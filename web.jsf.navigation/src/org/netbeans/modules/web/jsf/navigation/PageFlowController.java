@@ -146,10 +146,10 @@ public class PageFlowController {
     }
     
     public boolean isFacesConfigCurrentScope() {
-        return getCurrentScope() == PageFlowUtilities.LBL_SCOPE_FACESCONFIG;
+        return getCurrentScope().equals( PageFlowUtilities.LBL_SCOPE_FACESCONFIG );
     }
     public boolean isProjectCurrentScope() {
-        return getCurrentScope() == PageFlowUtilities.LBL_SCOPE_PROJECT;
+        return getCurrentScope().equals( PageFlowUtilities.LBL_SCOPE_PROJECT );
     }
     
     
