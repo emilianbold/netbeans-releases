@@ -45,17 +45,17 @@ public class GlobalActionTable extends TopComponent {
     public static synchronized GlobalActionTable getInstance() {
         if (instance == null) {
             TopComponent tc = WindowManager.getDefault().findTopComponent("GlobalActionTable"); // NOI18N
-            if(! (tc instanceof GlobalActionTable)) {
+            if (instance == null) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException(
-                        "Can not find GlobalActionTable component for its ID. Returned " + tc)); // NOI18N
+                    "Can not find GlobalActionTable component for its ID. Returned " + tc)); // NOI18N
                 instance = new GlobalActionTable();
-            } else {
-                instance = (GlobalActionTable) tc;
             }
         }
         return instance;
     }
     
+    /** Overriden to explicitely set persistence type of GlobalActionTable
+     * to PERSISTENCE_ALWAYS */
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
@@ -79,7 +79,6 @@ public class GlobalActionTable extends TopComponent {
     
     protected String preferredID() {
         return getClass().getName();
-        //return "GlobalList"; //NOI18N
     }
     
     

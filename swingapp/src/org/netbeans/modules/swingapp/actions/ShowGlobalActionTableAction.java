@@ -21,15 +21,7 @@ package org.netbeans.modules.swingapp.actions;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
-import javax.swing.JFrame;
-import org.netbeans.modules.form.FormEditorSupport;
-import org.netbeans.modules.swingapp.ActionManager;
 import org.netbeans.modules.swingapp.GlobalActionTable;
-import org.netbeans.modules.swingapp.GlobalActionPanel;
-import org.openide.filesystems.FileObject;
-import org.openide.windows.Mode;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 /**
  * A simple action which shows the global action table. It will be placed
@@ -46,11 +38,12 @@ public class ShowGlobalActionTableAction extends AbstractAction {
     
     public void actionPerformed(ActionEvent e) {
         GlobalActionTable gat = GlobalActionTable.getInstance();
+
         
-        Mode outputMode = WindowManager.getDefault().findMode("output");
+        /*Mode outputMode = WindowManager.getDefault().findMode("output");
         if(outputMode != null) {
             outputMode.dockInto(gat);
-        }
+        }*/
         gat.open();
         gat.requestActive();
         
