@@ -225,7 +225,7 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
             return false;
         }
         
-        return activatedTopComponent.getActivatedNodes() == null;
+        return activatedTopComponent != null && activatedTopComponent.getActivatedNodes() == null;
     }
     
     /// notifications of changes from window manager <<<<<
