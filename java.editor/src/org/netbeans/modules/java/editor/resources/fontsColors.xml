@@ -35,6 +35,23 @@ Microsystems, Inc. All Rights Reserved.
     <!--"semantic" highlighting:-->
     <fontcolor name="mod-unused" foreColor="gray"/>
     <fontcolor name="mod-abstract" />
+    
+    <fontcolor name="mod-field-declaration" foreColor="098618" >
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="mod-local-variable-declaration" />
+    <fontcolor name="mod-parameter-declaration" foreColor="A06001"/>
+    <fontcolor name="mod-method-declaration" >
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="mod-constructor-declaration" >
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="mod-class-declaration" />
+    <fontcolor name="mod-interface-declaration" />
+    <fontcolor name="mod-annotation-type-declaration" />
+    <fontcolor name="mod-enum-declaration" />
+    
     <fontcolor name="mod-field" foreColor="098618" >
         <font style="bold" />
     </fontcolor>

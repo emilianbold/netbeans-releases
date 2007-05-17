@@ -40,6 +40,8 @@ public enum ColoringAttributes {
     DEPRECATED,
     STATIC,
 
+    DECLARATION,
+    
     PRIVATE,
     PACKAGE_PRIVATE,
     PROTECTED,

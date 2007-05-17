@@ -24,9 +24,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
@@ -37,6 +41,7 @@ import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.Coloring;
 import org.netbeans.editor.SettingsDefaults;
+import static org.netbeans.modules.java.editor.semantic.ColoringAttributes.*;
 
 /**
  *
@@ -44,69 +49,50 @@ import org.netbeans.editor.SettingsDefaults;
  */
 public final class ColoringManager {
 
-    private static final Map<ColoringAttributes, String> type2Coloring;
-    private static final List<ColoringAttributes> attributesInOrder = new ArrayList(Arrays.asList(            
-    ColoringAttributes.UNUSED,
-    ColoringAttributes.UNDEFINED,
-
-    ColoringAttributes.DEPRECATED,
+    private static final Map<Set<ColoringAttributes>, String> type2Coloring;
     
-    ColoringAttributes.ABSTRACT,
-    ColoringAttributes.STATIC,
-
-    ColoringAttributes.PRIVATE,
-    ColoringAttributes.PACKAGE_PRIVATE,
-    ColoringAttributes.PROTECTED,
-    ColoringAttributes.PUBLIC,
-            
-    ColoringAttributes.FIELD,
-    ColoringAttributes.LOCAL_VARIABLE,
-    ColoringAttributes.PARAMETER,
-    ColoringAttributes.METHOD,
-    ColoringAttributes.CONSTRUCTOR,
-    ColoringAttributes.CLASS,
-    ColoringAttributes.INTERFACE,
-    ColoringAttributes.ANNOTATION_TYPE,
-    ColoringAttributes.ENUM,
-
-    ColoringAttributes.TYPE_PARAMETER_DECLARATION,
-    ColoringAttributes.TYPE_PARAMETER_USE,
-
-    ColoringAttributes.MARK_OCCURRENCES));
-
     private static final Font ITALIC = SettingsDefaults.defaultFont.deriveFont(Font.ITALIC);
     private static final Font BOLD = SettingsDefaults.defaultFont.deriveFont(Font.BOLD);
     
     static {
-        Collections.reverse(attributesInOrder);
+        type2Coloring = new LinkedHashMap<Set<ColoringAttributes>, String>();
         
-        type2Coloring = new HashMap<ColoringAttributes, String>();
+        put("mark-occurrences", MARK_OCCURRENCES);
+        put("mod-type-parameter-use", TYPE_PARAMETER_USE);
+        put("mod-type-parameter-declaration", TYPE_PARAMETER_DECLARATION);
+        put("mod-enum-declaration", ENUM, DECLARATION);
+        put("mod-annotation-type-declaration", ANNOTATION_TYPE, DECLARATION);
+        put("mod-interface-declaration", INTERFACE, DECLARATION);
+        put("mod-class-declaration", CLASS, DECLARATION);
+        put("mod-constructor-declaration", CONSTRUCTOR, DECLARATION);
+        put("mod-method-declaration", METHOD, DECLARATION);
+        put("mod-parameter-declaration", PARAMETER, DECLARATION);
+        put("mod-local-variable-declaration", LOCAL_VARIABLE, DECLARATION);
+        put("mod-field-declaration", FIELD, DECLARATION);
+        put("mod-enum", ENUM);
+        put("mod-annotation-type", ANNOTATION_TYPE);
+        put("mod-interface", INTERFACE);
+        put("mod-class", CLASS);
+        put("mod-constructor", CONSTRUCTOR);
+        put("mod-method", METHOD);
+        put("mod-parameter", PARAMETER);
+        put("mod-local-variable", LOCAL_VARIABLE);
+        put("mod-field", FIELD);
+        put("mod-public", PUBLIC);
+        put("mod-protected", PROTECTED);
+        put("mod-package-private", PACKAGE_PRIVATE);
+        put("mod-private", PRIVATE);
+        put("mod-static", STATIC);
+        put("mod-abstract", ABSTRACT);
+        put("mod-deprecated", DEPRECATED);
+        put("mod-undefined", UNDEFINED);
+        put("mod-unused", UNUSED);
+    }
+    
+    private static void put(String coloring, ColoringAttributes... attributes) {
+        Set<ColoringAttributes> attribs = EnumSet.copyOf(Arrays.asList(attributes));
         
-        type2Coloring.put(ColoringAttributes.UNUSED, "mod-unused");
-        type2Coloring.put(ColoringAttributes.ABSTRACT, "mod-abstract");
-        type2Coloring.put(ColoringAttributes.FIELD, "mod-field");
-        type2Coloring.put(ColoringAttributes.LOCAL_VARIABLE, "mod-local-variable");
-        type2Coloring.put(ColoringAttributes.PARAMETER, "mod-parameter");
-        type2Coloring.put(ColoringAttributes.METHOD, "mod-method");
-        type2Coloring.put(ColoringAttributes.CONSTRUCTOR, "mod-constructor");
-        type2Coloring.put(ColoringAttributes.CLASS, "mod-class");
-        type2Coloring.put(ColoringAttributes.INTERFACE, "mod-interface");
-        type2Coloring.put(ColoringAttributes.ANNOTATION_TYPE, "mod-annotation-type");
-        type2Coloring.put(ColoringAttributes.ENUM, "mod-enum");
-        type2Coloring.put(ColoringAttributes.DEPRECATED, "mod-deprecated");
-        type2Coloring.put(ColoringAttributes.STATIC, "mod-static");
-        
-        type2Coloring.put(ColoringAttributes.PRIVATE, "mod-private");
-        type2Coloring.put(ColoringAttributes.PACKAGE_PRIVATE, "mod-package-private");
-        type2Coloring.put(ColoringAttributes.PROTECTED, "mod-protected");
-        type2Coloring.put(ColoringAttributes.PUBLIC, "mod-public");
-        
-        type2Coloring.put(ColoringAttributes.TYPE_PARAMETER_DECLARATION, "mod-type-parameter-declaration");
-        type2Coloring.put(ColoringAttributes.TYPE_PARAMETER_USE, "mod-type-parameter-use");
-            
-        type2Coloring.put(ColoringAttributes.UNDEFINED, "mod-use");
-        
-        type2Coloring.put(ColoringAttributes.MARK_OCCURRENCES, "mark-occurrences");
+        type2Coloring.put(attribs, coloring);
     }
     
     public static Coloring getColoring(Collection<ColoringAttributes> colorings) {
@@ -114,11 +100,15 @@ public final class ColoringManager {
         
         Coloring c = new Coloring(null, 0, null, null);
         
-        for (ColoringAttributes type : attributesInOrder) {
+        colorings = colorings.size() > 0 ? EnumSet.copyOf(colorings) : EnumSet.noneOf(ColoringAttributes.class);
+        
+        for (Entry<Set<ColoringAttributes>, String> attribs2Colorings : type2Coloring.entrySet()) {
 //            System.err.println("type = " + type );
-            if (colorings.contains(type)) {
+            if (colorings.containsAll(attribs2Colorings.getKey())) {
 //                System.err.println("type2Coloring.get(type)=" + type2Coloring.get(type));
-                String key = type2Coloring.get(type);
+                String key = attribs2Colorings.getValue();
+                
+                colorings.removeAll(attribs2Colorings.getKey());
                 
                 if (key != null) {
                     AttributeSet colors = fcs.getTokenFontColors(key);

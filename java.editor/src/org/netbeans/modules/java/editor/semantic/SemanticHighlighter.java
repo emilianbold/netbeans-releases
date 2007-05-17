@@ -259,7 +259,7 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
                 if (u.spec == null)
                     continue;
                 
-                if (u.type.contains(UseTypes.Element) && org.netbeans.modules.java.editor.semantic.Utilities.isPrivateElement(decl)) {
+                if (u.type.contains(UseTypes.DECLARATION) && org.netbeans.modules.java.editor.semantic.Utilities.isPrivateElement(decl)) {
                     if (decl.getKind().isField() || isLocalVariableClosure(decl)) {
                         if (!hasAllTypes(uses, EnumSet.of(UseTypes.READ, UseTypes.WRITE))) {
                             u.spec.add(ColoringAttributes.UNUSED);
@@ -313,7 +313,7 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
     }
     
     private enum UseTypes {
-        READ, WRITE, EXECUTE, Element, CLASS_USE;
+        READ, WRITE, EXECUTE, DECLARATION, CLASS_USE;
     }
     
     private static boolean isLocalVariableClosure(Element el) {
@@ -562,6 +562,14 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
                 }
             }
             
+            if (decl != null && type.contains(UseTypes.DECLARATION)) {
+                if (c == null) {
+                    c = new ArrayList<ColoringAttributes>();
+                }
+                
+                c.add(ColoringAttributes.DECLARATION);
+            }
+            
             if (c != null) {
                 addUse(decl, type, expr, c);
             }
@@ -688,7 +696,7 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
 //                    highlights.add(h);
 //                }
 //            }
-            handlePossibleIdentifier(getCurrentPath(), EnumSet.of(UseTypes.Element));
+            handlePossibleIdentifier(getCurrentPath(), EnumSet.of(UseTypes.DECLARATION));
             
             for (Tree t : tree.getThrows()) {
                 TreePath tp = new TreePath(getCurrentPath(), t);
@@ -798,16 +806,16 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
             boolean isParameter = false;
             
             if (tree.getInitializer() != null) {
-                uses = EnumSet.of(UseTypes.Element, UseTypes.WRITE);
+                uses = EnumSet.of(UseTypes.DECLARATION, UseTypes.WRITE);
                 if (tree.getInitializer().getKind() == Kind.IDENTIFIER)
                     handlePossibleIdentifier(new TreePath(getCurrentPath(), tree.getInitializer()), EnumSet.of(UseTypes.READ));
             } else {
                 Element e = info.getTrees().getElement(getCurrentPath());
                 
                 if (e != null && e.getKind() == ElementKind.FIELD) {
-                    uses = EnumSet.of(UseTypes.Element, UseTypes.WRITE);
+                    uses = EnumSet.of(UseTypes.DECLARATION, UseTypes.WRITE);
                 } else {
-                    uses = EnumSet.of(UseTypes.Element);
+                    uses = EnumSet.of(UseTypes.DECLARATION);
                 }
             }
             
@@ -948,7 +956,7 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
                 }
             }
             
-            handlePossibleIdentifier(getCurrentPath(), EnumSet.of(UseTypes.Element));
+            handlePossibleIdentifier(getCurrentPath(), EnumSet.of(UseTypes.DECLARATION));
             
             super.visitClass(tree, null);
             //TODO: maybe should be considered
