@@ -54,7 +54,9 @@ import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Name;
+import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -625,8 +627,16 @@ out:                for (URL e : roots) {
                             }
                             if (fragment != null && fragment.length() > 0) {
                                 try {
-                                    return new URI(url.toExternalForm() + '#' + fragment.toString()).toURL();
+                                    // Javadoc fragments may contain chars that must be escaped to comply with RFC 2396.
+                                    // Unfortunately URLEncoder escapes almost everything but
+                                    // spaces replaces with '+' char which is wrong so it is
+                                    // replaced with "%20"escape sequence here.
+                                    String encodedfragment = URLEncoder.encode(fragment.toString(), "UTF-8"); // NOI18N
+                                    encodedfragment = encodedfragment.replace("+", "%20"); // NOI18N
+                                    return new URI(url.toExternalForm() + '#' + encodedfragment).toURL();
                                 } catch (URISyntaxException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                } catch (UnsupportedEncodingException ex) {
                                     Exceptions.printStackTrace(ex);
                                 } catch (MalformedURLException ex) {
                                     Exceptions.printStackTrace(ex);
