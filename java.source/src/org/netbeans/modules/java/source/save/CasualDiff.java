@@ -529,7 +529,7 @@ public class CasualDiff {
         int old = printer.indent();
         Name oldEnclosing = printer.enclClassName;
         printer.enclClassName = null;
-        localPointer = diffListImports(oldT.stats, newT.stats, oldT.pos + 1, est, Measure.DEFAULT, printer);
+        localPointer = diffListImports(oldT.stats, newT.stats, oldT.pos + 1, est, Measure.MEMBER, printer);
         printer.enclClassName = oldEnclosing;
         if (localPointer < endPos(oldT)) {
             copyTo(localPointer, localPointer = endPos(oldT));
