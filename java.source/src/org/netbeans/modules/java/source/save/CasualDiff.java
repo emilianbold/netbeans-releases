@@ -20,6 +20,7 @@ package org.netbeans.modules.java.source.save;
 
 import java.util.*;
 import com.sun.source.tree.*;
+import java.util.logging.Logger;
 import static com.sun.source.tree.Tree.*;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -56,6 +57,7 @@ public class CasualDiff {
     private String origText;
     private VeryPretty printer;
     private Context context;
+    private static final Logger LOG = Logger.getLogger(CasualDiff.class.getName());
 
     private Map<Integer, String> diffInfo = new HashMap<Integer, String>();
     
@@ -2549,10 +2551,13 @@ public class CasualDiff {
         if (from == to) { 
             return;
         } else if (from > to || from < 0 || to < 0) {
-            throw new IllegalArgumentException("Illegal values: from = " + from + "; to = " + to + ".");
+            // #104107 - log the source when this problem occurs.
+            LOG.severe("-----\n" + origText + "-----\n");
+            throw new IllegalArgumentException("Illegal values: from = " + from + "; to = " + to + "." +
+                "Please, attach your messages.log to new issue!");
         } else if (to > origText.length()) {
             // #99333, #97801: Debug message for the issues.
-            System.err.println("-----\n" + origText + "-----\n");
+            LOG.severe("-----\n" + origText + "-----\n");
             throw new IllegalArgumentException("Copying to " + to + " is greater then its size (" + origText.length() + ").");
         }
         loc.print(origText.substring(from, to));
