@@ -43,7 +43,6 @@ import javax.swing.table.TableCellEditor;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.mobility.antext.preprocessor.CommentingPreProcessor;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
-import org.netbeans.modules.mobility.project.J2MEProjectUtils;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.spi.mobility.project.support.DefaultPropertyParsers;
@@ -140,20 +139,12 @@ public class AbilitiesPanel implements NavigatorPanel
                                 EditableProperties ep=helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                                 if (defaultConfig != null)
                                 {
-                                    String abilities=J2MEProjectUtils.evaluateProperty(helper,DefaultPropertiesDescriptor.ABILITIES,ProjectConfigurationsHelper.DEFAULT_CONFIGURATION_NAME);
+                                    String abilities=ep.getProperty(DefaultPropertiesDescriptor.ABILITIES);
                                     Map<String,String> ab=CommentingPreProcessor.decodeAbilitiesMap(abilities);
                                     ab.put(key,newValue);
                                     abilities=CommentingPreProcessor.encodeAbilitiesMap(ab);
                                     ep.put(DefaultPropertiesDescriptor.ABILITIES,abilities);
-                                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,ep);
-                                    
-                                    try
-                                    {
-                                        ProjectManager.getDefault().saveProject(project);
-                                    } catch (Exception ex)
-                                    {
-                                        ErrorManager.getDefault().notify(ex);
-                                    }
+                                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,ep);                                                                       
                                 }                        
 
                                 for (Node node : selectedNodes)
@@ -161,7 +152,10 @@ public class AbilitiesPanel implements NavigatorPanel
                                     if (node != defaultConfig)
                                     {
                                         ProjectConfiguration conf=node.getLookup().lookup(ProjectConfiguration.class);
-                                        String abilities=J2MEProjectUtils.evaluateProperty(helper,DefaultPropertiesDescriptor.ABILITIES,conf.getDisplayName());
+                                        String abilities = ep.getProperty(J2MEProjectProperties.CONFIG_PREFIX + conf.getDisplayName() + "." + DefaultPropertiesDescriptor.ABILITIES);
+                                        if (abilities == null)
+                                            // Let's take a default value if we inherit from default configuration
+                                            abilities = ep.getProperty(DefaultPropertiesDescriptor.ABILITIES);
                                         Map<String,String> ab=CommentingPreProcessor.decodeAbilitiesMap(abilities);
                                         String defCf=ab.get(key);
                                         //if value is the same configuration inherits its values from the default configuration 
@@ -220,7 +214,12 @@ public class AbilitiesPanel implements NavigatorPanel
                         if (conf.getDisplayName().equals(ProjectConfigurationsHelper.DEFAULT_CONFIGURATION_NAME))
                             defaultConfig=n;
 
-                        String abilities=J2MEProjectUtils.evaluateProperty(project.getLookup().lookup(AntProjectHelper.class),"abilities",conf.getDisplayName());
+                        AntProjectHelper helper=project.getLookup().lookup(AntProjectHelper.class);
+                        EditableProperties ep=helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                        String abilities = ep.getProperty(J2MEProjectProperties.CONFIG_PREFIX + conf.getDisplayName() + "." + DefaultPropertiesDescriptor.ABILITIES);
+                        if (abilities == null)
+                            // Let's take a default value if we inherit from default configuration
+                            abilities = ep.getProperty(DefaultPropertiesDescriptor.ABILITIES);
                         Map<String,String> ab=CommentingPreProcessor.decodeAbilitiesMap(abilities);
                         //change hinttype so only one instace is found
                         if (setExt)

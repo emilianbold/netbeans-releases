@@ -40,6 +40,7 @@ import java.util.WeakHashMap;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.KeyStroke;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.project.ProjectConfiguration;
@@ -51,6 +52,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.openide.actions.PasteAction;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
@@ -87,9 +89,9 @@ class ConfigurationsProvider
         final private Action[] actions;
         final private Image icon;
         
-        FNode(Node original, Lookup lookup,Action[] act,VisualClassPathItem it) {
+        FNode(Node original, Lookup lookup,Action[] acts,VisualClassPathItem it) {
             super(original,new ActionFilterChildren(original),lookup);
-            actions=act;
+            actions=acts==null?act:acts;
             icon=((ImageIcon)it.getIcon()).getImage();
         }
         
@@ -102,14 +104,9 @@ class ConfigurationsProvider
         final Action act[]=new Action[] 
         {
             RemoveResourceAction.getStaticInstance(),
-            null,
             SystemAction.get(CopyAction.class),
         };
 
-        final Action gract[]=new Action[] 
-        {
-            SystemAction.get(CopyAction.class),
-        };
 
         public Action[] getActions(boolean context)
         {
