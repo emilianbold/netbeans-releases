@@ -655,8 +655,8 @@ public class PageFlowController {
         return configDataObj;
     }
     
-    public void saveLocation(Page node, String newDisplayName) {
-        view.saveLocation(node, newDisplayName);
+    public void saveLocation(String oldDisplayName, String newDisplayName) {
+        view.saveLocation(oldDisplayName, newDisplayName);
     }
     
     // WebFiles Wrappers

@@ -160,7 +160,7 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
                 if( isDataNode() ){
                     newDisplayName = getFolderDisplayName(pc.getWebFolder(),((DataNode) original).getDataObject().getPrimaryFile());
                 }
-                pc.saveLocation(this, newDisplayName);
+                pc.saveLocation(oldDisplayName, newDisplayName);
                 renaming= false;
                 pc.renamePageInModel(oldDisplayName, newDisplayName);
             }
