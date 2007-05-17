@@ -143,6 +143,7 @@ public class NbExecutor extends Task {
                 callee.createClasspath().setPath(getProject().getProperty("java.class.path"));
                 callee.setFork(true);
                 callee.setFailonerror(true);
+                callee.setInput(new File("dummy")); // #90576,103874 - otherwise it freezes when calling InetAddress.getLocalHost.
                 
                 callee.setDir(getProject().getBaseDir());
                 callee.createArg().setLine("-buildfile " + "\"" + getProject().getProperty("ant.file") + "\"");
