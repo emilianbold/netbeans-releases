@@ -63,7 +63,6 @@ public class MobilityProjectWorkflow extends org.netbeans.performance.test.utili
         super.initialize();
         MPFootprintUtilities.closeAllDocuments();
         MPFootprintUtilities.closeMemoryToolbar();
-        MPFootprintUtilities.closeUIGesturesToolbar();
     }
     
     public ComponentOperator open(){

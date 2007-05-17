@@ -53,7 +53,6 @@ public class WebProjectWorkflow extends org.netbeans.performance.test.utilities.
         super.initialize();
         FootprintUtilities.closeAllDocuments();
         FootprintUtilities.closeMemoryToolbar();
-        FootprintUtilities.closeUIGesturesToolbar();
     }
     
     public void prepare() {

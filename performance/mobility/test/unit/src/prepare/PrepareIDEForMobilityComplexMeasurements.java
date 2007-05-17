@@ -79,7 +79,6 @@ public class PrepareIDEForMobilityComplexMeasurements extends JellyTestCase {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new PrepareIDEForMobilityComplexMeasurements("closeWelcome"));
         suite.addTest(new PrepareIDEForMobilityComplexMeasurements("closeAllDocuments"));
-        suite.addTest(new PrepareIDEForMobilityComplexMeasurements("closeUIGesturesToolbar"));
         suite.addTest(new PrepareIDEForMobilityComplexMeasurements("closeMemoryToolbar"));
         suite.addTest(new PrepareIDEForMobilityComplexMeasurements("openProjects"));
         suite.addTest(new PrepareIDEForMobilityComplexMeasurements("openFiles"));
@@ -129,17 +128,6 @@ public class PrepareIDEForMobilityComplexMeasurements extends JellyTestCase {
                 Bundle.getStringTrimmed("org.netbeans.core.Bundle","Toolbars/Memory"));
     }
 
-    
-    /**
-     * Close UI Gestures Toolbar.
-     */
-    public static void closeUIGesturesToolbar(){
-        closeToolbar(Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/View") + "|" +
-                Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle","CTL_ToolbarsListAction") + "|" +
-                Bundle.getStringTrimmed("org.netbeans.modules.uihandler.Bundle","Toolbars/UIGestures"));
-        
-    }
-    
     private static void closeToolbar(String menu){
         MainWindowOperator mainWindow = MainWindowOperator.getDefault();
         JMenuBarOperator menuBar = new JMenuBarOperator(mainWindow.getJMenuBar());

@@ -56,7 +56,6 @@ public class J2SEProjectWorkflow extends org.netbeans.performance.test.utilities
         super.initialize();
         FootprintUtilities.closeAllDocuments();
         FootprintUtilities.closeMemoryToolbar();
-        FootprintUtilities.closeUIGesturesToolbar();
     }
     
     public ComponentOperator open(){

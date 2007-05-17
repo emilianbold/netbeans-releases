@@ -67,7 +67,6 @@ public class ScanClasspath extends org.netbeans.performance.test.utilities.Perfo
         NbTestSuite suite = new NbTestSuite();
         
         suite.addTest(new gui.setup.IDESetupTest("closeMemoryToolbar"));
-        suite.addTest(new gui.setup.IDESetupTest("closeUIGesturesToolbar"));
         suite.addTest(new gui.setup.IDESetupTest("closeAllDocuments"));
         suite.addTest(new ScanClasspath("openJEditProject"));
 

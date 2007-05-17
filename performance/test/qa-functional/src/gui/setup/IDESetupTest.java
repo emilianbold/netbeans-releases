@@ -77,12 +77,4 @@ public class IDESetupTest extends org.netbeans.jellytools.JellyTestCase {
         Utilities.closeMemoryToolbar();
     }
 
-    
-    /**
-     * Close UI Gestures Toolbar.
-     */
-    public void closeUIGesturesToolbar(){
-        Utilities.closeUIGesturesToolbar();
-    }
-    
 }

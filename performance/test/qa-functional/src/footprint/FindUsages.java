@@ -61,7 +61,6 @@ public class FindUsages extends org.netbeans.performance.test.utilities.MemoryFo
         super.initialize();
         FootprintUtilities.closeAllDocuments();
         FootprintUtilities.closeMemoryToolbar();
-        FootprintUtilities.closeUIGesturesToolbar();
     }
 
     public void prepare() {

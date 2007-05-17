@@ -38,7 +38,6 @@ public class MPMeasuringSetup extends NbTestSuite {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Setup suite for Mobility Pack");
 
         suite.addTest(new MobilitySetupTest("closeMemoryToolbar"));
-        suite.addTest(new MobilitySetupTest("closeUIGesturesToolbar"));
         
         suite.addTest(new MobilitySetupTest("closeWelcome"));
         

@@ -60,7 +60,6 @@ public class MPScanClasspath extends gui.scanclasspath.ScanClasspath {
         NbTestSuite suite = new NbTestSuite();
         
         suite.addTest(new MobilitySetupTest("closeMemoryToolbar"));
-        suite.addTest(new MobilitySetupTest("closeUIGesturesToolbar"));
         suite.addTest(new MobilitySetupTest("closeAllDocuments"));
         
         suite.addTest(new MobilitySetupTest("openMobilityMIDletProject"));

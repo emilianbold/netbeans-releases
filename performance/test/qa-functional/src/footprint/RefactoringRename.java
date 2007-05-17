@@ -69,7 +69,6 @@ public class RefactoringRename extends org.netbeans.performance.test.utilities.M
         super.initialize();
         FootprintUtilities.closeAllDocuments();
         FootprintUtilities.closeMemoryToolbar();
-        FootprintUtilities.closeUIGesturesToolbar();
     }
     
     public void prepare() {

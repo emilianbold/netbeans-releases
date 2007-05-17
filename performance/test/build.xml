@@ -54,8 +54,12 @@ Microsystems, Inc. All Rights Reserved.
         </compare>
     </target>
 
-    <target name="buildallperftests" description="Build all performance tests + performancetestutilities library">
+    <target name="buildall" description="Build all performance tests + performancetestutilities library">
         <ant dir="${nball.dir}/performance/performancetestutilities" antfile="build.xml" target="jar"/>
+        <antcall target="buildallperftests"/>
+    </target>
+    
+    <target name="buildallperftests" description="Build all performance tests">
         <antcall target="buildIDEperftests"/>
         <antcall target="buildWebperftests"/>
         <ant dir="${nball.dir}/enterprise/performancetests/test" antfile="build.xml" target="buildtests"/>
@@ -63,7 +67,12 @@ Microsystems, Inc. All Rights Reserved.
         <ant dir="${nball.dir}/mobility/performancetests/test" antfile="build.xml" target="buildtests"/>
     </target>
     
-    <target name="cleanallperftests" description="Clean all performance tests + performancetestutilities library">
+    <target name="cleanall" description="Clean all performance tests + performancetestutilities library">
+        <ant dir="${nball.dir}/performance/performancetestutilities" antfile="build.xml" target="clean"/>
+        <antcall target="cleanallperftests"/>
+    </target>
+    
+    <target name="cleanallperftests" description="Clean all performance tests">
         <ant dir="${nball.dir}/performance/performancetestutilities" antfile="build.xml" target="clean"/>
         <antcall target="cleanIDEperftests"/>
         <antcall target="cleanWebperftests"/>

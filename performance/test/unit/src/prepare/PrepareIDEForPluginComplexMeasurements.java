@@ -60,7 +60,6 @@ public class PrepareIDEForPluginComplexMeasurements extends PrepareIDEForComplex
         suite.addTest(new PrepareIDEForComplexMeasurements("closeWelcome"));
         suite.addTest(new PrepareIDEForComplexMeasurements("closeAllDocuments"));
         suite.addTest(new PrepareIDEForComplexMeasurements("closeMemoryToolbar"));
-        suite.addTest(new PrepareIDEForComplexMeasurements("closeUIGesturesToolbar"));
         suite.addTest(new PrepareIDEForPluginComplexMeasurements("openFiles"));
         suite.addTest(new PrepareIDEForComplexMeasurements("saveStatus"));
         return suite;

@@ -39,7 +39,6 @@ public class MeasuringSetup extends NbTestSuite {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Setup suite");
 
         suite.addTest(new IDESetupTest("closeMemoryToolbar"));
-        suite.addTest(new IDESetupTest("closeUIGesturesToolbar"));
         
         suite.addTest(new IDESetupTest("closeWelcome"));
         
