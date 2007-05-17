@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,7 +29,6 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.LazyActionsManagerListener;
-import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.Watch;
@@ -44,6 +43,8 @@ import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
 
 import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -118,12 +119,20 @@ implements PropertyChangeListener, DebuggerManagerListener {
 //            fixBreakpointImpls ();
     }
 
-    public void breakpointAdded (Breakpoint breakpoint) {
-        createBreakpointImpl (breakpoint);
+    public void breakpointAdded (final Breakpoint breakpoint) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                createBreakpointImpl (breakpoint);
+            }
+        });
     }    
 
-    public void breakpointRemoved (Breakpoint breakpoint) {
-        removeBreakpointImpl (breakpoint);
+    public void breakpointRemoved (final Breakpoint breakpoint) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                removeBreakpointImpl (breakpoint);
+            }
+        });
     }
     
 
@@ -140,7 +149,6 @@ implements PropertyChangeListener, DebuggerManagerListener {
     // helper methods ..........................................................
     
     private HashMap<Breakpoint, BreakpointImpl> breakpointToImpl = new HashMap<Breakpoint, BreakpointImpl>();
-    
     
     private void createBreakpointImpls () {
         Breakpoint[] bs = DebuggerManager.getDebuggerManager ().getBreakpoints ();
@@ -162,7 +170,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
             i.next ().fixed ();
     }
 
-    private void createBreakpointImpl (Breakpoint b) {
+    private synchronized void createBreakpointImpl (Breakpoint b) {
         if (breakpointToImpl.containsKey (b)) return;
         if (b instanceof LineBreakpoint) {
             breakpointToImpl.put (
@@ -229,7 +237,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
         logger.finer("BreakpointsEngineListener: created impl "+breakpointToImpl.get(b)+" for "+b);
     }
 
-    private void removeBreakpointImpl (Breakpoint b) {
+    private synchronized void removeBreakpointImpl (Breakpoint b) {
         BreakpointImpl impl = breakpointToImpl.get (b);
         if (impl == null) return;
         logger.finer("BreakpointsEngineListener: removed impl "+impl+" for "+b);
