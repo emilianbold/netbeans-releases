@@ -257,7 +257,7 @@ public class SunEjbJarProxy implements SunEjbJar, RootInterfaceImpl {
     }    
     
     public void setProxyVersion(java.lang.String value) {
-        if ((version==null && value!=null) || !version.equals(value)) {
+        if ((version==null && value!=null) || (version != null && !version.equals(value))) {
             PropertyChangeEvent evt = new PropertyChangeEvent(
                     this, PROPERTY_VERSION, version, value); 
             version=value;
@@ -416,7 +416,7 @@ public class SunEjbJarProxy implements SunEjbJar, RootInterfaceImpl {
     public void setStatus(int value) {
         if (ddStatus!=value) {
             PropertyChangeEvent evt = new PropertyChangeEvent(
-                    this, PROPERTY_STATUS, new Integer(ddStatus), new Integer(value));
+                    this, PROPERTY_STATUS, Integer.valueOf(ddStatus), Integer.valueOf(value));
             ddStatus=value;
             for (int i=0;i<listeners.size();i++) {
                 listeners.get(i).propertyChange(evt);

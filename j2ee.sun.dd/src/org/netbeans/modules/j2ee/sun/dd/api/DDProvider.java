@@ -30,6 +30,7 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.WeakHashMap;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -186,7 +187,7 @@ public final class DDProvider {
         }
     }
     
-    private Map<Object, RootInterface> ddMap = new HashMap<Object, RootInterface>();
+    private Map<Object, RootInterface> ddMap = new WeakHashMap<Object, RootInterface>();
 
     public RootInterface getDDRoot(FileObject fo) throws IOException {
         if (fo == null) {
@@ -250,8 +251,9 @@ public final class DDProvider {
             if (rootProxy == null) {
                 try {
                     rootProxy = getDDRoot(ddProviderDataObject.createReader());
-                    assert rootProxy != null;
-                    ddMap.put(ddProviderDataObject, rootProxy);
+                    if(rootProxy != null) {
+                        ddMap.put(ddProviderDataObject, rootProxy);
+                    }
                 } catch(Schema2BeansException ex) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 } catch(Schema2BeansRuntimeException ex) {
