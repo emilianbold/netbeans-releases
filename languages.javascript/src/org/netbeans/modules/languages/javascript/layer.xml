@@ -95,6 +95,7 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
             </folder>
             <folder name="x-string">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
                 <file name="language.nbs" url="String.nbs"/>
             </folder>
         </folder>
