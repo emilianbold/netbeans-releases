@@ -20,7 +20,8 @@ package org.netbeans.modules.etl.ui.view;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.Action;
+
+import org.openide.util.NbBundle;
 
 import org.netbeans.modules.etl.codegen.ETLProcessFlowGeneratorFactory;
 import org.netbeans.modules.etl.codegen.ETLStrategyBuilder;
@@ -44,17 +45,13 @@ import org.netbeans.modules.sql.framework.ui.graph.actions.AutoLayoutAction;
 import org.netbeans.modules.sql.framework.ui.graph.actions.CollapseAllAction;
 import org.netbeans.modules.sql.framework.ui.graph.actions.ExpandAllAction;
 import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
-import org.netbeans.modules.sql.framework.ui.graph.actions.PrintAction;
 import org.netbeans.modules.sql.framework.ui.graph.actions.RedoAction;
 import org.netbeans.modules.sql.framework.ui.graph.actions.UndoAction;
 import org.netbeans.modules.sql.framework.ui.graph.actions.ZoomAction;
 import org.netbeans.modules.sql.framework.ui.model.CollabSQLUIModel;
 import org.netbeans.modules.sql.framework.ui.view.BasicTopView;
 import org.netbeans.modules.sql.framework.ui.view.SQLStatementPanel;
-import org.openide.util.NbBundle;
-
 import com.sun.sql.framework.exception.BaseException;
-import org.openide.util.actions.SystemAction;
 import com.sun.sql.framework.utils.Logger;
 import com.sun.sql.framework.utils.StringUtil;
 /**
