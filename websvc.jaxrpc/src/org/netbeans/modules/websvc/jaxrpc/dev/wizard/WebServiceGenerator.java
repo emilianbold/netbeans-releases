@@ -275,77 +275,78 @@ public class WebServiceGenerator {
     }
 
     
-    public void addReferences(String beanClassName, Node[] nodes) {
-        for(int i = 0; i < nodes.length; i++) {
-            Node node = nodes[i];
-            EjbReference ref = (EjbReference)node.getCookie(EjbReference.class);
-            if(ref != null) {
-                EnterpriseReferenceContainer erc = (EnterpriseReferenceContainer)project.getLookup()
-                .lookup(EnterpriseReferenceContainer.class);
-                if(ref.supportsRemoteInvocation()) {
-                    EjbRef ejbRef = ref.createRef();
-                    if(ejbRef.getEjbRefType().equals("Session")) { //NOI18N
-                        try {
-// Retouche                            
-//                            erc.addEjbReference(ejbRef, beanClassName, ref.getClientJarTarget());
-                        }
-                        catch(Exception e) {
-                            throw new RuntimeException(e.getMessage());
-                        }
-                    }
-                }
-                if(!ref.supportsRemoteInvocation() &&
-                ref.supportsLocalInvocation()) {
-                    EjbLocalRef ejbLocalRef = ref.createLocalRef();
-                    if(ejbLocalRef.getEjbRefType().equals("Session")) { //NOI18N
-                        try {
-// Retouche
-//                            erc.addEjbLocalReference(ejbLocalRef, beanClassName, ref.getClientJarTarget());
-                        }
-                        catch(Exception e) {
-                            throw new RuntimeException(e.getMessage());
-                        }
-                    }
-                }
-            }
-            else  //Java class
-            {
-// Retouche
-//                JavaClass classElement = JMIUtils.getJavaClassFromNode(node);
-//                assert (classElement != null);
-//                
-//                //find out if the class is in the same project or not
-//                FileObject srcFile = JavaMetamodel.getManager().getDataObject(classElement.getResource()).getPrimaryFile();
-//
-//                Project p = FileOwnerQuery.getOwner(srcFile);
-//                if(p != null) //project can be determined. if not, class is
-//                    //not in any  project and is assumed to already be
-//                    //in the classpath
-//                {
-//                    if(!project.equals(p )) //not in same project
-//                    {
-//                        AntArtifact target = AntArtifactQuery.findArtifactsByType(p, getAntArtifactType(p))[0];
-//                        ReferenceHelper helper = wsSupport.getReferenceHelper();
-//                        if(helper.addReference(target)) {
-//                            AntProjectHelper antHelper = wsSupport.getAntProjectHelper();
-//                            EditableProperties ep =
-//                            antHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-//                            String s = ep.getProperty("javac.classpath"); //FIX-ME:get from project
-//                            s += File.pathSeparatorChar + helper.createForeignFileReference(target);
-//                            ep.setProperty("javac.classpath", s);
-//                            antHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-//                        }
+//    public void addReferences(String beanClassName, Node[] nodes) {
+//        for(int i = 0; i < nodes.length; i++) {
+//            Node node = nodes[i];
+//            EjbReference ref = (EjbReference)node.getCookie(EjbReference.class);
+//            if(ref != null) {
+//                EnterpriseReferenceContainer erc = (EnterpriseReferenceContainer)project.getLookup()
+//                .lookup(EnterpriseReferenceContainer.class);
+//                if(ref.supportsRemoteInvocation()) {
+//                    EjbRef ejbRef = ref.createRef();
+//                    if(ejbRef.getEjbRefType().equals("Session")) { //NOI18N
 //                        try {
-//                            ProjectManager.getDefault().saveProject(project);
+//// Retouche                            
+////                            erc.addEjbReference(ejbRef, beanClassName, ref.getClientJarTarget());
 //                        }
-//                        catch(java.io.IOException e) {
+//                        catch(Exception e) {
 //                            throw new RuntimeException(e.getMessage());
 //                        }
 //                    }
 //                }
-            }
-        }
-    }
+//                if(!ref.supportsRemoteInvocation() &&
+//                ref.supportsLocalInvocation()) {
+//                    EjbLocalRef ejbLocalRef = ref.createLocalRef();
+//                    if(ejbLocalRef.getEjbRefType().equals("Session")) { //NOI18N
+//                        try {
+//// Retouche
+////                            erc.addEjbLocalReference(ejbLocalRef, beanClassName, ref.getClientJarTarget());
+//                        }
+//                        catch(Exception e) {
+//                            throw new RuntimeException(e.getMessage());
+//                        }
+//                    }
+//                }
+//            }
+//            else  //Java class
+//            {
+//// Retouche
+////                JavaClass classElement = JMIUtils.getJavaClassFromNode(node);
+////                assert (classElement != null);
+////                
+////                //find out if the class is in the same project or not
+////                FileObject srcFile = JavaMetamodel.getManager().getDataObject(classElement.getResource()).getPrimaryFile();
+////
+////                Project p = FileOwnerQuery.getOwner(srcFile);
+////                if(p != null) //project can be determined. if not, class is
+////                    //not in any  project and is assumed to already be
+////                    //in the classpath
+////                {
+////                    if(!project.equals(p )) //not in same project
+////                    {
+////                        AntArtifact target = AntArtifactQuery.findArtifactsByType(p, getAntArtifactType(p))[0];
+////                        ReferenceHelper helper = wsSupport.getReferenceHelper();
+////                        if(helper.addReference(target)) {
+////                            AntProjectHelper antHelper = wsSupport.getAntProjectHelper();
+////                            EditableProperties ep =
+////                            antHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+////                            String s = ep.getProperty("javac.classpath"); //FIX-ME:get from project
+////                            s += File.pathSeparatorChar + helper.createForeignFileReference(target);
+////                            ep.setProperty("javac.classpath", s);
+////                            antHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+////                        }
+////                        try {
+////                            ProjectManager.getDefault().saveProject(project);
+////                        }
+////                        catch(java.io.IOException e) {
+////                            throw new RuntimeException(e.getMessage());
+////                        }
+////                    }
+////                }
+//            }
+//        }
+//    }
+
 // Retouche
 //    public void addDelegateMethod(Node[] nodes, final JavaClass jc) {
 //        if (nodes == null) return;
