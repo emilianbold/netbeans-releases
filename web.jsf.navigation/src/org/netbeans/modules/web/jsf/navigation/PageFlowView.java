@@ -74,14 +74,11 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         this.multiview = multiview;
         this.context = context;
         scene = initializeScene();
-        pfc = new PageFlowController( context,  this );        
-        sceneData = new PageFlowSceneData(scene, PageFlowUtilities.getInstance(pfc));            
+        pfc = new PageFlowController( context,  this );
+        sceneData = new PageFlowSceneData(scene, PageFlowUtilities.getInstance(pfc));
         
-        FileObject nbprojectFolder = pfc.getWebFolder().getParent().getFileObject("nbproject", null);
-        String fileName = pfc.getConfigDataObject().getPrimaryFile().getName() + ".NavData";
-        navDataFile = new File(nbprojectFolder.getPath(), fileName);
-        loadNodelocations(navDataFile);        
-            
+        loadNodelocations(getStorageDatFile());
+        
         pfc.setupGraphNoSaveData(); /* I don't want to override the loaded locations with empy sceneData */
         setFocusable(true);
     }
@@ -165,7 +162,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         
         add(pane, BorderLayout.CENTER);
         
-        setDefaultActivatedNode();     
+        setDefaultActivatedNode();
         
         return scene;
     }
@@ -235,15 +232,15 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
      * @param glyphs
      * @return
      */
-    protected VMDNodeWidget createNode( Page pageNode, String type, List<Image> glyphs) {        
+    protected VMDNodeWidget createNode( Page pageNode, String type, List<Image> glyphs) {
         String pageName = pageNode.getDisplayName();
         
         assert pageName != null;
         
         VMDNodeWidget widget = (VMDNodeWidget) scene.addNode(pageNode);
         //        widget.setNodeProperties(null /*IMAGE_LIST*/, pageName, type, glyphs);
-        widget.setNodeProperties(pageNode.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16), pageName, type, glyphs);        
-        widget.setPreferredLocation(sceneData.getPageLocation(pageName));        
+        widget.setNodeProperties(pageNode.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16), pageName, type, glyphs);
+        widget.setPreferredLocation(sceneData.getPageLocation(pageName));
         
         scene.addPin(pageNode,new Pin(pageNode));
         
@@ -332,7 +329,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
      */
     public JComponent getToolbarRepresentation() {
         
-//        PageFlowUtilities pfu = PageFlowUtilities.getInstance();
+        //        PageFlowUtilities pfu = PageFlowUtilities.getInstance();
         // TODO -- Look at NbEditorToolBar in the editor - it does stuff
         // with the UI to get better Aqua and Linux toolbar
         JToolBar toolbar = new JToolBar();
@@ -341,8 +338,8 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         toolbar.setBorder(new EmptyBorder(0, 0, 0, 0));
         
         toolbar.addSeparator();
-        
-        toolbar.add(PageFlowUtilities.createScopeComboBox(this,pfc));
+        PageFlowUtilities utilities = PageFlowUtilities.getInstance(pfc);
+        toolbar.add(utilities.createScopeComboBox());
         
         return toolbar;
         
@@ -498,27 +495,32 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         return myNavCases;
     }
     
-    private File navDataFile;
+    private File navDataFile = null;
     public File getStorageDatFile(){
+        if( navDataFile == null){
+            FileObject nbprojectFolder = pfc.getWebFolder().getParent().getFileObject("nbproject", null);
+            String fileName = pfc.getConfigDataObject().getPrimaryFile().getName() + ".NavData";
+            navDataFile = new File(nbprojectFolder.getPath(), fileName);
+        }
         return navDataFile;
     }
     
     public void serializeNodeLocations(File navDataFile){
         //For long term storage;
-//        SceneSerializer.serialize(scene, navDataFile);
+        //        SceneSerializer.serialize(scene, navDataFile);
         saveLocations();
         SceneSerializer.serialize(sceneData, navDataFile);
     }
     
     private void loadNodelocations(File navDataFile) {
         if( navDataFile.exists() ) {
-//            SceneSerializer.deserialize(scene, navDataFile);
-//            validate();
+            //            SceneSerializer.deserialize(scene, navDataFile);
+            //            validate();
             SceneSerializer.deserialize(sceneData, navDataFile);
         }
     }
-
     
     
-
+    
+    
 }

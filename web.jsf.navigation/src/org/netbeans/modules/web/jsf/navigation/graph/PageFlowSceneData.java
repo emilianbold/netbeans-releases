@@ -111,6 +111,10 @@ public class PageFlowSceneData {
         return utilities.getCurrentScope();
     }
     
+    public void setCurrentScope(String newScope) {
+        utilities.setCurrentScope(newScope);
+    }
+    
     
     public void setScopeData( String scope, Map<String,Point> map){
         if ( scope.equals( PageFlowUtilities.LBL_SCOPE_FACESCONFIG) ){
