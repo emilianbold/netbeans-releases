@@ -45,12 +45,14 @@ public class OpenBeanFiles  extends org.netbeans.performance.test.utilities.Perf
         super(testName);
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=2000;
+        WAIT_AFTER_PREPARE=3000;
     }
     
     public OpenBeanFiles(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=2000;
+        WAIT_AFTER_PREPARE=3000;        
     }
     
     public void testApplicationBean() {
