@@ -7,15 +7,24 @@ import javax.swing.Icon;
 import javax.swing.KeyStroke;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.modules.swingapp.*;
-
+import org.openide.util.NbBundle;
 // End of variables declaration                   
 
 public class ActionTableModel extends AbstractTableModel {
     
+    private static String getLocalizedString(String key) {
+        return NbBundle.getMessage(ActionTableModel.class, "ActionTableModel."+key);
+    }
+    
     final String[] columnNames = new String[]{
-            "Name","Text","Accel",
-            "Class","Method",
-            "Icon","Task"};
+        getLocalizedString("header.name"),
+        getLocalizedString("header.text"),
+        getLocalizedString("header.accelerator"),
+        getLocalizedString("header.class"),
+        getLocalizedString("header.method"),
+        getLocalizedString("header.icon"),
+        getLocalizedString("header.task") 
+    };
     final Class[] columnClasses = new Class[] {
         String.class, String.class, String.class, 
         String.class, String.class, 
