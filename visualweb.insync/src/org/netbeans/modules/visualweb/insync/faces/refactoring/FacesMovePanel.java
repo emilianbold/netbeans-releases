@@ -274,9 +274,16 @@ public class FacesMovePanel extends JPanel implements ActionListener, CustomRefa
                 if (child.isFolder()) {
                     // Not special folders
                     if (child.getNameExt().equalsIgnoreCase("META-INF") || // NOI18N
-                            child.getNameExt().equalsIgnoreCase("WEB-INF") || // NOI18N
-                            child.getNameExt().equalsIgnoreCase("resources")) { // NOI18N
+                            child.getNameExt().equalsIgnoreCase("WEB-INF")) { // NOI18N
                         continue;
+                    }
+                    // Not children of special folders
+                    String relativePath = FileUtil.getRelativePath(webRootFolder, child);
+                    if (relativePath != null) {
+                    	if (relativePath.startsWith("META-INF/") || // NOI18N
+                    			relativePath.startsWith("WEB-INF/")) { // NOI18N
+                    		continue;
+                    	}
                     }
                     folders.add(child);
                 }

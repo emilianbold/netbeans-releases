@@ -34,6 +34,7 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
+import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectConstants;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
@@ -208,7 +209,7 @@ public class FacesJspFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
                         // Compute relative path of target folder to document root.
                         String targetRelativePath = FileUtil.getRelativePath(targetDocumentRoot, targetFileObject); // NOI18N
                         
-                        // Deleggate to Java refactoring to rename the backing bean
+                        // Delegate to Java refactoring to rename the backing bean
                         MoveRefactoring javaMoveRefactoring = new MoveRefactoring(Lookups.singleton(javaFileObject));
                         
                         // new folder
@@ -218,17 +219,20 @@ public class FacesJspFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
                             // TODO
                         }
                         
+                        String targetJavaPackage = 
+                        	JsfProjectUtils.getProjectProperty(targetFileObjectProject, JsfProjectConstants.PROP_JSF_PAGEBEAN_PACKAGE) +
+                        	"." +
+                        	targetRelativePath.replace('/', '.');
                         FileObject targetJavaFolder = targetPageBeanRoot.getFileObject(targetRelativePath);
                         if (targetJavaFolder == null) {
-                            // TODO
+                        	return new Problem(true, NbBundle.getMessage(FacesJspFileRenameRefactoringPlugin.class, "ERR_TargetPackageDoesNotExist", targetJavaPackage));
                         }
                         
                         URL url = URLMapper.findURL(targetJavaFolder, URLMapper.EXTERNAL);
                         try {
                             javaMoveRefactoring.setTarget(Lookups.singleton(new URL(url.toExternalForm())));
                         } catch (MalformedURLException ex) {
-                            // TODO return problem
-                            ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+                        	return new Problem(true, NbBundle.getMessage(FacesJspFileRenameRefactoringPlugin.class, "ERR_TargetPackageDoesNotExist", targetJavaPackage));
                         }
                         
                         // Set ClasspathInfo

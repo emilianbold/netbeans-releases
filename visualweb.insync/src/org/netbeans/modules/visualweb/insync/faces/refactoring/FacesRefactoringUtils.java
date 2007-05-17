@@ -70,7 +70,6 @@ final class FacesRefactoringUtils {
             new String[] {
                     "META-INF"   // NOI18N
                     ,"WEB-INF"   // NOI18N
-                    ,"resources" // NOI18N
             }
         ));
        
