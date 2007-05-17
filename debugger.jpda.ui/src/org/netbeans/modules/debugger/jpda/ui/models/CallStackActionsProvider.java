@@ -183,11 +183,14 @@ public class CallStackActionsProvider implements NodeActionsProvider {
             StringBuffer frameStr = new StringBuffer(50);
             
             for (i = 0; i < k; i++) {
-                int index = stack[i].getClassName().lastIndexOf('.');
-                frameStr.append(stack[i].getClassName().substring(index + 1));
-         
-                frameStr.append("." + stack[i].getMethodName() +
-                        " line: " + stack[i].getLineNumber("java"));
+                frameStr.append(stack[i].getClassName());
+                frameStr.append(".");
+                frameStr.append(stack[i].getMethodName());
+                frameStr.append("(");
+                frameStr.append(stack[i].getSourceName(null));
+                frameStr.append(":");
+                frameStr.append(stack[i].getLineNumber(null));
+                frameStr.append(")");
                 if (i != k - 1) frameStr.append('\n');
             }    
             Clipboard systemClipboard = getClipboard();
