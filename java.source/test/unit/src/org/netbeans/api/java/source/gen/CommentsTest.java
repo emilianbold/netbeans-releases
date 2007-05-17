@@ -159,6 +159,7 @@ public class CommentsTest extends GeneratorTest {
         src.runModificationTask(task).commit();
     }
     
+    // #99329
     public void testAddJavaDocToMethod() throws Exception {
         File testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
@@ -170,7 +171,20 @@ public class CommentsTest extends GeneratorTest {
             "\n" +
             "}\n"
             );
-        
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    Test() {\n" +
+            "    }\n" +
+            "\n" +
+            "    /**\n" +
+            "     * Comentario\n" +
+            "     */\n" +
+            "    public void nuevoMetodo() {\n" +
+            "    }\n" +
+            "\n" +
+            "}\n";
         JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
             
@@ -205,9 +219,9 @@ public class CommentsTest extends GeneratorTest {
             }
         };
         src.runModificationTask(task).commit();
-        System.err.println(TestUtilities.copyFileToString(testFile));
-        assertTrue(TestUtilities.copyFileToString(testFile).contains("nuevoMetodo"));
-        assertTrue(TestUtilities.copyFileToString(testFile).contains("Comentario"));
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
     }
     
     public void testAddJavaDocToExistingMethod() throws Exception {

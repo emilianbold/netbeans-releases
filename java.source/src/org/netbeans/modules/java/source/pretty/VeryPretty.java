@@ -144,10 +144,12 @@ public final class VeryPretty extends JCTree.Visitor {
 
     public void print(JCTree t) {
         CommentSet comment = commentHandler.getComments(t);
+        blankLines(t, true);
 	printPrecedingComments(comment);
         toLeftMargin();
 	t.accept(this);
         printTrailingComments(comment);
+        blankLines(t, false);
     }
     
     public void print(JCTree t, WorkingCopy copy) {
@@ -302,7 +304,6 @@ public final class VeryPretty extends JCTree.Visitor {
     public void visitClassDef(JCClassDecl tree) {
 	Name enclClassNamePrev = enclClassName;
 	enclClassName = tree.name;
-        blankLines(cs.getBlankLinesBeforeClass());
 	toLeftMargin();
         printAnnotations(tree.mods.annotations);
 	long flags = tree.sym != null ? tree.sym.flags() : tree.mods.flags;
@@ -414,7 +415,6 @@ public final class VeryPretty extends JCTree.Visitor {
         toColExactly(bcol);
 	undent(old);
 	print('}');
-        blankLines(cs.getBlankLinesAfterClass());
 	enclClassName = enclClassNamePrev;
     }
     
@@ -424,8 +424,6 @@ public final class VeryPretty extends JCTree.Visitor {
 		enclClassName != null) {
 	    Name enclClassNamePrev = enclClassName;
 	    enclClassName = null;
-            blankLines(cs.getBlankLinesBeforeMethods());
-	    toLeftMargin();
             printAnnotations(tree.mods.annotations);
             printFlags(tree.mods.flags);
             if (tree.name == names.init) {
@@ -473,19 +471,14 @@ public final class VeryPretty extends JCTree.Visitor {
             } else {
                 print(';');
             }
-            blankLines(cs.getBlankLinesAfterMethods());
             enclClassName = enclClassNamePrev;
 	}
     }
 
     public void visitVarDef(JCVariableDecl tree) {
-	if ((tree.mods.flags & ENUM) != 0)
+ 	if ((tree.mods.flags & ENUM) != 0)
 	    print(tree.name);
 	else {
-            if (enclClassName != null && enclClassName != names.empty) {
-                blankLines(cs.getBlankLinesBeforeFields());
-         	toLeftMargin();
-            }
             printAnnotations(tree.mods.annotations);
             printFlags(tree.mods.flags);
             Type type = tree.type != null ? tree.type : tree.vartype.type;
@@ -523,8 +516,6 @@ public final class VeryPretty extends JCTree.Visitor {
             }
             if (prec == treeinfo.notExpression)
                 print(';');
-            if (enclClassName != null && enclClassName != names.empty)
-                blankLines(cs.getBlankLinesAfterFields());
 	}
     }
 
@@ -1251,6 +1242,34 @@ public final class VeryPretty extends JCTree.Visitor {
         out.blanklines(n);
     }
     
+    private void blankLines(JCTree tree, boolean before) {
+        int n = 0;
+        switch (tree.getKind()) {
+            case CLASS:
+                n = before ? cs.getBlankLinesBeforeClass() : cs.getBlankLinesAfterClass();
+        	if (((JCClassDecl) tree).defs.nonEmpty() && !before) n = 0;
+                else out.blanklines(n);
+                return;
+            case METHOD: // do not handle for sythetic things
+        	if ((((JCMethodDecl) tree).mods.flags & Flags.SYNTHETIC) == 0 && 
+                    ((JCMethodDecl) tree).name != names.init || 
+                    enclClassName != null)
+                {
+                    n = before ? cs.getBlankLinesBeforeMethods() : cs.getBlankLinesAfterMethods();
+                    out.blanklines(n);
+        	    toLeftMargin();
+                }
+                return;
+            case VARIABLE: // just for the fields
+                if (enclClassName != null && enclClassName != names.empty && (((JCVariableDecl) tree).mods.flags & ENUM) == 0) {
+                    n = before ? cs.getBlankLinesBeforeFields() : cs.getBlankLinesAfterFields();
+                    out.blanklines(n);
+                    if (before) toLeftMargin();
+                }
+                return;
+        }
+    }
+    
     private void toColExactly(int n) {
 	if (n < out.col) newline();
 	out.toCol(n);
@@ -1386,11 +1405,13 @@ public final class VeryPretty extends JCTree.Visitor {
 	if(tree==null) print(';');
 	else {
             CommentSet comment = commentHandler.getComments(tree);
+            blankLines(tree, true);
 	    printPrecedingComments(comment);
 	    printExpr(tree, treeinfo.notExpression);
 	    int tag = tree.tag;
 	    if(JCTree.APPLY<=tag && tag<=JCTree.MOD_ASG) print(';');
             printTrailingComments(comment);
+            blankLines(tree, false);
 	}
     }
 
