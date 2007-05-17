@@ -84,9 +84,14 @@ Microsystems, Inc. All Rights Reserved.
     	<xtest executeAction="cleanResults"/>
     </target>
     
-    <!-- This target cleans both tests and results. -->
-    <target name="realclean" description="Delete both test and results files.">
+    <!-- Deprecated - use clean instead. This target cleans both tests and results. -->
+    <target name="realclean" description="Deprecated - use clean instead. Delete both test and results files.">
     	<xtest executeAction="cleanAll"/>
+    </target>
+    
+    <!-- This target cleans both tests and results. -->
+    <target name="clean" description="Clean compiled tests and results." depends="cleancoverage">
+    	<xtest executeAction="clean"/>
     </target>
     
     <!-- This target prints out default xtest configuration which will be used to run the tests. -->

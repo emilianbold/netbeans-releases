@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -171,16 +171,17 @@ Microsystems, Inc. All Rights Reserved.
         <antcall target="localresults-clean"/>
     </target>
     
-    <target name="realclean" depends="configuration"
+    <target name="clean" depends="configuration"
             description="Clean of tests, results and xtest framework. Use Carefully!">
         <antcall target="executor">
-            <param name="target.name" value="realclean-helper"/>
+            <param name="target.name" value="clean-helper"/>
         </antcall>
         <antcall target="localresults-clean"/>
         <antcall target="cleantestsdist"/>
     </target>
     
-    <target name="real-clean" depends="realclean"/>
+    <!-- Deprecated - use clean instead. This target cleans both tests and results. -->
+    <target name="realclean" depends="clean"/>
     
     <target name="buildtestsdist" depends="configuration"
             description="Builds distribution of tests.">
@@ -228,9 +229,9 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <!-- helper can be executed only by target executor -->
-    <target name="realclean-helper">
+    <target name="clean-helper">
         <echo message="Cleaning everything for ${xtest.module}"/>
-        <ant dir="${xtest.basedir}/${xtest.module}/test" target="realclean"/>
+        <ant dir="${xtest.basedir}/${xtest.module}/test" target="clean"/>
     </target>
     
     <!-- helper can be executed only by target executor -->

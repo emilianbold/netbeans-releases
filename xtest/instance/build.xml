@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -106,12 +106,13 @@ Microsystems, Inc. All Rights Reserved.
              target="cleanresults"/>
     </target>
     
-    <target name="realclean">
-        <ant dir="." antfile="${xtest.harness.antfile}"
-             target="realclean"/>
-    </target>
+    <!-- Deprecated - use clean instead. This target cleans both tests and results. -->
+    <target name="realclean" depends="clean"/>
     
-    <target name="real-clean" depends="realclean"/>
+    <target name="clean">
+        <ant dir="." antfile="${xtest.harness.antfile}"
+             target="clean"/>
+    </target>
     
     <target name="buildtestsdist"
             description="Zip tests and libraries necessary to run test">
