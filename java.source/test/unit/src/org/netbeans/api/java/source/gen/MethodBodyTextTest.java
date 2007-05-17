@@ -57,6 +57,7 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
         suite.addTest(new MethodBodyTextTest("testReplaceMethod"));
         suite.addTest(new MethodBodyTextTest("testReplaceMethodBody1"));
         suite.addTest(new MethodBodyTextTest("testReplaceMethodBody2"));
+        suite.addTest(new MethodBodyTextTest("testReplaceMethodBody3"));
         return suite;
     }
 
@@ -350,7 +351,7 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
     }
     
     public void testReplaceMethodBody1() throws Exception {
-        System.err.println("testReplaceMethod");
+        System.err.println("testReplaceMethodBody1");
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
             "package personal;\n" +
@@ -408,7 +409,7 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
     }
     
     public void testReplaceMethodBody2() throws Exception {
-        System.err.println("testReplaceMethod");
+        System.err.println("testReplaceMethodBody2");
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
             "package personal;\n" +
@@ -443,6 +444,67 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
                 ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
                 MethodTree meth = (MethodTree) clazz.getMembers().get(1);
                 String bodyText = "{return 0.0f;}";
+                MethodTree newMeth = make.Method(
+                        meth.getModifiers(),
+                        meth.getName(),
+                        meth.getReturnType(),
+                        meth.getTypeParameters(),
+                        meth.getParameters(),
+                        meth.getThrows(),
+                        bodyText,
+                        (ExpressionTree) meth.getDefaultValue()
+                );
+                workingCopy.rewrite(meth.getBody(), newMeth.getBody());
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    // #90186 regression test
+    public void testReplaceMethodBody3() throws Exception {
+        System.err.println("testReplaceMethodBody3");
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Test() {\n" +
+            "    }\n" +
+            "    \n" +
+            "    public float method() {\n" +
+            "    }\n" +
+            "}\n");
+        
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Test() {\n" +
+            "    }\n" +
+            "    \n" +
+            "    public float method() {\n" +
+            "        int hash;\n" +
+            "        hash += 2;\n" +
+            "        return hash;\n" +
+            "    }\n" +
+            "}\n";
+      
+        JavaSource src = getJavaSource(testFile);
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree meth = (MethodTree) clazz.getMembers().get(1);
+                String bodyText = "{ int hash; hash += 2; return hash; }";
                 MethodTree newMeth = make.Method(
                         meth.getModifiers(),
                         meth.getName(),
