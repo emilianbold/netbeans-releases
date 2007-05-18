@@ -369,10 +369,12 @@ public final class JPDAThreadImpl implements JPDAThread {
         } catch (ObjectCollectedException ex) {
             throw new IncompatibleThreadStateException("Thread died.");
         } catch (NativeMethodException nmex) {
+            cleanCachedFrames();
             ErrorManager.getDefault().notify(
                     ErrorManager.getDefault().annotate(nmex,
                         NbBundle.getMessage(JPDAThreadImpl.class, "MSG_NativeMethodPop")));
         } catch (InternalException iex) {
+            cleanCachedFrames();
             if (iex.errorCode() == 32) {
                 ErrorManager.getDefault().notify(
                         ErrorManager.getDefault().annotate(iex,
