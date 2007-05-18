@@ -76,9 +76,9 @@ public class DateFieldDisplayPresenter extends ItemDisplayPresenter {
     }
     
     public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
-        ResourcePropertyEditor dateField = new ResourcePropertyEditor(DateFieldCD.PROP_DATE, getComponent());
+        ResourcePropertyEditor dateFieldPropertyEditor = new ResourcePropertyEditor(DateFieldCD.PROP_DATE, getComponent());
         List<ScreenPropertyDescriptor> descriptors = new ArrayList<ScreenPropertyDescriptor>();
-        descriptors.add(new ScreenPropertyDescriptor(getComponent(), label,dateField));
+        descriptors.add(new ScreenPropertyDescriptor(getComponent(), label,dateFieldPropertyEditor));
         descriptors.addAll(super.getPropertyDescriptors());
         return descriptors;
     }

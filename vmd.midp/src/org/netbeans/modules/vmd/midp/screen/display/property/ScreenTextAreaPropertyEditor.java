@@ -20,6 +20,7 @@
 
 package org.netbeans.modules.vmd.midp.screen.display.property;
 
+import java.awt.event.FocusEvent;
 import org.netbeans.modules.vmd.api.io.PopupUtil;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
@@ -28,6 +29,7 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -58,7 +60,7 @@ public class ScreenTextAreaPropertyEditor implements ScreenPropertyEditor {
     }
 
 
-    private class StringTextArea extends JTextArea implements KeyListener {
+    private class StringTextArea extends JTextArea implements KeyListener, FocusListener {
 
         private ScreenPropertyDescriptor property;
 
@@ -66,6 +68,7 @@ public class ScreenTextAreaPropertyEditor implements ScreenPropertyEditor {
             this.property = property;
             setToolTipText ("Press Ctrl+Enter key to set the edited text");
             addKeyListener(this);
+            addFocusListener(this);
         }
 
         public void keyTyped(KeyEvent e) {
@@ -86,6 +89,17 @@ public class ScreenTextAreaPropertyEditor implements ScreenPropertyEditor {
         public void keyReleased(KeyEvent e) {
         }
 
-    }
+        public void focusGained(FocusEvent arg0) {
+        }
 
+        public void focusLost(FocusEvent arg0) {
+             property.getRelatedComponent().getDocument().getTransactionManager().writeAccess(new Runnable() {
+                public void run() {
+                    PropertyValue value = MidpTypes.createStringValue(getText());
+                    property.getRelatedComponent ().writeProperty(propertyName, value);
+                }
+            });
+            PopupUtil.hidePopup();
+        }
+    }
 }

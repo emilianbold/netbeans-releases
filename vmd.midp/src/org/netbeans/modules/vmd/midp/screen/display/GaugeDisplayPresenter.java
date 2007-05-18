@@ -24,10 +24,15 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import javax.swing.JPanel;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
+import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.items.GaugeCD;
+import org.netbeans.modules.vmd.midp.screen.display.property.ResourcePropertyEditor;
 
 /**
  *
@@ -120,5 +125,13 @@ public class GaugeDisplayPresenter extends ItemDisplayPresenter {
         }
         
         panel.repaint();
+    }
+    
+    public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
+        ResourcePropertyEditor gaugePropertyEditor = new ResourcePropertyEditor(GaugeCD.PROP_VALUE, getComponent());
+        List<ScreenPropertyDescriptor> descriptors = new ArrayList<ScreenPropertyDescriptor>();
+        descriptors.addAll(super.getPropertyDescriptors());
+        descriptors.add(new ScreenPropertyDescriptor(getComponent(), panel, gaugePropertyEditor));
+        return descriptors;
     }
 }

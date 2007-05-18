@@ -101,7 +101,8 @@ public final class PropertiesSupport {
     }
     
     //multi selection not supported
-    public synchronized static void showPropertyEditorForCurrentComponent (DesignComponent component, String propertyName) {
+    //remember not to invoke inside read transaction
+    public synchronized static void showCustomPropertyEditor (DesignComponent component, String propertyName) {
         boolean propertyEditorExists = false;
         if (component.getDocument().getTransactionManager().isWriteAccess())
             Debug.warning("Calling PropertiesSupport.showPropertyEditorForCurrentComponent form write transaction may generate problems"); //NOI18N

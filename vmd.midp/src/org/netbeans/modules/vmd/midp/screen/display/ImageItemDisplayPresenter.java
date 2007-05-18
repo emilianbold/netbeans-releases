@@ -19,12 +19,18 @@
 
 package org.netbeans.modules.vmd.midp.screen.display;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.midp.components.items.ImageItemCD;
 
 import javax.swing.*;
+import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
+import org.netbeans.modules.vmd.midp.components.items.GaugeCD;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
+import org.netbeans.modules.vmd.midp.screen.display.property.ResourcePropertyEditor;
 import org.openide.util.Utilities;
 
 
@@ -63,5 +69,13 @@ public class ImageItemDisplayPresenter extends ItemDisplayPresenter {
             label.setText(alternText); //NOI18N
             label.setIcon(null);
         }
+    }
+    
+     public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
+        ResourcePropertyEditor imagePropertyEditor = new ResourcePropertyEditor(ImageItemCD.PROP_IMAGE, getComponent());
+        List<ScreenPropertyDescriptor> descriptors = new ArrayList<ScreenPropertyDescriptor>();
+        descriptors.addAll(super.getPropertyDescriptors());
+        descriptors.add(new ScreenPropertyDescriptor(getComponent(), label, imagePropertyEditor));
+        return descriptors;
     }
 }

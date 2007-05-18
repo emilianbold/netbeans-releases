@@ -43,7 +43,7 @@ public class ImageItemInjectorPresenter extends ScreenButtonInjectorPresenter.St
     protected void actionPerformed () {
         SwingUtilities.invokeLater (new Runnable() {
             public void run () {
-                PropertiesSupport.showPropertyEditorForCurrentComponent (getComponent (), ImageItemCD.PROP_IMAGE);
+                PropertiesSupport.showCustomPropertyEditor (getComponent (), ImageItemCD.PROP_IMAGE);
             }
         });
     }
