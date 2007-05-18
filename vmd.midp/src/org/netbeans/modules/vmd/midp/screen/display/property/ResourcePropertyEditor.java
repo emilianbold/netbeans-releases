@@ -25,6 +25,7 @@ import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyEditor;
 
 import javax.swing.*;
 import java.awt.*;
+import org.netbeans.modules.vmd.api.io.IOUtils;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.properties.common.PropertiesSupport;
 
@@ -43,7 +44,7 @@ public class ResourcePropertyEditor implements ScreenPropertyEditor {
     }
     
     public JComponent createEditorComponent(ScreenPropertyDescriptor property) {
-        SwingUtilities.invokeLater(new Runnable() {
+        IOUtils.runInAWTNoBlocking(new Runnable() {
             public void run() {
                 PropertiesSupport.showPropertyEditorForCurrentComponent (propertyComponent, propertyName);
             }

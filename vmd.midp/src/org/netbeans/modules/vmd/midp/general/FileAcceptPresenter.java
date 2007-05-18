@@ -107,7 +107,6 @@ public abstract class FileAcceptPresenter extends AbstractAcceptPresenter {
             return null;
         DesignDocument document = getComponent().getDocument();
         final ComponentProducer producer = DocumentSupport.getComponentProducer(document, typeID);
-        //final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
         if (document == null)
             return null;
         DesignComponent newComponent  = producer.createComponent(document).getComponents().iterator().next();

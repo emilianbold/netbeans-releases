@@ -27,6 +27,11 @@ import org.netbeans.modules.vmd.midp.components.items.DateFieldCD;
 import javax.swing.*;
 import java.util.Date;
 import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
+import org.netbeans.modules.vmd.midp.screen.display.property.ResourcePropertyEditor;
 
 /**
  *
@@ -35,7 +40,7 @@ import java.text.DateFormat;
 public class DateFieldDisplayPresenter extends ItemDisplayPresenter {
     
     private JLabel label;
-
+    
     public DateFieldDisplayPresenter() {
         label = new JLabel();
         setContentComponent(label);
@@ -43,30 +48,39 @@ public class DateFieldDisplayPresenter extends ItemDisplayPresenter {
     
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
-
-        PropertyValue inputModeValue = getComponent ().readProperty (DateFieldCD.PROP_INPUT_MODE);
+        
+        PropertyValue inputModeValue = getComponent().readProperty(DateFieldCD.PROP_INPUT_MODE);
+        PropertyValue dateValue = getComponent().readProperty(DateFieldCD.PROP_DATE);
         String text = "<user input mode>";
-        DateFormat format = DateFormat.getDateTimeInstance (DateFormat.MEDIUM, DateFormat.MEDIUM);
-        if (inputModeValue.getKind () == PropertyValue.Kind.VALUE) {
-            int inputMode = MidpTypes.getInteger (inputModeValue);
+        DateFormat format = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM);
+        if (inputModeValue.getKind() == PropertyValue.Kind.VALUE) {
+            int inputMode = MidpTypes.getInteger(inputModeValue);
             switch (inputMode) {
-                case DateFieldCD.VALUE_DATE:
-                    text = "<user date>";
-                    format = DateFormat.getDateInstance (DateFormat.MEDIUM);
-                    break;
-                case DateFieldCD.VALUE_DATE_TIME:
-                    text = "<user date time>";
-                    break;
-                case DateFieldCD.VALUE_TIME:
-                    text = "<user time>";
-                    format = DateFormat.getTimeInstance (DateFormat.MEDIUM);
-                    break;
+            case DateFieldCD.VALUE_DATE:
+                text = "<user date>";
+                format = DateFormat.getDateInstance(DateFormat.MEDIUM);
+                break;
+            case DateFieldCD.VALUE_DATE_TIME:
+                text = "<user date time>";
+                break;
+            case DateFieldCD.VALUE_TIME:
+                text = "<user time>";
+                format = DateFormat.getTimeInstance(DateFormat.MEDIUM);
+                break;
             }
         }
-        PropertyValue dateValue = getComponent().readProperty(DateFieldCD.PROP_DATE);
+        
         if (dateValue.getKind() == PropertyValue.Kind.VALUE)
-            text = format.format (new Date (MidpTypes.getLong (dateValue)));
+            text = format.format(new Date(MidpTypes.getLong(dateValue)));
         label.setText(text);
     }
-
+    
+    public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
+        ResourcePropertyEditor dateField = new ResourcePropertyEditor(DateFieldCD.PROP_DATE, getComponent());
+        List<ScreenPropertyDescriptor> descriptors = new ArrayList<ScreenPropertyDescriptor>();
+        descriptors.add(new ScreenPropertyDescriptor(getComponent(), label,dateField));
+        descriptors.addAll(super.getPropertyDescriptors());
+        return descriptors;
+    }
+    
 }
