@@ -40,7 +40,6 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
     public FacesModelPropertyChangeListener( PageFlowController pfc ){
         this.pfc = pfc;
         view = pfc.getView();
-        LOGGER.setLevel(Level.ALL);
     }
     
     public void propertyChange(final PropertyChangeEvent ev) {

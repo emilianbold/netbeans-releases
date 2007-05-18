@@ -115,8 +115,6 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
         public PageFlowElement(JSFConfigEditorContext context) {
             this.context = context;
             init();
-            
-            LOG.setLevel(Level.FINEST);
         }
         
         private void init() {
