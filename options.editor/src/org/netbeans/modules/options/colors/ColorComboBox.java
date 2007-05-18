@@ -116,11 +116,10 @@ public class ColorComboBox {
         public void actionPerformed(ActionEvent ev) {
             if (combo.getSelectedItem() == ColorValue.CUSTOM_COLOR) {
                 Color c = JColorChooser.showDialog(
-                        SwingUtilities.getAncestorOfClass
-                        (Dialog.class, combo),
-                        loc("SelectColor"),
-                        null
-                        );
+                    SwingUtilities.getAncestorOfClass(Dialog.class, combo),
+                    loc("SelectColor"), //NOI18N
+                    lastSelection != null ? ((ColorValue) lastSelection).color : null
+                );
                 if (c != null) {
                     setColor (combo, c);
                 } else if (lastSelection != null) {
