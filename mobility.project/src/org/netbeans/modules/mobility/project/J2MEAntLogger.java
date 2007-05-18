@@ -39,7 +39,7 @@ public final class J2MEAntLogger extends AntLogger {
     private static final String separator = File.separatorChar == '\\' ? "\\\\" : "/"; //NOI18N
     
     private static final Pattern PREPROCESSED = Pattern.compile(
-            ".*" + separator + "build(?:" + separator + "[a-zA-Z_$][a-zA-Z0-9_$]*)?" + separator + "preprocessed" + separator); // NOI18N
+            "^.*" + separator + "build(?:" + separator + "[a-zA-Z_$][a-zA-Z0-9_$]*)?" + separator + "preprocessed" + separator); // NOI18N
     
     //this funny stuff is just to escape backslashes and dollar characters in a replacement path string using String.replaceAll(regexp, regexp)
     private static final String CHARSTOESCAPE = "([\\\\\\$])"; //NOI18N
