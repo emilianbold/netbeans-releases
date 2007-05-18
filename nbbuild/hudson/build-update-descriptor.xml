@@ -14,7 +14,10 @@
 	<echo>Checking synchronic and diachronic consistency of NBMs; see http://wiki.netbeans.org/wiki/view/DevFaqImplementationDependency</echo>
 	<vuc updates="workspace/nbbuild/nbms/updates.xml" oldupdates="lastSuccessful/archive/nbbuild/nbms/updates.xml">
 	    <classpath>
-	        <fileset dir="workspace/nbbuild/netbeans" includes="platform*/lib/*.jar"/>
+	        <fileset dir="workspace/nbbuild/netbeans">
+                    <include name="platform*/lib/*.jar"/>
+                    <include name="platform*/core/*.jar"/>
+                </fileset>
 	    </classpath>
 	</vuc>
     </target>

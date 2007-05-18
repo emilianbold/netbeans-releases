@@ -135,7 +135,7 @@ public final class VerifyUpdateCenter extends Task {
     @SuppressWarnings("unchecked")
     private SortedMap<String,SortedSet<String>> findInconsistencies(Set<Manifest> manifests, ClassLoader loader) throws BuildException {
         try {
-            return (SortedMap) loader.loadClass("org.netbeans.ConsistencyVerifier").
+            return (SortedMap) loader.loadClass("org.netbeans.core.startup.ConsistencyVerifier").
                     getMethod("findInconsistencies", Set.class).invoke(null, manifests);
         } catch (Exception x) {
             throw new BuildException(x, getLocation());
