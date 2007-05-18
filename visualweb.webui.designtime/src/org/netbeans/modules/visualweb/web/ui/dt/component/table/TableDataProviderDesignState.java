@@ -20,57 +20,90 @@ package org.netbeans.modules.visualweb.web.ui.dt.component.table;
 
 import com.sun.data.provider.FieldKey;
 import com.sun.data.provider.TableDataProvider;
+import com.sun.data.provider.impl.ObjectArrayDataProvider;
+import com.sun.data.provider.impl.ObjectListDataProvider;
 import com.sun.rave.designtime.DesignBean;
+import com.sun.rave.designtime.ext.DesignBeanExt;
 import com.sun.rave.web.ui.component.Checkbox;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.Vector;
 import javax.swing.DefaultListModel;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 /**
  * Data structure to hold design state of a data provider
  * @author Winston Prakash
  */
 public class TableDataProviderDesignState {
-
+    
     boolean dataProviderBroken = false;
     private static int newColumnNameCount = 0;
-
+    
     private DesignBean dataProviderBean;
-
+    
     private DefaultListModel selectedColumnListModel = new DefaultListModel();
     private DefaultListModel availableColumnListModel = new DefaultListModel();
-
+    
     Map columnsDesignStates = null;
-
+    
+    private TableDataProvider tableDataProvider;
+    private ResourceBundle bundle =
+            ResourceBundle.getBundle(TableDataProviderDesignState.class.getPackage().getName() + ".Bundle");
+    
     /** Creates a new instance of TableDataProviderDesignState */
     public TableDataProviderDesignState(DesignBean modelBean) {
-        if(!(modelBean.getInstance()  instanceof TableDataProvider)){
-            throw new IllegalArgumentException(dataProviderBean.getInstanceName() + " not a table data provider.");
+        
+        if(modelBean.getInstance()  instanceof TableDataProvider){
+            tableDataProvider =  (TableDataProvider) modelBean.getInstance();
+        }else if(List.class.isAssignableFrom(modelBean.getBeanInfo().getBeanDescriptor().getBeanClass())){
+            List listObject = (List)modelBean.getInstance();
+            if(listObject == null){
+                listObject = new ArrayList();
+            }
+            tableDataProvider =  new ObjectListDataProvider(listObject);
+            if(modelBean instanceof DesignBeanExt){
+                try {
+                    java.lang.reflect.Type[] parameterTypes = ((com.sun.rave.designtime.ext.DesignBeanExt) modelBean).getTypeParameters();
+                    if (parameterTypes != null && (parameterTypes.length > 0)) {
+                        ((com.sun.data.provider.impl.ObjectListDataProvider) tableDataProvider).setObjectType((java.lang.Class) parameterTypes[0]);
+                    }
+                } catch (ClassNotFoundException exc) {
+                    ErrorManager.getDefault().notify(exc);
+                }
+            }
+        }else if(modelBean.getInstance()  instanceof Object[]){
+            tableDataProvider = new ObjectArrayDataProvider((Object[])modelBean.getInstance());
+        }else{
+            throw new IllegalArgumentException(modelBean.getInstanceName() + " " + bundle.getString("NOT_DATA_PROVIDER")); //NOI18N
         }
+        
         dataProviderBean = modelBean;
         // Check if this is a broken DP
         try{
-            ((TableDataProvider) dataProviderBean.getInstance()).getFieldKeys();
+            tableDataProvider.getFieldKeys();
         }catch (Exception exc){
             ErrorManager.getDefault().notify(exc);
             dataProviderBroken = true;
         }
     }
-
+    
     public boolean isBroken(){
         return dataProviderBroken;
     }
-
+    
     /**
      * Get the Data Model Bean
      */
     public DesignBean getDataProviderBean(){
         return dataProviderBean;
     }
-
+    
     public String getUniqueColumnName(String baseName){
         int colNameCount = selectedColumnListModel.size() + 1;
         boolean found = false;
@@ -89,35 +122,35 @@ public class TableDataProviderDesignState {
         }while(found);
         return newName;
     }
-
+    
     /**
      * Set the available column vector
      */
     public void setSelectedColumnListModel(DefaultListModel listModel){
         selectedColumnListModel =  listModel;
     }
-
+    
     /**
      * Get the Selected table column information
      */
     public DefaultListModel getSelectedColumnListModel(){
         return selectedColumnListModel;
     }
-
+    
     /**
      * Set the available column vector
      */
     public void setAvailableColumnListModel(DefaultListModel listModel){
         availableColumnListModel =  listModel;
     }
-
+    
     /**
      * Get the Selected table column information
      */
     public DefaultListModel getAvailableColumnListModel(){
         return availableColumnListModel;
     }
-
+    
     /**
      * Add the TableColumnDesignState to the selectedColumnsDesignStates design state
      * The name is added to the selected column list model.
@@ -127,7 +160,7 @@ public class TableDataProviderDesignState {
         columnsDesignStates.put(colDesignState.getName(), colDesignState);
         selectedColumnListModel.addElement(colDesignState.getName());
     }
-
+    
     /*
      * Set the Table Column Design states
      */
@@ -190,8 +223,10 @@ public class TableDataProviderDesignState {
      */
     public void initialize(){
         if (dataProviderBroken) return;
-        TableDataProvider tdp = (TableDataProvider) dataProviderBean.getInstance();
-        FieldKey[] columns = tdp.getFieldKeys();
+        
+        
+        
+        FieldKey[] columns = tableDataProvider.getFieldKeys();
         
         if((columns != null) && (columns.length > 0)){
             if(columnsDesignStates == null){
@@ -199,11 +234,11 @@ public class TableDataProviderDesignState {
                 // Populate the selected column list and create corresponding TableColumnDesignState
                 for (int i=0; i< columns.length; i++){
                     //Skip FieldKey of type "Class" - 6309491
-                    if((tdp.getType(columns[i]) != null) && tdp.getType(columns[i]).toString().indexOf("java.lang.Class") == -1){
+                    if((tableDataProvider.getType(columns[i]) != null) && tableDataProvider.getType(columns[i]).toString().indexOf("java.lang.Class") == -1){
                         String columnName = columns[i].getDisplayName();
                         selectedColumnListModel.addElement(columnName);
                         TableColumnDesignState tableColumnDesignState = new TableColumnDesignState(columnName);
-                        tableColumnDesignState.setColumnType(tdp.getType(columns[i]));
+                        tableColumnDesignState.setColumnType(tableDataProvider.getType(columns[i]));
                         if(tableColumnDesignState.getColumnType().isAssignableFrom(Boolean.class)){
                             tableColumnDesignState.setChildType(Checkbox.class);
                         }
@@ -214,12 +249,12 @@ public class TableDataProviderDesignState {
                 // Populate the available column list and create the corresponding TableColumnDesignState
                 for (int i=0; i< columns.length; i++){
                     //Skip FieldKey of type "Class" - 6309491
-                    if(tdp.getType(columns[i]).toString().indexOf("java.lang.Class") == -1){
+                    if(tableDataProvider.getType(columns[i]).toString().indexOf("java.lang.Class") == -1){
                         String columnName = columns[i].getDisplayName();
                         if(!selectedColumnListModel.contains(columnName)){
                             availableColumnListModel.addElement(columnName);
                             TableColumnDesignState tableColumnDesignState = new TableColumnDesignState(columnName);
-                            tableColumnDesignState.setColumnType(tdp.getType(columns[i]));
+                            tableColumnDesignState.setColumnType(tableDataProvider.getType(columns[i]));
                             if(tableColumnDesignState.getColumnType().isAssignableFrom(Boolean.class)){
                                 tableColumnDesignState.setChildType(Checkbox.class);
                             }

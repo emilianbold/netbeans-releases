@@ -60,45 +60,45 @@ import org.netbeans.modules.visualweb.propertyeditors.binding.data.AddDataProvid
  */
 
 public class TableCustomizerMainPanel extends javax.swing.JPanel implements DesignContextListener{
-
+    
     private DesignBean designBean = null;
-
+    
     private TableDesignState tableDesignState;
     private TableRowGroupDesignState tableRowGroupDesignState;
-
+    
     private DefaultListModel selectedColumnListModel = new DefaultListModel();
     private DefaultListModel availableColumnListModel = new DefaultListModel();
-
+    
     private DefaultComboBoxModel dataProviderComboBoxModel = new DefaultComboBoxModel();
-
+    
     private Map dataProviderList = new HashMap();
-
+    
     private TableDataProviderDesignState currentTableDataProviderDesignState;
-
+    
     private TableColumnDesignState currentTableColumnDesignState;
-
+    
     private List componentTypes = new ArrayList();
-
+    
     private DesignContext[] designContexts;
-
+    
     DesignBean currentModelBean;
-
+    
     String[] hAlignValues = {"left", "center", "right", "justify"};
     String[] vAlignValues = {"top", "middle", "bottom"};
-
+    
     public TableCustomizerMainPanel(DesignBean bean){
         designBean = bean;
         //designContexts = designBean.getDesignContext().getProject().getDesignContexts();
         designContexts = getDesignContexts(designBean);
         initComponents();
         initialize();
-
+        
         // For Shortfin we removed the Server Navigator window.
         // Add Data provider dialogs depends on it. So hide it for Shortfin - Winston
         addDataProviderButton.setVisible(false);
-
+        
     }
-
+    
     // For performance improvement. No need to get all the contexts in the project
     private DesignContext[] getDesignContexts(DesignBean designBean){
         DesignProject designProject = designBean.getDesignContext().getProject();
@@ -117,7 +117,7 @@ public class TableCustomizerMainPanel extends javax.swing.JPanel implements Desi
         System.arraycopy(contexts, 0, designContexts, 1, contexts.length);
         return designContexts;
     }
-             
+    
     
     /**
      * Initialize the Panel with design state data
@@ -192,16 +192,16 @@ public class TableCustomizerMainPanel extends javax.swing.JPanel implements Desi
         
         cbxVertAlign.setModel(new DefaultComboBoxModel(new String[] {
             java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle").getString("ALIGN_NOT_SET"),
-                    java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle").getString("VALIGN_TOP"),
-                    java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle").getString("VALIGN_MIDDLE"),
-                    java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle").getString("VALIGN_BOTTOM")
+            java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle").getString("VALIGN_TOP"),
+            java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle").getString("VALIGN_MIDDLE"),
+            java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle").getString("VALIGN_BOTTOM")
         }));
         cbxHorzAlign.setModel(new DefaultComboBoxModel(new String[] {
             java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle").getString("ALIGN_NOT_SET"),
-                    java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle").getString("HALIGN_LEFT"),
-                    java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle").getString("HALIGN_CENTER"),
-                    java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle").getString("VALIGN_RIGHT"),
-                    java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle").getString("VALIGN_JUSTIFY")
+            java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle").getString("HALIGN_LEFT"),
+            java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle").getString("HALIGN_CENTER"),
+            java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle").getString("VALIGN_RIGHT"),
+            java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/web/ui/dt/component/table/Bundle").getString("VALIGN_JUSTIFY")
                     
         }));
         
@@ -226,6 +226,36 @@ public class TableCustomizerMainPanel extends javax.swing.JPanel implements Desi
                             dataProviderList.put(tableDataProvider, tableDataProviderDesignState);
                             dataProviderComboBoxModel.addElement(tableDataProvider);
                         }
+                    }
+                    // Allow to Object List as Data to the table
+                    
+                    DesignBean[] objectListBeans = designContexts[i].getBeansOfType(List.class);
+                    for (int j = 0; j < objectListBeans.length; j++) {
+                        DesignBean objectList = objectListBeans[j];
+                        TableDataProviderDesignState tableDataProviderDesignState = new TableDataProviderDesignState(objectList);
+                        if(currentModelBean == objectList){
+                            currentTableDataProviderDesignState = tableDataProviderDesignState;
+                            tableDataProviderDesignState.setColumnDesignStates(tableRowGroupDesignState.getColumnDesignStates());
+                            tableDataProviderDesignState.setSelectedColumnNames(tableRowGroupDesignState.getSelectedColumnNames());
+                        }
+                        tableDataProviderDesignState.initialize();
+                        dataProviderList.put(objectList, tableDataProviderDesignState);
+                        dataProviderComboBoxModel.addElement(objectList);
+                    }
+                    
+                    // Allow to Object Array as Data to the table
+                    DesignBean[] objectArrayBeans = designContexts[i].getBeansOfType(Object[].class);
+                    for (int j = 0; j < objectArrayBeans.length; j++) {
+                        DesignBean objectArray = objectArrayBeans[j];
+                        TableDataProviderDesignState tableDataProviderDesignState = new TableDataProviderDesignState(objectArray);
+                        if(currentModelBean == objectArray){
+                            currentTableDataProviderDesignState = tableDataProviderDesignState;
+                            tableDataProviderDesignState.setColumnDesignStates(tableRowGroupDesignState.getColumnDesignStates());
+                            tableDataProviderDesignState.setSelectedColumnNames(tableRowGroupDesignState.getSelectedColumnNames());
+                        }
+                        tableDataProviderDesignState.initialize();
+                        dataProviderList.put(objectArray, tableDataProviderDesignState);
+                        dataProviderComboBoxModel.addElement(objectArray);
                     }
                 }
                 SwingUtilities.invokeLater(new Runnable() {
@@ -365,7 +395,7 @@ public class TableCustomizerMainPanel extends javax.swing.JPanel implements Desi
                 }
             }
             cbxVertAlign.setSelectedIndex(vAlignIndex);
-      
+            
             widthField.setText(currentTableColumnDesignState.getWidth());
             
             if(currentTableColumnDesignState.isSortAllowed()){
@@ -1168,7 +1198,7 @@ public class TableCustomizerMainPanel extends javax.swing.JPanel implements Desi
                 if((compType == RadioButton.class) && (currentTableColumnDesignState.getColumnType() != String.class)){
                     allowed = false;
                 }else if((compType == ImageComponent.class) && (!((currentTableColumnDesignState.getColumnType() == String.class)
-                || currentTableColumnDesignState.getColumnType() == java.net.URL.class))){
+                        || currentTableColumnDesignState.getColumnType() == java.net.URL.class))){
                     allowed = false;
                 }
                 if(allowed){

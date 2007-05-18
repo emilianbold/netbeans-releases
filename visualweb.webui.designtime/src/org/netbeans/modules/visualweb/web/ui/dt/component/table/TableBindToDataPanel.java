@@ -33,6 +33,7 @@ import java.util.Map;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import java.awt.Component;
+import java.util.List;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import org.netbeans.modules.visualweb.propertyeditors.binding.data.AddDataProviderDialog;
@@ -46,25 +47,25 @@ import org.netbeans.modules.visualweb.propertyeditors.binding.data.AddDataProvid
 //       and TableCustomizerMainPanel - revisit (Winston)
 
 public class TableBindToDataPanel extends javax.swing.JPanel implements DesignContextListener{
-
+    
     private DesignBean designBean = null;
-
+    
     private TableDesignState tableDesignState;
     private TableRowGroupDesignState tableRowGroupDesignState;
-
+    
     private DefaultListModel selectedColumnListModel = new DefaultListModel();
     private DefaultListModel availableColumnListModel = new DefaultListModel();
-
+    
     private DefaultComboBoxModel dataProviderComboBoxModel = new DefaultComboBoxModel();
-
+    
     private Map dataProviderList = new HashMap();
-
+    
     private TableDataProviderDesignState currentTableDataProviderDesignState;
-
+    
     private TableColumnDesignState currentTableColumnDesignState;
-
+    
     private DesignContext[] designContexts;
-
+    
     public TableBindToDataPanel(DesignBean bean){
         designBean = bean;
         //designContexts = designBean.getDesignContext().getProject().getDesignContexts();
@@ -75,7 +76,7 @@ public class TableBindToDataPanel extends javax.swing.JPanel implements DesignCo
         // Add Data provider dialogs depends on it. So hide it for Shortfin - Winston
         addDataProviderButton.setVisible(false);
     }
-
+    
     // For performance improvement. No need to get all the contexts in the project
     private DesignContext[] getDesignContexts(DesignBean designBean){
         DesignProject designProject = designBean.getDesignContext().getProject();
@@ -94,7 +95,7 @@ public class TableBindToDataPanel extends javax.swing.JPanel implements DesignCo
         System.arraycopy(contexts, 0, designContexts, 1, contexts.length);
         return designContexts;
     }
-
+    
     /**
      * Initialize the Panel with design state data
      */
@@ -129,6 +130,37 @@ public class TableBindToDataPanel extends javax.swing.JPanel implements DesignCo
                     dataProviderList.put(tableDataProvider, tableDataProviderDesignState);
                     dataProviderComboBoxModel.addElement(tableDataProvider);
                 }
+            }
+            // Allow to Object List as Data to the table
+            
+            DesignBean[] objectListBeans = designContexts[i].getBeansOfType(List.class);
+            for (int j = 0; j < objectListBeans.length; j++) {
+                DesignBean objectList = objectListBeans[j];
+                TableDataProviderDesignState tableDataProviderDesignState = new TableDataProviderDesignState(objectList);
+                if(currentModelBean == objectList){
+                    currentTableDataProviderDesignState = tableDataProviderDesignState;
+                    tableDataProviderDesignState.setColumnDesignStates(tableRowGroupDesignState.getColumnDesignStates());
+                    tableDataProviderDesignState.setSelectedColumnNames(tableRowGroupDesignState.getSelectedColumnNames());
+                }
+                tableDataProviderDesignState.initialize();
+                dataProviderList.put(objectList, tableDataProviderDesignState);
+                dataProviderComboBoxModel.addElement(objectList);
+            }
+            
+            // Allow to Object Array as Data to the table
+            
+            DesignBean[] objectArrayBeans = designContexts[i].getBeansOfType(Object[].class);
+            for (int j = 0; j < objectArrayBeans.length; j++) {
+                DesignBean objectArray = objectArrayBeans[j];
+                TableDataProviderDesignState tableDataProviderDesignState = new TableDataProviderDesignState(objectArray);
+                if(currentModelBean == objectArray){
+                    currentTableDataProviderDesignState = tableDataProviderDesignState;
+                    tableDataProviderDesignState.setColumnDesignStates(tableRowGroupDesignState.getColumnDesignStates());
+                    tableDataProviderDesignState.setSelectedColumnNames(tableRowGroupDesignState.getSelectedColumnNames());
+                }
+                tableDataProviderDesignState.initialize();
+                dataProviderList.put(objectArray, tableDataProviderDesignState);
+                dataProviderComboBoxModel.addElement(objectArray);
             }
         }
         cbxTableDataprovider.setRenderer(new DPComboRenderer());
@@ -615,7 +647,7 @@ public class TableBindToDataPanel extends javax.swing.JPanel implements DesignCo
         // This is not enough. The instance name and cached rowset are yet set.
         // It would be nice if this event is fired after creation is fully completed
         if (designBean.getInstance() instanceof TableDataProvider){
-            //System.out.println("Bean Created - " + designBean.getInstanceName());    
+            //System.out.println("Bean Created - " + designBean.getInstanceName());
         }
     }
     
