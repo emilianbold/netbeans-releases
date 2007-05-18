@@ -36,6 +36,9 @@ import org.netbeans.api.java.source.SourceUtils;
  */
 public class PersistentObjectManager<T extends PersistentObject> implements JavaContextListener {
 
+    // XXX perhaps also initialize temporary when classpath not registered in GPR 
+    // (since then there would be no events)
+
     private static final Logger LOGGER = Logger.getLogger(PersistentObjectManager.class.getName());
     private static final boolean NO_EVENTS = Boolean.getBoolean("netbeans.metadata.model.noevents"); // NOI18N
     // XXX for M9 only
