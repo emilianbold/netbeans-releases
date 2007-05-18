@@ -96,6 +96,17 @@ Microsystems, Inc. All Rights Reserved.
         </executeTests>
     </target>
     
+    <target name="runidetestcl" depends="init-cp">        
+        <property name="xtest.ide.use.classloader" value="org.netbeans.modules.java.editor" />
+        <property name="xtest.ide.open.project" location="${xtest.data}/projects/java_editor_test" />
+        <executeTests  pluginName="ide">
+            <classpath>
+                <!--<path refid="jemmy.and.jelly.path"/>  -->
+		<!-- removed dependence on editor tests -->
+                <!--pathelement location="../../../editor/build/test/qa-functional/classes" /-->
+            </classpath>
+        </executeTests>
+    </target>
     
 </project>
 

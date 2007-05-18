@@ -77,6 +77,14 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
+    <testbag testattribs="mark" name="Mark Occurrences" executor="ide-cl"> 
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/modules/java/editor/semantic/*.class"/>		                               
+            </patternset>
+        </testset>
+    </testbag>
+    
     <testbag testattribs="devel" name="Testcases under development" compiler="qa-functional-compiler-completion">
         <testset dir="qa-functional/src">
             <patternset>
@@ -88,6 +96,8 @@ Microsystems, Inc. All Rights Reserved.
     <!--//Experimental tests (not to be runned automaticaly): -->
         
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
+    
+    <executor name="ide-cl" antfile="build-qa-functional.xml" target="runidetestcl" default="false"/>
     
     <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true" />
     <compiler name="qa-functional-compiler-completion" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="false" />
