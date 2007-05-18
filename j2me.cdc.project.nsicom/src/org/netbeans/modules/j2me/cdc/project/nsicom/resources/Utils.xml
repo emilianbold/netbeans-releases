@@ -21,7 +21,7 @@
 <library version="1.0">
     <name>nsicom-ant-utils</name>
     <type>j2se</type>
-    <localizing-bundle>org.netbeans.modules.j2me.cdc.project.nsicom</localizing-bundle>
+    <localizing-bundle>org/netbeans/modules/j2me/cdc/project/nsicom/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
         <resource>jar:nbinst:///modules/ext/org-netbeans-modules-j2me-cdc-project-nsicom.jar!/</resource>
