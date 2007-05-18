@@ -33,11 +33,13 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.ListCellRenderer;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.plaf.UIResource;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
@@ -83,11 +85,7 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
         javaPlatformIntro.setBackground(getBackground());
         javaPlatformIntro.setDisabledTextColor(jLabel2.getForeground());
         refreshJavaPlatforms();
-        javaPlatform.setRenderer(new DefaultListCellRenderer() {
-            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                return super.getListCellRendererComponent(list, ((JavaPlatform) value).getDisplayName(), index, isSelected, cellHasFocus);
-            }
-        });
+        javaPlatform.setRenderer(new JavaPlatformRenderer());
     }
 
     private void basicInit() {
@@ -710,4 +708,33 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
             return this.description;
         }
     }
+    
+    private static final class JavaPlatformRenderer extends JLabel implements ListCellRenderer, UIResource {
+        
+        public JavaPlatformRenderer() {
+            setOpaque(true);
+        }
+        
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            setName("ComboBox.listRenderer");
+            setText(((JavaPlatform) value).getDisplayName());
+            setIcon(null);
+            if (isSelected) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());
+            } else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+            return this;
+        }
+        
+        @Override
+        public String getName() {
+            String name = super.getName();
+            return name == null ? "ComboBox.renderer" : name;
+        }
+        
+    }
+    
 }

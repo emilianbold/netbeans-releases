@@ -40,9 +40,11 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.plaf.UIResource;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -981,18 +983,39 @@ private void includesExcludesButtonActionPerformed(java.awt.event.ActionEvent ev
         }
     }
     
-    private static class EncodingRenderer extends DefaultListCellRenderer {
+    private static class EncodingRenderer extends JLabel implements ListCellRenderer, UIResource {
+        
+        public EncodingRenderer() {
+            setOpaque(true);
+        }
+        
         public Component getListCellRendererComponent(JList list, Object value, 
                 int index, boolean isSelected, boolean cellHasFocus) {
+            setName("ComboBox.listRenderer"); // NOI18N
             String dispName = null;
             if (value instanceof Charset) {
                 dispName = ((Charset) value).displayName();
             } else {
                 dispName = value.toString();
             }
-            return super.getListCellRendererComponent(list, dispName,
-                    index, isSelected, cellHasFocus);
+            setText(dispName);
+            setIcon(null);
+            if (isSelected) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());
+            } else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+            return this;
         }
+        
+        @Override
+        public String getName() {
+            String name = super.getName();
+            return name == null ? "ComboBox.renderer" : name; // NOI18N
+        }
+        
     }
     
     private class ToolTipRenderer extends DefaultTableCellRenderer { 
