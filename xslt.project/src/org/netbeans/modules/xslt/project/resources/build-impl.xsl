@@ -145,8 +145,8 @@ is divided into following sections:
                     <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-xslt-project.jar"/>
                     <pathelement location="${{netbeans.home}}/../soa1/ant/nblib/org-netbeans-modules-xslt-project.jar"/>
                     <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-xslt-core.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform6/core/org-openide-filesystems.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform6/lib/org-openide-util.jar"/>
+                    <pathelement location="${{netbeans.home}}/../platform7/core/org-openide-filesystems.jar"/>
+                    <pathelement location="${{netbeans.home}}/../platform7/lib/org-openide-util.jar"/>
                 </path>
                 
                 <taskdef name="XsltProjectJBIGen" classname="org.netbeans.modules.xslt.project.anttasks.GenerateJBIDescriptorTask">
