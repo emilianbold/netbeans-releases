@@ -642,11 +642,11 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
     }
     
     public long getUniqueID() {
-        ObjectReference ref = (ObjectReference) getJDIValue();
-        if (ref == null) {
+        Value value = getJDIValue();
+        if (!(value instanceof ObjectReference)) { // null or anything else than Object
             return 0L;
         } else {
-            return ref.uniqueID();
+            return ((ObjectReference) value).uniqueID();
         }
     }
     
