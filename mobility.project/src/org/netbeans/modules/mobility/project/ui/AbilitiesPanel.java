@@ -267,7 +267,7 @@ public class AbilitiesPanel implements NavigatorPanel
                                         //if value is the same configuration inherits its values from the default configuration 
                                         //which was selected (and modified) as well so we don't need to change it
                                         //if the values are different configuration don't inherit abilities anymore and so we can store it
-                                        if (!defCf.equals(newValue))
+                                        if ((defCf==null && newValue !=null) || !defCf.equals(newValue))
                                         {
                                             ab.put(key,newValue);
                                             abilities=CommentingPreProcessor.encodeAbilitiesMap(ab);
