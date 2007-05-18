@@ -46,8 +46,8 @@ PropertyChangeListener {
     private ColorModel          colorModel;
     private boolean		listen = false;
     private String              currentScheme;
-    private Map                 schemes = new HashMap ();
-    private Set                 toBeSaved = new HashSet ();
+    private Map<String, Vector<AttributeSet>> schemes = new HashMap<String, Vector<AttributeSet>>();
+    private Set<String> toBeSaved = new HashSet<String>();
     private boolean             changed = false;
     
     
@@ -202,20 +202,18 @@ PropertyChangeListener {
     }
     
     void cancel () {
-        toBeSaved = new HashSet ();
-        schemes = new HashMap ();
+        toBeSaved = new HashSet<String>();
+        schemes = new HashMap<String, Vector<AttributeSet>>();
         changed = false;
     }
     
-    void applyChanges () {
+    void applyChanges() {
         if (colorModel == null) return;
-        Iterator it = toBeSaved.iterator ();
-        while (it.hasNext ()) {
-            String scheme = (String) it.next ();
-            colorModel.setAnnotations (scheme, getAnnotations (scheme));
+        for(String scheme : toBeSaved) {
+            colorModel.setAnnotations(scheme, getAnnotations(scheme));
         }
-        toBeSaved = new HashSet ();
-        schemes = new HashMap ();
+        toBeSaved = new HashSet<String>();
+        schemes = new HashMap<String, Vector<AttributeSet>>();
     }
     
     boolean isChanged () {
@@ -225,11 +223,11 @@ PropertyChangeListener {
     public void setCurrentProfile (String currentScheme) {
         String oldScheme = this.currentScheme;
         this.currentScheme = currentScheme;
-        Vector v = getAnnotations (currentScheme);
+        Vector<AttributeSet> v = getAnnotations(currentScheme);
         if (v == null) {
             // clone scheme
             v = getAnnotations (oldScheme);
-            schemes.put (currentScheme, new Vector (v));
+            schemes.put (currentScheme, new Vector<AttributeSet>(v));
             toBeSaved.add (currentScheme);
             v = getAnnotations (currentScheme);
         }
@@ -263,7 +261,7 @@ PropertyChangeListener {
     }
 
     private void updateData () {
-        Vector annotations = getAnnotations(currentScheme);
+        Vector<AttributeSet> annotations = getAnnotations(currentScheme);
         SimpleAttributeSet c = (SimpleAttributeSet) annotations.get(lCategories.getSelectedIndex());
         
         Color color = ColorComboBox.getColor(cbBackground);
@@ -322,8 +320,8 @@ PropertyChangeListener {
         }
 
         // set values
-        Vector annotations = getAnnotations (currentScheme);
-        AttributeSet c = (AttributeSet) annotations.get (index);
+        Vector<AttributeSet> annotations = getAnnotations (currentScheme);
+        AttributeSet c = annotations.get (index);
         ColorComboBox.setColor (
             cbForeground,
             (Color) c.getAttribute (StyleConstants.Foreground)
@@ -353,14 +351,14 @@ PropertyChangeListener {
         return null;
     }
     
-    private Vector getAnnotations (String scheme) {
-        if (!schemes.containsKey (scheme)) {
-            Collection c = colorModel.getAnnotations (currentScheme);
+    private Vector<AttributeSet> getAnnotations(String scheme) {
+        if (!schemes.containsKey(scheme)) {
+            Collection<AttributeSet> c = colorModel.getAnnotations(currentScheme);
             if (c == null) return null;
-            List l = new ArrayList (c);
-            Collections.sort (l, new CategoryComparator ());
-            schemes.put (scheme, new Vector (l));
+            List<AttributeSet> l = new ArrayList<AttributeSet>(c);
+            Collections.sort(l, new CategoryComparator());
+            schemes.put(scheme, new Vector<AttributeSet>(l));
         }
-        return (Vector) schemes.get (scheme);
+        return schemes.get(scheme);
     }
 }

@@ -76,9 +76,9 @@ PropertyChangeListener {
     private String		currentLanguage;
     private String              currentProfile;
     /** cache Map (String (profile name) > Map (String (language name) > Vector (AttributeSet))). */
-    private Map                 profiles = new HashMap ();
+    private Map<String, Map<String, Vector<AttributeSet>>> profiles = new HashMap<String, Map<String, Vector<AttributeSet>>>();
     /** Map (String (profile name) > Set (String (language name))) of names of changed languages. */
-    private Map                 toBeSaved = new HashMap ();
+    private Map<String, Set<String>> toBeSaved = new HashMap<String, Set<String>>();
     private boolean		listen = false;
     
     /** Creates new form SyntaxColoringPanel1 */
@@ -400,8 +400,7 @@ PropertyChangeListener {
         preview.addPropertyChangeListener 
             (Preview.PROP_CURRENT_ELEMENT, this);
         listen = false;
-        List languages = new ArrayList 
-            (colorModel.getLanguages ());
+        List<String> languages = new ArrayList<String>(colorModel.getLanguages ());
         Collections.sort (languages, new LanguagesComparator ());
         Iterator it = languages.iterator ();
         cbLanguage.removeAllItems ();
@@ -412,29 +411,25 @@ PropertyChangeListener {
     }
     
     void cancel () {
-        toBeSaved = new HashMap ();
-        profiles = new HashMap ();
+        toBeSaved = new HashMap<String, Set<String>>();
+        profiles = new HashMap<String, Map<String, Vector<AttributeSet>>>();
     }
     
-    void applyChanges () {
+    void applyChanges() {
         if (colorModel == null) return;
-	Iterator it = toBeSaved.keySet ().iterator ();
-	while (it.hasNext ()) {
-	    String profile = (String) it.next ();
-            Set toBeSavedLanguages = (Set) toBeSaved.get (profile);
-            Map schemeMap = (Map) profiles.get (profile);
-            Iterator it2 = toBeSavedLanguages.iterator ();
-            while (it2.hasNext ()) {
-                String languageName = (String) it2.next ();
-                colorModel.setCategories (
+        for(String profile : toBeSaved.keySet()) {
+            Set<String> toBeSavedLanguages = toBeSaved.get(profile);
+            Map<String, Vector<AttributeSet>> schemeMap = profiles.get(profile);
+            for(String languageName : toBeSavedLanguages) {
+                colorModel.setCategories(
                     profile,
                     languageName,
-                    (Vector) schemeMap.get (languageName)
+                    schemeMap.get(languageName)
                 );
             }
-	}
-        toBeSaved = new HashMap ();
-        profiles = new HashMap ();
+        }
+        toBeSaved = new HashMap<String, Set<String>>();
+        profiles = new HashMap<String, Map<String, Vector<AttributeSet>>>();
     }
     
     boolean isChanged () {
@@ -454,44 +449,42 @@ PropertyChangeListener {
         refreshUI ();
     }
 
-    void deleteProfile (String profile) {
-        Iterator it = colorModel.getLanguages ().iterator ();
-        Map m = new HashMap ();
-        boolean custom = colorModel.isCustomProfile (profile);
-        while (it.hasNext ()) {
-            String language = (String) it.next ();
-            if (custom)
-                m.put (language, null);
-            else
-                m.put (language, getDefaults (profile, language));
+    void deleteProfile(String profile) {
+        Map<String, Vector<AttributeSet>> m = new HashMap<String, Vector<AttributeSet>>();
+        boolean custom = colorModel.isCustomProfile(profile);
+        for(String language : colorModel.getLanguages()) {
+            if (custom) {
+                m.put(language, null);
+            } else {
+                m.put(language, getDefaults(profile, language));
+            }
         }
-        profiles.put (profile, m);
-        toBeSaved.put (profile, new HashSet (colorModel.getLanguages ()));
-        if (!custom)
-            refreshUI ();
+        profiles.put(profile, m);
+        toBeSaved.put(profile, new HashSet<String>(colorModel.getLanguages()));
+        if (!custom) {
+            refreshUI();
+        }
     }
     
         
     // other methods ...........................................................
     
-    private void cloneScheme (String oldScheme, String newScheme) {
-        Map m = new HashMap ();
-        Iterator it = colorModel.getLanguages ().iterator ();
-        while (it.hasNext ()) {
-            String language = (String) it.next ();
-            Vector v = getCategories (oldScheme, language);
-            m.put (language, new Vector (v));
-            setToBeSaved (newScheme, language);
+    private void cloneScheme(String oldScheme, String newScheme) {
+        Map<String, Vector<AttributeSet>> m = new HashMap<String, Vector<AttributeSet>>();
+        for(String language : colorModel.getLanguages()) {
+            Vector<AttributeSet> v = getCategories(oldScheme, language);
+            m.put(language, new Vector<AttributeSet>(v));
+            setToBeSaved(newScheme, language);
         }
-        profiles.put (newScheme, m);
+        profiles.put(newScheme, m);
     }
     
-    Collection getAllLanguages () {
-        return getCategories (currentProfile, ColorModel.ALL_LANGUAGES);
+    Collection<AttributeSet> getAllLanguages() {
+        return getCategories(currentProfile, ColorModel.ALL_LANGUAGES);
     }
     
-    Collection getSyntaxColorings () {
-        return getCategories (currentProfile, currentLanguage);
+    Collection<AttributeSet> getSyntaxColorings() {
+        return getCategories(currentProfile, currentLanguage);
     }
     
     private void setCurrentLanguage (String language) {
@@ -598,8 +591,8 @@ PropertyChangeListener {
     }
     
     private void updatePreview () {
-        Collection syntaxColorings = getSyntaxColorings ();
-        Collection allLanguages = getAllLanguages ();
+        Collection<AttributeSet> syntaxColorings = getSyntaxColorings ();
+        Collection<AttributeSet> allLanguages = getAllLanguages ();
         if ((blinkSequence % 2) == 1) {
             if (currentLanguage == ColorModel.ALL_LANGUAGES)
                 allLanguages = invertCategory (allLanguages, getCurrentCategory ());
@@ -614,9 +607,9 @@ PropertyChangeListener {
         );
     }
     
-    private Collection invertCategory (Collection c, AttributeSet category) {
+    private Collection<AttributeSet> invertCategory (Collection<AttributeSet> c, AttributeSet category) {
         if (category == null) return c;
-        ArrayList result = new ArrayList (c);
+        ArrayList<AttributeSet> result = new ArrayList<AttributeSet> (c);
         int i = result.indexOf (category);
         SimpleAttributeSet as = new SimpleAttributeSet (category);
         Color highlight = (Color) getValue (currentLanguage, category, StyleConstants.Background);
@@ -713,55 +706,55 @@ PropertyChangeListener {
         listen = true;
     }
     
-    private void setToBeSaved (String currentProfile, String currentLanguage) {
-        Set s = (Set) toBeSaved.get (currentProfile);
+    private void setToBeSaved(String currentProfile, String currentLanguage) {
+        Set<String> s = toBeSaved.get(currentProfile);
         if (s == null) {
-            s = new HashSet ();
-            toBeSaved.put (currentProfile, s);
+            s = new HashSet<String>();
+            toBeSaved.put(currentProfile, s);
         }
-        s.add (currentLanguage);
+        s.add(currentLanguage);
     }
     
-    private Vector getCategories (String profile, String language) {
+    private Vector<AttributeSet> getCategories(String profile, String language) {
         if (colorModel == null) return null;
-        Map m = (Map) profiles.get (profile);
+        Map<String, Vector<AttributeSet>> m = profiles.get(profile);
         if (m == null) {
-            m = new HashMap ();
-            profiles.put (profile, m);
+            m = new HashMap<String, Vector<AttributeSet>>();
+            profiles.put(profile, m);
         }
-        Vector v = (Vector) m.get (language);
+        Vector<AttributeSet> v = m.get(language);
         if (v == null) {
-            Collection c = colorModel.getCategories (profile, language);
+            Collection<AttributeSet> c = colorModel.getCategories(profile, language);
             if (c == null) {
-                c = Collections.EMPTY_SET; // XXX OK?
+                c = Collections.<AttributeSet>emptySet(); // XXX OK?
             }
-            List l = new ArrayList (c);
-            Collections.sort (l, new CategoryComparator ());
-            v = new Vector (l);
-            m.put (language, v);
+            List<AttributeSet> l = new ArrayList<AttributeSet>(c);
+            Collections.sort(l, new CategoryComparator());
+            v = new Vector<AttributeSet>(l);
+            m.put(language, v);
         }
         return v;
     }
 
-    private Map defaults = new HashMap ();
+    private Map<String, Map<String, Vector<AttributeSet>>> defaults = new HashMap<String, Map<String, Vector<AttributeSet>>>();
     /**
      * Returns original colors for given profile.
      */
-    private Vector getDefaults (String profile, String language) {
-        Map m = (Map) defaults.get (profile);
+    private Vector<AttributeSet> getDefaults(String profile, String language) {
+        Map<String, Vector<AttributeSet>> m = defaults.get(profile);
         if (m == null) {
-            m = new HashMap ();
-            defaults.put (profile, m);
+            m = new HashMap<String, Vector<AttributeSet>>();
+            defaults.put(profile, m);
         }
-        Vector v = (Vector) m.get (language);
+        Vector<AttributeSet> v = m.get(language);
         if (v == null) {
-            Collection c = colorModel.getDefaults (profile, language);
-            List l = new ArrayList (c);
-            Collections.sort (l, new CategoryComparator ());
-            v = new Vector (l);
-            m.put (language, v);
+            Collection<AttributeSet> c = colorModel.getDefaults(profile, language);
+            List<AttributeSet> l = new ArrayList<AttributeSet>(c);
+            Collections.sort(l, new CategoryComparator());
+            v = new Vector<AttributeSet>(l);
+            m.put(language, v);
         }
-        return new Vector (v);
+        return new Vector<AttributeSet>(v);
     }
     
     private AttributeSet getCurrentCategory () {
@@ -946,27 +939,26 @@ PropertyChangeListener {
         }
     }
     
-    private static Map convertALC = new HashMap ();
+    private static Map<String, String> convertALC = new HashMap<String, String>();
     
     static {
-        convertALC.put ("java-block-comment", "comment");
-        convertALC.put ("java-keywords", "keyword");
-        convertALC.put ("java-line-comment", "comment");
-        convertALC.put ("java-dentifier", "identifier");
-        convertALC.put ("java-numeric-literals", "number");
-        convertALC.put ("java-operators", "operator");
-        convertALC.put ("java-char-literal", "char");
-        convertALC.put ("java-string-literal", "string");
-        convertALC.put ("java-whitespace", "whitespace");
-        convertALC.put ("java-identifier", "identifier");
-        convertALC.put ("java-error", "error");
+        convertALC.put ("java-block-comment", "comment"); //NOI18N
+        convertALC.put ("java-keywords", "keyword"); //NOI18N
+        convertALC.put ("java-line-comment", "comment"); //NOI18N
+        convertALC.put ("java-dentifier", "identifier"); //NOI18N
+        convertALC.put ("java-numeric-literals", "number"); //NOI18N
+        convertALC.put ("java-operators", "operator"); //NOI18N
+        convertALC.put ("java-char-literal", "char"); //NOI18N
+        convertALC.put ("java-string-literal", "string"); //NOI18N
+        convertALC.put ("java-whitespace", "whitespace"); //NOI18N
+        convertALC.put ("java-identifier", "identifier"); //NOI18N
+        convertALC.put ("java-error", "error"); //NOI18N
     }
     
     private static Integer defaultFontSize;
     private static Integer getDefaultFontSize () {
         if (defaultFontSize == null) {
-            defaultFontSize = (Integer) UIManager.get 
-                ("customFontSize");                                   // NOI18N
+            defaultFontSize = (Integer) UIManager.get("customFontSize"); // NOI18N
             if (defaultFontSize == null) {
                 int s = UIManager.getFont ("TextField.font").getSize (); // NOI18N
                 if (s < 12) s = 12;
@@ -976,11 +968,11 @@ PropertyChangeListener {
         return defaultFontSize;
     }
     
-    private static class LanguagesComparator implements Comparator {
-	public int compare (Object o1, Object o2) {
-	    if (o1.equals (ColorModel.ALL_LANGUAGES)) 
-		return o2.equals (ColorModel.ALL_LANGUAGES) ? 0 : -1;
-	    return ((String) o1).compareTo ((String) o2);
-	}
+    private static final class LanguagesComparator implements Comparator<String> {
+        public int compare(String o1, String o2) {
+            if (o1.equals(ColorModel.ALL_LANGUAGES))
+                return o2.equals(ColorModel.ALL_LANGUAGES) ? 0 : -1;
+            return o1.compareTo(o2);
+        }
     }
 }

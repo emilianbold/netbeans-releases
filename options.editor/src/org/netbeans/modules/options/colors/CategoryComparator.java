@@ -28,9 +28,9 @@ import javax.swing.text.StyleConstants;
  *
  * @author Jan Jancura
  */
-public class CategoryComparator implements Comparator {
+public final class CategoryComparator implements Comparator<AttributeSet> {
 
-    public int compare (Object o1, Object o2) {
+    public int compare (AttributeSet o1, AttributeSet o2) {
         String name_1 = name(o1);
         String name_2 = name(o2);
 	if (name_1.startsWith ("default")) // NOI18N
@@ -40,8 +40,8 @@ public class CategoryComparator implements Comparator {
 	return name_1.compareTo (name_2);
     }
     
-    private static String name (Object o) {
-        return (String) ((AttributeSet) o).getAttribute(StyleConstants.NameAttribute);
+    private static String name (AttributeSet o) {
+        return (String) o.getAttribute(StyleConstants.NameAttribute);
     }
     
 }

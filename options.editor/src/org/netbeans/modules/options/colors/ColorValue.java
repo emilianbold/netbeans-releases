@@ -34,7 +34,7 @@ class ColorValue {
     public static final ColorValue  CUSTOM_COLOR =
             new ColorValue (loc ("Custom"), null); //NOI18N
 
-    private static Map colorMap = new HashMap ();
+    private static Map<Color, String> colorMap = new HashMap<Color, String>();
     static {
         colorMap.put (Color.BLACK,      loc ("Black"));         //NOI18N
         colorMap.put (Color.BLUE,       loc ("Blue"));          //NOI18N
@@ -56,7 +56,7 @@ class ColorValue {
 
     ColorValue (Color color) {
         this.color = color;
-        text = (String) colorMap.get (color);
+        text = colorMap.get (color);
         if (text != null) return;
         StringBuffer sb = new StringBuffer ();
         sb.append ('[').append (color.getRed ()).

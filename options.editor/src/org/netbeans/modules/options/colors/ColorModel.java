@@ -74,8 +74,8 @@ public final class ColorModel {
     
     // schemes .................................................................
     
-    public Set /*<String>*/ getProfiles () {
-        return EditorSettings.getDefault().getFontColorProfiles ();
+    public Set<String> getProfiles() {
+        return EditorSettings.getDefault().getFontColorProfiles();
     }
     
     public String getCurrentProfile () {
@@ -93,8 +93,8 @@ public final class ColorModel {
     
     // annotations .............................................................
     
-    public Collection /*<Category>*/ getAnnotations (String profile) {
-        Collection annotations = new ArrayList ();
+    public Collection<AttributeSet> getAnnotations(String profile) {
+        List<AttributeSet> annotations = new ArrayList<AttributeSet>();
         for(Iterator it = AnnotationTypes.getTypes().getAnnotationTypeNames(); it.hasNext(); ) {
             String name = (String) it.next ();
             
@@ -147,12 +147,10 @@ public final class ColorModel {
     
     public void setAnnotations (
 	String profile, 
-	Collection /*<Category>*/ annotations
+	Collection<AttributeSet> annotations
     ) {
-	Iterator it = annotations.iterator ();
 	//S ystem.out.println("ColorModelImpl.setAnnotations ");
-	while (it.hasNext ()) {
-	    AttributeSet category = (AttributeSet) it.next ();
+	for(AttributeSet category : annotations) {
 	    AnnotationType annotationType = (AnnotationType) 
 		category.getAttribute ("annotationType");
             
@@ -191,38 +189,31 @@ public final class ColorModel {
      * @param profile a profile name
      * @return Collection of AttributeSets or null
      */
-    public Collection /*<Category>*/ getHighlightings (String profile) {
-        Map m = EditorSettings.getDefault().getHighlightings(profile);
+    public Collection<AttributeSet> getHighlightings (String profile) {
+        Map<String, AttributeSet> m = EditorSettings.getDefault().getHighlightings(profile);
         if (m == null) {
             return null;
         }
         return hideDummyCategories(m.values());
     }
     
-    public Collection /*<Category>*/ getHighlightingDefaults (String profile) {
-        Collection r = EditorSettings.getDefault().getHighlightingDefaults (profile).values ();
+    public Collection<AttributeSet> getHighlightingDefaults (String profile) {
+        Collection<AttributeSet> r = EditorSettings.getDefault().getHighlightingDefaults(profile).values();
         if (r == null) return null;
         return hideDummyCategories (r);
     }
     
-    public void setHighlightings (
-	String profile, 
-	Collection /*<Category>*/ highlihgtings
-    ) {
-	EditorSettings.getDefault().setHighlightings (
-	    profile, 
-	    toMap (highlihgtings)
-	);
+    public void setHighlightings(String profile, Collection<AttributeSet> highlihgtings) {
+        EditorSettings.getDefault().setHighlightings(profile, toMap(highlihgtings));
     }
-
     
     // syntax coloring .........................................................
     
-    public Set /*<String>*/ getLanguages () {
-	return getLanguageToMimeTypeMap ().keySet ();
+    public Set<String> getLanguages() {
+        return getLanguageToMimeTypeMap().keySet();
     }
     
-    public Collection /*<AttributeSet>*/ getCategories (
+    public Collection<AttributeSet> getCategories (
 	String profile, 
 	String language
     ) {
@@ -231,7 +222,7 @@ public final class ColorModel {
         return fcs.getAllFontColors(profile);
     }
     
-    public Collection /*<AttributeSet>*/ getDefaults (
+    public Collection<AttributeSet> getDefaults (
 	String profile, 
 	String language
     ) {
@@ -243,7 +234,7 @@ public final class ColorModel {
     public void setCategories (
         String profile, 
         String language, 
-        Collection/*<AttributeSet>*/ categories
+        Collection<AttributeSet> categories
     ) {
         String [] mimePath = getMimePath(language);
         FontColorSettingsFactory fcs = EditorSettings.getDefault().getFontColorSettings(mimePath);
@@ -281,9 +272,9 @@ public final class ColorModel {
         
         public void setParameters(
             String      language,
-            final Collection /*<Category>*/ defaults,
-            final Collection /*<Category>*/ highlightings,
-            final Collection /*<Category>*/ syntaxColorings
+            final Collection<AttributeSet> defaults,
+            final Collection<AttributeSet> highlightings,
+            final Collection<AttributeSet> syntaxColorings
         ) {
             final String mimeType = getMimeType(language);
             
@@ -438,7 +429,7 @@ public final class ColorModel {
         if (language.equals(ALL_LANGUAGES)) {
             return ""; //NOI18N
         } else {
-            String mimeType = (String) getLanguageToMimeTypeMap().get(language);
+            String mimeType = getLanguageToMimeTypeMap().get(language);
             assert mimeType != null : "Invalid language '" + language + "'"; //NOI18N
             return mimeType;
         }
@@ -448,64 +439,53 @@ public final class ColorModel {
         if (language.equals(ALL_LANGUAGES)) {
             return EMPTY_MIMEPATH;
         } else {
-            String mimeType = (String) getLanguageToMimeTypeMap().get(language);
+            String mimeType = getLanguageToMimeTypeMap().get(language);
             assert mimeType != null : "Invalid language '" + language + "'"; //NOI18N
             return new String [] { mimeType };
         }
     }
     
-    private Map languageToMimeType;
-    private Map getLanguageToMimeTypeMap () {
-	if (languageToMimeType == null) {
-	    languageToMimeType = new HashMap ();
-	    Set mimeTypes = EditorSettings.getDefault().getMimeTypes ();
-	    Iterator it = mimeTypes.iterator ();
-	    while (it.hasNext ()) {
-		String mimeType = (String) it.next ();
-		languageToMimeType.put (
-		    EditorSettings.getDefault().getLanguageName (mimeType),
-		    mimeType
-		);
-	    }
-            languageToMimeType.put (
-                ALL_LANGUAGES, 
-                "Defaults"
-            );
-	}
-	return languageToMimeType;
+    private Map<String, String> languageToMimeType;
+    private Map<String, String> getLanguageToMimeTypeMap() {
+        if (languageToMimeType == null) {
+            languageToMimeType = new HashMap<String, String>();
+            Set<String> mimeTypes = EditorSettings.getDefault().getMimeTypes();
+            for(String mimeType : mimeTypes) {
+                languageToMimeType.put(
+                    EditorSettings.getDefault().getLanguageName(mimeType),
+                    mimeType
+                );
+            }
+            languageToMimeType.put(
+                    ALL_LANGUAGES,
+                    "Defaults" //NOI18N
+                    );
+        }
+        return languageToMimeType;
     }
     
-    private Set hiddenCategories = new HashSet ();
+    private Set<AttributeSet> hiddenCategories = new HashSet<AttributeSet>();
     {
 //        hiddenCategories.add ("status-bar");
 //        hiddenCategories.add ("status-bar-bold");
     }
     
-    private Collection hideDummyCategories (
-        Collection /*AttributeSet*/ categories
-    ) {
-        List result = new ArrayList ();
-        Iterator it = categories.iterator ();
-        while (it.hasNext ()) {
-            AttributeSet as = (AttributeSet) it.next ();
-            if (hiddenCategories.contains (
-                as.getAttribute (StyleConstants.NameAttribute)
-            )) continue;
-            result.add (as);
+    private Collection<AttributeSet> hideDummyCategories(Collection<AttributeSet> categories) {
+        List<AttributeSet> result = new ArrayList<AttributeSet>();
+        for(AttributeSet as : categories) {
+            if (hiddenCategories.contains(as.getAttribute(StyleConstants.NameAttribute))) {
+                continue;
+            }
+            result.add(as);
         }
         return result;
     }
     
-    private static Map toMap (Collection categories) {
+    private static Map<String, AttributeSet> toMap(Collection<AttributeSet> categories) {
         if (categories == null) return null;
-        Map result = new HashMap ();
-        Iterator it = categories.iterator ();
-        while (it.hasNext ()) {
-            AttributeSet as = (AttributeSet) it.next ();
-            result.put (
-                as.getAttribute (StyleConstants.NameAttribute),
-                as
-            );
+        Map<String, AttributeSet> result = new HashMap<String, AttributeSet>();
+        for(AttributeSet as : categories) {
+            result.put((String) as.getAttribute(StyleConstants.NameAttribute), as);
         }
         return result;
     }

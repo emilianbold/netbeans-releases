@@ -7,7 +7,6 @@
 package org.netbeans.modules.options.colors;
 
 import java.awt.Component;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -17,6 +16,7 @@ import java.util.Iterator;
 import javax.swing.AbstractButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.text.AttributeSet;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.InputLine;
@@ -258,15 +258,15 @@ public class FontAndColorsPanel extends JPanel implements ActionListener {
         }
     }
     
-    Collection getDefaults () {
+    Collection<AttributeSet> getDefaults () {
         return syntaxColoringPanel.getAllLanguages ();
     }
     
-    Collection getHighlights () {
+    Collection<AttributeSet> getHighlights () {
         return highlightingPanel.getHighlightings ();
     }
     
-    Collection getSyntaxColorings () {
+    Collection<AttributeSet> getSyntaxColorings () {
         return syntaxColoringPanel.getSyntaxColorings ();
     }
     
