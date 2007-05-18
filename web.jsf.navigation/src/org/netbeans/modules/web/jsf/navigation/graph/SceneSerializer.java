@@ -104,6 +104,7 @@ public class SceneSerializer {
     public static void serialize(PageFlowSceneData sceneData, File file) {
         if( file == null ){
             LOG.warning("Can not serialize locations because file is null.");
+            return;
         }
         LOG.entering("SceneSerializer", "serialize");
         Document document = XMLUtil.createDocument(SCENE_ELEMENT, null, null, null);
