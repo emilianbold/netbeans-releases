@@ -28,12 +28,18 @@
 
 package org.netbeans.modules.mobility.project.ui;
 
-import java.io.IOException;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.CellEditorListener;
@@ -45,7 +51,6 @@ import org.netbeans.mobility.antext.preprocessor.CommentingPreProcessor;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
-import org.netbeans.spi.mobility.project.support.DefaultPropertyParsers;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.project.ui.customizer.CustomizerAbilities;
@@ -54,8 +59,10 @@ import org.netbeans.spi.navigator.NavigatorPanel;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.ErrorManager;
+import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -96,12 +103,14 @@ public class AbilitiesPanel implements NavigatorPanel
             return hint;
         }
     };
+    
         
     static ABHint hintInstance=new ABHint();
     
-    private static String MULTIPLE_VALUES="Multiple different values ...";
+    private static String MULTIPLE_VALUES=NbBundle.getMessage(AbilitiesPanel.class,"LBL_MultipleValues");
+    private static String REMOVE=NbBundle.getMessage(AbilitiesPanel.class,"LBL_Remove");
     
-    static class ABPanel extends JPanel
+    static class ABPanel extends JPanel implements ExplorerManager.Provider
     {
         private static javax.swing.JScrollPane scrollPane;
         final private static EditableTableModel tableModel =  new EditableTableModel();
@@ -110,14 +119,111 @@ public class AbilitiesPanel implements NavigatorPanel
         private static J2MEProject project=null;
         private static Node[] selectedNodes=null;
         private static Node defaultConfig=null;
+        private static Action[] actions = { new RemoveAction() };
+        private static ExplorerManager manager=new ExplorerManager();
+        
+        static private class RemoveAction extends AbstractAction {
+
+            private RemoveAction()
+            {
+                putValue(Action.NAME,REMOVE);
+            }
+
+            public void actionPerformed(ActionEvent e)
+            {
+                Object o=e.getSource();
+                final int rows[]=table.getSelectedRows();
+                if (project == null) return;
+                
+                ProjectManager.mutex().writeAccess(new Runnable() 
+                {
+                    public void run() 
+                    {
+                        for (int row : rows)
+                        {
+                            //getValueAt(rows[0],0) is always different, because we delete rows[0] in
+                            //each iteration and rows[0] is actual line we want to delete
+                            String key=tableModel.getValueAt(rows[0],0);                    
+                            tableModel.removeRow(rows[0]);
+                            AntProjectHelper helper=project.getLookup().lookup(AntProjectHelper.class);
+                            EditableProperties ep=helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                            if (defaultConfig != null)
+                            {   
+                                String abilities=ep.getProperty(DefaultPropertiesDescriptor.ABILITIES);
+                                Map<String,String> ab=CommentingPreProcessor.decodeAbilitiesMap(abilities);
+                                ab.remove(key);
+                                abilities=CommentingPreProcessor.encodeAbilitiesMap(ab);
+                                ep.put(DefaultPropertiesDescriptor.ABILITIES,abilities);
+                                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,ep);   
+                            }
+
+                            for (Node node : selectedNodes)
+                            {
+                                if (node != defaultConfig)
+                                {
+                                    ProjectConfiguration conf=node.getLookup().lookup(ProjectConfiguration.class);
+                                    String abilities = ep.getProperty(J2MEProjectProperties.CONFIG_PREFIX + conf.getDisplayName() + "." + DefaultPropertiesDescriptor.ABILITIES);
+                                    if (abilities == null)
+                                        // Let's take a default value if we inherit from default configuration
+                                        abilities = ep.getProperty(DefaultPropertiesDescriptor.ABILITIES);
+                                    Map<String,String> ab=CommentingPreProcessor.decodeAbilitiesMap(abilities);
+                                    //if value is the same configuration inherits its values from the default configuration 
+                                    //which was selected (and modified) as well so we don't need to change it
+                                    //if the values are different configuration don't inherit abilities anymore and so we can store it
+                                    if (ab.containsKey(key))
+                                    {
+                                        ab.remove(key);
+                                        abilities=CommentingPreProcessor.encodeAbilitiesMap(ab);
+                                        ep.put(J2MEProjectProperties.CONFIG_PREFIX+conf.getDisplayName()+"."+DefaultPropertiesDescriptor.ABILITIES,abilities);
+                                    }
+                                }
+                            }
+                            //Save the properties
+                            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,ep);
+                        }
+                        
+                        try
+                        {
+                            ProjectManager.getDefault().saveProject(project);
+                        } catch (Exception ex)
+                        {
+                            ErrorManager.getDefault().notify(ex);
+                        }
+                    }
+                });
+            }
+        }
         
         private ABPanel()
         {
             initComponents();            
             scrollPane.setViewportView(table);
-            table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);                                    
+            table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);                                    
+            final TableCellEditor editor=table.getDefaultEditor(String.class);
+            //Add the popup menu for abilities table
+            final JPopupMenu pm=new JPopupMenu();
+            pm.add(new RemoveAction());            
+            table.addMouseListener(new MouseAdapter()
+            {
+                public void mousePressed(MouseEvent e) {
+                  showPopup(e);
+                }
+
+                public void mouseReleased(MouseEvent e) {
+                  showPopup(e);
+                }
+
+                private void showPopup(MouseEvent e) {
+                  if (e.isPopupTrigger()) {
+                    int row=table.rowAtPoint(e.getPoint());
+                    int selRows[]=table.getSelectedRows();
+                    if ((selRows.length>=2 && (row < selRows[0] || row > selRows[selRows.length-1])) || selRows.length<2)
+                        table.setRowSelectionInterval(row,row);
+                    pm.show(e.getComponent(), e.getX(), e.getY());
+                  }
+                }
+            });
             
-            final TableCellEditor editor=table.getDefaultEditor(String.class);         
             editor.addCellEditorListener(new CellEditorListener() {                                    
                 public void editingStopped(ChangeEvent e)
                 {
@@ -189,6 +295,11 @@ public class AbilitiesPanel implements NavigatorPanel
             });
             
         }
+        
+        public Action[] getActions() {
+            return actions;
+        }
+
         
         public static void setAbilities(final Node[] nodes)
         {
@@ -293,6 +404,11 @@ public class AbilitiesPanel implements NavigatorPanel
                 instance = new ABPanel();
             return instance;
         }
+
+        public ExplorerManager getExplorerManager()
+        {
+            return manager;
+        }
     }
         
     public synchronized JComponent getComponent()
@@ -305,7 +421,7 @@ public class AbilitiesPanel implements NavigatorPanel
         String cf="";
         if (ABPanel.selectedNodes != null)            
             cf =ABPanel.selectedNodes.length==1 ? " : " + ABPanel.selectedNodes[0].getLookup().lookup(ProjectConfiguration.class).getDisplayName() : 
-                                                  " : Multiple configurations";
+                                                  " : " + NbBundle.getMessage(AbilitiesPanel.class,"LBL_MultipleConfigs");
         return "Abilities" + cf ;
     }
     
