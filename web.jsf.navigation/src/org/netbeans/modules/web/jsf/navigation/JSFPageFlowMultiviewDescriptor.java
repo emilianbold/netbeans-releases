@@ -173,7 +173,7 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
         
         public void componentClosed() {
             tc.unregstierListeners();
-            tc.serializeNodeLocations(tc.getStorageDatFile());
+            tc.serializeNodeLocations(PageFlowView.getStorageDatFile(context.getFacesConfigFile()));
             LOG.finest("PageFlowEditor componentClosed");
         }
         
@@ -210,7 +210,7 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
         }
         
         private void writeObject(java.io.ObjectOutputStream out) throws IOException {
-            tc.serializeNodeLocations(tc.getStorageDatFile());
+            tc.serializeNodeLocations(PageFlowView.getStorageDatFile(context.getFacesConfigFile()));
             out.writeObject(context);
             LOG.finest("writeObject");
         }
@@ -220,6 +220,7 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
             if (! (object instanceof JSFConfigEditorContext))
                 throw new ClassNotFoundException("JSFConfigEditorContext expected but not found");
             context = (JSFConfigEditorContext) object;
+            /* deserialization of node locations is completed in the PageFlowView constructor (in init() ) */
             init();
             LOG.finest("readObject");
         }

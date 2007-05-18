@@ -69,7 +69,7 @@ public class PageFlowController {
     private HashMap<NavigationRule,String> navRule2String = new HashMap<NavigationRule,String>();
     private final HashMap<String,Page> pageName2Page = new HashMap<String,Page>();  //Should this be synchronized.
     
-    private static final String DEFAULT_DOC_BASE_FOLDER = "web"; //NOI18NF
+    public static final String DEFAULT_DOC_BASE_FOLDER = "web"; //NOI18NF
     
     /** Creates a new instance of PageFlowController
      * @param context
@@ -142,7 +142,7 @@ public class PageFlowController {
      * @return currentScope (LBL_SCOPE_PROJECT,LBL_SCOPE_FACESCONFIG)
      */
     public String getCurrentScope() {
-        return PageFlowUtilities.getInstance(this).getCurrentScope();
+        return PageFlowUtilities.getInstance(view).getCurrentScope();
     }
     
     public boolean isFacesConfigCurrentScope() {
@@ -748,7 +748,7 @@ public class PageFlowController {
     }
     
     public void serializeNodeLocations() {
-        view.serializeNodeLocations(view.getStorageDatFile());
+        view.serializeNodeLocations(PageFlowView.getStorageDatFile(configDataObj.getPrimaryFile()));
     }
     
 }

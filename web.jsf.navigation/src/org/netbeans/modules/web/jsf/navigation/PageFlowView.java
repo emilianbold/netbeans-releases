@@ -34,9 +34,12 @@ import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.border.EmptyBorder;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.vmd.VMDPinWidget;
 import org.netbeans.api.visual.widget.ConnectionWidget;
+import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.navigation.JSFPageFlowMultiviewDescriptor.PageFlowElement;
@@ -75,10 +78,10 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         this.context = context;
         scene = initializeScene();
         pfc = new PageFlowController( context,  this );
-        sceneData = new PageFlowSceneData(scene, PageFlowUtilities.getInstance(pfc));
+        sceneData = new PageFlowSceneData(PageFlowUtilities.getInstance(this));
         
-        loadNodelocations(getStorageDatFile());
-        
+        deserializeNodeLocation(getStorageDatFile(context.getFacesConfigFile()));
+    
         pfc.setupGraphNoSaveData(); /* I don't want to override the loaded locations with empy sceneData */
         setFocusable(true);
     }
@@ -218,7 +221,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     }
     
     public void saveLocations() {
-        sceneData.saveCurrentSceneData();
+        sceneData.saveCurrentSceneData(scene);
     }
     public void saveLocation(String oldDisplayName, String newDisplayName){
         sceneData.savePageWithNewName(oldDisplayName, newDisplayName);
@@ -338,7 +341,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         toolbar.setBorder(new EmptyBorder(0, 0, 0, 0));
         
         toolbar.addSeparator();
-        PageFlowUtilities utilities = PageFlowUtilities.getInstance(pfc);
+        PageFlowUtilities utilities = PageFlowUtilities.getInstance(this);
         toolbar.add(utilities.createScopeComboBox());
         
         return toolbar;
@@ -495,14 +498,15 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         return myNavCases;
     }
     
-    private File navDataFile = null;
-    public File getStorageDatFile(){
-        if( navDataFile == null){
-            FileObject nbprojectFolder = pfc.getWebFolder().getParent().getFileObject("nbproject", null);
-            String fileName = pfc.getConfigDataObject().getPrimaryFile().getName() + ".NavData";
-            navDataFile = new File(nbprojectFolder.getPath(), fileName);
-        }
-        return navDataFile;
+    //    private File navDataFile = null;
+    public final static File getStorageDatFile( FileObject configFile ){
+//    public final static File getStorageDatFile(JSFConfigEditorContext context){
+//        FileObject configFile = context.getFacesConfigFile();
+        Project project = FileOwnerQuery.getOwner(configFile);
+        FileObject webFolder = project.getProjectDirectory().getFileObject(PageFlowController.DEFAULT_DOC_BASE_FOLDER);        
+        FileObject nbprojectFolder = webFolder.getParent().getFileObject("nbproject", null);
+        String fileName = configFile.getName() + ".NavData";
+        return  new File(nbprojectFolder.getPath(), fileName);
     }
     
     public void serializeNodeLocations(File navDataFile){
@@ -512,19 +516,19 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         SceneSerializer.serialize(sceneData, navDataFile);
     }
     
-    private void loadNodelocations(File navDataFile) {
+    public void deserializeNodeLocation(File navDataFile) {
         if( navDataFile.exists() ) {
             //            SceneSerializer.deserialize(scene, navDataFile);
             //            validate();
             SceneSerializer.deserialize(sceneData, navDataFile);
         }
     }
-
+    
     @Override
     protected String preferredID() {
         return "PageFlowEditor";
     }
-
+    
     @Override
     public int getPersistenceType() {
         return PERSISTENCE_NEVER;

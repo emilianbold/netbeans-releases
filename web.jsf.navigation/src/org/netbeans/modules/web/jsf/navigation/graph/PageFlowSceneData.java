@@ -31,7 +31,7 @@ import org.netbeans.modules.web.jsf.navigation.PageFlowUtilities;
  */
 public class PageFlowSceneData {
     private PageFlowUtilities utilities;
-    private PageFlowScene scene;
+//    private PageFlowScene scene;
     
     private final Map<String,Point> facesConfigSceneData = new HashMap<String,Point>();
     private final Map<String,Point> projectSceneData = new HashMap<String,Point>();
@@ -43,21 +43,21 @@ public class PageFlowSceneData {
      * @param scene PageFlowScene
      * @param utilities PageFlowUtilites
      **/
-    public PageFlowSceneData(PageFlowScene scene, PageFlowUtilities utilities) {
+    public PageFlowSceneData(PageFlowUtilities utilities) {
         this.utilities = utilities;
-        this.scene = scene;
+//        this.scene = scene;
     }
     
     /**
      * Saves the Scene Data for the Current Scene Scope
      **/
-    public void saveCurrentSceneData( ) {
+    public void saveCurrentSceneData( PageFlowScene scene ) {
         if ( utilities.getCurrentScope().equals( PageFlowUtilities.LBL_SCOPE_FACESCONFIG) ){
             facesConfigSceneData.clear();
-            facesConfigSceneData.putAll( createSceneInfo() );
+            facesConfigSceneData.putAll( createSceneInfo(scene ) );
         } else if( utilities.getCurrentScope().equals(PageFlowUtilities.LBL_SCOPE_PROJECT)){
             projectSceneData.clear();
-            projectSceneData.putAll( createSceneInfo() );
+            projectSceneData.putAll( createSceneInfo(scene) );
         }
     }
     
@@ -74,8 +74,8 @@ public class PageFlowSceneData {
     /**
      * Loads the Scene Data stored for the current scope into the Scene.
      **/
-    public void loadSceneData() {
-        loadSceneData(getCurrentSceneData());
+    public void loadSceneData(PageFlowScene scene) {
+        loadSceneData(scene, getCurrentSceneData());
     }
     
     public Point getPageLocation( String pageDisplayName ){
@@ -85,7 +85,7 @@ public class PageFlowSceneData {
         return null;
     }
     
-    private void loadSceneData(Map<String,Point> sceneInfo) {
+    private void loadSceneData(PageFlowScene scene, Map<String,Point> sceneInfo) {
         if( sceneInfo == null ){
             return;
         }
@@ -98,7 +98,7 @@ public class PageFlowSceneData {
         }
     }
     
-    private Map<String, Point> createSceneInfo( ){
+    private Map<String, Point> createSceneInfo(PageFlowScene scene ){
         Map<String,Point> sceneInfo = new HashMap<String,Point>();
         Collection<Page> pages =  scene.getNodes();
         for( Page page : pages ){
