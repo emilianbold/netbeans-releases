@@ -207,7 +207,6 @@ public class FormComponentBox extends ContainerBox {
         JComponent proxyComp = createComponent(tag, webform, element);
 
         if (proxyComp == null) { // invisible component
-
             return null;
         }
 
@@ -803,6 +802,9 @@ public class FormComponentBox extends ContainerBox {
                 field.setText(value);
             }
 
+            if (CssProvider.getValueService().isColorTransparentForElement(el, XhtmlCss.BACKGROUND_COLOR_INDEX)) {
+                field.setOpaque(false);
+            }
             //field.addActionListener(this);
             //maxIsPreferred = 3;
         } else if ((tag == HtmlTag.BUTTON) || type.equals("submit") // NOI18N
@@ -1176,6 +1178,8 @@ public class FormComponentBox extends ContainerBox {
 
         Graphics og = image.getGraphics(); // offscreen buffer
 
+        // XXX This 'nonrectangular' (should be transparent) stuff is very suspicious,
+        // why to repaint the parent's color again? Is it because of the grid dots only?
         if (nonrectangular) {
             //og.setColor(bg);
             // Hmmm, what about borders? Just call super-duper instead?

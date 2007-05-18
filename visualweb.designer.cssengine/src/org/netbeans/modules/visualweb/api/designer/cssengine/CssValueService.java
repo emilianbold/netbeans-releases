@@ -34,6 +34,7 @@ import org.w3c.dom.Element;
 public interface CssValueService {
 
     public Color getColorForElement(Element element, int styleIndex);
+    public boolean isColorTransparentForElement(Element element, int styleIndex);
 
     public float getFontSizeForElement(Element element, int defaultSize);
     public int getFontStyleForElement(Element element, int defaultStyle);

@@ -21,7 +21,6 @@
 package org.netbeans.modules.visualweb.designer.cssengine;
 
 
-import org.netbeans.modules.visualweb.api.designer.cssengine.CssComputedValue;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssListValue;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValueService;
@@ -32,7 +31,6 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import org.apache.batik.css.engine.value.ComputedValue;
@@ -91,6 +89,10 @@ public class CssValueServiceImpl implements CssValueService {
         if (v == CssValueConstants.TRANSPARENT_RGB_VALUE) {
             return null;
         }
+        if (v instanceof ComputedValue
+        && ((ComputedValue)v).getComputedValue() == CssValueConstants.TRANSPARENT_RGB_VALUE) {
+            return null;
+        }
 
         if (v != null) {
             //if (v.getCssValueType() == CSSValue.CSS_PRIMITIVE_VALUE) {
@@ -105,6 +107,20 @@ public class CssValueServiceImpl implements CssValueService {
         }
 
         return null;
+    }
+    
+    public boolean isColorTransparentForElement(Element element, int styleIndex) {
+        Value v = getCssValue(element, styleIndex);
+        // XXX #94265 The initial is transparent, but that doesn't work (in browser it doesn't seem to be transparent),
+        // or there might be browser specific stylesheets changing the default behavior.
+        // Hack: For now we ignore when it is initial value.
+//        if (v == CssValueConstants.TRANSPARENT_RGB_VALUE) {
+//            return true;
+//        }
+        if (v instanceof ComputedValue) {
+            return ((ComputedValue)v).getComputedValue() == CssValueConstants.TRANSPARENT_RGB_VALUE;
+        }
+        return false;
     }
 
     private static final String[] CSS_LENGTH_UNITS = { "%", "em", "ex", "px", "cm", "mm", "in", "pt", "pc" }; // NOI18N
