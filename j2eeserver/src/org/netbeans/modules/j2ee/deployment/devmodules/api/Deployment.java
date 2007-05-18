@@ -34,6 +34,7 @@ import org.netbeans.modules.j2ee.deployment.impl.*;
 import org.netbeans.modules.j2ee.deployment.impl.projects.*;
 import org.netbeans.modules.j2ee.deployment.impl.ui.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
@@ -271,6 +272,27 @@ if (System.getProperties().getProperty("resource-api-redesign") != null) {
             return si.getServer().getShortName();
         }
         return null;
+    }
+    
+    /**
+     * Determine if a server instance will attempt to use file deployment for a
+     * J2eeModule.
+     * 
+     * @param instanceId The target instance's server id
+     * @param mod The module to be deployed
+     * @return Whether file deployment will be used
+     * @since 1.27
+     */
+    public boolean canFileDeploy(String instanceId, J2eeModule mod) {
+        boolean retVal = false;
+        ServerInstance instance = ServerRegistry.getInstance().getServerInstance(instanceId);
+        if (null != instance) {
+            IncrementalDeployment incr = instance.getIncrementalDeployment();
+            if (null != incr) {
+                retVal = incr.canFileDeploy(null, mod);
+            }
+        }
+        return retVal;
     }
     
     public String getDefaultServerInstanceID () {
