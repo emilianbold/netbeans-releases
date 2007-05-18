@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -40,11 +40,12 @@ import org.openide.util.Lookup;
  */
 public class UMLPanelController extends OptionsPanelController {
     
-        
+    
     private boolean changed = false ;
     private static final boolean debug = false ;
-            
-    
+    private DefaultOptionsPanel defaultPanel = null ;
+    private MiscOptionsPanel misc = null ;
+    private OptionsSupport support = null ;
     /**
      * Creates a new instance of UMLPanelController
      */
@@ -56,12 +57,38 @@ public class UMLPanelController extends OptionsPanelController {
     public void update() {
         changed = false ;
         if (debug) log("update");
+        
+        // (1) apply changes for "general" panel options
+        defaultPanel.update();
+        
+        // (2..n) apply changes for registered panel options
+        for (UMLOptionsPanel panel: support.getMainPanels()) {
+            panel.update(); 
+        }
+        
+        //((n+1)..m) apply changes for misc panels options
+        for (UMLOptionsPanel panel: support.getMiscPanels()) {
+            panel.update(); 
+        }
     }
     
     public void applyChanges() {
         changed = true ;
-        if (debug) log("applyChanges");        
-    }    
+        if (debug) log("applyChanges");
+        
+        // (1) apply changes for "general" panel options
+        defaultPanel.applyChanges();
+        
+        // (2..n) apply changes for registered panel options
+        for (UMLOptionsPanel panel: support.getMainPanels()) {
+            panel.applyChanges(); 
+        }
+        
+        //((n+1)..m) apply changes for misc panels options
+        for (UMLOptionsPanel panel: support.getMiscPanels()) {
+            panel.applyChanges(); 
+        }
+    }
     
     public void cancel() {
         if (debug) log("cancel");
@@ -73,7 +100,7 @@ public class UMLPanelController extends OptionsPanelController {
     }
     
     public boolean isChanged() {
-        if (debug) log("isChanged");
+        if (debug) log("isChanged"); 
         return changed ;
     }
     
@@ -83,28 +110,29 @@ public class UMLPanelController extends OptionsPanelController {
         
         // this is the main component that holds the various tabs. There are two
         // panels being added directly: General and Misc. The other tabs are found
-        // from the lookup (via layer file). See OptionsSupport getMainPanels() and 
+        // from the lookup (via layer file). See OptionsSupport getMainPanels() and
         // getMiscPanels().
         JTabbedPane pane = new JTabbedPane() ;
         
-        // create the General panel and populate it. 
-        DefaultOptionsPanel defaultPanel = new DefaultOptionsPanel() ;
-        DefaultOptionsPanelForm defaultForm = (DefaultOptionsPanelForm) defaultPanel.create() ;        
+        // (1) create the General panel and populate it.
+        defaultPanel = new DefaultOptionsPanel() ;
+        DefaultOptionsPanelForm defaultForm = (DefaultOptionsPanelForm) defaultPanel.create() ;
         
         pane.addTab(defaultPanel.getDisplayName(), defaultForm) ;
         
-        OptionsSupport support = new OptionsSupport() ;
+        // (2..n) add all panels that are registered via layer files
+        support = new OptionsSupport() ;
         
         for (UMLOptionsPanel panel:support.getMainPanels()) {
             pane.addTab(panel.getDisplayName(), panel.create()) ;
         }
         
-        // create the Misc panel and populate it.
-        MiscOptionsPanel misc = new MiscOptionsPanel() ;
-        UMLMiscOptionsPanelForm miscPanel = (UMLMiscOptionsPanelForm) misc.create() ;        
+        // ((n+1)..m) create the Misc panel and populate it.
+        misc = new MiscOptionsPanel() ;
+        UMLMiscOptionsPanelForm miscPanel = (UMLMiscOptionsPanelForm) misc.create() ;
         
         pane.addTab(misc.getDisplayName(), miscPanel) ;
-                
+        
         for (UMLOptionsPanel panel:support.getMiscPanels()) {
             miscPanel.addTab(panel) ;
         }
@@ -121,12 +149,12 @@ public class UMLPanelController extends OptionsPanelController {
     
     public void addPropertyChangeListener(PropertyChangeListener propertyChangeListener) {
         if (debug) log("addPropertyChangeListener::"+propertyChangeListener.toString());
-                
+        
     }
     
     public void removePropertyChangeListener(PropertyChangeListener propertyChangeListener) {
         if (debug) log("removePropertyChangeListener");
-                
+        
     }
     
     private static void log(String s) {

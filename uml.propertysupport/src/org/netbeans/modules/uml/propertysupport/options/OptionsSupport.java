@@ -84,44 +84,6 @@ public class OptionsSupport {
                 miscOptionPanels.addElement(option);
             }
         
-        //
-        //        if (fo == null) return;
-        //
-        //        FileObject [] panels = fo.getChildren() ;
-        //
-        //        //DataFolder df = fo != null ? DataFolder.findFolder(fo) : null;
-        //
-        //        if (panels != null) {
-        //            //DataObject [] optionPanels = df.getChildren();
-        //            for (int i = 0; i < panels.length; i++) {
-        //                try             {
-        //                    DataObject panel = DataObject.find(panels[i]);
-        //                    InstanceCookie ic = (InstanceCookie) panel.getCookie(InstanceCookie.class);
-        //
-        //                    if (ic == null)
-        //                        continue;
-        //
-        //                    Object instance;
-        //
-        //                    try {
-        //                        instance = ic.instanceCreate();
-        //                    } catch (java.io.IOException e) {
-        //                        e.printStackTrace();
-        //                        continue;
-        //                    } catch (java.lang.ClassNotFoundException e) {
-        //                        e.printStackTrace();
-        //                        continue;
-        //                    }
-        //                    if (instance instanceof org.netbeans.modules.uml.propertysupport.options.api.UMLOptionsPanel)
-        //                        this.umlOptionPanels.addElement((org.netbeans.modules.uml.propertysupport.options.api.UMLOptionsPanel) instance);
-        //                } catch (DataObjectNotFoundException ex) {
-        //                    Exceptions.printStackTrace(ex);
-        //                }
-        //
-        //            }
-        //        }
-        
-        
     }
     
     protected Vector<UMLOptionsPanel> getMainPanels() {

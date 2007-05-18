@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.uml.propertysupport.options.panels;
 
+import org.openide.util.NbPreferences;
+
 /**
  *
  * @author  krichard
@@ -97,138 +99,58 @@ public class JavaPlatformOptionsPanel extends javax.swing.JPanel {
         y1.setSelected(true);
         y1.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "jRadioButton1.text_1")); // NOI18N
         y1.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        y1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                y1ActionPerformed(evt);
-            }
-        });
 
         n1.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "y2.text")); // NOI18N
         n1.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        n1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                n1ActionPerformed(evt);
-            }
-        });
 
         y2.setSelected(true);
         y2.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "y2.text_1")); // NOI18N
         y2.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        y2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                y2ActionPerformed(evt);
-            }
-        });
 
         y3.setSelected(true);
         y3.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "y3.text")); // NOI18N
         y3.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        y3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                y3ActionPerformed(evt);
-            }
-        });
 
         y4.setSelected(true);
         y4.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "y4.text")); // NOI18N
         y4.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        y4.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                y4ActionPerformed(evt);
-            }
-        });
 
         y5.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "y5.text")); // NOI18N
         y5.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        y5.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                y5ActionPerformed(evt);
-            }
-        });
 
         y6.setSelected(true);
         y6.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "y6.text")); // NOI18N
         y6.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        y6.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                y6ActionPerformed(evt);
-            }
-        });
 
         y7.setSelected(true);
         y7.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "y7.text")); // NOI18N
         y7.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        y7.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                y7ActionPerformed(evt);
-            }
-        });
 
         y8.setSelected(true);
         y8.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "y8.text")); // NOI18N
         y8.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        y8.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                y8ActionPerformed(evt);
-            }
-        });
 
         n2.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "n2.text")); // NOI18N
         n2.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        n2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                n2ActionPerformed(evt);
-            }
-        });
 
         n3.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "n3.text")); // NOI18N
         n3.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        n3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                n3ActionPerformed(evt);
-            }
-        });
 
         n4.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "n4.text")); // NOI18N
         n4.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        n4.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                n4ActionPerformed(evt);
-            }
-        });
 
         n5.setSelected(true);
         n5.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "n5.text")); // NOI18N
         n5.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        n5.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                n5ActionPerformed(evt);
-            }
-        });
 
         n6.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "n6.text")); // NOI18N
         n6.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        n6.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                n6ActionPerformed(evt);
-            }
-        });
 
         n7.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "n7.text")); // NOI18N
         n7.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        n7.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                n7ActionPerformed(evt);
-            }
-        });
 
         n8.setText(org.openide.util.NbBundle.getMessage(JavaPlatformOptionsPanel.class, "n8.text")); // NOI18N
         n8.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        n8.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                n8ActionPerformed(evt);
-            }
-        });
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -257,32 +179,32 @@ public class JavaPlatformOptionsPanel extends javax.swing.JPanel {
                 .addContainerGap(34, Short.MAX_VALUE))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
                 .add(jLabel6)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 35, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 41, Short.MAX_VALUE)
                 .add(y6)
                 .add(74, 74, 74))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
                 .add(jLabel5)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 107, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 113, Short.MAX_VALUE)
                 .add(y5)
                 .add(74, 74, 74))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
                 .add(jLabel4)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 80, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 86, Short.MAX_VALUE)
                 .add(y4)
                 .add(74, 74, 74))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
                 .add(jLabel3)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 98, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 104, Short.MAX_VALUE)
                 .add(y3)
                 .add(74, 74, 74))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
                 .add(jLabel2)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 51, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 57, Short.MAX_VALUE)
                 .add(y2)
                 .add(74, 74, 74))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
                 .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 11, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 17, Short.MAX_VALUE)
                 .add(y1)
                 .add(74, 74, 74))
         );
@@ -370,7 +292,7 @@ public class JavaPlatformOptionsPanel extends javax.swing.JPanel {
                         .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(jTextField2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 33, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 57, Short.MAX_VALUE)
                         .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jLabel14)
                             .add(jLabel12))
@@ -423,70 +345,76 @@ public class JavaPlatformOptionsPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-private void n8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_n8ActionPerformed
-    // TODO add your handling code here:
-}//GEN-LAST:event_n8ActionPerformed
-
-private void n7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_n7ActionPerformed
-    // TODO add your handling code here:
-}//GEN-LAST:event_n7ActionPerformed
-
-private void n6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_n6ActionPerformed
-    // TODO add your handling code here:
-}//GEN-LAST:event_n6ActionPerformed
-
-private void n5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_n5ActionPerformed
-    // TODO add your handling code here:
-}//GEN-LAST:event_n5ActionPerformed
-
-private void n4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_n4ActionPerformed
-    // TODO add your handling code here:
-}//GEN-LAST:event_n4ActionPerformed
-
-private void n3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_n3ActionPerformed
-    // TODO add your handling code here:
-}//GEN-LAST:event_n3ActionPerformed
-
-private void n2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_n2ActionPerformed
-    // TODO add your handling code here:
-}//GEN-LAST:event_n2ActionPerformed
-
-private void y8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_y8ActionPerformed
-    // TODO add your handling code here:
-}//GEN-LAST:event_y8ActionPerformed
-
-private void y7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_y7ActionPerformed
-    // TODO add your handling code here:
-}//GEN-LAST:event_y7ActionPerformed
-
-private void y6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_y6ActionPerformed
-    // TODO add your handling code here:
-}//GEN-LAST:event_y6ActionPerformed
-
-private void y5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_y5ActionPerformed
-    // TODO add your handling code here:
-}//GEN-LAST:event_y5ActionPerformed
-
-private void y4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_y4ActionPerformed
-    // TODO add your handling code here:
-}//GEN-LAST:event_y4ActionPerformed
-
-private void y3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_y3ActionPerformed
-    // TODO add your handling code here:
-}//GEN-LAST:event_y3ActionPerformed
-
-private void y2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_y2ActionPerformed
-    // TODO add your handling code here:
-}//GEN-LAST:event_y2ActionPerformed
-
-    private void n1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_n1ActionPerformed
-    // TODO add your handling code here:
-}//GEN-LAST:event_n1ActionPerformed
-
-    private void y1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_y1ActionPerformed
-    // TODO add your handling code here:
-}//GEN-LAST:event_y1ActionPerformed
+        
+    /**
+     * Setting all the ui elements to match their respective prefences.
+     * This is called in the corresponding UMLOptionsPanel's update method.
+     */
+    public void load() {
+        
+        if (NbPreferences.forModule(JavaPlatformOptionsPanel.class).getBoolean("dummy", true)) {
+            y1.setSelected(true);
+        } else {
+            n1.setSelected(true);
+        }
+        
+        if (NbPreferences.forModule(JavaPlatformOptionsPanel.class).getBoolean("dummy", true)) {
+            y2.setSelected(true);
+        } else {
+            n2.setSelected(true);
+        }
+        
+        if (NbPreferences.forModule(JavaPlatformOptionsPanel.class).getBoolean("dummy", true)) {
+            y3.setSelected(true);
+        } else {
+            n3.setSelected(true);
+        }
+        
+        if (NbPreferences.forModule(JavaPlatformOptionsPanel.class).getBoolean("dummy", true)) {
+            y4.setSelected(true);
+        } else {
+            n4.setSelected(true);
+        }
+        
+        if (NbPreferences.forModule(JavaPlatformOptionsPanel.class).getBoolean("dummy", true)) {
+            y5.setSelected(true);
+        } else {
+            n5.setSelected(true);
+        }
+        
+        if (NbPreferences.forModule(JavaPlatformOptionsPanel.class).getBoolean("dummy", true)) {
+            y6.setSelected(true);
+        } else {
+            n6.setSelected(true);
+        }
+        
+        if (NbPreferences.forModule(JavaPlatformOptionsPanel.class).getBoolean("dummy", true)) {
+            y7.setSelected(true);
+        } else {
+            n7.setSelected(true);
+        }
+        
+        if (NbPreferences.forModule(JavaPlatformOptionsPanel.class).getBoolean("dummy", true)) {
+            y8.setSelected(true);
+        } else {
+            n8.setSelected(true);
+        }
+        
+    }
     
+    public void store() {
+        
+        NbPreferences.forModule(JavaPlatformOptionsPanel.class).putBoolean("dummy", y1.isSelected());
+        NbPreferences.forModule(JavaPlatformOptionsPanel.class).putBoolean("dummy", y2.isSelected());
+        NbPreferences.forModule(JavaPlatformOptionsPanel.class).putBoolean("dummy", y3.isSelected());
+        NbPreferences.forModule(JavaPlatformOptionsPanel.class).putBoolean("dummy", y4.isSelected());
+        NbPreferences.forModule(JavaPlatformOptionsPanel.class).putBoolean("dummy", y5.isSelected());
+        NbPreferences.forModule(JavaPlatformOptionsPanel.class).putBoolean("dummy", y6.isSelected());
+        NbPreferences.forModule(JavaPlatformOptionsPanel.class).putBoolean("dummy", y7.isSelected());
+        NbPreferences.forModule(JavaPlatformOptionsPanel.class).putBoolean("dummy", y8.isSelected());
+        
+    }
+        
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox jComboBox1;

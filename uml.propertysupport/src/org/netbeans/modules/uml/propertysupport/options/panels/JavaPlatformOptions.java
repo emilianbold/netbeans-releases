@@ -17,11 +17,8 @@
  */
 package org.netbeans.modules.uml.propertysupport.options.panels;
 
-import java.awt.BorderLayout;
 import java.util.Hashtable;
-import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JPanel;
 import org.netbeans.modules.uml.propertysupport.options.api.UMLOptionsPanel;
 import org.openide.util.NbBundle;
 
@@ -31,14 +28,18 @@ import org.openide.util.NbBundle;
  */
 public class JavaPlatformOptions implements UMLOptionsPanel {
     
-    private JComponent form = null ;
+    private JavaPlatformOptionsPanel form = null ;
 
     
     public JavaPlatformOptions() {
     }
     
+    public void update() {
+        form.load();
+    }
+    
     public void applyChanges() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        form.store() ;
     }
     
     public JComponent create() {
@@ -61,5 +62,7 @@ public class JavaPlatformOptions implements UMLOptionsPanel {
     public String getDisplayName() {
         return NbBundle.getMessage (JavaPlatformOptions.class, "JAVA_PLATFORM");
     }
+
+    
     
 }

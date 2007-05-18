@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -20,6 +20,7 @@
 package org.netbeans.modules.uml.propertysupport.options.panels;
 
 import javax.swing.JCheckBox;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -33,6 +34,60 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
         
     }
     
+    /**
+     * Setting all the ui elements to match their respective prefences.
+     * This is called in the corresponding UMLOptionsPanel's update method.
+     */
+    public void load() {
+     
+        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("dummy", true)) {
+            allowLengthyCB.setSelected(true);
+        }
+        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("dummy", true)) {
+            autoCreateCB.setSelected(true);
+        }
+        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("dummy", true)) {
+            deleteCombinedFragCB.setSelected(true);
+        }
+        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("dummy", true)) {
+            deleteConnectorCB.setSelected(true);
+        }
+        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("dummy", true)) {
+            deleteFileCB.setSelected(true);
+        }
+        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("dummy", true)) {
+            filterWarningCB.setSelected(true);
+        }
+        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("dummy", true)) {
+            modifyCB.setSelected(true);
+        }
+        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("dummy", true)) {
+            moveInvokedCB.setSelected(true);
+        }
+        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("dummy", true)) {
+            overwriteCB.setSelected(true);
+        }
+        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("dummy", true)) {
+            transformCB.setSelected(true);
+        }
+        
+    }
+    
+    public void store() {
+        
+        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("dummy", allowLengthyCB.isSelected());
+        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("dummy", autoCreateCB.isSelected());
+        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("dummy", deleteCombinedFragCB.isSelected());
+        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("dummy", deleteConnectorCB.isSelected());
+        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("dummy", deleteFileCB.isSelected());
+        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("dummy", filterWarningCB.isSelected());
+        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("dummy", modifyCB.isSelected());
+        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("dummy", moveInvokedCB.isSelected());
+        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("dummy", overwriteCB.isSelected());
+        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("dummy", transformCB.isSelected());
+        
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -42,16 +97,16 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         dialogListPanel = new javax.swing.JPanel();
-        jCheckBox1 = new javax.swing.JCheckBox();
-        jCheckBox2 = new javax.swing.JCheckBox();
-        jCheckBox3 = new javax.swing.JCheckBox();
-        jCheckBox4 = new javax.swing.JCheckBox();
-        jCheckBox5 = new javax.swing.JCheckBox();
-        jCheckBox6 = new javax.swing.JCheckBox();
-        jCheckBox7 = new javax.swing.JCheckBox();
-        jCheckBox8 = new javax.swing.JCheckBox();
-        jCheckBox9 = new javax.swing.JCheckBox();
-        jCheckBox10 = new javax.swing.JCheckBox();
+        deleteFileCB = new javax.swing.JCheckBox();
+        filterWarningCB = new javax.swing.JCheckBox();
+        transformCB = new javax.swing.JCheckBox();
+        modifyCB = new javax.swing.JCheckBox();
+        overwriteCB = new javax.swing.JCheckBox();
+        deleteConnectorCB = new javax.swing.JCheckBox();
+        autoCreateCB = new javax.swing.JCheckBox();
+        deleteCombinedFragCB = new javax.swing.JCheckBox();
+        moveInvokedCB = new javax.swing.JCheckBox();
+        allowLengthyCB = new javax.swing.JCheckBox();
         buttonPanel = new javax.swing.JPanel();
         deselectButton = new javax.swing.JButton();
         jButton1 = new javax.swing.JButton();
@@ -61,46 +116,51 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
 
         checkboxes = new JCheckBox[10];
 
-        checkboxes[0] = jCheckBox1 ;
-        checkboxes[1] = jCheckBox2 ;
-        checkboxes[2] = jCheckBox3 ;
-        checkboxes[3] = jCheckBox4 ;
-        checkboxes[4] = jCheckBox5 ;
-        checkboxes[5] = jCheckBox6 ;
-        checkboxes[6] = jCheckBox7 ;
-        checkboxes[7] = jCheckBox8 ;
-        checkboxes[8] = jCheckBox9 ;
-        checkboxes[9] = jCheckBox10 ;
+        checkboxes[0] = allowLengthyCB ;
+        checkboxes[1] = autoCreateCB ;
+        checkboxes[2] = deleteCombinedFragCB ;
+        checkboxes[3] = deleteConnectorCB ;
+        checkboxes[4] = deleteFileCB ;
+        checkboxes[5] = filterWarningCB ;
+        checkboxes[6] = modifyCB ;
+        checkboxes[7] = moveInvokedCB ;
+        checkboxes[8] = overwriteCB ;
+        checkboxes[9] = transformCB ;
 
-        jCheckBox1.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jCheckBox1.text_1")); // NOI18N
-        jCheckBox1.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        deleteFileCB.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jCheckBox1.text_1")); // NOI18N
+        deleteFileCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        jCheckBox2.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jCheckBox2.text_1")); // NOI18N
-        jCheckBox2.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        filterWarningCB.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jCheckBox2.text_1")); // NOI18N
+        filterWarningCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        jCheckBox3.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jCheckBox3.text_1")); // NOI18N
-        jCheckBox3.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        transformCB.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jCheckBox3.text_1")); // NOI18N
+        transformCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        transformCB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                transformCBActionPerformed(evt);
+            }
+        });
 
-        jCheckBox4.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jCheckBox4.text_1")); // NOI18N
-        jCheckBox4.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        modifyCB.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jCheckBox4.text_1")); // NOI18N
+        modifyCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        jCheckBox5.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jCheckBox5.text_1")); // NOI18N
-        jCheckBox5.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        overwriteCB.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jCheckBox5.text_1")); // NOI18N
+        overwriteCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        jCheckBox6.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jCheckBox6.text_1")); // NOI18N
-        jCheckBox6.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        deleteConnectorCB.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jCheckBox6.text_1")); // NOI18N
+        deleteConnectorCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        jCheckBox7.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jCheckBox7.text_1")); // NOI18N
-        jCheckBox7.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        autoCreateCB.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jCheckBox7.text_1")); // NOI18N
+        autoCreateCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        jCheckBox8.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jCheckBox8.text")); // NOI18N
-        jCheckBox8.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        deleteCombinedFragCB.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jCheckBox8.text")); // NOI18N
+        deleteCombinedFragCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        jCheckBox9.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jCheckBox9.text")); // NOI18N
-        jCheckBox9.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        moveInvokedCB.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jCheckBox9.text")); // NOI18N
+        moveInvokedCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        jCheckBox10.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jCheckBox10.text")); // NOI18N
-        jCheckBox10.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        allowLengthyCB.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jCheckBox10.text")); // NOI18N
+        allowLengthyCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         org.jdesktop.layout.GroupLayout dialogListPanelLayout = new org.jdesktop.layout.GroupLayout(dialogListPanel);
         dialogListPanel.setLayout(dialogListPanelLayout);
@@ -109,40 +169,40 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
             .add(dialogListPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(dialogListPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jCheckBox1)
-                    .add(jCheckBox2)
-                    .add(jCheckBox3)
-                    .add(jCheckBox4)
-                    .add(jCheckBox5)
-                    .add(jCheckBox6)
-                    .add(jCheckBox7)
-                    .add(jCheckBox8)
-                    .add(jCheckBox9)
-                    .add(jCheckBox10))
+                    .add(deleteFileCB)
+                    .add(filterWarningCB)
+                    .add(transformCB)
+                    .add(modifyCB)
+                    .add(overwriteCB)
+                    .add(deleteConnectorCB)
+                    .add(autoCreateCB)
+                    .add(deleteCombinedFragCB)
+                    .add(moveInvokedCB)
+                    .add(allowLengthyCB))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         dialogListPanelLayout.setVerticalGroup(
             dialogListPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(dialogListPanelLayout.createSequentialGroup()
-                .add(jCheckBox1)
+                .add(deleteFileCB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jCheckBox2)
+                .add(filterWarningCB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jCheckBox3)
+                .add(transformCB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jCheckBox4)
+                .add(modifyCB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jCheckBox5)
+                .add(overwriteCB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jCheckBox6)
+                .add(deleteConnectorCB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jCheckBox7)
+                .add(autoCreateCB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jCheckBox8)
+                .add(deleteCombinedFragCB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jCheckBox9)
+                .add(moveInvokedCB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jCheckBox10))
+                .add(allowLengthyCB))
         );
 
         deselectButton.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jButton1.text")); // NOI18N
@@ -207,7 +267,11 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
                 .addContainerGap(31, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-
+    
+    private void transformCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_transformCBActionPerformed
+        // TODO add your handling code here:
+}//GEN-LAST:event_transformCBActionPerformed
+    
 private void deselectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deselectButtonActionPerformed
     deselectAll() ;
 }//GEN-LAST:event_deselectButtonActionPerformed
@@ -215,7 +279,7 @@ private void deselectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
 private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
     selectAll() ;
 }//GEN-LAST:event_jButton1ActionPerformed
-    
+
 private void selectAll() {
     for (JCheckBox box: checkboxes) {
         box.setSelected(true);
@@ -231,24 +295,24 @@ private void deselectAll() {
 }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox allowLengthyCB;
+    private javax.swing.JCheckBox autoCreateCB;
     private javax.swing.JPanel buttonPanel;
+    private javax.swing.JCheckBox deleteCombinedFragCB;
+    private javax.swing.JCheckBox deleteConnectorCB;
+    private javax.swing.JCheckBox deleteFileCB;
     private javax.swing.JButton deselectButton;
     private JCheckBox[] checkboxes = null ;
     private javax.swing.JPanel dialogListPanel;
+    private javax.swing.JCheckBox filterWarningCB;
     private javax.swing.JButton jButton1;
-    private javax.swing.JCheckBox jCheckBox1;
-    private javax.swing.JCheckBox jCheckBox10;
-    private javax.swing.JCheckBox jCheckBox2;
-    private javax.swing.JCheckBox jCheckBox3;
-    private javax.swing.JCheckBox jCheckBox4;
-    private javax.swing.JCheckBox jCheckBox5;
-    private javax.swing.JCheckBox jCheckBox6;
-    private javax.swing.JCheckBox jCheckBox7;
-    private javax.swing.JCheckBox jCheckBox8;
-    private javax.swing.JCheckBox jCheckBox9;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JLabel mainLabel;
+    private javax.swing.JCheckBox modifyCB;
+    private javax.swing.JCheckBox moveInvokedCB;
+    private javax.swing.JCheckBox overwriteCB;
+    private javax.swing.JCheckBox transformCB;
     // End of variables declaration//GEN-END:variables
     
 }

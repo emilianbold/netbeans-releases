@@ -58,9 +58,6 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                 <file name="JavaPlatformOptions.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.propertysupport.options.panels.JavaPlatformOptions"/>
                 </file>
-                <file name="FindDialogOptions.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.propertysupport.options.panels.FindDialogOptions"/>
-                </file>
                 <file name="ShowMeDialogsList.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.propertysupport.options.panels.ShowMeDialogsList"/>
                 </file>

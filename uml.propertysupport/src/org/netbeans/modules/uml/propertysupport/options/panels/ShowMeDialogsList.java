@@ -33,6 +33,10 @@ public class ShowMeDialogsList implements UMLOptionsPanel {
     public ShowMeDialogsList() {
     }
     
+    public void update() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
     public void applyChanges() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -55,5 +59,6 @@ public class ShowMeDialogsList implements UMLOptionsPanel {
     public String getDisplayName() {
         return NbBundle.getMessage(ShowMeDialogsList.class, "Dialogs") ;
     }
+    
     
 }

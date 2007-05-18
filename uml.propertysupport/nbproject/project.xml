@@ -104,10 +104,10 @@
                 <friend>org.netbeans.modules.uml.kit</friend>
                 <friend>org.netbeans.modules.uml.project</friend>
                 <package>org.netbeans.modules.uml.propertysupport</package>
-                <package>org.netbeans.modules.uml.propertysupport.customizers</package>
                 <package>org.netbeans.modules.uml.propertysupport.nodes</package>
                 <package>org.netbeans.modules.uml.propertysupport.options</package>
                 <package>org.netbeans.modules.uml.propertysupport.options.api</package>
+                <package>org.netbeans.modules.uml.propertysupport.options.panels</package>
             </friend-packages>
         </data>
     </configuration>

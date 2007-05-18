@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -29,27 +29,31 @@ import javax.swing.JComponent;
 public interface UMLOptionsPanel {
     
     /**
-     * 
+     *
      */
     public void applyChanges() ;
     /**
-     * 
-     * @return 
+     *
+     */
+    public void update() ;
+    /**
+     *
+     * @return
      */
     public JComponent create() ;
     /**
-     * 
-     * @return 
+     *
+     * @return
      */
     public Hashtable getCurrentValues() ;
     /**
-     * 
-     * @return 
+     *
+     * @return
      */
     public Hashtable getUpdatedValues() ;
     /**
-     * 
-     * @return 
+     *
+     * @return
      */
     public String getDisplayName() ;
     
