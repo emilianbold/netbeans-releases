@@ -30,10 +30,12 @@ import java.nio.charset.CharsetEncoder;
 import java.nio.charset.IllegalCharsetNameException;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
+import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.ListCellRenderer;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import javax.swing.plaf.UIResource;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.openide.DialogDescriptor;
@@ -146,12 +148,33 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
     }
     
     
-    private static class EncodingRenderer extends DefaultListCellRenderer {
+    private static class EncodingRenderer extends JLabel implements ListCellRenderer, UIResource {
+        
+        public EncodingRenderer() {
+            setOpaque(true);
+        }
         
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            assert value instanceof Charset; 
-            return super.getListCellRendererComponent(list, ((Charset)value).displayName(), index, isSelected, cellHasFocus);
+            assert value instanceof Charset;
+            setName("ComboBox.listRenderer"); // NOI18N
+            setText(((Charset) value).displayName());
+            setIcon(null);
+            if (isSelected) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());             
+            } else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+            return this;
         }
+        
+        @Override
+        public String getName() {
+            String name = super.getName();
+            return name == null ? "ComboBox.renderer" : name; // NOI18N
+        }
+        
     }
     
     private static class EncodingModel extends DefaultComboBoxModel {
