@@ -138,8 +138,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private StackFrame      altCSF = null;  //PATCH 48174
 
     private boolean                     doContinue = true; // Whether resume() will actually resume
-    private Boolean                     singleThreadStepResumeDecission = null;
-    private Boolean                     stepInterruptByBptResumeDecission = null;
+    private Boolean                     singleThreadStepResumeDecision = null;
+    private Boolean                     stepInterruptByBptResumeDecision = null;
 
     // init ....................................................................
 
@@ -1175,20 +1175,20 @@ public class JPDADebuggerImpl extends JPDADebugger {
         return expressionPool;
     }
     
-    synchronized void setSingleThreadStepResumeDecission(Boolean decission) {
-        singleThreadStepResumeDecission = decission;
+    synchronized void setSingleThreadStepResumeDecision(Boolean decision) {
+        singleThreadStepResumeDecision = decision;
     }
     
-    synchronized Boolean getSingleThreadStepResumeDecission() {
-        return singleThreadStepResumeDecission;
+    synchronized Boolean getSingleThreadStepResumeDecision() {
+        return singleThreadStepResumeDecision;
     }
     
-    public synchronized void setStepInterruptByBptResumeDecission(Boolean decission) {
-        stepInterruptByBptResumeDecission = decission;
+    public synchronized void setStepInterruptByBptResumeDecision(Boolean decision) {
+        stepInterruptByBptResumeDecision = decision;
     }
     
-    public synchronized Boolean getStepInterruptByBptResumeDecission() {
-        return stepInterruptByBptResumeDecission;
+    public synchronized Boolean getStepInterruptByBptResumeDecision() {
+        return stepInterruptByBptResumeDecision;
     }
 
 
