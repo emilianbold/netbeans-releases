@@ -73,6 +73,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ModifiersTest("testAnnRename"));
 //        suite.addTest(new ModifiersTest("testAddArrayValue"));
 //        suite.addTest(new ModifiersTest("testRenameAnnotationAttribute"));
+//        suite.addTest(new ModifiersTest("testMakeClassAbstract"));
         return suite;
     }
 
@@ -631,6 +632,66 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 AnnotationTree annotationTree = mods.getAnnotations().get(0);
                 AssignmentTree assignementTree = (AssignmentTree) annotationTree.getArguments().get(0);
                 workingCopy.rewrite(assignementTree.getVariable(), make.Identifier("value"));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    // #95354
+    public void testMakeClassAbstract() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package org.netbeans.test.java.hints;\n" +
+            "\n" +
+            "@Test1 @Test2(test=\"uuu\") class MakeClassAbstract3 {\n" +
+            "\n" +
+            "    public MakeClassAbstract3() {\n" +
+            "    }\n" +
+        "\n" +
+            "    public abstract void test();\n" +
+            "\n" +
+            "}\n" +
+            "\n" +
+            "@interface Test1 {}\n" +
+            "\n" +
+            "@interface Test2 {\n" +
+            "    public String test();\n" +
+            "}\n"
+        );
+        String golden =
+            "package org.netbeans.test.java.hints;\n" +
+            "\n" +
+            "@Test1 @Test2(test=\"uuu\") abstract class MakeClassAbstract3 {\n" +
+            "\n" +
+            "    public MakeClassAbstract3() {\n" +
+            "    }\n" +
+            "\n" +
+            "    public abstract void test();\n" +
+            "\n" +
+            "}\n" +
+            "\n" +
+            "@interface Test1 {}\n" +
+            "\n" +
+            "@interface Test2 {\n" +
+            "    public String test();\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                ModifiersTree mods = clazz.getModifiers();
+                Set<Modifier> flags = new HashSet<Modifier>(mods.getFlags());
+                flags.add(Modifier.ABSTRACT);
+                workingCopy.rewrite(mods, make.Modifiers(flags, mods.getAnnotations()));
             }
             
             public void cancel() {

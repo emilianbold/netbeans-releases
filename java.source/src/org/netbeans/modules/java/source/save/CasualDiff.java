@@ -1182,37 +1182,38 @@ public class CasualDiff {
         return bounds[1];
     }
     
-    protected int diffModifiers(JCModifiers oldT, JCModifiers newT, JCTree parent, int lastPrinted) {
-        int localPointer = lastPrinted;
+    protected int diffModifiers(JCModifiers oldT, JCModifiers newT, JCTree parent, int localPointer) {
         if (oldT == newT) {
             // modifiers wasn't changed, return the position lastPrinted.
             return localPointer;
         }
-        int result = endPos(oldT.annotations);
-        int oldPos = oldT.pos != Position.NOPOS ? getOldPos(oldT) : getOldPos(parent);
+        int annotationsEnd = oldT.annotations.nonEmpty() ? endPos(oldT.annotations) : localPointer;
+        int startPos = oldT.pos != Position.NOPOS ? getOldPos(oldT) : getOldPos(parent);
         if (listsMatch(oldT.annotations, newT.annotations)) {
-            copyTo(localPointer, localPointer = oldPos);
-            if (result > 0) {
-                copyTo(localPointer, localPointer = result);
-            } else {
-            }
+            copyTo(localPointer, localPointer = (annotationsEnd != localPointer ? annotationsEnd : startPos));
         } else {
-            copyTo(localPointer, oldPos);
+            copyTo(localPointer, startPos);
             PositionEstimator est = EstimatorFactory.annotations(((ModifiersTree) oldT).getAnnotations(), ((ModifiersTree) newT).getAnnotations(), workingCopy);
-            int[] res = diffList(oldT.annotations, newT.annotations, oldPos, est, Measure.DEFAULT, printer);
+            int[] res = diffList(oldT.annotations, newT.annotations, startPos, est, Measure.DEFAULT, printer);
             localPointer = res[1];
         }
         if (oldT.flags != newT.flags) {
-            int endPos = endPos(oldT);
-            if (endPos > 0) {
-                printer.print(newT.toString().trim());
-                localPointer = endPos;
+            if (localPointer == startPos) {
+                // no annotation printed, do modifiers print immediately
+                printer.printFlags(newT.flags, oldT.getFlags().isEmpty() ? true : false);
+                localPointer = endPos(oldT) > 0 ? endPos(oldT) : localPointer;
             } else {
-                printer.print(newT.toString());
+                if (!oldT.getFlags().isEmpty()) localPointer = endPos(oldT);
+                tokenSequence.move(localPointer);
+                PositionEstimator.moveToSrcRelevant(tokenSequence, Direction.FORWARD);
+                copyTo(localPointer, localPointer = tokenSequence.offset());
+                printer.printFlags(newT.flags);
+                localPointer = tokenSequence.offset();
             }
-        }
-        if (endPos(oldT) > 0) {
-            copyTo(localPointer, localPointer = endPos(oldT));
+        } else {
+            if (endPos(oldT) > 0) {
+                copyTo(localPointer, localPointer = endPos(oldT));
+            }
         }
         return localPointer;
     }

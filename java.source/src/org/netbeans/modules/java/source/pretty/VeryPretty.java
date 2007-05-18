@@ -1351,11 +1351,11 @@ public final class VeryPretty extends JCTree.Visitor {
         }
     }
 
-    private void printFlags(long flags) {
+    public void printFlags(long flags) {
         printFlags(flags, true);
     }
     
-    private void printFlags(long flags, boolean addSpace) {
+    public void printFlags(long flags, boolean addSpace) {
 	print(treeinfo.flagNames(flags));
         if ((flags & StandardFlags) != 0) {
             if (cs.placeNewLineAfterModifiers())
