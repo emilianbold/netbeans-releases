@@ -29,6 +29,7 @@ import javax.swing.ButtonModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.ListCellRenderer;
+import javax.swing.SwingUtilities;
 
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
@@ -364,8 +365,12 @@ public class WebProjectProperties {
             if (newFrameworks != null) {
                 for(int i = 0; i < newFrameworks.size(); i++)
                     ((WebFrameworkProvider) newFrameworks.get(i)).extend(project.getAPIWebModule());
-
                 newFrameworks.clear();
+                SwingUtilities.invokeLater(new Runnable(){
+                    public void run() {
+                        project.fixRecommendedAndPrivilegedTemplates();
+                    }
+                });
             }
             
             //prevent deadlock reported in the issue #54643
@@ -384,6 +389,7 @@ public class WebProjectProperties {
         catch ( IOException ex ) {
             ErrorManager.getDefault().notify( ex );
         }
+        
     }
 
     private void storeProperties() throws IOException {

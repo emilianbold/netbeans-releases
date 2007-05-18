@@ -32,7 +32,7 @@ public class ProjectWebModuleProvider implements WebModuleProvider {
     public org.netbeans.modules.web.api.webmodule.WebModule findWebModule (org.openide.filesystems.FileObject file) {
         Project project = FileOwnerQuery.getOwner (file);
         if (project != null) {
-            WebModuleProvider provider = (WebModuleProvider) project.getLookup ().lookup (WebModuleProvider.class);
+            WebModuleProvider provider = project.getLookup ().lookup (WebModuleProvider.class);
             if (provider != null) {
                 return provider.findWebModule (file);
             }

@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.web.api.webmodule;
 
-import java.util.Collections;
+import java.net.URL;
 import java.util.Iterator;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.metadata.ClassPathSupport;
@@ -61,7 +61,7 @@ public final class WebModule implements MetadataUnit {
     
     private WebModuleImplementation impl;
     private static final Lookup.Result implementations =
-        Lookup.getDefault().lookup(new Lookup.Template(WebModuleProvider.class));
+            Lookup.getDefault().lookupResult(WebModuleProvider.class);
     
     static  {
         WebModuleAccessor.DEFAULT = new WebModuleAccessor() {
@@ -178,7 +178,7 @@ public final class WebModule implements MetadataUnit {
                 ClassPath.getClassPath(fo, ClassPath.COMPILE)
             });
         } else {
-            return org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(Collections.emptyList());
+            return org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(new URL[0]);
         }
     }
 }

@@ -47,6 +47,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
+import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -100,6 +101,7 @@ import org.netbeans.modules.web.project.classpath.WebProjectClassPathModifier;
 import org.netbeans.modules.web.project.classpath.WebProjectLibrariesModifierImpl;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSVersionProvider;
 import org.netbeans.modules.web.project.ui.customizer.CustomizerProviderImpl;
+import org.netbeans.modules.web.spi.webmodule.WebPrivilegedTemplates;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
@@ -786,6 +788,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                 BrokenReferencesSupport.showAlert();
             }
             webPagesFileWatch.init();
+            fixRecommendedAndPrivilegedTemplates();
         }
 
         protected void projectClosed() {
@@ -908,6 +911,43 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         "Templates/JSP_Servlet/webXml",     // NOI18N  --- 
     };
     
+    String[] privilegedTemplatesEE5 = null;
+    String[] privilegedTemplates = null;
+    
+    // Path where instances of privileged templates are registered
+    private static final String WEBTEMPLATE_PATH = "j2ee/webtier/templates"; //NOI18N
+    
+    public void fixRecommendedAndPrivilegedTemplates(){
+        ArrayList<String>templatesEE5 = new ArrayList(PRIVILEGED_NAMES_EE5.length + 1);
+        ArrayList<String>templates = new ArrayList(PRIVILEGED_NAMES.length + 1);
+
+        // how many templates are added
+        int countTemplate = 0;
+        Collection <WebPrivilegedTemplates> pfTemplates = 
+                (Collection<WebPrivilegedTemplates>)Lookups.forPath(WEBTEMPLATE_PATH).lookupAll(WebPrivilegedTemplates.class);
+        
+        for (WebPrivilegedTemplates webPrivililegedTemplates : pfTemplates) {
+            String[] addedTemplates = webPrivililegedTemplates.getPrivilegedTemplates(apiWebModule);
+            if (addedTemplates != null && addedTemplates.length > 0){
+                countTemplate = countTemplate + addedTemplates.length;
+                List addedList = Arrays.asList(addedTemplates);
+                templatesEE5.addAll(addedList);
+                templates.addAll(addedList);
+            }
+        }
+
+        if(countTemplate > 0){
+            templatesEE5.addAll(Arrays.asList(PRIVILEGED_NAMES_EE5));
+            privilegedTemplatesEE5 = templatesEE5.toArray(new String[templatesEE5.size()]);
+            templates.addAll(Arrays.asList(PRIVILEGED_NAMES));
+            privilegedTemplates = templates.toArray(new String[templates.size()]);
+        }
+        else {
+            privilegedTemplatesEE5 = PRIVILEGED_NAMES_EE5;
+            privilegedTemplates = PRIVILEGED_NAMES;
+        }
+    }
+    
     private final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
         RecommendedTemplatesImpl () {
         }
@@ -922,8 +962,8 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             if (isArchive) {
                 retVal = TYPES_ARCHIVE;
             } else {
-                retVal = TYPES;
-            }
+                    retVal = TYPES;
+                }
            
             return retVal;
         }
@@ -934,9 +974,9 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             if (isArchive) {
                 retVal = PRIVILEGED_NAMES_ARCHIVE;
             } else if (isEE5) {
-                retVal = PRIVILEGED_NAMES_EE5;
+                retVal = privilegedTemplatesEE5;
             } else {
-                retVal = PRIVILEGED_NAMES;
+                retVal = privilegedTemplates;
             }
             return retVal;
         }
@@ -952,7 +992,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                 checked = true;
             }
         }
-        
+
     }
 
     public class CopyOnSaveSupport extends FileChangeAdapter implements PropertyChangeListener {

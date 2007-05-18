@@ -35,7 +35,7 @@ import org.netbeans.modules.web.spi.webmodule.RequestParametersProvider;
 public final class RequestParametersQuery {
 
     private static final Lookup.Result implementations =
-        Lookup.getDefault().lookup(new Lookup.Template(RequestParametersProvider.class));
+        Lookup.getDefault().lookup(new Lookup.Template<RequestParametersProvider>(RequestParametersProvider.class));
     
     /** Return the part of URL for access the file. It can include the query string.
      * @return path fom the context.
