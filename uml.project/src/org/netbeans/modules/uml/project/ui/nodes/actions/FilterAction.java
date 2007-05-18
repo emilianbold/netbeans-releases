@@ -20,10 +20,8 @@
 
 package org.netbeans.modules.uml.project.ui.nodes.actions;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.uml.core.coreapplication.IPreferenceManager2;
 import org.netbeans.modules.uml.ui.controls.filter.IFilterDialog;
 import org.netbeans.modules.uml.ui.support.ErrorDialogIconKind;
-import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.SimpleQuestionDialogKind;
 import org.netbeans.modules.uml.ui.support.SimpleQuestionDialogResultKind;
 import org.netbeans.modules.uml.ui.support.SwingPreferenceQuestionDialog;
@@ -33,9 +31,11 @@ import org.netbeans.modules.uml.ui.swing.projecttree.JFilterDialog;
 import org.netbeans.modules.uml.project.UMLProjectModule;
 import org.netbeans.modules.uml.project.ui.nodes.ModelRootNodeCookie;
 import javax.swing.tree.DefaultTreeModel;
+import org.netbeans.modules.uml.propertysupport.options.panels.ShowMeDialogsListPanel;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.actions.CookieAction;
 import org.openide.windows.WindowManager;
 
@@ -155,10 +155,10 @@ public class FilterAction extends CookieAction
         String path = ""; // NOI18N
         String name = "FilterCollapseNodesWarning"; // NOI18N
         
-        // the preference may not exist for whater reason, but show
-        //  the filter dialog without the warning notice
-        if (getPreferenceValue (key, path, name).equals (""))
-            return true;
+        //Kris Richards - This is a "show me dialog" preference. Need to get the 
+        // preference value for the propertysupport module.
+        boolean on = NbPreferences.forModule (ShowMeDialogsListPanel.class).getBoolean ("UML_ShowMe_Dont_Show_Filter_Warning_Dialog", true);
+        if (! on) return true ;
         
         int result = 0;
         boolean userClickedYes = true;
@@ -199,15 +199,4 @@ public class FilterAction extends CookieAction
         return userClickedYes;
     }
     
-    private String getPreferenceValue (
-            String prefKey, String prefPath, String prefName)
-    {
-        String sVal = "";
-        IPreferenceManager2 pManager = ProductHelper.getPreferenceManager ();
-        
-        if (pManager != null)
-            sVal = pManager.getPreferenceValue (prefKey, prefPath, prefName);
-        
-        return sVal;
-    }
 }

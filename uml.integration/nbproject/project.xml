@@ -23,23 +23,6 @@ Microsystems, Inc. All Rights Reserved.
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.uml.integration</code-name-base>
             <module-dependencies>
-                <!--dependency>
-                    <code-name-base>javax.jmi.reflect</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.5.1</specification-version>
-                    </run-dependency>
-                </dependency-->
-                <dependency>
-                    <code-name-base>org.netbeans.modules.uml.dom4jlib</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.1</specification-version>
-                    </run-dependency>
-                </dependency>
                 <dependency>
                     <code-name-base>org.jdesktop.layout</code-name-base>
                     <build-prerequisite/>
@@ -58,15 +41,6 @@ Microsystems, Inc. All Rights Reserved.
                         <specification-version>1.8.1</specification-version>
                     </run-dependency>
                 </dependency>
-                <!--dependency>
-                    <code-name-base>org.netbeans.api.mdr</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.2.1</specification-version>
-                    </run-dependency>
-                </dependency-->
                 <dependency>
                     <code-name-base>org.netbeans.api.progress</code-name-base>
                     <build-prerequisite/>
@@ -76,24 +50,21 @@ Microsystems, Inc. All Rights Reserved.
                         <specification-version>1.5.1</specification-version>
                     </run-dependency>
                 </dependency>
-                <!--dependency>
-                    <code-name-base>org.netbeans.jmi.javamodel</code-name-base>
+                <dependency>
+                    <code-name-base>org.netbeans.libs.javacapi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
-                    <run-dependency>
-                        <release-version>2</release-version>
-                        <specification-version>1.18.1</specification-version>
-                    </run-dependency>
-                </dependency-->
-                <!--dependency>
-                    <code-name-base>org.netbeans.modules.java</code-name-base>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.java.editor</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.23.1.2.2.2</specification-version>
+                        <implementation-version/>
                     </run-dependency>
-                </dependency-->
+                </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.java.project</code-name-base>
                     <build-prerequisite/>
@@ -103,15 +74,14 @@ Microsystems, Inc. All Rights Reserved.
                         <specification-version>1.8.1</specification-version>
                     </run-dependency>
                 </dependency>
-                <!--dependency>
-                    <code-name-base>org.netbeans.modules.javacore</code-name-base>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.java.source</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.15.1.2.2</specification-version>
+                        <specification-version>0.3.0</specification-version>
                     </run-dependency>
-                </dependency-->
+                </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.project.ant</code-name-base>
                     <build-prerequisite/>
@@ -139,14 +109,6 @@ Microsystems, Inc. All Rights Reserved.
                         <specification-version>1.13.1.5</specification-version>
                     </run-dependency>
                 </dependency>
-                <!--dependency>
-                    <code-name-base>org.netbeans.modules.refactoring</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                    </run-dependency>
-                </dependency-->
                 <dependency>
                     <code-name-base>org.netbeans.modules.uml</code-name-base>
                     <build-prerequisite/>
@@ -157,12 +119,29 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.uml.dom4jlib</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.uml.project</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.uml.propertysupport</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -245,37 +224,6 @@ Microsystems, Inc. All Rights Reserved.
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>6.5.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <!--dependency>
-                    <code-name-base>org.openide.src</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.6.1</specification-version>
-                    </run-dependency>
-                </dependency-->
-                <dependency>
-                    <code-name-base>org.netbeans.modules.java.source</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>0.3.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.libs.javacapi</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.java.editor</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <implementation-version/>
                     </run-dependency>
                 </dependency>
                 <dependency>

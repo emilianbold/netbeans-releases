@@ -200,4 +200,15 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
             <attr name="originalFile" stringvalue="Actions/UML/Keyboard/AddToDiagram/org-netbeans-modules-uml-integration-netbeans-actions-AddToDiagramAction.instance"/>
         </file>
     </folder>
+    
+    <folder name="UML">
+        <folder name="UMLOptions">
+            <folder name="Misc">
+                <file name="FindDialogOptions.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.integration.options.FindDialogOptions"/>
+                </file>
+            </folder>
+            
+        </folder>
+    </folder>
 </filesystem>

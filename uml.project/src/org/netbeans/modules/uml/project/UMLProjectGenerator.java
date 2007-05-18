@@ -276,17 +276,12 @@ public class UMLProjectGenerator
             if (umlProjectType==NewUMLProjectWizardIterator.TYPE_UML ||
                     umlProjectType==NewUMLProjectWizardIterator.TYPE_UML_JAVA)
             {
-                IPreferenceManager2 prefMgr = ProductHelper.getPreferenceManager();
-                String pref = prefMgr.getPreferenceValue(
-                        "Default|NewProject|QueryForNewDiagram"); // NOI18N
-                
-                if ("Yes".equals(pref) || "PSK_YES".equals(pref)) // NOI18N
-                {
-//					SwingUtilities.invokeLater(
-//						new Runnable()
-//						{
-//							public void run()
-//							{
+                //Kris Richards - options no longer available. Default to yes, so removed
+                // condition also.
+//                IPreferenceManager2 prefMgr = ProductHelper.getPreferenceManager();
+//                String pref = prefMgr.getPreferenceValue(
+//                        "Default|NewProject|QueryForNewDiagram"); // NOI18N
+
                     IDiagram newDiagram =
                             ProductHelper.getProductDiagramManager()
                             .newDiagramDialog(
@@ -302,9 +297,7 @@ public class UMLProjectGenerator
                           newDiagram.setIsDirty(true);
                           newDiagram.save();
                     }
-//							}
-//						});
-                }
+
             }
         }
         

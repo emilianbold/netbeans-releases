@@ -657,11 +657,8 @@ public class UMLDiagramNode extends UMLElementNode
     
     private boolean userConfirmedSave(String name, String dialogMsg)
     {
-        String prefVal = ProductHelper.getPreferenceManager()
-        .getPreferenceValue("", "PromptToSaveDiagram"); // NOI18N
-        
-        if (("PSK_NO").equals(prefVal))
-            return true;
+        //Kris Richards - this preference is now always "PSK_YES"
+
         
         String title = NbBundle.getMessage(UMLDiagramNode.class,
                 "LBL_DIALOG_TITLE_SaveDiagram"); // NOI18N
@@ -687,8 +684,6 @@ public class UMLDiagramNode extends UMLElementNode
         {
             success = true;
             
-            ProductHelper.getPreferenceManager().setPreferenceValue(
-                    "Default", "PromptToSaveDiagram", "PSK_NO"); // NOI18N
         }
         
         else if (result == NotifyDescriptor.OK_OPTION)

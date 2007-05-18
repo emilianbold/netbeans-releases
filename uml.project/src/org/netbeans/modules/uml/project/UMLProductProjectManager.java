@@ -214,19 +214,18 @@ public class UMLProductProjectManager implements IProductProjectManager {
             }
             
             if (promptUser) {
-                IPreferenceManager2 prefMan = ProductHelper.getPreferenceManager();
-                if (prefMan != null) {
-                    String prefVal = prefMan.getPreferenceValue("NewProject", "QueryForNewDiagram");
-                    if (prefVal != null && prefVal.equals("PSK_YES")) {
+                
+                    //Kris Richards - options no longer available. Default to yes.
+                    //String prefVal = prefMan.getPreferenceValue("NewProject", "QueryForNewDiagram");                   
                         // Query the user for a new diagram
                         INamespace space = null;
                         if (pProject instanceof INamespace) {
                             space = (INamespace)pProject;
                         }
                         queryUserForNewDiagram(space, IDiagramKind.DK_UNKNOWN, IDiagramKind.DK_ALL);
-                    }
+                   
                 }
-            }
+            
         }
     }
     
