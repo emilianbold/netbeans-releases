@@ -22,6 +22,7 @@ package org.netbeans.modules.debugger.jpda.models;
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.InvalidStackFrameException;
+import com.sun.jdi.InternalException;
 import com.sun.jdi.NativeMethodException;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.PrimitiveValue;
@@ -331,6 +332,14 @@ public class CallStackFrameImpl implements CallStackFrame {
                     } catch (IncompatibleThreadStateException itsex) {
                         ErrorManager.getDefault().notify(itsex);
                         return null;
+                    } catch (NativeMethodException nmex) {
+                        return null;
+                    } catch (InternalException iex) {
+                        if (iex.errorCode() == 32) {
+                            return null;
+                        } else {
+                            throw iex;
+                        }
                     }
                 }
                 if (arguments != null) {

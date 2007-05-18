@@ -22,6 +22,8 @@ package org.netbeans.modules.debugger.jpda.models;
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.InvalidStackFrameException;
+import com.sun.jdi.InternalException;
+import com.sun.jdi.NativeMethodException;
 import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.StackFrame;
@@ -41,7 +43,7 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.openide.ErrorManager;
-
+import org.openide.util.NbBundle;
 
 /**
  * The implementation of JPDAThread.
@@ -366,6 +368,18 @@ public final class JPDAThreadImpl implements JPDAThread {
             setReturnVariable(null); // Clear the return var
         } catch (ObjectCollectedException ex) {
             throw new IncompatibleThreadStateException("Thread died.");
+        } catch (NativeMethodException nmex) {
+            ErrorManager.getDefault().notify(
+                    ErrorManager.getDefault().annotate(nmex,
+                        NbBundle.getMessage(JPDAThreadImpl.class, "MSG_NativeMethodPop")));
+        } catch (InternalException iex) {
+            if (iex.errorCode() == 32) {
+                ErrorManager.getDefault().notify(
+                        ErrorManager.getDefault().annotate(iex,
+                            NbBundle.getMessage(JPDAThreadImpl.class, "MSG_NativeMethodPop")));
+            } else {
+                throw iex;
+            }
         }
     }
     
