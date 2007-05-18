@@ -46,6 +46,7 @@ import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.StringComparator;
 
@@ -430,15 +431,17 @@ public class Utilities {
         Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(false, false);
         StringComparator previousComparator = rto.tree().getComparator();
         rto.setComparator(comparator);
-        
+        JTreeOperator runtimeTree = rto.tree();
+        long oldTimeout = runtimeTree.getTimeouts().getTimeout("JTreeOperator.WaitNextNodeTimeout");
+        runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", 60000);
         try {
-            path = rto.tree().findPath("Servers|Sun Java System Application Server"); // NOI18N
+            path = runtimeTree.findPath("Servers|Sun Java System Application Server"); // NOI18N
         } catch (Exception exc) {
             exc.printStackTrace(System.err);
             throw new Error("Cannot find Application Server Node");
         }
+        runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", oldTimeout);
         rto.setComparator(previousComparator);
-        
         return new Node(rto.tree(),path);
     }
     
