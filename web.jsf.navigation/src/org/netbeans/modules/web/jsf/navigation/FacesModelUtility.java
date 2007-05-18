@@ -43,7 +43,7 @@ public class FacesModelUtility {
         String viewId = navRule.getFromViewId();
         return getViewIdFiltiered( viewId );
     }
-
+    
     public static String getViewIdFiltiered( String viewId ){
         if( viewId != null && viewId.length() > 0 && viewId.charAt(0) == '/') {
             viewId = viewId.replaceFirst("/", "");
@@ -52,16 +52,26 @@ public class FacesModelUtility {
     }
     
     public static void setToViewId(NavigationCase navCase, String filteredName ){
-        String unfilteredName = "/".concat(filteredName);
-        navCase.setToViewId(unfilteredName);
+        if( filteredName != null && filteredName.length() > 0 ) {
+            String unfilteredName = "/".concat(filteredName);
+            navCase.setToViewId(unfilteredName);
+        } else {
+            navCase.setToViewId(filteredName);
+        }
+        
     }
     
     public static void setFromViewId( NavigationRule navRule, String filteredName ){
-        String unfilteredName = "/".concat(filteredName);
-        navRule.setFromViewId(unfilteredName);
+        
+        if( filteredName != null && filteredName.length() > 0 ) {
+            String unfilteredName = "/".concat(filteredName);
+            navRule.setFromViewId(unfilteredName);
+        } else {
+            navRule.setFromViewId(filteredName);
+        }
     }
     
-        /**
+    /**
      * Renames a page in the faces configuration file.
      * @param oldDisplayName
      * @param newDisplayName
@@ -73,7 +83,7 @@ public class FacesModelUtility {
         for( NavigationRule navRule : navRules ){
             String fromViewId = getFromViewIdFiltered(navRule);
             if ( fromViewId != null && fromViewId.equals(oldDisplayName) ){
-//                navRule.setFromViewId(newDisplayName);
+                //                navRule.setFromViewId(newDisplayName);
                 setFromViewId(navRule, newDisplayName);
             }
             List<NavigationCase> navCases = navRule.getNavigationCases();
@@ -81,7 +91,7 @@ public class FacesModelUtility {
                 //                String toViewId = navCase.getToViewId();
                 String toViewId = getToViewIdFiltered(navCase);
                 if ( toViewId != null && toViewId.equals(oldDisplayName) ) {
-//                    navCase.setToViewId(newDisplayName);
+                    //                    navCase.setToViewId(newDisplayName);
                     setToViewId(navCase, newDisplayName);
                 }
             }
