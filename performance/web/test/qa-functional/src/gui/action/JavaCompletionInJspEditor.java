@@ -21,12 +21,12 @@ package gui.action;
 
 import java.awt.event.KeyEvent;
 import javax.swing.JComponent;
+import javax.swing.KeyStroke;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.actions.Action.Shortcut;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.performance.test.guitracker.LoggingRepaintManager;
@@ -38,6 +38,19 @@ import org.netbeans.test.web.performance.WebPerformanceTestCase;
  * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
 public class JavaCompletionInJspEditor extends WebPerformanceTestCase {
+    private String text;
+    private EditorOperator editorOperator;    
+    protected LoggingRepaintManager.RegionFilter COMPLETION_DIALOG_FILTER =
+        new LoggingRepaintManager.RegionFilter() {
+            public boolean accept(JComponent comp) {
+                return comp.getClass().getName().startsWith("org.netbeans.editor.ext.");
+            }
+
+            public String getFilterName() {
+                return "Completion Dialog Filter (accepts only componenets from" +
+                        "'org.netbeans.editor.ext.**' packages";
+            }
+        };
     
     /** Creates a new instance of JavaCompletionInEditor */
     public JavaCompletionInJspEditor(String testName) {
@@ -56,23 +69,8 @@ public class JavaCompletionInJspEditor extends WebPerformanceTestCase {
     protected void init() {
         super.init();
         WAIT_AFTER_OPEN = 6000;
-        shcut = new Shortcut(KeyEvent.VK_SPACE, KeyEvent.CTRL_MASK);
     }
-    
-    public String text;
-    public Shortcut shcut;
-    protected LoggingRepaintManager.RegionFilter COMPLETION_DIALOG_FILTER =
-        new LoggingRepaintManager.RegionFilter() {
-        public boolean accept(JComponent comp) {
-            return comp.getClass().getName().startsWith("org.netbeans.editor.ext.");
-        }
-    
-        public String getFilterName() {
-            return "Completion Dialog Filter (accepts only componenets from" +
-                    "'org.netbeans.editor.ext.**' packages";
-        }
-};
-    
+        
     public void testScriptletCC() {
         text = "<% ";
         measureTime();
@@ -133,8 +131,6 @@ public class JavaCompletionInJspEditor extends WebPerformanceTestCase {
         measureTime();
     }
     
-    private EditorOperator editorOperator;
-    
     protected void initialize() {
         jspOptions().setCaretBlinkRate(0);
         // delay between the caret stops and the update of his position in status bar
@@ -151,14 +147,14 @@ public class JavaCompletionInJspEditor extends WebPerformanceTestCase {
         
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().
             getProjectRootNode("TestWebProject"),"Web Pages|index.jsp"));
-        editorOperator = new EditorWindowOperator().getEditor("index.jsp");
+        editorOperator = EditorWindowOperator.getEditor("index.jsp");
         eventTool().waitNoEvent(1000);
         waitNoEvent(2000);
     }
     
     public void prepare() {
         // scroll to the place where we start
-        editorOperator.activateWindow();
+        editorOperator.makeComponentVisible();
         clearTestLine();
         editorOperator.setCaretPositionToLine(8);
         // insert the initial text
@@ -168,11 +164,10 @@ public class JavaCompletionInJspEditor extends WebPerformanceTestCase {
     }
     
     public ComponentOperator open(){
-        //repaintManager().setRegionFilter(COMPLETION_DIALOG_FILTER);
+        KeyStroke ctrlSpace = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, KeyEvent.CTRL_MASK);
         repaintManager().addRegionFilter(COMPLETION_DIALOG_FILTER);
-        
         // invoke the completion dialog
-        new ActionNoBlock(null, null, shcut).perform(editorOperator);
+        new ActionNoBlock(null, null, ctrlSpace).perform(editorOperator);
         return null;
     }
     
@@ -180,7 +175,7 @@ public class JavaCompletionInJspEditor extends WebPerformanceTestCase {
         //repaintManager().setRegionFilter(null);
          repaintManager().resetRegionFilters();
        
-        new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_ESCAPE)).
+        new ActionNoBlock(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0)).
             perform(editorOperator);
         clearTestLine();
     }
