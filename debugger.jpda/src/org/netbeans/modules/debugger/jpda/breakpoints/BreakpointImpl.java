@@ -303,9 +303,9 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                     return false;
                 }
                 if (activeStepRequests.size() > 0 && (thisThreadHasStep || suspendState == JPDABreakpoint.SUSPEND_ALL)) {
-                    Boolean resumeDecission = debugger.getStepInterruptByBptResumeDecission();
-                    if (resumeDecission != null) {
-                        return resumeDecission.booleanValue();
+                    Boolean resumeDecision = debugger.getStepInterruptByBptResumeDecision();
+                    if (resumeDecision != null) {
+                        return resumeDecision.booleanValue();
                     }
                     String message;
                     if (thisThreadHasStep) {
@@ -319,7 +319,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                                 thread.name(),
                                 activeStepRequests.get(0).thread().name());
                     }
-                    JCheckBox cb = new JCheckBox(NbBundle.getMessage(BreakpointImpl.class, "RememberDecission"));
+                    JCheckBox cb = new JCheckBox(NbBundle.getMessage(BreakpointImpl.class, "RememberDecision"));
                     DialogDescriptor dd = new DialogDescriptor(
                             //message,
                             createDlgPanel(message, cb),
@@ -336,7 +336,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                     boolean yes = option == NotifyDescriptor.YES_OPTION;
                     boolean no  = option == NotifyDescriptor.NO_OPTION;
                     if (cb.isSelected() && (yes || no)) {
-                        debugger.setStepInterruptByBptResumeDecission(Boolean.valueOf(yes));
+                        debugger.setStepInterruptByBptResumeDecision(Boolean.valueOf(yes));
                     }
                     if (yes) {
                         // We'll resume...

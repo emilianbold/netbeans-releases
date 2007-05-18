@@ -563,16 +563,16 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 if (!request.isEnabled()) {
                     return ;
                 }
-                Boolean resumeDecission = debugger.getSingleThreadStepResumeDecission();
-                if (resumeDecission != null) {
-                    if (resumeDecission.booleanValue()) {
+                Boolean resumeDecision = debugger.getSingleThreadStepResumeDecision();
+                if (resumeDecision != null) {
+                    if (resumeDecision.booleanValue()) {
                         doResume();
                     }
                     return ;
                 }
             }
             String message = NbBundle.getMessage(JPDAStepImpl.class, "SingleThreadedStepBlocked");
-            JCheckBox cb = new JCheckBox(NbBundle.getMessage(JPDAStepImpl.class, "RememberDecission"));
+            JCheckBox cb = new JCheckBox(NbBundle.getMessage(JPDAStepImpl.class, "RememberDecision"));
             final boolean[] yes = new boolean[] { false, false };
             DialogDescriptor dd = new DialogDescriptor(
                     //message,
@@ -604,7 +604,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 dialog = null;
                 if (watchTask == null) return ;
                 if ((yes[0] || yes[1]) && cb.isSelected()) {
-                    debugger.setSingleThreadStepResumeDecission(Boolean.valueOf(yes[0]));
+                    debugger.setSingleThreadStepResumeDecision(Boolean.valueOf(yes[0]));
                 }
                 if (doResume) {
                     doResume();
