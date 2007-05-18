@@ -1876,11 +1876,14 @@ final class Central implements ControllerHandler {
         if (modeKind == Constants.MODE_KIND_SLIDING) {
             modeKind = Constants.MODE_KIND_VIEW;
         }
+        switchMaximizedMode(null);
         attachTopComponentsIntoNewMode(new TopComponent[] { tc }, bounds, modeKind, Constants.MODE_STATE_SEPARATED);
         updateViewAfterDnD(true);
     }
 
     public void userDockedTopComponent(TopComponent tc, int modeKind) {
+        switchMaximizedMode(null);
+        
         ModeImpl dockTo = null;
         // find saved previous mode or at least constraints (=the place) to dock back into
         String tcID = WindowManagerImpl.getInstance().findTopComponentID(tc);

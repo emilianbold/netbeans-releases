@@ -1097,7 +1097,12 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
 
         ModeImpl mode = getModeForOpenedTopComponent(tc);
         if(mode != null) {
-            mode.close(tc);
+            if( mode == central.getViewMaximizedMode() || mode == central.getEditorMaximizedMode() ) {
+                central.switchMaximizedMode( null );
+                topComponentClose( tc );
+            } else {
+                mode.close(tc);
+            }
         }
     }
     
