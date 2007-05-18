@@ -71,8 +71,8 @@ public class SelectJ2EEModuleDialog extends org.netbeans.performance.test.utilit
     
     public ComponentOperator open() {
         // invoke Window / Properties from the main menu
-        testNode.performPopupActionNoBlock("Add J2EE Module...");
-        return new NbDialogOperator("Add J2ee Module");
+        testNode.performPopupActionNoBlock("Add Java EE Module...");
+        return new NbDialogOperator("Add Java EE Module");
     }
     
 }

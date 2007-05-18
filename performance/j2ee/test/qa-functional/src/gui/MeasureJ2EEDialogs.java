@@ -40,7 +40,8 @@ public class MeasureJ2EEDialogs  {
         suite.addTest(new SelectJ2EEModuleDialog("measureTime", "Select J2EE Module Dialog open"));
         suite.addTest(new InvokeEJBAction("testAddBusinessMethodDialog", "Add Business method Dialog open"));
         suite.addTest(new InvokeEJBAction("testCallEJBDialog", "Call EJB Dialog open"));
-        suite.addTest(new InvokeWSAction("testAddOperationDialog", "Add Operation Dialog open"));
+        //Disabled because JAX-RPC issues in NB6.0 - enable again when fixed
+        //suite.addTest(new InvokeWSAction("testAddOperationDialog", "Add Operation Dialog open"));
 
         return suite;
     }
