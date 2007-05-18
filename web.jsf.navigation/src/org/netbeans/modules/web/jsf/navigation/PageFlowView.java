@@ -238,8 +238,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     protected VMDNodeWidget createNode( Page pageNode, String type, List<Image> glyphs) {
         String pageName = pageNode.getDisplayName();
         
-        assert pageName != null;
-        
+
         VMDNodeWidget widget = (VMDNodeWidget) scene.addNode(pageNode);
         //        widget.setNodeProperties(null /*IMAGE_LIST*/, pageName, type, glyphs);
         widget.setNodeProperties(pageNode.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16), pageName, type, glyphs);
@@ -503,7 +502,10 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
 //    public final static File getStorageDatFile(JSFConfigEditorContext context){
 //        FileObject configFile = context.getFacesConfigFile();
         Project project = FileOwnerQuery.getOwner(configFile);
-        FileObject webFolder = project.getProjectDirectory().getFileObject(PageFlowController.DEFAULT_DOC_BASE_FOLDER);        
+        FileObject webFolder = project.getProjectDirectory().getFileObject(PageFlowController.DEFAULT_DOC_BASE_FOLDER);
+        if ( webFolder == null ) {
+            return null;
+        }              
         FileObject nbprojectFolder = webFolder.getParent().getFileObject("nbproject", null);
         String fileName = configFile.getName() + ".NavData";
         return  new File(nbprojectFolder.getPath(), fileName);
@@ -517,7 +519,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     }
     
     public void deserializeNodeLocation(File navDataFile) {
-        if( navDataFile.exists() ) {
+        if( navDataFile != null && navDataFile.exists() ) {
             //            SceneSerializer.deserialize(scene, navDataFile);
             //            validate();
             SceneSerializer.deserialize(sceneData, navDataFile);

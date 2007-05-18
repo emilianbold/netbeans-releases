@@ -283,15 +283,19 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
             //            pfc.putCase2Node(newCase, newCaseEdge);//     case2Node.put(myNewCase, node);
             Page fromPage = pfc.getPageName2Page(newCaseEdge.getFromViewId());
             Page toPage = pfc.getPageName2Page(newCaseEdge.getToViewId());
-            if( fromPage == null ){
-                fromPage = pfc.createPage(newCaseEdge.getFromViewId());
-                view.createNode(fromPage, null, null);
+            
+            
+            if( newCaseEdge.getToViewId() != null && newCaseEdge.getFromViewId() != null ) {
+                if( fromPage == null ){
+                    fromPage = pfc.createPage(newCaseEdge.getFromViewId());
+                    view.createNode(fromPage, null, null);
+                }
+                if( toPage == null ){
+                    toPage = pfc.createPage(newCaseEdge.getToViewId());
+                    view.createNode(toPage, null, null);
+                }
+                pfc.createEdge(newCaseEdge);
             }
-            if( toPage == null ){
-                toPage = pfc.createPage(newCaseEdge.getToViewId());
-                view.createNode(toPage, null, null);
-            }
-            pfc.createEdge(newCaseEdge);
         }
         if ( oldCaseEdge != null ){
             //            NavigationCaseEdge oldCaseEdge = pfc.removeCase2Node(myOldCase);

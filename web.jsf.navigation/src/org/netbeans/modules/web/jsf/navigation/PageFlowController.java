@@ -27,6 +27,7 @@
 package org.netbeans.modules.web.jsf.navigation;
 
 
+import java.awt.Dialog;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Collection;
@@ -54,6 +55,9 @@ import org.netbeans.modules.web.jsf.navigation.NavigationCaseEdge;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import java.util.*;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 /**
  *
  * @author joelle lam
@@ -70,6 +74,9 @@ public class PageFlowController {
     private final HashMap<String,Page> pageName2Page = new HashMap<String,Page>();  //Should this be synchronized.
     
     public static final String DEFAULT_DOC_BASE_FOLDER = "web"; //NOI18NF
+    
+    private static final String NO_WEB_FOLDER_WARNING= NbBundle.getMessage(PageFlowController.class, "MSG_NoWebFolder");
+    private static final String NO_WEB_FOLDER_TITLE= NbBundle.getMessage(PageFlowController.class, "TLE_NoWebFolder");
     
     /** Creates a new instance of PageFlowController
      * @param context
@@ -88,6 +95,37 @@ public class PageFlowController {
         configModel = ConfigurationUtils.getConfigModel(configFile,true);
         Project project = FileOwnerQuery.getOwner(configFile);
         webFolder = project.getProjectDirectory().getFileObject(DEFAULT_DOC_BASE_FOLDER);
+        
+        if( webFolder == null ){
+            
+            //            throw new IllegalArgumentException("A Web Folder Does not exist in this project.  Page Flow Editor will not be able to model you project. ");
+//            DialogDescriptor desc = new DialogDescriptor(null, NO_WEB_FOLDER_TITLE, true, DialogDescriptor.WARNING_MESSAGE, null, null);
+            
+            
+            
+            
+            
+            DialogDescriptor desc = new DialogDescriptor(
+                    NbBundle.getMessage(PageFlowController.class, "MSG_NoWebFolder"),
+                    NbBundle.getMessage(PageFlowController.class, "TLE_NoWebFolder"),
+                    true,
+                    DialogDescriptor.WARNING_MESSAGE,
+                    DialogDescriptor.NO_OPTION,
+                    null);
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            Dialog d = DialogDisplayer.getDefault().createDialog(desc);
+            d.show();
+            webFiles = new HashSet<FileObject>();
+        }
+        
         webFiles = getAllProjectRelevantFilesObjects();
         
     }
@@ -253,7 +291,11 @@ public class PageFlowController {
     
     private Collection<FileObject> getProjectKnownFileOjbects(FileObject folder ) {
         Collection<FileObject> webFiles = new HashSet<FileObject>();
-        FileObject[] childrenFiles = folder.getChildren();
+        
+        FileObject[] childrenFiles = new FileObject[]{};
+        if( folder != null ) {
+            childrenFiles = folder.getChildren();
+        }
         for( FileObject file : childrenFiles ){
             if( !file.isFolder() ) {
                 if( isKnownFile(file) ) {
@@ -297,14 +339,14 @@ public class PageFlowController {
      * Should only be called by init();
      *
      **/
-    public boolean setupGraph(){        
+    public boolean setupGraph(){
         view.saveLocations();
-        return setupGraphNoSaveData();        
+        return setupGraphNoSaveData();
     }
     
     public boolean setupGraphNoSaveData() {
         assert configModel !=null;
-        assert webFolder != null;
+        //        assert webFolder != null;
         assert webFiles != null;
         
         
