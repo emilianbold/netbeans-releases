@@ -23,7 +23,7 @@ Microsystems, Inc. All Rights Reserved.
 <mconfig name="core qa-performance test config">
     
     <!-- testbag common for all suites to setup usedir -->
-    <testbag testattribs="all or menus or dialogs or actions or setup" prio="1"
+    <testbag testattribs="all or ui_responsiveness or menus or dialogs or actions or setup" prio="1"
              executor="ide_perf_setup" name="UI responsiveness - setup">
         <testset dir="qa-functional/src">
             <patternset>
@@ -33,7 +33,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <!-- 1st round -->    
-    <testbag testattribs="all or actions" prio="2"
+    <testbag testattribs="all or ui_responsiveness or actions" prio="2"
              executor="ide_performance" name="UI responsiveness - Actions" >
         <testset dir="qa-functional/src">
             <patternset>
@@ -41,7 +41,7 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-    <testbag testattribs="all or dialogs" prio="3"
+    <testbag testattribs="all or ui_responsiveness or dialogs" prio="3"
              executor="ide_performance" name="UI responsiveness - Dialogs" >
         <testset dir="qa-functional/src">
             <patternset>
@@ -49,7 +49,7 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-    <testbag testattribs="all or menus" prio="4"
+    <testbag testattribs="all or ui_responsiveness or menus" prio="4"
              executor="ide_performance" name="UI responsiveness - Menus" >
         <testset dir="qa-functional/src">
             <patternset>
@@ -59,7 +59,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <!-- 2nd round -->    
-    <testbag testattribs="(all or actions) and NOT once" prio="5"
+    <testbag testattribs="(all or ui_responsiveness or actions) and NOT once" prio="5"
              executor="ide_performance" name="UI responsiveness - Actions" >
         <testset dir="qa-functional/src">
             <patternset>
@@ -67,7 +67,7 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-    <testbag testattribs="(all or dialogs) and NOT once" prio="6"
+    <testbag testattribs="(all or ui_responsiveness or dialogs) and NOT once" prio="6"
              executor="ide_performance" name="UI responsiveness - Dialogs" >
         <testset dir="qa-functional/src">
             <patternset>
@@ -75,7 +75,7 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-    <testbag testattribs="(all or menus) and NOT once" prio="7"
+    <testbag testattribs="(all or ui_responsiveness or menus) and NOT once" prio="7"
              executor="ide_performance" name="UI responsiveness - Menus" >
         <testset dir="qa-functional/src">
             <patternset>
@@ -85,7 +85,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <!-- 3rd round -->    
-    <testbag testattribs="(all or actions) and NOT once" prio="8"
+    <testbag testattribs="(all or ui_responsiveness or actions) and NOT once" prio="8"
              executor="ide_performance" name="UI responsiveness - Actions" >
         <testset dir="qa-functional/src">
             <patternset>
@@ -93,7 +93,7 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-    <testbag testattribs="(all or dialogs) and NOT once" prio="9"
+    <testbag testattribs="(all or ui_responsiveness or dialogs) and NOT once" prio="9"
              executor="ide_performance" name="UI responsiveness - Dialogs" >
         <testset dir="qa-functional/src">
             <patternset>
@@ -101,7 +101,7 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-    <testbag testattribs="(all or menus) and NOT once" prio="10"
+    <testbag testattribs="(all or ui_responsiveness or menus) and NOT once" prio="10"
              executor="ide_performance" name="UI responsiveness - Menus" >
         <testset dir="qa-functional/src">
             <patternset>
@@ -122,7 +122,7 @@ Microsystems, Inc. All Rights Reserved.
     
 <!-- Memory Footprint Testbags -->
     <!-- Visual Web Project workflow -->
-    <testbag testattribs="all or footprint_VisualWebProject" prio="330"
+    <testbag testattribs="all or footprint or footprint_VisualWebProject" prio="330"
              executor="ide_footprint" name="Footprint - Visual Web project workflow" >
         <testset dir="footprint/src">
             <patternset>
@@ -131,7 +131,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="(all or footprint_VisualWebProject) and NOT once" prio="331"
+    <testbag testattribs="(all or footprint or footprint_VisualWebProject) and NOT once" prio="331"
              executor="ide_footprint" name="Footprint - Visual Web project workflow" >
         <testset dir="footprint/src">
             <patternset>
@@ -140,7 +140,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="(all or footprint_VisualWebProject) and NOT once" prio="332"
+    <testbag testattribs="(all or footprint or footprint_VisualWebProject) and NOT once" prio="332"
              executor="ide_footprint" name="Footprint - Visual Web project workflow" >
         <testset dir="footprint/src">
             <patternset>
