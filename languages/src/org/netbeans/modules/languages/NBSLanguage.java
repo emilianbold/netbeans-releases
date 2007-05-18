@@ -93,6 +93,7 @@ public class NBSLanguage {
                 "'PARSE' |" +
                 "'PROPERTIES' |" +
                 "'REFORMAT' |" +
+                "'SELECTION' | " +
                 "'SKIP' |" +
                 "'STORE' |" +
                 "'TOKEN' |" +

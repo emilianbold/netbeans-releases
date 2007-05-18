@@ -512,7 +512,7 @@ public class Pattern {
         return p;
     }
 
-    boolean matches (String text) {
+    public boolean matches (String text) {
         int i = 0;
         Integer state = dg.getStartNode ();
         while (i < text.length ()) {

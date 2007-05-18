@@ -34,6 +34,7 @@ TOKEN:keyword:(
     "PARSE" | 
     "PROPERTIES" | 
     "REFORMAT" |
+    "SELECTION" |
     "SKIP" | 
     "STORE" | 
     "TOKEN" | 

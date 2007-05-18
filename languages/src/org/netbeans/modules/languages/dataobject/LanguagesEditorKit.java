@@ -33,6 +33,8 @@ import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.UIManager;
 import javax.swing.text.TextAction;
+import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
+import org.netbeans.editor.Acceptor;
 
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.EditorUI;
@@ -44,6 +46,9 @@ import org.netbeans.editor.PopupManager;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.ext.plain.PlainSyntax;
 import org.netbeans.modules.editor.NbEditorUI;
+import org.netbeans.modules.languages.Feature;
+import org.netbeans.modules.languages.Language;
+import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.features.AnnotationManager;
 import org.netbeans.modules.languages.features.BraceCompletionDeleteAction;
 import org.netbeans.modules.languages.features.BraceCompletionInsertAction;
@@ -56,6 +61,7 @@ import org.netbeans.modules.languages.features.IndentAction;
 import org.netbeans.modules.languages.features.LanguagesGenerateFoldPopupAction;
 import org.netbeans.modules.languages.features.MyFirstDrawLayer;
 import org.netbeans.modules.languages.features.MySecondDrawLayer;
+import org.netbeans.modules.languages.parser.Pattern;
 
 
 /**
@@ -74,6 +80,7 @@ public class LanguagesEditorKit extends NbEditorKit {
         if (mimeType == null)
             throw new NullPointerException ();
         //Settings.setValue (LanguagesEditorKit.class, SettingsNames.CODE_FOLDING_ENABLE, Boolean.TRUE);
+        
         Settings.addInitializer (new Settings.Initializer () {
             public String getName() {
                 return mimeType;
@@ -82,8 +89,37 @@ public class LanguagesEditorKit extends NbEditorKit {
             public void updateSettingsMap (Class kitClass, Map settingsMap) {
                 if (kitClass != null && kitClass.equals (LanguagesEditorKit.class)) {
                     settingsMap.put (SettingsNames.CODE_FOLDING_ENABLE, Boolean.TRUE);
+                    Acceptor acceptor = getAcceptor();
+                    if (acceptor != null) {
+                        settingsMap.put (SettingsNames.IDENTIFIER_ACCEPTOR, acceptor);
+                    }
                 }
             }
+            
+            private Acceptor getAcceptor() {
+                try {
+                    Language language = LanguagesManager.getDefault ().getLanguage (mimeType);
+                    Feature f = language.getFeature(Language.SELECTION);
+                    if (f == null) {
+                        return null;
+                    }
+                    final Pattern pat = f.getPattern();
+                    if (pat == null) {
+                        return null;
+                    }
+                    return new Acceptor() {
+                        public boolean accept(char ch) {
+                            StringBuffer buf = new StringBuffer();
+                            buf.append(ch);
+                            boolean matches = pat.matches(buf.toString());
+                            return matches;
+                        }
+                    };
+                } catch (LanguageDefinitionNotFoundException e) {
+                }
+                return null;
+            }
+            
         });
     }
     

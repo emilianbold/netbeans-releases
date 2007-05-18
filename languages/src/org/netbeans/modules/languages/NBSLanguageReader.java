@@ -272,6 +272,11 @@ public class NBSLanguageReader {
         ASTNode classNode = valueNode.getNode ("class");
         if (classNode != null)
             return Feature.createMethodCallFeature (keyword, selector, readClass (classNode));
+        ASTNode regExprNode = valueNode.getNode ("regularExpression");
+        if (regExprNode != null) {
+            Pattern pat = readPattern(source, sourceName, regExprNode.getAsText().trim(), regExprNode.getOffset());
+            return Feature.createExpressionFeature (keyword, selector, pat);
+        }
         String s = valueNode.getTokenTypeIdentifier ("string");
         s = s.substring (1, s.length () - 1);
         return Feature.createExpressionFeature (keyword, selector, c (s));

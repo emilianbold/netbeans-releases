@@ -447,6 +447,8 @@ PROPERTIES {
 
 BUNDLE "org.netbeans.modules.languages.javascript.JavaScript"
 
+SELECTION ( ["a"-"z" "A"-"Z" "0"-"9" "_" "$"] )
+
 ########### actions ############################################################
 
 #ACTION:delete_method: {

@@ -84,6 +84,7 @@ public class Language extends org.netbeans.api.languages.Language {
     public static final String PARSE = "PARSE";
     public static final String PROPERTIES = "PROPERTIES";
     public static final String REFORMAT = "REFORMAT";
+    public static final String SELECTION = "SELECTION";
     public static final String SKIP = "SKIP";
     public static final String STORE = "STORE";
     public static final String TOKEN = "TOKEN";
