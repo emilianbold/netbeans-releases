@@ -66,7 +66,7 @@ import org.openide.filesystems.FileObject;
  */
 public class CompletionProviderImpl implements CompletionProvider {
     
-    private static final String COMPLETION = "COMPLETION";
+    static final String COMPLETION = "COMPLETION";
     
     /**
      * Append text after current end of token. This type of cc is used
@@ -222,7 +222,7 @@ public class CompletionProviderImpl implements CompletionProvider {
                 Token token = tokenSequence.token ();
                 int tokenOffset = tokenSequence.offset();
                 String tokenType = token.id ().name ();
-                List<Feature> features = language.getFeatures (Language.COMPLETION, tokenType);
+                List<Feature> features = language.getFeatures (COMPLETION, tokenType);
                 Iterator<Feature> it = features.iterator ();
                 while (it.hasNext ()) {
                     Feature feature = it.next ();
@@ -274,7 +274,7 @@ public class CompletionProviderImpl implements CompletionProvider {
                 Language language = LanguagesManager.getDefault ().
                     getLanguage (mimeType);
                 String tokenType = token.id ().name ();
-                List<Feature> features = language.getFeatures (Language.COMPLETION, tokenType);
+                List<Feature> features = language.getFeatures (COMPLETION, tokenType);
                 Iterator<Feature> it = features.iterator ();
                 while (it.hasNext ()) {
                     Feature feature =  it.next ();

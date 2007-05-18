@@ -64,6 +64,7 @@ import org.netbeans.modules.languages.Language;
  */
 public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
     
+    static final String         FOLD = "FOLD";
     private static final int    EVALUATING = 0;
     private static final int    STOPPED = 1;
     
@@ -256,13 +257,13 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
             if (sln == eln) return;
             String mimeType = item.getMimeType ();
             Language language = LanguagesManager.getDefault ().getLanguage (mimeType);
-            List<Feature> fls = language.getFeatures (Language.FOLD, path);
+            List<Feature> fls = language.getFeatures (FOLD, path);
             if (fls == null || fls.isEmpty()) {
                 return;
             }
             Feature fold = fls.get(0);
             boolean isTokenFold = (fls.size() == 1 && (item instanceof ASTToken) && 
-                        fold == language.getFeature(Language.FOLD, ((ASTToken) item).getType()));
+                        fold == language.getFeature (FOLD, ((ASTToken) item).getType()));
             if (!isTokenFold) {
                 TokenHierarchy th = TokenHierarchy.get (doc);
                 if (doc instanceof NbEditorDocument)

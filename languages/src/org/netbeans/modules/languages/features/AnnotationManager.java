@@ -78,7 +78,7 @@ public class AnnotationManager extends ASTEvaluator {
             ASTItem item = path.getLeaf ();
             Language language = LanguagesManager.getDefault ().
                 getLanguage (item.getMimeType ());
-            Feature mark = language.getFeature (Language.MARK, path);
+            Feature mark = language.getFeature ("MARK", path);
             if (mark != null) {
                 if (mark.getBoolean ("condition", SyntaxContext.create (doc, path), true)) {
                     items.add (item);

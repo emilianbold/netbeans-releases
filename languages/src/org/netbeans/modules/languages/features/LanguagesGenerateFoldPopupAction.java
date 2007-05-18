@@ -19,14 +19,13 @@
 
 package org.netbeans.modules.languages.features;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.swing.JMenu;
 import javax.swing.text.JTextComponent;
+
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.modules.editor.NbEditorKit.GenerateFoldPopupAction;
 import org.netbeans.modules.languages.Feature;
@@ -54,7 +53,7 @@ public class LanguagesGenerateFoldPopupAction extends GenerateFoldPopupAction {
     }
 
     private void addFoldTypes (JTextComponent target, JMenu menu, Language l, Set expands) {
-        List<Feature> features = l.getFeatures (Language.FOLD);
+        List<Feature> features = l.getFeatures (LanguagesFoldManager.FOLD);
         Iterator<Feature> it = features.iterator ();
         while (it.hasNext ()) {
             Feature fold = it.next ();

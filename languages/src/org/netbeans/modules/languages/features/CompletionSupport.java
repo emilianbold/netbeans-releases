@@ -181,7 +181,7 @@ public class CompletionSupport implements org.netbeans.spi.editor.completion.Com
                 String tokenType = token.id ().name ();
                 String mimeType = sequence.language ().mimeType ();
                 Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
-                List<Feature> features = l.getFeatures (Language.COMPLETION, tokenType);
+                List<Feature> features = l.getFeatures (CompletionProviderImpl.COMPLETION, tokenType);
                 Iterator<Feature> it = features.iterator ();
                 while (it.hasNext ()) {
                     Feature feature =  it.next ();

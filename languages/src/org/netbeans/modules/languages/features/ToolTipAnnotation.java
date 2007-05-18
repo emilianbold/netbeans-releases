@@ -51,6 +51,7 @@ import org.openide.text.NbDocument;
  */
 public class ToolTipAnnotation extends Annotation {
 
+    static final String TOOLTIP = "TOOLTIP";
     
     public String getShortDescription () {
         try {
@@ -75,7 +76,7 @@ public class ToolTipAnnotation extends Annotation {
                 tokenSequence.move (offset);
                 if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) return null;
                 Token token = tokenSequence.token ();
-                Feature tooltip = l.getFeature (Language.TOOLTIP, token.id ().name ());
+                Feature tooltip = l.getFeature (TOOLTIP, token.id ().name ());
                 if (tooltip != null) {
                     String s = c ((String) tooltip.getValue (Context.create (doc, tokenSequence)));
                     return s;
@@ -100,7 +101,7 @@ public class ToolTipAnnotation extends Annotation {
             int i, k = path.size ();
             for (i = 0; i < k; i++) {
                 ASTPath p = path.subPath (i);
-                Feature tooltip = l.getFeature (Language.TOOLTIP, p);
+                Feature tooltip = l.getFeature (TOOLTIP, p);
                 if (tooltip == null) continue;
                 String s = c ((String) tooltip.getValue (SyntaxContext.create (doc, p)));
                 return s;

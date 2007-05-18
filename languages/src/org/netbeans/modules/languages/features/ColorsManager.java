@@ -109,7 +109,7 @@ public class ColorsManager {
     
     private static void addColors(Map<String,AttributeSet> colorsMap, Language l, ResourceBundle bundle) {
         Map<String,AttributeSet> defaultsMap = getDefaultColors();
-        List<Feature> list = l.getFeatures("COLOR");
+        List<Feature> list = l.getFeatures (COLOR);
         Iterator<Feature> it = list.iterator();
         while (it.hasNext()) {
             Feature f = it.next();

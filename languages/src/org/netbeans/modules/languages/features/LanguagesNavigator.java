@@ -249,7 +249,7 @@ public class LanguagesNavigator implements NavigatorPanel {
         try {
             Language language = LanguagesManager.getDefault ().
                 getLanguage (item.getMimeType ());
-            navigator = language.getFeature (Language.NAVIGATOR, path2);
+            navigator = language.getFeature ("NAVIGATOR", path2);
         } catch (ParseException ex) {
             return null;
         }

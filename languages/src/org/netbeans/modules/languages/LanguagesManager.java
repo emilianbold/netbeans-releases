@@ -185,7 +185,7 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
 
             // init code folding bar
             if (root.getFileObject ("SideBar/org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance") == null &&
-                l.getFeatures(Language.FOLD).size () > 0
+                l.getFeatures("FOLD").size () > 0
             ) {
                 FileUtil.createData (root, "FoldManager/org-netbeans-modules-languages-features-LanguagesFoldManager$Factory.instance");
                 FileUtil.createData (root, "SideBar/org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance");

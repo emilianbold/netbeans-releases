@@ -99,7 +99,7 @@ public class LanguagesEditorKit extends NbEditorKit {
             private Acceptor getAcceptor() {
                 try {
                     Language language = LanguagesManager.getDefault ().getLanguage (mimeType);
-                    Feature f = language.getFeature(Language.SELECTION);
+                    Feature f = language.getFeature("SELECTION");
                     if (f == null) {
                         return null;
                     }

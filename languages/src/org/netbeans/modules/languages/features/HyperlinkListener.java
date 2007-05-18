@@ -210,7 +210,7 @@ MouseListener {
                     Language language = LanguagesManager.getDefault ().getLanguage (mimeType);
                     Token token = tokenSequence.token ();
                     Feature hyperlink = language.getFeature 
-                        (Language.HYPERLINK, token.id ().name ());
+                        ("HYPERLINK", token.id ().name ());
                     if (hyperlink != null) return new Object[] {Context.create (doc, tokenSequence), hyperlink};
                 } finally {
                     if (doc instanceof NbEditorDocument)
@@ -224,7 +224,7 @@ MouseListener {
             for (i = 0; i < k; i++) {
                 ASTPath p = path.subPath (i);
                 Language language = LanguagesManager.getDefault ().getLanguage (p.getLeaf ().getMimeType ());
-                Feature hyperlink = language.getFeature (Language.HYPERLINK, p);
+                Feature hyperlink = language.getFeature ("HYPERLINK", p);
                 if (hyperlink != null) 
                     return new Object[] {SyntaxContext.create (doc, p), hyperlink};
             }

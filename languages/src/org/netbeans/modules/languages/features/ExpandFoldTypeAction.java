@@ -65,7 +65,7 @@ public class ExpandFoldTypeAction extends BaseAction {
     }
 
     private boolean expand (FoldHierarchy hierarchy, Language l) {
-        List<Feature> folds = l.getFeatures (Language.FOLD);
+        List<Feature> folds = l.getFeatures (LanguagesFoldManager.FOLD);
         Iterator<Feature> it = folds.iterator ();
         while (it.hasNext ()) {
             Feature fold = it.next ();
