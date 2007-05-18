@@ -37,6 +37,8 @@ import javax.swing.KeyStroke;
 import org.netbeans.modules.form.FormAwareEditor;
 import org.netbeans.modules.form.FormEditor;
 import org.netbeans.modules.form.FormModel;
+import org.netbeans.modules.form.FormModelEvent;
+import org.netbeans.modules.form.FormModelListener;
 import org.netbeans.modules.form.FormProperty;
 import org.netbeans.modules.form.RADComponent;
 import org.netbeans.modules.form.RADProperty;
@@ -106,6 +108,18 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
     // property editor impl
     public void setContext(FormModel formModel, FormProperty property) {
         this.formModel = formModel;
+        if(formModel != null) {
+            formModel.addFormModelListener(new FormModelListener() {
+                public void formChanged(FormModelEvent[] events) {
+                    for(FormModelEvent e : events) {
+                        if(e.getChangeType() == e.FORM_TO_BE_CLOSED) {
+                            ActionManager am = ActionManager.getActionManager(getSourceFile());
+                            am.removeAllBoundComponents(e.getFormModel());
+                        }
+                    }
+                }
+            });
+        }
         this.formProperty = (RADProperty)property;
         this.radComponent = formProperty.getRADComponent();
         this.componentClass = formProperty.getRADComponent().getBeanInstance().getClass();

@@ -552,7 +552,19 @@ public class ActionManager {
     }
     
     
-    
+    public void removeAllBoundComponents(FormModel model) {
+        for(String key : boundComponents.keySet()) {
+            List<RADComponent> comps = boundComponents.get(key);
+            
+            Iterator<RADComponent> it = comps.iterator();
+            while(it.hasNext()) {
+                RADComponent comp = it.next();
+                if(comp != null && comp.getFormModel() == model) {
+                    it.remove();
+                }
+            }
+        }
+    }
     
     
     
