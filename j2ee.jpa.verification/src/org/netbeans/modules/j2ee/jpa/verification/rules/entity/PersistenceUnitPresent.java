@@ -70,14 +70,8 @@ public class PersistenceUnitPresent extends JPAClassRule  {
                 }
             }
         }
-        return new ErrorDescription[]{createProblem(subject, ctx, new CreatePersistenceUnit(project))};
-    }
-    
-    @Override public Severity getSeverity(){
-        return Severity.WARNING;
-    }
-    
-    public String getDescription(){
-        return NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_MissingPersistenceUnitHint");
+        return new ErrorDescription[]{createProblem(subject, ctx,
+                NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_MissingPersistenceUnitHint"),
+                Severity.WARNING, new CreatePersistenceUnit(project))};
     }
 }

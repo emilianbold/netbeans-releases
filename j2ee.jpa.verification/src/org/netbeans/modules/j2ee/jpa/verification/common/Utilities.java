@@ -81,21 +81,21 @@ public class Utilities {
         
         int startOffset = (int) srcPos.getStartPosition(info.getCompilationUnit(), tree);
         int endOffset = (int) srcPos.getEndPosition(info.getCompilationUnit(), tree);
-        Tree modifiersTree = null;
+        
+        Tree startSearchingForNameIndentifierBehindThisTree = null;
         
         if (tree.getKind() == Tree.Kind.CLASS){
-            modifiersTree = ((ClassTree)tree).getModifiers();
-        } else
-            if (tree.getKind() == Tree.Kind.VARIABLE){
-                modifiersTree = ((VariableTree)tree).getModifiers();
-            } else
-                if (tree.getKind() == Tree.Kind.METHOD){
-                    modifiersTree = ((MethodTree)tree).getModifiers();
-                }
+            startSearchingForNameIndentifierBehindThisTree = ((ClassTree)tree).getModifiers();
+            
+        } else if (tree.getKind() == Tree.Kind.METHOD){
+            startSearchingForNameIndentifierBehindThisTree = ((MethodTree)tree).getReturnType();
+        } else if (tree.getKind() == Tree.Kind.VARIABLE){
+            startSearchingForNameIndentifierBehindThisTree = ((VariableTree)tree).getType();
+        }
         
-        
-        if (modifiersTree != null){
-            int searchStart = (int) srcPos.getEndPosition(info.getCompilationUnit(), modifiersTree);
+        if (startSearchingForNameIndentifierBehindThisTree != null){
+            int searchStart = (int) srcPos.getEndPosition(info.getCompilationUnit(),
+                    startSearchingForNameIndentifierBehindThisTree);
             
             TokenSequence tokenSequence = info.getTreeUtilities().tokensFor(tree);
             
@@ -115,6 +115,7 @@ public class Utilities {
                 }
             }
         }
+        
         return new TextSpan(startOffset, endOffset);
     }
     

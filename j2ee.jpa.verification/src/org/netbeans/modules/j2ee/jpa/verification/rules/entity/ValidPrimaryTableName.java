@@ -37,8 +37,6 @@ import org.openide.util.NbBundle;
  * @author Tomasz.Slota@Sun.COM
  */
 public class ValidPrimaryTableName extends JPAClassRule {
-    private String errorMsg = null;
-    private Severity severity = null;
     
     /** Creates a new instance of LegalName */
     public ValidPrimaryTableName() {
@@ -48,32 +46,22 @@ public class ValidPrimaryTableName extends JPAClassRule {
     @Override public ErrorDescription[] apply(TypeElement subject, ProblemContext ctx){
         String entityName = JPAHelper.getPrimaryTableName((Entity)ctx.getModelElement());
         
-        if (entityName.length() == 0){ //TODO: 
-            severity = Severity.ERROR;
-            errorMsg = NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_InvalidPersistenceQLIdentifier");
-            return new ErrorDescription[]{createProblem(subject, ctx)};
+        if (entityName.length() == 0){
+            return new ErrorDescription[]{createProblem(subject, ctx,
+                    NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_InvalidPersistenceQLIdentifier"))};
         }
         
         if (JavaPersistenceQLKeywords.isKeyword(entityName)){
-            severity = Severity.ERROR;
-            errorMsg = NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_ClassNamedWithJavaPersistenceQLKeyword");
-            return new ErrorDescription[]{createProblem(subject, ctx)};
+            return new ErrorDescription[]{createProblem(subject, ctx,
+                    NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_ClassNamedWithJavaPersistenceQLKeyword"))};
         }
         
         if (SQLKeywords.isSQL99ReservedKeyword(entityName)){
-            severity = Severity.WARNING;
-            errorMsg = NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_ClassNamedWithReservedSQLKeyword");
-            return new ErrorDescription[]{createProblem(subject, ctx)};
+            return new ErrorDescription[]{createProblem(subject, ctx,
+                    NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_ClassNamedWithReservedSQLKeyword"),
+                    Severity.WARNING)};
         }
         
         return null;
-    }
-    
-    @Override public String getDescription(){
-        return errorMsg;
-    }
-    
-    @Override public Severity getSeverity(){
-        return severity;
     }
 }

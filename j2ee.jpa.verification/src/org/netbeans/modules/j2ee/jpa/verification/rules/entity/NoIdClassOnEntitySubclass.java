@@ -71,7 +71,8 @@ public class NoIdClassOnEntitySubclass extends JPAClassRule {
                     for (Id id : entity.getAttributes().getId()){
                         if (!parentEntityIds.contains(id.getName())){
                             // Found id defined directly on the child entity
-                            return new ErrorDescription[]{createProblem(subject, ctx)};
+                            return new ErrorDescription[]{createProblem(subject, ctx,
+                                    NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_EntitySubclassHasIdClass"))};
                         }
                     }
                 }
@@ -80,9 +81,4 @@ public class NoIdClassOnEntitySubclass extends JPAClassRule {
         
         return null;
     }
-    
-    @Override public String getDescription(){
-        return NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_EntitySubclassHasIdClass");
-    }
-    
 }

@@ -66,21 +66,12 @@ public abstract class Rule<E> {
         if (isApplicable(subject, ctx)) {
             if (!predicate.evaluate(subject)) { // found a violation
                 // TODO: remove this hack (cast)
-                return new ErrorDescription[]{createProblem((Element)subject, ctx)};
+                //return new ErrorDescription[]{createProblem((Element)subject, ctx)};
             }
         }
         
         return null;
     }
-    
-    /**
-     * How critical is the failure.
-     */
-    public Severity getSeverity(){
-        return Severity.ERROR;
-    }
-    
-    public abstract String getDescription();
     
     protected boolean isApplicable(E subject, ProblemContext ctx) {
         boolean result = true;
@@ -94,15 +85,27 @@ public abstract class Rule<E> {
         return result;
     }
     
-    protected ErrorDescription createProblem(Element subject, ProblemContext ctx){
-        return createProblem(subject, ctx, Collections.<Fix>emptyList());
+    public static ErrorDescription createProblem(Element subject, ProblemContext ctx,
+            String description){
+        return createProblem(subject, ctx, description, Severity.ERROR, Collections.<Fix>emptyList());
     }
     
-    protected ErrorDescription createProblem(Element subject, ProblemContext ctx, Fix fix){
-        return createProblem(subject, ctx, Collections.singletonList(fix));
+    public static ErrorDescription createProblem(Element subject, ProblemContext ctx,
+            String description, Severity severity){
+        return createProblem(subject, ctx, description, severity, Collections.<Fix>emptyList());
     }
     
-    protected ErrorDescription createProblem(Element subject, ProblemContext ctx, List<Fix> fixes){
+    public static ErrorDescription createProblem(Element subject, ProblemContext ctx, String description,
+            Severity severity, Fix fix){
+        return createProblem(subject, ctx, description, severity, Collections.singletonList(fix));
+    }
+    
+    public static ErrorDescription createProblem(Element subject, ProblemContext ctx, String description, Fix fix){
+        return createProblem(subject, ctx, description, Severity.ERROR, Collections.singletonList(fix));
+    }
+    
+    public static ErrorDescription createProblem(Element subject, ProblemContext ctx, 
+            String description, Severity severity, List<Fix> fixes){
         ErrorDescription err = null;
         List<Fix> fixList = fixes == null ? Collections.<Fix>emptyList() : fixes;
         
@@ -111,17 +114,15 @@ public abstract class Rule<E> {
             ctx.getCompilationInfo().getTrees().getTree(subject) : ctx.getElementToAnnotate();
         
         if (elementTree != null){
-            SourcePositions srcPositions = ctx.getCompilationInfo().getTrees().getSourcePositions();
-            
             Utilities.TextSpan underlineSpan = Utilities.getUnderlineSpan(
                     ctx.getCompilationInfo(), elementTree);
             
             err = ErrorDescriptionFactory.createErrorDescription(
-                    getSeverity(), getDescription(), fixList, ctx.getFileObject(),
+                    severity, description, fixList, ctx.getFileObject(),
                     underlineSpan.getStartOffset(), underlineSpan.getEndOffset());
         }
         else{
-            JPAProblemFinder.LOG.severe(getClass().getName() + " could not create ErrorDescription: " +
+            JPAProblemFinder.LOG.severe(" could not create ErrorDescription: " +
                     "failed to find tree for " + subject);
         }
         

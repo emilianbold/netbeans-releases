@@ -50,10 +50,8 @@ public class NonFinalClass extends JPAClassRule {
         }
         
         Fix fix = new RemoveFinalModifier(ctx.getFileObject(), ElementHandle.create(subject));
-        return new ErrorDescription[]{createProblem(subject, ctx, fix)};
-    }
-    
-    @Override public String getDescription(){
-        return NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_FinalClassAsEntity");
+        
+        return new ErrorDescription[]{createProblem(subject, ctx,
+                NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_FinalClassAsEntity"), fix)};
     }
 }

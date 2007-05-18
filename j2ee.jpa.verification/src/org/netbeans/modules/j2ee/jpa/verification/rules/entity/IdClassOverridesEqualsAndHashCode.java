@@ -64,10 +64,7 @@ public class IdClassOverridesEqualsAndHashCode extends JPAClassRule {
             }
         }
         
-        return new ErrorDescription[]{createProblem(subject, ctx)};
-    }
-    
-    @Override public String getDescription(){
-        return NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_IdClassDoesNotOverrideEquals");
+        return new ErrorDescription[]{createProblem(subject, ctx, NbBundle.getMessage(IdDefinedInHierarchy.class,
+                "MSG_IdClassDoesNotOverrideEquals"))};
     }
 }

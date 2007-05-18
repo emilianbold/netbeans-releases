@@ -70,10 +70,7 @@ public class IdDefinedInHierarchy extends JPAClassRule {
             
         } while (javaClass != null);
         
-        return new ErrorDescription[]{createProblem(subject, ctx)};
-    }
-    
-    public String getDescription(){
-        return NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_NoIdDefinedInHierarchy");
+        return new ErrorDescription[]{createProblem(subject, ctx, 
+                NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_NoIdDefinedInHierarchy"))};
     }
 }

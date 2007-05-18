@@ -20,6 +20,7 @@
 package org.netbeans.modules.j2ee.jpa.verification.common;
 
 import com.sun.source.tree.Tree;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.openide.filesystems.FileObject;
 
@@ -35,6 +36,7 @@ public class ProblemContext {
     private boolean cancelled = false;
     private Tree elementToAnnotate;
     private Object modelElement;
+    private TypeElement javaClass;
     
     public FileObject getFileObject(){
         return fileObject;
@@ -86,5 +88,13 @@ public class ProblemContext {
     
     public void setModelElement(Object modelElement){
         this.modelElement = modelElement;
+    }
+    
+    public TypeElement getJavaClass(){
+        return javaClass;
+    }
+    
+    public void setJavaClass(TypeElement element){
+        this.javaClass = element;
     }
 }

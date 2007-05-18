@@ -52,14 +52,8 @@ public class SerializableClass  extends JPAClassRule {
         }
         
         Fix fix = new ImplementSerializable(ctx.getFileObject(), ElementHandle.create(subject));
-        return new ErrorDescription[]{createProblem(subject, ctx, fix)};
-    }
-    
-    @Override public String getDescription(){
-        return NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_NonSerializableClass");
-    }
-    
-    @Override public Severity getSeverity(){
-        return Severity.WARNING;
+        return new ErrorDescription[]{createProblem(subject, ctx,
+                NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_NonSerializableClass"),
+                Severity.WARNING, fix)};
     }
 }

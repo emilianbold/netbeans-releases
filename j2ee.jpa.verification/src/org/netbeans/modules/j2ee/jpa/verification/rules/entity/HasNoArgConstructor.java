@@ -57,10 +57,7 @@ public class HasNoArgConstructor extends JPAClassRule {
             }
         }
         
-        return new ErrorDescription[]{createProblem(subject, ctx)};
-    }
-    
-    public String getDescription(){
-        return NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_HasNoNoArgConstructor");
+        return new ErrorDescription[]{createProblem(subject, ctx,
+                NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_HasNoNoArgConstructor"))};
     }
 }

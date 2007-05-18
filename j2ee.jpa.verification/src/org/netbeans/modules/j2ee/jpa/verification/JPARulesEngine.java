@@ -35,6 +35,7 @@ import org.netbeans.modules.j2ee.jpa.verification.rules.entity.PersistenceUnitPr
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.PublicClass;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.SerializableClass;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.TopLevelClass;
+import org.netbeans.modules.j2ee.jpa.verification.rules.entity.ValidAttributes;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.ValidPrimaryTableName;
 
 /**
@@ -56,6 +57,7 @@ public class JPARulesEngine extends RulesEngine {
         classRules.add(new IdClassOverridesEqualsAndHashCode());
         classRules.add(new NoIdClassOnEntitySubclass());
         classRules.add(new ConsistentAccessType());
+        classRules.add(new ValidAttributes());
     }
     
     protected Collection<Rule<TypeElement>> getClassRules() {

@@ -26,7 +26,6 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,7 +50,6 @@ import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
-import org.netbeans.spi.tasklist.Task;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -181,6 +179,7 @@ public abstract class JPAProblemFinder {
         
         JPAProblemContext context = new JPAProblemContext();
         context.setMetaData(metadata);
+        context.setJavaClass(javaClass);
         
         if (!idClass){
             Object modelElement = ModelUtils.getEntity(metadata, javaClass);

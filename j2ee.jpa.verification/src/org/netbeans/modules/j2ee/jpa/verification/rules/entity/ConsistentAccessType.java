@@ -42,13 +42,10 @@ public class ConsistentAccessType extends JPAClassRule {
     
     @Override public ErrorDescription[] apply(TypeElement subject, ProblemContext ctx){
         if (((JPAProblemContext)ctx).getAccessType() == AccessType.INCONSISTENT){
-            return new ErrorDescription[]{createProblem(subject, ctx)};
+            return new ErrorDescription[]{createProblem(subject, ctx,
+                    NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_InconsistentAccessType"))};
         }
         
         return null;
-    }
-    
-    public String getDescription(){
-        return NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_InconsistentAccessType");
     }
 }

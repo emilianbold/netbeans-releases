@@ -9,7 +9,12 @@
 
 package org.netbeans.modules.j2ee.jpa.model;
 
+import java.util.List;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Embeddable;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
@@ -48,5 +53,44 @@ public class ModelUtils {
         }
         return null;
     }
-   
+    
+    public static TypeElement getTypeElementFromModel(CompilationInfo info, Object modelElement){
+        String className = null;
+        
+        if (modelElement instanceof Entity){
+            className = ((Entity)modelElement).getClass2();
+        }
+        
+        if (className != null){
+            return info.getElements().getTypeElement(className);
+        }
+        
+        return null;
+    }
+    
+    public static void resolveJavaElementFromModel(JPAProblemContext problemCtx, AttributeWrapper attr){
+        List <? extends Element> elementsToSearch = null;
+        String searchedName = null;
+        
+        if (problemCtx.getAccessType() == AccessType.FIELD){
+            searchedName = attr.getName();
+            elementsToSearch = ElementFilter.fieldsIn(problemCtx.getJavaClass().getEnclosedElements());
+        }
+        
+        else if (problemCtx.getAccessType() == AccessType.PROPERTY){
+            searchedName = "get" //NOI18N
+                    + Character.toString(attr.getName().charAt(0)).toUpperCase() +
+                    attr.getName().substring(1);
+            
+            elementsToSearch = ElementFilter.methodsIn(problemCtx.getJavaClass().getEnclosedElements());
+        }
+        
+        if (searchedName != null){
+            for (Element elem : elementsToSearch){
+                if (elem.getSimpleName().contentEquals(searchedName)){
+                    attr.setJavaElement(elem);
+                }
+            }
+        }
+    }
 }

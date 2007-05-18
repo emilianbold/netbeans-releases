@@ -45,10 +45,7 @@ public class TopLevelClass extends JPAClassRule {
             return null;
         }
         
-        return new ErrorDescription[]{createProblem(subject, ctx)};
-    }
-    
-    @Override public String getDescription(){
-        return NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_NestedClassAsEntity");
+        return new ErrorDescription[]{createProblem(subject, ctx,
+                NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_NestedClassAsEntity"))};
     }
 }
