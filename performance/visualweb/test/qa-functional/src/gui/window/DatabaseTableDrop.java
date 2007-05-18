@@ -31,6 +31,7 @@ import org.netbeans.jellytools.actions.DeleteAction;
 
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
@@ -149,9 +150,12 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
         String title = Bundle.getStringTrimmed("org.openide.explorer.Bundle","MSG_ConfirmDeleteObjectTitle"); //Confirm Object Deletion
         
         TopComponentOperator navigator = new TopComponentOperator("Navigator"); // NOI18N
+        
+        JComboBoxOperator modeCombo = new JComboBoxOperator(navigator);
+        modeCombo.selectItem("Outline");
+        
         JTreeOperator tree =  new JTreeOperator(navigator);
-        
-        
+                
         Node table = new Node(tree,"Page1|page1|html1|body1|form1|table1");
         new DeleteAction().perform(table);
         new NbDialogOperator(title).yes();
