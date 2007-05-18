@@ -799,9 +799,6 @@ public class BeansUnit implements Unit {
      * @return  The new instance of the given Class.
      */
     public Object instantiateBean(Class cls) {
-        if(cls.isInterface() || (cls.getModifiers() & Modifier.ABSTRACT) != 0) {
-            return null;
-        }
         // intercept Basic and Primitive types & just hand-construct them
         // Also, intercept classes that lack a null constructor
         if (cls == Boolean.TYPE || cls == Boolean.class)
@@ -823,10 +820,18 @@ public class BeansUnit implements Unit {
         else if (cls == BigDecimal.class)
             return new BigDecimal("0");
 
-        try {
-            return cls.isArray() ? Array.newInstance(cls.getComponentType(), 0) : cls.newInstance();
-        }
-        catch (Exception e) {
+        try {        
+            if(cls.isArray()) {
+                Class elemClass = cls.getComponentType();
+                if(!elemClass.isInterface() && !Modifier.isAbstract(elemClass.getModifiers())) {
+                    return Array.newInstance(elemClass, 0);
+                }
+            }else {
+                if(!cls.isInterface() && !Modifier.isAbstract(cls.getModifiers())) {
+                    return cls.newInstance();
+                }                
+            }
+        } catch (Exception e) {
             // EAT: TODO XXX
             // Look into what we can do to handle beans that do not have a default constructor ?
             // Is there something in the Beans spec that could help ?
