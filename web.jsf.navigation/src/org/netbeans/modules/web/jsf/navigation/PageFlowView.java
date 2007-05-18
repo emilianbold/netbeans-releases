@@ -519,6 +519,16 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
             SceneSerializer.deserialize(sceneData, navDataFile);
         }
     }
+
+    @Override
+    protected String preferredID() {
+        return "PageFlowEditor";
+    }
+
+    @Override
+    public int getPersistenceType() {
+        return PERSISTENCE_NEVER;
+    }
     
     
     
