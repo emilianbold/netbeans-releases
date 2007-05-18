@@ -116,8 +116,9 @@ public class CatalogModelImpl implements CatalogModel {
         ModelSource result = null;
         //selects the correct cataog for use.
         useSuitableCatalogFile(modelSourceOfSourceDocument);
-        if(isOrphan())
+        if(isOrphan() && isLocalFile(locationURI)) {
             return tryOrphanResolution(locationURI, modelSourceOfSourceDocument);
+        }
         File absResourceFile = null;
         FileObject fob = null;
         if(modelSourceOfSourceDocument != null)
@@ -273,13 +274,22 @@ public class CatalogModelImpl implements CatalogModel {
         }
         return null;
     }
-    
-    
+        
     private boolean isOrphan(){
         if(catalogFileObject == null)
             return true;
         return false;
     }
+    
+    private boolean isLocalFile(URI locationURI) {
+        if(locationURI.isAbsolute() &&
+           locationURI.getScheme() != null &&
+           "file".equals(locationURI.getScheme()))
+            return true;
+        
+        return false;
+    }
+            
     
     
     protected File resolveUsingCatalog(URI locationURI, FileObject sourceFileObject
