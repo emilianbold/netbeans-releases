@@ -114,8 +114,14 @@ public class JsfFunctionalTest extends JellyTestCase{
         lop.setProjectLocation(getDataDir().getCanonicalPath());
         lop.next();
         NewProjectWizardOperator frameworkStep = new NewProjectWizardOperator();
-        // select JavaServer Faces
-        new JTableOperator(frameworkStep).selectCell(0, 0);;
+        // select JavaServer Faces within Visual Web JavaServer Faces, JavaServer Faces, Struts 1.2.9
+        JTableOperator tableOper = new JTableOperator(frameworkStep);
+        if(tableOper.getRowCount() > 2) {
+            // when Visual Web JSF available
+            tableOper.selectCell(1, 0);
+        } else {
+            tableOper.selectCell(0, 0);
+        }
         frameworkStep.finish();
         // Opening Projects
         String openingProjectsTitle = Bundle.getString(

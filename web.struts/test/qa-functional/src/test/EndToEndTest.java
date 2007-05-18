@@ -126,8 +126,14 @@ public class EndToEndTest extends JellyTestCase {
         lop.setProjectLocation(getDataDir().getCanonicalPath());
         lop.next();
         NewProjectWizardOperator frameworkStep = new NewProjectWizardOperator();
-        // select Struts
-        new JTableOperator(frameworkStep).selectCell(1, 0);
+        // select Struts within Visual Web JavaServer Faces, JavaServer Faces, Struts 1.2.9
+        JTableOperator tableOper = new JTableOperator(frameworkStep);
+        if(tableOper.getRowCount() > 2) {
+            // when Visual Web JSF available
+            tableOper.selectCell(2, 0);
+        } else {
+            tableOper.selectCell(1, 0);
+        }
         // set ApplicationResource location
         new JTextFieldOperator(
                 (JTextField)new JLabelOperator(frameworkStep, "Application Resource:").getLabelFor()
