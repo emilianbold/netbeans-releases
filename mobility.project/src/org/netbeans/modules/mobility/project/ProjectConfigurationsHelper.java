@@ -109,7 +109,7 @@ public final class ProjectConfigurationsHelper implements ProjectConfigurationPr
                     if (s.trim().length() > 0) {
                         int i = s.compareTo(configName);
                         if (i == 0) return Boolean.FALSE;
-                        else if (i > 0) {
+                        else if (add && i > 0) {
                             add = false;
                             sb.append(',').append(configName);
                         }
