@@ -192,6 +192,9 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
     public void testAttachDebugger() {
         // assuming server is running in debug mode
         AttachDialogOperator ado = AttachDialogOperator.invoke();
+        // "JPDA Debugger"
+        String jpdaDebuggerLabel = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_Connector_name");
+        ado.selectDebugger(jpdaDebuggerLabel);
         ado.selectConnector(ado.ITEM_SOCKET_ATTACH);
         ado.setPort(Utils.getSocketPort());
         ado.ok();
