@@ -27,6 +27,7 @@ import com.sun.data.provider.TableDataProvider;
 import com.sun.data.provider.TableDataSorter;
 import com.sun.data.provider.impl.BasicTableDataFilter;
 import com.sun.data.provider.impl.BasicTableDataSorter;
+import com.sun.data.provider.impl.ObjectListDataProvider;
 import com.sun.data.provider.impl.ObjectArrayDataProvider;
 import com.sun.data.provider.impl.TableRowDataProvider;
 import com.sun.rave.web.ui.theme.Theme;
@@ -161,6 +162,11 @@ public class TableRowGroup extends TableRowGroupBase implements
     private boolean paginated = false;
     private boolean paginated_set = false;
 
+    // The TableRowDataProvider associated with this component, lazily
+    // instantiated if requested. This object is not part of the saved and
+    // restored state of the component.
+    private TableRowDataProvider provider = null;
+    
     // The Table ancestor enclosing this component.
     private Table table = null;
 
@@ -626,6 +632,32 @@ public class TableRowGroup extends TableRowGroupBase implements
         }
         return paginated;
     }
+    
+    /**
+     * A convenience method to set the current page to be displayed.
+     * <p>
+     * Note: You can also set the current, first, next, prev, and last pages by
+     * invoking the setFirst(int) method directly. For example, you could use
+     * setFirst(0) to display the first page and setFirst(getLast()) to display
+     * the last page. The setFirst(int) method is particularly useful when a
+     * subset of data is displayed in scroll mode or when overriding pagination.
+     * </p><p>
+     * Note: When ever a new DataProvider is used, UI Guiedlines recommend that
+     * pagination should be reset (e.g., remaining on the 4th page of a new set
+     * of data makes no sense).
+     * </p>
+     * @param page The current page.
+     */
+    public void setPage(int page) {
+        // Set the starting row for the new page.
+        int row = (page - 1) * getRows();
+
+        // Result cannot be greater than the row index for the last page.
+        int result = Math.min(row, getLast());
+
+        // Result cannot be greater than total number of rows or less than zero.
+        setFirst(Math.min(Math.max(result, 0), getRowCount()));
+    }
 
     /**
      * Set the paginated state of this component.
@@ -846,7 +878,25 @@ public class TableRowGroup extends TableRowGroupBase implements
         if (provider == null) {
             log("getTableRowDataProvider", //NOI18N
                 "Re-evaluating sourceData, TableRowDataProvider is null"); //NOI18N
-            provider = new TableRowDataProvider(getSourceData());
+            
+            // Synthesize a TableDataProvider around source data, if possible.
+            TableDataProvider tdp;
+            Object obj = getSourceData();
+            if (obj == null) {
+                tdp = null;
+            } else if (obj instanceof TableDataProvider) {
+                tdp = (TableDataProvider) obj;
+            } else if (obj instanceof List) {
+                tdp = new ObjectListDataProvider((List) obj);
+            } else if (Object[].class.isAssignableFrom(obj.getClass())) {
+                tdp = new ObjectArrayDataProvider((Object[]) obj);
+            } else {
+                // Default "single variable" case.
+                ArrayList list = new ArrayList(1);
+                list.add(obj);
+                tdp = new ObjectListDataProvider(list);
+            }
+            provider = new TableRowDataProvider(tdp);
 
             // Save property in request map.
             if (properties != null) {
@@ -1003,10 +1053,12 @@ public class TableRowGroup extends TableRowGroupBase implements
      * </p>
      * @param sourceData The source data of the TableRowGroup.
      */
-    public void setSourceData(TableDataProvider sourceData) {
+    public void setSourceData(Object sourceData) {
         super.setSourceData(sourceData);
         init();
     }
+    
+     
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Selected methods
