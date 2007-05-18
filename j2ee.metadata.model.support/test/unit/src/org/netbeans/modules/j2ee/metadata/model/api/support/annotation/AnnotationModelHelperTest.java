@@ -204,6 +204,7 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
                 return null;
             }
         });
+        t.join();
     }
 
     public void testWhenScanFinished() throws Exception {
@@ -250,5 +251,6 @@ public class AnnotationModelHelperTest extends PersistenceTestCase {
                 "}");
         scanBlockingLatch.await();
         assertSame(result, futureRef.get().get());
+        t.join();
     }
 }
