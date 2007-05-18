@@ -1666,7 +1666,8 @@ public abstract class TreeView extends JScrollPane {
                         char c = e.getKeyChar();
 
                         //#43617 - don't eat + and -
-                        if ((c == '+') || (c == '-')) return;
+                        //#98634 - and all its duplicates dont't react to space
+                        if ((c == '+') || (c == '-') || (c==' ')) return; // NOI18N
 
                         if (((modifiers > 0) && (modifiers != KeyEvent.SHIFT_MASK)) || e.isActionKey()) {
                             return;
