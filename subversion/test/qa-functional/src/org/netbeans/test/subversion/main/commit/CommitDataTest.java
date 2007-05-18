@@ -15,6 +15,7 @@ import javax.swing.table.TableModel;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -101,7 +102,11 @@ public class CommitDataTest extends JellyTestCase {
         }
         
         try {
+            TestKit.showStatusLabels();
             TestKit.closeProject(PROJECT_NAME);
+            VersioningOperator vo = VersioningOperator.invoke();
+            OutputOperator oo = OutputOperator.invoke();
+            
             org.openide.nodes.Node nodeIDE;
             long start;
             long end;
@@ -109,7 +114,6 @@ public class CommitDataTest extends JellyTestCase {
             String status;
             JTableOperator table;
             TableModel model;
-            VersioningOperator vo;
             
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
             comOperator = new Operator.DefaultStringComparator(true, true);
@@ -137,8 +141,7 @@ public class CommitDataTest extends JellyTestCase {
             wdso.finish();
             //open project
             OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
-//            oto.clear();            
-            oto = new OutputTabOperator("file:///tmp/repo");
+            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
             oto.waitText("Checking out... finished.");
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
@@ -181,6 +184,7 @@ public class CommitDataTest extends JellyTestCase {
             assertEquals("Wrong color of node!!!", TestKit.NEW_COLOR, color);
             
             oto = new OutputTabOperator("file:///tmp/repo");
+            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
             oto.clear();
             nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|NewClass.java");
             cmo = CommitOperator.invoke(nodeFile);
@@ -254,6 +258,7 @@ public class CommitDataTest extends JellyTestCase {
             wdso.finish();
             //open project
             OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
+            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
 //            oto.clear();            
             oto.waitText("Checking out... finished.");
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
@@ -296,6 +301,7 @@ public class CommitDataTest extends JellyTestCase {
             assertEquals("Wrong status of node!!!", TestKit.NEW_STATUS, status);
             
             oto = new OutputTabOperator("file:///tmp/repo");
+            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
             oto.clear();
             nodePack = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
             cmo = CommitOperator.invoke(nodePack);
