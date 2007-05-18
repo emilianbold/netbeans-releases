@@ -111,14 +111,6 @@ Microsystems, Inc. All Rights Reserved.
     <target name="install-tomcat" depends="init">
         <delete dir="${tomcat.home}" quiet="true"/>
         <unzip src="${tomcat.ext.dir}/apache-tomcat-${tomcat_version}.zip" dest="${xtest.tmpdir}/"/>
-        <!-- <Workaround> for issue #102127 -->
-        <copy todir="${tomcat.home}/common/lib">
-            <fileset dir="qa-functional/data">
-                <include name="org-netbeans-modules-web-httpmonitor.jar"/>
-                <include name="org-netbeans-modules-schema2beans.jar"/>
-            </fileset>
-        </copy>
-        <!-- </Workaround> -->
         <chmod dir="${tomcat.home}/bin" perm="ugo+rx" includes="**/*.sh"/>
     </target>
     
