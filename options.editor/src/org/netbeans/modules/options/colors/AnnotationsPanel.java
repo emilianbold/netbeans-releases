@@ -263,34 +263,31 @@ PropertyChangeListener {
     }
 
     private void updateData () {
-        Vector annotations = getAnnotations (currentScheme);
-	SimpleAttributeSet c = (SimpleAttributeSet) annotations.get 
-	    (lCategories.getSelectedIndex ());
-        Color color = ((ColorValue) cbBackground.getSelectedItem ()).color;
-        if (color != null)
-            c.addAttribute (
-                StyleConstants.Background,
-                color
-            );
-        else
-            c.removeAttribute (StyleConstants.Background);
-        color = ((ColorValue) cbForeground.getSelectedItem ()).color;
-        if (color != null)
-            c.addAttribute (
-                StyleConstants.Foreground,
-                color
-            );
-        else
-            c.removeAttribute (StyleConstants.Foreground);
-        color = ((ColorValue) cbWaveUnderlined.getSelectedItem ()).color;
-        if (color != null)
-            c.addAttribute (
-                EditorStyleConstants.WaveUnderlineColor,
-                color
-            );
-        else
-            c.removeAttribute (EditorStyleConstants.WaveUnderlineColor);
-        toBeSaved.add (currentScheme);
+        Vector annotations = getAnnotations(currentScheme);
+        SimpleAttributeSet c = (SimpleAttributeSet) annotations.get(lCategories.getSelectedIndex());
+        
+        Color color = ColorComboBox.getColor(cbBackground);
+        if (color != null) {
+            c.addAttribute(StyleConstants.Background, color);
+        } else {
+            c.removeAttribute(StyleConstants.Background);
+        }
+        
+        color = ColorComboBox.getColor(cbForeground);
+        if (color != null) {
+            c.addAttribute(StyleConstants.Foreground, color);
+        } else {
+            c.removeAttribute(StyleConstants.Foreground);
+        }
+        
+        color = ColorComboBox.getColor(cbWaveUnderlined);
+        if (color != null) {
+            c.addAttribute(EditorStyleConstants.WaveUnderlineColor, color);
+        } else {
+            c.removeAttribute(EditorStyleConstants.WaveUnderlineColor);
+        }
+        
+        toBeSaved.add(currentScheme);
     }
     
     private void refreshUI () {

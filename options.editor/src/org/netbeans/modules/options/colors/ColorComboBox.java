@@ -20,30 +20,13 @@
 package org.netbeans.modules.options.colors;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dialog;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.HashMap;
-import java.util.Map;
-import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import org.openide.util.NbBundle;
 
 
@@ -107,8 +90,12 @@ public class ColorComboBox {
     }
     
     static Color getColor (JComboBox combo) {
-	if (combo.getSelectedIndex () == (content.length - 1)) return null;
-        return ((ColorValue) combo.getSelectedItem ()).color;
+        // The last item is Inherited Color or None
+        if (combo.getSelectedIndex() < combo.getItemCount() - 1) {
+            return ((ColorValue) combo.getSelectedItem()).color;
+        } else {
+            return null;
+        }
     }
     
     private static String loc (String key) {

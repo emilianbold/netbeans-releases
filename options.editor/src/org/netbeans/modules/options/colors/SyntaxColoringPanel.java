@@ -535,22 +535,22 @@ PropertyChangeListener {
               wave = null, 
               strikethrough = null;
         if (cbEffects.getSelectedIndex () == 1)
-            underline = getRealColor(cbEffectColor);
+            underline = ColorComboBox.getColor(cbEffectColor);
         if (cbEffects.getSelectedIndex () == 2)
-            wave = getRealColor(cbEffectColor);
+            wave = ColorComboBox.getColor(cbEffectColor);
         if (cbEffects.getSelectedIndex () == 3)
-            strikethrough = getRealColor(cbEffectColor);
+            strikethrough = ColorComboBox.getColor(cbEffectColor);
         
         SimpleAttributeSet c = new SimpleAttributeSet (category);
         
-        Color color = getRealColor(cbBackground);
+        Color color = ColorComboBox.getColor(cbBackground);
         if (color != null) {
             c.addAttribute(StyleConstants.Background, color);
         } else {
             c.removeAttribute(StyleConstants.Background);
         }
         
-        color = getRealColor(cbForeground);
+        color = ColorComboBox.getColor(cbForeground);
         if (color != null) {
             c.addAttribute(StyleConstants.Foreground, color);
         } else {
@@ -580,15 +580,6 @@ PropertyChangeListener {
         updatePreview();
     }
 
-    private Color getRealColor(JComboBox comboBox) {
-        // The last item is Inherited Color or None
-        if (comboBox.getSelectedIndex() < comboBox.getItemCount() - 1) {
-            return ((ColorValue) comboBox.getSelectedItem()).color;
-        } else {
-            return null;
-        }
-    }
-    
     private boolean                 blink = true;
     private int                     blinkSequence = 0;
     private RequestProcessor.Task   task = new RequestProcessor 

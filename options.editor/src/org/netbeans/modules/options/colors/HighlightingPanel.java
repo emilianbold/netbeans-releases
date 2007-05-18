@@ -265,35 +265,29 @@ public class HighlightingPanel extends JPanel implements ActionListener, Propert
     }
 
     private void updateData () {
-        if (lCategories.getSelectedIndex () < 0) return;
-        Vector categories = getCategories (currentProfile);
-	AttributeSet category = (AttributeSet) categories.get 
-	    (lCategories.getSelectedIndex ());
-        Color underline = null, 
-              wave = null, 
-              strikethrough = null;
+        int index = lCategories.getSelectedIndex();
+        if (index < 0) return;
         
-        SimpleAttributeSet c = new SimpleAttributeSet (category);
-        Color color = ((ColorValue) cbBackground.getSelectedItem ()).color;
-        if (color != null)
-            c.addAttribute (
-                StyleConstants.Background,
-                color
-            );
-        else
-            c.removeAttribute (StyleConstants.Background);
-        color = ((ColorValue) cbForeground.getSelectedItem ()).color;
-        if (color != null)
-            c.addAttribute (
-                StyleConstants.Foreground,
-                color
-            );
-        else
-            c.removeAttribute (StyleConstants.Foreground);
-        int i = lCategories.getSelectedIndex ();
-        categories.set (i, c);
+        Vector categories = getCategories(currentProfile);
+        AttributeSet category = (AttributeSet) categories.get(lCategories.getSelectedIndex());
+        SimpleAttributeSet c = new SimpleAttributeSet(category);
         
-        toBeSaved.add (currentProfile);
+        Color color = ColorComboBox.getColor(cbBackground);
+        if (color != null) {
+            c.addAttribute(StyleConstants.Background, color);
+        } else {
+            c.removeAttribute(StyleConstants.Background);
+        }
+        
+        color = ColorComboBox.getColor(cbForeground);
+        if (color != null) {
+            c.addAttribute(StyleConstants.Foreground, color);
+        } else {
+            c.removeAttribute(StyleConstants.Foreground);
+        }
+        
+        categories.set(index, c);
+        toBeSaved.add(currentProfile);
     }
     
     private void refreshUI () {
