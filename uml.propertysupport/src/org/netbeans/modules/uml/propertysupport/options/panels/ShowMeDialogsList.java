@@ -34,11 +34,12 @@ public class ShowMeDialogsList implements UMLOptionsPanel {
     }
     
     public void update() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        form.load() ;
     }
     
     public void applyChanges() {
-        throw new UnsupportedOperationException("Not supported yet.");
+
+        form.store();
     }
     
     public JComponent create() {

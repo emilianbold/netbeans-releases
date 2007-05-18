@@ -40,34 +40,34 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
      */
     public void load() {
      
-        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("dummy", true)) {
+        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("UML_ShowMe_Allow_Lengthy_Searches", true)) {
             allowLengthyCB.setSelected(true);
         }
-        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("dummy", true)) {
+        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("UML_ShowMe_Automatically_Create_Classifiers", true)) {
             autoCreateCB.setSelected(true);
         }
-        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("dummy", true)) {
+        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("UML_ShowMe_Delete_Combined_Fragment_Messages", true)) {
             deleteCombinedFragCB.setSelected(true);
         }
-        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("dummy", true)) {
+        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("UML_ShowMe_Delete_Connector_Messages", true)) {
             deleteConnectorCB.setSelected(true);
         }
-        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("dummy", true)) {
+        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("UML_ShowMe_Delete_File_when_Deleting_Artifacts", true)) {
             deleteFileCB.setSelected(true);
         }
-        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("dummy", true)) {
+        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("UML_ShowMe_Dont_Show_Filter_Warning_Dialog", true)) {
             filterWarningCB.setSelected(true);
         }
-        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("dummy", true)) {
+        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("UML_ShowMe_Modify_Redefined_Operations", true)) {
             modifyCB.setSelected(true);
         }
-        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("dummy", true)) {
+        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("UML_ShowMe_Move_Invoked_Operation", true)) {
             moveInvokedCB.setSelected(true);
         }
-        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("dummy", true)) {
+        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("UML_ShowMe_Overwrite_Existing_Participants", true)) {
             overwriteCB.setSelected(true);
         }
-        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("dummy", true)) {
+        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("UML_ShowMe_Transform_When_Elements_May_Be_Lost", true)) {
             transformCB.setSelected(true);
         }
         
@@ -75,16 +75,16 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
     
     public void store() {
         
-        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("dummy", allowLengthyCB.isSelected());
-        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("dummy", autoCreateCB.isSelected());
-        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("dummy", deleteCombinedFragCB.isSelected());
-        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("dummy", deleteConnectorCB.isSelected());
-        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("dummy", deleteFileCB.isSelected());
-        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("dummy", filterWarningCB.isSelected());
-        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("dummy", modifyCB.isSelected());
-        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("dummy", moveInvokedCB.isSelected());
-        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("dummy", overwriteCB.isSelected());
-        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("dummy", transformCB.isSelected());
+        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("UML_ShowMe_Allow_Lengthy_Searches", allowLengthyCB.isSelected());
+        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("UML_ShowMe_Automatically_Create_Classifiers", autoCreateCB.isSelected());
+        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("UML_ShowMe_Delete_Combined_Fragment_Messages", deleteCombinedFragCB.isSelected());
+        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("UML_ShowMe_Delete_Connector_Messages", deleteConnectorCB.isSelected());
+        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("UML_ShowMe_Delete_File_when_Deleting_Artifacts", deleteFileCB.isSelected());
+        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("UML_ShowMe_Dont_Show_Filter_Warning_Dialog", filterWarningCB.isSelected());
+        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("UML_ShowMe_Modify_Redefined_Operations", modifyCB.isSelected());
+        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("UML_ShowMe_Move_Invoked_Operation", moveInvokedCB.isSelected());
+        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("UML_ShowMe_Overwrite_Existing_Participants", overwriteCB.isSelected());
+        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("UML_ShowMe_Transform_When_Elements_May_Be_Lost", transformCB.isSelected());
         
     }
     
