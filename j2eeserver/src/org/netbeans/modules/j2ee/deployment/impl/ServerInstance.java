@@ -38,6 +38,8 @@ import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsEx
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
 import org.openide.filesystems.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -92,8 +94,10 @@ public class ServerInstance implements Node.Cookie, Comparable {
     /** For how long should plugins be allowed to block in the isDebuggable method */
     private static final int DEBUGGING_CHECK_TIMEOUT = 10000; // in millis
     
-    /** Maximum amount of time the server should finish starting/stopping in */
-    private static final long TIMEOUT = 1200000; // in millis
+    /** Default maximum amount of time the server should finish starting/stopping/deploying in */
+    private static final long DEFAULT_TIMEOUT = 1200000; // in millis
+    
+    private static final Logger LOGGER = Logger.getLogger(ServerInstance.class.getName());
     
     private final String url;
     private final Server server;
@@ -113,8 +117,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
     private Map targets; // keyed by target name, valued by ServerTarget
     private boolean managerStartedByIde = false;
     private ServerTarget coTarget = null;
-    private boolean commandSucceed = false;
-    private InstancePropertiesImpl instanceProperties;
+    private final InstancePropertiesImpl instanceProperties;
     private HashMap/*<Target, ServerDebugInfo>*/ debugInfo = new HashMap();
     
     // last known server state, the initial value is stopped
@@ -151,6 +154,44 @@ public class ServerInstance implements Node.Cookie, Comparable {
     /** Return display name of this server instance.*/
     public String getDisplayName() {
         return instanceProperties.getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
+    }
+    
+    /**
+     * Returns value of the specified timeout propety in milliseconds. If the
+     * timeout property is not defined the specified default values is returned.
+     * 
+     * @param propName timeout property
+     * @param defaultValue value which will be returned when the specified timeout
+     *        property is not set.
+     * 
+     * @return value of the specified timeout propety in milliseconds.
+     */
+    private long getTimeout(String propName, long defaultValue) {
+        long returnValue = defaultValue;
+        String timeout = instanceProperties.getProperty(propName);
+        if (timeout != null) {
+            try {
+                returnValue = Long.parseLong(timeout) * 1000;
+            } catch (NumberFormatException e) {
+                LOGGER.log(Level.FINE, "could not parse timeout property", e); // NOI18N
+            }
+        }
+        return returnValue;
+    }
+    
+    /** Get the server startup timeout in milliseconds */
+    private long getStartupTimeout() {
+        return getTimeout(InstanceProperties.STARTUP_TIMEOUT, DEFAULT_TIMEOUT);
+    }
+    
+    /** Get the server shutdown timeout in milliseconds */
+    private long getShutdownTimeout() {
+        return getTimeout(InstanceProperties.SHUTDOWN_TIMEOUT, DEFAULT_TIMEOUT);
+    }
+    
+    /** Get the deployment timeout in milliseconds */
+    long getDeploymentTimeout() {
+        return getTimeout(InstanceProperties.DEPLOYMENT_TIMEOUT, DEFAULT_TIMEOUT);
     }
     
     public Server getServer() {
@@ -1184,93 +1225,38 @@ public class ServerInstance implements Node.Cookie, Comparable {
     //------------------------------------------------------------
     // startDeploymentManager
     private synchronized void _start(ProgressUI ui) throws ServerException {
-        
-        String displayName = getDisplayName();
-        
-        ui.progress(NbBundle.getMessage(ServerInstance.class, "MSG_StartingServer", displayName));
-        
-        ProgressObject po = null;
-        StartProgressHandler handler = new StartProgressHandler();
-        
+        ProgressObject po = getStartServer().startDeploymentManager();
         try {
-            setCommandSucceeded(false);
-            po = getStartServer().startDeploymentManager();
-            if (ui != null) {
-                ui.setProgressObject(po);
+            boolean completedSuccessfully = ProgressObjectUtil.trackProgressObject(ui, po, getStartupTimeout());
+            if (!completedSuccessfully) {
+                throw new ServerException(po.getDeploymentStatus().getMessage());
             }
-            po.addProgressListener(handler);
-            
-            if (isProgressing(po)) {
-                // wait until done or cancelled
-                boolean done = sleep();
-                if (! done) {
-                    String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StartServerTimeout", displayName);
-                    throw new ServerException(msg);
-                } else if (! hasCommandSucceeded()) {
-                    DeploymentStatus status = po.getDeploymentStatus();
-                    throw new ServerException(status.getMessage());
-                }
-            } else if (hasFailed(po)) {
-                DeploymentStatus status = po.getDeploymentStatus();
-                throw new ServerException(status.getMessage());
-            }
-            managerStartedByIde = true;
-            coTarget = null;
-            targets = null;
-            initCoTarget();
-        } finally {
-            if (ui != null) {
-                ui.setProgressObject(null);
-            }
-            if (po != null) {
-                po.removeProgressListener(handler);
-            }
+        } catch (TimedOutException e) {
+            String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StartServerTimeout", getDisplayName());
+            throw new ServerException(msg);
         }
+        managerStartedByIde = true;
+        coTarget = null;
+        targets = null;
+        initCoTarget();
     }
     
     // startDebugging
     private synchronized void _startDebug(Target target, ProgressUI ui) throws ServerException {
-        
-        String displayName = getDisplayName();
-        ui.progress(NbBundle.getMessage(ServerInstance.class, "MSG_StartingDebugServer", displayName));
-        
-        ProgressObject po = null;
-        StartProgressHandler handler = new StartProgressHandler();
-        
+        ProgressObject po = getStartServer().startDebugging(target);
         try {
-            setCommandSucceeded(false);
-            po = getStartServer().startDebugging(target);
-            if (ui != null) {
-                ui.setProgressObject(po);
+            boolean completedSuccessfully = ProgressObjectUtil.trackProgressObject(ui, po, getStartupTimeout());
+            if (!completedSuccessfully) {
+                throw new ServerException(po.getDeploymentStatus().getMessage());
             }
-            po.addProgressListener(handler);
-            
-            if (isProgressing(po)) {
-                // wait until done or cancelled
-                boolean done = sleep();
-                if (! done) {
-                    String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StartDebugTimeout", displayName);
-                    throw new ServerException(msg);
-                } else if (! hasCommandSucceeded()) {
-                    DeploymentStatus status = po.getDeploymentStatus();
-                    throw new ServerException(status.getMessage());
-                }
-            } else if (hasFailed(po)) {
-                DeploymentStatus status = po.getDeploymentStatus();
-                throw new ServerException(status.getMessage());
-            }
-            managerStartedByIde = true;
-            coTarget = null;
-            targets = null;
-            initCoTarget();
-        } finally {
-            if (ui != null) {
-                ui.setProgressObject(null);
-            }
-            if (po != null) {
-                po.removeProgressListener(handler);
-            }
+        } catch (TimedOutException e) {
+            String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StartDebugTimeout", getDisplayName());
+            throw new ServerException(msg);
         }
+        managerStartedByIde = true;
+        coTarget = null;
+        targets = null;
+        initCoTarget();
     }
     
     /** start server in the profile mode */
@@ -1292,85 +1278,41 @@ public class ServerInstance implements Node.Cookie, Comparable {
             debugInfo.clear();
             profiledServerInstance = null;
         }
-        
-        String displayName = getDisplayName();
-        ui.progress(NbBundle.getMessage(ServerInstance.class, "MSG_StartingProfileServer", displayName));
-        
-        ProgressObject po = null;
-        StartProgressHandler handler = new StartProgressHandler();
-        
-        try {
-            setCommandSucceeded(false);
-            Profiler profiler = ServerRegistry.getProfiler();
-            if (profiler == null) {
-                // this should not occur, but it is safer this way
-                String msg = NbBundle.getMessage(ServerInstance.class, "MSG_ProfilerNotRegistered");
-                throw new ServerException(msg);
-            }
-            profiler.notifyStarting();
-            po = getStartServer().startProfiling(target, settings);
-            ui.setProgressObject(po);
-            po.addProgressListener(handler);
-            
-            if (isProgressing(po)) {
-                // wait until done or cancelled
-                boolean done = sleep();
-                if (! done) {
-                    String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StartProfileTimeout", displayName);
-                    throw new ServerException(msg);
-                } else if (! hasCommandSucceeded()) {
-                    DeploymentStatus status = po.getDeploymentStatus();
-                    throw new ServerException(status.getMessage());
-                }
-            } else if (hasFailed(po)) {
-                DeploymentStatus status = po.getDeploymentStatus();
-                throw new ServerException(status.getMessage());
-            }
-            profiledServerInstance = this;
-            profilerSettings = settings;
-            managerStartedByIde = true;
-        } finally {
-            if (ui != null) {
-                ui.setProgressObject(null);
-            }
-            if (po != null) {
-                po.removeProgressListener(handler);
-            }
+        Profiler profiler = ServerRegistry.getProfiler();
+        if (profiler == null) {
+            // this should not occur, but better make sure
+            throw new ServerException(NbBundle.getMessage(ServerInstance.class, "MSG_ProfilerNotRegistered"));
         }
+        profiler.notifyStarting();
+        ProgressObject po = getStartServer().startProfiling(target, settings);
+        try {
+            boolean completedSuccessfully = ProgressObjectUtil.trackProgressObject(ui, po, DEFAULT_TIMEOUT);
+            if (!completedSuccessfully) {
+                throw new ServerException(po.getDeploymentStatus().getMessage());
+            }
+        } catch (TimedOutException e) {
+            String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StartProfileTimeout", getDisplayName());
+            throw new ServerException(msg);
+        }
+        profiledServerInstance = this;
+        profilerSettings = settings;
+        managerStartedByIde = true;
     }
     
     /** Tell the profiler to shutdown */
     private synchronized void shutdownProfiler(ProgressUI ui) throws ServerException {
         ui.progress(NbBundle.getMessage(ServerInstance.class, "MSG_StoppingProfiler"));
-        StartProgressHandler handler = new StartProgressHandler();
-        ProgressObject po = null;
-        try {
-            Profiler profiler = ServerRegistry.getProfiler();
-            if (profiler != null) {
-                po = profiler.shutdown();
-                ui.setProgressObject(po);
-                po.addProgressListener(handler);
-                if (isProgressing(po)) {
-                    // wait until done or cancelled
-                    boolean done = sleep();
-                    if (!done) {
-                        String msg = NbBundle.getMessage(ServerInstance.class, "MSG_ProfilerShutdownTimeout");
-                        throw new ServerException(msg);
-                    } else if (! hasCommandSucceeded()) {
-                        DeploymentStatus status = po.getDeploymentStatus();
-                        throw new ServerException(status.getMessage());
-                    }
-                } else if (hasFailed(po)) {
-                    DeploymentStatus status = po.getDeploymentStatus();
-                    throw new ServerException(status.getMessage());
+        Profiler profiler = ServerRegistry.getProfiler();
+        if (profiler != null) {
+            ProgressObject po = profiler.shutdown();
+            try {
+                boolean completedSuccessfully = ProgressObjectUtil.trackProgressObject(ui, po, getShutdownTimeout());
+                if (!completedSuccessfully) {
+                    throw new ServerException(po.getDeploymentStatus().getMessage());
                 }
-            }
-        } finally {
-            if (ui != null) {
-                ui.setProgressObject(null);
-            }
-            if (po != null) {
-                po.removeProgressListener(handler);
+            } catch (TimedOutException e) {
+                String msg = NbBundle.getMessage(ServerInstance.class, "MSG_ProfilerShutdownTimeout");
+                throw new ServerException(msg);
             }
         }
     }
@@ -1408,42 +1350,18 @@ public class ServerInstance implements Node.Cookie, Comparable {
                 }
             }
         }
-        
-        String displayName = getDisplayName();
-        ui.progress(NbBundle.getMessage(ServerInstance.class, "MSG_StoppingServer", displayName));
-        
-        StartProgressHandler handler = new StartProgressHandler();
-        ProgressObject po = null;
+        ProgressObject po = getStartServer().stopDeploymentManager();
         try {
-            setCommandSucceeded(false);
-            po = getStartServer().stopDeploymentManager();
-            ui.setProgressObject(po);
-            po.addProgressListener(handler);
-            
-            if (isProgressing(po)) {
-                // wait until done or cancelled
-                boolean done = sleep();
-                if (! done) {
-                    String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StopServerTimeout", displayName);
-                    throw new ServerException(msg);
-                } else if (! hasCommandSucceeded()) {
-                    DeploymentStatus status = po.getDeploymentStatus();
-                    throw new ServerException(status.getMessage());
-                }
-            } else if (hasFailed(po)) {
-                DeploymentStatus status = po.getDeploymentStatus();
-                throw new ServerException(status.getMessage());
+            boolean completedSuccessfully = ProgressObjectUtil.trackProgressObject(ui, po, getShutdownTimeout());
+            if (!completedSuccessfully) {
+                throw new ServerException(po.getDeploymentStatus().getMessage());
             }
-            managerStartedByIde = false;
-            reset();
-        } finally {
-            if (ui != null) {
-                ui.setProgressObject(null);
-            }
-            if (po != null) {
-                po.removeProgressListener(handler);
-            }
+        } catch (TimedOutException e) {
+            String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StopServerTimeout", getDisplayName());
+            throw new ServerException(msg);
         }
+        managerStartedByIde = false;
+        reset();
     }
     
     private void _start(Target target, ProgressUI ui) throws ServerException {
@@ -1451,43 +1369,17 @@ public class ServerInstance implements Node.Cookie, Comparable {
         if (serverTarget.isRunning()) {
             return;
         }
-        
-        String displayName = target.getName();
-        ui.progress(NbBundle.getMessage(ServerInstance.class, "MSG_StartingServer", displayName));
-        StartProgressHandler handler = new StartProgressHandler();
-        ProgressObject po = null;
-        
+        ProgressObject po = serverTarget.start();
         try {
-            setCommandSucceeded(false);
-            po = serverTarget.start();
-            if (ui != null) {
-                ui.setProgressObject(po);
+            boolean completedSuccessfully = ProgressObjectUtil.trackProgressObject(ui, po, getStartupTimeout());
+            if (!completedSuccessfully) {
+                throw new ServerException(po.getDeploymentStatus().getMessage());
             }
-            po.addProgressListener(handler);
-            
-            if (isProgressing(po)) {
-                // wait until done or cancelled
-                boolean done = sleep();
-                if (! done) {
-                    String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StartServerTimeout", displayName);
-                    throw new ServerException(msg);
-                } else if (! hasCommandSucceeded()) {
-                    DeploymentStatus status = po.getDeploymentStatus();
-                    throw new ServerException(status.getMessage());
-                }
-            } else if (hasFailed(po)) {
-                DeploymentStatus status = po.getDeploymentStatus();
-                throw new ServerException(status.getMessage());
-            }
-            targetsStartedByIde.add(serverTarget.getName());
-        } finally {
-            if (ui != null) {
-                ui.setProgressObject(null);
-            }
-            if (po != null) {
-                po.removeProgressListener(handler);
-            }
+        } catch (TimedOutException e) {
+            String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StartServerTimeout", target.getName());
+            throw new ServerException(msg);
         }
+        targetsStartedByIde.add(serverTarget.getName());
     }
     
     private void _stop(Target target, ProgressUI ui) throws ServerException {
@@ -1495,86 +1387,23 @@ public class ServerInstance implements Node.Cookie, Comparable {
         if (serverTarget.isRunning()) {
             return;
         }
-        
-        String displayName = target.getName();
-        ui.progress(NbBundle.getMessage(ServerInstance.class, "MSG_StoppingServer", displayName));
-        StartProgressHandler handler = new StartProgressHandler();
-        ProgressObject po = null;
-        
+        ProgressObject po = serverTarget.stop();
         try {
-            setCommandSucceeded(false);
-            po = serverTarget.stop();
-            if (ui != null) {
-                ui.setProgressObject(po);
+            boolean completedSuccessfully = ProgressObjectUtil.trackProgressObject(ui, po, getShutdownTimeout());
+            if (!completedSuccessfully) {
+                throw new ServerException(po.getDeploymentStatus().getMessage());
             }
-            po.addProgressListener(handler);
-            
-            if (isProgressing(po)) {
-                // wait until done or cancelled
-                boolean done = sleep();
-                if (! done) {
-                    String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StopServerTimeout", displayName);
-                    throw new ServerException(msg);
-                } else if (! hasCommandSucceeded()) {
-                    DeploymentStatus status = po.getDeploymentStatus();
-                    throw new ServerException(status.getMessage());
-                }
-            } else if (hasFailed(po)) {
-                DeploymentStatus status = po.getDeploymentStatus();
-                throw new ServerException(status.getMessage());
-            }
-            targetsStartedByIde.remove(serverTarget.getName());
-        } finally {
-            if (ui != null) {
-                ui.setProgressObject(null);
-            }
-            if (po != null) {
-                po.removeProgressListener(handler);
-            }
+        } catch (TimedOutException e) {
+            String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StopServerTimeout", target.getName());
+            throw new ServerException(msg);
         }
+        targetsStartedByIde.remove(serverTarget.getName());
     }
     
     //-------------- End state-machine operations -------------------
     
     public boolean canStartServer() {
         return this.getStartServer() != null && getStartServer().supportsStartDeploymentManager();
-    }
-    
-    private class StartProgressHandler implements ProgressListener {
-        Boolean completed = null;
-        public StartProgressHandler() {
-        }
-        public void handleProgressEvent(ProgressEvent progressEvent) {
-            if (completed != null)
-                return;
-            DeploymentStatus status = progressEvent.getDeploymentStatus();
-            if (status.isCompleted()) {
-                completed = Boolean.TRUE;
-                ServerInstance.this.setCommandSucceeded(true);
-                ServerInstance.this.wakeUp();
-            } else if (status.isFailed()) {
-                completed = Boolean.FALSE;
-                ServerInstance.this.wakeUp();
-            }
-        }
-        public boolean isCompleted() {
-            if (completed == null)
-                return false;
-            return completed.booleanValue();
-        }
-    }
-    
-    private synchronized void wakeUp() {
-        notify();
-    }
-    
-    //return false when timeout or interrupted
-    private synchronized boolean sleep() {
-        try {
-            long t0 = System.currentTimeMillis();
-            wait(TIMEOUT);
-            return (System.currentTimeMillis() - t0) < TIMEOUT;
-        } catch (Exception e) { return false; }
     }
     
     public boolean isManagerOf(Target target) {
@@ -1674,7 +1503,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
     };
     
     /** Return the result of the test or false if the given time-out ran out. */
-    private boolean safeTrueTest(SafeTrueTest test, int timeout) {
+    private boolean safeTrueTest(SafeTrueTest test, long timeout) {
         try {
            new RequestProcessor().post(test).waitFinished(timeout);
         } catch (InterruptedException ie) {
@@ -1682,13 +1511,6 @@ public class ServerInstance implements Node.Cookie, Comparable {
         } finally {
             return test.result();
         }
-    }
-    
-    private synchronized boolean hasCommandSucceeded() {
-        return commandSucceed;
-    }
-    private synchronized void setCommandSucceeded(boolean val) {
-        commandSucceed = val;
     }
     
     private ServerDebugInfo _retrieveDebugInfo(Target target) {

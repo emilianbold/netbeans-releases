@@ -35,9 +35,12 @@ import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
  * 
  * @author sherold
  */
-public final class ProgressObjectUtil {
+public class ProgressObjectUtil {
     
     private static final Logger LOGGER = Logger.getLogger(ProgressObjectUtil.class.getName());
+    
+    private ProgressObjectUtil() {
+    }
     
     /**
      * Waits till the progress object is in final state or till the timeout runs out.
@@ -48,8 +51,12 @@ public final class ProgressObjectUtil {
      *
      * @return true if the progress object completed successfully, false otherwise.
      *         This is a workaround for issue 82428.
+     * 
+     * @throws TimedOutException when the task times out.
      */
-    public static boolean trackProgressObject(ProgressUI ui, final ProgressObject po, long timeout) {
+    public static boolean trackProgressObject(ProgressUI ui, final ProgressObject po, long timeout) throws TimedOutException {
+        assert po != null;
+        assert ui != null;
         final AtomicBoolean completed = new AtomicBoolean();
         ui.setProgressObject(po);
         try {
@@ -76,6 +83,9 @@ public final class ProgressObjectUtil {
                             progressFinished.await();
                         } else {
                             progressFinished.await(timeout, TimeUnit.MILLISECONDS);
+                            if (progressFinished.getCount() > 0) {
+                                throw new TimedOutException();
+                            }
                         }
                     } catch (InterruptedException e) {
                         LOGGER.log(Level.INFO, null, e);

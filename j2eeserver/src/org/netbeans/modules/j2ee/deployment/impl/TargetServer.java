@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -60,10 +60,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver;
  *      deploymentTarget.setTargetModules(tms);
  */
 public class TargetServer {
-    
-    private static final long DISTRIBUTE_TIMEOUT = 120000;
-    private static final long INCREMENTAL_TIMEOUT = 60000;
-    private static final long TIMEOUT = 60000;
     
     private Target[] targets;
     private final ServerInstance instance;
@@ -474,7 +470,11 @@ public class TargetServer {
             TargetModuleID[] tmIDs = (TargetModuleID[]) undeployTMIDs.toArray(new TargetModuleID[undeployTMIDs.size()]);
             ui.progress(NbBundle.getMessage(TargetServer.class, "MSG_Undeploying"));
             ProgressObject undeployPO = instance.getDeploymentManager().undeploy(tmIDs);
-            trackProgressObject(ui, undeployPO, TIMEOUT);
+            try {
+                ProgressObjectUtil.trackProgressObject(ui, undeployPO, instance.getDeploymentTimeout()); // lets use the same timeout as for deployment
+            } catch (TimedOutException e) {
+                // undeployment failed, try to continue anyway
+            }
         }
 
         // handle initial file deployment or distribute
@@ -560,64 +560,22 @@ public class TargetServer {
      * @param incremental is it incremental deploy?
      */
     private void trackDeployProgressObject(ProgressUI ui, ProgressObject po, boolean incremental) {
-        boolean completed = trackProgressObject(ui, po, incremental ? INCREMENTAL_TIMEOUT : DISTRIBUTE_TIMEOUT);
-        if (completed) {
-            TargetModuleID[] modules = po.getResultTargetModuleIDs();
-            modules = saveRootTargetModules(modules);
-            if (!incremental) {
-                // if incremental, plugin is responsible for starting module, depending on nature of changes
-                ProgressObject startPO = instance.getDeploymentManager().start(modules);
-                trackProgressObject(ui, startPO, TIMEOUT);
-            }
-        }
-    }
-    
-    /**
-     * Waits till the progress object is in final state or till the timeout runs out.
-     *
-     * @param ui progress ui which will be notified about progress object changes .
-     * @param po progress object which will be tracked.
-     * @param timeout timeout in millis
-     *
-     * @return true if the progress object completed successfully, false otherwise.
-     *         This is a workaround for issue 82428.
-     */
-    private static boolean trackProgressObject(ProgressUI ui, final ProgressObject po, long timeout) {
-        final AtomicBoolean completed = new AtomicBoolean();
-        ui.setProgressObject(po);
+        long deploymentTimeout = instance.getDeploymentTimeout();
+        long startTime = System.currentTimeMillis();
         try {
-            final CountDownLatch progressFinished = new CountDownLatch(1);
-            ProgressListener listener = new ProgressListener() {
-                public void handleProgressEvent(ProgressEvent progressEvent) {
-                    DeploymentStatus status = progressEvent.getDeploymentStatus();
-                    if (status.isCompleted()) {
-                        completed.set(true);
-                    }
-                    if (status.isCompleted() || status.isFailed()) {
-                        progressFinished.countDown();
-                    }
+            boolean completed = ProgressObjectUtil.trackProgressObject(ui, po, deploymentTimeout);
+            if (completed) {
+                TargetModuleID[] modules = po.getResultTargetModuleIDs();
+                modules = saveRootTargetModules(modules);
+                if (!incremental) {
+                    // if incremental, plugin is responsible for starting module, depending on nature of changes
+                    ProgressObject startPO = instance.getDeploymentManager().start(modules);
+                    long deployTime = System.currentTimeMillis() - startTime;
+                    ProgressObjectUtil.trackProgressObject(ui, startPO, deploymentTimeout - deployTime);
                 }
-            };
-            po.addProgressListener(listener);
-            try {
-                // the completion event might have arrived before the progress listener 
-                // was registered, wait only if not yet finished
-                DeploymentStatus status = po.getDeploymentStatus();
-                if (!status.isCompleted() && !status.isFailed()) {
-                    try {
-                        progressFinished.await(timeout, TimeUnit.MILLISECONDS);
-                    } catch (InterruptedException e) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                    }
-                } else if (status.isCompleted()) {
-                    completed.set(true);
-                }
-            } finally {
-                po.removeProgressListener(listener);
             }
-        } finally {
-            ui.setProgressObject(null);
+        } catch (TimedOutException e) {
+            // deployment failed
         }
-        return completed.get();
     }
 }
