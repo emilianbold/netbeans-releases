@@ -23,7 +23,7 @@
 <mconfig name="enterprise pack qa-performance test config">
 
     <!-- testbag common for all suites to setup usedir -->
-    <testbag testattribs="all or menus or dialogs or actions" prio="1"
+    <testbag testattribs="all or ui_responsiveness or menus or dialogs or actions" prio="1"
              executor="ide_perf_setup" name="UI responsiveness - setup">
         <testset dir="qa-functional/src">
             <patternset>
@@ -33,7 +33,7 @@
     </testbag>
     
     <!-- 1st round -->    
-    <testbag testattribs="all or actions" prio="2"
+    <testbag testattribs="all or ui_responsiveness or actions" prio="2"
              executor="ide_performance" name="UI responsiveness - Actions" >
         <testset dir="qa-functional/src">
             <patternset>
@@ -41,7 +41,7 @@
             </patternset>
         </testset>
     </testbag>
-    <testbag testattribs="all or dialogs" prio="3"
+    <testbag testattribs="all or ui_responsiveness or dialogs" prio="3"
              executor="ide_performance" name="UI responsiveness - Dialogs" >
         <testset dir="qa-functional/src">
             <patternset>
@@ -49,7 +49,7 @@
             </patternset>
         </testset>
     </testbag>
-<!-- no mobility specific menus tests so far        <testbag testattribs="all or menus" prio="4"
+<!-- no mobility specific menus tests so far        <testbag testattribs="all or ui_responsiveness or menus" prio="4"
              executor="ide_performance" name="UI responsiveness - Menus" >
         <testset dir="qa-functional/src">
             <patternset>
@@ -60,7 +60,7 @@
 -->
 
     <!-- 2nd round -->    
-    <testbag testattribs="(all or actions) and NOT once" prio="5"
+    <testbag testattribs="(all or ui_responsiveness or actions) and NOT once" prio="5"
              executor="ide_performance" name="UI responsiveness - Actions" >
         <testset dir="qa-functional/src">
             <patternset>
@@ -68,7 +68,7 @@
             </patternset>
         </testset>
     </testbag>
-    <testbag testattribs="(all or dialogs) and NOT once" prio="6"
+    <testbag testattribs="(all or ui_responsiveness or dialogs) and NOT once" prio="6"
              executor="ide_performance" name="UI responsiveness - Dialogs" >
         <testset dir="qa-functional/src">
             <patternset>
@@ -76,7 +76,7 @@
             </patternset>
         </testset>
     </testbag>
-<!-- no mobility specific menus tests so far    <testbag testattribs="(all or menus) and NOT once" prio="7"
+<!-- no mobility specific menus tests so far    <testbag testattribs="(all or ui_responsiveness or menus) and NOT once" prio="7"
              executor="ide_performance" name="UI responsiveness - Menus" >
         <testset dir="qa-functional/src">
             <patternset>
@@ -87,7 +87,7 @@
 -->
       
     <!-- 3rd round -->    
-    <testbag testattribs="(all or actions) and NOT once" prio="8"
+    <testbag testattribs="(all or ui_responsiveness or actions) and NOT once" prio="8"
              executor="ide_performance" name="UI responsiveness - Actions" >
         <testset dir="qa-functional/src">
             <patternset>
@@ -95,7 +95,7 @@
             </patternset>
         </testset>
     </testbag>
-    <testbag testattribs="(all or dialogs) and NOT once" prio="9"
+    <testbag testattribs="(all or ui_responsiveness or dialogs) and NOT once" prio="9"
              executor="ide_performance" name="UI responsiveness - Dialogs" >
         <testset dir="qa-functional/src">
             <patternset>
@@ -103,7 +103,7 @@
             </patternset>
         </testset>
     </testbag>
-<!-- no mobility specific menus tests so far    <testbag testattribs="(all or menus) and NOT once" prio="10"
+<!-- no mobility specific menus tests so far    <testbag testattribs="(all or ui_responsiveness or menus) and NOT once" prio="10"
              executor="ide_performance" name="UI responsiveness - Menus" >
         <testset dir="qa-functional/src">
             <patternset>
@@ -127,7 +127,7 @@
 <!-- Memory Footprint Testbags -->
 
     <!-- Out Of The Box -->
-    <testbag testattribs="all or footprint_OutOfTheBox" prio="300"
+    <testbag testattribs="all or footprint or footprint_OutOfTheBox" prio="300"
              executor="ide_footprint" name="Footprint - Out Of The Box Startup" >
         <testset dir="qa-functional/src">
             <patternset>
@@ -136,7 +136,7 @@
         </testset>
     </testbag>
     
-    <testbag testattribs="(all or footprint_OutOfTheBox) and NOT once" prio="301"
+    <testbag testattribs="(all or footprint or footprint_OutOfTheBox) and NOT once" prio="301"
              executor="ide_footprint" name="Footprint - Out Of The Box Startup" >
         <testset dir="footprint/src">
             <patternset>
@@ -145,7 +145,7 @@
         </testset>
     </testbag>
     
-    <testbag testattribs="(all or footprint_OutOfTheBox) and NOT once" prio="302"
+    <testbag testattribs="(all or footprint or footprint_OutOfTheBox) and NOT once" prio="302"
              executor="ide_footprint" name="Footprint - Out Of The Box Startup" >
         <testset dir="footprint/src">
             <patternset>
@@ -155,7 +155,7 @@
     </testbag>
 
     <!-- J2EE Project workflow -->
-    <testbag testattribs="all or footprint_MobilityProject" prio="330"
+    <testbag testattribs="all or footprint or footprint_MobilityProject" prio="330"
              executor="ide_footprint" name="Footprint - Mobility project workflow" >
 	<testset dir="footprint/src">
 	    <patternset>
@@ -164,7 +164,7 @@
 	</testset>
     </testbag>
 
-    <testbag testattribs="(all or footprint_MobilityProject) and NOT once" prio="331"
+    <testbag testattribs="(all or footprint or footprint_MobilityProject) and NOT once" prio="331"
              executor="ide_footprint" name="Footprint - Mobility project workflow" >
 	<testset dir="footprint/src">
 	    <patternset>
@@ -173,7 +173,7 @@
 	</testset>
     </testbag>
 
-    <testbag testattribs="(all or footprint_MobilityProject) and NOT once" prio="332"
+    <testbag testattribs="(all or footprint or footprint_MobilityProject) and NOT once" prio="332"
              executor="ide_footprint" name="Footprint - Mobility project workflow" >
 	<testset dir="footprint/src">
 	    <patternset>
