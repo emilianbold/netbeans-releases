@@ -53,11 +53,11 @@ public class PageFlowSceneData {
      **/
     public void saveCurrentSceneData( ) {
         if ( utilities.getCurrentScope().equals( PageFlowUtilities.LBL_SCOPE_FACESCONFIG) ){
-                facesConfigSceneData.clear();
-                facesConfigSceneData.putAll( createSceneInfo() );
+            facesConfigSceneData.clear();
+            facesConfigSceneData.putAll( createSceneInfo() );
         } else if( utilities.getCurrentScope().equals(PageFlowUtilities.LBL_SCOPE_PROJECT)){
-                projectSceneData.clear();
-                projectSceneData.putAll( createSceneInfo() );
+            projectSceneData.clear();
+            projectSceneData.putAll( createSceneInfo() );
         }
     }
     
@@ -102,7 +102,11 @@ public class PageFlowSceneData {
         Map<String,Point> sceneInfo = new HashMap<String,Point>();
         Collection<Page> pages =  scene.getNodes();
         for( Page page : pages ){
-            sceneInfo.put(page.getDisplayName(), scene.findWidget(page).getPreferredLocation());
+            if( scene.isValidated() ) {
+                sceneInfo.put(page.getDisplayName(), scene.findWidget(page).getLocation());
+            } else {
+                sceneInfo.put(page.getDisplayName(), scene.findWidget(page).getPreferredLocation());
+            }
         }
         return sceneInfo;
     }

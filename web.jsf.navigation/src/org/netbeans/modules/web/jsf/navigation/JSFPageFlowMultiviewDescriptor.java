@@ -31,6 +31,8 @@ package org.netbeans.modules.web.jsf.navigation;
 import java.awt.Image;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import org.netbeans.core.spi.multiview.CloseOperationState;
@@ -38,12 +40,12 @@ import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
+import org.openide.LifecycleManager;
 import org.openide.awt.UndoRedo;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -53,8 +55,8 @@ import org.openide.windows.WindowManager;
  */
 public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Serializable{
     static final long serialVersionUID = -3101808890387485990L;
-//    private static final long serialVersionUID = -6305897237371751567L;
-//        static final long serialVersionUID = -6305897237371751567L;
+    //    private static final long serialVersionUID = -6305897237371751567L;
+    //        static final long serialVersionUID = -6305897237371751567L;
     
     
     private JSFConfigEditorContext context;
@@ -82,10 +84,10 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
         return "PageFlow";
     }
     
-//    private static final Image PageFlowImage = Utilities.loadImage("org/netbeans/modules/web/jsf/navigation/resources/navigation.gif");
+    //    private static final Image PageFlowImage = Utilities.loadImage("org/netbeans/modules/web/jsf/navigation/resources/navigation.gif");
     private static final Image JSFConfigIcon = org.openide.util.Utilities.loadImage("org/netbeans/modules/web/jsf/resources/JSFConfigIcon.png"); // NOI18N
     public Image getIcon() {
-//        return PageFlowImage;
+        //        return PageFlowImage;
         return JSFConfigIcon;
     }
     
@@ -107,26 +109,18 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
         private transient PageFlowView tc;
         private transient JComponent toolbar;
         static final long serialVersionUID = 5454879177214643L;
-//        private static final long serialVersionUID = -6305897237371751567L;
         private JSFConfigEditorContext context;
         
-        
-        //        public PageFlowElement() {
-        //        }
         
         public PageFlowElement(JSFConfigEditorContext context) {
             this.context = context;
             init();
+            
+            LOG.setLevel(Level.FINEST);
         }
         
         private void init() {
-            
             getTopComponent().setName(context.getFacesConfigFile().getName());
-            //            panel = new JScrollPane(tc);
-            //            panel.setName(context.getFacesConfigFile().getName());
-            //            this.setName(context.getFacesConfigFile().getName());
-            //            add(panel, BorderLayout.CENTER);
-            
         }
         
         public JComponent getVisualRepresentation() {
@@ -174,27 +168,31 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
                 properties.open();
             }
             tc.registerListeners();
+            LOG.finest("PageFlowEditor componentOpened");
         }
         
         public void componentClosed() {
             tc.unregstierListeners();
             tc.serializeNodeLocations(tc.getStorageDatFile());
+            LOG.finest("PageFlowEditor componentClosed");
         }
         
         public void componentShowing() {
+            LOG.finest("PageFlowEditor componentShowing");
         }
         
         public void componentHidden() {
-            
+            LOG.finest("PageFlowEditor componentHidden");
         }
         
         public void componentActivated() {
             //tc.requestFocusInWindow();
+            LOG.finest("PageFlowView componentActivated");
             tc.requestActive();
         }
         
         public void componentDeactivated() {
-            
+            LOG.finest("PageFlowView Deactivated");
         }
         
         private MultiViewElementCallback callback;
@@ -206,13 +204,15 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
             this.callback = callback;
             context.setMultiViewTopComponent(callback.getTopComponent());
         }
-                
+        
         public CloseOperationState canCloseElement() {
             return CloseOperationState.STATE_OK;
         }
         
         private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+            tc.serializeNodeLocations(tc.getStorageDatFile());
             out.writeObject(context);
+            LOG.finest("writeObject");
         }
         
         private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -221,6 +221,7 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
                 throw new ClassNotFoundException("JSFConfigEditorContext expected but not found");
             context = (JSFConfigEditorContext) object;
             init();
+            LOG.finest("readObject");
         }
         
         public UndoRedo getUndoRedo() {
@@ -228,4 +229,7 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
         }
         
     }
+    
+    private final static Logger LOG = Logger.getLogger("org.netbeans.modules.web.jsf.navigation");
+
 }
