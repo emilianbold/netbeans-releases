@@ -62,7 +62,6 @@
 					<file title="binding_data_2_table_component.html"/>
 					<file title="create_sql_query.html"/>
 					<file title="data_quickref.html"/>
-					<file title="database_connect.html"/>
 					<file title="del_web_service.html"/>
 					<file title="delete_database_svr_type.html"/>
 					<file title="delete_table.html"/>
@@ -70,7 +69,6 @@
 					<file title="java_db_quickref.html"/>
 					<file title="modify_db_conn_properties.html"/>
 					<file title="remove_database_conn.html"/>
-					<file title="view_data.html"/>
 				</directory>
 				<file title="about_data_binding.html"/>
 				<file title="aboutcompdata.html"/>
