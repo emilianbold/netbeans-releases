@@ -80,6 +80,38 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
             </folder>
         </folder>
+
+        <folder name="text">
+            <folder name="x-type-C">
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="module-coloring.xml">
+<![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
+
+<fontscolors>
+    <fontcolor name="test-module" foreColor="000011" bgColor="000022">
+        <font style="italic"/>
+    </fontcolor>
+    <fontcolor name="test-module-and-user" foreColor="BB0000" bgColor="AA0000">
+        <font style="bold"/>
+    </fontcolor>
+</fontscolors>
+                            ]]></file>
+                        </folder>
+                        <file name="user-coloring.xml">
+<![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
+
+<fontscolors>
+    <fontcolor name="test-module-and-user" bgColor="CC0000"/>
+</fontscolors>
+                            ]]></file>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
     </folder>
 
 </filesystem>

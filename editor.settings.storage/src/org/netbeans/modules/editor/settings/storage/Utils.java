@@ -24,6 +24,7 @@ import java.awt.Font;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -281,12 +282,34 @@ public class Utils {
      * Creates unmodifiable copy of the original map converting <code>AttributeSet</code>s
      * to their immutable versions.
      */
-    public static Map<String, AttributeSet> immutize(Map<String, ? extends AttributeSet> map) {
+    public static Map<String, AttributeSet> immutize(Map<String, ? extends AttributeSet> map, Object... filterOutKeys) {
         Map<String, AttributeSet> immutizedMap = new HashMap<String, AttributeSet>();
         
         for(String name : map.keySet()) {
             AttributeSet attribs = map.get(name);
-            immutizedMap.put(name, AttributesUtilities.createImmutable(attribs));
+            
+            if (filterOutKeys.length == 0) {
+                immutizedMap.put(name, AttributesUtilities.createImmutable(attribs));
+            } else {
+                List<Object> pairs = new ArrayList<Object>();
+
+                // filter out attributes specified by filterOutKeys
+                first:
+                for(Enumeration<? extends Object> keys = attribs.getAttributeNames(); keys.hasMoreElements(); ) {
+                    Object key = keys.nextElement();
+                    
+                    for(Object filterOutKey : filterOutKeys) {
+                        if (Utilities.compareObjects(key, filterOutKey)) {
+                            continue first;
+                        }
+                    }
+                    
+                    pairs.add(key);
+                    pairs.add(attribs.getAttribute(key));
+                }
+
+                immutizedMap.put(name, AttributesUtilities.createImmutable(pairs.toArray()));
+            }
         }
         
         return Collections.unmodifiableMap(immutizedMap);

@@ -108,6 +108,28 @@ public class FontColorSettingsImplTest extends NbTestCase {
         checkSingleAttribute(MimePath.EMPTY, "test-all-languages-set-all", EditorStyleConstants.WaveUnderlineColor, 0x070809);
     }
     
+    public void testUserChangesOverrideDefaults() {
+        MimePath mimePath = MimePath.parse("text/x-type-C");
+        Lookup lookup = MimeLookup.getLookup(mimePath);
+        FontColorSettings fcs = lookup.lookup(FontColorSettings.class);
+        assertNotNull("Can't find FontColorSettings", fcs);
+        
+        AttributeSet attribs = fcs.getTokenFontColors("test-module-and-user");
+        assertNotNull("Can't find 'test-module-and-user' coloring", attribs);
+        
+        assertNull("Wrong foreColor", attribs.getAttribute(StyleConstants.Foreground));
+        assertEquals("Wrong bgColor", new Color(0xCC0000), attribs.getAttribute(StyleConstants.Background));
+        assertNull("Wrong font family", attribs.getAttribute(StyleConstants.FontFamily));
+        assertNull("Wrong font size", attribs.getAttribute(StyleConstants.FontSize));
+        assertNull("Wrong bold", attribs.getAttribute(StyleConstants.Bold));
+        assertNull("Wrong italic", attribs.getAttribute(StyleConstants.Italic));
+        
+        checkSingleAttribute(mimePath, "test-module", StyleConstants.Foreground, 0x000011);
+        checkSingleAttribute(mimePath, "test-module", StyleConstants.Background, 0x000022);
+        checkSingleAttribute(mimePath, "test-module", StyleConstants.Bold, false);
+        checkSingleAttribute(mimePath, "test-module", StyleConstants.Italic, true);
+    }
+    
     private void checkSingleAttribute(MimePath mimePath, String coloringName, Object attributeKey, int rgb) {
         Lookup lookup = MimeLookup.getLookup(mimePath);
         
@@ -117,6 +139,17 @@ public class FontColorSettingsImplTest extends NbTestCase {
         AttributeSet attribs = fcs.getTokenFontColors(coloringName);
         assertNotNull("Can't find " + coloringName + " coloring", attribs);
         assertEquals("Wrong color", new Color(rgb), attribs.getAttribute(attributeKey));
+    }
+    
+    private void checkSingleAttribute(MimePath mimePath, String coloringName, Object attributeKey, Object attributeValue) {
+        Lookup lookup = MimeLookup.getLookup(mimePath);
+        
+        FontColorSettings fcs = lookup.lookup(FontColorSettings.class);
+        assertNotNull("Can't find FontColorSettings", fcs);
+        
+        AttributeSet attribs = fcs.getTokenFontColors(coloringName);
+        assertNotNull("Can't find " + coloringName + " coloring", attribs);
+        assertEquals("Wrong value of '" + attributeKey + "'", attributeValue, attribs.getAttribute(attributeKey));
     }
     
 }
