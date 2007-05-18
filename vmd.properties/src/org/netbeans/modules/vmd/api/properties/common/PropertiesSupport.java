@@ -50,6 +50,9 @@ import java.util.List;
  */
 public final class PropertiesSupport {
     
+    private PropertiesSupport() {
+    }
+    
     private static Comparator<DesignPropertyDescriptor> compareByDisplayName = new Comparator<DesignPropertyDescriptor>() {
         public int compare(DesignPropertyDescriptor descriptor1, DesignPropertyDescriptor descriptor2) {
             return descriptor1.getPropertyDisplayName().compareTo(descriptor2.getPropertyDisplayName());
@@ -96,15 +99,18 @@ public final class PropertiesSupport {
         
         return sheet;
     }
+    
     //multi selection not supported
-    public static void showPropertyEditorForCurrentComponent (DesignComponent component, String propertyName) {
+    public synchronized static void showPropertyEditorForCurrentComponent (DesignComponent component, String propertyName) {
+        boolean propertyEditorExists = false;
         if (component.getDocument().getTransactionManager().isWriteAccess())
             Debug.warning("Calling PropertiesSupport.showPropertyEditorForCurrentComponent form write transaction may generate problems"); //NOI18N
         Sheet sheet = createSheet(component);
         for (PropertySet propertySet : sheet.toArray()) {
             for (Property property : propertySet.getProperties()) {
                 if(propertyName.equals(property.getName())) {
-                    final PropertyPanel propertyPanel = new PropertyPanel(property, PropertyPanel.PREF_CUSTOM_EDITOR);
+                    PropertyPanel propertyPanel = new PropertyPanel(property, PropertyPanel.PREF_CUSTOM_EDITOR);
+                    propertyEditorExists = true;
                     propertyPanel.setChangeImmediate(false);
                     DialogDescriptor dd = new DialogDescriptor(propertyPanel, property.getDisplayName(), true, null); // NOI18N
                     Object helpID = property.getValue(ExPropertyEditor.PROPERTY_HELP_ID);
@@ -128,12 +134,16 @@ public final class PropertiesSupport {
                             Exceptions.printStackTrace(ex);
                         }
                     }
+                    return;
                 }
             }
         }
+        if (!propertyEditorExists) {
+            throw new IllegalArgumentException("PropertyEditor for " + propertyName +" not fond in the component " + component); //NOI18N 
+        }
     }
     
-    private static Sheet.Set createPropertiesSet(String categoryName) {
+    private synchronized static Sheet.Set createPropertiesSet(String categoryName) {
         Sheet.Set setSheet = new Sheet.Set();
         setSheet.setName(categoryName);
         setSheet.setDisplayName(categoryName);
@@ -141,7 +151,7 @@ public final class PropertiesSupport {
         return setSheet;
     }
     
-    private static void createCategoriesSet(Sheet sheet, List<String> categories) {
+    private synchronized static void createCategoriesSet(Sheet sheet, List<String> categories) {
         for (String propertyCategory : categories) {
             sheet.put(createPropertiesSet(propertyCategory));
         }
