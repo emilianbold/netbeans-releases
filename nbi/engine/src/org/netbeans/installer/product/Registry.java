@@ -63,6 +63,7 @@ import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.ExecutionMode;
 import org.netbeans.installer.utils.helper.Feature;
 import org.netbeans.installer.utils.helper.FinishHandler;
+import org.netbeans.installer.utils.helper.NbiProperties;
 import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.progress.CompositeProgress;
 import org.netbeans.installer.utils.progress.Progress;
@@ -106,7 +107,7 @@ public class Registry {
     private List<ExtendedUri> includes;
     
     private RegistryNode registryRoot;
-    private Properties properties;
+    private NbiProperties properties;
     private Platform targetPlatform;
     
     private FinishHandler finishHandler;
@@ -128,7 +129,7 @@ public class Registry {
         registryRoot = new Group();
         registryRoot.setRegistryType(RegistryType.LOCAL);
         
-        properties = new Properties();
+        properties = new NbiProperties();
         targetPlatform = SystemUtils.getCurrentPlatform();
     }
     
@@ -628,7 +629,8 @@ public class Registry {
                     XMLUtils.getChild(registryElement, "properties");
             
             if (propertiesElement != null) {
-                final Properties map = XMLUtils.parseProperties(propertiesElement);
+                final NbiProperties map = 
+                        XMLUtils.parseNbiProperties(propertiesElement);
                 for (Object name: map.keySet()) {
                     if (!properties.containsKey(name)) {
                         properties.put(name, map.get(name));
@@ -697,7 +699,7 @@ public class Registry {
         }
         
         if ((properties.size() > 0) && saveProperties) {
-            documentElement.appendChild(XMLUtils.saveProperties(
+            documentElement.appendChild(XMLUtils.saveNbiProperties(
                     properties, document.createElement("properties")));
         }
         
@@ -1131,7 +1133,7 @@ public class Registry {
                     XMLUtils.getChild(element, "properties");
             if (propertiesElement != null) {
                 progress.setDetail("Loading registry properties");
-                properties.putAll(XMLUtils.parseProperties(propertiesElement));
+                properties.putAll(XMLUtils.parseNbiProperties(propertiesElement));
             }
             
             LogManager.log("    ...complete");
@@ -1181,7 +1183,7 @@ public class Registry {
                             final Element productPropertiesElement = XMLUtils.getChild(productElement, "properties");
                             if (productPropertiesElement != null) {
                                 product.getProperties().putAll(
-                                        XMLUtils.parseProperties(productPropertiesElement));
+                                        XMLUtils.parseNbiProperties(productPropertiesElement));
                             }
                         }
                     }

@@ -148,9 +148,19 @@ public class ProductFilter implements RegistryFilter {
             }
             
             if (platforms.size() > 0) {
-                if (!SystemUtils.intersects(platforms, product.getPlatforms())) {
-                    return false;
+                boolean intersects = false;
+                
+                for (Platform platform: platforms) {
+                    for (Platform productPlatform: product.getPlatforms()) {
+                        if (platform.isCompatibleWith(productPlatform)) {
+                            intersects = true;
+                        }
+                    }
+                    
+                    if (intersects) break;
                 }
+                
+                if (!intersects) return false;
             }
             
             if (status != null) {

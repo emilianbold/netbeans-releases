@@ -844,7 +844,7 @@ public final class Product extends RegistryNode {
     }
     
     public File getInstallationLocation() {
-        final String path = SystemUtils.parseString(
+        final String path = SystemUtils.resolveString(
                 getProperty(INSTALLATION_LOCATION_PROPERTY),
                 getClassLoader());
         

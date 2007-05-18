@@ -53,6 +53,7 @@ import org.netbeans.installer.utils.exceptions.ParseException;
 import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.ExtendedUri;
 import org.netbeans.installer.utils.helper.Feature;
+import org.netbeans.installer.utils.helper.NbiProperties;
 import org.netbeans.installer.utils.helper.Version;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -357,6 +358,17 @@ public abstract class XMLUtils {
         }
         
         return element;
+    }
+    
+    public static NbiProperties parseNbiProperties(
+            final Element element) throws ParseException {
+        return new NbiProperties(parseProperties(element));
+    }
+    
+    public static Element saveNbiProperties(
+            final NbiProperties properties,
+            final Element element) {
+        return saveProperties(properties, element);
     }
     
     public static ExtendedUri parseExtendedUri(

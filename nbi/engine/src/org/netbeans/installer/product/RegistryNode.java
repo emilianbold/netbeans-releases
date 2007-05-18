@@ -41,6 +41,7 @@ import org.netbeans.installer.utils.exceptions.FinalizationException;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.ParseException;
 import org.netbeans.installer.utils.helper.ExtendedUri;
+import org.netbeans.installer.utils.helper.NbiProperties;
 import org.netbeans.installer.utils.helper.PropertyContainer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -50,40 +51,40 @@ import org.w3c.dom.Element;
  * @author Kirill Sorokin
  */
 public abstract class RegistryNode implements PropertyContainer {
-    protected RegistryNode        parent;
+    protected RegistryNode parent;
     
-    protected RegistryType        registryType;
+    protected RegistryType registryType;
     
-    protected String              uid;
+    protected String uid;
     
-    protected ExtendedUri         iconUri;
-    protected Icon                icon;
+    protected ExtendedUri iconUri;
+    protected Icon icon;
     
-    protected long                offset;
-    protected boolean             expand;
-    protected boolean             initialVisible;
-    protected boolean             currentVisible;
+    protected long offset;
+    protected boolean expand;
+    protected boolean initialVisible;
+    protected boolean currentVisible;
     
-    protected Date                built;
+    protected Date built;
     
     protected Map<Locale, String> displayNames;
     protected Map<Locale, String> descriptions;
     
-    protected List<RegistryNode>  children;
+    protected List<RegistryNode> children;
     
-    protected Properties          properties;
+    protected NbiProperties properties;
     
     protected RegistryNode() {
         initialVisible = true;
-        currentVisible  = true;
-        built          = new Date();
+        currentVisible = true;
+        built = new Date();
         
-        displayNames   = new HashMap<Locale, String>();
-        descriptions   = new HashMap<Locale, String>();
+        displayNames = new HashMap<Locale, String>();
+        descriptions = new HashMap<Locale, String>();
         
-        children       = new ArrayList<RegistryNode>();
+        children = new ArrayList<RegistryNode>();
         
-        properties     = new Properties();
+        properties = new NbiProperties();
     }
     
     public String getUid() {
@@ -336,7 +337,7 @@ public abstract class RegistryNode implements PropertyContainer {
                 document.createElement("icon")));
         
         if (properties.size() > 0) {
-            element.appendChild(XMLUtils.saveProperties(
+            element.appendChild(XMLUtils.saveNbiProperties(
                     properties,
                     document.createElement("properties")));
         }
@@ -373,7 +374,7 @@ public abstract class RegistryNode implements PropertyContainer {
             descriptions = XMLUtils.parseLocalizedString(
                     XMLUtils.getChild(element, "description"));
             
-            properties = XMLUtils.parseProperties(
+            properties = XMLUtils.parseNbiProperties(
                     XMLUtils.getChild(element, "properties"));
         } catch (ParseException e) {
             throw new InitializationException("Cannot deserialize product tree node", e);

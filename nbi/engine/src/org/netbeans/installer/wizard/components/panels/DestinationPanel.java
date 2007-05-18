@@ -165,7 +165,7 @@ public class DestinationPanel extends ErrorMessagePanel {
                 destination = DEFAULT_DESTINATION;
             }
             
-            destination = component.parsePath(destination).getAbsolutePath();
+            destination = component.resolvePath(destination).getAbsolutePath();
             
             try {
                 if (SystemUtils.isMacOS() && (

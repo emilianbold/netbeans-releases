@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -62,9 +62,9 @@ public class NbBasePanel extends DestinationPanel {
     public NbBasePanel() {
         jdkLocationPanel = new JdkLocationPanel();
         
-        setProperty(TITLE_PROPERTY, 
+        setProperty(TITLE_PROPERTY,
                 DEFAULT_TITLE);
-        setProperty(DESCRIPTION_PROPERTY, 
+        setProperty(DESCRIPTION_PROPERTY,
                 DEFAULT_DESCRIPTION);
         
         setProperty(DESTINATION_LABEL_TEXT_PROPERTY,
@@ -77,9 +77,9 @@ public class NbBasePanel extends DestinationPanel {
         setProperty(BROWSE_BUTTON_TEXT_PROPERTY,
                 DEFAULT_BROWSE_BUTTON_TEXT);
         
-        setProperty(JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY, 
+        setProperty(JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY,
                 DEFAULT_MINIMUM_JDK_VERSION);
-        setProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY, 
+        setProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY,
                 DEFAULT_MAXIMUM_JDK_VERSION);
     }
     
@@ -145,8 +145,6 @@ public class NbBasePanel extends DestinationPanel {
         
         private JFileChooser fileChooser;
         
-        private boolean defaultInstallationLocationCorrected;
-        
         public NbBaseDestinationPanelSwingUi(
                 final NbBasePanel panel,
                 final SwingContainer container) {
@@ -154,37 +152,12 @@ public class NbBasePanel extends DestinationPanel {
             
             this.panel = panel;
             
-            defaultInstallationLocationCorrected = false;
-            
             initComponents();
         }
         
         // protected ////////////////////////////////////////////////////////////////
         @Override
         protected void initialize() {
-            // correct the installation location
-            if (!defaultInstallationLocationCorrected) {
-                if (SystemUtils.isMacOS()) {
-                    final String location = component.getWizard().getProperty(
-                            Product.INSTALLATION_LOCATION_PROPERTY + ".macosx");
-                    
-                    component.getWizard().setProperty(
-                        Product.INSTALLATION_LOCATION_PROPERTY,
-                        location);
-                }
-                
-                if (SystemUtils.isWindows()) {
-                    final String location = component.getWizard().getProperty(
-                            Product.INSTALLATION_LOCATION_PROPERTY + ".windows");
-                    
-                    component.getWizard().setProperty(
-                        Product.INSTALLATION_LOCATION_PROPERTY,
-                        location);
-                }
-                
-                defaultInstallationLocationCorrected = true;
-            }
-            
             jdkLocationLabel.setText(
                     panel.getProperty(JDK_LOCATION_LABEL_TEXT_PROPERTY));
             
@@ -349,22 +322,22 @@ public class NbBasePanel extends DestinationPanel {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final String JDK_LOCATION_LABEL_TEXT_PROPERTY = 
+    public static final String JDK_LOCATION_LABEL_TEXT_PROPERTY =
             "jdk.location.label.text"; // NOI18N
-    public static final String BROWSE_BUTTON_TEXT_PROPERTY = 
+    public static final String BROWSE_BUTTON_TEXT_PROPERTY =
             "browse.button.text"; // NOI18N
     
-    public static final String DEFAULT_TITLE = 
+    public static final String DEFAULT_TITLE =
             ResourceUtils.getString(NbBasePanel.class,
             "NBP.title"); // NOI18N
-    public static final String DEFAULT_DESCRIPTION = 
+    public static final String DEFAULT_DESCRIPTION =
             ResourceUtils.getString(NbBasePanel.class,
             "NBP.description"); // NOI18N
     
-    public static final String DEFAULT_DESTINATION_LABEL_TEXT = 
+    public static final String DEFAULT_DESTINATION_LABEL_TEXT =
             ResourceUtils.getString(NbBasePanel.class,
             "NBP.destination.label.text"); // NOI18N
-    public static final String DEFAULT_DESTINATION_BUTTON_TEXT = 
+    public static final String DEFAULT_DESTINATION_BUTTON_TEXT =
             ResourceUtils.getString(NbBasePanel.class,
             "NBP.destination.button.text"); // NOI18N
     
@@ -375,10 +348,10 @@ public class NbBasePanel extends DestinationPanel {
             ResourceUtils.getString(NbBasePanel.class,
             "NBP.browse.button.text"); // NOI18N
     
-    public static final String DEFAULT_MINIMUM_JDK_VERSION = 
+    public static final String DEFAULT_MINIMUM_JDK_VERSION =
             ResourceUtils.getString(NbBasePanel.class,
             "NBP.minimum.jdk.version"); // NOI18N
-    public static final String DEFAULT_MAXIMUM_JDK_VERSION = 
+    public static final String DEFAULT_MAXIMUM_JDK_VERSION =
             ResourceUtils.getString(NbBasePanel.class,
             "NBP.maximum.jdk.version"); // NOI18N
     

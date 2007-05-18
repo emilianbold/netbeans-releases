@@ -265,49 +265,53 @@ public abstract class StringUtils {
     // object -> string .////////////////////////////////////////////////////////////
     public static String asString(
             final Throwable throwable) {
-        StringWriter writer = new StringWriter();
+        final StringWriter writer = new StringWriter();
         
         throwable.printStackTrace(new PrintWriter(writer));
-        
         return writer.toString();
     }
     
     public static String asString(
             final List<? extends Object> objects) {
-        return asString(objects, ", ");
+        return asString(objects.toArray(), 0, objects.size(), ", ");
     }
     
     public static String asString(
             final List<? extends Object> objects,
             final String separator) {
-        StringBuilder result = new StringBuilder();
-        
-        for (int i = 0; i < objects.size(); i++) {
-            result.append(objects.get(i).toString());
-            
-            if (i != objects.size() - 1) {
-                result.append(separator);
-            }
-        }
-        
-        return result.toString();
+        return asString(objects.toArray(), 0, objects.size(), separator);
     }
     
     public static String asString(
-            final Object[] strings) {
-        return asString(strings, ", ");
-    }
-    
-    public static String asString(
-            final Object[] strings,
+            final List<? extends Object> objects,
+            final int offset,
+            final int length,
             final String separator) {
-        StringBuilder result = new StringBuilder();
+        return asString(objects.toArray(), offset, length, separator);
+    }
+    
+    public static String asString(
+            final Object[] objects) {
+        return asString(objects, 0, objects.length, ", ");
+    }
+    
+    public static String asString(
+            final Object[] objects,
+            final String separator) {
+        return asString(objects, 0, objects.length, separator);
+    }
+    
+    public static String asString(
+            final Object[] objects,
+            final int offset,
+            final int length,
+            final String separator) {
+        final StringBuilder result = new StringBuilder();
         
-        for (int i = 0; i < strings.length; i++) {
-            result.append((strings[i]==null) ? EMPTY_STRING+null :
-                strings[i].toString());
+        for (int i = offset; i < offset + length; i++) {
+            result.append(EMPTY_STRING + objects[i]);
             
-            if (i != strings.length - 1) {
+            if (i != offset + length - 1) {
                 result.append(separator);
             }
         }
@@ -508,7 +512,7 @@ public abstract class StringUtils {
     public static Platform parsePlatform(
             final String string) throws ParseException {
         for (Platform platform: Platform.values()) {
-            if (platform.getName().equals(string)) {
+            if (platform.getCodeName().equals(string)) {
                 return platform;
             }
         }

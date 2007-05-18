@@ -30,32 +30,30 @@ import org.netbeans.installer.utils.system.launchers.impl.ShLauncher;
  *
  * @author Dmitry Lipin 
  */
-public class LauncherFactory {
-    
-    /** Creates a new instance of LauncherFactory */
-    private LauncherFactory() {
-    }
-    public static Launcher newLauncher (LauncherProperties props, Platform platform) {
-        Launcher launcher;
-        switch (platform) {
-            case WINDOWS :
-                launcher = new ExeLauncher(props);
-                break;
-                
-            case LINUX :
-            case SOLARIS_SPARC :
-            case SOLARIS_X86 :
-                launcher = new ShLauncher(props);
-                break;
-            case MACOS_X_PPC:
-            case MACOS_X_X86:
-                launcher = new CommandLauncher(props);
-                break;
-                
-            default:
-                launcher = new JarLauncher(props);
-                break;
+public final class LauncherFactory {
+    /////////////////////////////////////////////////////////////////////////////////
+    // Static
+    public static Launcher newLauncher(
+            final LauncherProperties properties, 
+            final Platform platform) {
+        if (platform.isCompatibleWith(Platform.WINDOWS)) {
+            return new ExeLauncher(properties);
         }
-        return launcher;
+        
+        if (platform.isCompatibleWith(Platform.LINUX) || 
+                platform.isCompatibleWith(Platform.SOLARIS)) {
+            return new ShLauncher(properties);
+        }
+        
+        if (platform.isCompatibleWith(Platform.MACOSX)) {
+            return new CommandLauncher(properties);
+        }
+        
+        return new JarLauncher(properties);
+    }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Instance
+    private LauncherFactory() {
     }
 }

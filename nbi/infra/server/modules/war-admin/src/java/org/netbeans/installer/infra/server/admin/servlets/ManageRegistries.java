@@ -62,10 +62,10 @@ public class ManageRegistries extends HttpServlet {
                 platform = Platform.WINDOWS;
             }
             if (userAgent.contains("PPC Mac OS")) {
-                platform = Platform.MACOS_X_PPC;
+                platform = Platform.MACOSX_PPC;
             }
             if (userAgent.contains("Intel Mac OS")) {
-                platform = Platform.MACOS_X_X86;
+                platform = Platform.MACOSX_X86;
             }
             if (userAgent.contains("Linux")) {
                 platform = Platform.LINUX;
@@ -126,7 +126,7 @@ public class ManageRegistries extends HttpServlet {
                 
                 out.println("        <select id=\"platforms-select\" onchange=\"update_target_platform()\">");
                 for (Platform temp: Platform.values()) {
-                    out.println("            <option value=\"" + temp.getName() + "\"" + (temp.equals(platform) ? " selected" : "") + ">" + temp.getDisplayName() + "</option>");
+                    out.println("            <option value=\"" + temp.getCodeName() + "\"" + (temp.equals(platform) ? " selected" : "") + ">" + temp.getDisplayName() + "</option>");
                 }
                 out.println("        </select>");
                 

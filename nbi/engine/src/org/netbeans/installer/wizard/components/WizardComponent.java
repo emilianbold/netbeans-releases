@@ -29,6 +29,7 @@ import javax.swing.JComponent;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.UiUtils;
+import org.netbeans.installer.utils.helper.NbiProperties;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.containers.SwingContainer;
@@ -77,7 +78,7 @@ public abstract class WizardComponent {
      * {@link Wizard#setProperty(String,String)} - these are internal to the
      * component, while the wizard's ones are expected to keep the user input.
      */
-    private Properties properties;
+    private NbiProperties properties;
     
     // constructor //////////////////////////////////////////////////////////////////
     /**
@@ -88,7 +89,7 @@ public abstract class WizardComponent {
      */
     protected WizardComponent() {
         children = new ArrayList<WizardComponent>();
-        properties = new Properties();
+        properties = new NbiProperties();
         
         setProperty(TITLE_PROPERTY,
                 DEFAULT_TITLE);
@@ -275,14 +276,21 @@ public abstract class WizardComponent {
     }
     
     /**
-     * Returns the value of the component's property with the specified name. This
-     * method does not attempt to parse the property's value.
+     * Returns the value of the specified property. Thsi method can either attempt
+     * to resolve the value, or return it as is.
      *
-     * @param name Name of the property whose value should be returned.
-     * @return Value of the specified property.
+     * @param name Name of the property whose value needs to be returned.
+     * @param resolve Whether to resolve the property value or not.
+     * @return Value of the specified property, either parsed or not.
      */
-    public final String getRawProperty(final String name) {
-        return getProperty(name, false);
+    public final String getProperty(final String name, final boolean resolve) {
+        final String value = properties.getProperty(name);
+        
+        if (resolve) {
+            return value != null ? resolveString(value) : null;
+        } else {
+            return value;
+        }
     }
     
     /**
@@ -303,31 +311,31 @@ public abstract class WizardComponent {
      *
      * @return Component's properties.
      */
-    public final Properties getProperties() {
+    public final NbiProperties getProperties() {
         return properties;
     }
     
     // helpers //////////////////////////////////////////////////////////////////////
     /**
-     * A helper method - calls {@link SystemUtils#parseString(String,ClassLoader)}
+     * A helper method - calls {@link SystemUtils#resolveString(String,ClassLoader)}
      * supplying {@link Wizard#getClassLoader()} as the class loader value.
      *
-     * @param string String to be parsed.
-     * @return Parsed string.
+     * @param string String to be resolved.
+     * @return Resolved string.
      */
-    protected final String parseString(final String string) {
-        return SystemUtils.parseString(string, wizard.getClassLoader());
+    protected final String resolveString(final String string) {
+        return SystemUtils.resolveString(string, wizard.getClassLoader());
     }
     
     /**
-     * A helper method - calls {@link SystemUtils#parsePath(String,ClassLoader)}
+     * A helper method - calls {@link SystemUtils#resolvePath(String,ClassLoader)}
      * supplying {@link Wizard#getClassLoader()} as the class loader value.
      *
-     * @param path Path to be parsed as a {@link String}.
-     * @return Parsed path as a {@link File}.
+     * @param path Path to be resolved as a {@link String}.
+     * @return Resolved path as a {@link File}.
      */
-    protected final File parsePath(final String path) {
-        return SystemUtils.parsePath(path, wizard.getClassLoader());
+    protected final File resolvePath(final String path) {
+        return SystemUtils.resolvePath(path, wizard.getClassLoader());
     }
     
     /**
@@ -372,25 +380,6 @@ public abstract class WizardComponent {
      */
     protected final InputStream getResource(final String path) {
         return ResourceUtils.getResource(path, wizard.getClassLoader());
-    }
-    
-    // private //////////////////////////////////////////////////////////////////////
-    /**
-     * Returns the value of the specified property. Thsi method can either attempt
-     * to parse the value, or return it as is.
-     *
-     * @param name Name of the property whose value needs to be returned.
-     * @param parse Whether to parse the property value or not.
-     * @return Value of the specified property, either parsed or not.
-     */
-    private final String getProperty(final String name, final boolean parse) {
-        final String value = properties.getProperty(name);
-        
-        if (parse) {
-            return value != null ? parseString(value) : null;
-        } else {
-            return value;
-        }
     }
     
     /////////////////////////////////////////////////////////////////////////////////

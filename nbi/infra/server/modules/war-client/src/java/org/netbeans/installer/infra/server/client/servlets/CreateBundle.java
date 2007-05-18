@@ -46,8 +46,9 @@ import static org.netbeans.installer.utils.helper.Platform.WINDOWS;
 import static org.netbeans.installer.utils.helper.Platform.LINUX;
 import static org.netbeans.installer.utils.helper.Platform.SOLARIS_X86;
 import static org.netbeans.installer.utils.helper.Platform.SOLARIS_SPARC;
-import static org.netbeans.installer.utils.helper.Platform.MACOS_X_X86;
-import static org.netbeans.installer.utils.helper.Platform.MACOS_X_PPC;
+import static org.netbeans.installer.utils.helper.Platform.MACOSX;
+import static org.netbeans.installer.utils.helper.Platform.MACOSX_X86;
+import static org.netbeans.installer.utils.helper.Platform.MACOSX_PPC;
 
 /**
  *
@@ -78,10 +79,10 @@ public class CreateBundle extends HttpServlet {
                 platform = WINDOWS;
             }
             if (userAgent.contains("PPC Mac OS")) {
-                platform = MACOS_X_PPC;
+                platform = MACOSX_PPC;
             }
             if (userAgent.contains("Intel Mac OS")) {
-                platform = MACOS_X_X86;
+                platform = MACOSX_X86;
             }
             if (userAgent.contains("Linux")) {
                 platform = LINUX;
@@ -128,7 +129,7 @@ public class CreateBundle extends HttpServlet {
             
             out.println("        <select id=\"platforms-select\" onchange=\"update_target_platform()\">");
             for (Platform temp: Platform.values()) {
-                out.println("            <option value=\"" + temp.getName() + "\"" + (temp.equals(platform) ? " selected" : "") + ">" + temp.getDisplayName() + "</option>");
+                out.println("            <option value=\"" + temp.getCodeName() + "\"" + (temp.isCompatibleWith(platform) ? " selected" : "") + ">" + temp.getDisplayName() + "</option>");
             }
             out.println("        </select>");
             
@@ -170,7 +171,7 @@ public class CreateBundle extends HttpServlet {
             filename += platform.toString();
             if (platform == WINDOWS) {
                 filename += ".exe";
-            } else if (platform == MACOS_X_PPC || platform == MACOS_X_X86) {
+            } else if (platform.isCompatibleWith(MACOSX)) {
                 filename += ".command";
             } else {
                 filename += ".sh";

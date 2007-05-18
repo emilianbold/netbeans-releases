@@ -193,11 +193,11 @@ public abstract class ProductConfigurationLogic {
     
     // helper methods for system utils and resource utils ///////////////////////////
     protected final String parseString(String string) {
-        return SystemUtils.parseString(string, product.getClassLoader());
+        return SystemUtils.resolveString(string, product.getClassLoader());
     }
     
     protected final File parsePath(String path) {
-        return SystemUtils.parsePath(path, product.getClassLoader());
+        return SystemUtils.resolvePath(path, product.getClassLoader());
     }
     
     protected final String getString(String key) {

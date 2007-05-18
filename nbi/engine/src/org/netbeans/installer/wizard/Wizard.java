@@ -289,7 +289,7 @@ public class Wizard {
             
             child = XMLUtils.getChild(element, TAG_PROPERTIES);
             if (child != null) {
-                component.getProperties().putAll(XMLUtils.parseProperties(child));
+                component.getProperties().putAll(XMLUtils.parseNbiProperties(child));
             }
         } catch (ParseException e) {
             throw new InitializationException(ResourceUtils.getString(

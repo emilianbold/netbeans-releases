@@ -173,7 +173,7 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
                 if (selectedLocation != null) {
                     locationField.setText(selectedLocation.getAbsolutePath());
                 } else {
-                    locationField.setText(SystemUtils.parsePath(DEFAULT_LOCATION).getAbsolutePath());
+                    locationField.setText(SystemUtils.resolvePath(DEFAULT_LOCATION).getAbsolutePath());
                 }
                 
                 locationsLabel.setVisible(false);

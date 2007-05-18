@@ -67,11 +67,11 @@ public final class SystemUtils {
     private static Platform currentPlatform;
     
     // string resolution ////////////////////////////////////////////////////////////
-    public static String parseString(String string) {
-        return parseString(string, SystemUtils.class.getClassLoader());
+    public static String resolveString(String string) {
+        return resolveString(string, SystemUtils.class.getClassLoader());
     }
     
-    public static String parseString(String string, ClassLoader loader) {
+    public static String resolveString(String string, ClassLoader loader) {
         String parsed = string;
         
         // N for Name
@@ -211,14 +211,14 @@ public final class SystemUtils {
         return parsed;
     }
     
-    public static File parsePath(String string) {
-        return parsePath(string, SystemUtils.class.getClassLoader());
+    public static File resolvePath(String string) {
+        return resolvePath(string, SystemUtils.class.getClassLoader());
     }
     
-    public static File parsePath(String path, ClassLoader loader) {
+    public static File resolvePath(String path, ClassLoader loader) {
         final String separator = getFileSeparator();
         
-        String parsed = parseString(path, loader);
+        String parsed = resolveString(path, loader);
         
         parsed = parsed.replace("\\", separator);
         parsed = parsed.replace("/", separator);
@@ -611,7 +611,7 @@ public final class SystemUtils {
     }
     
     public static Launcher createLauncher(LauncherProperties props, Platform platform, Progress progress) throws IOException {
-        Progress prg = (progress==null) ? new Progress() : progress;
+        Progress prg = (progress == null) ? new Progress() : progress;
         LogManager.log("Create native launcher for " + platform.toString());
         Launcher launcher  =null;
         try {
@@ -623,11 +623,11 @@ public final class SystemUtils {
             long seconds = System.currentTimeMillis() - start ;
             LogManager.unindent();
             LogManager.log("[launcher] Time : " + (seconds/1000) + "."+ (seconds%1000)+ " seconds");                        
-        } catch (IOException ex) {
+        } catch (IOException e) {
             LogManager.unindent();
             LogManager.log("[launcher] Build failed with the following exception :");
-            LogManager.log(ex);
-            throw ex;
+            LogManager.log(e);
+            throw e;
         }         
         return launcher;
     }
@@ -659,11 +659,11 @@ public final class SystemUtils {
             }
             if (System.getProperty("os.name").contains("Mac OS X") &&
                     System.getProperty("os.arch").contains("ppc")) {
-                currentPlatform = Platform.MACOS_X_PPC;
+                currentPlatform = Platform.MACOSX_PPC;
             }
             if (System.getProperty("os.name").contains("Mac OS X") &&
                     System.getProperty("os.arch").contains("i386")) {
-                currentPlatform = Platform.MACOS_X_X86;
+                currentPlatform = Platform.MACOSX_X86;
             }
             if (System.getProperty("os.name").contains("SunOS") &&
                     System.getProperty("os.arch").contains("sparc")) {
@@ -697,12 +697,11 @@ public final class SystemUtils {
     
     // platforms probes /////////////////////////////////////////////////////////////
     public static boolean isWindows() {
-        return getCurrentPlatform() == Platform.WINDOWS;
+        return getCurrentPlatform().isCompatibleWith(Platform.WINDOWS);
     }
     
     public static boolean isMacOS() {
-        return (getCurrentPlatform() == Platform.MACOS_X_X86) ||
-                (getCurrentPlatform() == Platform.MACOS_X_PPC);
+        return getCurrentPlatform().isCompatibleWith(Platform.MACOSX);
     }
     
     // miscellanea //////////////////////////////////////////////////////////////////

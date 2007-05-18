@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -42,12 +42,6 @@ import org.netbeans.installer.wizard.components.WizardComponent;
  */
 public class ConfigurationLogic extends ProductConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////
-    // Constants
-    public static final String WIZARD_COMPONENTS_URI =
-            "resource:" + // NOI18N
-            "org/netbeans/installer/products/tomcat/wizard.xml"; // NOI18N
-    
-    /////////////////////////////////////////////////////////////////////////////////
     // Instance
     private List<WizardComponent> wizardComponents;
     
@@ -57,7 +51,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 getClass().getClassLoader());
     }
     
-    public void install(Progress progress) throws InstallationException {
+    public void install(
+            final Progress progress) throws InstallationException {
         final File location = getProduct().getInstallationLocation();
         
         /////////////////////////////////////////////////////////////////////////////
@@ -81,17 +76,41 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     getString("CL.install.error.files.permissions"), // NOI18N
                     e);
         }
-        //integrateWithIDE(progress, location); 
+        //integrateWithIDE(progress, location);
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);
     }
     
-    private void integrateWithIDE(Progress progress, File directory)  throws InstallationException {
+    public void uninstall(
+            final Progress progress) throws UninstallationException {
+        // no custom unconfiguration is needed
+        
+        /////////////////////////////////////////////////////////////////////////////
+        progress.setPercentage(Progress.COMPLETE);
+    }
+    
+    public List<WizardComponent> getWizardComponents() {
+        return wizardComponents;
+    }
+    
+    @Override
+    public String getIcon() {
+        if (SystemUtils.isWindows()) {
+            return "bin/tomcat5.exe";
+        } else {
+            return null;
+        }
+    }
+    
+    // private //////////////////////////////////////////////////////////////////////
+    private void integrateWithIDE(
+            final Progress progress, 
+            final File directory)  throws InstallationException {
         /////////////////////////////////////////////////////////////////////////////
         // Based on the following wiki:
-        // http://wiki.netbeans.org/wiki/view/TomcatAutoRegistration        
-        // TODO: 
-        // Provide the similar method (or improve this one) for 
+        // http://wiki.netbeans.org/wiki/view/TomcatAutoRegistration
+        // TODO:
+        // Provide the similar method (or improve this one) for
         //     unregistration by means of removing both of the options
         
         try {
@@ -123,26 +142,15 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }
     }
     
-    public void uninstall(Progress progress) throws UninstallationException {
-        // no custom unconfiguration is needed
-        
-        /////////////////////////////////////////////////////////////////////////////
-        progress.setPercentage(Progress.COMPLETE);
-    }
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String WIZARD_COMPONENTS_URI =
+            "resource:" + // NOI18N
+            "org/netbeans/installer/products/tomcat/wizard.xml"; // NOI18N
     
-    public List<WizardComponent> getWizardComponents() {
-        return wizardComponents;
-    }
-    
-    public String getIcon() {
-        if (SystemUtils.isWindows()) {
-            return "bin/tomcat5.exe";
-        } else {
-            return null;
-        }
-    }
-     public static final String JVM_OPTION_AUTOREGISTER_TOKEN_NAME =
+    public static final String JVM_OPTION_AUTOREGISTER_TOKEN_NAME =
             "-Dorg.netbeans.modules.tomcat.autoregister.token"; // NOI18N
-     public static final String JVM_OPTION_AUTOREGISTER_HOME_NAME =
+    
+    public static final String JVM_OPTION_AUTOREGISTER_HOME_NAME =
             "-Dorg.netbeans.modules.tomcat.autoregister.catalinaHome"; // NOI18N
 }

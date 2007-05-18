@@ -223,7 +223,7 @@ public class SearchForJavaAction extends WizardAction {
         }
         
         for (String location: candidateLocations) {
-            final File parent = SystemUtils.parsePath(location);
+            final File parent = SystemUtils.resolvePath(location);
             
             if (parent.exists() && parent.isDirectory()) {
                 locations.add(parent);

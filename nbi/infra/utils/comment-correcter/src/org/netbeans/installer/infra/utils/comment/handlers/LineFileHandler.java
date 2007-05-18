@@ -274,7 +274,7 @@ public abstract class LineFileHandler implements FileHandler {
             }
         }
         
-        // output the correct comment
+        // output the correct comment and an empty line
         builder.append(correctComment).append(Utils.NL);
         
         // transfer the rest of the file
