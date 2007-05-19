@@ -111,10 +111,12 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         if(formModel != null) {
             formModel.addFormModelListener(new FormModelListener() {
                 public void formChanged(FormModelEvent[] events) {
-                    for(FormModelEvent e : events) {
-                        if(e.getChangeType() == e.FORM_TO_BE_CLOSED) {
-                            ActionManager am = ActionManager.getActionManager(getSourceFile());
-                            am.removeAllBoundComponents(e.getFormModel());
+                    if(events != null) {
+                        for(FormModelEvent e : events) {
+                            if(e.getChangeType() == e.FORM_TO_BE_CLOSED) {
+                                ActionManager am = ActionManager.getActionManager(getSourceFile());
+                                am.removeAllBoundComponents(e.getFormModel());
+                            }
                         }
                     }
                 }
