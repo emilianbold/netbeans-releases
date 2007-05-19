@@ -217,27 +217,34 @@ public abstract class DefaultSchemaGenerator extends SchemaGenerator {
             
             case CHOICE: {
                 Choice c = null;
-                if(scParent instanceof LocalComplexType) {
-                    LocalComplexType lct = (LocalComplexType) scParent;
-                    if(lct.getDefinition() != null)
-                        c = SchemaGeneratorUtil.createChoice(sm, lct.getDefinition(), index);
-                    else
-                        c = SchemaGeneratorUtil.createChoice(sm,
-                                (LocalComplexType) scParent);
-                }
-                if(scParent instanceof GlobalComplexType) {
-                    GlobalComplexType gct = (GlobalComplexType) scParent;
-                    if(gct.getDefinition() != null) {
-                        ComplexTypeDefinition ctd = gct.getDefinition();
-                        if(ctd instanceof SimpleContent) {
-                            transformToComplexContent(compositor, ctd);
-                            c = SchemaGeneratorUtil.createChoice(sm, gct);
+                if(scParent instanceof ComplexType) {
+                    if(scParent instanceof LocalComplexType) {
+                        LocalComplexType lct = (LocalComplexType) scParent;
+                        if(lct.getDefinition() != null) {
+                            ComplexTypeDefinition ctd = lct.getDefinition();
+                            if(ctd instanceof SimpleContent)   {
+                                transformToComplexContent(compositor, ctd);
+                                c = SchemaGeneratorUtil.createChoice(sm, lct);
+                            } else
+                                c = SchemaGeneratorUtil.createChoice(sm, ctd, index);
                         } else
-                            c = SchemaGeneratorUtil.createChoice(sm, ctd, index);
+                            c = SchemaGeneratorUtil.createChoice(sm,
+                                    (LocalComplexType) scParent);                    
                     }
-                    else
-                        c = SchemaGeneratorUtil.createChoice(sm,
-                                (GlobalComplexType) scParent);
+                    if(scParent instanceof GlobalComplexType) {
+                        GlobalComplexType gct = (GlobalComplexType) scParent;
+                        if(gct.getDefinition() != null) {
+                            ComplexTypeDefinition ctd = gct.getDefinition();
+                            if(ctd instanceof SimpleContent) {
+                                transformToComplexContent(compositor, ctd);
+                                c = SchemaGeneratorUtil.createChoice(sm, gct);
+                            } else
+                                c = SchemaGeneratorUtil.createChoice(sm, ctd, index);
+                        }
+                        else
+                            c = SchemaGeneratorUtil.createChoice(sm,
+                                    (GlobalComplexType) scParent);
+                    }
                 } else if(scParent instanceof ComplexContentDefinition) {
                     ComplexContentDefinition ccd = (ComplexContentDefinition) scParent;
                     if(ccd instanceof ComplexContentRestriction &&
