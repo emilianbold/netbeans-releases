@@ -9,8 +9,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 @@EDITOR_SUPPORT_IMPORT@@
 
-public class @@PREFIX@@DataObject extends MultiDataObject 
-implements Lookup.Provider {
+public class @@PREFIX@@DataObject extends MultiDataObject {
 
     public @@PREFIX@@DataObject(FileObject pf, @@PREFIX@@DataLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
@@ -21,7 +20,7 @@ implements Lookup.Provider {
         return new @@PREFIX@@DataNode(this, getLookup());
     }
 
-    public Lookup getLookup() {
+    public @Override Lookup getLookup() {
         return getCookieSet().getLookup();
     }
 }

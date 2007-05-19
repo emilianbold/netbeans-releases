@@ -954,8 +954,18 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
      * @since 6.0
      */
     public Lookup getLookup() {
-        return getNodeDelegate().getLookup();
+        Class<?> c = getClass();
+        if (warnedClasses.add(c)) {
+            LOG.warning("Should override getLookup() in " + c + ", e.g.: [MultiDataObject.this.]getCookieSet().getLookup()");
+        }
+        if (isValid()) {
+            return getNodeDelegate().getLookup();
+        } else {
+            // Fallback for invalid DO; at least provide something reasonable.
+            return createNodeDelegate().getLookup();
+        }
     }
+    private static final Set<Class<?>> warnedClasses = Collections.synchronizedSet(new WeakSet<Class<?>>());
     
     /** When a request for a cookie is done on a DataShadow of this DataObject
      * this methods gets called (by default) so the DataObject knows which
