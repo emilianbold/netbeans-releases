@@ -101,6 +101,11 @@ public class GlobalActionPanel extends javax.swing.JPanel {
                 if(e.getClickCount() == 2) {
                     editSelectedAction();
                 }
+                if(getSelectedAction() != null) {
+                    editActionButton.setEnabled(true);
+                    viewSourceButton.setEnabled(true);
+                    deleteActionButton.setEnabled(true);
+                }
             }
         });
         
@@ -246,11 +251,35 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         classCombo.setSelectedItem(item);
     }
     
+    //refresh the projects combo based on the known projects
+    // then enable and disable buttons as appropriate, and refresh the classes
+    // combo and the table itself
     private void reloadProjectsCombo() {
         Set<Project> projects = ActionManager.getKnownProjects();
+        classCombo.setSelectedItem(SHOW_ALL_CLASSES);
         if(projects.size() > 0) {
+            Project firstProject = (Project) projects.toArray()[0];
             projectCombo.setModel(new DefaultComboBoxModel(projects.toArray()));
-            projectCombo.setSelectedItem(actionManager.getProject());
+            if(projects.contains(actionManager.getProject())) {
+                projectCombo.setSelectedItem(actionManager.getProject());
+            } else {
+                projectCombo.setSelectedItem(firstProject);
+                actionManager = ActionManager.getActionManager(firstProject);
+            }
+            projectCombo.setEnabled(true);
+            newActionButton.setEnabled(true);
+            classCombo.setEnabled(true);
+            reloadTable();
+        } else {
+            actionManager = ActionManager.getEmptyActionManager();
+            projectCombo.setModel(new DefaultComboBoxModel());
+            projectCombo.setEnabled(false);
+            newActionButton.setEnabled(false);
+            editActionButton.setEnabled(false);
+            viewSourceButton.setEnabled(false);
+            deleteActionButton.setEnabled(false);
+            classCombo.setEnabled(false);
+            reloadTable();
         }
     }
     
