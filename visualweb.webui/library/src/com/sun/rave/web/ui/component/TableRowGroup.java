@@ -1054,7 +1054,7 @@ public class TableRowGroup extends TableRowGroupBase implements
      * @param sourceData The source data of the TableRowGroup.
      */
     public void setSourceData(Object sourceData) {
-        super.setSourceData(sourceData);
+        super.setSourceData(/* XXX hotfix! */(TableDataProvider) sourceData);
         init();
     }
     
