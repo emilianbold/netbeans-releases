@@ -677,6 +677,7 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     private void setSelectedProject(Project project) {
         actionManager = ActionManager.getActionManager(project);
         reloadClassesCombo();
+        classCombo.setSelectedItem(SHOW_ALL_CLASSES);
         reloadTable();
     }
     
