@@ -308,9 +308,12 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../javacvs/libmodule</project>
                 <project>../javadoc</project>
                 <project>../javawebstart</project>
+                <project>../javawebstart/signtask</project>
                 <project>../junit</project>
                 <project>../languages/css</project>
+                <project>../languages/diff</project>
                 <project>../languages/engine</project>
+                <project>../languages/manifest</project>
                 <project>../lexer</project>
                 <project>../lexer/editorbridge</project>
                 <project>../lexer/nbbridge</project>
@@ -355,7 +358,9 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../refactoring/api</project>
                 <project>../refactoring/java</project>
                 <project>../schema2beans/rt</project>
+                <project>../scripting/bat</project>
                 <project>../scripting/javascript</project>
+                <project>../scripting/sh</project>
                 <project>../serverplugins/jboss4</project>
                 <project>../serverplugins/sun/appsrv</project>
                 <project>../serverplugins/sun/appsrv81</project>
