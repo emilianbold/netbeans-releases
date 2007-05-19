@@ -596,16 +596,34 @@ public class ActionManager {
     
     public void updateAction(ProxyAction action) {
         List<ProxyAction> actions = getActions(action.getClassname(), false);
+        boolean replaced = false;
         for(ProxyAction a : actions) {
             if(a.getId().equals(action.getId())) {
-                actions.remove(a);
+                //actions.remove(a);
+                // do a replace instead of a remove
+                int n = actions.indexOf(a);
+                if(n >= 0) {
+                    actions.remove(n);
+                    actions.add(n, action);
+                }
                 // do a special search remove because remove(a) isn't working
-                safeRemove(actionList,a);
+                //safeRemove(actionList,a);
+                for(int i=0; i<actionList.size(); i++) {
+                    ProxyAction target = actionList.get(i);
+                    if(actionsMatch(action, target)) {
+                        actionList.remove(target);
+                        actionList.add(i,action);
+                    }
+                }
+                replaced = true;
                 break;
             }
         }
-        actions.add(action);
-        actionList.add(action);
+        
+        if(!replaced) {
+            actions.add(action);
+            actionList.add(action);
+        }
         updateActionMethod(action, getFileForClass(action.getClassname()));
         // this will update the global action table
         //fireStructureChanged();
