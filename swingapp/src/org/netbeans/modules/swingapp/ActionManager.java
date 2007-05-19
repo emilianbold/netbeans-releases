@@ -722,7 +722,7 @@ public class ActionManager {
             }
             Document doc = ec.getDocument();
 
-            if (newTaskName != null) { // generate Task impl class
+            if (newTaskName != null && action.isTaskEnabled()) { // generate Task impl class
                 Integer methodEndPosition = (Integer) new ActionMethodTask(sourceFile, action.getId()) {
                     Object run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
                         return (int) controller.getTrees().getSourcePositions().getEndPosition(
