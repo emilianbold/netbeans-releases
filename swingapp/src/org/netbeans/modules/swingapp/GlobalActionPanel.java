@@ -88,6 +88,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
     /** Creates new form GlobalActionPanel */
     public GlobalActionPanel() {
         initComponents();
+        jSplitPane1.setResizeWeight(1.0);
         actionManager = ActionManager.getEmptyActionManager();
         
         

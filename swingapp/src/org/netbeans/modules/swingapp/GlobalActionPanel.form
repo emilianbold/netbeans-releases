@@ -188,6 +188,7 @@
               <Border info="null"/>
             </Property>
             <Property name="dividerLocation" type="int" value="500"/>
+            <Property name="resizeWeight" type="double" value="1.0"/>
           </Properties>
 
           <Layout class="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout"/>
