@@ -68,8 +68,8 @@ public class NbModuleProjectGenerator {
             final String name, final String bundlePath,
             final String layerPath, final String platformID) throws IOException {
         try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws IOException {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws IOException {
                     final FileObject dirFO = FileUtil.createFolder(projectDir);
                     if (ProjectManager.getDefault().findProject(dirFO) != null) {
                         throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
@@ -84,6 +84,7 @@ public class NbModuleProjectGenerator {
                         createLayerInSrc(dirFO, layerPath);
                     }
                     createEmptyTestDir(dirFO);
+                    createInitialProperties(dirFO);
                     ModuleList.refresh();
                     ProjectManager.getDefault().clearNonProjectCache();
                     return null;
@@ -99,8 +100,8 @@ public class NbModuleProjectGenerator {
             final String name, final String bundlePath,
             final String layerPath, final File suiteDir) throws IOException {
         try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws IOException {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws IOException {
                     final FileObject dirFO = FileUtil.createFolder(projectDir);
                     if (ProjectManager.getDefault().findProject(dirFO) != null) {
                         throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
@@ -115,6 +116,7 @@ public class NbModuleProjectGenerator {
                         createLayerInSrc(dirFO, layerPath);
                     }
                     createEmptyTestDir(dirFO);
+                    createInitialProperties(dirFO);
                     ModuleList.refresh();
                     ProjectManager.getDefault().clearNonProjectCache();
                     appendToSuite(cnb, dirFO, suiteDir);
@@ -131,8 +133,8 @@ public class NbModuleProjectGenerator {
             final String name, final String bundlePath, final File suiteDir,
             final File license, final File[] jars) throws IOException {
         try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws IOException {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws IOException {
                     final FileObject dirFO = FileUtil.createFolder(projectDir);
                     if (ProjectManager.getDefault().findProject(dirFO) != null) {
                         throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
@@ -140,8 +142,8 @@ public class NbModuleProjectGenerator {
                     
                     EditableProperties props = new EditableProperties(true);
                     props.put(SingleModuleProperties.IS_AUTOLOAD, "true"); // NOI18N
-                    SortedSet<String> packageList = new TreeSet();
-                    Map classPathExtensions = new HashMap();
+                    SortedSet<String> packageList = new TreeSet<String>();
+                    Map<String,String> classPathExtensions = new HashMap<String,String>();
                     
                     File releaseDir = new File(projectDir, "release/modules/ext"); //NOI18N
                     if (!releaseDir.mkdirs()) {
@@ -228,8 +230,8 @@ public class NbModuleProjectGenerator {
     public static void createNetBeansOrgModule(final File projectDir, final String cnb,
             final String name, final String bundlePath, final String layerPath) throws IOException {
         try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws IOException {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws IOException {
                     File nborg = ModuleList.findNetBeansOrg(projectDir);
                     if (nborg == null) {
                         throw new IllegalArgumentException(projectDir + " doesn't " + // NOI18N
@@ -425,6 +427,14 @@ public class NbModuleProjectGenerator {
     
     private static void createEmptyTestDir(FileObject projectDir) throws IOException {
         FileUtil.createFolder(projectDir, "test/unit/src"); // NOI18N
+    }
+    
+    private static void createInitialProperties(FileObject projectDir) throws IOException {
+        EditableProperties props = new EditableProperties();
+        props.put(SingleModuleProperties.JAVAC_SOURCE, "1.5"); // NOI18N
+        props.put(SingleModuleProperties.JAVAC_COMPILERARGS, "-Xlint -Xlint:-serial"); // NOI18N
+        FileObject f = createFileObject(projectDir, AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        Util.storeProperties(f, props);
     }
     
     /**

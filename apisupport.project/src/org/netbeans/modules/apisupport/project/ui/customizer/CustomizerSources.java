@@ -46,7 +46,7 @@ final class CustomizerSources extends NbPropertyPanel.Single {
                 if (srcLevelValueBeingUpdated) {
                     return;
                 }
-                final String oldLevel = getProperty(SingleModuleProperties.JAVAC_SOURCES);
+                final String oldLevel = getProperty(SingleModuleProperties.JAVAC_SOURCE);
                 final String newLevel = (String) srcLevelValue.getSelectedItem();
                 SpecificationVersion jdk5 = new SpecificationVersion("1.5"); // NOI18N
                 if (new SpecificationVersion(oldLevel).compareTo(jdk5) < 0 && new SpecificationVersion(newLevel).compareTo(jdk5) >= 0) {
@@ -89,7 +89,7 @@ final class CustomizerSources extends NbPropertyPanel.Single {
             for (int i = 0; i < SingleModuleProperties.SOURCE_LEVELS.length; i++) {
                 srcLevelValue.addItem(SingleModuleProperties.SOURCE_LEVELS[i]);
             }
-            srcLevelValue.setSelectedItem(getProperty(SingleModuleProperties.JAVAC_SOURCES));
+            srcLevelValue.setSelectedItem(getProperty(SingleModuleProperties.JAVAC_SOURCE));
         } finally {
             srcLevelValueBeingUpdated = false;
         }
@@ -97,7 +97,7 @@ final class CustomizerSources extends NbPropertyPanel.Single {
     }
     
     public void store() {
-        setProperty(SingleModuleProperties.JAVAC_SOURCES,
+        setProperty(SingleModuleProperties.JAVAC_SOURCE,
                 (String) srcLevelValue.getSelectedItem());
     }
     
