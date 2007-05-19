@@ -110,6 +110,15 @@ public class GlobalActionPanel extends javax.swing.JPanel {
             }
         });
         
+        actionTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                boolean state = getSelectedAction() != null;
+                editActionButton.setEnabled(state);
+                viewSourceButton.setEnabled(state);
+                deleteActionButton.setEnabled(state);
+            }
+        });
+        
         boundComponentList.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 if(e.getClickCount() == 2) {
