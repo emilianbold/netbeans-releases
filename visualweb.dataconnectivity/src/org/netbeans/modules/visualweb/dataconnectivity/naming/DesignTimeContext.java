@@ -127,7 +127,7 @@ class DesignTimeContext implements Context {
         Log.getLogger().entering(getClass().getName(), "lookup", name); //NOI18N
         
         // Update datasources for current project            
-        if (!name.toString().equals("java:comp/env/com.sun.faces.ClientStateSavingPassword") || !update) {            
+        if (name.toString().indexOf("java:comp/env/jdbc") != -1  || !update) {            
             return updateBindings(currentProj, name) ;
         }
            
