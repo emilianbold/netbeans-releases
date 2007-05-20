@@ -50,6 +50,8 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
     private FindChildrenElementVisitor scanner;
     private volatile boolean canceled;
     
+    private static final String TYPE_COLOR = "#707070";
+    
     public ElementScanningTask( ClassMemberPanelUI ui ) {
         this.ui = ui;
     }
@@ -206,8 +208,10 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             
             List<? extends VariableElement> params = e.getParameters();
             for( Iterator<? extends VariableElement> it = params.iterator(); it.hasNext(); ) {
-                VariableElement param = it.next();                
+                VariableElement param = it.next(); 
+                sb.append( "<font color=" + TYPE_COLOR + ">" ); // NOI18N
                 sb.append(print( param.asType()));
+                sb.append("</font>"); // NOI18N
                 sb.append(" "); // NOI18N
                 sb.append(param.getSimpleName());
                 if ( it.hasNext() ) {
@@ -221,8 +225,10 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             if ( e.getKind() != ElementKind.CONSTRUCTOR ) {
                 TypeMirror rt = e.getReturnType();
                 if ( rt.getKind() != TypeKind.VOID ) {                               
-                    sb.append(" : "); // NOI18N                                
+                    sb.append(" : "); // NOI18N     
+                    sb.append( "<font color=" + TYPE_COLOR + ">" ); // NOI18N
                     sb.append(print(e.getReturnType()));
+                    sb.append("</font>"); // NOI18N                    
                 }
             }
                 
@@ -243,7 +249,9 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             
             if ( e.getKind() != ElementKind.ENUM_CONSTANT ) {
                 sb.append( " : " ); // NOI18N
+                sb.append( "<font color=" + TYPE_COLOR + ">" ); // NOI18N
                 sb.append(print(e.asType()));
+                sb.append("</font>"); // NOI18N
             }
                         
             return sb.toString();            
@@ -288,6 +296,47 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                 
                 sb.append("&gt;"); // NOI18N
             }
+            
+            // Add superclass and implemented interfaces
+            
+            TypeMirror sc = e.getSuperclass();
+            String scName = print( sc );
+            
+            if ( sc == null || 
+                 e.getKind() == ElementKind.ENUM ||
+                 e.getKind() == ElementKind.ANNOTATION_TYPE ||
+                 "Object".equals(scName) || // NOI18N
+                 "<none>".equals(scName)) { // NOI18N
+                scName = null;
+            }
+            
+            List<? extends TypeMirror> ifaces = e.getInterfaces();
+            
+            if ( ( scName != null || !ifaces.isEmpty() ) &&
+                  e.getKind() != ElementKind.ANNOTATION_TYPE ) {
+                sb.append( " :: " ); // NOI18N
+                if (scName != null) {                
+                    sb.append( "<font color=" + TYPE_COLOR + ">" ); // NOI18N                
+                    sb.append( scName );
+                    sb.append("</font>"); // NOI18N
+                }
+                if ( !ifaces.isEmpty() ) {
+                    if ( scName != null ) {
+                        sb.append( " : " ); // NOI18N
+                    }
+                    for (Iterator<? extends TypeMirror> it = ifaces.iterator(); it.hasNext();) {
+                        TypeMirror typeMirror = it.next();
+                        sb.append( "<font color=" + TYPE_COLOR + ">" ); // NOI18N                
+                        sb.append( print(typeMirror) );
+                        sb.append("</font>"); // NOI18N
+                        if ( it.hasNext() ) {
+                            sb.append(", "); // NOI18N
+                        }
+                    }
+
+                }
+            }
+            
             return sb.toString();            
         }
         
