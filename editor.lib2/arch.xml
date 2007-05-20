@@ -41,12 +41,22 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
 <answer id="arch-what">
-The Editor Library 2 module is a set of official APIs and SPIs.
-<br/>
-It replaces the original Editor Library with legacy APIs
-that were not properly structured and did not conform to the rules
-implied on the current NB APIs.
+<p>
+    The Editor Library 2 module is a set of official APIs and SPIs, designed to 
+    replaces the original Editor Library with legacy APIs
+    that are not properly structured and do not conform to the rules
+    implied on the current NB APIs.
+</p>
 
+<p>
+    The APIs currently offered in Editor Library 2 module include:
+</p>
+
+<ul>
+<li>
+    <api name="editor-highlighting" group="java" type="export" category="official" url="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/highlighting/package-summary.html">Highlighting SPI</api>
+</li>    
+</ul>
 </answer>
 
 
@@ -67,8 +77,9 @@ implied on the current NB APIs.
         </question>
 -->
 <answer id="arch-overall">
-The editor functionality are mainly implementations of the Swing Text package APIs
-plus extension features such as Syntax Coloring or Word Matching.
+The Netbeans editor infrastructure provides an implementation of the Swing Text
+package APIs as well as some additional features such as syntax coloring, code
+folding, braces matching, etc.
 <br/>
 </answer>
 
@@ -83,13 +94,9 @@ plus extension features such as Syntax Coloring or Word Matching.
         </question>
 -->
 <answer id="arch-usecases">
-    Usecases of the 
-    <api name="editor-highlighting" group="java" type="export" category="devel" url="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/highlighting/package-summary.html">Highlighting SPI</api>
-    can be found in its package 
-    <a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/highlighting/package-summary.html">overview</a>.
-
-    <br/>
-    Other usecases - TBD.
+    At the moment the Editor Library 2 module contains only the Highlighting SPI,
+    which use cases can be found in the <code>org.netbeans.spi.editor.highlighting</code> package 
+    <a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/highlighting/package-summary.html#usecases">overview</a>.
 </answer>
 
 
@@ -122,7 +129,11 @@ plus extension features such as Syntax Coloring or Word Matching.
         </question>
 -->
 <answer id="arch-time">
-    Most of the work should be ready in NetBeans 6.0.
+    The migration process from the old APIs in Editor Library to the new ones
+    in Editor Library 2 is a long task without any clear time frame. We will
+    gradually keep deprecating parts of Editor Library and Editor module and
+    announce their replacements in the Editor Library 2 or other specialized
+    modules.
 </answer>
 
 
@@ -252,7 +263,7 @@ plus extension features such as Syntax Coloring or Word Matching.
         </question>
 -->
 <answer id="dep-non-nb">
-    No non-NetBeans projects.
+    None.
 </answer>
 
 
@@ -286,9 +297,7 @@ plus extension features such as Syntax Coloring or Word Matching.
         </question>
 -->
 <answer id="deploy-dependencies">
-<pre>
-OpenIDE-Module-Module-Dependencies: org.netbeans.modules.editor.lib2/1 &gt; @SPECIFICATION-VERSION@
-</pre>
+  Just normal module dependency.
 </answer>
 
 
@@ -399,7 +408,32 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.editor.lib2/1 &gt; @SPE
         </question>
 -->
 <answer id="exec-component">
-    No.
+<p>    
+    Yes, the Highlighting SPI recognizes the following client properties that can
+    be set on a <code>JTextComponenet</code>.
+</p>
+  <ul>
+  <li>
+  <api name="HighlightsLayerIncludes" group="property" category="official" type="export" >
+      Defines a regular expression that can be used for filtering out highlighting
+      layers used for rendering a text component. If specified, any layer with
+      id matching the regular expression <b>will</b> be used for rendering the
+      component. By default, when the property is not specified or is <code>null</code>,
+      all layers are used. See 
+      <a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/highlighting/package-summary.html#usecase5">Use case 5.</a>
+      for more details.
+  </api></li>
+  <li>
+  <api name="HighlightsLayerExcludes" group="property" category="official" type="export" >
+      Defines a regular expression that can be used for filtering out highlighting
+      layers used for rendering a text component. If specified, any layer with
+      id matching the regular expression <b>will not</b> be used for rendering the
+      component. By default, when the property is not specified or is <code>null</code>,
+      all layers are used. See 
+      <a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/highlighting/package-summary.html#usecase5">Use case 5.</a>
+      for more details.
+  </api></li>
+</ul>
 </answer>
 
 
@@ -470,11 +504,7 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.editor.lib2/1 &gt; @SPE
         </question>
 -->
 <answer id="format-clipboard">
-    <ul>
-        <li>Editor just forwards the clipboard operation requests
-            into javax.swing.text.JTextComponent's cut(), copy() and paste() methods.
-        </li>
-    </ul>
+    None.
 </answer>
 
 
@@ -498,7 +528,7 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.editor.lib2/1 &gt; @SPE
         </question>
 -->
 <answer id="format-types">
-    No files read/written to disk (file reading into editor document not handled here).
+    None. Reading/writing files into editor document is not handled in this module.
 </answer>
 
 
@@ -518,7 +548,9 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.editor.lib2/1 &gt; @SPE
         </question>
 -->
 <answer id="lookup-lookup">
-    No.
+    The module uses <code>MimeLookup</code> for various purposes. The Highlighting
+    SPI looks up factories for highlighing layers registered in MimeLookup under
+    a mime type of documents that those layer wish to colorify.
 </answer>
 
 
@@ -534,7 +566,8 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.editor.lib2/1 &gt; @SPE
         </question>
 -->
 <answer id="lookup-register">
-    No.
+    Yes. There are some implementations of highlighting layers provided by this
+    module and they are registered in <code>MimeLookup</code>.
 </answer>
 
 
@@ -648,11 +681,14 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.editor.lib2/1 &gt; @SPE
         </question>
 -->
 <answer id="perf-scale">
-    Number of characters of the source file multiplied by 2 to respect
-    2 bytes for each unicode characters.
-    <br/>
-    Each line separator adds another line element (about 96 bytes) plus a position
-    object (48 bytes).
+<p>    
+    The number of characters in a file multiplied by 2 to respect
+    2 bytes for each unicode character.
+</p>
+<p>
+    Each line is represented by a line element, which takes up about 96 bytes and
+    a position object occupying another 48 bytes.
+</p>
 </answer>
 
 
@@ -718,7 +754,8 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.editor.lib2/1 &gt; @SPE
         </question>
 -->
 <answer id="resources-layer">
-    No.
+    Yes. The module registers a factory for highlighting layers implemented in
+    the module.
 </answer>
 
 
@@ -840,8 +877,10 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.editor.lib2/1 &gt; @SPE
         </question>
 -->
 <answer id="perf-spi">
-    The listeners attached to text document should execute quickly.
-    For copmlex tasks they should reschedule their work into another thread.
+    The infrastructure does not enforce any performance criteria and it's up to
+    modules to perform reasonably. On the other hand each SPI defines its threading
+    and locking model, which should help modules to understand the constraints
+    and impact of their code.
 </answer>
 
 
