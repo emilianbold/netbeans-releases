@@ -21,6 +21,8 @@ package org.netbeans.modules.debugger.jpda.heapwalk.models;
 
 import com.sun.tools.profiler.heap.Instance;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import javax.swing.Action;
 
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -93,16 +95,28 @@ public class HeapActionsFilter implements NodeActionsProviderFilter {
             public void perform (Object[] nodes) {
                 ObjectVariable var = (ObjectVariable) nodes[0];
                 if (var.getUniqueID() == 0L) return ;
-                InstancesView instances = openInstances(true);
-                HeapFragmentWalker hfw = instances.getCurrentFragmentWalker();
-                HeapImpl heap = (hfw != null) ? (HeapImpl) hfw.getHeapFragment() : null;
-                if (heap == null || heap.getDebugger() != debugger) {
-                    heap = new HeapImpl(debugger);
-                    hfw = new DebuggerHeapFragmentWalker(heap);
-                    instances.setHeapFragmentWalker(hfw);
-                }
-                Instance instance = InstanceImpl.createInstance(heap, var);
-                hfw.getInstancesController().showInstance(instance);
+                final InstancesView instances = openInstances(true);
+                final Reference<ObjectVariable> varRef = new WeakReference(var);
+                final Reference<JPDADebugger> debuggerRef = new WeakReference(debugger);
+                InstancesView.HeapFragmentWalkerProvider provider =
+                        new InstancesView.HeapFragmentWalkerProvider() {
+                    public HeapFragmentWalker getHeapFragmentWalker() {
+                        HeapFragmentWalker hfw = instances.getCurrentFragmentWalker();
+                        HeapImpl heap = (hfw != null) ? (HeapImpl) hfw.getHeapFragment() : null;
+                        JPDADebugger debugger = debuggerRef.get();
+                        if (heap == null || debugger != null && heap.getDebugger() != debugger) {
+                            heap = new HeapImpl(debugger);
+                            hfw = new DebuggerHeapFragmentWalker(heap);
+                        }
+                        ObjectVariable var = varRef.get();
+                        if (var != null) {
+                            Instance instance = InstanceImpl.createInstance(heap, var);
+                            hfw.getInstancesController().showInstance(instance);
+                        }
+                        return hfw;
+                    }
+                };
+                instances.setHeapFragmentWalkerProvider(provider);
             }
             
             private InstancesView openInstances (boolean activate) {

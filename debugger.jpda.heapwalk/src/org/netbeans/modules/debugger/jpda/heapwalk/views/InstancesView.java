@@ -34,6 +34,7 @@ public class InstancesView extends TopComponent {
     
     private javax.swing.JPanel hfwPanel;
     private HeapFragmentWalker hfw;
+    private HeapFragmentWalkerProvider provider;
     
     /** Creates a new instance of InstancesView */
     public InstancesView() {
@@ -46,6 +47,9 @@ public class InstancesView extends TopComponent {
         HeapFragmentWalker hfw = cc.getCurrentFragmentWalker();
         if (hfw != null) {
             setHeapFragmentWalker(hfw);
+            provider = null;
+        } else if (provider != null) {
+            setHeapFragmentWalker(provider.getHeapFragmentWalker());
         }
     }
     
@@ -58,12 +62,18 @@ public class InstancesView extends TopComponent {
         hfw = null;
     }
     
-    public void setHeapFragmentWalker(HeapFragmentWalker hfw) {
+    public void setHeapFragmentWalkerProvider(HeapFragmentWalkerProvider hfwp) {
+        provider = hfwp;
+        setHeapFragmentWalker(hfwp.getHeapFragmentWalker());
+    }
+    
+    private void setHeapFragmentWalker(HeapFragmentWalker hfw) {
         if (hfwPanel != null) {
             remove(hfwPanel);
             hfwPanel = null;
         }
         this.hfw = hfw;
+        if (hfw == null) return ;
         setLayout (new BorderLayout ());
         java.awt.Container header;
         header = (java.awt.Container) hfw.getInstancesController().getFieldsBrowserController().getPanel().getComponent(0);
@@ -90,6 +100,12 @@ public class InstancesView extends TopComponent {
 
     public int getPersistenceType() {
         return PERSISTENCE_NEVER;
+    }
+    
+    public static interface HeapFragmentWalkerProvider {
+        
+        HeapFragmentWalker getHeapFragmentWalker();
+        
     }
     
 }
