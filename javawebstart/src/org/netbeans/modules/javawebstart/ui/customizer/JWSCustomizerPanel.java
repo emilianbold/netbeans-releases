@@ -253,7 +253,7 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
             int index = name.lastIndexOf('.');
             if (index > 0 && index < name.length() - 1) {
                 String ext = name.substring(index+1).toLowerCase();
-                if ("gif".equals(ext) || "png".equals(ext) || "jpg".equals(ext)) {
+                if ("gif".equals(ext) || "png".equals(ext) || "jpg".equals(ext)) { // NOI18N
                     return true;
                 }
             }
@@ -261,7 +261,7 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         }
         
         public String getDescription() {
-            return "Icon image files";
+            return NbBundle.getMessage(JWSCustomizerPanel.class, "MSG_IconFileFilter_Description");
         }
         
     }
