@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.j2ee.jpa.refactoring.JPARefactoring;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
@@ -67,10 +68,14 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
      *@return the file object for the object being refactored.
      */
     protected FileObject getRefactoringSource() {
-
+        
         FileObject result = getRefactoring().getRefactoringSource().lookup(FileObject.class);
         if (result != null){
             return result;
+        }
+        NonRecursiveFolder folder = getRefactoring().getRefactoringSource().lookup(NonRecursiveFolder.class);
+        if (folder != null){
+            return folder.getFolder();
         }
         try{
             result = resolveTreePathHandle().getFileObject();
@@ -82,19 +87,19 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
     }
     
     /**
-     *@return the project owning the object being refactored or null if 
+     *@return the project owning the object being refactored or null if
      * does not belong to any project.
-     */  
+     */
     protected Project getProject() {
         return FileOwnerQuery.getOwner(getRefactoringSource());
     }
     
     /**
      * Resolves the TreePathHandle for the object being refactored.
-     * 
-     * @return the TreePathHandle or null if no handle could be resolved 
+     *
+     * @return the TreePathHandle or null if no handle could be resolved
      * the refactored object.
-     */ 
+     */
     private TreePathHandle resolveTreePathHandle() throws IOException {
         TreePathHandle tph = getRefactoring().getRefactoringSource().lookup(TreePathHandle.class);
         if (tph != null) {
@@ -184,10 +189,8 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
             return null;
         }
         
-        ClassPathProvider classPathProvider = project.getLookup().lookup(ClassPathProvider.class);
         FileObject refactoringSource = getRefactoringSource();
-        String classNameFQN =
-                classPathProvider.findClassPath(refactoringSource, ClassPath.SOURCE).getResourceName(refactoringSource, '.', false);
+        String classNameFQN = RefactoringUtil.getQualifiedName(refactoringSource);
         
         for (FileObject each : getPersistenceXmls()){
             try {
@@ -222,9 +225,9 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
     /**
      * Gets the persistence unit from the given <code>PUDataObject</code> that contain
      * a class matching with the given <code>clazz</code>.
-     * @param puDataObject 
+     * @param puDataObject
      * @param clazz the fully qualified name of the class
-     * 
+     *
      * @return the persistence units that contain the given class.
      */
     protected final List<PersistenceUnit> getAffectedPersistenceUnits(PUDataObject pUDataObject, String clazz){

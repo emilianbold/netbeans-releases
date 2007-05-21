@@ -20,6 +20,7 @@
 package org.netbeans.modules.j2ee.jpa.refactoring;
 
 import java.io.IOException;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -34,13 +35,14 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 /**
- * Utility methods needed in JPA refactoring, split from 
+ * Utility methods needed in JPA refactoring, split from
  * <code>org.netbeans.modules.j2ee.refactoring.Utility</code>.
  *
  * @author Erno Mononen
@@ -48,7 +50,7 @@ import org.openide.util.Parameters;
 public abstract class RefactoringUtil {
     
     private static final String JAVA_MIME_TYPE = "text/x-java"; //NO18N
-
+    
     /**
      * Constructs a new fully qualified name for the given <code>newName</code>.
      *
@@ -145,5 +147,21 @@ public abstract class RefactoringUtil {
     }
     
     
+    /**
+     * Gets the fully qualified name for the given <code>fileObject</code>. If it
+     * represents a java package, will return the name of the package (with dots as separators).
+     *
+     *@param fileObject the file object whose FQN should be get. Must belong to
+     * a project.
+     *@return the FQN for the given file object. 
+     */
+    public static String getQualifiedName(FileObject fileObject){
+        Project project = FileOwnerQuery.getOwner(fileObject);
+        assert project != null;
+        ClassPathProvider classPathProvider = project.getLookup().lookup(ClassPathProvider.class);
+        assert classPathProvider != null;
+        return classPathProvider.findClassPath(fileObject, ClassPath.SOURCE).getResourceName(fileObject, '.', false);
+        
+    }
     
 }
