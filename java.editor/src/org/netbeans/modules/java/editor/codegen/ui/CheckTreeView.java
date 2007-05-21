@@ -20,16 +20,14 @@
 package org.netbeans.modules.java.editor.codegen.ui;
 
 import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import javax.swing.Action;
+import javax.swing.InputMap;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
-import javax.swing.tree.TreeNode;
+import javax.swing.KeyStroke;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.openide.explorer.view.BeanTreeView;
@@ -63,6 +61,10 @@ public class CheckTreeView extends BeanTreeView  {
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         
         tree.setShowsRootHandles(false);
+        
+        InputMap input = tree.getInputMap( JTree.WHEN_FOCUSED );
+        if( null != input )
+            input.remove( KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0) );
     }
     
     @Override
@@ -85,9 +87,10 @@ public class CheckTreeView extends BeanTreeView  {
         // MouseListener -------------------------------------------------------
         
         public void mouseClicked(MouseEvent e) {
-            Point p = e.getPoint();
-            TreePath path = tree.getPathForLocation(e.getPoint().x, e.getPoint().y);
-            toggle( path );            
+            if( !e.isPopupTrigger() ) {
+                TreePath path = tree.getPathForLocation(e.getPoint().x, e.getPoint().y);
+                toggle( path );            
+            }
         }
 
         public void keyTyped(KeyEvent e) {}
@@ -105,7 +108,7 @@ public class CheckTreeView extends BeanTreeView  {
         // Key Listener --------------------------------------------------------
         
         public void keyPressed(KeyEvent e) {
-            if (e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_ENTER ) {
+            if (e.getKeyCode() == KeyEvent.VK_SPACE ) {
                 
                 if ( e.getSource() instanceof JTree ) {
                     JTree tree = (JTree) e.getSource();
