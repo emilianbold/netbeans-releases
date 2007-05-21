@@ -47,6 +47,7 @@ import org.openide.ErrorManager;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -104,6 +105,11 @@ public class JaxWsClientChildren extends Children.Keys {
     }
     
     void refreshKeys(boolean downloadWsdl) {
+        this.refreshKeys(downloadWsdl, "");
+    }
+    
+    void refreshKeys(boolean downloadWsdl, String newWsdlUrl) {
+        System.out.println("newWsdlUrl = "+newWsdlUrl);
         super.addNotify();
         List keys=null;
         // copy to local wsdl first
@@ -112,10 +118,32 @@ public class JaxWsClientChildren extends Children.Keys {
         if (downloadWsdl) {
             try {
                 String clientName = clientNode.getName();
-                WSUtils.retrieveResource(
-                    support.getLocalWsdlFolderForClient(clientName,true),
-                    new URI(client.getWsdlUrl()));
+                String oldWsdlUrl = client.getWsdlUrl();
+                boolean jaxWsModelChanged=false;
+                FileObject localWsdl = null;
+                if (newWsdlUrl.length()>0 && !oldWsdlUrl.equals(newWsdlUrl)) {                    
+                    localWsdl = WSUtils.retrieveResource(
+                        support.getLocalWsdlFolderForClient(clientName,true),
+                        new URI(newWsdlUrl));
+                    jaxWsModelChanged=true;
+                } else {
+                    WSUtils.retrieveResource(
+                        support.getLocalWsdlFolderForClient(clientName,true),
+                        new URI(oldWsdlUrl));                       
+                }
                 
+                if (jaxWsModelChanged) {
+                    client.setWsdlUrl(newWsdlUrl);
+                    FileObject xmlResorcesFo = support.getLocalWsdlFolderForClient(clientName,false);
+                    System.out.println("localWsdl = "+localWsdl);
+                    if (xmlResorcesFo!=null) {
+                        String localWsdlUrl = FileUtil.getRelativePath(xmlResorcesFo, localWsdl);
+                        System.out.println("localWsdlUrl = "+localWsdlUrl);
+                        client.setLocalWsdlFile(localWsdlUrl);
+                    }
+                    
+                    clientNode.getJaxWsModel().write();
+                }  
                 // copy resources to WEB-INF[META-INF]/wsdl/client/${clientName}
                 if (client.getWsdlUrl().startsWith("file:")) {
                     FileObject srcRoot = (FileObject)getNode().getLookup().lookup(FileObject.class);
@@ -127,7 +155,7 @@ public class JaxWsClientChildren extends Children.Keys {
                             WSUtils.copyFiles(xmlResorcesFo, wsdlFolder);
                         }
                     }
-                }
+                }              
             } catch (URISyntaxException ex) {
                 ErrorManager.getDefault().notify(ex);
             } catch (UnknownHostException ex) {

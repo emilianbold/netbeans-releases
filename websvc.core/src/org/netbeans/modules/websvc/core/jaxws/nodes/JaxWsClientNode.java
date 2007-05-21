@@ -286,13 +286,13 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
      */
     public void refreshService(boolean downloadWsdl) {
         if (downloadWsdl) {
-            int result = RefreshClientDialog.open(client.getWsdlUrl());
-            if (RefreshClientDialog.CLOSE==result) return;
-            if (RefreshClientDialog.DOWNLOAD_WSDL==result){
-                removeWsdlFolderContents();
-                ((JaxWsClientChildren)getChildren()).refreshKeys(true);
-            } else
+            String result = RefreshClientDialog.open(client.getWsdlUrl());
+            if (RefreshClientDialog.CLOSE.equals(result)) return;
+            else if (RefreshClientDialog.NO_DOWNLOAD.equals(result)) {
                 ((JaxWsClientChildren)getChildren()).refreshKeys(false);
+            } else {
+                ((JaxWsClientChildren)getChildren()).refreshKeys(true, result);
+            }
         } else {
             Object result = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                     NbBundle.getMessage(JaxWsClientNode.class,

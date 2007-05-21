@@ -113,7 +113,7 @@ public class RefreshWsDialog extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         downloadWsdlCheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(RefreshWsDialog.class, "MSG_DownloadWsdl_mnem").charAt(0));
-        downloadWsdlCheckBox.setText(org.openide.util.NbBundle.getMessage(RefreshWsDialog.class, "MSG_DownloadWsdl", new Object[] {url}));
+        downloadWsdlCheckBox.setText(org.openide.util.NbBundle.getMessage(RefreshWsDialog.class, "MSG_DownloadServiceWsdl", new Object[] {url})); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -123,7 +123,7 @@ public class RefreshWsDialog extends javax.swing.JPanel {
 
         regenerateCheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(RefreshWsDialog.class, "MSG_RegenerateImplClass_mnem").charAt(0));
         regenerateCheckBox.setSelected(true);
-        regenerateCheckBox.setText(org.openide.util.NbBundle.getMessage(RefreshWsDialog.class, "MSG_RegenerateImplClass"));
+        regenerateCheckBox.setText(org.openide.util.NbBundle.getMessage(RefreshWsDialog.class, "MSG_RegenerateImplClass")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -132,7 +132,7 @@ public class RefreshWsDialog extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 0);
         add(regenerateCheckBox, gridBagConstraints);
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(RefreshWsDialog.class, "HINT_DownloadWsdl"));
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(RefreshWsDialog.class, "HINT_DownloadWsdl")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -140,7 +140,7 @@ public class RefreshWsDialog extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 22, 0, 0);
         add(jLabel1, gridBagConstraints);
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(RefreshWsDialog.class, "HINT_RegenerateImplClass", new Object[] {implClass+".java.old"}));
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(RefreshWsDialog.class, "HINT_RegenerateImplClass", new Object[] {implClass+".java.old"})); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -148,12 +148,11 @@ public class RefreshWsDialog extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 22, 0, 0);
         add(jLabel2, gridBagConstraints);
 
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(RefreshWsDialog.class, "HINT_RefreshService"));
+        jLabel3.setText(org.openide.util.NbBundle.getMessage(RefreshWsDialog.class, "HINT_RefreshService")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 20, 0);
         add(jLabel3, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
     
     
