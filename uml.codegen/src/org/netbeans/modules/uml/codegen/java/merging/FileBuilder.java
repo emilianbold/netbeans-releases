@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -178,8 +177,8 @@ public class FileBuilder
                   {
                      raOldFile.setLength(currentLen);
                      int bytesShift = newDataSize - oldDataSize;
-                     if (bytesShift != 0) 
-                     {  
+                     if (bytesShift != 0)
+                     {
                         // keep track of changes made to the old file
                         this.posMapper.addToMap(oldElemStartPos, bytesShift);
                      }
@@ -452,7 +451,7 @@ public class FileBuilder
       return insertPos;
    }
    
-   // Returns the position of the byte left next to the last right brace.
+   // Returns the position of the byte left next to the last right brace '}'.
    // In case it is not found, the position of the byte right next to the first
    // non-white-space character is returned.
    private long getSrcBottomPosition() throws IOException
@@ -500,7 +499,7 @@ public class FileBuilder
       return offset;
    }
    
-   // Returns the position of the byte right next to the first left brace.
+   // Returns the position of the byte right next to the first left brace '{'.
    // In case, the left brace is not found, 0 is returned.
    private long getSrcTopPosition() throws IOException
    {
@@ -561,7 +560,13 @@ public class FileBuilder
    private long getElemStartPosition(ElementDescriptor elem)
    {
       long startPos = elem.getStartPos();
-      //TODO: check for comment, if exist, add comment to startPos
+      // check for comment, if exists, use the start posistion
+      // of the comment as startPos.
+      long commentStartPos = elem.getPosition("Comment");
+      if ( commentStartPos > -1 && elem.getLength("Comment") > 0) // commet=nt exists
+      {
+         startPos = commentStartPos;
+      }
       return startPos;
    }
    
