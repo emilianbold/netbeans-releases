@@ -1921,7 +1921,12 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         
         boolean isInterruptJavac () {
             synchronized (INTERNAL_LOCK) {
-                return this.mayCancelJavac;
+                boolean ret = this.mayCancelJavac;
+                if (ret) {
+                    assert this.canceledReference != null;
+                    assert (this.canceledReference.javaSource.flags & INVALID) != 0;
+                }
+                return ret;
             }
         }
         
