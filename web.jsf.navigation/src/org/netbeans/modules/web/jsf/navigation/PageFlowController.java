@@ -58,6 +58,7 @@ import java.util.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 /**
  *
  * @author joelle lam
@@ -65,7 +66,6 @@ import org.openide.util.NbBundle;
 public class PageFlowController {
     private PageFlowView view;
     private JSFConfigModel configModel;
-    private FileObject webFolder;
     private Collection<FileObject> webFiles;
     private DataObject configDataObj;
     
@@ -73,7 +73,7 @@ public class PageFlowController {
     private HashMap<NavigationRule,String> navRule2String = new HashMap<NavigationRule,String>();
     private final HashMap<String,Page> pageName2Page = new HashMap<String,Page>();  //Should this be synchronized.
     
-    public static final String DEFAULT_DOC_BASE_FOLDER = "web"; //NOI18NF
+    //    public static final String DEFAULT_DOC_BASE_FOLDER = "web"; //NOI18NF
     
     private static final String NO_WEB_FOLDER_WARNING= NbBundle.getMessage(PageFlowController.class, "MSG_NoWebFolder");
     private static final String NO_WEB_FOLDER_TITLE= NbBundle.getMessage(PageFlowController.class, "TLE_NoWebFolder");
@@ -94,39 +94,23 @@ public class PageFlowController {
         }
         configModel = ConfigurationUtils.getConfigModel(configFile,true);
         Project project = FileOwnerQuery.getOwner(configFile);
-        webFolder = project.getProjectDirectory().getFileObject(DEFAULT_DOC_BASE_FOLDER);
+        //        webFolder = project.getProjectDirectory().getFileObject(DEFAULT_DOC_BASE_FOLDER);
         
-        if( webFolder == null ){
-            
-            //            throw new IllegalArgumentException("A Web Folder Does not exist in this project.  Page Flow Editor will not be able to model you project. ");
-//            DialogDescriptor desc = new DialogDescriptor(null, NO_WEB_FOLDER_TITLE, true, DialogDescriptor.WARNING_MESSAGE, null, null);
-            
-            
-            
-            
-            
+        if ( getWebFolder() == null ){
             DialogDescriptor desc = new DialogDescriptor(
                     NbBundle.getMessage(PageFlowController.class, "MSG_NoWebFolder"),
                     NbBundle.getMessage(PageFlowController.class, "TLE_NoWebFolder"),
-                    true,
+                    false,
                     DialogDescriptor.WARNING_MESSAGE,
                     DialogDescriptor.NO_OPTION,
                     null);
             
-            
-            
-            
-            
-            
-            
-            
-            
             Dialog d = DialogDisplayer.getDefault().createDialog(desc);
             d.show();
             webFiles = new HashSet<FileObject>();
+        } else {
+            webFiles = getAllProjectRelevantFilesObjects();
         }
-        
-        webFiles = getAllProjectRelevantFilesObjects();
         
     }
     
@@ -284,7 +268,7 @@ public class PageFlowController {
     
     
     private Collection<FileObject> getAllProjectRelevantFilesObjects() {
-        Collection<FileObject> webFiles = getProjectKnownFileOjbects(webFolder);
+        Collection<FileObject> webFiles = getProjectKnownFileOjbects(getWebFolder());
         return webFiles;
     }
     
@@ -663,11 +647,18 @@ public class PageFlowController {
         }
     }
     
+    
+    
+    private FileObject webFolder = null;
     /**
      * Gets the WebFolder which contains the jsp pages.
      * @return FileObject webfolder
      */
     public FileObject getWebFolder() {
+        if ( webFolder == null ) {
+            FileObject configFile = configDataObj.getPrimaryFile();
+            webFolder = PageFlowView.getWebFolder(configFile);
+        }
         return webFolder;
     }
     

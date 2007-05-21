@@ -39,6 +39,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.vmd.VMDPinWidget;
 import org.netbeans.api.visual.widget.ConnectionWidget;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
@@ -81,7 +82,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         sceneData = new PageFlowSceneData(PageFlowUtilities.getInstance(this));
         
         deserializeNodeLocation(getStorageDatFile(context.getFacesConfigFile()));
-    
+        
         pfc.setupGraphNoSaveData(); /* I don't want to override the loaded locations with empy sceneData */
         setFocusable(true);
     }
@@ -238,7 +239,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     protected VMDNodeWidget createNode( Page pageNode, String type, List<Image> glyphs) {
         String pageName = pageNode.getDisplayName();
         
-
+        
         VMDNodeWidget widget = (VMDNodeWidget) scene.addNode(pageNode);
         //        widget.setNodeProperties(null /*IMAGE_LIST*/, pageName, type, glyphs);
         widget.setNodeProperties(pageNode.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16), pageName, type, glyphs);
@@ -499,16 +500,23 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     
     //    private File navDataFile = null;
     public final static File getStorageDatFile( FileObject configFile ){
-//    public final static File getStorageDatFile(JSFConfigEditorContext context){
-//        FileObject configFile = context.getFacesConfigFile();
-        Project project = FileOwnerQuery.getOwner(configFile);
-        FileObject webFolder = project.getProjectDirectory().getFileObject(PageFlowController.DEFAULT_DOC_BASE_FOLDER);
-        if ( webFolder == null ) {
+        FileObject webFolder = getWebFolder(configFile);
+        if( webFolder == null) {
             return null;
-        }              
+        }
         FileObject nbprojectFolder = webFolder.getParent().getFileObject("nbproject", null);
         String fileName = configFile.getName() + ".NavData";
         return  new File(nbprojectFolder.getPath(), fileName);
+    }
+    
+    public final static FileObject getWebFolder( FileObject configFile ){
+        WebModule webModule = WebModule.getWebModule(configFile);        
+        
+        if ( webModule == null ) {
+            return null;
+        }
+        FileObject webFolder = webModule.getDocumentBase();
+        return webFolder;
     }
     
     public void serializeNodeLocations(File navDataFile){
