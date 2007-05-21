@@ -19,12 +19,9 @@
 
 package org.netbeans.test.web.performance;
 
-import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JFrameOperator;
 
 /**
  *
@@ -37,7 +34,7 @@ public class Macros {
      */
     public static J2eeServerNode startBundledTomact() {
         RuntimeTabOperator.invoke();
-        J2eeServerNode serverNode = new J2eeServerNode("Bundled Tomcat");
+        J2eeServerNode serverNode = new J2eeServerNode("Tomcat");
         serverNode.start();
         return serverNode;
     }
@@ -48,7 +45,7 @@ public class Macros {
      */
     public static Node stopBundledTomact() {
         RuntimeTabOperator.invoke();
-        J2eeServerNode serverNode = new J2eeServerNode("Bundled Tomcat");
+        J2eeServerNode serverNode = new J2eeServerNode("Tomcat");
         serverNode.stop();
         return serverNode;
     }
