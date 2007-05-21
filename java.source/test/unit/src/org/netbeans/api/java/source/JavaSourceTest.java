@@ -376,7 +376,7 @@ public class JavaSourceTest extends NbTestCase {
         });        
         assertTrue ("Time out",waitForMultipleObjects(new CountDownLatch[] {latches[1]}, 15000)); 
         assertEquals ("Called more times than expected",1,counter.getAndSet(0));
-        assertTrue("Took less time than expected time=" + (timers[1] - start), (timers[1] - start) >= JavaSource.REPARSE_DELAY);
+        assertTrue("Took less time than expected time=" + (timers[1] - start), (timers[1] - start) >= js.getReparseDelay());
         js.removePhaseCompletionTask (task);
     }
     
@@ -443,14 +443,14 @@ public class JavaSourceTest extends NbTestCase {
     }
     
     public void testChangeInvalidates() throws MalformedURLException, InterruptedException, IOException, BadLocationException {
-        int originalReparseDelay = JavaSource.REPARSE_DELAY;
+        FileObject test = createTestFile ("Test1");
+        ClassPath bootPath = createBootPath ();
+        ClassPath compilePath = createCompilePath ();
+        JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, null), test);
+        int originalReparseDelay = js.getReparseDelay();
+        
         try {
-            JavaSource.REPARSE_DELAY = Integer.MAX_VALUE; //never automatically reparse
-
-            FileObject test = createTestFile ("Test1");
-            ClassPath bootPath = createBootPath ();
-            ClassPath compilePath = createCompilePath ();
-            JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, null), test);
+            js.setReparseDelay(Integer.MAX_VALUE, false); //never automatically reparse                        
             CountDownLatch latch1 = new CountDownLatch (1);
             final CountDownLatch latch2 = new CountDownLatch (1);
             AtomicInteger counter = new AtomicInteger (0);
@@ -498,7 +498,9 @@ public class JavaSourceTest extends NbTestCase {
 
             js.removePhaseCompletionTask (task);
         } finally {
-            JavaSource.REPARSE_DELAY = originalReparseDelay;
+            if (js != null) {
+                js.setReparseDelay(originalReparseDelay, true);
+            }
         }
     }
     

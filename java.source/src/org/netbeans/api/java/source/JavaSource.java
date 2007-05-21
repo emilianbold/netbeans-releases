@@ -67,6 +67,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -202,8 +203,9 @@ public final class JavaSource {
     private static final int SLOW_CANCEL_LIMIT = 50;
     private static final PrintWriter DEV_NULL = new PrintWriter(new DevNullWriter(), false);
     
-    /**Not final for tests.*/
-    static int REPARSE_DELAY = 500;
+
+    private static final int REPARSE_DELAY = 500;
+    private int reparseDelay;
     
     /**Used by unit tests*/
     static JavaFileObjectProvider jfoProvider = new DefaultJavaFileObjectProvider (); 
@@ -385,6 +387,7 @@ public final class JavaSource {
      * @param cpInfo classpath info
      */
     private JavaSource (ClasspathInfo cpInfo, Collection<? extends FileObject> files) throws IOException {
+        this.reparseDelay = REPARSE_DELAY;
         this.files = Collections.unmodifiableList(new ArrayList<FileObject>(files));   //Create a defensive copy, prevent modification
         this.fileChangeListener = new FileChangeListenerImpl ();
         boolean multipleSources = this.files.size() > 1, filterAssigned = false;
@@ -1159,46 +1162,50 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             //First change set the index as dirty
             updateIndex ();
         }
-        Request r = currentRequest.getTaskToCancel (this, invalidate);
+        Request r = currentRequest.getTaskToCancel (invalidate);
         if (r != null) {
             r.task.cancel();
-            assert rst == null;
-            rst = r;
-        }                                        
-        resetTask.schedule(REPARSE_DELAY);
+            Request oldR = rst.getAndSet(r);
+            assert oldR == null;
+        }
+        if (!k24) {
+            resetTask.schedule(reparseDelay);
+        }
     }
     
-    private Request rst;
+    private final AtomicReference<Request> rst = new AtomicReference<JavaSource.Request> ();
+    private volatile boolean k24;
     
     /**
      * Not synchronized, only sets the atomic state and clears the listeners
      *
      */
     private void resetStateImpl() {
-        Request r = rst;
-        rst = null;
-        currentRequest.cancelCompleted(r);
-        synchronized (INTERNAL_LOCK) {
-            boolean reschedule, updateIndex;
-            synchronized (this) {
-                reschedule = (this.flags & RESCHEDULE_FINISHED_TASKS) != 0;
-                updateIndex = (this.flags & UPDATE_INDEX) != 0;
-                this.flags&=~(RESCHEDULE_FINISHED_TASKS|CHANGE_EXPECTED|UPDATE_INDEX);
-            }            
-            if (updateIndex) {
-                //Last change set the index as dirty
-                updateIndex ();
-            }
-            Collection<Request> cr;            
-            if (reschedule) {                
-                if ((cr=JavaSource.finishedRequests.remove(this)) != null && cr.size()>0)  {
+        if (!k24) {
+            Request r = rst.getAndSet(null);
+            currentRequest.cancelCompleted(r);
+            synchronized (INTERNAL_LOCK) {
+                boolean reschedule, updateIndex;
+                synchronized (this) {
+                    reschedule = (this.flags & RESCHEDULE_FINISHED_TASKS) != 0;
+                    updateIndex = (this.flags & UPDATE_INDEX) != 0;
+                    this.flags&=~(RESCHEDULE_FINISHED_TASKS|CHANGE_EXPECTED|UPDATE_INDEX);
+                }            
+                if (updateIndex) {
+                    //Last change set the index as dirty
+                    updateIndex ();
+                }
+                Collection<Request> cr;            
+                if (reschedule) {                
+                    if ((cr=JavaSource.finishedRequests.remove(this)) != null && cr.size()>0)  {
+                        JavaSource.requests.addAll(cr);
+                    }
+                }
+                if ((cr=JavaSource.waitingRequests.remove(this)) != null && cr.size()>0)  {
                     JavaSource.requests.addAll(cr);
                 }
-            }
-            if ((cr=JavaSource.waitingRequests.remove(this)) != null && cr.size()>0)  {
-                JavaSource.requests.addAll(cr);
-            }
-        }               
+            }          
+        }
     }
     
     private void updateIndex () {
@@ -1520,8 +1527,9 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         
     }
     
-    private static class EditorRegistryListener implements ChangeListener, CaretListener {
+    private static class EditorRegistryListener implements ChangeListener, CaretListener, PropertyChangeListener {
                         
+        private Request request;
         private JTextComponent lastEditor;
         
         public EditorRegistryListener () {
@@ -1533,10 +1541,20 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             if (lastEditor != editor) {
                 if (lastEditor != null) {
                     lastEditor.removeCaretListener(this);
+                    lastEditor.removePropertyChangeListener(this);
+                    final Document doc = lastEditor.getDocument();
+                    JavaSource js = null;
+                    if (doc != null) {
+                        js = forDocument(doc);
+                    }
+                    if (js != null) {
+                        js.k24 = false;
+                    }                   
                 }
                 lastEditor = editor;
                 if (lastEditor != null) {                    
                     lastEditor.addCaretListener(this);
+                    lastEditor.addPropertyChangeListener(this);
                 }
             }
         }
@@ -1552,6 +1570,40 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 }
             }
         }
+
+        public void propertyChange(final PropertyChangeEvent evt) {
+            String propName = evt.getPropertyName();
+            if ("completion-active".equals(propName)) {
+                JavaSource js = null;
+                final Document doc = lastEditor.getDocument();
+                if (doc != null) {
+                    js = forDocument(doc);
+                }
+                if (js != null) {
+                    Object rawValue = evt.getNewValue();
+                    assert rawValue instanceof Boolean;
+                    if (rawValue instanceof Boolean) {
+                        final boolean value = (Boolean)rawValue;
+                        if (value) {
+                            assert this.request == null;
+                            this.request = currentRequest.getTaskToCancel(false);
+                            if (this.request != null) {
+                                this.request.task.cancel();
+                            }
+                            js.k24 = true;
+                        }
+                        else {                    
+                            Request _request = this.request;
+                            this.request = null;                            
+                            js.k24 = false;
+                            js.resetTask.schedule(js.reparseDelay);
+                            currentRequest.cancelCompleted(_request);
+                        }
+                    }
+                }
+            }
+        }
+        
     }
     
     private class FileChangeListenerImpl extends FileChangeAdapter {                
@@ -1730,6 +1782,8 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
      */
     private static final class CurrentRequestReference {                        
         
+        private static JavaSource.Request DUMMY_RQ = new JavaSource.Request (new CancellableTask<CompilationInfo>() { public void cancel (){}; public void run (CompilationInfo info){}},null,null,null,false);
+        
         private JavaSource.Request reference;
         private JavaSource.Request canceledReference;
         private long cancelTime;
@@ -1749,7 +1803,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 this.canceled = this.mayCancelJavac = false;
                 this.cancelTime = 0;
                 this.reference = reference;                
-            }            
+            }
             return result;
         }
         
@@ -1770,16 +1824,22 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             return request;
         }
         
-        JavaSource.Request getTaskToCancel (final JavaSource js, final boolean mayCancelJavac) {
+        JavaSource.Request getTaskToCancel (final boolean mayCancelJavac) {
             JavaSource.Request request = null;
             if (!factory.isDispatchThread(Thread.currentThread())) {
                 synchronized (INTERNAL_LOCK) {
-                    if (this.reference != null && js.equals(this.reference.javaSource)) {
+                    if (this.reference != null) {
                         assert this.canceledReference == null;
                         request = this.reference;
                         this.canceledReference = request;
                         this.reference = null;
                         this.canceled = true;
+                        this.mayCancelJavac = mayCancelJavac;
+                        this.cancelTime = System.currentTimeMillis();
+                    }
+                    else if (canceledReference == null)  {
+                        request = DUMMY_RQ;
+                        this.canceledReference = request;
                         this.mayCancelJavac = mayCancelJavac;
                         this.cancelTime = System.currentTimeMillis();
                     }
@@ -2125,6 +2185,18 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         public void flush() throws IOException {
         }
         public void close() throws IOException {
+        }
+    }
+    
+    //Package private test utility methods
+    int getReparseDelay () {
+        return this.reparseDelay;
+    }
+    
+    void setReparseDelay (int reparseDelay, boolean reset) {
+        this.reparseDelay = reparseDelay;
+        if (reset) {
+            resetState(true, false);
         }
     }
     
