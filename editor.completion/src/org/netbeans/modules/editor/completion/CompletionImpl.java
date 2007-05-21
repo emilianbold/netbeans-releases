@@ -672,6 +672,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
             return;
         }
 
+        getActiveComponent().putClientProperty("completion-active", Boolean.TRUE);
         LogRecord r = new LogRecord(Level.FINE, "COMPL_INVOCATION"); // NOI18N
         r.setParameters(new Object[] {explicitQuery});
         uilog(r);
@@ -830,6 +831,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         if (!completionOnly && hidePerformed && CompletionSettings.INSTANCE.documentationAutoPopup()) {
             hideDocumentation(true);
         }
+        getActiveComponent().putClientProperty("completion-active", Boolean.FALSE);
         return hidePerformed;
     }
     
