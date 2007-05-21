@@ -187,4 +187,8 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
         }                
     }
 
+    public boolean promptUser(String arg0, String arg1, boolean arg2) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
 }
