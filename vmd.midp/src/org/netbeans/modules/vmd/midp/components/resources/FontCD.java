@@ -215,7 +215,7 @@ public final class FontCD extends ComponentDescriptor {
                         switch (MidpTypes.getInteger (propertyValue)) {
                             case VALUE_FACE_SYSTEM: writer.write ("Font.FACE_SYSTEM"); break; // NOI18N
                             case VALUE_FACE_MONOSPACE: writer.write ("Font.FACE_MONOSPACE"); break; // NOI18N
-                            case VALUE_FACE_PROPORTIONAL: writer.write ("Font.FACE_PROPPORTIONAL"); break; // NOI18N
+                            case VALUE_FACE_PROPORTIONAL: writer.write ("Font.FACE_PROPORTIONAL"); break; // NOI18N
                             default: throw Debug.illegalState ();
                         }
                     } else

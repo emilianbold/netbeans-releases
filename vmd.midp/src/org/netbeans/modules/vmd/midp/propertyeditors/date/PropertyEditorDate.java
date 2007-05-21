@@ -20,10 +20,11 @@
 package org.netbeans.modules.vmd.midp.propertyeditors.date;
 
 import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -41,7 +42,6 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.items.DateFieldCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorElement;
 import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorUserCode;
-import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorUserCodeElement;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -49,11 +49,11 @@ import org.openide.util.NbBundle;
  *
  * @author Anton Chechel
  */
-public final class PropertyEditorDate extends PropertyEditorUserCode implements PropertyEditorElement, PropertyEditorUserCodeElement {
+public final class PropertyEditorDate extends PropertyEditorUserCode implements PropertyEditorElement {
     
-    private static final DateFormat FORMAT_DATE_TIME = DateFormat.getDateTimeInstance();
-    private static final DateFormat FORMAT_DATE = DateFormat.getDateInstance();
-    private static final DateFormat FORMAT_TIME = DateFormat.getTimeInstance();
+    private static final DateFormat FORMAT_DATE_TIME = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss"); // NOI18N
+    private static final DateFormat FORMAT_DATE = new SimpleDateFormat("dd.MM.yyyy"); // NOI18N
+    private static final DateFormat FORMAT_TIME = new SimpleDateFormat("HH:mm:ss"); // NOI18N
     private static final String NON_DATE_TIME_TEXT = NbBundle.getMessage(PropertyEditorDate.class, "MSG_NON_DATE_TIME"); // NOI18N
     private static final String NON_DATE_TEXT = NbBundle.getMessage(PropertyEditorDate.class, "MSG_NON_DATE"); // NOI18N
     private static final String NON_TIME_TEXT = NbBundle.getMessage(PropertyEditorDate.class, "MSG_NON_TIME"); // NOI18N
@@ -71,9 +71,7 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         
         Collection<PropertyEditorElement> peElements = new ArrayList<PropertyEditorElement>(1);
         peElements.add(this);
-        Collection<PropertyEditorUserCodeElement> ucElements = new ArrayList<PropertyEditorUserCodeElement>(1);
-        ucElements.add(this);
-        initElements(peElements, ucElements);
+        initElements(peElements);
     }
     
     public static final DesignPropertyEditor createInstance() {
@@ -84,7 +82,6 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorDate.class, "LBL_DATE_STR")); // NOI18N
         customEditor = new CustomEditor();
-        radioButton.addActionListener(customEditor);
     }
     
     public void init(DesignComponent component) {
@@ -128,7 +125,7 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
     
     public void setPropertyValue(PropertyValue value) {
         if (isCurrentValueANull() || value == null) {
-            customEditor.setText("");
+            customEditor.setText(null);
         } else {
             customEditor.setText(getValueAsText(value));
         }
@@ -144,8 +141,6 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
                 }
             });
         }
-        
-        customEditor.checkText();
     }
     
     private void saveValue(String text) {
@@ -178,15 +173,11 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         return FORMAT_DATE_TIME;
     }
     
-    
-    public void userCodeRadioButtonPressed() {
-        customEditor.checkText();
-    }
-    
-    private class CustomEditor extends JPanel implements DocumentListener, ActionListener {
+    private class CustomEditor extends JPanel implements DocumentListener, FocusListener {
         private JTextField textField;
         
         public CustomEditor() {
+            radioButton.addFocusListener(this);
             initComponents();
         }
         
@@ -194,6 +185,7 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
             setLayout(new BorderLayout());
             textField = new JTextField();
             textField.getDocument().addDocumentListener(this);
+            textField.addFocusListener(this);
             add(textField, BorderLayout.CENTER);
         }
         
@@ -205,16 +197,12 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
             return textField.getText();
         }
         
-        public void checkText() {
-            if (radioButton.isSelected()) {
-                try {
-                    getFormatter().parse(textField.getText());
-                    clearErrorStatus();
-                } catch (ParseException e) {
-                    displayWarning(getMessage());
-                }
-            } else {
+        public void checkDateStatus() {
+            try {
+                getFormatter().parse(textField.getText());
                 clearErrorStatus();
+            } catch (ParseException e) {
+                displayWarning(getMessage());
             }
         }
         
@@ -229,21 +217,25 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         
         public void insertUpdate(DocumentEvent evt) {
             radioButton.setSelected(true);
-            checkText();
+            checkDateStatus();
         }
         
         public void removeUpdate(DocumentEvent evt) {
             radioButton.setSelected(true);
-            checkText();
+            checkDateStatus();
         }
         
         public void changedUpdate(DocumentEvent evt) {
-            radioButton.setSelected(true);
-            checkText();
         }
         
-        public void actionPerformed(ActionEvent evt) {
-            checkText();
+        public void focusGained(FocusEvent e) {
+            if (e.getSource() == radioButton || e.getSource() == textField) {
+                checkDateStatus();
+            }
+        }
+        
+        public void focusLost(FocusEvent e) {
+            clearErrorStatus();
         }
     }
 }
