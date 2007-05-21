@@ -33,6 +33,7 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.mercurial</friend>
                 <friend>org.netbeans.modules.subversion</friend>
                 <package>org.ini4j</package>                
             </friend-packages>
