@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.api.java.source.gen;
@@ -52,9 +52,10 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
         suite.addTest(new MethodParametersTest("testSwap"));
         suite.addTest(new MethodParametersTest("testRenameInTypePar"));
         suite.addTest(new MethodParametersTest("testRenameInParameterizedType"));
+        suite.addTest(new MethodParametersTest("testRenameInParameterInvocation"));
         return suite;
     }
-    
+
     public void testAddInsertReplaceParameters() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
@@ -578,6 +579,63 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
                         VariableTree vt = node.getParameters().get(0);
                         ParameterizedTypeTree ptt = (ParameterizedTypeTree) vt.getType();
                         workingCopy.rewrite(ptt.getType(), make.Identifier("Seznam"));
+                    }
+                }
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    /**
+     * #89746: Rename in type parameter/parameterized type
+     */
+    public void testRenameInParameterInvocation() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "import java.io.File;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        String s = \"Nothing\";\n" +
+            "        System.out.println(a, s);\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "import java.io.File;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        String retez = \"Nothing\";\n" +
+            "        System.out.println(a, retez);\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // ensure that it is correct type declaration, i.e. class
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        ClassTree clazz = (ClassTree) typeDecl;
+                        MethodTree node = (MethodTree) clazz.getMembers().get(1);
+                        VariableTree vt = (VariableTree) node.getBody().getStatements().get(0);
+                        workingCopy.rewrite(vt, make.setLabel(vt, "retez"));
+                        ExpressionStatementTree est = (ExpressionStatementTree) node.getBody().getStatements().get(1);
+                        MethodInvocationTree mit = (MethodInvocationTree) est.getExpression();
+                        IdentifierTree ident = (IdentifierTree) mit.getArguments().get(1);
+                        workingCopy.rewrite(ident, make.Identifier("retez"));
                     }
                 }
             }

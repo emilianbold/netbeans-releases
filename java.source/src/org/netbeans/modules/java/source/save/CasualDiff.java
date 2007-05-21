@@ -839,7 +839,7 @@ public class CasualDiff {
                 int rParen = TokenUtilities.moveFwdToToken(tokenSequence, getOldPos(oldT.meth), JavaTokenId.RPAREN);
                 copyTo(localPointer, localPointer = rParen);
             }
-            localPointer = diffParameterList(oldT.args, newT.args, false, localPointer, printer);
+            localPointer = diffParameterList2(oldT.args, newT.args, localPointer, Measure.ARGUMENT);
         }
         copyTo(localPointer, bounds[1]);
         
@@ -1614,6 +1614,77 @@ public class CasualDiff {
         if (printParen && oldList.isEmpty()) {
             buf.print(JavaTokenId.GT.fixedText());
             buf.print(" "); // part of options?
+        }
+        return oldList.isEmpty() ? pos : endPos(oldList);
+    }
+    
+    /**
+     * Diff two lists of parameters separated by comma. It is used e.g.
+     * from type parameters and method parameters.
+     * 
+     */
+    private int diffParameterList2(
+            List<? extends JCTree> oldList,
+            List<? extends JCTree> newList,
+            int pos,
+            Measure measure)
+    {
+        assert oldList != null && newList != null;
+        if (oldList == newList || oldList.equals(newList))
+            return pos; // they match perfectly or no need to do anything
+        
+        if (newList.isEmpty()) {
+            int endPos = endPos(oldList);
+        }
+        ListMatcher<JCTree> matcher = ListMatcher.<JCTree>instance(
+                (List<JCTree>) oldList, 
+                (List<JCTree>) newList,
+                Measure.ARGUMENT
+        );
+        if (!matcher.match()) {
+            // nothing in the list, no need to print and nothing was printed
+            return pos; 
+        }
+        ResultItem<JCTree>[] result = matcher.getResult();
+        for (int oldIndex = 0, j = 0; j < result.length; j++) {
+            ResultItem<JCTree> item = result[j];
+            switch (item.operation) {
+                case MODIFY: {
+                    JCTree tree = oldList.get(oldIndex);
+                    int[] bounds = getBounds(tree);
+                    if (oldIndex++ > 0) printer.print(",");
+                    copyTo(pos, bounds[0]);
+                    diffTree(tree, item.element, bounds);
+                    tokenSequence.move(bounds[1]);
+                    PositionEstimator.moveToSrcRelevant(tokenSequence, Direction.FORWARD);
+                    pos = bounds[1];
+                    break;
+                }
+                // insert new element
+                case INSERT: {
+                    if (oldIndex > 0) printer.print(", ");
+                    printer.print(item.element);
+                    break;
+                }
+                // just copy existing element
+                case NOCHANGE: {
+                    if (oldIndex++ > 0) printer.print(",");
+                    int[] bounds = getBounds(item.element);
+                    tokenSequence.move(bounds[0]);
+                    TokenUtilities.movePrevious(tokenSequence, bounds[0]);
+                    tokenSequence.moveNext();
+                    int start = tokenSequence.offset();
+                    TokenUtilities.moveNext(tokenSequence, bounds[1]);
+                    int end = tokenSequence.offset();
+                    copyTo(start, end);
+                    pos = end + 1;
+                    break;
+                }
+                // just continue
+                case DELETE:
+                default: 
+                    break;
+            }
         }
         return oldList.isEmpty() ? pos : endPos(oldList);
     }
