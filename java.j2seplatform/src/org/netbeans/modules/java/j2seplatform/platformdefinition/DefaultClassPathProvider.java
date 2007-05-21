@@ -46,6 +46,7 @@ import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.classfile.ClassName;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -70,7 +71,7 @@ public class DefaultClassPathProvider implements ClassPathProvider {
 
     private /*WeakHash*/Map/*<FileObject,WeakReference<FileObject>>*/ sourceRootsCache = new WeakHashMap ();
     private /*WeakHash*/Map/*<FileObject,WeakReference<ClassPath>>*/ sourceClasPathsCache = new WeakHashMap();
-    private Reference/*<ClassPath>*/ compiledClassPath;
+    private Reference/*<ClassPath>*/ compiledClassPath;    
     
     /** Creates a new instance of DefaultClassPathProvider */
     public DefaultClassPathProvider() {
@@ -516,63 +517,84 @@ public class DefaultClassPathProvider implements ClassPathProvider {
         }
     } // End of class SourceReader.
     
+    
+    private static class RecursionException extends IllegalStateException {}
+    
     private static class CompileClassPathImpl implements ClassPathImplementation, GlobalPathRegistryListener {
         
-        private List cachedCompiledClassPath;
+        private List<? extends PathResourceImplementation> cachedCompiledClassPath;
         private PropertyChangeSupport support;
+        private final ThreadLocal<Boolean> active = new ThreadLocal<Boolean> ();
         
         public CompileClassPathImpl () {
             this.support = new PropertyChangeSupport (this);
         }
         
-        public synchronized List getResources () {
+        public synchronized List<? extends PathResourceImplementation> getResources () {
+            
             if (this.cachedCompiledClassPath == null) {
-                GlobalPathRegistry regs = GlobalPathRegistry.getDefault();
-                regs.addGlobalPathRegistryListener(this);
-                Set roots = new HashSet ();
-                //Add compile classpath
-                Set paths = regs.getPaths (ClassPath.COMPILE);
-                for (Iterator it = paths.iterator(); it.hasNext();) {
-                    ClassPath cp = (ClassPath) it.next();
-                    for (Iterator eit = cp.entries().iterator(); eit.hasNext();) {
-                        ClassPath.Entry entry = (ClassPath.Entry) eit.next();
-                        roots.add (entry.getURL());
-                    }                    
+                Boolean _active = active.get();
+                if (_active == Boolean.TRUE) {
+                    throw new RecursionException ();
                 }
-                //Add entries from Exec CP which has sources on Sources CP and are not on the Compile CP
-                Set sources = regs.getPaths(ClassPath.SOURCE);
-                Set sroots = new HashSet ();
-                for (Iterator it = sources.iterator(); it.hasNext();) {
-                    ClassPath cp = (ClassPath) it.next();
-                    for (Iterator eit = cp.entries().iterator(); eit.hasNext();) {
-                        ClassPath.Entry entry = (ClassPath.Entry) eit.next();
-                        sroots.add (entry.getURL());
-                    }                    
-                }                
-                Set exec = regs.getPaths(ClassPath.EXECUTE);
-                for (Iterator it = exec.iterator(); it.hasNext();) {
-                    ClassPath cp = (ClassPath) it.next ();
-                    for (Iterator eit = cp.entries().iterator(); eit.hasNext();) {
-                        ClassPath.Entry entry = (ClassPath.Entry) eit.next ();
-                        FileObject[] fos = SourceForBinaryQuery.findSourceRoots(entry.getURL()).getRoots();
-                        for (int i=0; i< fos.length; i++) {
-                            try {
-                                if (sroots.contains(fos[i].getURL())) {
-                                    roots.add (entry.getURL());
-                                }
-                            } catch (FileStateInvalidException e) {
-                                ErrorManager.getDefault().notify(e);
-                            }                                
-                        }
+                active.set(true);
+                try {
+                    GlobalPathRegistry regs = GlobalPathRegistry.getDefault();
+                    regs.addGlobalPathRegistryListener(this);
+                    Set<URL> roots = new HashSet<URL> ();
+                    //Add compile classpath
+                    Set<ClassPath> paths = regs.getPaths (ClassPath.COMPILE);
+                    for (Iterator<ClassPath> it = paths.iterator(); it.hasNext();) {
+                        ClassPath cp =  it.next();
+                        try {
+                            for (Iterator eit = cp.entries().iterator(); eit.hasNext();) {
+                                ClassPath.Entry entry = (ClassPath.Entry) eit.next();
+                                roots.add (entry.getURL());
+                            }                    
+                        } catch (RecursionException e) {/*Recover from recursion*/}
                     }
+                    //Add entries from Exec CP which has sources on Sources CP and are not on the Compile CP
+                    Set<ClassPath> sources = regs.getPaths(ClassPath.SOURCE);
+                    Set<URL> sroots = new HashSet<URL> ();
+                    for (Iterator<ClassPath> it = sources.iterator(); it.hasNext();) {
+                        ClassPath cp = it.next();
+                        try {
+                            for (Iterator<ClassPath.Entry> eit = cp.entries().iterator(); eit.hasNext();) {
+                                ClassPath.Entry entry = eit.next();
+                                sroots.add (entry.getURL());
+                            }                    
+                        } catch (RecursionException e) {/*Recover from recursion*/}
+                    }                
+                    Set<ClassPath> exec = regs.getPaths(ClassPath.EXECUTE);
+                    for (Iterator<ClassPath> it = exec.iterator(); it.hasNext();) {
+                        ClassPath cp = it.next ();
+                        try {
+                            for (Iterator<ClassPath.Entry> eit = cp.entries().iterator(); eit.hasNext();) {
+                                ClassPath.Entry entry = eit.next ();
+                                FileObject[] fos = SourceForBinaryQuery.findSourceRoots(entry.getURL()).getRoots();
+                                for (int i=0; i< fos.length; i++) {
+                                    try {
+                                        if (sroots.contains(fos[i].getURL())) {
+                                            roots.add (entry.getURL());
+                                        }
+                                    } catch (FileStateInvalidException e) {
+                                        ErrorManager.getDefault().notify(e);
+                                    }                                
+                                }
+                            }
+                        } catch (RecursionException e) {/*Recover from recursion*/}
+                    }
+                    List<PathResourceImplementation> l =  new ArrayList<PathResourceImplementation> ();
+                    for (Iterator it = roots.iterator(); it.hasNext();) {
+                        l.add (ClassPathSupport.createResource((URL)it.next()));
+                    }
+                    this.cachedCompiledClassPath = Collections.unmodifiableList(l);
+                } finally {
+                    active.remove();
                 }
-                List l =  new ArrayList ();
-                for (Iterator it = roots.iterator(); it.hasNext();) {
-                    l.add (ClassPathSupport.createResource((URL)it.next()));
-                }
-                this.cachedCompiledClassPath = Collections.unmodifiableList(l);
             }
             return this.cachedCompiledClassPath;
+            
         }
         
         public void addPropertyChangeListener (PropertyChangeListener l) {

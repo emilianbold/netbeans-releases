@@ -18,6 +18,7 @@
  */
 
 package org.netbeans.modules.java.j2seplatform.platformdefinition;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -37,8 +38,8 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 
 
 
-import org.netbeans.api.project.TestUtil;
 import org.netbeans.core.startup.layers.ArchiveURLMapper;
+import org.netbeans.junit.MockServices;
 
 
 
@@ -56,14 +57,11 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 
-import org.openide.util.lookup.Lookups;
-
-
 /**
  *
  * @author  tom
  */
-public class DefaultClassPathProviderTest extends NbTestCase implements Lookup.Provider {
+public class DefaultClassPathProviderTest extends NbTestCase {
     
     private static final int FILE_IN_PACKAGE = 0;
     private static final int FILE_IN_BAD_PACKAGE = 1;
@@ -85,15 +83,19 @@ public class DefaultClassPathProviderTest extends NbTestCase implements Lookup.P
     private FileObject srcRoot;
     private FileObject[] srcFile = new FileObject[3];
     private FileObject[] compileRoots;
-    private FileObject[] execRoots;
-    private FileObject[] libSourceRoots;
+    private static FileObject[] execRoots;
+    private static FileObject[] libSourceRoots;
     private FileObject execTestDir;
     private Lookup lookup;
     
     /** Creates a new instance of DefaultClassPathProviderTest */
     public DefaultClassPathProviderTest (String testName) {
         super (testName);
-        TestUtil.setLookup(Lookups.proxy(this));
+        MockServices.setServices(
+                ArchiveURLMapper.class,
+                MasterURLMapper.class,
+                JavaPlatformProviderImpl.class,
+                SFBQI.class);
     }
     
     
@@ -105,7 +107,7 @@ public class DefaultClassPathProviderTest extends NbTestCase implements Lookup.P
     
     
     protected void setUp() throws Exception {
-        this.clearWorkDir();
+        this.clearWorkDir();        
         super.setUp();
         FileObject workDir = FileUtil.toFileObject(this.getWorkDir());
         assertNotNull("MasterFS is not configured.", workDir);
@@ -116,7 +118,7 @@ public class DefaultClassPathProviderTest extends NbTestCase implements Lookup.P
         }
         ClassPath cp = ClassPathSupport.createClassPath(this.compileRoots);
         GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, new ClassPath[] {cp});
-        this.execRoots = new FileObject[2];
+       this.execRoots = new FileObject[2];
         this.execRoots[0] = this.compileRoots[2];
         this.execRoots[1] = workDir.createFolder("lib_OnlyExec");
         cp = ClassPathSupport.createClassPath(this.execRoots);
@@ -169,6 +171,30 @@ public class DefaultClassPathProviderTest extends NbTestCase implements Lookup.P
         assertNotNull ("DefaultClassPathProvider returned null for EXECUTE",cp);
         assertEquals("Invalid length of classpath for EXECUTE",1,cp.getRoots().length);
         assertEquals("Illegal classpath for EXECUTE: ",cp.getRoots()[0],this.execTestDir);
+    }
+    
+    public void testCycle () throws Exception {
+        GlobalPathRegistry regs = GlobalPathRegistry.getDefault();
+        Set<ClassPath> toCleanUp = regs.getPaths(ClassPath.COMPILE);        
+        regs.unregister(ClassPath.COMPILE, toCleanUp.toArray(new ClassPath[toCleanUp.size()]));
+        toCleanUp = regs.getPaths(ClassPath.EXECUTE);        
+        regs.unregister(ClassPath.EXECUTE, toCleanUp.toArray(new ClassPath[toCleanUp.size()]));
+        File wdf = getWorkDir();
+        FileObject wd = FileUtil.toFileObject(wdf);
+        FileObject root1 = wd.createFolder("root1");
+        FileObject root2 = wd.createFolder("root2");
+        ClassPathProvider cpp = new DefaultClassPathProvider ();
+        ClassPath dcp = cpp.findClassPath(root2, ClassPath.COMPILE);
+        ClassPath cp = ClassPathSupport.createClassPath(new FileObject[] {root1});
+        regs.register(ClassPath.COMPILE, new ClassPath[] {cp});        
+        assertNotNull(dcp);
+        FileObject[] roots = dcp.getRoots();
+        assertEquals(1, roots.length);
+        assertEquals(root1, roots[0]);
+        
+        regs.register(ClassPath.COMPILE, new ClassPath[] {dcp});
+        roots = dcp.getRoots();
+        assertEquals(1, roots.length);        
     }
     
     
@@ -248,7 +274,7 @@ public class DefaultClassPathProviderTest extends NbTestCase implements Lookup.P
     
     
     
-    private class SFBQI implements SourceForBinaryQueryImplementation {
+    public static class SFBQI implements SourceForBinaryQueryImplementation {
         
         
         public SFBQI () {
@@ -276,23 +302,5 @@ public class DefaultClassPathProviderTest extends NbTestCase implements Lookup.P
             }
             return null;
         }
-    }
-        
-   
-            
-    
-    public synchronized Lookup getLookup() {
-        if (this.lookup == null) {
-            this.lookup = Lookups.fixed (
-                new Object[] {
-                    new ArchiveURLMapper (),
-                    new MasterURLMapper(),
-                    new JavaPlatformProviderImpl(),
-                    new SFBQI (),
-                });
-        }
-        return this.lookup;
-    }    
-    
-    
+    }                                  
 }
