@@ -1,6 +1,5 @@
 package org.netbeans.modules.web.jsf.navigation.graph;
 
-import org.netbeans.api.visual.widget.Widget;
 import org.openide.util.Exceptions;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.*;
@@ -14,7 +13,6 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
-import org.netbeans.modules.web.jsf.navigation.Page;
 import org.netbeans.modules.web.jsf.navigation.PageFlowUtilities;
 
 /**
