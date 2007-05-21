@@ -20,8 +20,9 @@ package org.netbeans.modules.java.editor.codegen.ui;
 
 
 import java.awt.Image;
-import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -38,11 +39,9 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.UiUtils;
-import org.netbeans.modules.java.editor.codegen.ui.ElementNode.Description;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -65,7 +64,7 @@ public class ElementNode extends AbstractNode {
         description.node = this;
         setDisplayName(description.name); 
     }
-        
+    
     public void setSingleSelection( boolean singleSelection ) {
         this.singleSelection = singleSelection;
     }
@@ -91,7 +90,14 @@ public class ElementNode extends AbstractNode {
     public String getHtmlDisplayName() {
         return description.htmlHeader;
     }
+
+    private static final Action[] EMPTY_ACTIONS = new Action[0];
     
+    @Override
+    public Action[] getActions(boolean context) {
+        return EMPTY_ACTIONS;
+    }
+
     public void assureSingleSelection() {
         Node pn = getParentNode();
         if (pn == null && singleSelection ) {
@@ -108,6 +114,8 @@ public class ElementNode extends AbstractNode {
     private static final class ElementChilren extends Children.Keys<Description> {
             
         public ElementChilren(List<Description> descriptions) {
+            Collections.sort( descriptions, Description.ALPHA_COMPARATOR );
+
             setKeys(descriptions);            
         }
         
@@ -119,6 +127,8 @@ public class ElementNode extends AbstractNode {
     /** Stores all interesting data about given element.
      */    
     public static class Description {
+        
+        public static final Comparator<Description> ALPHA_COMPARATOR = new DescriptionComparator();
         
         private ElementNode node;
         
@@ -385,5 +395,39 @@ public class ElementNode extends AbstractNode {
             }
         }
             
+        
+        private static class DescriptionComparator implements Comparator<Description> {
+            
+            public int compare(Description d1, Description d2) {
+                
+                if ( k2i(d1.elementHandle.getKind()) != k2i(d2.elementHandle.getKind()) ) {
+                    return k2i(d1.elementHandle.getKind()) - k2i(d2.elementHandle.getKind());
+                } 
+
+                return d1.name.compareTo(d2.name);
+            }
+            
+            int k2i( ElementKind kind ) {
+                switch( kind ) {
+                    case CONSTRUCTOR:
+                        return 1;
+                    case METHOD:
+                        return 2;
+                    case FIELD:
+                        return 3;
+                    case CLASS:
+                        return 4;
+                    case INTERFACE:
+                        return 5;
+                    case ENUM:
+                        return 6;
+                    case ANNOTATION_TYPE:                        
+                        return 7;
+                    default:
+                        return 100;
+                }
+            }
+            
+        }
     }
 }
