@@ -356,7 +356,7 @@ public class Merge extends CopyDialog implements ItemListener {
             RepositoryPaths mergeStartRepositoryPaths =
                 new RepositoryPaths(
                     repositoryRoot,
-                    null,
+                    (JTextComponent) panel.mergeStartUrlComboBox.getEditor().getEditorComponent(),
                     null,
                     panel.mergeStartRevisionTextField,
                     panel.mergeStartSearchButton

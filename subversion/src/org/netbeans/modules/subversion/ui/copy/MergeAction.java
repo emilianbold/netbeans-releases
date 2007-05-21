@@ -25,7 +25,6 @@ import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
@@ -70,14 +69,16 @@ public class MergeAction extends ContextAction {
         
         Context ctx = getContext(nodes);        
         final File root = ctx.getRootFiles()[0];
+        SVNUrl rootUrl;
         SVNUrl url;
         try {            
+            rootUrl = SvnUtils.getRepositoryRootUrl(root);
             url = SvnUtils.getRepositoryRootUrl(root);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
         }           
-        final RepositoryFile repositoryRoot = new RepositoryFile(url, url, SVNRevision.HEAD);
+        final RepositoryFile repositoryRoot = new RepositoryFile(rootUrl, url, SVNRevision.HEAD);
      
         final Merge merge = new Merge(repositoryRoot, root);           
         if(merge.showDialog()) {

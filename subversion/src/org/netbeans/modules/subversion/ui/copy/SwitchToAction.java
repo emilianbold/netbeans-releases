@@ -78,14 +78,15 @@ public class SwitchToAction extends ContextAction {
         Context ctx = getContext(nodes);        
         
         final File root = ctx.getRootFiles()[0];
-        SVNUrl url;
+        SVNUrl rootUrl;
+
         try {            
-            url = SvnUtils.getRepositoryRootUrl(root);
+            rootUrl = SvnUtils.getRepositoryRootUrl(root);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
         }                
-        final RepositoryFile repositoryRoot = new RepositoryFile(url, url, SVNRevision.HEAD);
+        final RepositoryFile repositoryRoot = new RepositoryFile(rootUrl, rootUrl, SVNRevision.HEAD);
         File[] files = Subversion.getInstance().getStatusCache().listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);       
         boolean hasChanges = files.length > 0;
 

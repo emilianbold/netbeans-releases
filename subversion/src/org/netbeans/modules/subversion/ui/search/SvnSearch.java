@@ -25,9 +25,9 @@ import java.awt.event.ActionListener;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -44,6 +44,7 @@ import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * Handles the UI for revision search.
@@ -56,13 +57,13 @@ public class SvnSearch implements ActionListener, DocumentListener {
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd"); // NOI18N
     private final SvnSearchPanel panel;    
     
-    private RepositoryFile repositoryRoot;
+    private RepositoryFile[] repositoryFiles;
     private SvnSearchView searchView ;
     private SvnProgressSupport support;
     private NoContentPanel noContentPanel;
-
-    public SvnSearch(RepositoryFile repositoryRoot) {
-        this.repositoryRoot = repositoryRoot;
+    
+    public SvnSearch(RepositoryFile... repositoryFile) {
+        this.repositoryFiles = repositoryFile;
         panel = new SvnSearchPanel();
         panel.listButton.addActionListener(this);
         panel.dateFromTextField.getDocument().addDocumentListener(this); 
@@ -99,22 +100,34 @@ public class SvnSearch implements ActionListener, DocumentListener {
         panel.listPanel.setVisible(false);
         panel.noContentPanel.setVisible(true);       
         
+        // XXX handle when ! revisionFrom instanceof SVNRevision.DateSpec
+        
         final SVNRevision revisionFrom = getRevisionFrom();
+        final SVNUrl repositoryUrl = this.repositoryFiles[0].getRepositoryUrl();
         if(revisionFrom instanceof SVNRevision.DateSpec) {
             SvnModuleConfig.getDefault().getPreferences().put(DATE_FROM, panel.dateFromTextField.getText().trim());
         }
-        
-        RequestProcessor rp = Subversion.getInstance().getRequestProcessor(this.repositoryRoot.getRepositoryUrl());
+                
+        final String[] paths = new String[repositoryFiles.length];
+        for(int i = 0; i < repositoryFiles.length; i++) {
+            String[] segments = repositoryFiles[i].getPathSegments();
+            StringBuffer sb = new StringBuffer();
+            for(String segment : segments) {
+                sb.append(segment);
+                sb.append('/');
+            }
+            paths[i] = sb.toString();
+        }
+
+        RequestProcessor rp = Subversion.getInstance().getRequestProcessor();
         try { 
             support = new SvnProgressSupport() {
-                protected void perform() {
-                    SvnClient client;
-                    ISVNLogMessage[] lm;
-                    try {
-                        client = Subversion.getInstance().getClient(SvnSearch.this.repositoryRoot.getRepositoryUrl(), this);
-                        lm = client.getLogMessages(repositoryRoot.getRepositoryUrl(), 
-                                                   SVNRevision.HEAD, 
-                                                   revisionFrom);
+                protected void perform() {                                                                                    
+                    final Map<Long, ISVNLogMessage> messages = new HashMap<Long, ISVNLogMessage>();
+                    ISVNLogMessage[] messageArray= null;
+                    try {                        
+                        SvnClient client = Subversion.getInstance().getClient(repositoryUrl, this);                         
+                        messageArray = client.getLogMessages(repositoryUrl, paths, SVNRevision.HEAD, revisionFrom, false, true);                   
                     } catch (SVNClientException ex) {
                         AbstractNode errorNode = new AbstractNode(Children.LEAF);
                         errorNode.setDisplayName(org.openide.util.NbBundle.getMessage(SvnSearch.class, "LBL_Error")); // NOI18N
@@ -126,27 +139,31 @@ public class SvnSearch implements ActionListener, DocumentListener {
                         return;
                     }    
 
-                    final List<ISVNLogMessage> msgList = new ArrayList<ISVNLogMessage>(lm.length);
-                    if(revisionFrom instanceof SVNRevision.DateSpec) {
-                        long timeFrom = ((SVNRevision.DateSpec)revisionFrom).getDate().getTime();
-                        for (int i = 0; i < lm.length; i++) {
-                            if(lm[i].getDate().getTime() >= timeFrom) {
-                                msgList.add(lm[i]);
-                            }
-                        }
-                        lm = msgList.toArray(new ISVNLogMessage[msgList.size()]);
+                    if(messageArray != null) {                    
+                        long timeFrom = ((SVNRevision.DateSpec) revisionFrom).getDate().getTime();                        
+                        for(ISVNLogMessage lm : messageArray) {
+                            if(!messages.containsKey(lm.getRevision().getNumber())) {
+                                if(lm.getDate().getTime() >= timeFrom) {
+                                    messages.put(lm.getRevision().getNumber(), lm);
+                                }                                                                        
+                            }                                
+                        }   
+                    }     
+
+                    if(isCanceled()) {
+                        return;
                     }
-                    final ISVNLogMessage[] msgRet = lm;
+                    
                     EventQueue.invokeLater(new Runnable() {
                         public void run() {
                             panel.listPanel.setVisible(true);
                             panel.noContentPanel.setVisible(false);                     
-                            searchView.setResults(msgRet);      
+                            searchView.setResults(messages.values().toArray(new ISVNLogMessage[messages.values().size()]));      
                         }
                     });
                 }                        
             };
-            support.start(rp, SvnSearch.this.repositoryRoot.getRepositoryUrl(), org.openide.util.NbBundle.getMessage(SvnSearch.class, "LBL_Search_Progress")); // NOI18N
+            support.start(rp, repositoryUrl, org.openide.util.NbBundle.getMessage(SvnSearch.class, "LBL_Search_Progress")); // NOI18N
         } finally {
             // XXX and how is this supposed to work?
             support = null;

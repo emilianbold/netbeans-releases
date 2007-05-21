@@ -22,9 +22,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.MalformedURLException;
-import javax.swing.JButton;
 import javax.swing.JTextField;
-import javax.swing.text.JTextComponent;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.ui.browser.Browser;
@@ -44,13 +42,13 @@ public class SwitchTo extends CopyDialog implements PropertyChangeListener {
 
     private RepositoryPaths repositoryPaths;
     private final File root;
-    private final RepositoryFile repositoryRoot;
+    private final RepositoryFile repositoryFile;
         
-    public SwitchTo(RepositoryFile repositoryRoot, File root, boolean localChanges) {
+    public SwitchTo(RepositoryFile repositoryFile, File root, boolean localChanges) {
         super(new SwitchToPanel(), NbBundle.getMessage(SwitchTo.class, "CTL_SwitchTo_Title", root.getName()), NbBundle.getMessage(SwitchTo.class, "CTL_SwitchTo_Action")); // NOI18N
         
         this.root = root;        
-        this.repositoryRoot = repositoryRoot;       
+        this.repositoryFile = repositoryFile;       
         
         SwitchToPanel panel = getSwitchToPanel();
         panel.warningLabel.setVisible(localChanges);
@@ -59,7 +57,7 @@ public class SwitchTo extends CopyDialog implements PropertyChangeListener {
         
         repositoryPaths = 
             new RepositoryPaths(
-                repositoryRoot, 
+                repositoryFile, 
                 (JTextField) panel.urlComboBox.getEditor().getEditorComponent(),
                 panel.browseRepositoryButton,
                 panel.revisionTextField,
@@ -92,7 +90,7 @@ public class SwitchTo extends CopyDialog implements PropertyChangeListener {
                     return null;
                 }
                 SVNUrl url = SvnUtils.getRepositoryUrl(root);
-                RepositoryFile rf = new RepositoryFile(repositoryRoot.getRepositoryUrl(), url, revision);
+                RepositoryFile rf = new RepositoryFile(repositoryFile.getRepositoryUrl(), url, revision);
                 return rf;
             }
         } catch (SVNClientException ex) {            

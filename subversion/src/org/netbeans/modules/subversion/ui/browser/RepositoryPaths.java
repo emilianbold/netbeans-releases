@@ -225,9 +225,21 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
     }          
     
     private void searchRepository() {
-        SVNRevision revision = getRevision();        
-        final SvnSearch svnSearch = new SvnSearch(new RepositoryFile(getRepositoryUrl(), revision));        
+        SVNRevision revision = getRevision();     
         
+        final SvnSearch svnSearch;
+        try {
+            RepositoryFile[] repositoryFiles = getRepositoryFiles();
+            if(repositoryFiles.length > 0) {
+                svnSearch = new SvnSearch(repositoryFiles); 
+            } else {
+                svnSearch = new SvnSearch(new RepositoryFile[] { repositoryFile }); 
+            }                            
+        } catch (MalformedURLException ex) {
+            ErrorManager.getDefault().notify(ex);
+            return;
+        }
+                               
         final DialogDescriptor dialogDescriptor = 
                 new DialogDescriptor(svnSearch.getSearchPanel(), java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/browser/Bundle").getString("CTL_RepositoryPath_SearchRevisions")); 
         dialogDescriptor.setModal(true);
