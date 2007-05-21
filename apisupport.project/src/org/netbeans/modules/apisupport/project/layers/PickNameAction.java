@@ -23,9 +23,11 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -47,19 +49,22 @@ public class PickNameAction extends CookieAction {
         return ((DataObject) activatedNodes[0].getCookie(DataObject.class)).getPrimaryFile();
     }
     
-    private static NbModuleProject findProject(FileObject f) {
+    private static NbModuleProvider findProject(FileObject f) {
         URL location = (URL) f.getAttribute("WritableXMLFileSystem.location"); // NOI18N
         if (location == null) {
             return null;
         }
-        NbModuleProject p = (NbModuleProject) FileOwnerQuery.getOwner(URI.create(location.toExternalForm()));
+        Project p = FileOwnerQuery.getOwner(URI.create(location.toExternalForm()));
+                
         assert p != null : location;
-        return p;
+        NbModuleProvider prov = p.getLookup().lookup(NbModuleProvider.class);
+        assert prov != null : location;
+        return prov;
     }
     
-    private static String findBundlePath(NbModuleProject p) {
+    private static String findBundlePath(NbModuleProvider p) {
         FileObject src = p.getSourceDirectory();
-        ManifestManager mm = ManifestManager.getInstance(p.getManifest(), false);
+        ManifestManager mm = ManifestManager.getInstance(Util.getManifest(p.getManifestFile()), false);
         String bundlePath = mm.getLocalizingBundle();
         if (bundlePath != null && bundlePath.endsWith(".properties") && src.getFileObject(bundlePath) != null) {
             return bundlePath;
@@ -77,7 +82,7 @@ public class PickNameAction extends CookieAction {
         }
         String name = d.getInputText();
         FileObject f = findFile(activatedNodes);
-        NbModuleProject p = findProject(f);
+        NbModuleProvider p = findProject(f);
         String bundlePath = findBundlePath(p);
         try {
             FileObject properties = p.getSourceDirectory().getFileObject(bundlePath);
@@ -98,7 +103,7 @@ public class PickNameAction extends CookieAction {
         if (f == null) {
             return false;
         }
-        NbModuleProject p = findProject(f);
+        NbModuleProvider p = findProject(f);
         if (p == null) {
             return false;
         }
