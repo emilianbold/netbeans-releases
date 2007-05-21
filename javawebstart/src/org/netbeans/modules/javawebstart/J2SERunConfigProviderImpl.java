@@ -43,7 +43,7 @@ public class J2SERunConfigProviderImpl implements J2SERunConfigProvider {
     public JComponent createComponent(Project p, J2SERunConfigProvider.ConfigChangeListener listener) {
         J2SEPropertyEvaluator j2sePropEval = p.getLookup().lookup(J2SEPropertyEvaluator.class);
         PropertyEvaluator evaluator = j2sePropEval.evaluator();
-        String enabled = evaluator.getProperty("jnlp.enabled");
+        String enabled = evaluator.getProperty("jnlp.enabled"); // NOI18N
         JWSCustomizerPanel.runComponent.addListener(listener);
         if ("true".equals(enabled)) {
             JWSCustomizerPanel.runComponent.setCheckboxEnabled(true);
@@ -56,7 +56,7 @@ public class J2SERunConfigProviderImpl implements J2SERunConfigProvider {
     }
     
     public void configUpdated(Map<String,String> m) {
-        if ((m.get("$target.run") != null) && (m.get("$target.debug") != null)) {
+        if ((m.get("$target.run") != null) && (m.get("$target.debug") != null)) { // NOI18N
             JWSCustomizerPanel.runComponent.setCheckboxSelected(true);
         } else {
             JWSCustomizerPanel.runComponent.setCheckboxSelected(false);

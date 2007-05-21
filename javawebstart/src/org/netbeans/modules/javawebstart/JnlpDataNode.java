@@ -24,7 +24,7 @@ import org.openide.nodes.Children;
 
 public class JnlpDataNode extends DataNode {
     
-    private static final String IMAGE_ICON_BASE = "org/netbeans/modules/javawebstart/resources/jnlp.gif";
+    private static final String IMAGE_ICON_BASE = "org/netbeans/modules/javawebstart/resources/jnlp.gif"; // NOI18N
     
     public JnlpDataNode(JnlpDataObject obj) {
         super(obj, Children.LEAF);

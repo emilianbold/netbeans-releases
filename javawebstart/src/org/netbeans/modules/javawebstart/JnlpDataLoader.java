@@ -28,16 +28,16 @@ import org.openide.util.NbBundle;
 
 public class JnlpDataLoader extends UniFileLoader {
     
-    public static final String REQUIRED_MIME = "text/x-jnlp+xml";
+    public static final String REQUIRED_MIME = "text/x-jnlp+xml"; // NOI18N
     
     private static final long serialVersionUID = 1L;
     
     public JnlpDataLoader() {
-        super("org.netbeans.modules.javawebstart.JnlpDataObject");
+        super("org.netbeans.modules.javawebstart.JnlpDataObject"); // NOI18N
     }
     
     protected String defaultDisplayName() {
-        return NbBundle.getMessage(JnlpDataLoader.class, "LBL_Jnlp_loader_name");
+        return NbBundle.getMessage(JnlpDataLoader.class, "LBL_Jnlp_loader_name"); // NOI18N
     }
     
     protected void initialize() {
@@ -50,7 +50,7 @@ public class JnlpDataLoader extends UniFileLoader {
     }
     
     protected String actionsContext() {
-        return "Loaders/" + REQUIRED_MIME + "/Actions";
+        return "Loaders/" + REQUIRED_MIME + "/Actions"; // NOI18N
     }
     
 }
