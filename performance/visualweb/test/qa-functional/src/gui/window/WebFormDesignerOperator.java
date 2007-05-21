@@ -70,13 +70,24 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
      * @return WebFOrmDesignerOperator
      */
     public static WebFormDesignerOperator findWebFormDesignerOperator(String topComponentName){
+        return findWebFormDesignerOperator(topComponentName, true);
+    }
+    /**
+     * Find web designer operator located certain top component
+     * @param topComponentName name of the top component
+     * @param exactlyMatch flag to match component name exactly
+     * @return WebFOrmDesignerOperator
+     */
+    public static WebFormDesignerOperator findWebFormDesignerOperator(String topComponentName, boolean exactlyMatch){
         StringComparator oldOperator = Operator.getDefaultStringComparator();
-        Operator.setDefaultStringComparator(new DefaultStringComparator(true, true));
+        if(exactlyMatch) {            
+            Operator.setDefaultStringComparator(new DefaultStringComparator(true, true));            
+        }
         WebFormDesignerOperator webFormDesignerOperator =  new WebFormDesignerOperator(topComponentName);
         Operator.setDefaultStringComparator(oldOperator);
         return webFormDesignerOperator;
     }
-    
+        
     public void switchToDesignView() {
         JToggleButtonOperator designViewButton = new JToggleButtonOperator(this,"Design"); // NOI18N
         
