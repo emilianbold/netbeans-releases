@@ -82,7 +82,7 @@ public interface DatasourceConfiguration {
      * 
      * @since 1.25
      */
-    public void bindDatasourceReference(String referenceName, String jndiName) throws ConfigurationException;
+    void bindDatasourceReference(String referenceName, String jndiName) throws ConfigurationException;
 
     /**
      * Binds the data source reference name with the corresponding data source which is
@@ -100,20 +100,21 @@ public interface DatasourceConfiguration {
      * 
      * @since 1.25
      */
-    public void bindDatasourceReferenceForEjb(String ejbName, String ejbType, 
+    void bindDatasourceReferenceForEjb(String ejbName, String ejbType, 
             String referenceName, String jndiName) throws ConfigurationException;
 
     /**
      * Finds JNDI name of the data source which is mapped to the given reference name.
      * 
-     * @referenceName reference name
+     * @param referenceName reference name
+     * 
      * @return JNDI name of the data source if the mapping exists, null otherwise
      *
      * @throws ConfigurationException if there is some problem with data source configuration
      * 
      * @since 1.25
      */
-    public String findDatasourceJndiName(String referenceName) throws ConfigurationException;
+    String findDatasourceJndiName(String referenceName) throws ConfigurationException;
     
     /**
      * Finds JNDI name of the data source which is mapped to the given reference name in the scope the EJB.
@@ -126,5 +127,5 @@ public interface DatasourceConfiguration {
      * 
      * @since 1.25
      */
-    public String findDatasourceJndiNameForEjb(String ejbName, String referenceName) throws ConfigurationException;
+    String findDatasourceJndiNameForEjb(String ejbName, String referenceName) throws ConfigurationException;
 }
