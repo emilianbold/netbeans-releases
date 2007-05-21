@@ -25,7 +25,6 @@ import java.awt.datatransfer.Transferable;
 import java.io.IOException;
 import java.util.ArrayList;
 import org.openide.NotifyDescriptor;
-import org.openide.cookies.SaveCookie;
 import org.openide.cookies.PrintCookie;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -53,6 +52,7 @@ import javax.swing.Action;
 import org.netbeans.modules.uml.common.Util;
 import org.netbeans.modules.uml.project.ui.nodes.actions.CopyDiagramAction;
 import org.netbeans.modules.uml.ui.controls.newdialog.AddPackageVisualPanel1;
+import org.netbeans.modules.uml.ui.support.diagramsupport.ProxyDiagramManager;
 import org.openide.DialogDisplayer;
 import org.openide.util.actions.SystemAction;
 import org.openide.actions.DeleteAction;
@@ -93,7 +93,7 @@ public class UMLDiagramNode extends UMLElementNode
         setFilename(diagram.getFilename());
         setDiagramType(diagram.getDiagramKindName());
         registerListeners();
-        getCookieSet().add(new DiagramCookie());
+        getCookieSet().add(this);
     }
     
     public String getShortDescription()
@@ -127,6 +127,14 @@ public class UMLDiagramNode extends UMLElementNode
     public boolean canRename()
     {
         return true;
+    }
+    
+    public void destroy() throws IOException
+    {
+        ProxyDiagramManager proxyDiagramManager = ProxyDiagramManager.instance();
+        proxyDiagramManager.removeDiagram(getDiagram().getFilename());
+        
+        super.destroy();
     }
     
    /* (non-Javadoc)
@@ -219,6 +227,8 @@ public class UMLDiagramNode extends UMLElementNode
         actions.add(SystemAction.get(CopyDiagramAction.class));
         actions.add(SystemAction.get(RenameAction.class));
         actions.add(SystemAction.get(DeleteAction.class));
+        actions.add(null);
+        addContextMenus(actions);
         actions.add(null);
         actions.add(SystemAction.get(PropertiesAction.class));;
         
