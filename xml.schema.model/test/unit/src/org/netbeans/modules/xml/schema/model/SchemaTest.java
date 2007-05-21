@@ -10,10 +10,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Set;
+import javax.swing.undo.UndoManager;
 import junit.framework.*;
 import org.netbeans.modules.xml.schema.model.Schema.Block;
 import org.netbeans.modules.xml.schema.model.Schema.Final;
 import org.netbeans.modules.xml.schema.model.impl.SchemaModelImpl;
+import org.netbeans.modules.xml.xam.AbstractModel;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 /**
@@ -222,4 +224,34 @@ public class SchemaTest extends TestCase {
         assertEquals("globalelement should be appended as last component", schema.getChildren().size()-1, index);
     }
     
+    /*public void testRollback() throws Exception {
+        UndoManager um = new UndoManager();
+        schema.getModel().addUndoableEditListener(um);
+        
+       GlobalElement stick = schema.getModel().getFactory().createGlobalElement();
+       stick.setName("stickAfterRollbackElement");
+       model.startTransaction();
+       schema.addElement(stick);
+       model.endTransaction();
+       
+       GlobalElement ge = schema.getModel().getFactory().createGlobalElement();
+       ge.setName("newElement");
+       model.startTransaction();
+       schema.addElement(ge);
+       String text = (( AbstractDocumentModel)model).getAccess().getCurrentDocumentText();
+       ( (AbstractModel)model).rollackTransaction();
+       assertTrue(text.indexOf("newElement") > 0);
+       ( (AbstractModel)model).rollackTransaction();
+       text = (( AbstractDocumentModel)model).getAccess().getCurrentDocumentText();
+       assertTrue(text.indexOf("newElement") == -1);
+       assertTrue(text.indexOf("stickAfterRollbackElement") > 0);
+       
+       um.undo();
+       text = (( AbstractDocumentModel)model).getAccess().getCurrentDocumentText();
+       assertTrue(text.indexOf("stickAfterRollbackElement") == -1);
+
+       um.redo();
+       text = (( AbstractDocumentModel)model).getAccess().getCurrentDocumentText();
+       assertTrue(text.indexOf("stickAfterRollbackElement") > 0);
+    }*/
 }
