@@ -27,10 +27,15 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
@@ -45,11 +50,13 @@ import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 
 /**
  *
- * @author devil
+ * @author Karol Harezlak
  */
 public abstract class FileAcceptPresenter extends AbstractAcceptPresenter {
     
@@ -92,7 +99,7 @@ public abstract class FileAcceptPresenter extends AbstractAcceptPresenter {
             return false;
         fe = ignoreExtFileCase(fe);
         TypeID typeID = extensionsMap.get(fe);
-
+        
         if (typeID != null)
             return true;
         return false;
@@ -132,16 +139,20 @@ public abstract class FileAcceptPresenter extends AbstractAcceptPresenter {
             if (list == null && list.size() <= 0)
                 continue;
             File file = list.iterator().next();
-            try {
-                DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-                DataObject fileDataObject = DataObject.find(FileUtil.toFileObject(file));
-                Project fileProject =  ProjectUtils.getProject(fileDataObject);
-                Project currentProject = ProjectUtils.getProject(document);
-                if (fileProject != currentProject)
-                    return null;
-            } catch (Exception ex) {
-                ex.printStackTrace();
+            Set<FileObject> filesToScan = getFoldersToScan();
+            boolean hasExtension = false;
+            for (FileObject f : filesToScan) {
+                try {
+                    if (isParent(DataObject.find(f), FileUtil.toFileObject(file))) {
+                        hasExtension = true;
+                        break;
+                    }
+                } catch (DataObjectNotFoundException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
+            if (!hasExtension)
+                return null;
             String filename = file.getName();
             String ext = (filename.lastIndexOf(".") == -1) ? "" : filename.substring(filename.lastIndexOf(".") + 1 , filename.length()); //NOI18N
             if (ext != null)
@@ -166,13 +177,12 @@ public abstract class FileAcceptPresenter extends AbstractAcceptPresenter {
                 continue;
             File file = list.iterator().next();
             try {
-                DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-                FileObject fileObject = FileUtil.toFileObject(file);
-                Project project = ProjectUtils.getProject(document);
-                String projectID = ProjectUtils.getProjectID(project);
-                for (SourceGroup g : ProjectUtils.getSourceGroups(projectID)) {
-                    if (g.contains(fileObject))
-                        return fileObject.getPath().replaceAll(g.getRootFolder().getPath(),""); //NOI18N
+                Set<FileObject> foldersToScan = getFoldersToScan();
+                for (FileObject f : foldersToScan) {
+                    DataObject rootDataObject = DataObject.find(f);
+                    String filePath = createFilePath(rootDataObject, rootDataObject, FileUtil.toFileObject(file));  
+                    if (filePath != null)
+                        return filePath;
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();
@@ -187,5 +197,47 @@ public abstract class FileAcceptPresenter extends AbstractAcceptPresenter {
                 fe = key;
         }
         return fe;
+    }
+    
+    private Set<FileObject> getFoldersToScan() {
+        DesignDocument document = getComponent().getDocument();
+        Set<FileObject> filesToScan = new HashSet<FileObject>();
+        
+        FileObject projectDirectory = ProjectUtils.getProject(document).getProjectDirectory();
+        DataObjectContext dac = ProjectUtils.getDataObjectContextForDocument(document);
+        //Resources
+        for (FileObject f : ClassPath.getClassPath(projectDirectory, ClassPath.COMPILE).getRoots()) {
+            System.out.println(f.getName());
+            filesToScan.add((f));
+        }
+        //Sources
+        for (SourceGroup g : ProjectUtils.getSourceGroups(dac)) {
+            System.out.println(g.getRootFolder().getName());
+            filesToScan.add((g.getRootFolder()));
+        }
+        return filesToScan;
+    }
+    
+    private boolean isParent(DataObject rootDataObject, FileObject childFileObject) {
+        Node[] children = rootDataObject.getNodeDelegate().getChildren().getNodes();
+        for (Node node : children) {
+            DataObject nodeDataObject = (DataObject) node.getLookup().lookup(DataObject.class);
+            if (nodeDataObject.files().contains(childFileObject) || isParent(nodeDataObject, childFileObject))
+                return true;
+        }
+        return false;
+    }
+    
+    private String createFilePath(DataObject rootDataObject, DataObject parentDataObject, FileObject childFileObject) {
+        Node[] children = parentDataObject.getNodeDelegate().getChildren().getNodes();
+        for (Node node : children) {
+            DataObject nodeDataObject = (DataObject) node.getLookup().lookup(DataObject.class);
+            String filePath = createFilePath(rootDataObject, nodeDataObject, childFileObject);
+            if (filePath != null)
+                return filePath;
+            if (nodeDataObject.files().contains(childFileObject))
+               return childFileObject.getPath().replaceAll(rootDataObject.getPrimaryFile().getPath(),""); //NOI18N
+        }
+        return null;
     }
 }

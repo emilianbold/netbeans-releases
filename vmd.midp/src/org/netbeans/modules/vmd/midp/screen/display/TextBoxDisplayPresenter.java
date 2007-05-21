@@ -30,7 +30,6 @@ import javax.swing.border.Border;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 
 /**
  *
