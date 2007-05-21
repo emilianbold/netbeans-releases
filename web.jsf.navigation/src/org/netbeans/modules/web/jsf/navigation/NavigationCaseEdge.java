@@ -276,7 +276,8 @@ public final class NavigationCaseEdge extends PageFlowSceneElement  {
         }
 
         @Override
-        public void setName(String s) {
+        public void setName(String s) {            
+            super.setName(s);
             edge.setName(s);
         }
         
