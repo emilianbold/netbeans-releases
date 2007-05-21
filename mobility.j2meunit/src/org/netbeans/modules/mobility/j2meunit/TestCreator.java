@@ -29,16 +29,7 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.JavaSource;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -215,22 +206,35 @@ public class TestCreator {
         this.generateTearDown = generate;
     }
 
-    public FileObject[] generateTests(FileObject[] files2test) {
+    public FileObject[] generateTests(final FileObject[] files2test) {
         LinkedList<FileObject> result = new LinkedList();
+        Enumeration<? extends FileObject> dataFiles=Collections.enumeration(Arrays.asList(files2test));;
 
-        for (FileObject file2test : files2test) {
-            if (file2test.isFolder()) {
-                Enumeration<? extends FileObject> dataFiles = file2test.getData(false);
-                while (dataFiles.hasMoreElements()) {
-                    FileObject fo = dataFiles.nextElement();
-                    if (TestUtils.isTestable(fo))
-                        result.addAll(generateFromSingleSource(fo));
+
+        while (dataFiles.hasMoreElements()) {
+            FileObject dataFile=dataFiles.nextElement();
+            if (dataFile.isFolder()) {
+                Enumeration<? extends FileObject> testableFiles=dataFile.getData(true);
+                while (testableFiles.hasMoreElements()) {
+                    FileObject testableFile=testableFiles.nextElement();
+                    if (TestUtils.isTestable(testableFile))
+                        result.addAll(generateFromSingleSource(testableFile));
                 }
-            } else if (TestUtils.isTestable(file2test))
-                result.addAll(generateFromSingleSource(file2test));
+            } else if (TestUtils.isTestable(dataFile))
+                result.addAll(generateFromSingleSource(dataFile));
         }
 
+
         return result.toArray(new FileObject[result.size()]);
+    }
+
+    private List<FileObject> generateFromFolder(FileObject folder2test) {
+        assert folder2test.isFolder();
+
+        LinkedList<FileObject> result=new LinkedList();
+        Enumeration<? extends FileObject> dataFiles=folder2test.getData(true);
+
+        return null;
     }
 
     private List<FileObject> generateFromSingleSource(FileObject file2test) {
