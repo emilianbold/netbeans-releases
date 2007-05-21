@@ -215,25 +215,14 @@ public class ElementDescriptor
       return null;
    }
    
-   public ETList < Node > getOwnedElements()
+
+    public List getOwnedElements()
    {
-      String query = "Element.ownedElement";
-      ETList < Node > retVal = new ETArrayList < Node > ();
+      String query = "./UML:Element.ownedElement/*";
+      //ArrayList < Node > retVal = new ArrayList < Node > ();
       List result = node.selectNodes(query);
       
-      if (result != null)
-      {
-         Object subNode = null;
-         for (int index = 0; index < result.size(); index++)
-         {
-            subNode = result.get(index);
-            if(subNode != null && subNode instanceof Node)
-            {
-               retVal.add((Node)subNode);
-            }
-         }
-      }
-      return retVal;
+      return result;
    }
    
    public boolean isMarked()
