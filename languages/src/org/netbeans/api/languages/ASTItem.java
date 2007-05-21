@@ -135,7 +135,7 @@ public class ASTItem {
         return findPath (new ArrayList<ASTItem> (), offset);
     }
     
-    private ASTPath findPath (List<ASTItem> path, int offset) {
+    ASTPath findPath (List<ASTItem> path, int offset) {
         if (offset < getOffset ()) return ASTPath.create (path);
         if (offset > getEndOffset ()) return ASTPath.create (path);
         path.add (this);

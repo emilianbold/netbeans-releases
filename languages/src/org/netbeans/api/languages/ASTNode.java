@@ -32,7 +32,27 @@ import java.util.Map;
  * 
  * @author Jan Jancura
  */
-public final class ASTNode extends ASTItem {
+public class ASTNode extends ASTItem {
+   
+    /**
+     * Creates new ASTNode.
+     * 
+     * @param mimeType   MIME type
+     * @param nt         right side of grammar rule
+     * @param rule       rule id
+     * @param children   list of tokens (ASTToken) and subnodes (ASTNode)
+     * @param offset     start offset of this AST node
+     * 
+     * @return           returns new instance of AST node
+     */
+    public static ASTNode createCompoundASTNode (
+        String      mimeType,
+        String      nt,
+        List<ASTItem> children,
+        int         offset
+    ) {
+        return new CompoundNode (mimeType, nt, offset, children);
+    }
    
     /**
      * Creates new ASTNode.
@@ -297,4 +317,44 @@ public final class ASTNode extends ASTItem {
         }
         return sb.toString ();
     }
+    
+    
+    // innerclasses ............................................................
+    
+    private static class CompoundNode extends ASTNode {
+        
+        CompoundNode (String mimeType, String nt, int offset, List<ASTItem> children) {
+            super (mimeType, nt, offset, children);
+        }
+    
+        /**
+         * Returns path from this item to the item on given offset.
+         * 
+         * @param offset offset
+         * 
+         * @return path from this item to the item on given offset
+         */
+        public ASTPath findPath (int offset) {
+            ASTPath result = null;
+            Iterator<ASTItem> it = getChildren ().iterator ();
+            while (it.hasNext ()) {
+                ASTItem item = it.next ();
+                if (offset < item.getEndOffset () &&
+                    item.getOffset () <= offset
+                ) {
+                    List<ASTItem> p = new ArrayList<ASTItem> ();
+                    p.add (this);
+                    ASTPath path = item.findPath (p, offset);
+                    if (result == null ||
+                        path.getLeaf ().getLength () < result.getLeaf ().getLength ()
+                    )
+                        result = path;
+                }
+            }
+            if (result == null)
+                result = ASTPath.create (this);
+            return result;
+        }
+    }
 }
+
