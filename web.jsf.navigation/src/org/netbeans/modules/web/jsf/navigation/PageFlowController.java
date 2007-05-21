@@ -96,7 +96,8 @@ public class PageFlowController {
         Project project = FileOwnerQuery.getOwner(configFile);
         //        webFolder = project.getProjectDirectory().getFileObject(DEFAULT_DOC_BASE_FOLDER);
         
-        if ( getWebFolder() == null ){
+        webFolder = PageFlowView.getWebFolder(configFile);
+        if ( webFolder == null ){
             DialogDescriptor desc = new DialogDescriptor(
                     NbBundle.getMessage(PageFlowController.class, "MSG_NoWebFolder"),
                     NbBundle.getMessage(PageFlowController.class, "TLE_NoWebFolder"),
@@ -655,10 +656,6 @@ public class PageFlowController {
      * @return FileObject webfolder
      */
     public FileObject getWebFolder() {
-        if ( webFolder == null ) {
-            FileObject configFile = configDataObj.getPrimaryFile();
-            webFolder = PageFlowView.getWebFolder(configFile);
-        }
         return webFolder;
     }
     
