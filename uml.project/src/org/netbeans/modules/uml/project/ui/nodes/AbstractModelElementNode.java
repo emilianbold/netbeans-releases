@@ -515,8 +515,7 @@ public abstract class AbstractModelElementNode extends AbstractNode
             IElement elem = treeItem.getModelElement();
             modelElements.add(elem);
         }
-        
-        super.destroy();
+    
         
         Runnable runnable = new Runnable()
         {
