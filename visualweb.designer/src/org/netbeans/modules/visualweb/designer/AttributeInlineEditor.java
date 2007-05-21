@@ -31,6 +31,9 @@ import java.awt.event.FocusListener;
 import javax.swing.Action;
 import javax.swing.JRootPane;
 import org.apache.xerces.dom.events.MutationEventImpl;
+import org.netbeans.modules.visualweb.css2.CssBox;
+import org.netbeans.modules.visualweb.css2.SpaceBox;
+import org.netbeans.modules.visualweb.css2.TextBox;
 
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -907,4 +910,33 @@ class AttributeInlineEditor extends InlineEditor implements org.w3c.dom.events.E
             }
         }
     } // End of AttributeInlineEditorFocusListener.
+    
+    @Override
+    public boolean isEdited(CssBox box) {
+        // XXX #94103 Comparing exactly against the text node edited.
+        // For now checked against textual boxes (TextBox, SpaceBox) only,
+        // that should be enough.
+        Node boxText;
+        if (box instanceof TextBox) {
+            boxText = ((TextBox)box).getNode();
+        } else if (box instanceof SpaceBox) {
+            boxText = ((SpaceBox)box).getNode();
+        } else {
+            return false;
+        }
+        
+        // XXX text is source node.
+        Node editedRenderedText = MarkupService.getRenderedNodeForNode(text);
+        if (editedRenderedText == null) {
+            return false;
+        }
+        
+        while (boxText != null) {
+            if (boxText == editedRenderedText) {
+                return true;
+            }
+            boxText = boxText.getParentNode();
+        }
+        return false;
+    }
 }
