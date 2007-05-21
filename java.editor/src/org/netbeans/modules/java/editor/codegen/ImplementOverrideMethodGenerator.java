@@ -25,6 +25,7 @@ import com.sun.source.util.TreePath;
 import java.awt.Dialog;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -82,17 +83,21 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
             if (!implementDescriptions.isEmpty())
                 ret.add(new ImplementOverrideMethodGenerator(ElementNode.Description.create(implementDescriptions), true));
             map = new LinkedHashMap<Element, List<ElementNode.Description>>();
+            ArrayList<Element> orderedElements = new ArrayList<Element>();
             for (ExecutableElement method : GeneratorUtils.findOverridable(controller, typeElement)) {
                 List<ElementNode.Description> descriptions = map.get(method.getEnclosingElement());
                 if (descriptions == null) {
                     descriptions = new ArrayList<ElementNode.Description>();
-                    map.put(method.getEnclosingElement(), descriptions);
+                    Element e = method.getEnclosingElement();
+                    map.put(e, descriptions);
+                    if( !orderedElements.contains( e ) )
+                        orderedElements.add( e );
                 }
                 descriptions.add(ElementNode.Description.create(method, null, true, false));
             }
             List<ElementNode.Description> overrideDescriptions = new ArrayList<ElementNode.Description>();
-            for (Map.Entry<Element, List<ElementNode.Description>> entry : map.entrySet())
-                overrideDescriptions.add(ElementNode.Description.create(entry.getKey(), entry.getValue(), false, false));
+            for (Element e : orderedElements)
+                overrideDescriptions.add(ElementNode.Description.create(e, map.get( e ), false, false));
             if (!overrideDescriptions.isEmpty())
                 ret.add(new ImplementOverrideMethodGenerator(ElementNode.Description.create(overrideDescriptions), false));
             return ret;

@@ -59,7 +59,11 @@ public class ElementNode extends AbstractNode {
     
     /** Creates a new instance of TreeNode */
     public ElementNode(Description description) {
-        super(description.subs == null ? Children.LEAF: new ElementChilren(description.subs), Lookups.singleton(description));
+        this( description, false );
+    }
+    
+    private ElementNode(Description description, boolean sortChildren) {
+        super(description.subs == null ? Children.LEAF: new ElementChilren(description.subs, sortChildren), Lookups.singleton(description));
         this.description = description;
         description.node = this;
         setDisplayName(description.name); 
@@ -113,14 +117,15 @@ public class ElementNode extends AbstractNode {
     
     private static final class ElementChilren extends Children.Keys<Description> {
             
-        public ElementChilren(List<Description> descriptions) {
-            Collections.sort( descriptions, Description.ALPHA_COMPARATOR );
+        public ElementChilren(List<Description> descriptions, boolean sortChildren) {
+            if( sortChildren )
+                Collections.sort( descriptions, Description.ALPHA_COMPARATOR );
 
             setKeys(descriptions);            
         }
         
         protected Node[] createNodes(Description key) {
-            return new Node[] {new ElementNode(key)};
+            return new Node[] {new ElementNode(key, true)};
         }
     }
                        

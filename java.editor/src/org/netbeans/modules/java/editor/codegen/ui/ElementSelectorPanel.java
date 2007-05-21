@@ -20,18 +20,13 @@
 package org.netbeans.modules.java.editor.codegen.ui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Rectangle;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.Element;
-import javax.swing.BorderFactory;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.java.source.ElementHandle;
 import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
 
 /**
@@ -48,7 +43,6 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
         setLayout(new BorderLayout());
         elementView = new CheckTreeView();
         elementView.setRootVisible(false);
-        elementView.setBorder(BorderFactory.createLineBorder(Color.gray));        
         add(elementView, BorderLayout.CENTER);
         setRootElement(elementDescription, singleSelection);
     }
@@ -102,7 +96,9 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
         Node toSelect = null;
         
         int row = 0;
-        
+
+        boolean oldScroll = elementView.getScrollsOnExpand();
+        elementView.setScrollsOnExpand( false );
         
         for( int i = 0; subNodes != null && i < (howMuch == - 1 || howMuch > subNodes.length ? subNodes.length : howMuch ) ; i++ ) {                    
             // elementView.expandNode2(subNodes[i]);
@@ -117,7 +113,8 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
             }
         }
         
-        elementView.scrollToBegin();                
+        elementView.setScrollsOnExpand( oldScroll );
+        
         try  {
             if (toSelect != null ) {
                 getExplorerManager().setSelectedNodes(new org.openide.nodes.Node[]{toSelect});
@@ -126,7 +123,6 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
         catch (PropertyVetoException ex) {
             // Ignore
         }
-                
     }
     
     // ExplorerManager.Provider imlementation ----------------------------------

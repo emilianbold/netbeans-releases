@@ -19,15 +19,15 @@
 
 package org.netbeans.modules.java.editor.codegen.ui;
 
-import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import javax.swing.InputMap;
-import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
+import javax.swing.UIManager;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.openide.explorer.view.BeanTreeView;
@@ -42,15 +42,11 @@ import org.openide.nodes.Node;
 public class CheckTreeView extends BeanTreeView  {
     
     private NodeTreeModel nodeTreeModel;
-    private static final JScrollPane FOR_BORDER = new JScrollPane();
     
     /** Creates a new instance of CheckTreeView */
     public CheckTreeView() {
         
         setFocusable( false );
-        
-        setBorder(FOR_BORDER.getBorder());
-        setViewportBorder(FOR_BORDER.getViewportBorder());
         
         CheckListener l = new CheckListener();
         tree.addMouseListener( l );
@@ -65,6 +61,8 @@ public class CheckTreeView extends BeanTreeView  {
         InputMap input = tree.getInputMap( JTree.WHEN_FOCUSED );
         if( null != input )
             input.remove( KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0) );
+        
+        setBorder( UIManager.getBorder("ScrollPane.border") );
     }
     
     @Override
@@ -76,10 +74,36 @@ public class CheckTreeView extends BeanTreeView  {
     public void expandRow( int row ) {        
         tree.expandRow(row);
     }
-      
-    public void scrollToBegin() {
-        tree.scrollRowToVisible(0);
-        tree.expandRow(0);
+    
+    public boolean getScrollsOnExpand() {
+        return tree.getScrollsOnExpand();
+    }
+    
+    public void setScrollsOnExpand( boolean scrolls ) {
+        tree.setScrollsOnExpand( scrolls );
+    }
+    
+    @Override
+    protected void showPath(TreePath path) {
+        tree.expandPath(path);
+        showPathWithoutExpansion(path);
+    }
+    
+    @Override
+    protected void showSelection(TreePath[] treePaths) {
+        tree.getSelectionModel().setSelectionPaths(treePaths);
+
+        if (treePaths.length == 1) {
+            showPathWithoutExpansion(treePaths[0]);
+        }
+    }
+    
+    private void showPathWithoutExpansion(TreePath path) {
+        Rectangle rect = tree.getPathBounds(path);
+
+        if (rect != null && getWidth() > 0 && getHeight() > 0 ) {
+            tree.scrollRectToVisible(rect);
+        }
     }
     
     class CheckListener implements MouseListener, KeyListener {
