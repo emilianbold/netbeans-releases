@@ -1019,7 +1019,7 @@ public final class AntProjectHelper {
      * project directory). If they refer to locations inside the project directory,
      * including them does nothing but is harmless - since the project directory itself
      * is always treated as sharable. If they refer to external locations, you will
-     * need to also make sure that {@link org.netbeans.api.queries.FileOwnerQuery} actually maps files in those
+     * need to also make sure that {@link org.netbeans.api.project.FileOwnerQuery} actually maps files in those
      * directories to this project, or else {@link org.netbeans.api.queries.SharabilityQuery} will never find
      * this implementation in your project lookup and may return <code>UNKNOWN</code>.
      * </p>

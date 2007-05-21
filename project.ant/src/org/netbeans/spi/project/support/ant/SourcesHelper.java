@@ -358,7 +358,7 @@ public final class SourcesHelper {
      * Useful for project type providers which have external paths holding build
      * products. These should not appear in {@link Sources}, yet it may be useful
      * for {@link FileOwnerQuery} to know the owning project (for example, in order
-     * for a project-specific {@link org.netbeans.spi.queries.SourceForBinaryQueryImplementation} to work).
+     * for a project-specific <a href="@org-netbeans-api-java@/org/netbeans/spi/java/queries/SourceForBinaryQueryImplementation.html"><code>SourceForBinaryQueryImplementation</code></a> to work).
      * </p>
      * @param location a project-relative or absolute path giving the location
      *                 of a non-source tree; may contain Ant property substitutions
@@ -549,7 +549,7 @@ public final class SourcesHelper {
      * </p>
      * <p>
      * Source groups are created according to the semantics described in
-     * {@link GenericSources#group}. They are listed in the order they
+     * {@link org.netbeans.spi.project.support.GenericSources#group}. They are listed in the order they
      * were configured (for those roots that are actually used as groups).
      * </p>
      * <p>

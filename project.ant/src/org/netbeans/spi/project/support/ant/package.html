@@ -116,8 +116,8 @@ lookup. This will get an instance of
 it creates; the helper does a lot of the work required to interact with the file
 structure outlined above.</p>
 
-<p>{@link org.netbeans.spi.project.support.ant.ActionHelper} provides a number
-of utilities which make it easy to run Ant targets.</p>
+<p>To run Ant targets, use
+<a href="@org-apache-tools-ant-module@/org/apache/tools/ant/module/api/support/ActionUtils.html"><code>ActionUtils</code></a>.</p>
 
 <p>{@link org.netbeans.spi.project.support.ant.ReferenceHelper}s can also be
 created by an Ant-based project and used to manage references to subprojects and
@@ -130,8 +130,8 @@ build scripts and
 {@link org.netbeans.spi.project.support.ant.ProjectXmlSavedHook} to be told when
 to recreate them.</p>
 
-<p>To allow 3rd party extensions to build scripts, use {@link org.netbeans.spi.project.ant.AntBuildExtenderImplementation} and
-{@link org.netbeans.spi.project.support.ant.AntBuildExtenderSupport}.
+<p>To allow third-party extensions to build scripts, use {@link org.netbeans.spi.project.ant.AntBuildExtenderImplementation} and
+{@link org.netbeans.spi.project.support.ant.AntBuildExtenderFactory}.
 </p>
 
 <p>{@link org.netbeans.spi.project.support.ant.EditableProperties} is a

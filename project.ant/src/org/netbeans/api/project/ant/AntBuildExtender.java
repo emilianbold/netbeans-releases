@@ -248,8 +248,8 @@ public final class AntBuildExtender {
         
         /**
          * Add a dependency of a main build script target on the target in the extension's script.
-         * @param mainBuildTarget name of target in the main build script (see {@link org.netbeans.api.project.ant.AntBuildExtender#getExtendableTargets})
-         * @param extensionTarget name of target in the extention script
+         * @param mainBuildTarget name of target in the main build script (see {@link org.netbeans.api.project.ant.AntBuildExtender#getExtensibleTargets})
+         * @param extensionTarget name of target in the extension script
          */
         public void addDependency(String mainBuildTarget, String extensionTarget) {
             assert implementation.getExtensibleTargets().contains(mainBuildTarget) : 
@@ -279,8 +279,8 @@ public final class AntBuildExtender {
         /**
          * Remove a dependency of a main build script target on the target in the extension's script.
          * 
-         * @param mainBuildTarget name of target in the main build script (see {@link org.netbeans.api.project.ant.AntBuildExtender#getExtendableTargets})
-         * @param extensionTarget name of target in the extention script
+         * @param mainBuildTarget name of target in the main build script (see {@link org.netbeans.api.project.ant.AntBuildExtender#getExtensibleTargets})
+         * @param extensionTarget name of target in the extension script
          */
         public void removeDependency(String mainBuildTarget, String extensionTarget) {
             Collection<String> str = dependencies.get(mainBuildTarget);
