@@ -104,12 +104,13 @@ public class TableItemCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter (DesignEventFilterResolver.THIS_COMPONENT)
                 .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-                    .addProperty("Title", PropertyEditorString.createInstance(), PROP_TITLE)
-                    .addProperty("Table Model", PropertyEditorResourcesComboBox.create(SimpleTableModelCD.TYPEID, NbBundle.getMessage(TableItemCD.class, "LBL_TABLEMODEL_NEW"), NbBundle.getMessage(TableItemCD.class, "LBL_TABLEMODEL_NONE")), PROP_MODEL)
-                    .addProperty("Show Borders", Boolean.class, PROP_BORDERS)
-                    .addProperty("Title Font", PropertyEditorResourcesComboBox.createFontPropertyEditor(), PROP_TITLE_FONT)
-                    .addProperty("Headers Font", PropertyEditorResourcesComboBox.createFontPropertyEditor(), PROP_HEADERS_FONT)
-                    .addProperty("Values Font", PropertyEditorResourcesComboBox.createFontPropertyEditor(), PROP_VALUES_FONT);
+                    .addProperty("Title", PropertyEditorString.createInstance(), PROP_TITLE) //NOI18N
+                    .addProperty("Table Model", org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorResourcesComboBox.create(SimpleTableModelCD.TYPEID, //NOI18N
+                        NbBundle.getMessage(TableItemCD.class, "LBL_TABLEMODEL_NEW"), NbBundle.getMessage(TableItemCD.class, "LBL_TABLEMODEL_NONE")), PROP_MODEL) //NOI18N
+                    .addProperty("Show Borders", Boolean.class, PROP_BORDERS) //NOI18N
+                    .addProperty("Title Font", PropertyEditorResourcesComboBox.createFontPropertyEditor(), PROP_TITLE_FONT) //NOI18N
+                    .addProperty("Headers Font", PropertyEditorResourcesComboBox.createFontPropertyEditor(), PROP_HEADERS_FONT) //NOI18N
+                    .addProperty("Values Font", PropertyEditorResourcesComboBox.createFontPropertyEditor(), PROP_VALUES_FONT); //NOI18N
     }
 
     private Presenter createSetterPresenter () {
@@ -117,12 +118,12 @@ public class TableItemCD extends ComponentDescriptor {
             .addParameters (MidpCustomCodePresenterSupport.createDisplayParameter ())
             .addParameters (MidpParameter.create (PROP_TITLE, PROP_MODEL, PROP_BORDERS, PROP_TITLE_FONT, PROP_HEADERS_FONT, PROP_VALUES_FONT))
             .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2).addParameters (MidpCustomCodePresenterSupport.PARAM_DISPLAY, ItemCD.PROP_LABEL))
-            .addSetters (MidpSetter.createSetter ("setTitle", MidpVersionable.MIDP_2).addParameters (PROP_TITLE))
-            .addSetters (MidpSetter.createSetter ("setModel", MidpVersionable.MIDP_2).addParameters (PROP_MODEL))
-            .addSetters (MidpSetter.createSetter ("setBorders", MidpVersionable.MIDP_2).addParameters (PROP_BORDERS))
-            .addSetters (MidpSetter.createSetter ("setTitleFont", MidpVersionable.MIDP_2).addParameters (PROP_TITLE_FONT))
-            .addSetters (MidpSetter.createSetter ("setHeadersFont", MidpVersionable.MIDP_2).addParameters (PROP_HEADERS_FONT))
-            .addSetters (MidpSetter.createSetter ("setValuesFont", MidpVersionable.MIDP_2).addParameters (PROP_VALUES_FONT));
+            .addSetters (MidpSetter.createSetter ("setTitle", MidpVersionable.MIDP_2).addParameters (PROP_TITLE)) //NOI18N
+            .addSetters (MidpSetter.createSetter ("setModel", MidpVersionable.MIDP_2).addParameters (PROP_MODEL)) //NOI18N
+            .addSetters (MidpSetter.createSetter ("setBorders", MidpVersionable.MIDP_2).addParameters (PROP_BORDERS)) //NOI18N
+            .addSetters (MidpSetter.createSetter ("setTitleFont", MidpVersionable.MIDP_2).addParameters (PROP_TITLE_FONT)) //NOI18N
+            .addSetters (MidpSetter.createSetter ("setHeadersFont", MidpVersionable.MIDP_2).addParameters (PROP_HEADERS_FONT)) //NOI18N
+            .addSetters (MidpSetter.createSetter ("setValuesFont", MidpVersionable.MIDP_2).addParameters (PROP_VALUES_FONT)); //NOI18N
     }
 
     protected List<? extends Presenter> createPresenters() {

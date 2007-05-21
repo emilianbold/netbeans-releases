@@ -31,7 +31,7 @@ import org.netbeans.modules.vmd.midp.components.displayables.CanvasCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorNumber;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
+import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorResourcesComboBox;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.openide.util.NbBundle;
 

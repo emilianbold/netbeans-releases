@@ -101,17 +101,17 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
     
     private String getLabelName() {
         if (typeID.equals(CallPointCD.TYPEID)) {
-            return "Java code";
+            return "Java code:";
         } else if (typeID.equals(MethodPointCD.TYPEID)) {
-            return "Method Name";
+            return "Method Name:";
         } else if (typeID.equals(IfPointCD.TYPEID)) {
-            return "Condition Expression";
+            return "Condition Expression:";
         } else if (typeID.equals(SwitchPointCD.TYPEID)) {
             return "Switch Operand:";
         } else if (typeID.equals(SwitchCaseEventSourceCD.TYPEID)) {
             return "Case Operand:";
         }
-        return "Java Expression";
+        return "Java Expression:";
     }
     
     private final class CustomEditor extends JPanel {

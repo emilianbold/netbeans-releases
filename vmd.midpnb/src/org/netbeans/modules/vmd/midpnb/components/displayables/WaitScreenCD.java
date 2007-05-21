@@ -28,7 +28,6 @@ import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.openide.util.NbBundle;
@@ -36,6 +35,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpResourcesAcceptTypePresenter;
+import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorResourcesComboBox;
 
 /**
  * @author Karol Harezlak

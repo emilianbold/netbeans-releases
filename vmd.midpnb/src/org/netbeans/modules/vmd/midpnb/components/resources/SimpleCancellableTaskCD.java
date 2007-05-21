@@ -57,7 +57,7 @@ public class SimpleCancellableTaskCD extends ComponentDescriptor {
 
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/resource_16.png"; // NOI18N
 
-    private static final String PROP_CODE = "executableMethodBody"; //NOI18N
+    public static final String PROP_CODE = "executableMethodBody"; //NOI18N
 
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
