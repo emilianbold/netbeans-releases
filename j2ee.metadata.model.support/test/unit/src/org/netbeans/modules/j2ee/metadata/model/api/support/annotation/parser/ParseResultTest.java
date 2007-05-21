@@ -46,6 +46,5 @@ public class ParseResultTest extends NbTestCase {
         } catch (IllegalStateException e) {}
         assertNull(result.get("bar", String.class));
         assertNull(result.get("bar", Integer.class));
-        result.get("foo", Integer.class);
     }
 }
