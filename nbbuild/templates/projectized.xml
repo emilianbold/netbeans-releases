@@ -87,7 +87,8 @@ Microsystems, Inc. All Rights Reserved.
         <property name="nbm.release.date" value=""/>
         <property name="nbm.needs.restart" value="false"/>
         <property name="nbm.is.global" value=""/>
-        <!-- don't set 'extra' cluster for external modules -->
+        <property name="nbm.target.dir" location="${base.nbm.target.dir}/${cluster.dir}"/>
+         <!-- don't set 'extra' cluster for external modules -->
         <condition property="nbm.target.cluster" value="${cluster.dir}">
             <not>
                 <equals arg1="${cluster.dir}" arg2="${cluster.dir.fallback}"/>
@@ -175,6 +176,12 @@ Microsystems, Inc. All Rights Reserved.
     <target name="conditional-nbm" unless="skip.16" depends="-conditional-nbm-warn">
         <antcall target="nbm"/>
     </target>
+
+    <target name="-create-dest-dir-nbm" depends="init">
+        <mkdir dir="${nbm.target.dir}"/> 
+    </target>
+
+    <target name="nbm" depends="-create-dest-dir-nbm, projectized-common.nbm"/>
     
     <!-- apisupport/project could calls this for the debug action. -->
     <!-- You can also call it directly from the nbbuild/misc pseudoproject. -->

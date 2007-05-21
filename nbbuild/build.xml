@@ -180,7 +180,7 @@ Microsystems, Inc. All Rights Reserved.
   <!-- build NBMs for selected modules -->
   <target name="build-nbms" depends="init">
       <mkdir dir="nbms" />
-      <property name="nbm.target.dir" location="nbms" />
+      <property name="base.nbm.target.dir" location="nbms" />
       
       <pathconvert property="modules.fullpath" >
           <path>
@@ -1102,7 +1102,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <antcall target="cleanall" inheritAll="false">
       <param name="allmodules" value="${nb.cluster.visualweb}"/>
     </antcall>
-    <delete dir="netbeans/visualweb1"/>
+<!--    <delete dir="netbeans/visualweb1"/>-->
   </target>
 
 
