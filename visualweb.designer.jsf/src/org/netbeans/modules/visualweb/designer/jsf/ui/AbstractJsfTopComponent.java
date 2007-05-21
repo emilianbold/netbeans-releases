@@ -56,6 +56,7 @@ import org.w3c.dom.Element;
 
 import org.netbeans.modules.visualweb.designer.jsf.JsfForm;
 import org.netbeans.modules.visualweb.designer.jsf.JsfSupportUtilities;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -116,16 +117,18 @@ public abstract class AbstractJsfTopComponent extends TopComponent implements Cl
     protected void designerActivated() {
 //        super.componentActivated();
 
-        //Log.err.log("Component activated!");
-        if (cblistener == null) {
-            cblistener = new CBListener();
-        }
-
+//        //Log.err.log("Component activated!");
+//        if (cblistener == null) {
+//            cblistener = new CBListener();
+//        }
+        // #104330 Using weak listener.
+        // XXX Is this efficient to recreate it each time the comp is activated?
+        cblistener = new CBListener();
         Clipboard c = getClipboard();
-
         if (c instanceof ExClipboard) {
             ExClipboard clip = (ExClipboard)c;
-            clip.addClipboardListener(cblistener);
+//            clip.addClipboardListener(cblistener);
+            clip.addClipboardListener(WeakListeners.create(ClipboardListener.class, cblistener, clip));
         }
 
 //        if (webform != null) {
@@ -152,14 +155,16 @@ public abstract class AbstractJsfTopComponent extends TopComponent implements Cl
 //        }
         jsfForm.setModelActivated(false);
 
-        // XXX why not super.componentDeactivated?
-        //OutlineTopComp.getInstance().setCurrent(null);
-        Clipboard c = getClipboard();
-
-        if (c instanceof ExClipboard) {
-            ExClipboard clip = (ExClipboard)c;
-            clip.removeClipboardListener(cblistener);
-        }
+//        // XXX why not super.componentDeactivated?
+//        //OutlineTopComp.getInstance().setCurrent(null);
+//        Clipboard c = getClipboard();
+//
+//        if (c instanceof ExClipboard) {
+//            ExClipboard clip = (ExClipboard)c;
+//            clip.removeClipboardListener(cblistener);
+//        }
+        // XXX Removing the weak listener.
+        cblistener = null;
 
 //        if (webform != null) {
 //            deactivateActions();
