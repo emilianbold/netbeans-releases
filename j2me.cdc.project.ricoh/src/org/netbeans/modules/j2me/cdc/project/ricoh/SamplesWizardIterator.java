@@ -186,7 +186,7 @@ public class SamplesWizardIterator implements WizardDescriptor.InstantiatingIter
                                 }
 
                                 EditableProperties editableProps = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                                editableProps.setProperty("javac.classpath", entries.toArray(new String[entries.size()]));
+                                editableProps.setProperty("libs.classpath", entries.toArray(new String[entries.size()]));
                                 h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, editableProps); // #47609
                                 return null;
                             }
