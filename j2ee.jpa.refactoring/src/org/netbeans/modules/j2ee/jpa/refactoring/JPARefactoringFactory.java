@@ -21,14 +21,19 @@ package org.netbeans.modules.j2ee.jpa.refactoring;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.modules.j2ee.jpa.refactoring.rename.PersistenceXmlPackageRename;
 import org.netbeans.modules.j2ee.jpa.refactoring.rename.PersistenceXmlRename;
 import org.netbeans.modules.j2ee.jpa.refactoring.safedelete.PersistenceXmlSafeDelete;
+import org.netbeans.modules.j2ee.jpa.refactoring.whereused.PersistenceXmlWhereUsed;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
  * A refactoring factory for creating JPA refactoring plugins.
@@ -41,12 +46,21 @@ public class JPARefactoringFactory implements RefactoringPluginFactory{
     }
     
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
-
+        
+        FileObject targetFile = refactoring.getRefactoringSource().lookup(FileObject.class);
+        NonRecursiveFolder folder = refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class);
+        boolean javaPackage = folder != null && RefactoringUtil.isOnSourceClasspath(folder.getFolder());
+        boolean javaFile = targetFile != null && RefactoringUtil.isJavaFile(targetFile);
+        
         List<JPARefactoring> refactorings = new ArrayList<JPARefactoring>();
         
         if (refactoring instanceof RenameRefactoring) {
             RenameRefactoring rename = (RenameRefactoring) refactoring;
-            refactorings.add(new PersistenceXmlRename(rename));
+            if (javaFile){
+                refactorings.add(new PersistenceXmlRename(rename));
+            } else if (javaPackage){
+                refactorings.add(new PersistenceXmlPackageRename(rename));
+            }
             return new JPARefactoringPlugin(refactorings);
         }
         if (refactoring instanceof SafeDeleteRefactoring) {
@@ -56,11 +70,8 @@ public class JPARefactoringFactory implements RefactoringPluginFactory{
         }
         if (refactoring instanceof WhereUsedQuery) {
             WhereUsedQuery whereUsedQuery = (WhereUsedQuery) refactoring;
-            //TODO: WhereUsedQuery#getRefactoringSource returns null, so this doesn't work.
-            // either invalid usage or a bug in the refactoring api
-            //            refactorings.add(new PersistenceXmlWhereUsed(whereUsedQuery, tph));
-            //            return new JPARefactoringPlugin(refactorings);
-            return null;
+            refactorings.add(new PersistenceXmlWhereUsed(whereUsedQuery));
+            return new JPARefactoringPlugin(refactorings);
         }
         
         return null;

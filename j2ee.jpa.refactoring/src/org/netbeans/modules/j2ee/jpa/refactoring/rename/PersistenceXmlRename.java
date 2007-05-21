@@ -41,7 +41,6 @@ public final class PersistenceXmlRename extends PersistenceXmlRefactoring {
     private final RenameRefactoring renameRefactoring;
     
     public PersistenceXmlRename(RenameRefactoring rename) {
-        super(rename);
         this.renameRefactoring = rename;
     }
     
@@ -54,6 +53,7 @@ public final class PersistenceXmlRename extends PersistenceXmlRefactoring {
                                                                      PUDataObject pUDataObject,
                                                                      FileObject persistenceXml) {
 
+                                                                    
         String newName = RefactoringUtil.renameClass(clazz, renameRefactoring.getNewName());
         return new PersistenceXmlClassRenameRefactoringElement(persistenceUnit, clazz, newName, pUDataObject, persistenceXml);
     }

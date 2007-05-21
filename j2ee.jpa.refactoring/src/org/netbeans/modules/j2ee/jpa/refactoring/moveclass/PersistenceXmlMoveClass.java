@@ -41,7 +41,6 @@ public class PersistenceXmlMoveClass extends PersistenceXmlRefactoring{
     private final MoveRefactoring moveRefactoring;
     
     public PersistenceXmlMoveClass(MoveRefactoring moveRefactoring) {
-        super(moveRefactoring);
         this.moveRefactoring = moveRefactoring;
     }
     

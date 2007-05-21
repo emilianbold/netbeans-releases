@@ -40,7 +40,6 @@ public final class PersistenceXmlSafeDelete extends PersistenceXmlRefactoring {
     private final SafeDeleteRefactoring safeDeleteRefactoring;
     
     public PersistenceXmlSafeDelete(SafeDeleteRefactoring safeDeleteRefactoring) {
-        super(safeDeleteRefactoring);
         this.safeDeleteRefactoring = safeDeleteRefactoring;
     }
     

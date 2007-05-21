@@ -47,7 +47,6 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.j2ee.jpa.refactoring.util.PositionBoundsResolver;
-import org.netbeans.modules.j2ee.jpa.refactoring.util.ProblemUtil;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
@@ -64,22 +63,38 @@ import org.openide.util.lookup.Lookups;
  */
 public abstract class PersistenceXmlRefactoring implements JPARefactoring{
     
-    private final FileObject refactoringSource;
-    private final Project project;
-    
-    protected PersistenceXmlRefactoring(AbstractRefactoring refactoring) {
-        this.refactoringSource = refactoring.getRefactoringSource().lookup(FileObject.class);
-        this.project = FileOwnerQuery.getOwner(refactoringSource);
-    }
-    
+    /**
+     *@return the file object for the object being refactored.
+     */
     protected FileObject getRefactoringSource() {
-        return refactoringSource;
+
+        FileObject result = getRefactoring().getRefactoringSource().lookup(FileObject.class);
+        if (result != null){
+            return result;
+        }
+        try{
+            result = resolveTreePathHandle().getFileObject();
+        }catch(IOException ioe){
+            Exceptions.printStackTrace(ioe);
+        }
+        return result;
+        
     }
     
+    /**
+     *@return the project owning the object being refactored or null if 
+     * does not belong to any project.
+     */  
     protected Project getProject() {
-        return project;
+        return FileOwnerQuery.getOwner(getRefactoringSource());
     }
     
+    /**
+     * Resolves the TreePathHandle for the object being refactored.
+     * 
+     * @return the TreePathHandle or null if no handle could be resolved 
+     * the refactored object.
+     */ 
     private TreePathHandle resolveTreePathHandle() throws IOException {
         TreePathHandle tph = getRefactoring().getRefactoringSource().lookup(TreePathHandle.class);
         if (tph != null) {
@@ -87,7 +102,7 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
         }
         
         final TreePathHandle[] result = new TreePathHandle[1];
-        JavaSource source = JavaSource.forFileObject(refactoringSource);
+        JavaSource source = JavaSource.forFileObject(getRefactoring().getRefactoringSource().lookup(FileObject.class));
         
         source.runUserActionTask(new CancellableTask<CompilationController>() {
             public void cancel() {
@@ -108,15 +123,11 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
      * @return true if the refactoring source represents a class that
      * should be handled by persistence.xml refactorings.
      */
-    private boolean shouldHandle(){
-        
-        if (getProject() == null){
-            return false; // can handle only classes belonging to projects
-        }
+    protected boolean shouldHandle(){
         
         final boolean[] result = new boolean[1];
         
-        JavaSource source = JavaSource.forFileObject(refactoringSource);
+        JavaSource source = JavaSource.forFileObject(getRefactoringSource());
         try{
             source.runUserActionTask(new CancellableTask<CompilationController>(){
                 
@@ -153,7 +164,7 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
                 Problem newProblem =
                         new Problem(false, NbBundle.getMessage(PersistenceXmlRefactoring.class, "TXT_PersistenceXmlInvalidProblem", ex.getPath()));
                 
-                result = ProblemUtil.addToEnd(newProblem, result);
+                result = RefactoringUtil.addToEnd(newProblem, result);
             }
         }
         
@@ -161,15 +172,20 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
         
     }
     
-    public final Problem prepare(RefactoringElementsBag refactoringElementsBag) {
+    public Problem prepare(RefactoringElementsBag refactoringElementsBag) {
         
         if (!shouldHandle()){
             return null;
         }
         
         Problem result = null;
+        Project project = getProject();
+        if (project == null){
+            return null;
+        }
         
         ClassPathProvider classPathProvider = project.getLookup().lookup(ClassPathProvider.class);
+        FileObject refactoringSource = getRefactoringSource();
         String classNameFQN =
                 classPathProvider.findClassPath(refactoringSource, ClassPath.SOURCE).getResourceName(refactoringSource, '.', false);
         
@@ -184,7 +200,7 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
                 Problem newProblem =
                         new Problem(false, NbBundle.getMessage(PersistenceXmlRefactoring.class, "TXT_PersistenceXmlInvalidProblem", ex.getPath()));
                 
-                result = ProblemUtil.addToEnd(newProblem, result);
+                result = RefactoringUtil.addToEnd(newProblem, result);
             }
         }
         
@@ -204,9 +220,14 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
     
     
     /**
-     * @return the persistence units that contain the class that is being refactored.
+     * Gets the persistence unit from the given <code>PUDataObject</code> that contain
+     * a class matching with the given <code>clazz</code>.
+     * @param puDataObject 
+     * @param clazz the fully qualified name of the class
+     * 
+     * @return the persistence units that contain the given class.
      */
-    private List<PersistenceUnit> getAffectedPersistenceUnits(PUDataObject pUDataObject, String clazz){
+    protected final List<PersistenceUnit> getAffectedPersistenceUnits(PUDataObject pUDataObject, String clazz){
         List<PersistenceUnit> result = new ArrayList<PersistenceUnit>();
         PersistenceUnit[] persistenceUnits = ProviderUtil.getPersistenceUnits(pUDataObject);
         for(PersistenceUnit each : persistenceUnits){
@@ -231,8 +252,8 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
      * @return the persistence.xml files in the project to which the refactored
      * class belongs or an empty list if the class does not belong to any project.
      */
-    private List<FileObject> getPersistenceXmls(){
-        
+    protected final List<FileObject> getPersistenceXmls(){
+        Project project = getProject();
         if (project == null){
             return Collections.<FileObject>emptyList();
         }

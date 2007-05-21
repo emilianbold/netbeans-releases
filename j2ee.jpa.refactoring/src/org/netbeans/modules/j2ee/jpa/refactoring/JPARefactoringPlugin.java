@@ -20,10 +20,7 @@
 
 package org.netbeans.modules.j2ee.jpa.refactoring;
 
-import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.j2ee.jpa.refactoring.util.ProblemUtil;
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
@@ -48,7 +45,7 @@ public class JPARefactoringPlugin implements RefactoringPlugin{
     public Problem preCheck() {
         Problem result = null;
         for (JPARefactoring each : refactorings){
-            ProblemUtil.addToEnd(each.preCheck(), result);
+            RefactoringUtil.addToEnd(each.preCheck(), result);
         }
         return result;
     }
@@ -67,7 +64,7 @@ public class JPARefactoringPlugin implements RefactoringPlugin{
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         Problem result = null;
         for (JPARefactoring each : refactorings){
-            ProblemUtil.addToEnd(each.prepare(refactoringElements), result);
+            RefactoringUtil.addToEnd(each.prepare(refactoringElements), result);
         }
         return result;
     }
