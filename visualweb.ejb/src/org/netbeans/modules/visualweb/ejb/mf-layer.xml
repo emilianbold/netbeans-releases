@@ -77,6 +77,9 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="UI">
         <folder name="Runtime">
             <file name="org-netbeans-modules-visualweb-ejb-nodes-EjbRootNode.instance" url="org-netbeans-modules-visualweb-ejb-nodes-EjbRootNode.instance"/>
+            <attr name="org-netbeans-modules-visualweb-websvcmgr-nodes-WebServicesRootNode.instance/org-netbeans-modules-visualweb-ejb-nodes-EjbRootNode.instance" boolvalue="true"/>
+            <attr name="org-netbeans-modules-db-explorer-nodes-RootNode.instance/org-netbeans-modules-visualweb-ejb-nodes-EjbRootNode.instance" boolvalue="true"/>
+            <attr name="org-netbeans-modules-visualweb-ejb-nodes-EjbRootNode.instance/ServerRegistry2.instance" boolvalue="true"/>
         </folder>
     </folder>
     <folder name="org-netbeans-api-project-libraries">

@@ -30,6 +30,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                 <!--module name="org.netbeans.modules.identity.server.manager/1" spec="1.0"/--> 
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.identity.server.manager.ui.ServerManagerNode"/>
             </file>
+            <attr name="ServerRegistry2.instance/org-netbeans-modules-identity-server-manager-ui-ServerManagerNode.instance" boolvalue="true"/>
         </folder>   
     </folder>
 </filesystem>

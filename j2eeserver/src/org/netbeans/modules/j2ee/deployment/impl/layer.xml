@@ -42,6 +42,7 @@ Microsystems, Inc. All Rights Reserved.
 <!--          <module name="org.netbeans.modules.j2eeserver/3" spec="1.0"/> -->
           <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.impl.ui.ServerRegistryNode"/>
        </file>
+       <attr name="org-netbeans-modules-db-explorer-nodes-RootNode.instance/ServerRegistry2.instance" boolvalue="true"/>
     </folder>
     <folder name="Services">
         <folder name="IDEConfiguration">
