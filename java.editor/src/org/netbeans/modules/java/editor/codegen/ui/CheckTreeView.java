@@ -24,6 +24,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.List;
 import javax.swing.InputMap;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
@@ -157,14 +158,28 @@ public class CheckTreeView extends BeanTreeView  {
                 return false ;
 
             ElementNode.Description description = node.getLookup().lookup(ElementNode.Description.class);
-            if (description != null && description.isSelectable() ) {
-                description.setSelected( !description.isSelected() );
-                return true;
+            if (description != null ) {
+                if( description.isSelectable()  ) {
+                    description.setSelected( !description.isSelected() );
+                    return true;
+                } else {
+                    boolean newState = !description.isSelected();
+                    description.setSelected(newState);
+                    toggleChildren( description.getSubs(), newState );
+                }
             }
             
             return false;
         }
         
+        private void toggleChildren( List<ElementNode.Description> children, boolean newState ) {
+            if( null == children )
+                return;
+            for( ElementNode.Description d : children ) {
+                d.setSelected( newState );
+                toggleChildren( d.getSubs(), newState );
+            }
+        }
     }
     
 }

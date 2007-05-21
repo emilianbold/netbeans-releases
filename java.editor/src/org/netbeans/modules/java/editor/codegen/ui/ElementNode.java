@@ -192,6 +192,16 @@ public class ElementNode extends AbstractNode {
             return isSelectable;
         }
         
+        public boolean hasSelectableSubs() {
+            if( null == subs )
+                return false;
+            for( Description d : getSubs() ) {
+                if( d.isSelectable() )
+                    return true;
+            }
+            return false;
+        }
+        
         public boolean isSelected() {
             return isSelected;
         }
