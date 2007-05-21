@@ -127,10 +127,10 @@ class DesignTimeContext implements Context {
         Log.getLogger().entering(getClass().getName(), "lookup", name); //NOI18N
         
         // Update datasources for current project            
-        if (name.toString().indexOf("java:comp/env/jdbc") != -1  || !update) {            
+        if (name.toString().contains("java:comp/env/jdbc")  || !update) {            
             return updateBindings(currentProj, name) ;
         }
-           
+                           
         return null;
     }
 
