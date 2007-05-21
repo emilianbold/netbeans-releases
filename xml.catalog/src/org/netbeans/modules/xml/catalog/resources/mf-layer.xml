@@ -86,12 +86,23 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
 
-
-    <folder name="UI">
-        <folder name="Runtime">
-            <file name="org-netbeans-modules-xml-catalog-CatalogRootNode.instance"/>
-        </folder> <!-- Runtime -->        
-    </folder>  <!-- UI -->
+    <folder name="Actions">
+        <folder name="System">
+            <file name="org-netbeans-modules-xml-catalog-CatalogAction.instance"/>
+        </folder>
+    </folder>
+    
+    <folder name="Menu">
+        <folder name="Tools">
+            <file name="org-netbeans-modules-xml-catalog-CatalogAction.instance"/>
+            <attr name="JavaPlatformsCustomizerAction.instance/org-netbeans-modules-xml-catalog-CatalogAction.instance" boolvalue="true" />
+            <attr name="LibrariesCustomizerAction.instance/org-netbeans-modules-xml-catalog-CatalogAction.instance" boolvalue="true" />
+            <attr name="org-netbeans-modules-xml-catalog-CatalogAction.instance/Separator2.instance" boolvalue="true" />
+            <attr name="ServerManagerAction.instance/org-netbeans-modules-xml-catalog-CatalogAction.instance" boolvalue="true"/>
+            <attr name="org-netbeans-modules-favorites-templates-TemplatesAction.instance/org-netbeans-modules-xml-catalog-CatalogAction.instance" boolvalue="true"/>
+            <attr name="org-netbeans-modules-xml-catalog-CatalogAction.instance/PaletteManager" boolvalue="true"/>
+        </folder>
+    </folder>
     
     <folder name="Plugins">
         <folder name="XML">

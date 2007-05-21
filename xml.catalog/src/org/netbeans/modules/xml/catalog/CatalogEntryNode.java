@@ -54,7 +54,7 @@ import org.openide.util.actions.SystemAction;
  * @author  Petr Kuzel
  * @version 1.0
  */
-final class CatalogEntryNode extends BeanNode implements EditCookie {
+final class CatalogEntryNode extends BeanNode implements EditCookie, Node.Cookie {
 
     // cached ViewCookie instance
     private transient ViewCookie view;
@@ -64,13 +64,17 @@ final class CatalogEntryNode extends BeanNode implements EditCookie {
     /** Creates new CatalogNode */
     public CatalogEntryNode(CatalogEntry entry) throws IntrospectionException {        
         super(entry);
-        //getCookieSet().add(this);
+        getCookieSet().add(this);
         catalogReader = entry.getCatalog();
         if (catalogReader instanceof CatalogWriter) {
             isCatalogWriter = true;
         }
     }
     
+    public boolean isCatalogWriter() {
+        return isCatalogWriter;
+    }
+
     public javax.swing.Action getPreferredAction() {
         if (isCatalogWriter) 
             return SystemAction.get(EditAction.class);

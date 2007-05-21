@@ -37,6 +37,10 @@ public class AddCatalogEntryAction extends NodeAction {
     public AddCatalogEntryAction() {}
 
     protected void performAction(org.openide.nodes.Node[] activatedNodes) {
+        perform(activatedNodes);
+    }
+
+    public static void perform(org.openide.nodes.Node[] activatedNodes) {
         CatalogNode node = (CatalogNode) activatedNodes[0].getCookie(CatalogNode.class);
         CatalogWriter catalog = (CatalogWriter)node.getCatalogReader();
         CatalogEntryPanel panel = new CatalogEntryPanel();
@@ -54,7 +58,7 @@ public class AddCatalogEntryAction extends NodeAction {
                 catalog.registerCatalogEntry("SYSTEM:"+panel.getSystemId(), panel.getUri()); //NOI18N
         }
     }
-
+    
     protected boolean enable(org.openide.nodes.Node[] activatedNodes) {
         if (activatedNodes.length>0)  {
             Object node = activatedNodes[0].getCookie(CatalogNode.class);

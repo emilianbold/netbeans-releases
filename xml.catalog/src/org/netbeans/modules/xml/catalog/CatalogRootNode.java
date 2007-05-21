@@ -299,17 +299,20 @@ public final class CatalogRootNode extends AbstractNode implements Node.Cookie {
         }
         
         protected synchronized void performAction(Node[] activatedNodes) {
-            if (enable(activatedNodes) == false) return;
-            try {
-                Node current = activatedNodes[0];
-                CatalogRootNode me = (CatalogRootNode) current.getCookie(CatalogRootNode.class);
-                CatalogMounter newType = me.new CatalogMounter();
-                newType.create();
-            } catch (IOException ex) {
-                Util.THIS.debug(ex);
-            } finally {
-            }
+            mountCatalog(activatedNodes);
         }
     }
-    
+
+    public static void mountCatalog(Node[] activatedNodes) {
+        if (activatedNodes.length == 0) return;
+        try {
+            Node current = activatedNodes[0];
+            CatalogRootNode me = (CatalogRootNode) current.getCookie(CatalogRootNode.class);
+            CatalogMounter newType = me.new CatalogMounter();
+            newType.create();
+        } catch (IOException ex) {
+            Util.THIS.debug(ex);
+        } finally {
+        }
+    }
 }
