@@ -19,7 +19,6 @@
 package org.netbeans.modules.j2ee.jpa.verification;
 
 import org.netbeans.modules.j2ee.jpa.model.AttributeWrapper;
-import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 
 /**
@@ -28,7 +27,7 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  */
 public abstract class JPAEntityAttributeCheck {
 
-    public abstract ErrorDescription[] check(ProblemContext ctx,
+    public abstract ErrorDescription[] check(JPAProblemContext ctx,
             AttributeWrapper attrib);
 
 }

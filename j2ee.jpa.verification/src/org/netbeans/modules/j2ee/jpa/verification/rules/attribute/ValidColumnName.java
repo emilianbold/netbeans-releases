@@ -22,7 +22,7 @@ import javax.lang.model.element.Element;
 import org.netbeans.modules.db.api.sql.SQLKeywords;
 import org.netbeans.modules.j2ee.jpa.model.AttributeWrapper;
 import org.netbeans.modules.j2ee.jpa.verification.JPAEntityAttributeCheck;
-import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
+import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.common.Rule;
 import org.netbeans.modules.j2ee.persistence.dd.JavaPersistenceQLKeywords;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -35,7 +35,7 @@ import org.openide.util.NbBundle;
  */
 public class ValidColumnName extends JPAEntityAttributeCheck {
     
-    public ErrorDescription[] check(ProblemContext ctx, AttributeWrapper attrib) {
+    public ErrorDescription[] check(JPAProblemContext ctx, AttributeWrapper attrib) {
         String columnName = attrib.getColumn().getName();
         Element javaElement = attrib.getJavaElement();
         

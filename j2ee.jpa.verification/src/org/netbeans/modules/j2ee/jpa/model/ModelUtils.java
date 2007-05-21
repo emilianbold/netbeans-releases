@@ -9,16 +9,18 @@
 
 package org.netbeans.modules.j2ee.jpa.model;
 
+import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Embeddable;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.IdClass;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.MappedSuperclass;
 
 /**
@@ -78,10 +80,7 @@ public class ModelUtils {
         }
         
         else if (problemCtx.getAccessType() == AccessType.PROPERTY){
-            searchedName = "get" //NOI18N
-                    + Character.toString(attr.getName().charAt(0)).toUpperCase() +
-                    attr.getName().substring(1);
-            
+            searchedName = getAccesorName(attr.getName());
             elementsToSearch = ElementFilter.methodsIn(problemCtx.getJavaClass().getEnclosedElements());
         }
         
@@ -92,5 +91,51 @@ public class ModelUtils {
                 }
             }
         }
+    }
+    
+    public static ExecutableElement getAccesor(TypeElement clazz, String fieldName){
+        for (ExecutableElement method : getMethod(clazz, getAccesorName(fieldName))){
+            if (method.getParameters().size() == 0){
+                return method;
+            }
+        }
+        
+        return null;
+    }
+    
+    public static ExecutableElement[] getMethod(TypeElement clazz, String methodName){
+        List<ExecutableElement> methods = new ArrayList<ExecutableElement>();
+        
+        for (ExecutableElement method : ElementFilter.methodsIn(clazz.getEnclosedElements())){
+            if (method.getSimpleName().contentEquals(methodName)){
+                methods.add(method);
+            }
+        }
+        
+        return methods.toArray(new ExecutableElement[methods.size()]);
+    }
+    
+    public static String getAccesorName(String fieldName){
+        return "get" //NOI18N
+                + Character.toString(fieldName.charAt(0)).toUpperCase() +
+                fieldName.substring(1);
+    }
+    
+    public static String getFieldNameFromAccessor(String accessorName){
+        if (!accessorName.startsWith("get")){ //NOI18N
+            throw new IllegalArgumentException("accessor name must start with 'get'");
+        }
+        
+        return String.valueOf(accessorName.charAt(3)).toLowerCase() + accessorName.substring(4);
+    }
+    
+    public static VariableElement getField(TypeElement clazz, String fieldName){
+        for (VariableElement field : ElementFilter.fieldsIn(clazz.getEnclosedElements())){
+            if (field.getSimpleName().contentEquals(fieldName)){
+                return field;
+            }
+        }
+        
+        return null;
     }
 }

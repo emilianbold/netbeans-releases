@@ -29,6 +29,7 @@ import org.netbeans.modules.j2ee.jpa.verification.JPAEntityAttributeCheck;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.rules.attribute.ValidColumnName;
+import org.netbeans.modules.j2ee.jpa.verification.rules.attribute.ValidModifiers;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Basic;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Id;
@@ -41,7 +42,8 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  */
 public class ValidAttributes extends JPAClassRule {
     private static JPAEntityAttributeCheck[] attribChecks = new JPAEntityAttributeCheck[]{
-        new ValidColumnName()
+        new ValidColumnName(),
+        new ValidModifiers()
     };
     
     public ValidAttributes() {
@@ -77,11 +79,13 @@ public class ValidAttributes extends JPAClassRule {
             }
         }
         
+        JPAProblemContext jpaCtx = (JPAProblemContext)ctx;
+        
         for (AttributeWrapper attr : attrs){
-            ModelUtils.resolveJavaElementFromModel((JPAProblemContext)ctx, attr);
+            ModelUtils.resolveJavaElementFromModel(jpaCtx, attr);
             
             for (JPAEntityAttributeCheck check : attribChecks){
-                ErrorDescription[] attrProblems = check.check(ctx, attr);
+                ErrorDescription[] attrProblems = check.check(jpaCtx, attr);
                 
                 if (attrProblems != null){
                     for (ErrorDescription err : attrProblems){
