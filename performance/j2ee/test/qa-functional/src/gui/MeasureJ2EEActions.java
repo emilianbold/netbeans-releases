@@ -64,15 +64,19 @@ public class MeasureJ2EEActions  {
 	        suite.addTest(new MeasureEntityBeanAction("testAddFinderMethod", "Add finder method to EB"));
 	        suite.addTest(new MeasureEntityBeanAction("testAddSelectMethod", "Add select method to EB"));
 	
-	        suite.addTest(new MeasureWebServiceAction("testAddOperation", "Add operation to WS"));
-	
-	        suite.addTest(new MeasureCallEjbAction("measureTime", "Call EJB in session bean"));
+                //Commented due to missing JAX-RPC support in NB6.0,uncomment when probnlem is fixed
+	        //suite.addTest(new MeasureWebServiceAction("testAddOperation", "Add operation to WS"));
+	        
+                //Not suppoprted yet - should be in M10 
+	        //suite.addTest(new MeasureCallEjbAction("measureTime", "Call EJB in session bean"));
 	        
 	        //suite.addTest(new Deploy("measureTime", "Deploy Enterprise Application"));
 	
 	        suite.addTest(new CreateNewFile("testCreateNewSessionBean", "Create new session bean"));
 	        suite.addTest(new CreateNewFile("testCreateNewEntityBean", "Create new entity bean"));
-	        suite.addTest(new CreateNewFile("testCreateNewWebService", "Create new web service"));
+            
+	        //Commented due to missing JAX-RPC support in NB6.0,uncomment when probnlem is fixed
+	        //suite.addTest(new CreateNewFile("testCreateNewWebService", "Create new web service"));
 	
 	        suite.addTest(new CreateJ2EEProject("testCreateEnterpriseApplicationProject", "Create Enterprise Application projects"));
 	        suite.addTest(new CreateJ2EEProject("testCreateStandaloneEnterpriseApplicationProject", "Create standalone Enterprise Application project"));
