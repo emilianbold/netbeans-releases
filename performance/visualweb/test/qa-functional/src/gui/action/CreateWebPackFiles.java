@@ -163,12 +163,19 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
     
     private void cleanupTest() {
         log(":: do cleanup.....");
+        ProjectsTabOperator pto = new ProjectsTabOperator();
+        long nodeTimeout = pto.getTimeouts().getTimeout("ComponentOperator.WaitStateTimeout");
+        pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
         Node projectRootNode = new ProjectsTabOperator().getProjectRootNode(project_name);
         projectRootNode.select();
+        
         waitNoEvent(1000);
         Node objNode;
         objNode = new Node(projectRootNode,projectfolder+"|"+ buildedname+suffix);
         objNode.select();
+        
+        pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",nodeTimeout); 
+        
         log(":: Document: "+buildedname+suffix);
         log(":: Selected: "+objNode.getTreePath().toString());
         
