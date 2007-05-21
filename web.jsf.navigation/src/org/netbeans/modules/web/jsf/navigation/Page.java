@@ -29,6 +29,8 @@ import org.openide.DialogDescriptor;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataNode;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
@@ -58,6 +60,7 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
         updateContentModel();
         initListeners();
     }
+   
     
     public void updateContentModel() {
 //        if ( pageContentModel != null ){
@@ -274,7 +277,10 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
     }
 
     public Node getNode() {
-        return original;
+        if ( isDataNode() )
+            return original;
+        else
+            return new NonDataNode(this, original.getName());
     }
     
     
@@ -403,23 +409,35 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
         return System.identityHashCode(this);
     }
     
+//    
+//    public final NonDataNode createNonDataNode() {
+//        return new NonDataNode(this);
+//    }
     
-    
-    //    @Override
-    //    public boolean equals(Object obj) {
-    ////        if( original instanceof DataNode )
-    ////            return original.equals(obj);
-    ////        else {
-    //            if( !(obj instanceof PageFlowNode) ){
-    //                return false;
-    //            }
-    //            return getDisplayName().equals(((PageFlowNode)obj).getDisplayName());
-    ////        }
-    //    }
-    
-    //    public int hashCode() {
-    //        return getDisplayName().hashCode();
-    //    }
-    
+    public final class NonDataNode extends AbstractNode {
+        Page page;
+        public NonDataNode(Page page, String pageName) {
+            super(Children.LEAF);
+            super.setName(pageName);
+            this.page = page;
+        }
+
+        @Override
+        public boolean canRename() {
+            return true;
+        }
+
+        @Override
+        public String getName() {
+            return page.getName();
+        }
+
+        @Override
+        public void setName(String s) {
+            super.setName(s);
+            page.setName(s);
+        }
+        
+    }
     
 }
