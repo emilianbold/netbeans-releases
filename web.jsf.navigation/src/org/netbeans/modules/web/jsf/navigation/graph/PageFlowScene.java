@@ -540,7 +540,7 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
             
             if ( caseNode.canRename() ) {
                 Pin pin = getEdgeSource(caseNode);
-                caseNode.setName(pin, newName);
+                caseNode.setEdgeName(pin, newName);
             }
             
             ((LabelWidget)widget).setLabel(newName);

@@ -117,19 +117,19 @@ public final class NavigationCaseEdge extends PageFlowSceneElement  {
     }
     
     
-    public void setName(String newName) {
+    public void setEdgeName(String newName) {
         pc.setModelNavigationCaseName(navCase, newName);
         super.setName(newName);
     }
     
-    public void setName(Pin pin, String newName  ){
+    public void setEdgeName(Pin pin, String newName  ){
         if( pin != null && !pin.isDefault()){
             pin.setFromOutcome(newName);
         }
         setName(newName);
     }
     
-    public String getName() {
+    public String getEdgeName() {
         if( navCase.getModel() != null )
             return ( navCase.getFromOutcome() != null ? navCase.getFromOutcome() : navCase.getFromAction());
         return "";
@@ -263,6 +263,22 @@ public final class NavigationCaseEdge extends PageFlowSceneElement  {
             }
             return null;
         }
+
+        @Override
+        public boolean canRename() {
+            return true;
+        }
+
+        @Override
+        public String getName() {
+            return getEdgeName();
+        }
+
+        @Override
+        public void setName(String s) {
+            setEdgeName(s);
+        }
+        
         
     }
     
