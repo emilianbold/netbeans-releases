@@ -62,7 +62,7 @@ import org.xml.sax.SAXException;
  */
 public class JWSCompositeCategoryProvider implements ProjectCustomizer.CompositeCategoryProvider {
     
-    private static final String CAT_WEBSTART = "WebStart";
+    private static final String CAT_WEBSTART = "WebStart"; // NOI18N
     private String catName = null;
     
     private static JWSProjectProperties jwsProps = null;
@@ -126,11 +126,11 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
                     // test if the file already exists, if so do not generate, just set as active
                     J2SEProjectConfigurations.createConfigurationFiles(j2seProject, "JWS_generated",
                             prepareSharedProps(), null /*or new Properties()*/); // NOI18N
-                    setActiveConfig(configProvider, "Web Start"); // XXX from bundle
+                    setActiveConfig(configProvider, NbBundle.getBundle(JWSCompositeCategoryProvider.class).getString("LBL_Category_WebStart"));
                     copyTemplate(j2seProject);
                     modifyBuildXml(j2seProject);
                 } else {
-                    setActiveConfig(configProvider, "<default>"); // XXX from bundle?
+                    setActiveConfig(configProvider, NbBundle.getBundle(JWSCompositeCategoryProvider.class).getString("LBL_Category_Default"));
                 }
             } catch (IOException ioe) {
                 ErrorManager.getDefault().notify(ioe);
@@ -181,14 +181,14 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
             AntBuildExtender extender = proj.getLookup().lookup(AntBuildExtender.class);
             if (extender != null) {
                 assert jnlpBuildFile != null;
-                if (extender.getExtension("jws") == null) {
-                    AntBuildExtender.Extension ext = extender.addExtension("jws", jnlpBuildFile);
-                    ext.addDependency("jar", "jnlp");
+                if (extender.getExtension("jws") == null) { // NOI18N
+                    AntBuildExtender.Extension ext = extender.addExtension("jws", jnlpBuildFile); // NOI18N
+                    ext.addDependency("jar", "jnlp"); // NOI18N
                 }
                 ProjectManager.getDefault().saveProject(proj);
             } else {
                 Logger.getLogger(JWSCompositeCategoryProvider.class.getName()).log(Level.INFO, 
-                        "Trying to include JWS build snippet in project type that doesn't support AntBuildExtender API contract.");
+                        "Trying to include JWS build snippet in project type that doesn't support AntBuildExtender API contract."); // NOI18N
             }
             
             //TODO this piece shall not proceed when the upgrade to j2se-project/4 was cancelled.
@@ -198,32 +198,32 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
             Element target = null;
             for (int i = 0; i < nl.getLength(); i++) {
                 Element e = (Element) nl.item(i);
-                if (e.getAttribute("name") != null && "-post-jar".equals(e.getAttribute("name"))) {
+                if (e.getAttribute("name") != null && "-post-jar".equals(e.getAttribute("name"))) { // NOI18N
                     target = e;
                     break;
                 }
             }
             boolean changed = false;
             if (target != null) {
-                if ((target.getAttribute("depends") != null && target.getAttribute("depends").contains("jnlp"))) {
-                    String old = target.getAttribute("depends");
-                    old = old.replaceAll("jnlp", "");
-                    old = old.replaceAll(",[\\s]*$", "");
-                    old = old.replaceAll("^[\\s]*,", "");
-                    old = old.replaceAll(",[\\s]*,", ",");
+                if ((target.getAttribute("depends") != null && target.getAttribute("depends").contains("jnlp"))) { // NOI18N
+                    String old = target.getAttribute("depends"); // NOI18N
+                    old = old.replaceAll("jnlp", ""); // NOI18N
+                    old = old.replaceAll(",[\\s]*$", ""); // NOI18N
+                    old = old.replaceAll("^[\\s]*,", ""); // NOI18N
+                    old = old.replaceAll(",[\\s]*,", ","); // NOI18N
                     old = old.trim();
                     if (old.length() == 0) {
-                        target.removeAttribute("depends");
+                        target.removeAttribute("depends"); // NOI18N
                     } else {
                         target.setAttribute("depends", old); // NOI18N
                     }
                     changed = true;
                 }
             }
-            nl = docElem.getElementsByTagName("import");
+            nl = docElem.getElementsByTagName("import"); // NOI18N
             for (int i = 0; i < nl.getLength(); i++) {
                 Element e = (Element) nl.item(i);
-                if (e.getAttribute("file") != null && "nbproject/jnlp-impl.xml".equals(e.getAttribute("file"))) {
+                if (e.getAttribute("file") != null && "nbproject/jnlp-impl.xml".equals(e.getAttribute("file"))) { // NOI18N
                     e.getParentNode().removeChild(e);
                     changed = true;
                     break;
@@ -257,7 +257,7 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
         
         private Properties prepareSharedProps() {
             Properties props = new Properties();
-            props.setProperty("$label", "Web Start"); // XXX get from bundle
+            props.setProperty("$label", NbBundle.getBundle(JWSCompositeCategoryProvider.class).getString("LBL_Category_WebStart"));
             props.setProperty("$target.run", "jws-run"); // NOI18N
             props.setProperty("$target.debug", "jws-debug"); // NOI18N
             return props;
