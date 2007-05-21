@@ -292,9 +292,10 @@ public class TestCreator {
 
         int index = testClassName.lastIndexOf('/');
         String className = index > -1 ? testClassName.substring(index + 1) : testClassName;
+        FileObject packageFO = index > -1 ? this.testSourceRoot.getFileObject(testClassName.substring(0,index)) : this.testSourceRoot;
 
         // instantiate template into the package
-        return templateDataObj.createFromTemplate(DataFolder.findFolder(this.testSourceRoot), className);
+        return templateDataObj.createFromTemplate(DataFolder.findFolder(packageFO), className);
     }
 
     private DataObject loadTestTemplate(String templateID) {
