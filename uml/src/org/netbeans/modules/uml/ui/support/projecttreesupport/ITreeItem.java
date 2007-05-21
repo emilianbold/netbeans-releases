@@ -27,15 +27,15 @@ package org.netbeans.modules.uml.ui.support.projecttreesupport;
 
 import java.util.Comparator;
 import java.util.Enumeration;
-
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeItem;
-import org.netbeans.modules.uml.core.support.umlutils.ETList;
+import org.openide.nodes.Node;
+
 
 /**
  *
  * @author Trey Spiva
  */
-public interface ITreeItem
+public interface ITreeItem extends Node.Cookie
 {
    /**
     * Sets the name of the tree item. The name is not the displayed name.

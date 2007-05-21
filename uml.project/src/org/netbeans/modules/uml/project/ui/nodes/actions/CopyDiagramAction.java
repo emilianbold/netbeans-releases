@@ -37,6 +37,7 @@ import org.netbeans.modules.uml.ui.support.archivesupport.IProductArchiveDefinit
 import org.netbeans.modules.uml.ui.support.archivesupport.IProductArchiveElement;
 import org.netbeans.modules.uml.ui.support.archivesupport.ProductArchiveImpl;
 import org.netbeans.modules.uml.ui.support.diagramsupport.DiagramTypesManager;
+import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeDiagram;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
@@ -67,7 +68,7 @@ public class CopyDiagramAction extends NodeAction
     public void performAction(Node[] nodes)
     {
         Node diagramNode = nodes[0];
-        DiagramCookie cookie = (DiagramCookie)diagramNode.getCookie(DiagramCookie.class);
+        ITreeDiagram cookie = (ITreeDiagram)diagramNode.getCookie(ITreeDiagram.class);
         if ( cookie != null)
         {
             
