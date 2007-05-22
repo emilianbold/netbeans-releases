@@ -79,7 +79,7 @@ public class CvsVisibilityQuery implements VisibilityQueryImplementation, Versio
             if (file == null) return;
             File parent = file.getParentFile();
             if (parent == null) return;
-            File marker = new File(parent, "CVS/.nb-removed");
+            File marker = new File(parent, MARKER_CVS_REMOVED);
             if (marker.exists()) {
                 fireVisibilityChanged();
             }

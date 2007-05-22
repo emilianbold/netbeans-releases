@@ -19,7 +19,9 @@
 package org.netbeans.modules.versioning;
 
 import org.openide.util.actions.Presenter;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
@@ -27,6 +29,7 @@ import org.openide.windows.TopComponent;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
+import org.netbeans.modules.diff.PatchAction;
 
 import javax.swing.*;
 import java.io.File;
@@ -59,36 +62,44 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
                     return new JComponent[0];
                 }
             }
+            VersioningSystem localHistory = VersioningManager.getInstance().getLocalHistory(toFile(nodes[0]));
             List<JComponent> popups = new ArrayList<JComponent>();            
             if (owner != null) {
                 JMenu menu = createVersioningSystemPopup(owner, nodes);
                 if (menu != null) {
                     popups.add(menu);
                 }
-                VersioningSystem localHistory = VersioningManager.getInstance().getLocalHistory(toFile(nodes[0]));
-                if(localHistory != null) {
-                    JMenu localHistoryMenu = createVersioningSystemPopup(localHistory, nodes);
-                    if(localHistoryMenu != null) {
-                        popups.add(localHistoryMenu);    
-                    }                                    
-                }
             } else {                
+                JMenu vmenu = new JMenu(NbBundle.getMessage(ProjectMenuItem.class, "CTL_MenuItem_VersioningMenu"));                
                 Lookup.Result<VersioningSystem> result = Lookup.getDefault().lookup(new Lookup.Template<VersioningSystem>(VersioningSystem.class));
                 Collection<? extends VersioningSystem> vcs = result.allInstances();
                 for (VersioningSystem vs : vcs) {
-                    JMenu menu = createVersioningSystemPopup(vs, nodes);
-                    if (menu != null) popups.add(menu);
+                    if (vs == localHistory) continue;
+                    JComponent [] items = createVersioningSystemItems(vs, nodes);
+                    if (items != null) {
+                        for (JComponent item : items) {
+                            vmenu.add(item);
+                        }
+                    }
                 }
+                vmenu.add(new JSeparator());
+                vmenu.add(createmenuItem(SystemAction.get(PatchAction.class)));
+                popups.add(vmenu);
+            }
+            if(localHistory != null) {
+                JMenu localHistoryMenu = createVersioningSystemPopup(localHistory, nodes);
+                if(localHistoryMenu != null) {
+                    popups.add(localHistoryMenu);    
+                }                                    
             }
             return popups.toArray(new JComponent[popups.size()]);
         }
         return new JComponent[0];
     }
 
-    private JMenu createVersioningSystemPopup(VersioningSystem owner, Node[] nodes) {
+    private JComponent [] createVersioningSystemItems(VersioningSystem owner, Node[] nodes) {
         VCSAnnotator an = owner.getVCSAnnotator();
         if (an == null) return null;
-        JMenu menu = new JMenu(Utils.getDisplayName(owner));
         VCSContext ctx = VCSContext.forNodes(nodes);
         Action [] actions = an.getActions(ctx, VCSAnnotator.ActionDestination.PopupMenu);
         JComponent [] items = new JComponent[actions.length];
@@ -97,11 +108,25 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
             if (action == null) {
                 items[i++] = new JSeparator();
             } else {
-                JMenuItem item = new JMenuItem(action);
-                Mnemonics.setLocalizedText(item, (String) action.getValue(Action.NAME));
+                JMenuItem item = createmenuItem(action);
                 items[i++] = item;
             }
-            menu.add(items[i-1]);
+        }
+        return items;
+    }
+
+    private JMenuItem createmenuItem(Action action) {
+        JMenuItem item = new JMenuItem(action);
+        Mnemonics.setLocalizedText(item, (String) action.getValue(Action.NAME));
+        return item;
+    }
+
+    private JMenu createVersioningSystemPopup(VersioningSystem owner, Node[] nodes) {
+        JComponent [] items = createVersioningSystemItems(owner, nodes);
+        if (items == null) return null;
+        JMenu menu = new JMenu(Utils.getDisplayName(owner));
+        for (JComponent item : items) {
+            menu.add(item);
         }
         return menu;
     }

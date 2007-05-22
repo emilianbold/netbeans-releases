@@ -54,6 +54,7 @@ import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.ui.properties.SvnPropertiesAction;
 import org.netbeans.modules.subversion.ui.relocate.RelocateAction;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
+import org.netbeans.modules.diff.PatchAction;
 import org.tigris.subversion.svnclientadapter.*;
 
 /**
@@ -445,6 +446,7 @@ public class Annotator {
             actions.add(SystemAction.get(CommitAction.class));
             actions.add(null);
             actions.add(SystemAction.get(ExportDiffAction.class));
+            actions.add(SystemAction.get(PatchAction.class));
             actions.add(null);
             actions.add(SystemAction.get(CreateCopyAction.class));
             actions.add(SystemAction.get(SwitchToAction.class));
