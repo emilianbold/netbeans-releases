@@ -54,7 +54,10 @@ Microsystems, Inc. All Rights Reserved.
             <testtype name="unit" 
                       folder="test.unit.folder" 
                       runtimecp="test.unit.runtime.cp" 
-                      compilecp="test.unit.compile.cp"/>
+                      compilecp="test.unit.compile.cp"
+                      compiledep = "test.unit.testdep"
+/>
+
             <testtype name="qa-functional" 
                       folder="test.qa-functional.folder" 
                       runtimecp="test.qa-functional.runtime.cp" 

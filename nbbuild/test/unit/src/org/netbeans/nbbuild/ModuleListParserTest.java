@@ -104,6 +104,12 @@ public class ModuleListParserTest extends TestCase {
         assertEquals("correct CP extensions (using runtime-relative-path)", Arrays.asList(new File[] {
             file(build, "extra/modules/ext/org-netbeans-tax.jar"),
         }), Arrays.asList(e.getClassPathExtensions()));
+        e = p.findByCodeNameBase("org.netbeans.modules.masterfs");
+        assertNotNull(e);
+        String testDeps[] = e.getTestDependencies();
+        assertNotNull(testDeps);
+        assertEquals("depends on one test entry",1,testDeps.length);
+        assertEquals("org.openide.filesystems",testDeps[0]);
     }
     
     public void testScanSourcesAndBinariesForExternalSuite() throws Exception {

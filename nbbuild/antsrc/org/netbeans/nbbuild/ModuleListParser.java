@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -329,6 +330,28 @@ final class ModuleListParser {
         if (depsEl == null) {
             throw new IOException("Malformed project file " + projectxml);
         }
+        Element testDepsEl = ParseProjectXml.findNBMElement(dataEl,"test-dependencies");
+         //compileDeps = Collections.emptyList();
+        String compileTestDeps[] = null;
+        if (testDepsEl != null) {
+            for (Element depssEl : XMLUtil.findSubElements(testDepsEl)) {
+                String testtype = ParseProjectXml.findTextOrNull(depssEl,"name") ;
+                
+                if (testtype == null || testtype.equals("unit")) {
+                    List<String> compileDepsList = new ArrayList<String>();
+                    for (Element dep : XMLUtil.findSubElements(depssEl)) {
+                        if (dep.getTagName().equals("test-dependency")) {
+                            if (ParseProjectXml.findNBMElement(dep,"test") != null)  {
+                                compileDepsList.add(ParseProjectXml.findTextOrNull(dep, "code-name-base"));
+                            } 
+                        }
+                    }
+                    compileTestDeps = new String[compileDepsList.size()];
+                    compileDepsList.toArray(compileTestDeps);
+                }
+
+            }
+        } 
         for (Element dep : XMLUtil.findSubElements(depsEl)) {
             Element cnbEl2 = ParseProjectXml.findNBMElement(dep, "code-name-base");
             if (cnbEl2 == null) {
@@ -343,7 +366,11 @@ final class ModuleListParser {
         }
         String cluster = fakeproj.getProperty("cluster.dir"); // may be null
         Entry entry = new Entry(cnb, jar, exts.toArray(new File[exts.size()]), dir, path,
-                prereqs.toArray(new String[prereqs.size()]), cluster, rundeps.toArray(new String[rundeps.size()]));
+                prereqs.toArray(new String[prereqs.size()]), 
+                cluster, 
+                rundeps.toArray(new String[rundeps.size()]),
+                compileTestDeps
+                );
         if (entries.containsKey(cnb)) {
             throw new IOException("Duplicated module " + cnb + ": found in " + entries.get(cnb) + " and " + entry);
         } else {
@@ -443,7 +470,7 @@ final class ModuleListParser {
                         String moduleDependencies = attr.getValue("OpenIDE-Module-Module-Dependencies");
                         
                         
-                        Entry entry = new Entry(codenamebase, m, exts,dir, null, null, clusters[i].getName(),parseRuntimeDependencies(moduleDependencies));
+                        Entry entry = new Entry(codenamebase, m, exts,dir, null, null, clusters[i].getName(),parseRuntimeDependencies(moduleDependencies), null);
                         if (entries.containsKey(codenamebase)) {
                             throw new IOException("Duplicated module " + codenamebase + ": found in " + entries.get(codenamebase) + " and " + entry);
                         } else {
@@ -576,7 +603,8 @@ final class ModuleListParser {
                                           e.getClassPathExtensions(),e.sourceLocation,
                                           e.netbeansOrgPath,e.buildPrerequisites,
                                           oldEntry.getClusterName(),
-                                          e.runtimeDependencies);  
+                                          e.runtimeDependencies,
+                                          e.getTestDependencies());  
                          }
                     }
                     entries.put(e.getCnb(), e);
@@ -650,8 +678,10 @@ final class ModuleListParser {
         private final String[] buildPrerequisites;
         private final String clusterName;
         private final String[] runtimeDependencies; 
+        // dependencies on other tests
+        private final String[] testDepencies;
         
-        Entry(String cnb, File jar, File[] classPathExtensions, File sourceLocation, String netbeansOrgPath, String[] buildPrerequisites, String clusterName,String[] runtimeDependencies) {
+        Entry(String cnb, File jar, File[] classPathExtensions, File sourceLocation, String netbeansOrgPath, String[] buildPrerequisites, String clusterName,String[] runtimeDependencies,String[] testDepencies) {
             this.cnb = cnb;
             this.jar = jar;
             this.classPathExtensions = classPathExtensions;
@@ -660,6 +690,7 @@ final class ModuleListParser {
             this.buildPrerequisites = buildPrerequisites;
             this.clusterName = clusterName;
             this.runtimeDependencies = runtimeDependencies;
+            this.testDepencies = testDepencies;
         }
         
         /**
@@ -715,6 +746,9 @@ final class ModuleListParser {
             return clusterName;
         }
         
+        public String [] getTestDependencies() {
+            return testDepencies;
+        }
         public String toString() {
             return (sourceLocation != null ? sourceLocation : jar).getAbsolutePath();
         }

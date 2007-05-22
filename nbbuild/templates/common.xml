@@ -354,7 +354,18 @@ Microsystems, Inc. All Rights Reserved.
         </propertyset>
     </target>
 
-    <target name="test-build" depends="jar,do-test-build,test-build-datajar"/>
+    <target name="test-build" depends="jar,test-dep-build,do-test-build,test-build-datajar"/>
+
+    <target name="test-dep-build" if="test.unit.testdep">
+        <pathconvert property="test.modules.fullpath" >
+          <path>
+              <dirset dir="${nb_all}" includes="${test.unit.testdep}" />
+          </path>
+          <mapper type="identity" />
+      </pathconvert>
+      <sortsuitemodules unsortedmodules="${test.modules.fullpath}" sortedmodulesproperty="modules.sorted" sorttests="true"/>
+      <subant buildpath="${modules.sorted}" target="do-test-build" />
+    </target>
 
     <target name="do-test-build" depends="init,test-init">
         <mkdir dir="${build.test.unit.classes.dir}"/>

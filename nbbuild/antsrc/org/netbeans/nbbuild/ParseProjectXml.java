@@ -200,6 +200,9 @@ public final class ParseProjectXml extends Task {
         private String folder;
         private String runtimeCP;
         private String compileCP;
+        /** compilation dependency supported only unit tests
+         */
+        private String compileDep;
 
         public TestType() {}
         public String getName() {
@@ -233,8 +236,15 @@ public final class ParseProjectXml extends Task {
         public void setCompileCP(String compileCP) {
             this.compileCP = compileCP;
         }
-        
-    }
+
+        public String getCompileDep() {
+            return compileDep;
+        }
+
+        public void setCompileDep(String compileDep) {
+            this.compileDep = compileDep;
+        }
+     }
       List<TestType> testTypes = new LinkedList<TestType>();
       
       public void addTestType(TestType testType) {
@@ -440,6 +450,12 @@ public final class ParseProjectXml extends Task {
                        }
                        if (testType.getRuntimeCP() != null && td.getRuntimeClassPath() != null && td.getRuntimeClassPath().trim().length() > 0) {
                            define(testType.getRuntimeCP(),td.getRuntimeClassPath());
+                       }
+                       if (TestDeps.UNIT.equals(td.testtype)) {
+                           String testCompileDep = td.getTestCompileDep();   
+                           if (testType.getCompileDep() != null && testCompileDep != null ) {
+                               define(testType.getCompileDep(),testCompileDep);
+                           }
                        }
                    }
                }
@@ -835,7 +851,7 @@ public final class ParseProjectXml extends Task {
       // code name base of tested module
       final String cnb;
       final ModuleListParser modulesParser;
-
+  
       public  static final String TEST_DIST_VAR = "test.dist.dir";
       public TestDeps(String testtype,String cnb,ModuleListParser modulesParser) {
           assert modulesParser != null;
@@ -889,7 +905,49 @@ public final class ParseProjectXml extends Task {
             return getPath(getFiles(false));
         }
         
-
+    /** construct test compilation compilation dependencies.
+     * Use case: unit tests of masterfs depends on tests of fs
+     * @return relatives projects folders separated by colon mark(,)
+     */
+    public  String getTestCompileDep() {
+        Set<String> cnbs = new HashSet<String>();
+        StringBuilder builder = new StringBuilder();
+        computeCompileDep(cnb,cnbs,builder);
+        return (builder.length() > 0) ? builder.toString() : null;
+    }
+    
+    private void computeCompileDep(String cnb,Set<String> cnbs,StringBuilder sb) {
+        if (cnbs.contains(cnb)) {
+            return;
+        }
+        ModuleListParser.Entry entry = modulesParser.findByCodeNameBase(cnb);
+        if (!cnbs.isEmpty()) {
+            // check if is tests are already built
+            for (TestDep td : dependencies) {
+                if (cnb.equals(td.cnb) && new File(td.getTestJarPath()).exists()) {
+                    // don't compile already compiled tests dependencies
+                    return ;
+                }
+            }
+            if (sb.length() > 0) {
+                sb.append(","); // NOI18N
+            }
+            // XXX it works only for netbeans.org modules :(
+            String nborgPath = entry.getNetbeansOrgPath();
+            if (nborgPath != null) {
+                sb.append(nborgPath);
+            }
+        }
+        cnbs.add(cnb);
+        if (entry != null) {
+            String testDeps[] = entry.getTestDependencies();
+            if (testDeps != null) {
+                for (String cnb2 : testDeps) {
+                    computeCompileDep(cnb2,cnbs,sb);
+                }
+            } 
+        }
+    }
   }
    /** Test dependency for module and type
     */ 
@@ -961,17 +1019,20 @@ public final class ParseProjectXml extends Task {
                // get tests files
                if (test) {
                    // get test folder
-                   ModuleListParser.Entry entry = modulesParser.findByCodeNameBase(cnb);
-                   String sep = File.separator;
-                   String cluster = entry.getClusterName();
-                   if (cluster == null) {
-                       cluster = "cluster";
-                   }
-                   String jarPath = ParseProjectXml.testDistLocation + sep + testDeps.testtype + sep + cluster  + sep + cnb.replace('.','-') + sep + "tests.jar";
+                   String jarPath = getTestJarPath() ;
                    files.add(jarPath);
                }
            }
            return files;
+       }
+       public String getTestJarPath() {
+           String sep = File.separator;
+           ModuleListParser.Entry entry = modulesParser.findByCodeNameBase(cnb);
+           String cluster = entry.getClusterName();
+           if (cluster == null) {
+               cluster = "cluster";
+           }
+            return ParseProjectXml.testDistLocation + sep + testDeps.testtype + sep + cluster  + sep + cnb.replace('.','-') + sep + "tests.jar";           
        }
    } 
     private String computeClassPathExtensions(Document pDoc) {
@@ -1112,6 +1173,8 @@ public final class ParseProjectXml extends Task {
                     }
 
                 }
+
+
             }
         }
         // #82204 intialize default testtypes when are not  in project.xml
