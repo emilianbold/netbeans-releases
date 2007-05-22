@@ -22,6 +22,7 @@ package org.netbeans.modules.subversion;
 import java.io.File;
 import java.io.IOException;
 import org.openide.ErrorManager;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputListener;
@@ -32,14 +33,14 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 /**
  *
  * @author Tomas Stupka
- *
  */
 public class OutputLogger implements ISVNNotifyListener {
 
     private InputOutput log;
     private boolean ignoreCommand = false;
-    private String      repositoryRootString;
-
+    private String repositoryRootString;
+    private static final RequestProcessor rp = new RequestProcessor("SubversionOutput", 1);
+    
     public static OutputLogger getLogger(SVNUrl repositoryRoot) {
         if (repositoryRoot != null) {
             return new OutputLogger(repositoryRoot);
@@ -56,24 +57,40 @@ public class OutputLogger implements ISVNNotifyListener {
     private OutputLogger() {
     }
     
-    public void logCommandLine(String commandLine) {
-        logln(commandLine, false);
-        flushLog();
+    public void logCommandLine(final String commandLine) {
+        rp.post(new Runnable() {
+            public void run() {                        
+                logln(commandLine, false);
+                log.getOut().flush();
+            }
+        });        
     }
     
-    public void logCompleted(String message) {
-        logln(message, ignoreCommand);
-        flushLog();
+    public void logCompleted(final String message) {
+        rp.post(new Runnable() {
+            public void run() {                
+                logln(message, ignoreCommand);
+                log.getOut().flush();
+            }
+        });        
     }
     
-    public void logError(String message) {
-        logln(message, false);
-        flushLog();
+    public void logError(final String message) {
+        rp.post(new Runnable() {
+            public void run() {                
+                logln(message, false);
+                log.getOut().flush();
+            }
+        });            
     }
     
-    public void logMessage(String message) {
-        logln(message, ignoreCommand);
-        flushLog();
+    public void logMessage(final String message) {
+        rp.post(new Runnable() {
+            public void run() {                
+                logln(message, ignoreCommand);
+                log.getOut().flush();
+            }
+        });
     }
     
     public void logRevision(long revision, String path) {
@@ -84,14 +101,35 @@ public class OutputLogger implements ISVNNotifyListener {
         //logln(" file " + path + ", kind " + kind);
     }
     
-    public void setCommand(int command) {
-        ignoreCommand = command == ISVNNotifyListener.Command.INFO ||
-                        command == ISVNNotifyListener.Command.STATUS ||
-                        command == ISVNNotifyListener.Command.ANNOTATE ||
-                        command == ISVNNotifyListener.Command.LOG ||
-                        command == ISVNNotifyListener.Command.LS;
+    public void setCommand(final int command) {
+        rp.post(new Runnable() {
+            public void run() {        
+                ignoreCommand = command == ISVNNotifyListener.Command.INFO ||
+                                command == ISVNNotifyListener.Command.STATUS ||
+                                command == ISVNNotifyListener.Command.ANNOTATE ||
+                                command == ISVNNotifyListener.Command.LOG ||
+                                command == ISVNNotifyListener.Command.LS;
+            }
+        });
     }
-            
+         
+    public void closeLog() {
+        rp.post(new Runnable() {
+            public void run() {
+                log.getOut().flush();
+                log.getOut().close();        
+            }
+        });
+    }
+
+    public void flushLog() {
+        rp.post(new Runnable() {
+            public void run() {        
+                log.getOut().flush();
+            }
+        });        
+    }
+    
     private void logln(String message, boolean ignore) {
         log(message + "\n", null, ignore); // NOI18N
     }
@@ -119,17 +157,8 @@ public class OutputLogger implements ISVNNotifyListener {
             }
         } else {
             log.getOut().write(message);
-        }
-    }    
-
-    public void closeLog() {
-        log.getOut().flush();
-        log.getOut().close();        
-    }
-
-    public void flushLog() {
-        log.getOut().flush();
-    }
+        }        
+    }      
     
     private static class NullLogger extends OutputLogger {
 
@@ -160,4 +189,5 @@ public class OutputLogger implements ISVNNotifyListener {
         public void flushLog() {
         }
     }
+
 }

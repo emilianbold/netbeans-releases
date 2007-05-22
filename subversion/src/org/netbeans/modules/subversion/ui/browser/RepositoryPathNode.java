@@ -235,6 +235,9 @@ public class RepositoryPathNode extends AbstractNode {
                 public void perform() {
                     try {
                         Collection cl = client.listRepositoryPath(pathEntry, this);
+                        if(isCanceled()) {
+                            return;
+                        }
                         if(cl == null) {
                             // is not a folder in the repository
                             setKeys(Collections.EMPTY_LIST);

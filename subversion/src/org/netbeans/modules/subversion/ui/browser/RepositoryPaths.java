@@ -25,9 +25,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.MalformedURLException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JTextField;
@@ -218,10 +215,9 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
                     }
                 }  
                 setRepositoryTextField(paths.toString());
-            } 
-        } else {
-            browser.cancel(); 
-        }
+            }             
+        } 
+        browser.cancelTasks();  // however the dialog was closed, we always cancel all running tasks 
     }          
     
     private void searchRepository() {

@@ -64,8 +64,11 @@ public class Browser implements VetoableChangeListener, BrowserClient {
     private RepositoryFile repositoryRoot;            
     private Action[] nodeActions;
 
-    private SvnProgressSupport support;
-
+    private boolean keepWarning = false;
+    private boolean initialSelection = true;
+    
+    private List<SvnProgressSupport> supportList = new ArrayList<SvnProgressSupport>();
+    private volatile boolean cancelled = false;
     /**
      * Creates a new instance
      *
@@ -144,27 +147,44 @@ public class Browser implements VetoableChangeListener, BrowserClient {
     /**
      * Cancels all running tasks
      */
-    public void cancel() {
+    public void cancelTasks() {                   
+        SvnProgressSupport[] progressSupports = null;    
+        synchronized(supportList) {            
+            cancelled = true; 
+            progressSupports = supportList.toArray(new SvnProgressSupport[supportList.size()]);
+            supportList.clear();
+        }
+
         Node rootNode = getExplorerManager().getRootContext();
         if(rootNode != null) {
             getExplorerManager().setRootContext(Node.EMPTY);
             try {                                
                 rootNode.destroy();
-                if(support != null) {
-                    support.cancel();
+                
+                if(progressSupports != null && progressSupports.length > 0) {
+                    for(SvnProgressSupport sps : progressSupports) {
+                        sps.cancel();   
+                    }                    
                 }
             } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
             }            
         }
     }
-    
+            
     public List listRepositoryPath(final RepositoryPathNode.RepositoryPathEntry entry, SvnProgressSupport support) throws SVNClientException {
+
+        synchronized (supportList) {
+            if(cancelled) {
+                support.cancel();
+                return Collections.EMPTY_LIST;
+            }            
+            supportList.add(support);                                
+        }        
+        
         List<RepositoryPathNode.RepositoryPathEntry> ret;
-        try {
-
-            this.support = support;
-
+        try {            
+            
             if(entry.getSvnNodeKind().equals(SVNNodeKind.FILE)) {
                 return Collections.EMPTY_LIST; // nothing to do...
             }
@@ -218,7 +238,9 @@ public class Browser implements VetoableChangeListener, BrowserClient {
             }                
         }
         finally {
-            this.support = null;
+            synchronized (supportList) {
+                supportList.remove(support);
+            }            
         }
 
         return ret;
@@ -244,10 +266,7 @@ public class Browser implements VetoableChangeListener, BrowserClient {
             ret[i] = ((RepositoryPathNode) nodes[i]).getEntry().getRepositoryFile();
         }
         return ret;
-    }
-    
-    private boolean keepWarning = false;
-    private boolean initialSelection = true;
+    }    
     
     public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {

@@ -348,7 +348,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
 
         // handle results
         if (!DialogDescriptor.OK_OPTION.equals(dialogDescriptor.getValue())) {       
-            browser.cancel();
+            browser.cancelTasks();
             return;
         }
 
