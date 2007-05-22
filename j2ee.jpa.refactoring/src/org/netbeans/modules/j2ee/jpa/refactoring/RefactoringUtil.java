@@ -146,14 +146,13 @@ public abstract class RefactoringUtil {
         return refactoring.getContext().lookup(CompilationInfo.class);
     }
     
-    
     /**
      * Gets the fully qualified name for the given <code>fileObject</code>. If it
      * represents a java package, will return the name of the package (with dots as separators).
      *
      *@param fileObject the file object whose FQN should be get. Must belong to
      * a project.
-     *@return the FQN for the given file object. 
+     *@return the FQN for the given file object.
      */
     public static String getQualifiedName(FileObject fileObject){
         Project project = FileOwnerQuery.getOwner(fileObject);
@@ -162,6 +161,42 @@ public abstract class RefactoringUtil {
         assert classPathProvider != null;
         return classPathProvider.findClassPath(fileObject, ClassPath.SOURCE).getResourceName(fileObject, '.', false);
         
+    }
+    
+    /**
+     * Gets the name of the property associated with the given accessor.
+     *
+     * @param accessor the name of the accessor method of the property. Must follow the JavaBeans
+     * naming conventions, i.e. start with 'get/set/is' followed by an uppercase letter,
+     * otherwise it is assumed that the name of the property directly matches with
+     * the getter. Must not be null or empty.
+     *
+     * @return the property name resolved from the given <code>getter</code>, i.e.
+     * if the given arg was <code>getProperty</code>, this method will return
+     * <code>property</code>.
+     */
+    public static String getPropertyName(String accessor){
+        Parameters.notEmpty("accessor", accessor); //NO18N
+        
+        int prefixLength = getPrefixLength(accessor);
+        String withoutPrefix = accessor.substring(prefixLength);
+        char firstChar = withoutPrefix.charAt(0);
+        
+        if (!Character.isUpperCase(firstChar)){
+            return accessor;
+        }
+        
+        return Character.toLowerCase(firstChar) + withoutPrefix.substring(1);
+    }
+    
+    private static int getPrefixLength(String accessor){
+        String[] accessorPrefixes = new String[]{"get", "set", "is"}; //NO18N
+        for (String prefix : accessorPrefixes){
+            if (accessor.startsWith(prefix)){
+                return prefix.length();
+            }
+        }
+        return 0;
     }
     
 }
