@@ -73,6 +73,7 @@ import java.util.*;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Represents one ejb module project
@@ -555,8 +556,15 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
                          
                     // 1. Update component info and binding component info if needed...
                     String name = JbiProject.this.getName();
-                    String confDir = JbiProject.this.getProjectDirectory().getPath() + "/src/conf"; // NOI18N
-                    File compFile = new File(confDir+"/ComponentInformation.xml");
+                    // On Solaris x86, JbiProject.this.getProjectDirectory().getPath() 
+                    // is missing the preceding "/".
+                    //System.out.println("projPath is " + JbiProject.this.getProjectDirectory().getPath());
+                    //System.out.println("projPath (absolute) is " + FileUtil.toFile(JbiProject.this.getProjectDirectory()).getAbsolutePath());
+                    //String confDir = JbiProject.this.getProjectDirectory().getPath() + "/src/conf"; // NOI18N
+                    FileObject projDir = JbiProject.this.getProjectDirectory();
+                    String confDir = FileUtil.toFile(projDir).getAbsolutePath() + 
+                            File.separator + "src" + File.separator + "conf"; // NOI18N
+                    File compFile = new File(confDir + File.separator + "ComponentInformation.xml");
                     try {
                         // load componentInfo..
                         JBIComponentDocument compDoc = ComponentInformationParser.parse(compFile);

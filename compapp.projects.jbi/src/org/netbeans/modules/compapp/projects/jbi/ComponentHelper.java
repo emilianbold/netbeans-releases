@@ -63,7 +63,7 @@ public class ComponentHelper {
         List os = (List) projProperties.get(JbiProjectProperties.META_INF);
         
         File pf = FileUtil.toFile(jbiProject.getProjectDirectory());
-        String projPath = pf.getPath() + File.separator;
+        String projPath = pf.getAbsolutePath() + File.separator;
         
         String compFile = projPath + os.get(0).toString() + File.separator +
                 "ComponentInformation.xml"; // NOI18N
