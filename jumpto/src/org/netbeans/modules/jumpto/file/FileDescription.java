@@ -1,0 +1,416 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is the Accelerators module.
+ * The Initial Developer of the Original Software is Andrei Badea.
+ * Portions Copyright 2005-2006 Andrei Badea.
+ * All Rights Reserved.
+ *
+ * Contributor(s): Petr Hrebejk
+ */
+
+package org.netbeans.modules.jumpto.file;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Image;
+import java.beans.BeanInfo;
+import java.io.File;
+import java.io.IOException;
+import java.util.Comparator;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JViewport;
+import javax.swing.SwingConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.queries.VisibilityQuery;
+import org.openide.cookies.EditCookie;
+import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
+
+/** Contains interesting information about file found in the search.
+ *
+ * @author Petr Hrebejk
+ */
+public class FileDescription {
+
+    static long time;
+    
+    public static final String SEARCH_IN_PROGRES = NbBundle.getMessage(FileDescription.class, "TXT_SearchingOtherProjects"); // NOI18N
+    
+    private File file; // The file 
+    private Project project; // Project the file belongs to
+    private SourceGroup sourceGroup; // The source group
+    
+    private FileObject fileObject;
+    
+    private Icon icon;
+    private String projectName;
+    private Icon projectIcon;
+    private boolean prefered;
+    
+    private static final String EMPTY_STRING = ""; // NOI18N
+    
+    public FileDescription(File file, Project project, SourceGroup sourceGroup, boolean prefered) {
+        this.file = file;
+        this.project = project;
+        this.sourceGroup = sourceGroup;
+        this.prefered = prefered;
+    }
+       
+    public String getName() {
+        return file.getName(); // NOI18N
+    }
+    
+    public synchronized Icon getIcon() {
+                
+        if ( icon == null ) {
+            DataObject od = getDataObject();
+            Image i = od.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16);
+            icon = new ImageIcon( i );
+        }
+        
+        return icon;
+    }
+    
+    public String getRelativePath() {
+        return " (" + FileUtil.getRelativePath(sourceGroup.getRootFolder(), getFileObject().getParent() ) + ")";
+    }
+    
+    public synchronized String getProjectName() {
+        if ( projectName == null ) {
+            initProjectInfo();
+        }        
+        return projectName;
+    }
+    
+    public synchronized Icon getProjectIcon() {
+        if ( projectIcon == null ) {
+            initProjectInfo();
+        }        
+        return projectIcon;
+    }
+    
+    public synchronized boolean isVisible() {
+        
+        long t = System.currentTimeMillis();
+        
+        if ( fileObject == null ) {
+            fileObject = FileUtil.toFileObject(file);
+        }
+        boolean visible = VisibilityQuery.getDefault().isVisible(fileObject);
+        if ( !visible ) {
+            addTime( t ); 
+            return false;
+        }
+        
+        // XXX PERF needs to cache parents.        
+        while( fileObject.getParent() != null ) {
+            fileObject = fileObject.getParent();
+            if ( fileObject.equals(sourceGroup.getRootFolder() ) ) {
+                addTime( t );
+                return true;
+            }
+            if ( !VisibilityQuery.getDefault().isVisible(fileObject)  ) {
+                addTime( t );
+                return false;
+            }
+        }
+        addTime( t );
+        return true;
+    }
+    
+    private void addTime( long t ) {
+//        time += System.currentTimeMillis() - t;
+//        System.out.println("isVisible time " + time);
+    }
+    
+    public void open() {
+        
+        DataObject od = getDataObject();
+        
+        if ( od != null ) {
+        
+            EditCookie ec = (EditCookie) od.getCookie(EditCookie.class);
+
+            if (ec != null) {
+                ec.edit();
+            }
+            else {
+                OpenCookie oc = od.getCookie( OpenCookie.class );
+                if ( oc != null ) {
+                    oc.open();
+                }
+            }
+        }
+
+    }
+    
+    public FileObject getFileObject() {        
+        return FileUtil.toFileObject(file);        
+    }
+    
+    private DataObject getDataObject() {
+        try     {
+            org.openide.filesystems.FileObject fo = getFileObject();
+            return org.openide.loaders.DataObject.find(fo);
+        }
+        catch (DataObjectNotFoundException ex) {
+            return null;
+        }
+    }
+    
+    private void initProjectInfo() {
+        ProjectInformation pi = ProjectUtils.getInformation( project );
+        projectName = pi.getDisplayName();
+        projectIcon = pi.getIcon();
+    }
+    
+    // Innerclasses ------------------------------------------------------------
+    
+    public static class FDComarator implements Comparator<FileDescription> {
+
+        private boolean usePrefered;
+        private boolean caseSensitive;
+                
+        public FDComarator(boolean usePrefered, boolean caseSensitive ) {
+            this.usePrefered = usePrefered;
+            this.caseSensitive = caseSensitive;
+        }
+        
+        public int compare(FileDescription o1, FileDescription o2) {
+            
+            // If prefered prefer prefered
+            if ( usePrefered ) {
+                if ( o1.prefered && !o2.prefered ) {
+                    return -1;
+                }
+                if ( !o1.prefered && o2.prefered ) {
+                    return 1;
+                }
+            }
+            
+            // File name
+            int cmpr = compareStrings( o1.file.getName(), o2.file.getName(), caseSensitive );            
+            if ( cmpr != 0 ) {
+                return cmpr;
+            }
+            
+            // Project name
+            cmpr = compareStrings( o1.getProjectName(), o2.getProjectName(), caseSensitive );            
+            if ( cmpr != 0 ) {
+                return cmpr;
+            }
+            
+            // Relative location
+            cmpr = compareStrings( o1.file.getPath(), o2.file.getPath(), caseSensitive );            
+                        
+            return cmpr;
+           
+        }
+        
+        private int compareStrings(String s1, String s2, boolean caseSensitive) {
+            if( s1 == null ) {
+                s1 = EMPTY_STRING;
+            }
+            if ( s2 == null ) {
+                s2 = EMPTY_STRING;
+            }
+            
+            
+            return caseSensitive ? s1.compareTo( s2 ) : s1.compareToIgnoreCase( s2 );
+        }        
+    }
+    
+    public static class Renderer extends DefaultListCellRenderer implements ChangeListener {
+        
+        public static Icon WAIT_ICON = new ImageIcon( Utilities.loadImage("org/netbeans/modules/jumpto/file/resources/wait.gif") ); // NOI18N
+        
+        
+        private JPanel rendererComponent;
+        private JLabel jlName = new JLabel();
+        private JLabel jlPath = new JLabel();
+        private JLabel jlPrj = new JLabel();
+        private int DARKER_COLOR_COMPONENT = 5;
+        private int LIGHTER_COLOR_COMPONENT = 80;        
+        private Color fgColor;
+        private Color fgColorLighter;
+        private Color bgColor;
+        private Color bgColorDarker;
+        private Color bgSelectionColor;
+        private Color fgSelectionColor;
+        private Color bgColorGreener;
+        private Color bgColorDarkerGreener;
+        
+        private JList jList;
+    
+        private boolean colorPrefered;
+        
+        public Renderer( JList list ) {
+            
+            jList = list;
+            
+            Container container = list.getParent();
+            if ( container instanceof JViewport ) {
+                ((JViewport)container).addChangeListener(this);
+                stateChanged(new ChangeEvent(container));
+            }
+            
+            rendererComponent = new JPanel();
+            rendererComponent.setLayout(new BorderLayout());
+            rendererComponent.add( jlName, BorderLayout.WEST );
+            rendererComponent.add( jlPath, BorderLayout.CENTER);
+            rendererComponent.add( jlPrj, BorderLayout.EAST );
+            
+            
+            jlName.setOpaque(false);
+            jlPath.setOpaque(false);
+            jlPrj.setOpaque(false);
+            
+            jlName.setFont(list.getFont());
+            jlPath.setFont(list.getFont());
+            jlPrj.setFont(list.getFont());
+            
+            
+            jlPrj.setHorizontalAlignment(RIGHT);
+            jlPrj.setHorizontalTextPosition(LEFT);
+            
+            // setFont( list.getFont() );            
+            fgColor = list.getForeground();
+            fgColorLighter = new Color( 
+                                   Math.min( 255, fgColor.getRed() + LIGHTER_COLOR_COMPONENT),
+                                   Math.min( 255, fgColor.getGreen() + LIGHTER_COLOR_COMPONENT),
+                                   Math.min( 255, fgColor.getBlue() + LIGHTER_COLOR_COMPONENT)
+                                  );
+                            
+            bgColor = list.getBackground();
+            bgColorDarker = new Color(
+                                    Math.abs(bgColor.getRed() - DARKER_COLOR_COMPONENT),
+                                    Math.abs(bgColor.getGreen() - DARKER_COLOR_COMPONENT),
+                                    Math.abs(bgColor.getBlue() - DARKER_COLOR_COMPONENT)
+                            );
+            bgSelectionColor = list.getSelectionBackground();
+            fgSelectionColor = list.getSelectionForeground();
+            
+            
+            bgColorGreener = new Color( 
+                                    Math.abs(bgColor.getRed() - 20),
+                                    Math.min(255, bgColor.getGreen() + 10 ),
+                                    Math.abs(bgColor.getBlue() - 20) );
+                    
+                    
+            bgColorDarkerGreener = new Color( 
+                                    Math.abs(bgColorDarker.getRed() - 35),
+                                    Math.min(255, bgColorDarker.getGreen() + 5 ),
+                                    Math.abs(bgColorDarker.getBlue() - 35) );
+        }
+        
+        public Component getListCellRendererComponent( JList list,
+                                                       Object value,
+                                                       int index,
+                                                       boolean isSelected,
+                                                       boolean hasFocus) {
+            
+            // System.out.println("Renderer for index " + index );
+            
+            int height = list.getFixedCellHeight();
+            int width = list.getFixedCellWidth() - 1;
+            
+            width = width < 200 ? 200 : width;
+            
+            // System.out.println("w, h " + width + ", " + height );
+            
+            Dimension size = new Dimension( width, height );
+            rendererComponent.setMaximumSize(size);
+            rendererComponent.setPreferredSize(size);
+                        
+            if ( isSelected ) {
+                jlName.setForeground(fgSelectionColor);
+                jlPath.setForeground(fgSelectionColor);
+                jlPrj.setForeground(fgSelectionColor);
+                rendererComponent.setBackground(bgSelectionColor);
+            }
+            else {
+                jlName.setForeground(fgColor);
+                jlPath.setForeground(fgColorLighter);
+                jlPrj.setForeground(fgColor);                
+                rendererComponent.setBackground( index % 2 == 0 ? bgColor : bgColorDarker );
+            }
+            
+            if ( value instanceof FileDescription ) {
+                FileDescription fd = (FileDescription)value;
+                jlName.setIcon(fd.getIcon());
+                jlName.setText(fd.getName());
+                jlPath.setIcon(null);
+                jlPath.setHorizontalAlignment(SwingConstants.LEFT);
+                jlPath.setText(fd.getRelativePath());
+                jlPrj.setText(fd.getProjectName());
+                jlPrj.setIcon(fd.getProjectIcon());
+                if ( !isSelected ) {
+                    rendererComponent.setBackground( index % 2 == 0 ? 
+                        ( fd.prefered && colorPrefered ? bgColorGreener : bgColor ) : 
+                        ( fd.prefered && colorPrefered ? bgColorDarkerGreener : bgColorDarker ) );
+                }
+                //rendererComponent.setToolTipText( FileUtil.getFileDisplayName(fd.getFileObject()));
+            }
+            else {
+                jlName.setText( "" ); // NOI18M
+                jlName.setIcon(null);
+                jlPath.setIcon(Renderer.WAIT_ICON);
+                jlPath.setHorizontalAlignment(SwingConstants.CENTER);
+                jlPath.setText( value.toString() );
+                jlPrj.setIcon(null);
+                jlPrj.setText( "" ); // NOI18N
+            }
+            
+            return rendererComponent;
+        }
+        
+        public void stateChanged(ChangeEvent event) {
+            
+            JViewport jv = (JViewport)event.getSource();
+            
+            jlName.setText( "Sample" ); // NOI18N
+            jlName.setIcon( new ImageIcon() );
+            
+            jList.setFixedCellHeight(jlName.getPreferredSize().height);
+            jList.setFixedCellWidth(jv.getExtentSize().width);
+        }
+        
+        public void setColorPrefered( boolean colorPrefered ) {
+            this.colorPrefered = colorPrefered;
+        }
+
+     }
+        
+
+}
