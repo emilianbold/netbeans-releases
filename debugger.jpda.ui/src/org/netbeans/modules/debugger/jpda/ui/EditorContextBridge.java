@@ -23,14 +23,21 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.netbeans.api.debugger.Breakpoint.VALIDITY;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.jpda.FieldBreakpoint;
+import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
+import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.spi.debugger.jpda.EditorContext;
+import org.netbeans.spi.debugger.jpda.SourcePathProvider;
+
+import org.openide.ErrorManager;
 
 
 /**
@@ -236,6 +243,20 @@ public class EditorContextBridge {
         return getContext ().getFieldLineNumber (url, className, fieldName);
     }
     
+    public static int getMethodLineNumber(
+        String url, 
+        String className, 
+        String methodName,
+        String methodSignature
+    ) {
+        return getContext ().getMethodLineNumber (url, className, methodName, methodSignature);
+    }
+    
+    public static String[] getCurrentMethodDeclaration() {
+        return getContext().getCurrentMethodDeclaration();
+    }
+
+    
     /**
      * Returns class name for given url and line number or null.
      *
@@ -361,6 +382,107 @@ public class EditorContextBridge {
             annotationType,
             null
         );
+    }
+
+    public static Object[] annotate (
+        JPDABreakpoint b
+    ) {
+        String[] URLs;
+        int[] lineNumbers;
+        String condition;
+        if (b instanceof LineBreakpoint) {
+            URLs = new String[] { ((LineBreakpoint) b).getURL () };
+            lineNumbers = new int[] { ((LineBreakpoint) b).getLineNumber() };
+            condition = ((LineBreakpoint) b).getCondition();
+        } else if (b instanceof FieldBreakpoint) {
+            String className = ((FieldBreakpoint) b).getClassName();
+            URLs = getClassURLs(SourcePath.convertClassNameToRelativePath(className));
+            lineNumbers = new int[URLs.length];
+            for (int i = 0; i < URLs.length; i++) {
+                lineNumbers[i] = getFieldLineNumber(URLs[i], className, ((FieldBreakpoint) b).getFieldName());
+            }
+            condition = ((FieldBreakpoint) b).getCondition();
+        } else if (b instanceof MethodBreakpoint) {
+            String[] filters = ((MethodBreakpoint) b).getClassFilters();
+            String[] urls = new String[] {};
+            int[] lns = new int[] {};
+            for (int i = 0; i < filters.length; i++) {
+                // TODO: annotate also other matched classes
+                if (!filters[i].startsWith("*") && !filters[i].endsWith("*")) {
+                    String[] newUrls = getClassURLs(SourcePath.convertClassNameToRelativePath(filters[i]));
+                    int[] newlns = new int[newUrls.length];
+                    for (int j = 0; j < newUrls.length; j++) {
+                       newlns[j] = getMethodLineNumber(newUrls[j], filters[i],
+                                                       ((MethodBreakpoint) b).getMethodName(),
+                                                       ((MethodBreakpoint) b).getMethodSignature());
+                    }
+                    if (urls.length == 0) {
+                        urls = newUrls;
+                        lns = newlns;
+                    } else {
+                        String[] l = new String[urls.length + newUrls.length];
+                        System.arraycopy(urls, 0, l, 0, urls.length);
+                        System.arraycopy(newUrls, 0, l, urls.length, newUrls.length);
+                        urls = l;
+                        
+                        int[] ln = new int[urls.length + newUrls.length];
+                        System.arraycopy(lns, 0, ln, 0, lns.length);
+                        System.arraycopy(newlns, 0, ln, lns.length, newlns.length);
+                        lns = ln;
+                    }
+                }
+            }
+            URLs = urls;
+            lineNumbers = lns;
+            condition = ((MethodBreakpoint) b).getCondition();
+        } else {
+            return new Object[] {};
+        }
+        
+        boolean isConditional = (condition != null) &&
+            !"".equals (condition.trim ()); // NOI18N
+        boolean isInvalid = b.getValidity() == VALIDITY.INVALID;
+        String annotationType;
+        if (b instanceof LineBreakpoint) {
+            annotationType = b.isEnabled () ?
+            (isConditional ? EditorContext.CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE :
+                             EditorContext.BREAKPOINT_ANNOTATION_TYPE) :
+            (isConditional ? EditorContext.DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE :
+                             EditorContext.DISABLED_BREAKPOINT_ANNOTATION_TYPE);
+        } else if (b instanceof FieldBreakpoint) {
+            annotationType = b.isEnabled () ?
+                EditorContext.FIELD_BREAKPOINT_ANNOTATION_TYPE :
+                EditorContext.DISABLED_FIELD_BREAKPOINT_ANNOTATION_TYPE;
+        } else if (b instanceof MethodBreakpoint) {
+            annotationType = b.isEnabled () ?
+                EditorContext.METHOD_BREAKPOINT_ANNOTATION_TYPE :
+                EditorContext.DISABLED_METHOD_BREAKPOINT_ANNOTATION_TYPE;
+        } else {
+            return new Object[] {};
+        }
+        if (isInvalid && b.isEnabled ()) annotationType += "_broken";
+
+        List annotations = new ArrayList(URLs.length);
+        for (int i = 0; i < URLs.length; i++) {
+            if (lineNumbers[i] >= 1) {
+                annotations.add(
+                        annotate (URLs[i], lineNumbers[i], annotationType, null)
+                );
+            }
+        }
+        return annotations.toArray();
+    }
+    
+    private static String[] getClassURLs(String className) {
+        SourcePathProvider spp = SourcePath.getDefaultContext();
+        // TODO: spp.getAllURLs(className, true);
+        try {
+        return (String[]) spp.getClass().getMethod("getAllURLs", new Class[] { String.class, Boolean.TYPE }).
+                invoke(spp, new Object[] { className, Boolean.TRUE });
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ex);
+            return new String[0];
+        }
     }
 
     public static String getRelativePath (

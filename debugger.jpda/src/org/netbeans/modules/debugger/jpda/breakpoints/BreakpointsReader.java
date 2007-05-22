@@ -119,6 +119,9 @@ public class BreakpointsReader implements Properties.Reader, PropertyChangeListe
             mb.setMethodName (
                 properties.getString (MethodBreakpoint.PROP_METHOD_NAME, "")
             );
+            mb.setMethodSignature(
+                properties.getString (MethodBreakpoint.PROP_METHOD_SIGNATURE, null)
+            );
             mb.setCondition (
                 properties.getString (MethodBreakpoint.PROP_CONDITION, "")
             );
@@ -270,6 +273,10 @@ public class BreakpointsReader implements Properties.Reader, PropertyChangeListe
             properties.setString (
                 MethodBreakpoint.PROP_METHOD_NAME, 
                 mb.getMethodName ()
+            );
+            properties.setString (
+                MethodBreakpoint.PROP_METHOD_SIGNATURE, 
+                mb.getMethodSignature()
             );
             properties.setString (
                 MethodBreakpoint.PROP_CONDITION, 

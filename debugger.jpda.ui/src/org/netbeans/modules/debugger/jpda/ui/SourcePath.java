@@ -82,6 +82,11 @@ public class SourcePath {
         }
         return sourcePathProvider;
     }
+    
+    static SourcePathProvider getDefaultContext() {
+        return (SourcePathProvider) DebuggerManager.getDebuggerManager().
+                lookupFirst("netbeans-JPDASession", SourcePathProvider.class);
+    }
 
     
     // ContextProvider methods .................................................

@@ -26,7 +26,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.BooleanStateAction;
 import org.openide.util.actions.NodeAction;
 
-import org.netbeans.api.debugger.jpda.LineBreakpoint;
+import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 
 
 /**
@@ -37,9 +37,12 @@ import org.netbeans.api.debugger.jpda.LineBreakpoint;
 public class BreakpointEnableAction extends BooleanStateAction {
 
     public boolean isEnabled() {
-        LineBreakpoint lb = LineBreakpointCustomizeAction.getCurrentBreakpoint();
-        if (lb != null) {
-            boolean value = lb.isEnabled();
+        JPDABreakpoint b = BreakpointCustomizeAction.getCurrentLineBreakpoint();
+        if (b == null) {
+            b = ToggleMethodFieldBreakpointAction.getCurrentFieldMethodBreakpoint();
+        }
+        if (b != null) {
+            boolean value = b.isEnabled();
             super.setBooleanState(value);
             return true;
         }
@@ -51,11 +54,14 @@ public class BreakpointEnableAction extends BooleanStateAction {
     }
     
     public void setBooleanState(boolean value) {
-        LineBreakpoint lb = LineBreakpointCustomizeAction.getCurrentBreakpoint();
+        JPDABreakpoint b = BreakpointCustomizeAction.getCurrentLineBreakpoint();
+        if (b == null) {
+            b = ToggleMethodFieldBreakpointAction.getCurrentFieldMethodBreakpoint();
+        }
         if (value) {
-            lb.enable();
+            b.enable();
         } else {
-            lb.disable();
+            b.disable();
         }
         super.setBooleanState(value);
     }

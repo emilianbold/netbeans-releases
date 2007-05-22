@@ -131,8 +131,8 @@ implements PropertyChangeListener {
         d.addBreakpoint (lb);
     }
     
-    private BreakpointAnnotationListener breakpointAnnotationListener;
-    private BreakpointAnnotationListener getBreakpointAnnotationListener () {
+    private static BreakpointAnnotationListener breakpointAnnotationListener;
+    static BreakpointAnnotationListener getBreakpointAnnotationListener () {
         if (breakpointAnnotationListener == null)
             breakpointAnnotationListener = (BreakpointAnnotationListener) 
                 DebuggerManager.getDebuggerManager ().lookupFirst 
