@@ -20,6 +20,7 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.*;
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.util.TreePath;
 import java.util.HashSet;
 import java.util.Set;
@@ -27,6 +28,7 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.refactoring.java.api.InnerToOuterRefactoring;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 
 /**
@@ -35,79 +37,113 @@ import org.netbeans.modules.refactoring.java.api.MemberInfo;
  */
 public class InnerToOuterTransformer extends SearchVisitor {
 
-    public InnerToOuterTransformer(WorkingCopy workingCopy) {
-        super(workingCopy);
+    private Element inner;
+    private Element outer;
+    private InnerToOuterRefactoring refactoring;
+    
+    private Element getCurrentElement() {
+        return workingCopy.getTrees().getElement(getCurrentPath());
     }
     
-    public Tree visitNewClass(NewClassTree tree, Element p) {
-        Element current = workingCopy.getTrees().getElement(getCurrentPath());
-        if (current.equals(p)) {
+    public InnerToOuterTransformer(WorkingCopy workingCopy, TypeElement inner, InnerToOuterRefactoring re) {
+        super(workingCopy);
+        this.inner = inner;
+        this.refactoring = re;
+        outer = SourceUtils.getEnclosingTypeElement(inner);
+    }
+
+    @Override
+    public Tree visitIdentifier(IdentifierTree node, Element p) {
+        if (inner.equals(getCurrentElement())) {
+            Tree newTree = make.setLabel(node, refactoring.getClassName());        
+            workingCopy.rewrite(node, newTree);
+        } else if (isThisReferenceToOuter()) {
+            MemberSelectTree m = make.MemberSelect(node, refactoring.getReferenceName());
+            workingCopy.rewrite(node, m);
         }
-        return null;
+        return super.visitIdentifier(node, p);
+    }
+
+    @Override
+    public Tree visitMethod(MethodTree constructor, Element element) {
+        if (constructor.getReturnType()==null) {
+            //constructor
+            if (!inner.equals(getCurrentClass()) && workingCopy.getTypes().isSubtype(getCurrentElement().getEnclosingElement().asType(), inner.asType())) {
+                MemberSelectTree arg = make.MemberSelect(make.Identifier(getCurrentClass().getEnclosingElement().getSimpleName()), "this");
+                MethodInvocationTree superCall = (MethodInvocationTree) ((ExpressionStatementTree)constructor.getBody().getStatements().get(0)).getExpression();
+                MethodInvocationTree newSuperCall = make.insertMethodInvocationArgument(superCall, 0, arg, null);
+                workingCopy.rewrite(superCall, newSuperCall);
+            }
+            
+        }
+        return super.visitMethod(constructor, element);
+    }
+
+    @Override
+    public Tree visitClass(ClassTree classTree, Element element) {
+        return super.visitClass(classTree, element);
+    }
+
+    @Override
+    public Tree visitMemberSelect(MemberSelectTree memberSelect, Element element) {
+        Element current = getCurrentElement();
+        if (inner.equals(current)) {
+            ExpressionTree ex = memberSelect.getExpression();
+            Tree newTree;
+            if (ex.getKind() == Tree.Kind.IDENTIFIER) {
+                newTree = make.Identifier(refactoring.getClassName());
+                workingCopy.rewrite(memberSelect, newTree);
+            } else if (ex.getKind() == Tree.Kind.MEMBER_SELECT) {
+                MemberSelectTree m = make.MemberSelect(((MemberSelectTree) ex).getExpression(),refactoring.getClassName());
+                workingCopy.rewrite(memberSelect,m);
+            }
+        } else if (isThisReferenceToOuter()) {
+            MemberSelectTree m = make.MemberSelect(memberSelect, refactoring.getReferenceName());
+            workingCopy.rewrite(memberSelect, m);
+        }
+        
+        return super.visitMemberSelect(memberSelect, element);
+    }
+    
+    private boolean isThisReferenceToOuter() {
+        Element cur = getCurrentElement();
+        if (cur==null || cur.getKind() == ElementKind.PACKAGE)
+                return false;
+        TypeElement encl = SourceUtils.getEnclosingTypeElement(cur);
+        if (outer.equals(encl) && workingCopy.getTypes().isSubtype(getCurrentClass().asType(), inner.asType())) {
+            return true;
+        }
+        return false;
+    }
+    
+    private TypeElement getCurrentClass() {
+        TreePath tp = getCurrentPath().getParentPath();
+        while (tp!=null) {
+            if (tp.getLeaf().getKind() == Tree.Kind.CLASS) {
+                return (TypeElement) workingCopy.getTrees().getElement(tp);
+            }
+            tp = tp.getParentPath();
+        }
+        throw new IllegalStateException();
     }
 
     
-    @Override
-    public Tree visitClass(ClassTree tree, Element p) {
-//        // rename class if necessary (if the new name is different from the original name)
-//        if (!refactoring.getClassName().equals(refactoring.getSourceType().getSimpleName())) {
-//            refactoringElements.add(refactoring, new RenameClassElement());
-//        }
-//        
-//        // add declaration of the field pointing to the original class (if user chooses to do so)
-//        // and fix all references to the outer class elements
-//        if (refactoring.getReferenceName() != null) {
-//            refactoringElements.add(refactoring, new AddReferenceElement());
-//            if (outerReferences!=null) {
-//                refactoringElements.addAll(refactoring, outerReferences);
-//            }
-//            // find all explicit constructor invocations and fix them
-//            for (Iterator it = refactoring.getSourceType().getSubClasses().iterator(); it.hasNext();) {
-//                JavaClass cls = (JavaClass) it.next();
-//                Object[] contents = cls.getContents().toArray();
-//                boolean constructorVisited = false;
-//                for (int i = 0; i < contents.length; i++) {
-//                    if (contents[i] instanceof Constructor) {
-//                        constructorVisited = true;
-//                        Iterator stmts = ((Constructor) contents[i]).getBody().getStatements().iterator();
-//                        Object firstStatement = stmts.hasNext() ? stmts.next() : null;
-//                        if (firstStatement instanceof ConstructorInvocation) {
-//                            ConstructorInvocation ci = (ConstructorInvocation) firstStatement;
-//                            if (ci.isHasSuper()) {
-//                                refactoringElements.add(refactoring, new AddInvocationArgumentElement(ci));
-//                            }
-//                        } else {
-//                            refactoringElements.add(refactoring, new AddConstructorInvocationElement((Constructor) contents[i]));
-//                        }
-//                    }
-//                }
-//                if (!constructorVisited) {
-//                    refactoringElements.add(refactoring, new AddConstructorElement(cls));
-//                }
-//            }
-//        }
-//        
-//        JavaClass origOuter = (JavaClass) refactoring.getSourceType().refImmediateComposite();
-//        // move the class to the outer level
-//        Element parent = getFutureParent();
-//        if (parent instanceof JavaClass) {
-//            refactoringElements.add(refactoring, new MoveInnerToOuterElement((JavaClass) parent));
-//        } else {
-//            refactoringElements.add(refactoring, new MoveInnerToTopElement(refactoring.getSourceType(), refactoring.getClassName()));
-//        }
-//        
-//        // fix all references to other inner classes of the outer class from the class being moved
-//        if (multipartIds != null) {
-//            refactoringElements.addAll(refactoring, multipartIds);
-//        }
-//
-//        // fix all the references to the inner class (including imports and new class expressions)
-//        ElementReference[] classReferences = (ElementReference[]) refactoring.getSourceType().getReferences().toArray(new ElementReference[0]);
-//        for (int i = 0; i < classReferences.length; i++) {
-//            refactoringElements.add(refactoring, new ChangeClassReferenceElement(classReferences[i], origOuter));
-//        }
-//        
-        return null;
+    private boolean isIn(Element el) {
+        if (el==null)
+            return false;
+        Element current = el;
+        while (current.getKind() != ElementKind.PACKAGE) {
+            if (current.equals(inner)) {
+                return true;
+            }
+            current = current.getEnclosingElement();
+        }
+        return false;
     }
-    
+
+//    @Override
+//    public Tree visitMemberSelect(MemberSelectTree node, Element p) {
+//        updateUsageIfMatch(getCurrentPath(), node,p);
+//        return super.visitMemberSelect(node, p);
+//    }
 }

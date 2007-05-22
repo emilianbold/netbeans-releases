@@ -19,13 +19,16 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CancellableTask;
@@ -42,6 +45,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.ProgressListener;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.java.DiffElement;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
@@ -50,6 +54,7 @@ import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  * Refactoring used for changing method signature. It changes method declaration
@@ -62,6 +67,7 @@ import org.openide.filesystems.FileObject;
 public class ChangeParametersPlugin extends JavaRefactoringPlugin implements ProgressListener {
     
     private ChangeParametersRefactoring refactoring;
+    private TreePathHandle treePathHandle;
     /**
      * Creates a new instance of change parameters refactoring.
      *
@@ -69,13 +75,9 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin implements Pro
      */
     public ChangeParametersPlugin(ChangeParametersRefactoring refactoring) {
         this.refactoring = refactoring;
+        this.treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
     }
     
-    public Problem preCheck() {
-        //TODO:
-        return null;
-    }
-
     public Problem checkParameters() {
         //TODO:
         return null;
@@ -232,78 +234,103 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin implements Pro
 //        
 //    }
 //    
-//    /**
-//     * Returns list of problems. For the change method signature, there are two
-//     * possible warnings - if the method is overriden or if it overrides
-//     * another method.
-//     *
-//     * @return  overrides or overriden problem or both
-//     */
-//    public Problem preCheck() {
-//        Problem result = isElementAvail((Element) selectedObject);
-//        if (result != null) {
-//            return result;
-//        }
-//        if (!(selectedObject instanceof CallableFeature)) {
-//            return createProblem(result, true, NbBundle.getMessage(ChangeParametersRefactoring.class, "ERR_ChangeParamsWrongType"));
-//        }
-//
-//        if (CheckUtils.isFromLibrary(((CallableFeature) selectedObject).getResource())) { //NOI18N
-//            return createProblem(result, true, getCannotRefactor(((Element) selectedObject).getResource()));
-//        }
-//
-//        if (!CheckUtils.isElementInOpenProject((Element) selectedObject)) {
-//            return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ProjectNotOpened"));
-//        }
-//        
-//        Collection overridesMethod = null;
-//        Collection overridenMethod = null;
-//        
-//        method = (CallableFeature)selectedObject;
-//        // for the method, check, if the method overrides another method and
-//        // if the method is overriden by another method
-//        // todo (#pf): what about constructors?
-//        List pars = (List) method.getParameters();
-//        List typeList = new ArrayList();
-//        for (Iterator parIt = pars.iterator(); parIt.hasNext(); ) {
-//            Parameter par = (Parameter) parIt.next();
-//            typeList.add(par.getType());
-//        }
-//        if (method instanceof Method) {
-//             overridesMethod = CheckUtils.overrides((Method) method,
-//                method.getName(), typeList, true);
-//             overridenMethod = CheckUtils.isOverridden((Method) method,
-//                method.getName(), typeList);
-//        }
-//        // for 4.0, we not support methods with variable arguments. It is a
-//        // fatal error for the time being.
-//        if (CheckUtils.hasVarArgs(method)) {
-//            String msg = getString("ERR_HasVarArg");// NOI18N
-//            result = createProblem(result, true, msg);
-//        }
-//        if (overridesMethod != null) {
-//            for (Iterator iter = overridesMethod.iterator(); iter.hasNext(); ){
-//                String msg = new MessageFormat(getString("ERR_MethodOverrides")).format( // NOI18N
-//                new Object[] { getDefClassName(((Method) iter.next()).getDeclaringClass()) }
-//                );
-//                result = createProblem(result, false, msg);
-//            }
-//        }
-//        if (overridenMethod != null) {
-//            for (Iterator iter = overridenMethod.iterator(); iter.hasNext(); ){
-//                String msg = new MessageFormat(getString("ERR_MethodIsOverridden")).format( // NOI18N
-//                new Object[] { getDefClassName(((Method) iter.next()).getDeclaringClass()) }
-//                );
-//                result = createProblem(result, false, msg);
-//            }
-//        }
-//        return result;
-//    }
-//    
-//    private static final String getCannotRefactor(Resource r) {
-//        return new MessageFormat(NbBundle.getMessage(RenameRefactoring.class, "ERR_CannotRefactorFile")).format(new Object[] {r.getName()});
-//    }
-//    
+    private Problem preCheckProblem;
+
+    /**
+     * Returns list of problems. For the change method signature, there are two
+     * possible warnings - if the method is overriden or if it overrides
+     * another method.
+     *
+     * @return  overrides or overriden problem or both
+     */
+    public Problem preCheck() {
+        //TODO: preChecks
+        // fire operation start on the registered progress listeners (4 steps)
+        ClasspathInfo cpInfo = getClasspathInfo(refactoring);
+        JavaSource source = JavaSource.create(cpInfo, treePathHandle.getFileObject());
+        fireProgressListenerStart(refactoring.PRE_CHECK, 4);
+        try {
+            source.runUserActionTask(new CancellableTask<CompilationController>() {
+                
+                public void cancel() {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+                
+                public void run(CompilationController info) throws Exception {
+                    info.toPhase(JavaSource.Phase.RESOLVED);
+                    preCheckProblem = isElementAvail(treePathHandle, info);
+                    if (preCheckProblem != null) {
+                        return;
+                    }
+                    Element el = treePathHandle.resolveElement(info);
+                    if (!(el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR)) {
+                        preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_ChangeParamsWrongType"));
+                        return;
+                    }
+                    
+                    FileObject fo = SourceUtils.getFile(el,info.getClasspathInfo());
+                    if (RetoucheUtils.isFromLibrary(el, info.getClasspathInfo())) { //NOI18N
+                        preCheckProblem = createProblem(preCheckProblem, true, getCannotRefactor(fo));
+                    }
+                    
+                    if (!RetoucheUtils.isElementInOpenProject(fo)) {
+                        preCheckProblem =new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ProjectNotOpened"));
+                        return;
+                    }
+                    
+//                    Collection overridesMethod = null;
+//                    Collection overridenMethod = null;
+//                    
+//                    method = (CallableFeature)selectedObject;
+//                    // for the method, check, if the method overrides another method and
+//                    // if the method is overriden by another method
+//                    // todo (#pf): what about constructors?
+//                    List pars = (List) method.getParameters();
+//                    List typeList = new ArrayList();
+//                    for (Iterator parIt = pars.iterator(); parIt.hasNext(); ) {
+//                        Parameter par = (Parameter) parIt.next();
+//                        typeList.add(par.getType());
+//                    }
+//                    if (method instanceof Method) {
+//                        overridesMethod = CheckUtils.overrides((Method) method,
+//                                method.getName(), typeList, true);
+//                        overridenMethod = CheckUtils.isOverridden((Method) method,
+//                                method.getName(), typeList);
+//                    }
+//                    // for 4.0, we not support methods with variable arguments. It is a
+//                    // fatal error for the time being.
+//                    if (CheckUtils.hasVarArgs(method)) {
+//                        String msg = getString("ERR_HasVarArg");// NOI18N
+//                        result = createProblem(result, true, msg);
+//                    }
+//                    if (overridesMethod != null) {
+//                        for (Iterator iter = overridesMethod.iterator(); iter.hasNext(); ){
+//                            String msg = new MessageFormat(getString("ERR_MethodOverrides")).format( // NOI18N
+//                                    new Object[] { getDefClassName(((Method) iter.next()).getDeclaringClass()) }
+//                            );
+//                            result = createProblem(result, false, msg);
+//                        }
+//                    }
+//                    if (overridenMethod != null) {
+//                        for (Iterator iter = overridenMethod.iterator(); iter.hasNext(); ){
+//                            String msg = new MessageFormat(getString("ERR_MethodIsOverridden")).format( // NOI18N
+//                                    new Object[] { getDefClassName(((Method) iter.next()).getDeclaringClass()) }
+//                            );
+//                            result = createProblem(result, false, msg);
+//                        }
+//                    }
+                }
+            }, true);
+        } catch (IOException ioe) {
+            throw (RuntimeException) new RuntimeException().initCause(ioe);
+        }
+        return preCheckProblem;
+    }
+    
+    private static final String getCannotRefactor(FileObject r) {
+        return new MessageFormat(NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_CannotRefactorFile")).format(new Object[] {r.getName()});
+    }
+    
 //    private Problem checkParameters(ParameterInfo[] aParamTable, int modifier) {
 //        if ((method.getModifiers() & modifier) == 0) {
 //            ClassDefinition cd = method.getDeclaringClass();

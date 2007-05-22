@@ -49,28 +49,51 @@ public class ChangeParamsTransformer extends SearchVisitor {
         this.refactoring = refactoring;
         this.allMethods = am;
     }
+    
+    @Override
+    public Tree visitNewClass(NewClassTree tree, Element p) {
+        if (!workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
+            Element el = workingCopy.getTrees().getElement(getCurrentPath());
+            if (el!=null) {
+                if (isMethodMatch(el)) {
+                    List<ExpressionTree> arguments = getNewArguments(tree.getArguments());
+                    NewClassTree nju = make.NewClass(tree.getEnclosingExpression(),
+                            (List<ExpressionTree>)tree.getTypeArguments(),
+                            tree.getIdentifier(),
+                            arguments,
+                            tree.getClassBody());
+                    workingCopy.rewrite(tree, nju);
+                }
+            }
+        }
+        return super.visitNewClass(tree, p);
+    }
+    
+    private List<ExpressionTree> getNewArguments(List<? extends ExpressionTree> currentArguments) {
+        List<ExpressionTree> arguments = new ArrayList();
+        ParameterInfo[] pi = refactoring.getParameterInfo();
+        for (int i=0; i<pi.length; i++) {
+            int originalIndex = pi[i].getOriginalIndex();
+            ExpressionTree vt;
+            if (originalIndex <0) {
+                String value = pi[i].getDefaultValue();
+                SourcePositions pos[] = new SourcePositions[1];
+                vt = workingCopy.getTreeUtilities().parseExpression(value, pos);
+            } else {
+                vt = currentArguments.get(pi[i].getOriginalIndex());
+            }
+            arguments.add(vt);
+        }
+        return arguments;
+    }
+    
 
     public Tree visitMethodInvocation(MethodInvocationTree tree, Element p) {
         if (!workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
             Element el = workingCopy.getTrees().getElement(getCurrentPath());
             if (el!=null) {
                 if (isMethodMatch(el)) {
-                    List<ExpressionTree> arguments = new ArrayList();
-                    List<? extends ExpressionTree> currentArguments = tree.getArguments();
-                    
-                    ParameterInfo[] pi = refactoring.getParameterInfo();
-                    for (int i=0; i<pi.length; i++) {
-                        int originalIndex = pi[i].getOriginalIndex();
-                        ExpressionTree vt;
-                        if (originalIndex <0) {
-                            String value = pi[i].getDefaultValue();
-                            SourcePositions pos[] = new SourcePositions[1];
-                            vt = workingCopy.getTreeUtilities().parseExpression(value, pos);
-                        } else {
-                            vt = currentArguments.get(pi[i].getOriginalIndex());
-                        }
-                        arguments.add(vt);
-                    }
+                    List<ExpressionTree> arguments = getNewArguments(tree.getArguments());
                     
                     MethodInvocationTree nju = make.MethodInvocation(
                             (List<ExpressionTree>)tree.getTypeArguments(),
@@ -128,7 +151,7 @@ public class ChangeParamsTransformer extends SearchVisitor {
     }
     
     private boolean isMethodMatch(Element method) {
-        if (method.getKind() == ElementKind.METHOD && allMethods !=null) {
+        if ((method.getKind() == ElementKind.METHOD || method.getKind() == ElementKind.CONSTRUCTOR) && allMethods !=null) {
             for (ElementHandle<ExecutableElement> mh: allMethods) {
                 ExecutableElement baseMethod =  mh.resolve(workingCopy);
                 if (baseMethod.equals(method) || elements.overrides((ExecutableElement)method, baseMethod, SourceUtils.getEnclosingTypeElement(baseMethod))) {
