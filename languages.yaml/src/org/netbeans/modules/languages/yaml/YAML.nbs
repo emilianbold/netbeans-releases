@@ -63,6 +63,7 @@ PROPERTIES {
     printRules:"true";
 }
 
-
-
+COMMENT_LINE {
+    prefix:"#";
+}
 
