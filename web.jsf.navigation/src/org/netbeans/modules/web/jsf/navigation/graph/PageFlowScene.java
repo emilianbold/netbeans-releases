@@ -18,10 +18,14 @@
  */
 package org.netbeans.modules.web.jsf.navigation.graph;
 
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Image;
+import java.awt.Paint;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.TexturePaint;
+import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,7 +38,6 @@ import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.anchor.AnchorFactory;
 import org.netbeans.api.visual.graph.GraphPinScene;
 import org.netbeans.api.visual.layout.LayoutFactory;
-import org.netbeans.api.visual.layout.SceneLayout;
 import org.netbeans.api.visual.router.Router;
 import org.netbeans.api.visual.router.RouterFactory;
 import org.netbeans.api.visual.widget.ConnectionWidget;
@@ -44,10 +47,8 @@ import org.netbeans.api.visual.widget.EventProcessingType;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.border.Border;
@@ -110,12 +111,28 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
     private PageFlowView tc;
     private FreePlaceNodesLayouter fpnl;
     
+    private static Paint PAINT_BACKGROUND;
+    static {
+        Image sourceImage = Utilities.loadImage("org/netbeans/modules/web/jsf/navigation/graph/resources/paper_grid.png"); // NOI18N
+        int width = sourceImage.getWidth(null);
+        int height = sourceImage.getHeight(null);
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        Graphics2D graphics = image.createGraphics();
+        graphics.drawImage(sourceImage, 0, 0, null);
+        graphics.dispose();
+        PAINT_BACKGROUND = new TexturePaint(image, new Rectangle(0, 0, width, height));
+    }
+    
+    
     /**
      * Creates a VMD graph scene.
      * @param tc or TopComponent/container.
      */
     public PageFlowScene(PageFlowView tc) {
         this.tc = tc;
+        
+        setOpaque (true);
+        setBackground (PAINT_BACKGROUND);
         
         setKeyEventProcessingType(EventProcessingType.FOCUSED_WIDGET_AND_ITS_PARENTS);
         
@@ -140,7 +157,7 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
         fpnl = new FreePlaceNodesLayouter(this, tc.getVisibleRect());
         
         //        actions.addAction(dragNdropAction);
-        //        actions.addAction(selectAction);        
+        //        actions.addAction(selectAction);
         
         //        GridGraphLayout<PageFlowNode, NavigationCaseNode> gridGraphLayout = new GridGraphLayout<PageFlowNode, NavigationCaseNode> ();
         //        gridGraphLayout.addGraphLayoutListener(new GridGraphListener());
@@ -315,7 +332,7 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
     }
     
     
-//    private Queue emptyPositions = new LinkedList();
+    //    private Queue emptyPositions = new LinkedList();
     
     @Override
     protected void detachNodeWidget(Page node,
@@ -436,10 +453,10 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
         VMDConnectionWidget edgeWidget = (VMDConnectionWidget) findWidget(edge);
         List<Widget> widgets = edgeWidget.getChildren();
         for( Widget widget : widgets ){
-             if( widget instanceof LabelWidget && ((LabelWidget)widget).getLabel().equals(oldName)){
-                  ((LabelWidget)widget).setLabel(newName);
-                  return;
-             }
+            if( widget instanceof LabelWidget && ((LabelWidget)widget).getLabel().equals(oldName)){
+                ((LabelWidget)widget).setLabel(newName);
+                return;
+            }
         }
     }
     
@@ -452,8 +469,8 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
      * @param sourcePin the new source pin
      */
     protected void attachEdgeSourceAnchor(NavigationCaseEdge edge,Pin oldSourcePin,
-    Pin sourcePin
-) {
+            Pin sourcePin
+            ) {
         ((ConnectionWidget) findWidget(edge)).setSourceAnchor(getPinAnchor(sourcePin));
     }
     
@@ -466,8 +483,8 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
      * @param targetPin the new target pin
      */
     protected void attachEdgeTargetAnchor(NavigationCaseEdge edge,Pin oldTargetPin,
-    Pin targetPin
-) {
+            Pin targetPin
+            ) {
         ((ConnectionWidget) findWidget(edge)).setTargetAnchor(getPinAnchor(targetPin));
     }
     
