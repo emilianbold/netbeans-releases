@@ -214,9 +214,51 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
             if (l.getFeatures ("TOOLTIP").size () > 0)
                 FileUtil.createData (root, "ToolTips/org-netbeans-modules-languages-features-ToolTipAnnotation.instance");
 
-            } catch (IOException ex) {
-                Utils.notify (ex);
+            if (l.getFeature("COMMENT_LINE") != null) {
+                // init editor toolbar
+                FileObject toolbarDefault = FileUtil.createFolder(root, "Toolbars/Default");
+                createSeparator(
+                        toolbarDefault,
+                        "Separator-before-comment",
+                        "stop-macro-recording",
+                        "comment"
+                );
+                FileUtil.createData (toolbarDefault, "comment");
+                toolbarDefault.setAttribute ("comment/uncomment", Boolean.TRUE);
+                FileUtil.createData (toolbarDefault, "uncomment");
+                
+                /*
+                if (root.getFileObject("Defaults/keybindings.xml") == null) {
+                    fs.runAtomicAction (new AtomicAction () {
+                        public void run () {
+                            try {
+                                InputStream is = getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/languages/resources/DefaultKeyBindings.xml");
+                                try {
+                                    FileObject defaults = root.getFileObject("Defaults");
+                                    if (defaults == null) {
+                                        defaults = root.createFolder("Defaults");
+                                    }
+                                    FileObject bindings = defaults.createData("keybindings.xml");
+                                    OutputStream os = bindings.getOutputStream();
+                                    try {
+                                        FileUtil.copy(is, os);
+                                    } finally {
+                                        os.close();
+                                    }
+                                } finally {
+                                    is.close();
+                                }
+                            } catch (IOException ex) {
+                                Utils.notify (ex);
+                            }
+                        }
+                    });
+                }
+                 */
             }
+        } catch (IOException ex) {
+            Utils.notify (ex);
+        }
         
         // init coloring
         ColorsManager.initColorings (l);

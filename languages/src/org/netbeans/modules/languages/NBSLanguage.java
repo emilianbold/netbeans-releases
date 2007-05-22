@@ -81,6 +81,7 @@ public class NBSLanguage {
                 "'BRACE' |" +
                 "'BUNDLE' |" +
                 "'COLOR' |" +
+                "'COMMENT_LINE' |" +
                 "'COMPLETE' |" +
                 "'COMPLETION' |" +
                 "'FOLD' |" +

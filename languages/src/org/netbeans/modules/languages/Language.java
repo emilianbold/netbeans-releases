@@ -67,6 +67,29 @@ import org.openide.util.NbBundle;
  */
 public class Language extends org.netbeans.api.languages.Language {
 
+    public static final String ACTION = "ACTION";
+    public static final String AST = "AST";
+    public static final String BRACE = "BRACE";
+    public static final String BUNDLE = "BUNDLE";
+    public static final String COLOR = "COLOR";
+    public static final String COMMENT_LINE = "COMMENT_LINE";
+    public static final String COMPLETE = "COMPLETE";
+    public static final String COMPLETION = "COMPLETION";
+    public static final String FOLD = "FOLD";
+    public static final String HYPERLINK = "HYPERLINK";
+    public static final String IMPORT = "IMPORT";
+    public static final String INDENT = "INDENT";
+    public static final String MARK = "MARK";
+    public static final String NAVIGATOR = "NAVIGATOR";
+    public static final String PARSE = "PARSE";
+    public static final String PROPERTIES = "PROPERTIES";
+    public static final String REFORMAT = "REFORMAT";
+    public static final String SELECTION = "SELECTION";
+    public static final String SKIP = "SKIP";
+    public static final String STORE = "STORE";
+    public static final String TOKEN = "TOKEN";
+    public static final String TOOLTIP = "TOOLTIP";
+    
     private Parser              parser;
     private List<TokenType>     tokenTypes = new ArrayList<TokenType> ();
     private Set<String>         skipTokenTypes;

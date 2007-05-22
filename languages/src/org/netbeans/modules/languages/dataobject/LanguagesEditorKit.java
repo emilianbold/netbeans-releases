@@ -54,6 +54,7 @@ import org.netbeans.modules.languages.features.BraceCompletionDeleteAction;
 import org.netbeans.modules.languages.features.BraceCompletionInsertAction;
 import org.netbeans.modules.languages.features.BraceHighlighting;
 import org.netbeans.modules.languages.features.CollapseFoldTypeAction;
+import org.netbeans.modules.languages.features.CommentCodeAction;
 import org.netbeans.modules.languages.features.ExpandFoldTypeAction;
 import org.netbeans.modules.languages.features.HyperlinkListener;
 import org.netbeans.modules.editor.NbEditorKit;
@@ -61,6 +62,7 @@ import org.netbeans.modules.languages.features.IndentAction;
 import org.netbeans.modules.languages.features.LanguagesGenerateFoldPopupAction;
 import org.netbeans.modules.languages.features.MyFirstDrawLayer;
 import org.netbeans.modules.languages.features.MySecondDrawLayer;
+import org.netbeans.modules.languages.features.UncommentCodeAction;
 import org.netbeans.modules.languages.parser.Pattern;
 
 
@@ -201,6 +203,8 @@ public class LanguagesEditorKit extends NbEditorKit {
             new BraceCompletionDeleteAction (),
             new IndentAction (),
             new LanguagesGenerateFoldPopupAction (),
+            new CommentCodeAction(),
+            new UncommentCodeAction()
         };
         return TextAction.augmentList (
             super.createActions (), 

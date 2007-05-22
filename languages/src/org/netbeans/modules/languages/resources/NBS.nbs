@@ -23,6 +23,7 @@ TOKEN:keyword:(
     "BRACE" |
     "BUNDLE" |
     "COLOR" | 
+    "COMMENT_LINE" |
     "COMPLETE" |  
     "COMPLETION" | 
     "FOLD" | 

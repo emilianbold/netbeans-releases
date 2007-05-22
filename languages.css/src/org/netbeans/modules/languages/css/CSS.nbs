@@ -300,3 +300,8 @@ PROPERTIES {
     #printRules:"true";
     #printFirst:"true";
 }
+
+COMMENT_LINE {
+    prefix:"/*";
+    suffix:"*/";
+}
