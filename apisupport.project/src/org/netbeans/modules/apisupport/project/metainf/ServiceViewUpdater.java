@@ -35,7 +35,6 @@ import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.spi.project.SubprojectProvider;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -43,7 +42,7 @@ import org.openide.filesystems.FileUtil;
  * It contains cached Services for suites. It should be better to move it to Suite Project.
  */
 final class ServiceViewUpdater {
-    private static Map <SuiteProject,List<Service>> suiteToServices = new WeakHashMap(); 
+    private static Map <SuiteProject,List<Service>> suiteToServices = new WeakHashMap<SuiteProject,List<Service>>(); 
     /** Creates a new instance of ServiceViewUpdater */
     
     /** Called if a service was update. It will refresh all openeden ServiceNodeHandlers
@@ -52,15 +51,15 @@ final class ServiceViewUpdater {
         // get suite
         SuiteProject suite = getSuite(handler);
         if (suite != null) {
-            SubprojectProvider spp = (SubprojectProvider) suite.getLookup().lookup(SubprojectProvider.class);
+            SubprojectProvider spp = suite.getLookup().lookup(org.netbeans.spi.project.SubprojectProvider.class);
             for (Iterator it = spp.getSubprojects().iterator(); it.hasNext() ; ) {
-                 ServiceNodeHandler handler2 = (ServiceNodeHandler) ((Project)it.next()).getLookup().lookup(ServiceNodeHandler.class);
+                 ServiceNodeHandler handler2 = ((org.netbeans.api.project.Project) it.next()).getLookup().lookup(org.netbeans.modules.apisupport.project.metainf.ServiceNodeHandler.class);
                  if (handler2 != null) {
                     handler2.updateService(service);
                  }
             }
         } else {
-            NbModuleProvider.NbModuleType type = ((NbModuleProvider) handler.getProject().getLookup().lookup(NbModuleProvider.class)).getModuleType();
+            NbModuleProvider.NbModuleType type = (handler.getProject().getLookup().lookup(org.netbeans.modules.apisupport.project.spi.NbModuleProvider.class)).getModuleType();
             if (type == NbModuleProvider.STANDALONE) { 
                 // standalone module
                 // update only this project
@@ -78,10 +77,10 @@ final class ServiceViewUpdater {
                         // for all opened projects for nb_all  
                         if (projects[i] instanceof NbModuleProject) {
                             NbModuleProject prj = (NbModuleProject) projects[i];
-                            NbModuleProvider.NbModuleType prjType = ((NbModuleProvider) handler.getProject().getLookup().lookup(NbModuleProvider.class)).getModuleType();
+                            NbModuleProvider.NbModuleType prjType = (handler.getProject().getLookup().lookup(org.netbeans.modules.apisupport.project.spi.NbModuleProvider.class)).getModuleType();
                             if (prjType == NbModuleProvider.NETBEANS_ORG &&
                                 FileUtil.isParentOf(nbAllfo,prj.getProjectDirectory())) {
-                                 ServiceNodeHandler handler2 = (ServiceNodeHandler) prj.getLookup().lookup(ServiceNodeHandler.class);
+                                 ServiceNodeHandler handler2 = prj.getLookup().lookup(org.netbeans.modules.apisupport.project.metainf.ServiceNodeHandler.class);
                                  if (handler2 != null) {
                                     handler2.updateService(service);
                                  }
@@ -100,7 +99,7 @@ final class ServiceViewUpdater {
         Project p = handler.getProject();
         NbModuleProvider.NbModuleType type = p.getLookup().lookup(NbModuleProvider.class).getModuleType();
         if (type == NbModuleProvider.SUITE_COMPONENT) {
-            SuiteProvider suiteProv = (SuiteProvider) p.getLookup().lookup(SuiteProvider.class);
+            SuiteProvider suiteProv = p.getLookup().lookup(org.netbeans.modules.apisupport.project.SuiteProvider.class);
             assert suiteProv != null : p;
             File suiteDir = suiteProv.getSuiteDirectory();
             if (suiteDir == null || !suiteDir.isDirectory()) {
@@ -117,14 +116,14 @@ final class ServiceViewUpdater {
 
     /** @return services from platform and modules
      */
-    static List getAllServices(ServiceNodeHandler serviceNodeHandler) throws IOException {
+    static List<Service> getAllServices(ServiceNodeHandler serviceNodeHandler) throws IOException {
         SuiteProject suite = getSuite(serviceNodeHandler);
         if (suite != null) {
-            List <Service> services = (List) suiteToServices.get(suite);
+            List <Service> services = suiteToServices.get(suite);
             if (services == null) {
                 services = Service.getPlatfromServices(serviceNodeHandler.getProject());
             }
-            SubprojectProvider subprojects = (SubprojectProvider)suite.getLookup().lookup(SubprojectProvider.class);        
+            SubprojectProvider subprojects = suite.getLookup().lookup(org.netbeans.spi.project.SubprojectProvider.class);        
             for (Iterator sIt = subprojects.getSubprojects().iterator() ; sIt.hasNext() ; ) {
                 NbModuleProject project = (NbModuleProject)sIt.next();
                 services.addAll(Service.getOnlyProjectServices(project));
@@ -141,11 +140,11 @@ final class ServiceViewUpdater {
     static List<Service> filterServices(List services,ServiceNodeHandler handler) throws IOException {
         if (getSuite(handler) != null) {
             List<Service> allServices = getAllServices(handler);
-            List <Service> retList = new ArrayList();
+            List <Service> retList = new ArrayList<Service>();
             NbModuleProvider info = handler.getProject().getLookup().lookup(NbModuleProvider.class);
             String cnb = info.getCodeNameBase();
             for (int i = 0 ; i < allServices.size() ; i++) {
-               Service service = (Service) allServices.get(i);
+               Service service = allServices.get(i);
                if (service.getCodebase().equals(cnb)) {
                    retList.add(service);
                }

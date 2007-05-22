@@ -26,12 +26,12 @@ import org.openide.util.HelpCtx;
 import org.openide.util.actions.CookieAction;
 
 public final class AddService extends CookieAction {
-    private static WeakReference actionInstance;
+    private static WeakReference<AddService> actionInstance;
     
     protected void performAction(Node[] activatedNodes) {
         // TODO implement action body
         if (activatedNodes.length > 0) {
-            ServiceNodeHandler.ServiceNode node = (ServiceNodeHandler.ServiceNode) activatedNodes[0].getLookup().lookup(ServiceNodeHandler.ServiceNode.class);
+            ServiceNodeHandler.ServiceNode node = activatedNodes[0].getLookup().lookup(org.netbeans.modules.apisupport.project.metainf.ServiceNodeHandler.ServiceNode.class);
             if ( node != null) {
                 AddServiceDialog panel = new AddServiceDialog(node.getProject());
                 
@@ -84,10 +84,10 @@ public final class AddService extends CookieAction {
     }
     
     public static AddService getInstance() {
-        AddService action = (actionInstance != null ) ? (AddService)actionInstance.get() : null;
+        AddService action = (actionInstance != null ) ? actionInstance.get() : null;
         if (action == null) {
             action = new AddService();
-            actionInstance = new WeakReference(action);
+            actionInstance = new WeakReference<AddService>(action);
         }
         return action;
     }

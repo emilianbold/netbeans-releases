@@ -21,6 +21,7 @@ package org.netbeans.modules.apisupport.project.metainf;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
@@ -44,7 +45,7 @@ import org.openide.filesystems.FileObject;
     static Logger logger ;
     
     static FileObject projectDir;
-    static Set platformJars;
+    static Set<File> platformJars;
     /** Creates a new instance of SUtil */
     public SUtil() {
     }
@@ -93,10 +94,12 @@ import org.openide.filesystems.FileObject;
         }
     }
 
-    static Set getPlatformJars() {
-	return  (platformJars == null) ?
-	    Collections.EMPTY_SET:       
-	    platformJars;
+    static Set<File> getPlatformJars() {
+	if (platformJars == null) {
+	    return Collections.emptySet();
+        } else {
+            return platformJars;
+        }
     }
 
        /**

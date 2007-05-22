@@ -21,9 +21,9 @@ package org.netbeans.modules.apisupport.project.metainf;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeMap;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
@@ -53,16 +53,16 @@ public final class ServiceNodeHandler  {
     private static final String THIS_SERVICES_IN_CONTEXT = NbBundle.getMessage(ServiceNodeHandler.class,"LBL_this_services_in_context");
     static final String ROOT_NODE_NAME = NbBundle.getMessage(ServiceNodeHandler.class,"LBL_META_INF_services");
     // All services in platform
-    TreeMap /* service class -> List of classes */ allServicesMap ; 
+    TreeMap<String,List<Service>> /* service class -> List of classes */ allServicesMap ; 
     // services in module
-    TreeMap /* service class -> List of classes */moduleServiceMap;
+    TreeMap <String,List<Service>>/* service class -> List of classes */moduleServiceMap;
     
     int prevAllServicesCount = -1;
     int prevModuleServicesCount = -1;
     
     final Project project;
     final NbModuleProvider info;
-    List /*Service*/ moduleServices;
+    List<Service> moduleServices;
     
     /** services in this module
      */
@@ -79,7 +79,7 @@ public final class ServiceNodeHandler  {
     private String codeNameBase;
     /** Children for services list
      */
-    class ServiceRootChildren extends Children.Keys {
+    class ServiceRootChildren extends Children.Keys<String> {
         boolean fullyComputed = false;
         /** show services  of this project or platfrom
          */
@@ -88,7 +88,7 @@ public final class ServiceNodeHandler  {
         ServiceRootChildren(boolean bProjectServices) {
             this.bProjectServices = bProjectServices;
         }
-        protected Node[] createNodes(Object key) {
+        protected Node[] createNodes(String key) {
             // synchronize access to allServicesMap and moduleServices
             if (key == KEY_WAIT) {
                 return new Node[] {new AbstractNode(Children.LEAF) {
@@ -106,7 +106,7 @@ public final class ServiceNodeHandler  {
                 Node parent = getNode(); 
                 String parentName = parent.getName();
                 boolean isThisModule = parentName == THIS_SERVICES;
-                ServiceNode node = new ServiceNode((String)key,isThisModule);
+                ServiceNode node = new ServiceNode(key,isThisModule);
                 return new Node[] {node};
             } else {
                 throw new AssertionError(key);
@@ -115,54 +115,51 @@ public final class ServiceNodeHandler  {
             
         }
         
-        protected void addNotify() {
+    protected void addNotify() {
             SUtil.log(SUtil.LOG_SERVICE_NODE_HANDLER_ADD_NOTIFY);
             super.addNotify();
             if (fullyComputed) {
-                Object keys[] = null;
                 if (bProjectServices) {
                     // only services from this project
-                    keys = moduleServiceMap.keySet().toArray();
                     prevModuleServicesCount = moduleServiceMap.keySet().size();
                     SUtil.log(SUtil.LOG_SET_KEYS);
-                    setKeys(keys);
+                    setKeys(moduleServiceMap.keySet());
                 } else {
-                    keys = allServicesMap.keySet().toArray();
                     prevAllServicesCount = allServicesMap.keySet().size();
-                    setKeys(keys);
+                    setKeys(allServicesMap.keySet());
                 }
             } else {
                 SUtil.log(SUtil.LOG_COMPUTE_KEYS);
-                setKeys(new Object[] {KEY_WAIT});
+                setKeys(new String[] {KEY_WAIT});
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         try {
-                            Object keys[] = null;
+                            Set<String> keys = null;
                             // synchronize access to TreeMaps
                             // categorize services
                             synchronized(ServiceNodeHandler.this) {
                                 if (moduleServiceMap == null) {
-                                    moduleServiceMap = new TreeMap();
+                                    moduleServiceMap = new TreeMap<String,List<Service>>();
                                     moduleServices = Service.getOnlyProjectServices(project);
                                     sortServices(moduleServiceMap, moduleServices);
                                 }                                
                                 if (bProjectServices) {
                                     // only services from this project
-                                    keys = moduleServiceMap.keySet().toArray();
+                                    keys = moduleServiceMap.keySet();
                                     prevModuleServicesCount = moduleServiceMap.keySet().size();
                                 } else {
                                     if (allServicesMap == null) {
-                                        allServicesMap = new TreeMap();
-                                        List /*Service*/ services = ServiceViewUpdater.getAllServices(ServiceNodeHandler.this);
+                                        allServicesMap = new TreeMap<String,List<Service>>();
+                                        List <Service> services = ServiceViewUpdater.getAllServices(ServiceNodeHandler.this);
                                         if (services != null) {
                                             assert moduleServiceMap!=null;
                                             sortServices(allServicesMap, services);
                                         }
                                     }
                                     prevAllServicesCount = allServicesMap.keySet().size();
-                                    keys = allServicesMap.keySet().toArray();
-                                    if (keys.length > 0) {
-                                        SUtil.log(keys[0].toString());
+                                    keys = allServicesMap.keySet();
+                                    if (!keys.isEmpty()) {
+                                        SUtil.log(keys.iterator().next().toString());
                                     }
                                 }
                                 
@@ -180,14 +177,13 @@ public final class ServiceNodeHandler  {
                     
                     
                     
-                    private void sortServices(final TreeMap map, final List services) {
+                    private void sortServices(final TreeMap<String,List<Service>> map, final List<Service> services) {
                         //               sortServices(map,services);
-                        for (Iterator it = services.iterator() ; it.hasNext();) {
-                            Service service = (Service) it.next();
+                        for (Service service : services) {
                             assert map != null;
-                            List theSameServices = (List) map.get(service.getFileName());
+                            List<Service> theSameServices =  map.get(service.getFileName());
                             if (theSameServices == null) {
-                                theSameServices = new ArrayList();
+                                theSameServices = new ArrayList<Service>();
                                 map.put(service.getFileName(),theSameServices);
                             }
                             theSameServices.add(service);
@@ -197,7 +193,7 @@ public final class ServiceNodeHandler  {
             } // else
         }
         
-        void refreshKeys() {
+    void refreshKeys() {
             if (bProjectServices) {
                 setKeys(moduleServiceMap.keySet());
                 prevModuleServicesCount = moduleServiceMap.size();
@@ -219,8 +215,8 @@ public final class ServiceNodeHandler  {
              }
         }
         
-        protected void removeNotify() {
-            setKeys(Collections.EMPTY_SET);
+    protected void removeNotify() {
+            setKeys(new String[0]);
             super.removeNotify();
         }
         
@@ -243,25 +239,25 @@ public final class ServiceNodeHandler  {
 
     }
     
-    class  ServiceNodeChildren extends Children.Keys  {
+    class  ServiceNodeChildren extends Children.Keys<ServiceClassKey>  {
         private boolean isThisModule;
         /** className -> ServiceClassKey 
          */
-        private TreeMap keys;
+        private TreeMap<String,ServiceClassKey> keys;
         boolean initialized = true;
         
         ServiceNodeChildren(boolean isThisModule) {
             this.isThisModule = isThisModule;
 //            setKeys(new Object[]{KEY_WAIT});
         }
-        private TreeMap getKeysMap () {
+        private TreeMap<String,ServiceClassKey> getKeysMap () {
             if (keys == null) {
-                keys = new TreeMap(); 
+                keys = new TreeMap<String,ServiceClassKey>(); 
             }
             return keys;
         }
         
-        private ServiceClassKey addKey(ServiceClassKey key,TreeMap newKeyMap) {
+        private ServiceClassKey addKey(ServiceClassKey key,TreeMap<String,ServiceClassKey> newKeyMap) {
               TreeMap keys = getKeysMap();
               ServiceClassKey oldKey = (ServiceClassKey)keys.get(key.name); 
               if (oldKey == null) {
@@ -277,18 +273,16 @@ public final class ServiceNodeHandler  {
          protected void addNotify() {
             ServiceNode serviceNode = (ServiceNode) getNode();
             isThisModule = serviceNode.isThisModule();
-            List servicesGroup  = (List) ((isThisModule) ? moduleServiceMap.get(serviceNode.getName()) : 
+            List<Service> servicesGroup  =  ((isThisModule) ? moduleServiceMap.get(serviceNode.getName()) : 
                                                                   allServicesMap.get(serviceNode.getName()));
            
-            List classes  = new ArrayList();
-            List maskedClasses = new ArrayList();
+            List<String> classes  = new ArrayList<String>();
+            List<String> maskedClasses = new ArrayList<String>();
             
-            Service service = null;
-            TreeMap newKeyMap = new TreeMap();
+            TreeMap<String,ServiceClassKey> newKeyMap = new TreeMap<String,ServiceClassKey>();
             // creates two groups - classes and masked class
             //
-            for (Iterator sIt = servicesGroup.iterator(); sIt.hasNext() ; ) {
-                service = (Service) sIt.next();
+            for (Service service : servicesGroup ) {
                 for (Iterator ssIt = service.getClasses().iterator() ; ssIt.hasNext() ; ) {
                     String name = (String)ssIt.next();
                     if (name.charAt(0) == '-') {
@@ -303,7 +297,7 @@ public final class ServiceNodeHandler  {
             //
             int i;
             for (i = 0 ; i < classes.size() ; i++) {
-                String name = (String)classes.get(i);
+                String name = classes.get(i);
                 ServiceClassKey key = new ServiceClassKey(name,false);
                 if (!isThisModule) {
                     String filteredName = '-' + name;
@@ -321,15 +315,15 @@ public final class ServiceNodeHandler  {
             //
             if (isThisModule) {
                 for ( int j = 0; j < maskedClasses.size() ; j++ ) {
-                    addKey(new ServiceClassKey((String)maskedClasses.get(j),false),newKeyMap);
+                    addKey(new ServiceClassKey(maskedClasses.get(j),false),newKeyMap);
                 }
             }
             this.keys = newKeyMap;
             setKeys(getKeysMap().values());
             initialized = true;
         }
-        protected Node[] createNodes(Object key) {
-            ServiceClassKey classKey = (ServiceClassKey)key;
+        protected Node[] createNodes(ServiceClassKey key) {
+            ServiceClassKey classKey = key;
             ServiceClassNode node = new ServiceClassNode(classKey.name,classKey.bRemoved);
             return new Node[] {node};
         } 
@@ -340,6 +334,7 @@ public final class ServiceNodeHandler  {
             }
             
         }
+
     }
     /*** the service super class node
      */
@@ -369,10 +364,10 @@ public final class ServiceNodeHandler  {
         /** create new service (also creates new file)
          */
         void addService(String serviceName, String classServiceName) {
-            List services = (List)allServicesMap.get(serviceName);
+            List<Service> services = allServicesMap.get(serviceName);
             boolean exists = false;
             for (int sIt = 0 ; sIt < services.size() ; sIt++ ) {
-                Service service = (Service) services.get(sIt);
+                Service service = services.get(sIt);
                 List classes = service.getClasses();
                 for (int cIt = 0 ; cIt < classes.size() ; cIt++) {
                     String className = (String) classes.get(cIt);
@@ -386,12 +381,12 @@ public final class ServiceNodeHandler  {
                 }
             }
             if (!exists) {
-               services = (List)moduleServiceMap.get(serviceName);
+               services = moduleServiceMap.get(serviceName);
                Service service = null;
                if (services != null && services.size() > 0) {
-                   service = (Service) services.get(0);
+                   service = services.get(0);
                } else {
-                   service = new Service(getInfo().getCodeNameBase(),serviceName,new ArrayList());
+                   service = new Service(getInfo().getCodeNameBase(),serviceName,new ArrayList<String>());
                }
                service.getClasses().add(classServiceName);
                service.write(project);  
@@ -485,7 +480,7 @@ public final class ServiceNodeHandler  {
                 List moduleServices = (List) moduleServiceMap.get(service.getFileName());
                 if (moduleServices == null || moduleServices.size() == 0) {
                     // create service in this modulu if the service doesn't exist
-                    ArrayList classes = new ArrayList();
+                    List<String> classes = new ArrayList<String>();
                     moduleService = new Service(service.getCodebase(),
                                                         service.getFileName(),
                                                         classes);
@@ -677,41 +672,41 @@ public final class ServiceNodeHandler  {
     }
 
     public int hashCode() {
-        return getCodeNameBase().hashCode();
+        return getKeyName().hashCode();
     }
 
     public boolean equals(Object obj) {
         return obj instanceof ServiceNodeHandler && 
-          getCodeNameBase().equals(((ServiceNodeHandler)obj).getCodeNameBase());
+          getKeyName().equals(((ServiceNodeHandler)obj).getKeyName());
     }
 
     void updateService(Service service) {
       //  throw new UnsupportedOperationException("Not yet implemented");
         synchronized (this) {
             if (moduleServiceMap != null) {
-                List services = (List) moduleServiceMap.get(service.getFileName()) ;
+                List<Service> services = moduleServiceMap.get(service.getFileName()) ;
                 if (service.getCodebase().equals(info.getCodeNameBase())) {
                     if (services != null && services.size() > 0 ) {
                         services.remove(0);
                     } else {
-                        services = new ArrayList();
+                        services = new ArrayList<Service>();
                         moduleServiceMap.put(service.getFileName(),services);
                     }
                    services.add(service);
                 }
 
                 if (allServicesMap != null) {
-                    services = (List) allServicesMap.get(service.getFileName()) ;
+                    services = allServicesMap.get(service.getFileName()) ;
                     if (services != null && services.size() > 0 ) {
                         // find service
                         for (int sIt = 0 ; sIt < services.size() ; sIt++ ) {
-                            if (((Service)services.get(sIt)).getCodebase().equals(service.getCodebase())) {
+                            if ((services.get(sIt)).getCodebase().equals(service.getCodebase())) {
                                 services.remove(sIt);
                                 break;
                             }
                         }
                     } else {
-                        services = new ArrayList();
+                        services = new ArrayList<Service>();
                         allServicesMap.put(service.getFileName(),services);
                     }
                     services.add(service);
@@ -725,17 +720,16 @@ public final class ServiceNodeHandler  {
         return project;
     }
 
-    private String getCodeNameBase() {
-         String cnb = info.getCodeNameBase();
-          // cnb will be null if project is deleted
-         if (cnb == null) {
-             cnb = codeNameBase;
-         } else {
-             codeNameBase = cnb;
-         }
-        if (cnb == null) {
-          cnb = "unknown"; // NOI18N  
+    private String getKeyName() {
+        // #103798 important files node hashCode problems. 
+        // probably on cnb change
+        if (codeNameBase == null) {   
+            codeNameBase  = info.getCodeNameBase();
         }
-        return cnb;
+          // cnb will be null if project is deleted
+        if (codeNameBase == null) {
+          codeNameBase = "unknown"; // NOI18N  
+        }
+        return codeNameBase;
     }
 }

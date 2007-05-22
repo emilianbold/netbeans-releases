@@ -56,19 +56,19 @@ final class Service {
     
     private final String codebase;
     private final String fileName;
-    private final List classes;
+    private final List<String> classes;
     
     static final String META_INF_SERVICES = "META-INF/services";
     
     /** Creates a new instance of Service */
-    public Service(String codebase,String fileName,List classes) { 
+    public Service(String codebase,String fileName,List<String> classes) { 
         this.codebase = codebase;
         this.fileName = fileName;
         this.classes = classes;
     }
     
     static Service createService(String codebase,String fileName, InputStream jarIs) throws IOException {
-        List list = new ArrayList();
+        List<String> list = new ArrayList<String>();
         BufferedReader reader = new BufferedReader(new InputStreamReader(jarIs));
         String line = null;
         while ((line = reader.readLine())!= null) {
@@ -80,12 +80,12 @@ final class Service {
         return new Service(codebase,fileName,list);
     }
     
-    static List /*Service*/ readServices(File jarFile) {
-        List /*Service */ services = new ArrayList();
+    static List <Service> readServices(File jarFile) {
+        List <Service> services = new ArrayList<Service>();
         try {
             JarFile jar = new JarFile(jarFile);
             Attributes attrs = jar.getManifest().getMainAttributes();
-            String codebase  = (String) attrs.getValue("OpenIDE-Module"); // NOI18N
+            String codebase  = attrs.getValue("OpenIDE-Module"); // NOI18N
             Enumeration /*JarEntry*/entries =  jar.entries();
             while (entries.hasMoreElements()) {
                 JarEntry entry = (JarEntry) entries.nextElement();
@@ -107,8 +107,8 @@ final class Service {
         return services;
     }
     
-    static List /*Service*/ getOnlyProjectServices(Project project) {
-        List /*Service */ services = new ArrayList();
+    static List <Service> getOnlyProjectServices(Project project) {
+        List <Service> services = new ArrayList<Service>();
         try {
             NbModuleProvider info = project.getLookup().lookup(NbModuleProvider.class);
             FileObject mIServicesFolder = null;
@@ -142,7 +142,7 @@ final class Service {
         return fileName;
     }
 
-    public List getClasses() {
+    public List<String> getClasses() {
         return classes;
     }
 
@@ -159,11 +159,11 @@ final class Service {
             // testing
             return SUtil.getPlatformJars();
         } else {
-            NbModuleProvider.NbModuleType type = ((NbModuleProvider) p.getLookup().lookup(NbModuleProvider.class)).getModuleType();
+            NbModuleProvider.NbModuleType type = (p.getLookup().lookup(org.netbeans.modules.apisupport.project.spi.NbModuleProvider.class)).getModuleType();
             if (type == NbModuleProvider.STANDALONE) {
                 return LayerUtils.getPlatformJarsForStandaloneProject(p);
             } else if (type == NbModuleProvider.SUITE_COMPONENT) {
-                SuiteProvider suiteProv = (SuiteProvider) p.getLookup().lookup(SuiteProvider.class);
+                SuiteProvider suiteProv = p.getLookup().lookup(org.netbeans.modules.apisupport.project.SuiteProvider.class);
                 assert suiteProv != null : p;
                 File suiteDir = suiteProv.getSuiteDirectory();
                 if (suiteDir == null || !suiteDir.isDirectory()) {
