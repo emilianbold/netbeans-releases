@@ -51,9 +51,10 @@ public class UndoAction extends CallableSystemAction implements PropertyChangeLi
         }
 
         final String n = name;
+        final boolean b = undoManager.isUndoAvailable();
         Runnable r = new Runnable() {
             public void run() {
-                setEnabled(undoManager.isUndoAvailable());
+                setEnabled(b);
                 putValue(Action.NAME, n);
             }
         };

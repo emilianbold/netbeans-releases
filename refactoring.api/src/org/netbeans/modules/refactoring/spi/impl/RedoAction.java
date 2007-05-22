@@ -51,9 +51,10 @@ public class RedoAction extends CallableSystemAction implements PropertyChangeLi
         }
         
         final String n = name;
+        final boolean b = undoManager.isRedoAvailable();
         Runnable r = new Runnable() {
             public void run() {
-                setEnabled(undoManager.isRedoAvailable());
+                setEnabled(b);
                 putValue(Action.NAME, n);
             }
         };
