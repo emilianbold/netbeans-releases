@@ -75,7 +75,6 @@ public class CompletionImpl extends MouseAdapter implements DocumentListener,
 CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener, SettingsChangeListener {
     
     private static final boolean debug = Boolean.getBoolean("org.netbeans.modules.editor.completion.debug");
-    private static final boolean allowFallbacks = !Boolean.getBoolean("org.netbeans.modules.editor.completion.noFallbacks");
     private static final boolean alphaSort = Boolean.getBoolean("org.netbeans.modules.editor.completion.alphabeticalSort"); // [TODO] create an option
     
     private static final Logger UI_LOG = Logger.getLogger("org.netbeans.ui.editor.completion"); // NOI18N
@@ -734,13 +733,19 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                     anchorOffset = resultSet.getAnchorOffset();
             }
         }
+
+        final boolean noSuggestions = sortedResultsSize == 0;
+        if (noSuggestions && qType == CompletionProvider.COMPLETION_QUERY_TYPE) {
+            showCompletion(this.explicitQuery, false, CompletionProvider.COMPLETION_ALL_QUERY_TYPE);
+            return;
+        }
+
         Collections.sort(sortedResultItems, CompletionItemComparator.get(getSortType()));
         
         // Request displaying of the completion pane in AWT thread
         final String displayTitle = title;
         final int displayAnchorOffset = anchorOffset;
         final int queryType = qType;
-        final boolean noSuggestions = sortedResultsSize <= 0;
         Runnable requestShowRunnable = new Runnable() {
             public void run() {
                 int caretOffset = getActiveComponent().getSelectionStart();
@@ -761,7 +766,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 }
                 
                 int selectedIndex = getCompletionPreSelectionIndex(sortedResultItems);
-                layout.showCompletion(noSuggestions ? Collections.singletonList(NO_SUGGESTIONS) : sortedResultItems, displayTitle, displayAnchorOffset, CompletionImpl.this, allowFallbacks && queryType == CompletionProvider.COMPLETION_QUERY_TYPE, selectedIndex);
+                layout.showCompletion(noSuggestions ? Collections.singletonList(NO_SUGGESTIONS) : sortedResultItems, displayTitle, displayAnchorOffset, CompletionImpl.this, queryType == CompletionProvider.COMPLETION_QUERY_TYPE, selectedIndex);
                 pleaseWaitDisplayed = false;
 
                 // Show documentation as well if set by default
