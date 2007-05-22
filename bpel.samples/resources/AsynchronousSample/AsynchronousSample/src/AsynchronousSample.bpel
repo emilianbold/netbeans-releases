@@ -22,7 +22,9 @@
         <variable name="inputVar" messageType="wsdlNS:requestMessage"/>
         <variable name="outputVar" messageType="wsdlNS:responseMessage"/>
     </variables>
-    
+    <correlationSets>
+        <bpws:correlationSet name="CorrelationSet" properties="wsdlNS:correlator"/>
+    </correlationSets>
     <sequence>   
         <receive 
             name="start"
@@ -30,7 +32,11 @@
             portType="wsdlNS:MyPortType"
             operation="asyncOperation"
             variable="inputVar"
-            createInstance="yes"/>
+            createInstance="yes">
+            <bpws:correlations>
+                <bpws:correlation set="CorrelationSet" initiate="no"/>
+            </bpws:correlations>
+        </receive>
         
         <assign name="assign">
             <copy>

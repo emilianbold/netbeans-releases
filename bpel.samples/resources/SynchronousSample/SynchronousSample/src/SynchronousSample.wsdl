@@ -4,7 +4,11 @@
     xmlns="http://schemas.xmlsoap.org/wsdl/"
     xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
     xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
-    xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="SynchronousSample" targetNamespace="http://localhost/SynchronousSample/SynchronousSample" xmlns:tns="http://localhost/SynchronousSample/SynchronousSample" xmlns:ns="http://xml.netbeans.org/schema/SynchronousSample" xmlns:plink="http://docs.oasis-open.org/wsbpel/2.0/plnktype">
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="SynchronousSample" targetNamespace="http://localhost/SynchronousSample/SynchronousSample"
+    xmlns:tns="http://localhost/SynchronousSample/SynchronousSample"
+    xmlns:ns="http://xml.netbeans.org/schema/SynchronousSample"
+    xmlns:plink="http://docs.oasis-open.org/wsbpel/2.0/plnktype"
+    xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/varprop">
     <types>
         <xsd:schema targetNamespace="http://localhost/SynchronousSample/SynchronousSample">
             <xsd:import namespace="http://xml.netbeans.org/schema/SynchronousSample" schemaLocation="SynchronousSample.xsd"/>
@@ -39,7 +43,16 @@
             <soap:address location="http://localhost:18181/SynchronousSample"/>
         </port>
     </service>
+
     <plink:partnerLinkType name="partnerlinktype1">
         <plink:role name="partnerlinktyperole1" portType="tns:portType1"/>
     </plink:partnerLinkType>
+
+    <bpws:property name="correlator" type="xsd:string"/>    
+    
+    <bpws:propertyAlias 
+        propertyName="tns:correlator"
+        messageType="tns:requestMessage"
+        part="inputType">
+    </bpws:propertyAlias>
 </definitions>

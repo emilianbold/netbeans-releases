@@ -8,12 +8,14 @@
                   xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
                   xmlns:xsd="http://www.w3.org/2001/XMLSchema"                          
                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
-                  xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype">
+                  xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype"
+                  xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/varprop">
     
     <types>
         <xsd:schema xmlns="http://enterprise.netbeans.org/bpel/AsynchronousSampleSchemaNamespace" 
                     targetNamespace="http://enterprise.netbeans.org/bpel/AsynchronousSample"  >
-            <xsd:import namespace="http://enterprise.netbeans.org/bpel/AsynchronousSampleSchemaNamespace" schemaLocation="AsynchronousSample.xsd"/>
+            <xsd:import namespace="http://enterprise.netbeans.org/bpel/AsynchronousSampleSchemaNamespace"
+                        schemaLocation="AsynchronousSample.xsd"/>
         </xsd:schema>
     </types>
     
@@ -78,4 +80,12 @@
         </plnk:role>
     </plnk:partnerLinkType>
     
+    <bpws:property name="correlator" type="xsd:byte"/>    
+    
+    <bpws:propertyAlias 
+        propertyName="tns:correlator"
+        messageType="tns:requestMessage"
+        part="inputType">
+    </bpws:propertyAlias>
+
 </wsdl:definitions>
