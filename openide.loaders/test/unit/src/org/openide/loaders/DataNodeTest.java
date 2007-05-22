@@ -22,12 +22,14 @@ package org.openide.loaders;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Set;
+import java.util.logging.Level;
 import junit.textui.TestRunner;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileSystem;
 import java.util.Enumeration;
+import java.util.logging.Logger;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.cookies.InstanceCookie;
@@ -43,6 +45,7 @@ import org.openide.util.lookup.Lookups;
  * @author Jesse Glick
  */
 public class DataNodeTest extends NbTestCase {
+    Logger LOG;
     
     public DataNodeTest(String name) {
         super(name);
@@ -50,6 +53,18 @@ public class DataNodeTest extends NbTestCase {
 
     static {
         System.setProperty ("org.openide.util.Lookup", "org.openide.loaders.DataNodeTest$Lkp");
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
+    
+    
+
+    @Override
+    protected void setUp() throws Exception {
+        LOG = Logger.getLogger("test." + getName());
     }
     
     /** Test that for all examples to be found in the system file system,
@@ -69,6 +84,10 @@ public class DataNodeTest extends NbTestCase {
         Enumeration e = top.children(true);
         while (e.hasMoreElements()) {
             DataObject o = (DataObject)e.nextElement();
+            if (o.getPrimaryFile().getPath().startsWith("UI/Services")) {
+                continue;
+            }
+            LOG.fine("Testing " + o.getPrimaryFile());
             Node n = o.getNodeDelegate();
             DataObject o2 = (DataObject)n.getCookie(DataObject.class);
             assertEquals("Correct cookie from node delegate", o, o2);
