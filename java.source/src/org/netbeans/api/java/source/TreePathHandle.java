@@ -114,11 +114,15 @@ public final class TreePathHandle {
         if (tp!=null && new KindPath(tp).equals(kindPath))                                                                                                                                                                                 
             return tp;                                                                                                                                                                                                         
         tp = compilationInfo.getTreeUtilities().pathFor(position.getOffset()+1);
-        if (new KindPath(tp).equals(kindPath))                                                                                                                                                                                 
-            return tp;                                                                                                                                                                                                         
-        else                                                                                                                                                                                                                   
-            return null;                                                                                                                                                                                                       
-    }                                                                                                                                                                                                                          
+        while (tp!=null) {
+            if (new KindPath(tp).equals(kindPath)) {
+                return tp;
+            }
+            tp = tp.getParentPath();
+        }
+        return null;
+    }
+    
                                                                                                                                                                                                                                
     /**                                                                                                                                                                                                                        
      * Resolves an {@link Element} from the {@link TreePathHandle}.                                                                                                                                                            
@@ -214,7 +218,7 @@ public final class TreePathHandle {
         } catch (MalformedURLException e) {
             throw (RuntimeException) new RuntimeException().initCause(e);
         }
-        int position = ((JCTree) treePath.getLeaf()).pos;                                                                                                                                                                      
+        int position = ((JCTree) treePath.getLeaf()).pos;               
         CloneableEditorSupport s = findCloneableEditorSupport(file);                                                                                                                                           
         PositionRef pos = s.createPositionRef(position, Bias.Forward);                                                                                                                                                         
         TreePath current = treePath;                                                                                                                                                                                           
