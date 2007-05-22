@@ -406,7 +406,9 @@ public abstract class AbstractRefactoring {
 
         private float progressStep;
         private float current;
+        private int starts = 0;
         public void start(ProgressEvent event) {
+            starts++;
             progressStep = (float) PLUGIN_STEPS / event.getCount();
             
             if (pluginsWithProgress.indexOf(event.getSource()) == 0) {
@@ -430,7 +432,8 @@ public abstract class AbstractRefactoring {
         }
         
         public void stop(ProgressEvent event) {
-            if (pluginsWithProgress.indexOf(event.getSource()) == pluginsWithProgress.size()-1) {
+            starts--;
+            if (starts==0) {
                 fireProgressListenerStop();
             }
         }
