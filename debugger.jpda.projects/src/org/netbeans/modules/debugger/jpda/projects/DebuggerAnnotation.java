@@ -99,6 +99,18 @@ public class DebuggerAnnotation extends Annotation {
         if (type == EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE)
             return NbBundle.getBundle (DebuggerAnnotation.class).getString 
                 ("TOOLTIP_CALLSITE"); // NOI18N
+        if (type == EditorContext.FIELD_BREAKPOINT_ANNOTATION_TYPE)
+            return NbBundle.getBundle (DebuggerAnnotation.class).getString 
+                ("TOOLTIP_FIELD_BREAKPOINT"); // NOI18N
+        if (type == EditorContext.DISABLED_FIELD_BREAKPOINT_ANNOTATION_TYPE)
+            return NbBundle.getBundle (DebuggerAnnotation.class).getString 
+                ("TOOLTIP_DISABLED_FIELD_BREAKPOINT"); // NOI18N
+        if (type == EditorContext.METHOD_BREAKPOINT_ANNOTATION_TYPE)
+            return NbBundle.getBundle (DebuggerAnnotation.class).getString 
+                ("TOOLTIP_METHOD_BREAKPOINT"); // NOI18N
+        if (type == EditorContext.DISABLED_METHOD_BREAKPOINT_ANNOTATION_TYPE)
+            return NbBundle.getBundle (DebuggerAnnotation.class).getString 
+                ("TOOLTIP_DISABLED_METHOD_BREAKPOINT"); // NOI18N
         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("Unknown breakpoint type '"+type+"'."));
         return null;
     }

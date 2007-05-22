@@ -67,18 +67,21 @@ public class SourcePathProviderImpl extends SourcePathProvider {
     private static final Pattern thisDirectoryPattern = Pattern.compile("(/|\\A)\\./");
     private static final Pattern parentDirectoryPattern = Pattern.compile("(/|\\A)([^/]+?)/\\.\\./");
 
-    private Session                 session;
+    //private Session                 session;
     // contains source path + jdk source path for JPDAStart task
     private ClassPath               originalSourcePath;
     private ClassPath               smartSteppingSourcePath;
     private String[]                sourceRoots;
     private PropertyChangeSupport   pcs;
     
+    public SourcePathProviderImpl () {
+        pcs = new PropertyChangeSupport (this);
+    }
 
     public SourcePathProviderImpl (ContextProvider contextProvider) {
         pcs = new PropertyChangeSupport (this);
-        this.session = (Session) contextProvider.lookupFirst 
-            (null, Session.class);
+        //this.session = (Session) contextProvider.lookupFirst 
+        //    (null, Session.class);
         Map properties = (Map) contextProvider.lookupFirst 
             (null, Map.class);
         
@@ -146,11 +149,15 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         FileObject fo = null;
         relativePath = normalize(relativePath);
         if (!global) {
-            fo = smartSteppingSourcePath.findResource 
-                (relativePath);                                         if (verbose) System.out.println ("SPPI:   fo " + fo);
+            if (smartSteppingSourcePath != null) {
+                fo = smartSteppingSourcePath.findResource 
+                    (relativePath);                                         if (verbose) System.out.println ("SPPI:   fo " + fo);
+            }
         } else {
-            fo = originalSourcePath.findResource 
-                (relativePath);                                         if (verbose) System.out.println ("SPPI:   fo " + fo);
+            if (originalSourcePath != null) {
+                fo = originalSourcePath.findResource 
+                    (relativePath);                                         if (verbose) System.out.println ("SPPI:   fo " + fo);
+            }
             if (fo == null)
                 fo = GlobalPathRegistry.getDefault ().findResource (relativePath);      if (verbose) System.out.println ("SPPI:   fo2 " + fo);
         }
@@ -160,6 +167,53 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         } catch (FileStateInvalidException e) {                     if (verbose) System.out.println ("SPPI:   FileStateInvalidException");
             return null;
         }
+    }
+    
+    /**
+     * Translates a relative path to all possible URLs.
+     * Uses GlobalPathRegistry if global == true.
+     *
+     * @param relativePath a relative path (java/lang/Thread.java)
+     * @param global true if global path should be used
+     * @return url
+     */
+    public String[] getAllURLs (String relativePath, boolean global) {    if (verbose) System.out.println ("SPPI: getURL " + relativePath + " global " + global);
+        List<FileObject> fos;
+        relativePath = normalize(relativePath);
+        if (!global) {
+            if (smartSteppingSourcePath != null) {
+                fos = smartSteppingSourcePath.findAllResources
+                    (relativePath);                                         if (verbose) System.out.println ("SPPI:   fos " + fos);
+            } else {
+                fos = Collections.emptyList();
+            }
+        } else {
+            if (originalSourcePath != null) {
+                fos = originalSourcePath.findAllResources 
+                    (relativePath);                                         if (verbose) System.out.println ("SPPI:   fos " + fos);
+            } else {
+                fos = Collections.emptyList();
+            }
+            fos = new ArrayList<FileObject>(fos);
+            for (ClassPath cp : GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
+                List<FileObject> cpfos = cp.findAllResources(relativePath);
+                for (FileObject fo : cpfos) {
+                    if (!fos.contains(fo)) {
+                        fos.add(fo);
+                    }
+                }
+            }
+                                                                        if (verbose) System.out.println ("SPPI:   fo2 " + fos);
+        }
+        List<String> urls = new ArrayList<String>(fos.size());
+        for (FileObject fo : fos) {
+            try {
+                urls.add(fo.getURL().toString());
+            } catch (FileStateInvalidException e) {                     if (verbose) System.out.println ("SPPI:   FileStateInvalidException for "+fo);
+                // skip it
+            }
+        }
+        return urls.toArray(new String[0]);
     }
     
     /**

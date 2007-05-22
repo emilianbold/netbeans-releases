@@ -530,6 +530,34 @@ Microsystems, Inc. All Rights Reserved.
         <class package="org.netbeans.api.debugger.jpda" name="JPDAArrayType" />
         <issue number="100047"/>
     </change>
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>API for identification of method declarations in source code.</summary>
+        <version major="2" minor="12"/>
+        <date day="21" month="5" year="2007"/>
+        <author login="mentlicher"/>
+        <compatibility addition="yes" source="compatible" binary="compatible"/>
+        <description>
+            <p>In order to implement annotation of method breakpoints in Editor, we need to be
+able to locate individual methods in Editor, based on their names and signature. Also we need
+annotation types for fields and methods.
+            </p>
+            <p>
+                Added methods:<br/>
+                <code>EditorContext.getMethodLineNumber()</code>,
+                <code>EditorContext.getCurrentMethodDeclaration()</code>,
+            </p>
+            <p>
+                Added fields:<br/>
+                <code>EditorContext.FIELD_BREAKPOINT_ANNOTATION_TYPE</code>,
+                <code>EditorContext.DISABLED_FIELD_BREAKPOINT_ANNOTATION_TYPE</code>,
+                <code>EditorContext.METHOD_BREAKPOINT_ANNOTATION_TYPE</code>
+                <code>EditorContext.DISABLED_METHOD_BREAKPOINT_ANNOTATION_TYPE</code>
+            </p>
+        </description>
+        <class package="org.netbeans.spi.debugger.jpda" name="EditorContext" />
+        <issue number="103934"/>
+    </change>
 
 
 </changes>

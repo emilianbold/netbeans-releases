@@ -58,12 +58,14 @@ import com.sun.source.util.SourcePositions;
 import javax.lang.model.util.Elements;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.editor.Coloring;
 import org.netbeans.modules.editor.highlights.spi.Highlight;
 
@@ -668,6 +670,148 @@ public class EditorContextImpl extends EditorContext {
     }
     
     /**
+     * Returns line number of given method in given class.
+     *
+     * @param url the url of file the class is deined in
+     * @param className the name of class (or innerclass) the method is 
+     *                  defined in
+     * @param methodName the name of method
+     * @param methodSignature the JNI-style signature of the method.
+     *        If <code>null</code>, then the first method found is returned.
+     *
+     * @return line number or -1
+     */
+    public int getMethodLineNumber (
+        String url, 
+        final String className, 
+        final String methodName,
+        final String methodSignature
+    ) {
+        final DataObject dataObject = getDataObject (url);
+        if (dataObject == null) return -1;
+        JavaSource js = JavaSource.forFileObject(dataObject.getPrimaryFile());
+        if (js == null) return -1;
+        final int[] result = new int[] {-1};
+        
+        try {
+            js.runUserActionTask(new CancellableTask<CompilationController>() {
+                public void cancel() {
+                }
+                public void run(CompilationController ci) throws Exception {
+                    Elements elms = ci.getElements();
+                    TypeElement classElement = elms.getTypeElement(className);
+                    if (classElement == null) return ;
+                    List classMemberElements = elms.getAllMembers(classElement);
+                    for (Iterator it = classMemberElements.iterator(); it.hasNext(); ) {
+                        Element elm = (Element) it.next();
+                        if (elm.getKind() == ElementKind.METHOD) {
+                            String name = elm.getSimpleName().toString();
+                            if (name.equals(methodName)) {
+                                if (methodSignature == null || methodSignature.equals(createSignature((ExecutableElement) elm))) {
+                                    SourcePositions positions =  ci.getTrees().getSourcePositions();
+                                    Tree tree = SourceUtils.treeFor(ci, elm);
+                                    int pos = (int)positions.getStartPosition(ci.getCompilationUnit(), tree);
+                                    EditorCookie editor = (EditorCookie) dataObject.getCookie(EditorCookie.class);
+                                    result[0] = NbDocument.findLineNumber(editor.openDocument(), pos) + 1;
+                                }
+                            }
+                        }
+                    }
+                }
+            },true);
+        } catch (IOException ioex) {
+            ErrorManager.getDefault().notify(ioex);
+            return -1;
+        }
+        return result[0];
+    }
+    
+    public String[] getCurrentMethodDeclaration() {
+        Node[] nodes = TopComponent.getRegistry ().getCurrentNodes ();
+        if (nodes == null) return null;
+        if (nodes.length != 1) return null;
+        DataObject dataObject = nodes[0].getCookie(DataObject.class);
+        if (dataObject == null) return null;
+        JavaSource js = JavaSource.forFileObject(dataObject.getPrimaryFile());
+        if (js == null) return null;
+        // TODO: Can be called outside of AWT? Probably need invokeAndWait()
+        final int currentOffset = org.netbeans.editor.Registry.getMostActiveComponent().getCaretPosition();
+        final String[] currentMethodPtr = new String[] { null, null };
+        try {
+            js.runUserActionTask(new CancellableTask<CompilationController>() {
+                public void cancel() {
+                }
+                public void run(CompilationController ci) throws Exception {
+                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) //TODO: ELEMENTS_RESOLVED may be sufficient
+                        return;
+                    int offset = currentOffset;
+                    //Scope scope = ci.getTreeUtilities().scopeFor(offset);
+                    String text = ci.getText();
+                    char c;
+                    while ((c = text.charAt(offset)) != '(' && c != ')' && c != '\n' && c != '\r') offset++;
+                    if (c == '(') offset--;
+                    
+                    Tree tree = ci.getTreeUtilities().pathFor(offset).getLeaf();
+                    if (tree.getKind() == Tree.Kind.METHOD) {
+                        Element el = ci.getTrees().getElement(ci.getTrees().getPath(ci.getCompilationUnit(), tree));
+                    
+                        //Element el = ci.getTrees().getElement(ci.getTreeUtilities().pathFor(offset));
+                        if (el != null && el.getKind() == ElementKind.METHOD) {
+                            currentMethodPtr[0] = el.getSimpleName().toString();
+                            currentMethodPtr[1] = createSignature((ExecutableElement) el);
+                        }
+                    }
+                }
+            }, true);
+        } catch (IOException ioex) {
+            ErrorManager.getDefault().notify(ioex);
+            return null;
+        }
+        if (currentMethodPtr[0] != null) {
+            return currentMethodPtr;
+        } else {
+            return null;
+        }
+    }
+
+    
+    private static String createSignature(ExecutableElement elm) {
+        StringBuilder signature = new StringBuilder("(");
+        for (VariableElement param : elm.getParameters()) {
+            String paramType = param.asType().toString();
+            signature.append(getSignature(paramType));
+        }
+        signature.append(')');
+        String returnType = elm.getReturnType().toString();
+        signature.append(getSignature(returnType));
+        return signature.toString();
+    }
+    
+    private static String getSignature(String javaType) {
+        if (javaType.equals("boolean")) {
+            return "Z";
+        } else if (javaType.equals("byte")) {
+            return "B";
+        } else if (javaType.equals("char")) {
+            return "C";
+        } else if (javaType.equals("short")) {
+            return "S";
+        } else if (javaType.equals("int")) {
+            return "I";
+        } else if (javaType.equals("long")) {
+            return "J";
+        } else if (javaType.equals("float")) {
+            return "F";
+        } else if (javaType.equals("double")) {
+            return "D";
+        } else if (javaType.endsWith("[]")) {
+            return "["+getSignature(javaType.substring(0, javaType.length() - 2));
+        } else {
+            return "L"+javaType+";";
+        }
+    }
+    
+    /**
      * Returns binary class name for given url and line number or null.
      *
      * @param url a url
@@ -1109,7 +1253,7 @@ public class EditorContextImpl extends EditorContext {
         JavaSource js = JavaSource.forFileObject(dataObject.getPrimaryFile());
         if (js == null) return null;
         // TODO: Can be called outside of AWT? Probably need invokeAndWait()
-        final int offset = org.netbeans.editor.Registry.getMostActiveComponent().getCaretPosition();
+        final int currentOffset = org.netbeans.editor.Registry.getMostActiveComponent().getCaretPosition();
         final String[] currentElementPtr = new String[] { null };
         try {
             js.runUserActionTask(new CancellableTask<CompilationController>() {
@@ -1120,22 +1264,51 @@ public class EditorContextImpl extends EditorContext {
                         return;
 
                     if (kind == ElementKind.CLASS) {
-                        Scope scope = ci.getTreeUtilities().scopeFor(offset);
+                        Scope scope = ci.getTreeUtilities().scopeFor(currentOffset);
                         TypeElement te = scope.getEnclosingClass();
                         if (te != null) {
                             currentElementPtr[0] = ElementUtilities.getBinaryName(te);
                         }
                     } else if (kind == ElementKind.METHOD) {
-                        Scope scope = ci.getTreeUtilities().scopeFor(offset);
+                        Scope scope = ci.getTreeUtilities().scopeFor(currentOffset);
                         Element el = scope.getEnclosingMethod();
                         if (el != null) {
                             currentElementPtr[0] = el.getSimpleName().toString();
                         }
                     } else if (kind == ElementKind.FIELD) {
+                        int offset = currentOffset;
+                        
+                        String text = ci.getText();
+                        char c; // Search for the end of the field declaration
+                        while ((c = text.charAt(offset)) != ';' && c != ',' && c != '\n' && c != '\r') offset++;
+                        if (c == ';' || c == ',') { // we have it, but there might be '=' sign somewhere before
+                            int endOffset = --offset;
+                            int setOffset = -1;
+                            while((c = text.charAt(offset)) != ';' && c != ',' && c != '\n' && c != '\r') {
+                                if (c == '=') setOffset = offset;
+                                offset--;
+                            }
+                            if (setOffset > -1) {
+                                offset = setOffset;
+                            } else {
+                                offset = endOffset;
+                            }
+                            while (Character.isWhitespace(text.charAt(offset))) offset--;
+                        }
+                         
+                        Tree tree = ci.getTreeUtilities().pathFor(offset).getLeaf();
+                        if (tree.getKind() == Tree.Kind.VARIABLE) {
+                            Element el = ci.getTrees().getElement(ci.getTrees().getPath(ci.getCompilationUnit(), tree));
+                            if (el.getKind() == ElementKind.FIELD || el.getKind() == ElementKind.ENUM_CONSTANT) {
+                                currentElementPtr[0] = ((VariableTree) tree).getName().toString();
+                            }
+                        }
+                        /*
                         Element el = ci.getTrees().getElement(ci.getTreeUtilities().pathFor(offset));
                         if (el != null && el.getKind() == ElementKind.FIELD) {
                             currentElementPtr[0] = el.getSimpleName().toString();
                         }
+                         */
                     }
                 }
             }, true);

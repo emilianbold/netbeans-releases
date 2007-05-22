@@ -45,6 +45,14 @@ public abstract class EditorContext {
     /** Annotation type constant. */
     public static final String DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE = "DisabledCondBreakpoint";
     /** Annotation type constant. */
+    public static final String FIELD_BREAKPOINT_ANNOTATION_TYPE = "FieldBreakpoint";
+    /** Annotation type constant. */
+    public static final String DISABLED_FIELD_BREAKPOINT_ANNOTATION_TYPE = "DisabledFieldBreakpoint";
+    /** Annotation type constant. */
+    public static final String METHOD_BREAKPOINT_ANNOTATION_TYPE = "MethodBreakpoint";
+    /** Annotation type constant. */
+    public static final String DISABLED_METHOD_BREAKPOINT_ANNOTATION_TYPE = "DisabledMethodBreakpoint";
+    /** Annotation type constant. */
     public static final String CURRENT_LINE_ANNOTATION_TYPE = "CurrentPC";
     /** Annotation type constant. */
     public static final String CALL_STACK_FRAME_ANNOTATION_TYPE = "CallSite";
@@ -207,7 +215,7 @@ public abstract class EditorContext {
     /**
      * Returns line number of given field in given class.
      *
-     * @param url the url of file the class is deined in
+     * @param url the url of source file the class is deined in
      * @param className the name of class (or innerclass) the field is 
      *                  defined in
      * @param fieldName the name of field
@@ -219,6 +227,39 @@ public abstract class EditorContext {
         String className, 
         String fieldName
     );
+    
+    /**
+     * Returns line number of given method in given class.
+     *
+     * @param url the url of source file the class is deined in
+     * @param className the name of class (or innerclass) the method is 
+     *                  defined in
+     * @param methodName the name of the method
+     * @param methodSignature the JNI-style signature of the method.
+     *        If <code>null</code>, then the first method found is returned.
+     *
+     * @return line number or -1
+     */
+    public int getMethodLineNumber (
+        String url, 
+        final String className, 
+        final String methodName,
+        final String methodSignature
+    ) {
+        return -1;
+    }
+    
+    
+    /**
+     * Returns name and signature of method declaration currently selected in editor,
+     * or <code>null</code>.
+     *
+     * @return name and signature of the method, or <code>null</code>.
+     */
+    public String[] getCurrentMethodDeclaration() {
+        return null;
+    }
+
     
     /**
      * Returns class name for given url and line number or null.
