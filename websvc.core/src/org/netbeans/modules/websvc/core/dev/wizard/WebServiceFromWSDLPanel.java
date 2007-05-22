@@ -207,7 +207,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         jLabelWSDLFile.setLabelFor(jTextFieldWSDLFile);
         jLabelWSDLFile.setText(org.openide.util.NbBundle.getMessage(WebServiceFromWSDLPanel.class, "LBL_WSDL_File"));
 
-        jTextFieldWSDLFile.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(WebServiceFromWSDLPanel.class).getString("A11Y_WSDLFilePath"));
+        jTextFieldWSDLFile.getAccessibleContext().setAccessibleDescription(null);
 
         jButtonWSDLFileBrowse.setMnemonic(org.openide.util.NbBundle.getBundle(WebServiceFromWSDLPanel.class).getString("MNE_Browse").charAt(0));
         jButtonWSDLFileBrowse.setText(org.openide.util.NbBundle.getMessage(WebServiceFromWSDLPanel.class, "LBL_Browse"));
@@ -217,7 +217,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
             }
         });
 
-        jButtonWSDLFileBrowse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(WebServiceFromWSDLPanel.class).getString("A11Y_WSDLFileButton"));
+        jButtonWSDLFileBrowse.getAccessibleContext().setAccessibleDescription(null);
 
         jLabelPortDescription.setText(org.openide.util.NbBundle.getBundle(WebServiceFromWSDLPanel.class).getString("LBL_PortMessage"));
 
@@ -226,7 +226,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         jLabelPort.setText(org.openide.util.NbBundle.getBundle(WebServiceFromWSDLPanel.class).getString("LBL_WebServicePort"));
 
         jTextFieldPort.setEditable(false);
-        jTextFieldPort.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(WebServiceFromWSDLPanel.class).getString("A11Y"));
+        jTextFieldPort.getAccessibleContext().setAccessibleDescription(null);
 
         jButtonBrowsePort.setMnemonic(org.openide.util.NbBundle.getBundle(WebServiceFromWSDLPanel.class).getString("MNE_BrowsePort").charAt(0));
         jButtonBrowsePort.setText(org.openide.util.NbBundle.getBundle(WebServiceFromWSDLPanel.class).getString("LBL_Browse"));
@@ -243,35 +243,37 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabelPort)
-                    .add(jLabelWSDLFile))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jTextFieldPort, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 576, Short.MAX_VALUE)
-                    .add(jTextFieldWSDLFile, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 576, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                    .add(jButtonBrowsePort, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jButtonWSDLFileBrowse, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-            .add(layout.createSequentialGroup()
-                .add(jLabelPortDescription)
+                    .add(jLabelWSDLFile)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jTextFieldWSDLFile, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 724, Short.MAX_VALUE)
+                            .add(jLabelPortDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 724, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                .add(jLabelPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 152, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(jTextFieldPort, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 560, Short.MAX_VALUE)))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jButtonWSDLFileBrowse, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jButtonBrowsePort, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .add(jLabelWSDLFile)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabelWSDLFile)
                     .add(jButtonWSDLFileBrowse)
                     .add(jTextFieldWSDLFile, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabelPortDescription)
+                .add(jLabelPortDescription, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 43, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabelPort)
                     .add(jButtonBrowsePort)
                     .add(jTextFieldPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(223, Short.MAX_VALUE))
+                .addContainerGap(202, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     
