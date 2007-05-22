@@ -120,7 +120,6 @@ public class CasualDiff {
     private int endPos(List<? extends JCTree> trees) {
         if (trees.isEmpty())
             return -1;
-        JCTree tree;
         return endPos(trees.get(trees.size()-1));
     }
 
@@ -1413,11 +1412,6 @@ public class CasualDiff {
         return false;
     }
 
-    
-    private JCTree safeNext(Iterator<? extends JCTree> iter) {
-        return iter.hasNext() ? iter.next() : null;
-    }
-
     protected int diffList2(
         List<? extends JCTree> oldList, List<? extends JCTree> newList,
         int initialPos, PositionEstimator estimator) 
@@ -1633,13 +1627,10 @@ public class CasualDiff {
         if (oldList == newList || oldList.equals(newList))
             return pos; // they match perfectly or no need to do anything
         
-        if (newList.isEmpty()) {
-            int endPos = endPos(oldList);
-        }
         ListMatcher<JCTree> matcher = ListMatcher.<JCTree>instance(
                 (List<JCTree>) oldList, 
                 (List<JCTree>) newList,
-                Measure.ARGUMENT
+                measure
         );
         if (!matcher.match()) {
             // nothing in the list, no need to print and nothing was printed
