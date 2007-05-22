@@ -558,6 +558,65 @@ annotation types for fields and methods.
         <class package="org.netbeans.spi.debugger.jpda" name="EditorContext" />
         <issue number="103934"/>
     </change>
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>Enhance JPDA breakpoints.</summary>
+        <version major="2" minor="13"/>
+        <date day="21" month="5" year="2007"/>
+        <author login="mentlicher"/>
+        <compatibility addition="yes" source="compatible" binary="compatible"/>
+        <description>
+            <p>
+                To catch-up with JDI capabilities and be able to implement new enhancements,
+we need to add support for new breakpoint properties into the debugger JPDA API.<br/>
+These are mainly class and thread filters and hit counts.
+            </p>
+            <p>
+                Added methods:<br/>
+                <code>ExceptionBreakpoint.getClassFilters()</code>,
+                <code>ExceptionBreakpoint.setClassFilters()</code>,
+                <code>ExceptionBreakpoint.getClassExclusionFilters()</code>,
+                <code>ExceptionBreakpoint.setClassExclusionFilters()</code>,
+                <code>FieldBreakpoint.getInstanceFilters()</code>,
+                <code>FieldBreakpoint.setInstanceFilters()</code>,
+                <code>FieldBreakpoint.getThreadFilters()</code>,
+                <code>FieldBreakpoint.setThreadFilters()</code>,
+                <code>JPDABreakpoint.getHitCountFilter()</code>,
+                <code>JPDABreakpoint.getHitCountFilteringStyle()</code>,
+                <code>JPDABreakpoint.setHitCountFilter()</code>,
+                <code>LineBreakpoint.getInstanceFilters()</code>,
+                <code>LineBreakpoint.setInstanceFilters()</code>,
+                <code>LineBreakpoint.getThreadFilters()</code>,
+                <code>LineBreakpoint.setThreadFilters()</code>,
+                <code>MethodBreakpoint.getMethodSignature()</code>,
+                <code>MethodBreakpoint.setMethodSignature()</code>,
+                <code>MethodBreakpoint.getInstanceFilters()</code>,
+                <code>MethodBreakpoint.setInstanceFilters()</code>,
+                <code>MethodBreakpoint.getThreadFilters()</code>,
+                <code>MethodBreakpoint.setThreadFilters()</code>.
+            </p>
+            <p>
+                Added fields:<br/>
+                <code>ExceptionBreakpoint.PROP_CLASS_FILTERS</code>,
+                <code>ExceptionBreakpoint.PROP_CLASS_EXCLUSION_FILTERS</code>,
+                <code>FieldBreakpoint.PROP_INSTANCE_FILTERS</code>,
+                <code>FieldBreakpoint.PROP_THREAD_FILTERS</code>,
+                <code>JPDABreakpoint.PROP_HIT_COUNT_FILTER</code>,
+                <code>JPDABreakpoint.HIT_COUNT_FILTERING_STYLE</code>,
+                <code>LineBreakpoint.PROP_INSTANCE_FILTERS</code>,
+                <code>LineBreakpoint.PROP_THREAD_FILTERS</code>,
+                <code>MethodBreakpoint.PROP_METHOD_SIGNATURE</code>,
+                <code>MethodBreakpoint.PROP_INSTANCE_FILTERS</code>,
+                <code>MethodBreakpoint.PROP_THREAD_FILTERS</code>.
+            </p>
+        </description>
+        <class package="org.netbeans.api.debugger.jpda" name="ExceptionBreakpoint" />
+        <class package="org.netbeans.api.debugger.jpda" name="FieldBreakpoint" />
+        <class package="org.netbeans.api.debugger.jpda" name="JPDABreakpoint" />
+        <class package="org.netbeans.api.debugger.jpda" name="LineBreakpoint" />
+        <class package="org.netbeans.api.debugger.jpda" name="MethodBreakpoint" />
+        <issue number="103936"/>
+    </change>
 
 
 </changes>

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -38,6 +38,10 @@ public final class ExceptionBreakpoint extends JPDABreakpoint {
 
     /** Property name constant */
     public static final String          PROP_EXCEPTION_CLASS_NAME = "exceptionClassName"; // NOI18N
+    /** Property name constant */
+    public static final String          PROP_CLASS_FILTERS = "classFilters"; // NOI18N
+    /** Property name constant */
+    public static final String          PROP_CLASS_EXCLUSION_FILTERS = "classExclusionFilters"; // NOI18N
     /** Property name constant. */
     public static final String          PROP_CATCH_TYPE = "catchType"; // NOI18N
     /** Property name constant. */
@@ -51,6 +55,8 @@ public final class ExceptionBreakpoint extends JPDABreakpoint {
     public static final int             TYPE_EXCEPTION_CATCHED_UNCATCHED = 3;
 
     private String                      exceptionClassName = "";
+    private String[]                    classFilters = new String [0];
+    private String[]                    classExclusionFilters = new String [0];
     private int                         catchType = TYPE_EXCEPTION_UNCATCHED;
     private String                      condition = ""; // NOI18N
 
@@ -100,6 +106,48 @@ public final class ExceptionBreakpoint extends JPDABreakpoint {
         Object old = exceptionClassName;
         exceptionClassName = cn;
         firePropertyChange (PROP_EXCEPTION_CLASS_NAME, old, exceptionClassName);
+    }
+    
+    /**
+     * Get list of class filters to stop on.
+     *
+     * @return list of class filters to stop on
+     */
+    public String[] getClassFilters () {
+        return classFilters;
+    }
+
+    /**
+     * Set list of class filters to stop on.
+     *
+     * @param classFilters a new value of class filters property
+     */
+    public void setClassFilters (String[] classFilters) {
+        if (classFilters == this.classFilters) return;
+        Object old = this.classFilters;
+        this.classFilters = classFilters;
+        firePropertyChange (PROP_CLASS_FILTERS, old, classFilters);
+    }
+
+    /**
+     * Get list of class exclusion filters to stop on.
+     *
+     * @return list of class exclusion filters to stop on
+     */
+    public String[] getClassExclusionFilters () {
+        return classExclusionFilters;
+    }
+
+    /**
+     * Set list of class exclusion filters to stop on.
+     *
+     * @param classExclusionFilters a new value of class exclusion filters property
+     */
+    public void setClassExclusionFilters (String[] classExclusionFilters) {
+        if (classExclusionFilters == this.classExclusionFilters) return;
+        Object old = this.classExclusionFilters;
+        this.classExclusionFilters = classExclusionFilters;
+        firePropertyChange (PROP_CLASS_EXCLUSION_FILTERS, old, classExclusionFilters);
     }
     
     /**

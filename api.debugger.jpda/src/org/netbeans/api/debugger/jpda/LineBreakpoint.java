@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,6 +21,8 @@ package org.netbeans.api.debugger.jpda;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Map;
+import java.util.WeakHashMap;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.debugger.Breakpoint;
@@ -66,6 +68,10 @@ public class LineBreakpoint extends JPDABreakpoint {
     public static final String          PROP_STRATUM = "stratum"; // NOI18N
     /** Property name constant. */
     public static final String          PROP_PREFERRED_CLASS_NAME = "classNamePreferred"; // NOI18N
+    /** Property name constant */
+    public static final String          PROP_INSTANCE_FILTERS = "instanceFilters"; // NOI18N
+    /** Property name constant */
+    public static final String          PROP_THREAD_FILTERS = "threadFilters"; // NOI18N
     
     private String                      url = ""; // NOI18N
     private int                         lineNumber;
@@ -74,6 +80,8 @@ public class LineBreakpoint extends JPDABreakpoint {
     private String                      sourcePath = null;
     private String                      stratum = "Java"; // NOI18N
     private String                      className = null;
+    private Map<JPDADebugger,ObjectVariable[]> instanceFilters;
+    private Map<JPDADebugger,JPDAThread[]> threadFilters;
 
     
     private LineBreakpoint (String url) {
@@ -153,6 +161,70 @@ public class LineBreakpoint extends JPDABreakpoint {
         );
     }
     
+    /**
+     * Get the instance filter for a specific debugger session.
+     * @return The instances or <code>null</code> when there is no instance restriction.
+     */
+    public ObjectVariable[] getInstanceFilters(JPDADebugger session) {
+        if (instanceFilters != null) {
+            return instanceFilters.get(session);
+        } else {
+            return null;
+        }
+    }
+    
+    /**
+     * Set the instance filter for a specific debugger session. This restricts
+     * the breakpoint to specific instances in that session.
+     * @param session the debugger session
+     * @param instances the object instances or <code>null</code> to unset the filter.
+     */
+    public void setInstanceFilters(JPDADebugger session, ObjectVariable[] instances) {
+        if (instanceFilters == null) {
+            instanceFilters = new WeakHashMap<JPDADebugger, ObjectVariable[]>();
+        }
+        if (instances != null) {
+            instanceFilters.put(session, instances);
+        } else {
+            instanceFilters.remove(session);
+        }
+        firePropertyChange(PROP_INSTANCE_FILTERS, null,
+                instances != null ?
+                    new Object[] { session, instances } : null);
+    }
+    
+    /**
+     * Get the thread filter for a specific debugger session.
+     * @return The thread or <code>null</code> when there is no thread restriction.
+     */
+    public JPDAThread[] getThreadFilters(JPDADebugger session) {
+        if (threadFilters != null) {
+            return threadFilters.get(session);
+        } else {
+            return null;
+        }
+    }
+    
+    /**
+     * Set the thread filter for a specific debugger session. This restricts
+     * the breakpoint to specific threads in that session.
+     * @param session the debugger session
+     * @param threads the threads or <code>null</code> to unset the filter.
+     */
+    public void setThreadFilters(JPDADebugger session, JPDAThread[] threads) {
+        if (threadFilters == null) {
+            threadFilters = new WeakHashMap<JPDADebugger, JPDAThread[]>();
+        }
+        if (threads != null) {
+            threadFilters.put(session, threads);
+        } else {
+            threadFilters.remove(session);
+        }
+        firePropertyChange(PROP_THREAD_FILTERS, null,
+                threads != null ?
+                    new Object[] { session, threads } : null);
+    }
+
     /**
      * Returns condition.
      *

@@ -13,12 +13,14 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.api.debugger.jpda;
 
+import java.util.Map;
+import java.util.WeakHashMap;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.debugger.Breakpoint;
@@ -42,6 +44,8 @@ public class MethodBreakpoint extends JPDABreakpoint {
 
     /** Property name constant */
     public static final String          PROP_METHOD_NAME = "methodName"; // NOI18N
+    /** Property name constant */
+    public static final String          PROP_METHOD_SIGNATURE = "signature"; // NOI18N
     /** Property name constant. */
     public static final String          PROP_BREAKPOINT_TYPE = "breakpointtType"; // NOI18N
     /** Property name constant. */
@@ -50,6 +54,10 @@ public class MethodBreakpoint extends JPDABreakpoint {
     public static final String          PROP_CLASS_FILTERS = "classFilters"; // NOI18N
     /** Property name constant */
     public static final String          PROP_CLASS_EXCLUSION_FILTERS = "classExclusionFilters"; // NOI18N
+    /** Property name constant */
+    public static final String          PROP_INSTANCE_FILTERS = "instanceFilters"; // NOI18N
+    /** Property name constant */
+    public static final String          PROP_THREAD_FILTERS = "threadFilters"; // NOI18N
 
     /** Breakpoint type property value constant. */
     public static final int             TYPE_METHOD_ENTRY = 1;
@@ -60,8 +68,11 @@ public class MethodBreakpoint extends JPDABreakpoint {
     private String[]                    classFilters = new String [0];
     private String[]                    classExclusionFilters = new String [0];
     private String                      methodName = "";
+    private String                      methodSignature;
     private int                         breakpointType = TYPE_METHOD_ENTRY;
     private String                      condition = "";
+    private Map<JPDADebugger,ObjectVariable[]> instanceFilters;
+    private Map<JPDADebugger,JPDAThread[]> threadFilters;
     
     
     private MethodBreakpoint () {
@@ -119,6 +130,36 @@ public class MethodBreakpoint extends JPDABreakpoint {
         String old = methodName;
         methodName = mn;
         firePropertyChange (PROP_METHOD_NAME, old, mn);
+    }
+    
+    /**
+     * Get the JNI-style signature of the method to stop on.
+     *
+     * @return JNI-style signature of the method to stop on
+     * @see com.sun.jdi.TypeComponent#signature
+     */
+    public String getMethodSignature () {
+        return methodSignature;
+    }
+
+    /**
+     * Set JNI-style signature of the method to stop on.
+     *
+     * @param signature the JNI-style signature of the method to stop on
+     * @see com.sun.jdi.TypeComponent#signature
+     */
+    public void setMethodSignature (String signature) {
+        if (signature != null) {
+            signature = signature.trim();
+        }
+        if ((signature == methodSignature) ||
+            ((signature != null) && signature.equals (methodSignature))) {
+            
+            return;
+        }
+        String old = methodSignature;
+        methodSignature = signature;
+        firePropertyChange (PROP_METHOD_SIGNATURE, old, signature);
     }
     
     /**
@@ -208,6 +249,70 @@ public class MethodBreakpoint extends JPDABreakpoint {
         this.classExclusionFilters = classExclusionFilters;
         firePropertyChange (PROP_CLASS_EXCLUSION_FILTERS, old, classExclusionFilters);
     }
+    
+    /**
+     * Get the instance filter for a specific debugger session.
+     * @return The instances or <code>null</code> when there is no instance restriction.
+     */
+    public ObjectVariable[] getInstanceFilters(JPDADebugger session) {
+        if (instanceFilters != null) {
+            return instanceFilters.get(session);
+        } else {
+            return null;
+        }
+    }
+    
+    /**
+     * Set the instance filter for a specific debugger session. This restricts
+     * the breakpoint to specific instances in that session.
+     * @param session the debugger session
+     * @param instances the object instances or <code>null</code> to unset the filter.
+     */
+    public void setInstanceFilters(JPDADebugger session, ObjectVariable[] instances) {
+        if (instanceFilters == null) {
+            instanceFilters = new WeakHashMap<JPDADebugger, ObjectVariable[]>();
+        }
+        if (instances != null) {
+            instanceFilters.put(session, instances);
+        } else {
+            instanceFilters.remove(session);
+        }
+        firePropertyChange(PROP_INSTANCE_FILTERS, null,
+                instances != null ?
+                    new Object[] { session, instances } : null);
+    }
+
+    /**
+     * Get the thread filter for a specific debugger session.
+     * @return The thread or <code>null</code> when there is no thread restriction.
+     */
+    public JPDAThread[] getThreadFilters(JPDADebugger session) {
+        if (threadFilters != null) {
+            return threadFilters.get(session);
+        } else {
+            return null;
+        }
+    }
+    
+    /**
+     * Set the thread filter for a specific debugger session. This restricts
+     * the breakpoint to specific threads in that session.
+     * @param session the debugger session
+     * @param threads the threads or <code>null</code> to unset the filter.
+     */
+    public void setThreadFilters(JPDADebugger session, JPDAThread[] threads) {
+        if (threadFilters == null) {
+            threadFilters = new WeakHashMap<JPDADebugger, JPDAThread[]>();
+        }
+        if (threads != null) {
+            threadFilters.put(session, threads);
+        } else {
+            threadFilters.remove(session);
+        }
+        firePropertyChange(PROP_THREAD_FILTERS, null,
+                threads != null ?
+                    new Object[] { session, threads } : null);
+    }
 
     /**
      * Returns a string representation of this object.
@@ -215,7 +320,8 @@ public class MethodBreakpoint extends JPDABreakpoint {
      * @return  a string representation of the object
      */
     public String toString () {
-        return "MethodBreakpoint " + java.util.Arrays.asList(classFilters).toString() + "." + methodName;
+        return "MethodBreakpoint " + java.util.Arrays.asList(classFilters).toString() + "." + methodName +
+                ((methodSignature != null) ? " '"+methodSignature+"'" : "");
     }
     
     private static final class MethodBreakpointImpl extends MethodBreakpoint implements ChangeListener {
