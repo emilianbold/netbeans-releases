@@ -35,7 +35,7 @@ import java.io.OutputStream;
 import java.io.ByteArrayInputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
+import java.util.WeakHashMap;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
@@ -114,7 +114,7 @@ public class JsfProjectUtils {
         JsfProjectConstants.PROP_START_PAGE
     };
 
-    private static final HashMap propertyListeners = new HashMap();
+    private static final Map<Project,ArrayList> propertyListeners = new WeakHashMap();
 
     /**
      * Provides the project template to be used to instantiate the project contents
@@ -507,7 +507,7 @@ public class JsfProjectUtils {
     public static final String J2EE_1_4 = J2eeModule.J2EE_14;
     public static final String JAVA_EE_5 = J2eeModule.JAVA_EE_5;
 
-    private static final HashMap JavaEE5Project = new HashMap();
+    private static final Map<Project,Boolean> JavaEE5Project = new WeakHashMap();
     
     /** J2EE platform version - one of the constants {@link #J2EE_13_LEVEL}, {@link #J2EE_14_LEVEL}.
      * @param project
