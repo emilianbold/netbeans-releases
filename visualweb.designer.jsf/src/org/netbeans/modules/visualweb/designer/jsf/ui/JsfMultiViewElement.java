@@ -19,6 +19,10 @@
 
 package org.netbeans.modules.visualweb.designer.jsf.ui;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JComponent;
 
@@ -30,6 +34,10 @@ import org.netbeans.modules.visualweb.designer.jsf.JsfForm;
 import org.openide.awt.UndoRedo;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
+import org.openide.windows.Mode;
+import org.openide.windows.TopComponent;
+import org.openide.windows.TopComponentGroup;
+import org.openide.windows.WindowManager;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -41,6 +49,8 @@ import org.w3c.dom.Node;
 public class JsfMultiViewElement implements MultiViewElement {
 
 //    private static final String PATH_TOOLBAR_FOLDER = "Designer/application/x-designer/Toolbars/Default"; // NOI18N
+    
+    private static final String TOP_COMPONENT_GROUP_JSF_DESIGNER = "jsfdesigner"; // NOI18N
     
 //    private final Designer designer;
     private final JsfTopComponent jsfTopComponent;
@@ -95,11 +105,15 @@ public class JsfMultiViewElement implements MultiViewElement {
     public void componentShowing() {
 //        designer.componentShowing();
         jsfTopComponent.componentShowing();
+        
+        openJsfTopComponentGroupIfNeeded();
     }
 
     public void componentHidden() {
 //        designer.componentHidden();
         jsfTopComponent.componentHidden();
+        
+        closeJsfTopComponentGroupIfNeeded();
     }
 
     public void componentActivated() {
@@ -190,8 +204,17 @@ public class JsfMultiViewElement implements MultiViewElement {
     }
     // JSF notifications <<<
     
+    
+    public TopComponent getMultiViewTopComponent() {
+        return jsfTopComponent.getMultiViewTopComponent();
+    }
+    
     public void closeMultiView() {
         jsfTopComponent.closeMultiView();
+    }
+    
+    public boolean isSelectedElement() {
+        return jsfTopComponent.isSelectedInMultiView();
     }
 
     public void modelLoaded() {
@@ -200,5 +223,102 @@ public class JsfMultiViewElement implements MultiViewElement {
     
     public void requestActive() {
         jsfTopComponent.requestActive();
+    }
+    
+    
+    private void openJsfTopComponentGroupIfNeeded() {
+        if (isFirstVisibleJsfMultiViewElement()) {
+            TopComponentGroup jsfTopComponentGroup = findJsfDesignerTopComponentGroup();
+            if (jsfTopComponentGroup == null) {
+                log("JSF TopComponentGroup not found, can not open helper windows."); // NOI18N
+            } else {
+                fine("Opening JSF Designer TopComponentGroup"); // NOI18N
+                jsfTopComponentGroup.open();
+            }
+        }
+    }
+    
+    private void closeJsfTopComponentGroupIfNeeded() {
+        if (isLastVisibleJsfMultiViewElement()) {
+            TopComponentGroup jsfTopComponentGroup = findJsfDesignerTopComponentGroup();
+            if (jsfTopComponentGroup == null) {
+                log("JSF TopComponentGroup not found, can not close helper windows."); // NOI18N
+            } else {
+                fine("Closing JSF Designer TopComponentGroup"); // NOI18N
+                jsfTopComponentGroup.close();
+            }
+        }
+    }
+    
+    private TopComponentGroup findJsfDesignerTopComponentGroup() {
+        return WindowManager.getDefault().findTopComponentGroup(TOP_COMPONENT_GROUP_JSF_DESIGNER); // NOI18N
+    }
+
+    private boolean isFirstVisibleJsfMultiViewElement() {
+        JsfMultiViewElement[] visibleJsfMultiViewElements = findAllVisibleJsfMultiViewElements();
+        if (visibleJsfMultiViewElements.length == 0) {
+            return true;
+        } else if (visibleJsfMultiViewElements.length == 1 && visibleJsfMultiViewElements[0] == this) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    private boolean isLastVisibleJsfMultiViewElement() {
+        JsfMultiViewElement[] visibleJsfMultiViewElements = findAllVisibleJsfMultiViewElements();
+        if (visibleJsfMultiViewElements.length == 0) {
+            return true;
+        } else if (visibleJsfMultiViewElements.length == 1 && visibleJsfMultiViewElements[0] == this) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    
+    private static JsfMultiViewElement[] findAllVisibleJsfMultiViewElements() {
+        Set<JsfMultiViewElement> allVisibleJsfMultiViewElements = new HashSet<JsfMultiViewElement>();
+        JsfMultiViewElement[] allJsfMultiViewElements = JsfForm.getJsfMultiViewElements();
+        for (JsfMultiViewElement jsfMultiViewElement : allJsfMultiViewElements) {
+            if (isVisibleJsfMultiViewElement(jsfMultiViewElement)) {
+                allVisibleJsfMultiViewElements.add(jsfMultiViewElement);
+            }
+        }
+        return allVisibleJsfMultiViewElements.toArray(new JsfMultiViewElement[allVisibleJsfMultiViewElements.size()]);
+    }
+    
+    private static boolean isVisibleJsfMultiViewElement(JsfMultiViewElement jsfMultiViewElement) {
+        TopComponent multiView = jsfMultiViewElement.getMultiViewTopComponent();
+        if (multiView == null) {
+            return false;
+        }
+        if (!multiView.isOpened()) {
+            return false;
+        }
+        
+        Mode mode = WindowManager.getDefault().findMode(multiView);
+        if (mode == null) {
+            return false;
+        }
+        if (mode.getSelectedTopComponent() != multiView) {
+            return false;
+        }
+        
+        return jsfMultiViewElement.isSelectedElement();
+    }
+    
+    private static void log(String message) {
+        Logger logger = getLogger();
+        logger.log(Level.INFO, message);
+    }
+    
+    private static void fine(String message) {
+        Logger logger = getLogger();
+        logger.fine(message);
+    }
+    
+    private static Logger getLogger() {
+        return Logger.getLogger(JsfMultiViewElement.class.getName());
     }
 }

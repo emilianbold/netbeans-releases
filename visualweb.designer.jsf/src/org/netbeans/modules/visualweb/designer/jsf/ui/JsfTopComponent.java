@@ -845,15 +845,15 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //        }
 //    }
     
-    private static TopComponent findNavigator() {
-        TopComponent navigator = WindowManager.getDefault().findTopComponent("navigatorTC"); // NOI18N
-        if (navigator == null) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                    new NullPointerException("Navigator TopComponent not found!")); // NOI18N
-        }
-        
-        return navigator;
-    }
+//    private static TopComponent findNavigator() {
+//        TopComponent navigator = WindowManager.getDefault().findTopComponent("navigatorTC"); // NOI18N
+//        if (navigator == null) {
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+//                    new NullPointerException("Navigator TopComponent not found!")); // NOI18N
+//        }
+//        
+//        return navigator;
+//    }
 
 //    /** Select the given bean in the tray, if it's present.
 //     * @param bean The bean you want selected
@@ -1963,49 +1963,48 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     
     // Helper methods
 
-    /** Opens palette(toolbox), properties, outline and navigator windows. */
-    private static void openAdditionalWindows() {
-        // XXX #6314795 Until fixed NB #62975, schedule it later,
-        // it allows winsys to load all the modes. When NB issue fixed,
-        // remove the scheduling.
-        SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    doOpenAdditionalWindows();
-                }
-            });
-    }
+//    /** Opens palette(toolbox), properties, outline and navigator windows. */
+//    private static void openAdditionalWindows() {
+//        // XXX #6314795 Until fixed NB #62975, schedule it later,
+//        // it allows winsys to load all the modes. When NB issue fixed,
+//        // remove the scheduling.
+//        SwingUtilities.invokeLater(new Runnable() {
+//                public void run() {
+//                    doOpenAdditionalWindows();
+//                }
+//            });
+//    }
 
-    private static void doOpenAdditionalWindows() {
-        // XXX TODO Define TC group, and use that, not this way.
-        
-        WindowManager wm = WindowManager.getDefault();
-//        TopComponent palette = wm.findTopComponent("toolbox"); // NOI18N
+//    private static void doOpenAdditionalWindows() {
+//        // XXX TODO Define TC group, and use that, not this way.
+//        
+//        WindowManager wm = WindowManager.getDefault();
+////        TopComponent palette = wm.findTopComponent("toolbox"); // NOI18N
+////
+////        if (palette != null) {
+////            palette.open();
+////        }
 //
-//        if (palette != null) {
-//            palette.open();
-//        }
-
-        TopComponent properties = wm.findTopComponent("properties"); // NOI18N
-        if (properties != null && !properties.isOpened()) {
-            properties.open();
-        }
-
-        TopComponent dynamicHelp = wm.findTopComponent("dynamicHelp"); // NOI18N
-        if (dynamicHelp != null && !dynamicHelp.isOpened()) {
-            dynamicHelp.open();
-        }
-        
-//        TopComponent outline = wm.findTopComponent("outline"); // NOI18N
-//        if (outline != null && !outline.isOpened()) {
-//            outline.open();
-//        }
-
-        TopComponent navigator = wm.findTopComponent("navigatorTC"); // NOI18N
-
-        if (navigator != null && !navigator.isOpened()) {
-            navigator.open();
-        }
-    }
+////        TopComponent properties = wm.findTopComponent("properties"); // NOI18N
+////        if (properties != null && !properties.isOpened()) {
+////            properties.open();
+////        }
+//
+////        TopComponent dynamicHelp = wm.findTopComponent("dynamicHelp"); // NOI18N
+////        if (dynamicHelp != null && !dynamicHelp.isOpened()) {
+////            dynamicHelp.open();
+////        }
+//        
+////        TopComponent outline = wm.findTopComponent("outline"); // NOI18N
+////        if (outline != null && !outline.isOpened()) {
+////            outline.open();
+////        }
+//
+////        TopComponent navigator = wm.findTopComponent("navigatorTC"); // NOI18N
+////        if (navigator != null && !navigator.isOpened()) {
+////            navigator.open();
+////        }
+//    }
 
 //    private void selectAndUpdateOutlineView() {
 ////        OutlineTopComp.getInstance().setCurrent(webform);
@@ -2365,16 +2364,25 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //        }
 //    } // End of JsfDesignerListener.
     
-    void closeMultiView() {
+    TopComponent getMultiViewTopComponent() {
         MultiViewElementCallback callback = multiViewElementCallback;
         if (callback == null) {
-            return;
+            return null;
         }
-        TopComponent multiView = callback.getTopComponent();
+        return callback.getTopComponent();
+    }
+    
+    void closeMultiView() {
+        TopComponent multiView = getMultiViewTopComponent();
         if (multiView == null) {
             return;
         }
         multiView.close();
+    }
+    
+    boolean isSelectedInMultiView() {
+        MultiViewElementCallback callback = multiViewElementCallback;
+        return callback == null ? false : callback.isSelectedElement();
     }
     
 
@@ -2479,8 +2487,9 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 ////        // XXX
 ////        designer.registerListeners();
         
-        // XXX Implement TopComponentGroup.
-        openAdditionalWindows();
+//        // XXX Implement TopComponentGroup.
+//        openAdditionalWindows();
+        // No op.
     }
 
     private void designerClosed() {

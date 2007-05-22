@@ -138,5 +138,17 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
 
+    <folder name="Windows2">
+        <folder name="Groups">
+            <file name="jsfdesigner.wsgrp" url="groups/jsfdesigner.wsgrp" />
+            <folder name="jsfdesigner">
+                <!-- XXX Shouldn't be here, but (probably) in core/ui module -->
+                <file name="properties.wstcgrp" url="groups/jsfdesigner/properties.wstcgrp" />
+                <!-- XXX Shouldn't be here, but (probably) in core/navigator module -->
+                <file name="navigatorTC.wstcgrp" url="groups/jsfdesigner/navigatorTC.wstcgrp" />
+            </folder>
+        </folder>
+    </folder>
+    
 </filesystem>
 

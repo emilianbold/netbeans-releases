@@ -364,6 +364,13 @@ public class JsfForm {
         return designer;
     }
     
+    
+    public static JsfMultiViewElement[] getJsfMultiViewElements() {
+        synchronized (jsfMultiViewElements) {
+            return jsfMultiViewElements.toArray(new JsfMultiViewElement[jsfMultiViewElements.size()]);
+        }
+    }
+    
     private static JsfMultiViewElement[] findJsfMultiViewElements(JsfForm jsfForm) {
 //        Designer[] designers = findDesigners(jsfForm);
         if (jsfForm == null) {
