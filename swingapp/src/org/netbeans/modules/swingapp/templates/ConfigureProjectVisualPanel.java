@@ -249,6 +249,8 @@ public class ConfigureProjectVisualPanel extends javax.swing.JPanel
         shellListLabel.setText(org.openide.util.NbBundle.getMessage(ConfigureProjectVisualPanel.class, "ConfigureProjectVisualPanel.shellListLabel.text")); // NOI18N
         shellListLabel.setToolTipText(org.openide.util.NbBundle.getMessage(ConfigureProjectVisualPanel.class, "ConfigureProjectVisualPanel.shellListLabel.toolTipText")); // NOI18N
 
+        shellList.setTraversalAllowed(false);
+
         descBrowser.setStatusLineVisible(false);
         descBrowser.setToolbarVisible(false);
 

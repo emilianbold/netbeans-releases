@@ -180,6 +180,9 @@
       </Properties>
     </Component>
     <Component class="org.openide.explorer.view.ListView" name="shellList">
+      <Properties>
+        <Property name="traversalAllowed" type="boolean" value="false"/>
+      </Properties>
     </Component>
     <Component class="org.openide.awt.HtmlBrowser" name="descBrowser">
       <Properties>
