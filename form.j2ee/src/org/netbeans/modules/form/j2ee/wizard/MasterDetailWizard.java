@@ -19,7 +19,11 @@
 
 package org.netbeans.modules.form.j2ee.wizard;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,6 +35,7 @@ import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.form.j2ee.J2EEUtils;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
@@ -38,6 +43,7 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMeta
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.openide.WizardDescriptor;
+import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -240,67 +246,100 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
             delegateIterator.previousPanel();
     }
 
+    public Set instantiate() throws IOException {
+        if (delegateIterator == null) {
+            // postpone the instantiation until the project is opened
+            final FileObject file = (FileObject) wizard.getProperty("mainFrame"); // NOI18N
+            final File projDir = (File)wizard.getProperty("projdir");
+            OpenProjects.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    try {
+                        for (Project p : OpenProjects.getDefault().getOpenProjects()) {
+                            File dir = FileUtil.toFile(p.getProjectDirectory());
+                            if (projDir.equals(dir)) {
+                                try {
+                                    instantiate0();
+                                    // Open the generated frame
+                                    DataObject dob = DataObject.find(file);
+                                    OpenCookie cookie = dob.getCookie(OpenCookie.class);
+                                    cookie.open();
+                                } catch (IOException ioex) {
+                                    ioex.printStackTrace();
+                                }
+                                break;
+                            } // else something went wrong - don't attempt to instantiate
+                        }
+                    } finally {
+                        OpenProjects.getDefault().removePropertyChangeListener(this);
+                    }
+                }
+            });
+            return Collections.EMPTY_SET;
+        } else {
+            return instantiate0();
+        }
+    }
+    
     /**
      * Returns set of instantiated objects.
      *
      * @return set of instantiated objects.
      * @throws IOException when the objects cannot be instantiated.
      */
-    public Set instantiate() throws IOException {
+    public Set instantiate0() throws IOException {
         Set resultSet = null;
-                try {
-        DatabaseConnection connection = (DatabaseConnection)wizard.getProperty("connection"); // NOI18N
-        String masterTableName = (String)wizard.getProperty("master"); // NOI18N
-        String detailFKTable = (String)wizard.getProperty("detailFKTable"); // NOI18N
-        String joinColumn = (String)wizard.getProperty("detailFKColumn"); // NOI18N
-
-        FileObject javaFile;
-        if (delegateIterator != null) {
-            resultSet = delegateIterator.instantiate();
-            javaFile = (FileObject)resultSet.iterator().next();
-        }
-        else {
-            resultSet = new HashSet();
-            javaFile = (FileObject) wizard.getProperty("mainFrame"); // NOI18N
-            resultSet.add(javaFile);
-        }
-        javaFile.setAttribute("justCreatedByNewWizard", Boolean.TRUE); // NOI18N
-        DataObject dob = null;
         try {
-            dob = DataObject.find(javaFile);
-        } catch (DataObjectNotFoundException ex) {
-            ex.printStackTrace(); // should not happen
-        }
-        FileObject formFile = FileUtil.findBrother(dob.getPrimaryFile(), "form"); // NOI18N
+            DatabaseConnection connection = (DatabaseConnection)wizard.getProperty("connection"); // NOI18N
+            String masterTableName = (String)wizard.getProperty("master"); // NOI18N
+            String detailFKTable = (String)wizard.getProperty("detailFKTable"); // NOI18N
+            String joinColumn = (String)wizard.getProperty("detailFKColumn"); // NOI18N
 
-        String[][] entity = instantiatePersitence(javaFile.getParent(), connection, masterTableName, detailFKTable);
+            FileObject javaFile;
+            if (delegateIterator != null) {
+                resultSet = delegateIterator.instantiate();
+                javaFile = (FileObject)resultSet.iterator().next();
+            }
+            else {
+                resultSet = new HashSet();
+                javaFile = (FileObject) wizard.getProperty("mainFrame"); // NOI18N
+                resultSet.add(javaFile);
+            }
+            javaFile.setAttribute("justCreatedByNewWizard", Boolean.TRUE); // NOI18N
+            DataObject dob = null;
+            try {
+                dob = DataObject.find(javaFile);
+            } catch (DataObjectNotFoundException ex) {
+                ex.printStackTrace(); // should not happen
+            }
+            FileObject formFile = FileUtil.findBrother(dob.getPrimaryFile(), "form"); // NOI18N
 
-        String masterClass = entity[0][1];
-        String masterEntity = entity[0][0];
-        String detailClass = null;
-        String detailEntity = null;
-        if (entity[1] != null) {
-            detailClass = entity[1][1];
-            detailEntity = entity[1][0];
-            joinColumn = J2EEUtils.columnToField(joinColumn);
-        }
-        MasterDetailGenerator generator = new MasterDetailGenerator(formFile, javaFile,
-            masterClass, detailClass, masterEntity, detailEntity, joinColumn, unitName);
+            String[][] entity = instantiatePersitence(javaFile.getParent(), connection, masterTableName, detailFKTable);
 
-        List<String> masterColumnNames = (List<String>)wizard.getProperty("masterColumns"); // NOI18N
-        List<String> masterColumns = new LinkedList();
-        for (String columnName : masterColumnNames) {
-            masterColumns.add(J2EEUtils.columnToField(columnName));
-        }
-        generator.setMasterColumns(masterColumns);
+            String masterClass = entity[0][1];
+            String masterEntity = entity[0][0];
+            String detailClass = null;
+            String detailEntity = null;
+            if (entity[1] != null) {
+                detailClass = entity[1][1];
+                detailEntity = entity[1][0];
+                joinColumn = J2EEUtils.columnToField(joinColumn);
+            }
+            MasterDetailGenerator generator = new MasterDetailGenerator(formFile, javaFile,
+                masterClass, detailClass, masterEntity, detailEntity, joinColumn, unitName);
 
-        List<String> detailColumnNames = (List<String>)wizard.getProperty("detailColumns"); // NOI18N
-        List<String> detailColumns = new LinkedList();
-        for (String columnName : detailColumnNames) {
-            detailColumns.add(J2EEUtils.columnToField(columnName));
-        }
-        generator.setDetailColumns(detailColumns);
+            List<String> masterColumnNames = (List<String>)wizard.getProperty("masterColumns"); // NOI18N
+            List<String> masterColumns = new LinkedList();
+            for (String columnName : masterColumnNames) {
+                masterColumns.add(J2EEUtils.columnToField(columnName));
+            }
+            generator.setMasterColumns(masterColumns);
 
+            List<String> detailColumnNames = (List<String>)wizard.getProperty("detailColumns"); // NOI18N
+            List<String> detailColumns = new LinkedList();
+            for (String columnName : detailColumnNames) {
+                detailColumns.add(J2EEUtils.columnToField(columnName));
+            }
+            generator.setDetailColumns(detailColumns);
 
             generator.generate();
         } catch (Exception ex) {
@@ -370,8 +409,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
                 if (entityInfo == null) {
                     // Generates a Java class for the entity
                     J2EEUtils.createEntity(folder, scope, unit, connection, table,
-                        (J2EEUtils.TABLE_CLOSURE && (detailTable != null)) ? new String[] {tableName} : null,
-                        delegateIterator == null);
+                        (J2EEUtils.TABLE_CLOSURE && (detailTable != null)) ? new String[] {tableName} : null);
                 }
             }
             

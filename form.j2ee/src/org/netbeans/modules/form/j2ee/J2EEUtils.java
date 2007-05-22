@@ -34,8 +34,6 @@ import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.net.URL;
@@ -64,7 +62,6 @@ import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.form.FormEditor;
 import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.FormProperty;
@@ -351,13 +348,11 @@ public class J2EEUtils {
      * @param tableNames names of the tables.
      * @param dbconn connection to the DB with the tables.
      * @param unit persistence unit to add the generated classes into
-     * @param inNewProject determines whether the given project is completely new
-     * (e.g. in early stages of its life - not opened etc.)
      * @return entity class that corresponds to the specified table and names
      * of the entity classes for related tables (if <code>relatedTableNames</code>
      * parameter was non-<code>null</code>).
      */
-    private static String[] generateEntityClass(final Project project, SourceGroup location, String packageName, DatabaseConnection dbconn, List tableNames, PersistenceUnit unit, boolean inNewProject) {
+    private static String[] generateEntityClass(final Project project, SourceGroup location, String packageName, DatabaseConnection dbconn, List tableNames, PersistenceUnit unit) {
         try {
             EntitiesFromDBGenerator generator = new EntitiesFromDBGenerator(tableNames, true, packageName, location, dbconn, project, unit);
             // PENDING
@@ -368,24 +363,7 @@ public class J2EEUtils {
             }
             
             // Compile generated bean
-            if (inNewProject) {
-                OpenProjects.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        try {
-                            for (Project p : OpenProjects.getDefault().getOpenProjects()) {
-                                if (p.equals(project)) {
-                                    compileGeneratedEntities(entities);
-                                    break;
-                                } // else something went wrong - don't attempt to compile
-                            }
-                        } finally {
-                            OpenProjects.getDefault().removePropertyChangeListener(this);
-                        }
-                    }
-                });
-            } else {
-                compileGeneratedEntities(entities);
-            }
+            compileGeneratedEntities(entities);
 
             String[] result = new String[entities.size()];
             int count = 0;
@@ -506,11 +484,9 @@ public class J2EEUtils {
      * @param tableName name of the table.
      * @param relatedTableNames names of related tables whose entity classes should be added
      * into the peristence unit.
-     * @param inNewProject determines whether the given project is completely new
-     * (e.g. in early stages of its life - not opened etc.)
      * @throws Exception when something goes wrong.
      */
-    public static void createEntity(FileObject dir, PersistenceScope scope, PersistenceUnit unit, DatabaseConnection connection, String tableName, String[] relatedTableNames, boolean inNewProject) throws Exception {
+    public static void createEntity(FileObject dir, PersistenceScope scope, PersistenceUnit unit, DatabaseConnection connection, String tableName, String[] relatedTableNames) throws Exception {
         Project project = FileOwnerQuery.getOwner(dir);
         String packageName = scope.getClassPath().getResourceName(dir, '.', false);
 
@@ -527,7 +503,7 @@ public class J2EEUtils {
         if (relatedTableNames != null) {
             tableNames.addAll(Arrays.asList(relatedTableNames));
         }
-        J2EEUtils.generateEntityClass(project, location, packageName, connection, tableNames, unit, inNewProject);
+        J2EEUtils.generateEntityClass(project, location, packageName, connection, tableNames, unit);
         // PENDING ugly workaround for the fact that the generated entity is not immediately
         // in the model - will be removed as soon as the corresponding issue is fixed
         try {
