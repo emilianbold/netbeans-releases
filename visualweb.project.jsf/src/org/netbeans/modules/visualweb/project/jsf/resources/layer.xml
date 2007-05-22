@@ -40,6 +40,9 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="framework">
                 <file name="org-netbeans-modules-visualweb-project-jsf-framework-JSFFrameworkProvider.instance"/> 
             </folder>
+            <folder name="templates">
+                <file name="org-netbeans-modules-visualweb-project-jsf-framework-JSFPrivilegedTemplates.instance"/> 
+            </folder>
         </folder>
     </folder>
     
