@@ -129,7 +129,8 @@
             <friend-packages>
                 <friend>org.netbeans.modules.iep.editor</friend>
                 <package>org.netbeans.modules.compapp.projects.wizard</package>
-            </friend-packages>
+                <friend>com.sun.jbi.sapbc.sapwsdlgenerator</friend>
+           </friend-packages>
         </data>
     </configuration>
 </project>
