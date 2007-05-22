@@ -30,6 +30,7 @@ import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 
 import org.netbeans.modules.form.FormLoaderSettings;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -49,7 +50,7 @@ public class AssistantView extends JPanel {
 
         setBackground(FormLoaderSettings.getInstance().getFormDesignerBackgroundColor());
         setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, getForeground()));
-        setToolTipText(null);
+        setToolTipText(NbBundle.getMessage(getClass(), "TOOLTIP_HelpBar")); // NOI18N
 
         // Message label
         messageLabel = new JLabel();
