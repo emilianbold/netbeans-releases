@@ -33,6 +33,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
@@ -384,15 +385,23 @@ public class J2EEUtils {
      */
     private static void compileGeneratedEntities(Set<FileObject> entities) {
         try {
-            Action action = FileSensitiveActions.fileCommandAction(ActionProvider.COMMAND_COMPILE_SINGLE, "", null); // NOI18N
+            final Action action = FileSensitiveActions.fileCommandAction(ActionProvider.COMMAND_COMPILE_SINGLE, "", null); // NOI18N
             if (action instanceof ContextAwareAction) {
                 DataObject[] dobs = new DataObject[entities.size()];
                 int count = 0;
                 for (FileObject fob : entities) {
                     dobs[count++] = DataObject.find(fob);
                 }
-                Lookup lookup = Lookups.fixed((Object[])dobs);
-                ((ContextAwareAction)action).createContextAwareInstance(lookup).actionPerformed(new ActionEvent(new Object(), 0, null));
+                final Lookup lookup = Lookups.fixed((Object[])dobs);
+                if (EventQueue.isDispatchThread()) { // Issue 102572
+                    ((ContextAwareAction)action).createContextAwareInstance(lookup).actionPerformed(new ActionEvent(new Object(), 0, null));
+                } else {
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            ((ContextAwareAction)action).createContextAwareInstance(lookup).actionPerformed(new ActionEvent(new Object(), 0, null));
+                        }
+                    });
+                }
             }
         } catch (DataObjectNotFoundException dnfex) {
             dnfex.printStackTrace();
