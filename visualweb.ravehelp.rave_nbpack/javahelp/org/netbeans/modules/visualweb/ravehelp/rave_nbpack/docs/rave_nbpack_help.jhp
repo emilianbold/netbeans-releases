@@ -7,8 +7,14 @@
 
 <helenProject version="1.0">
     <documents>
-		<directory title="C:/CVS/visualweb/ravehelp/rave_nbpack/javahelp/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs">
+		<directory title="C:/whole-CVS/visualweb/ravehelp/rave_nbpack/javahelp/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs">
 			<directory title="a11y">
+				<directory title="CVS">
+					<file title="Entries"/>
+					<file title="Repository"/>
+					<file title="Root"/>
+					<file title="Template"/>
+				</directory>
 				<file title="abouta11y.html"/>
 				<file title="component_palette_shortcuts.html"/>
 				<file title="dynamic_help_shortcuts.html"/>
@@ -16,7 +22,19 @@
 				<file title="query_editor_shortcuts.html"/>
 			</directory>
 			<directory title="components">
+				<directory title="CVS">
+					<file title="Entries"/>
+					<file title="Repository"/>
+					<file title="Root"/>
+					<file title="Template"/>
+				</directory>
 				<directory title="howtocomponents">
+					<directory title="CVS">
+						<file title="Entries"/>
+						<file title="Repository"/>
+						<file title="Root"/>
+						<file title="Template"/>
+					</directory>
 					<file title="add_clip.html"/>
 					<file title="add_component.html"/>
 					<file title="add_section_to_palette.html"/>
@@ -51,19 +69,40 @@
 				<file title="webform.html"/>
 			</directory>
 			<directory title="config_setup">
+				<directory title="CVS">
+					<file title="Entries"/>
+					<file title="Repository"/>
+					<file title="Root"/>
+					<file title="Template"/>
+				</directory>
 				<file title="tooltip_setting.html"/>
 			</directory>
 			<directory title="connect_data">
+				<directory title="CVS">
+					<file title="Entries"/>
+					<file title="Repository"/>
+					<file title="Root"/>
+					<file title="Template"/>
+				</directory>
 				<directory title="howtodata">
+					<directory title="CVS">
+						<file title="Entries"/>
+						<file title="Repository"/>
+						<file title="Root"/>
+						<file title="Template"/>
+					</directory>
+					<file title="add_table_to_form.html"/>
 					<file title="add_table_to_page.html"/>
 					<file title="add_web_service.html"/>
 					<file title="bind_data_to_comp.html"/>
 					<file title="binding_data_2_list_component.html"/>
 					<file title="binding_data_2_table_component.html"/>
+					<file title="configure_jdbc_driver.html"/>
 					<file title="create_sql_query.html"/>
 					<file title="data_quickref.html"/>
 					<file title="del_web_service.html"/>
 					<file title="delete_database_svr_type.html"/>
+					<file title="delete_jdbc_driver.html"/>
 					<file title="delete_table.html"/>
 					<file title="edit_database_svr_type.html"/>
 					<file title="java_db_quickref.html"/>
@@ -76,11 +115,29 @@
 				<file title="sql_query_supported.html"/>
 				<file title="working_with_databases.html"/>
 			</directory>
+			<directory title="CVS">
+				<file title="Entries"/>
+				<file title="Repository"/>
+				<file title="Root"/>
+				<file title="Template"/>
+			</directory>
 			<directory title="design">
+				<directory title="CVS">
+					<file title="Entries"/>
+					<file title="Repository"/>
+					<file title="Root"/>
+					<file title="Template"/>
+				</directory>
 				<file title="design_worksheet.html"/>
 				<file title="web_app_concepts.html"/>
 			</directory>
 			<directory title="glossary">
+				<directory title="CVS">
+					<file title="Entries"/>
+					<file title="Repository"/>
+					<file title="Root"/>
+					<file title="Template"/>
+				</directory>
 				<file title="datasourcedef.html"/>
 				<file title="deploymentsrvrdef.html"/>
 				<file title="glossary_beanprop.html"/>
@@ -98,6 +155,12 @@
 				<file title="wsdldef.html"/>
 			</directory>
 			<directory title="images">
+				<directory title="CVS">
+					<file title="Entries"/>
+					<file title="Repository"/>
+					<file title="Root"/>
+					<file title="Template"/>
+				</directory>
 				<file title="add-arrow.gif"/>
 				<file title="align.gif"/>
 				<file title="app_outline_icon.gif"/>
@@ -184,6 +247,7 @@
 				<file title="datasrcnodeicon.gif"/>
 				<file title="datatableicon.gif"/>
 				<file title="dbnodeicon.gif"/>
+				<file title="debug.png"/>
 				<file title="deploy_srvr_running.gif"/>
 				<file title="deploy_srvr_stopped.gif"/>
 				<file title="deploymtsrvrnodeicon.gif"/>
@@ -208,6 +272,7 @@
 				<file title="hyperlinkicon.gif"/>
 				<file title="inlinemsgicon.gif"/>
 				<file title="inputtextareaicon.gif"/>
+				<file title="jaxrpc-myHelloServiceApp.gif"/>
 				<file title="jsdialog_alarm.gif"/>
 				<file title="jsf_button_icon.gif"/>
 				<file title="jsf_checkbox_icon.gif"/>
@@ -242,8 +307,10 @@
 				<file title="propsheet_component_sample.gif"/>
 				<file title="radiobuttonlisticon.gif"/>
 				<file title="red-x.gif"/>
+				<file title="refresh.png"/>
 				<file title="remote_deploy.gif"/>
 				<file title="remote_deploy_icon.gif"/>
+				<file title="restart.png"/>
 				<file title="rowset.gif"/>
 				<file title="rowset_process.gif"/>
 				<file title="runprojicon.gif"/>
@@ -260,6 +327,8 @@
 				<file title="sort_name.gif"/>
 				<file title="source_pkg.gif"/>
 				<file title="stacking_comp.gif"/>
+				<file title="start.png"/>
+				<file title="stop.png"/>
 				<file title="tab_set_hierarchy.gif"/>
 				<file title="tab_set_selected_tab.gif"/>
 				<file title="table_process.gif"/>
@@ -286,10 +355,28 @@
 				<file title="websvcsnodeicon.gif"/>
 			</directory>
 			<directory title="jsp-jsfel">
+				<directory title="CVS">
+					<file title="Entries"/>
+					<file title="Repository"/>
+					<file title="Root"/>
+					<file title="Template"/>
+				</directory>
 				<file title="jsf_expression_language_intro.html"/>
 			</directory>
 			<directory title="multiple_forms">
+				<directory title="CVS">
+					<file title="Entries"/>
+					<file title="Repository"/>
+					<file title="Root"/>
+					<file title="Template"/>
+				</directory>
 				<directory title="howtomultiforms">
+					<directory title="CVS">
+						<file title="Entries"/>
+						<file title="Repository"/>
+						<file title="Root"/>
+						<file title="Template"/>
+					</directory>
 					<file title="add_comp_nav_editor.html"/>
 					<file title="create_form.html"/>
 					<file title="delete_connector.html"/>
@@ -305,7 +392,19 @@
 				<file title="multiform_process.html"/>
 			</directory>
 			<directory title="projects">
+				<directory title="CVS">
+					<file title="Entries"/>
+					<file title="Repository"/>
+					<file title="Root"/>
+					<file title="Template"/>
+				</directory>
 				<directory title="howtoprojects">
+					<directory title="CVS">
+						<file title="Entries"/>
+						<file title="Repository"/>
+						<file title="Root"/>
+						<file title="Template"/>
+					</directory>
 					<file title="aboutregularexpn.html"/>
 					<file title="add_css_file.html"/>
 					<file title="add_image.html"/>
@@ -339,7 +438,19 @@
 				<file title="project_process.html"/>
 			</directory>
 			<directory title="ui_elements">
+				<directory title="CVS">
+					<file title="Entries"/>
+					<file title="Repository"/>
+					<file title="Root"/>
+					<file title="Template"/>
+				</directory>
 				<directory title="dialogs">
+					<directory title="CVS">
+						<file title="Entries"/>
+						<file title="Repository"/>
+						<file title="Root"/>
+						<file title="Template"/>
+					</directory>
 					<file title="add_complib.html"/>
 					<file title="add_data_source_db.html"/>
 					<file title="add_database_conn_db.html"/>
@@ -366,6 +477,12 @@
 					<file title="virtual_forms_db.html"/>
 				</directory>
 				<directory title="editors">
+					<directory title="CVS">
+						<file title="Entries"/>
+						<file title="Repository"/>
+						<file title="Root"/>
+						<file title="Template"/>
+					</directory>
 					<file title="about_css_editor.html"/>
 					<file title="about_jsp_editor.html"/>
 					<file title="about_navigation_editor.html"/>
@@ -376,14 +493,33 @@
 					<file title="qe_grid_pane.html"/>
 					<file title="qe_results_pane.html"/>
 					<file title="qe_sql_pane.html"/>
+					<file title="visual_designer_popup.html"/>
 				</directory>
 				<directory title="options">
+					<directory title="CVS">
+						<file title="Entries"/>
+						<file title="Repository"/>
+						<file title="Root"/>
+						<file title="Template"/>
+					</directory>
 					<file title="options_data_source_dnd.html"/>
 					<file title="visual_editor.html"/>
 				</directory>
 				<directory title="palette">
 					<directory title="bh">
+						<directory title="CVS">
+							<file title="Entries"/>
+							<file title="Repository"/>
+							<file title="Root"/>
+							<file title="Template"/>
+						</directory>
 						<directory title="propsheets">
+							<directory title="CVS">
+								<file title="Entries"/>
+								<file title="Repository"/>
+								<file title="Root"/>
+								<file title="Template"/>
+							</directory>
 							<file title="bh_add_remove_css.html"/>
 							<file title="bh_addremovelist_props.html"/>
 							<file title="bh_alert_props.html"/>
@@ -482,8 +618,26 @@
 						<file title="tree.html"/>
 						<file title="tree_node.html"/>
 					</directory>
+					<directory title="CVS">
+						<file title="Entries"/>
+						<file title="Repository"/>
+						<file title="Root"/>
+						<file title="Template"/>
+					</directory>
 					<directory title="dataproviders">
+						<directory title="CVS">
+							<file title="Entries"/>
+							<file title="Repository"/>
+							<file title="Root"/>
+							<file title="Template"/>
+						</directory>
 						<directory title="propsheets">
+							<directory title="CVS">
+								<file title="Entries"/>
+								<file title="Repository"/>
+								<file title="Root"/>
+								<file title="Template"/>
+							</directory>
 							<file title="cachedrowset_dp_props.html"/>
 							<file title="list_dp_props.html"/>
 							<file title="map_dp_props.html"/>
@@ -499,7 +653,19 @@
 						<file title="object_list_dp.html"/>
 					</directory>
 					<directory title="html_elements">
+						<directory title="CVS">
+							<file title="Entries"/>
+							<file title="Repository"/>
+							<file title="Root"/>
+							<file title="Template"/>
+						</directory>
 						<directory title="propsheets">
+							<directory title="CVS">
+								<file title="Entries"/>
+								<file title="Repository"/>
+								<file title="Root"/>
+								<file title="Template"/>
+							</directory>
 							<file title="body_props.html"/>
 							<file title="head_props.html"/>
 							<file title="html_props.html"/>
@@ -509,6 +675,12 @@
 						<file title="html.html"/>
 					</directory>
 					<directory title="jsf-val-conv">
+						<directory title="CVS">
+							<file title="Entries"/>
+							<file title="Repository"/>
+							<file title="Root"/>
+							<file title="Template"/>
+						</directory>
 						<file title="big_decimal_converter.html"/>
 						<file title="big_integer_converter.html"/>
 						<file title="boolean_converter.html"/>
@@ -540,6 +712,12 @@
 						<file title="sql_timestamp_converter.html"/>
 					</directory>
 					<directory title="jsfstd">
+						<directory title="CVS">
+							<file title="Entries"/>
+							<file title="Repository"/>
+							<file title="Root"/>
+							<file title="Template"/>
+						</directory>
 						<file title="app_outline_chkbxlist_graphic.html"/>
 						<file title="app_outline_datatable_graphic.html"/>
 						<file title="app_outline_form_graphic.html"/>
@@ -571,7 +749,19 @@
 						<file title="text_field.html"/>
 					</directory>
 					<directory title="wdstk-jsf1_2">
+						<directory title="CVS">
+							<file title="Entries"/>
+							<file title="Repository"/>
+							<file title="Root"/>
+							<file title="Template"/>
+						</directory>
 						<directory title="propsheets">
+							<directory title="CVS">
+								<file title="Entries"/>
+								<file title="Repository"/>
+								<file title="Root"/>
+								<file title="Template"/>
+							</directory>
 							<file title="addremovelist_props.html"/>
 							<file title="alert_props.html"/>
 							<file title="anchor_props.html"/>
@@ -670,7 +860,19 @@
 					<file title="palette_win_graphic.html"/>
 				</directory>
 				<directory title="project_nav">
+					<directory title="CVS">
+						<file title="Entries"/>
+						<file title="Repository"/>
+						<file title="Root"/>
+						<file title="Template"/>
+					</directory>
 					<directory title="node_prop_sheets">
+						<directory title="CVS">
+							<file title="Entries"/>
+							<file title="Repository"/>
+							<file title="Root"/>
+							<file title="Template"/>
+						</directory>
 						<file title="application_bean_node_props.html"/>
 						<file title="build_node_props.html"/>
 						<file title="dist_node_props.html"/>
@@ -705,6 +907,12 @@
 					<file title="webforms_node.html"/>
 				</directory>
 				<directory title="propeditors">
+					<directory title="CVS">
+						<file title="Entries"/>
+						<file title="Repository"/>
+						<file title="Root"/>
+						<file title="Template"/>
+					</directory>
 					<file title="imageurl_prop_ed.html"/>
 					<file title="lang_domain_prop_ed.html"/>
 					<file title="style_prop_ed_background.html"/>
@@ -718,6 +926,12 @@
 					<file title="url_prop_ed.html"/>
 				</directory>
 				<directory title="propsheets">
+					<directory title="CVS">
+						<file title="Entries"/>
+						<file title="Repository"/>
+						<file title="Root"/>
+						<file title="Template"/>
+					</directory>
 					<file title="jsfstd_button_props.html"/>
 					<file title="jsfstd_checkbox_list_props.html"/>
 					<file title="jsfstd_checkbox_props.html"/>
@@ -746,6 +960,12 @@
 					<file title="propsheet_win.html"/>
 				</directory>
 				<directory title="server_nav">
+					<directory title="CVS">
+						<file title="Entries"/>
+						<file title="Repository"/>
+						<file title="Root"/>
+						<file title="Template"/>
+					</directory>
 					<file title="add_new_data_provider.html"/>
 					<file title="run_query.html"/>
 					<file title="run_query_options_dialog.html"/>
@@ -755,8 +975,247 @@
 					<file title="srvs_rnode.html"/>
 				</directory>
 				<directory title="wizards">
+					<directory title="CVS">
+						<file title="Entries"/>
+						<file title="Repository"/>
+						<file title="Root"/>
+						<file title="Template"/>
+					</directory>
 					<file title="new_project_choose_type.html"/>
 					<file title="new_project_name.html"/>
+				</directory>
+			</directory>
+			<directory title="web">
+				<directory title="about">
+					<file title="about_webapps.html"/>
+					<file title="webapps_idesupport.html"/>
+					<file title="webapps_process.html"/>
+					<file title="webapps_quickref.html"/>
+					<file title="webapps_techsupport.html"/>
+				</directory>
+				<directory title="build">
+					<file title="about_build.html"/>
+					<file title="build_externalresource.html"/>
+					<file title="build_remove.html"/>
+					<file title="build_warfile.html"/>
+				</directory>
+				<directory title="configure">
+					<file title="about_webapp_configure.html"/>
+					<file title="configure_webapp_dd.html"/>
+				</directory>
+				<directory title="create">
+					<directory title="about">
+						<file title="about_create_webapps.html"/>
+						<file title="about_create_webcomps.html"/>
+						<file title="about_struct_webapps.html"/>
+						<file title="create_webapps_proj.html"/>
+					</directory>
+					<directory title="applet">
+						<file title="applet_create.html"/>
+						<file title="applet_run.html"/>
+						<file title="applet_security.html"/>
+					</directory>
+					<directory title="filter">
+						<file title="about_filter.html"/>
+						<file title="filter_addtodd.html"/>
+						<file title="filter_create.html"/>
+						<file title="filter_run.html"/>
+					</directory>
+					<directory title="html">
+						<file title="html_create.html"/>
+					</directory>
+					<directory title="jsp">
+						<file title="about_jsp_edit.html"/>
+						<file title="about_jsp_encoding.html"/>
+						<file title="about_jsp_syntax.html"/>
+						<file title="about_jsp_technology.html"/>
+						<file title="jsp_compile.html"/>
+						<file title="jsp_create.html"/>
+						<file title="jsp_edit.html"/>
+						<file title="jsp_encoding_page.html"/>
+						<file title="jsp_encoding_request.html"/>
+						<file title="jsp_encoding_response.html"/>
+						<file title="jsp_queryparams.html"/>
+						<file title="jsp_run.html"/>
+						<file title="jsp_servletview.html"/>
+						<file title="jsp_useapplet.html"/>
+						<file title="jsp_usetaglib.html"/>
+					</directory>
+					<directory title="listener">
+						<file title="about_listener.html"/>
+						<file title="listener_addtodd.html"/>
+						<file title="listener_create.html"/>
+						<file title="listener_run.html"/>
+					</directory>
+					<directory title="servlet">
+						<file title="about_servlet.html"/>
+						<file title="servlet_create.html"/>
+						<file title="servlet_edit.html"/>
+						<file title="servlet_run.html"/>
+					</directory>
+					<directory title="tag">
+						<directory title="about">
+							<file title="about_jstl.html"/>
+							<file title="about_taglib.html"/>
+						</directory>
+						<directory title="framework">
+							<directory title="jsf">
+								<file title="AddDataTable.html"/>
+								<file title="AddForm.html"/>
+								<file title="AddManagedBeanDialog.html"/>
+								<file title="AddNavigationCaseDialog.html"/>
+								<file title="AddNavigationRuleDialog.html"/>
+								<file title="file_ManagedBeanPanel.html"/>
+							</directory>
+							<directory title="struts">
+								<file title="AddActionPanel.html"/>
+								<file title="AddException.html"/>
+								<file title="AddFormBean.html"/>
+								<file title="AddFormProperty.html"/>
+								<file title="AddForward.html"/>
+								<file title="AddForwardIncludePanel.html"/>
+								<file title="file_ActionPanel.html"/>
+								<file title="file_ActionPanel1.html"/>
+								<file title="file_FormBeanNewPanel.html"/>
+							</directory>
+							<file title="about_crud.html"/>
+							<file title="about_framework.html"/>
+							<file title="framework_crud_generate.html"/>
+							<file title="framework_jsf_add.html"/>
+							<file title="framework_jsf_create.html"/>
+							<file title="framework_jsf_datatable.html"/>
+							<file title="framework_jsf_form.html"/>
+							<file title="framework_struts_add.html"/>
+							<file title="framework_struts_create.html"/>
+						</directory>
+						<directory title="tagfile">
+							<file title="about_tagfile.html"/>
+							<file title="tagfile_create.html"/>
+						</directory>
+						<directory title="taghandler">
+							<file title="taghandler_create.html"/>
+							<file title="taghandler_edit.html"/>
+						</directory>
+						<directory title="taglib">
+							<file title="csh_library_manager.html"/>
+							<file title="taglib_create_separate.html"/>
+							<file title="taglib_manage.html"/>
+						</directory>
+						<directory title="tld">
+							<file title="about_tld.html"/>
+							<file title="tld_create.html"/>
+							<file title="tld_edit.html"/>
+						</directory>
+					</directory>
+				</directory>
+				<directory title="csh">
+					<directory title="dbox_other">
+						<file title="tomcat_edit_tomcatuser.html"/>
+					</directory>
+					<directory title="dbox_projprops">
+						<file title="CustomizerFrameworks.html"/>
+						<file title="CustomizerWSClientHost.html"/>
+						<file title="CustomizerWSClientHostDisabled.html"/>
+						<file title="CustomizerWSServiceHost.html"/>
+						<file title="CustomizerWSServiceHostDisabled.html"/>
+						<file title="WebCustomizerCompile.html"/>
+						<file title="WebCustomizerJavadoc.html"/>
+						<file title="WebCustomizerLibraries.html"/>
+						<file title="WebCustomizerRun.html"/>
+						<file title="WebCustomizerSources.html"/>
+						<file title="WebCustomizerWar.html"/>
+					</directory>
+					<directory title="dbox_projprops_freeform">
+						<file title="WebClasspathPanel.html"/>
+						<file title="WebLocationsPanel.html"/>
+					</directory>
+					<directory title="graphic_editor">
+						<file title="dd_multiview_filters_filtersNode.html"/>
+						<file title="dd_multiview_overview_contextParamsNode.html"/>
+						<file title="dd_multiview_overview_listenersNode.html"/>
+						<file title="dd_multiview_overview_overviewNode.html"/>
+						<file title="dd_multiview_pages_errorPagesNode.html"/>
+						<file title="dd_multiview_pages_jspPropertyGroupsNode.html"/>
+						<file title="dd_multiview_pages_welcomeFilesNode.html"/>
+						<file title="dd_multiview_references_ejbRefsNode.html"/>
+						<file title="dd_multiview_references_envEntriesNode.html"/>
+						<file title="dd_multiview_references_messageDestRefsNode.html"/>
+						<file title="dd_multiview_references_resEnvRefsNode.html"/>
+						<file title="dd_multiview_references_resRefsNode.html"/>
+						<file title="dd_multiview_security_loginconfigNode.html"/>
+						<file title="dd_multiview_security_securityconstraintsNode.html"/>
+						<file title="dd_multiview_security_securityrolesNode.html"/>
+						<file title="dd_multiview_servlets_servletsNode.html"/>
+					</directory>
+					<directory title="projwiz_freeform">
+						<file title="WebClasspathWizardPanel.html"/>
+						<file title="WebLocationsWizardPanel.html"/>
+					</directory>
+					<directory title="projwiz_standard">
+						<file title="JSFConfigurationPanelVisual.html"/>
+						<file title="PanelConfigureProject.html"/>
+						<file title="PanelSupportedFrameworks.html"/>
+						<file title="SecondPanel.html"/>
+						<file title="StrutsConfigurationPanelVisual.html"/>
+						<file title="ThePanel.html"/>
+					</directory>
+				</directory>
+				<directory title="debug">
+					<file title="about_debug.html"/>
+					<file title="debug_webapp.html"/>
+				</directory>
+				<directory title="deploy">
+					<file title="about_deploy.html"/>
+					<file title="deploy_changeserver.html"/>
+					<file title="deploy_quickref.html"/>
+					<file title="deploy_webapp.html"/>
+				</directory>
+				<directory title="glossary">
+					<file title="blueprints.html"/>
+					<file title="character-set.html"/>
+					<file title="jakarta.html"/>
+					<file title="uddi.html"/>
+					<file title="URL_query_string.html"/>
+				</directory>
+				<directory title="images">
+					<file title="arrow.gif"/>
+					<file title="cf_minus.gif"/>
+					<file title="cf_plus.gif"/>
+					<file title="cswitch.gif"/>
+					<file title="ctrl.png"/>
+					<file title="dd.gif"/>
+					<file title="emdash.gif"/>
+					<file title="html.gif"/>
+					<file title="html.jpg"/>
+					<file title="image6.gif"/>
+					<file title="index.gif"/>
+					<file title="j2ee-blueprint-projects.jpg"/>
+					<file title="jar.gif"/>
+					<file title="jar.jpg"/>
+					<file title="jar1.gif"/>
+					<file title="jar2.gif"/>
+					<file title="jar3.gif"/>
+					<file title="jsp-fragment16.gif"/>
+					<file title="jsp-xml16.gif"/>
+					<file title="jsp16.gif"/>
+					<file title="libraries-list.gif"/>
+					<file title="modicon.gif"/>
+					<file title="nb_spacer_t.gif"/>
+					<file title="reload.gif"/>
+					<file title="search.gif"/>
+					<file title="sort.gif"/>
+					<file title="sortasc.gif"/>
+					<file title="space_8pix.gif"/>
+					<file title="spacer2_t.gif"/>
+					<file title="spacer_4pix.gif"/>
+					<file title="tag16.gif"/>
+					<file title="time.gif"/>
+					<file title="tip.gif"/>
+					<file title="toplevel.gif"/>
+					<file title="war.gif"/>
+					<file title="warn.gif"/>
+					<file title="webmodule.gif"/>
+					<file title="yellow-ball.gif"/>
 				</directory>
 			</directory>
 			<file title="credits.html"/>
