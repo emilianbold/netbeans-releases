@@ -103,8 +103,8 @@ public class CLIHowHardIsToGuessKeyTest extends NbTestCase {
         File lock = new File(getWorkDir(), "lock");
         assertTrue("Lock is created", lock.canRead());
         LOG.info("lock file exists" + lock);
-        for (int i = 0; i < 50; i++) {
-            LOG.info("testing its size: " + lock.length());
+        for (int i = 0; i < 500; i++) {
+            LOG.info(i + ": testing its size: " + lock.length());
             if (lock.length() >= 14) {
                 break;
             }
@@ -159,7 +159,6 @@ public class CLIHowHardIsToGuessKeyTest extends NbTestCase {
         if (c.times > 10) {
             fail("Too many allowed connections, the responce has to be slow to prevent secure attacks: " + c.times);
         }
-        
     }
     static InetAddress localHostAddress () throws Exception {
         java.net.NetworkInterface net = java.net.NetworkInterface.getByName ("lo");
