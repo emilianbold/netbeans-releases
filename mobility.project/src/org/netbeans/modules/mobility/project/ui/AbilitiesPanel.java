@@ -28,13 +28,16 @@
 
 package org.netbeans.modules.mobility.project.ui;
 
-import java.awt.Point;
+import java.awt.Dialog;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -49,18 +52,25 @@ import javax.swing.table.TableCellEditor;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.mobility.antext.preprocessor.CommentingPreProcessor;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
+import org.netbeans.modules.mobility.project.GlobalAbilitiesCache;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
+import org.netbeans.modules.mobility.project.ui.customizer.AddAttributePanel;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.modules.mobility.project.J2MEProject;
+import org.netbeans.modules.mobility.project.ui.customizer.AddAbilityPanel;
 import org.netbeans.modules.mobility.project.ui.customizer.CustomizerAbilities;
 import org.netbeans.spi.navigator.NavigatorLookupHint;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -108,7 +118,8 @@ public class AbilitiesPanel implements NavigatorPanel
     static ABHint hintInstance=new ABHint();
     
     private static String MULTIPLE_VALUES=NbBundle.getMessage(AbilitiesPanel.class,"LBL_MultipleValues");
-    private static String REMOVE=NbBundle.getMessage(AbilitiesPanel.class,"LBL_Remove");
+    private static String REMOVE=NbBundle.getMessage(AbilitiesPanel.class,"LBL_RemoveAbility");
+    private static String ADD=NbBundle.getMessage(AbilitiesPanel.class,"LBL_AddAbility");
     
     static class ABPanel extends JPanel implements ExplorerManager.Provider
     {
@@ -119,8 +130,106 @@ public class AbilitiesPanel implements NavigatorPanel
         private static J2MEProject project=null;
         private static Node[] selectedNodes=null;
         private static Node defaultConfig=null;
-        private static Action[] actions = { new RemoveAction() };
+        private static Action[] actions = { new AddAction(), new RemoveAction() };
         private static ExplorerManager manager=new ExplorerManager();
+        
+        static private class AddAction extends AbstractAction {
+
+            private AddAction()
+            {
+                putValue(Action.NAME,ADD);
+            }
+
+            public void actionPerformed(ActionEvent e)
+            {
+                final AddAbilityPanel add = new AddAbilityPanel();
+                HashSet<String> usedAbilities=new HashSet<String>();
+                final AntProjectHelper helper=project.getLookup().lookup(AntProjectHelper.class);
+                final EditableProperties ep=helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                for (Node node : selectedNodes)
+                {
+                    ProjectConfiguration conf=node.getLookup().lookup(ProjectConfiguration.class);
+                    String abilities = ep.getProperty(J2MEProjectProperties.CONFIG_PREFIX + conf.getDisplayName() + "." + DefaultPropertiesDescriptor.ABILITIES);
+                    if (abilities == null)
+                        // Let's take a default value if we inherit from default configuration
+                        abilities = ep.getProperty(DefaultPropertiesDescriptor.ABILITIES);
+                    Map<String,String> ab=CommentingPreProcessor.decodeAbilitiesMap(abilities);
+                    usedAbilities.addAll(ab.keySet());
+                }
+                final Vector<String> proposedAbilities = new Vector<String>(GlobalAbilitiesCache.getDefault().getAllAbilities());
+                proposedAbilities.removeAll(usedAbilities);
+                add.init(false, proposedAbilities, usedAbilities, null, null);
+                final DialogDescriptor dd = new DialogDescriptor(
+                    add, NbBundle.getMessage(CustomizerAbilities.class, "TITLE_AddAbility"), //NOI18N
+                    true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(AddAttributePanel.class),
+                    new ActionListener() 
+                    {
+                        public void actionPerformed(ActionEvent e) 
+                        {
+                            if (NotifyDescriptor.OK_OPTION.equals(e.getSource())) {
+                                final String key = add.getKey();
+                                final String value=add.getValue();
+                                GlobalAbilitiesCache.getDefault().addAbility(key);
+                                int row = tableModel.addRow(key, value);
+                                table.getSelectionModel().setSelectionInterval(row, row);
+                                
+                                ProjectManager.mutex().writeAccess(new Runnable() 
+                                {
+                                    public void run() 
+                                    {
+                                        //Save the change
+                                        if (defaultConfig != null)
+                                        {   
+                                            String abilities=ep.getProperty(DefaultPropertiesDescriptor.ABILITIES);
+                                            Map<String,String> ab=CommentingPreProcessor.decodeAbilitiesMap(abilities);
+                                            ab.put(key,value);
+                                            abilities=CommentingPreProcessor.encodeAbilitiesMap(ab);
+                                            ep.put(DefaultPropertiesDescriptor.ABILITIES,abilities);
+                                            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,ep);   
+                                        }
+
+                                        for (Node node : selectedNodes)
+                                        {
+                                            if (node != defaultConfig)
+                                            {
+                                                ProjectConfiguration conf=node.getLookup().lookup(ProjectConfiguration.class);
+                                                String abilities = ep.getProperty(J2MEProjectProperties.CONFIG_PREFIX + conf.getDisplayName() + "." + DefaultPropertiesDescriptor.ABILITIES);
+                                                if (abilities == null)
+                                                    // Let's take a default value if we inherit from default configuration
+                                                    abilities = ep.getProperty(DefaultPropertiesDescriptor.ABILITIES);
+                                                Map<String,String> ab=CommentingPreProcessor.decodeAbilitiesMap(abilities);
+                                                //if key is present it means default config is used and we don't need to added'
+                                                String oldVal=ab.get(key);
+                                                if (!ab.containsKey(key) || 
+                                                    (oldVal == null && value != null) || 
+                                                    (oldVal != null && !oldVal.equals(value)))
+                                                {
+                                                    ab.put(key,value);
+                                                    abilities=CommentingPreProcessor.encodeAbilitiesMap(ab);
+                                                    ep.put(J2MEProjectProperties.CONFIG_PREFIX+conf.getDisplayName()+"."+DefaultPropertiesDescriptor.ABILITIES,abilities);
+                                                }
+                                            }
+                                        }
+                                        //Save the properties
+                                        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,ep);
+                                        try
+                                        {
+                                            ProjectManager.getDefault().saveProject(project);
+                                        } catch (Exception ex)
+                                        {
+                                            ErrorManager.getDefault().notify(ex);
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    });
+                    
+                add.setDialogDescriptor(dd);
+                final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+                dialog.setVisible(true);
+            }
+        }
         
         static private class RemoveAction extends AbstractAction {
 
@@ -202,7 +311,8 @@ public class AbilitiesPanel implements NavigatorPanel
             final TableCellEditor editor=table.getDefaultEditor(String.class);
             //Add the popup menu for abilities table
             final JPopupMenu pm=new JPopupMenu();
-            pm.add(new RemoveAction());            
+            for (Action act : actions)
+                pm.add(act);            
             table.addMouseListener(new MouseAdapter()
             {
                 public void mousePressed(MouseEvent e) {

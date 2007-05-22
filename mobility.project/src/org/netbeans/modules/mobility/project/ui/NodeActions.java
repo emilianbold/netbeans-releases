@@ -254,7 +254,7 @@ class AddLibraryAction extends NodeAction<Library>
     {
         Library result[]=null;
         final LibrariesChooser panel = new LibrariesChooser("j2se"); //NOI18N
-            final Object[] options = new Object[] {
+        final Object[] options = new Object[] {
             NbBundle.getMessage (VisualClasspathSupport.class,"LBL_AddLibrary"), //NOI18N
             NotifyDescriptor.CANCEL_OPTION
         };

@@ -72,7 +72,7 @@ public class AddAbilityPanel extends javax.swing.JPanel implements ActionListene
         return tValue.getText();
     }
     
-    protected void setDialogDescriptor(final DialogDescriptor desc) {
+    public void setDialogDescriptor(final DialogDescriptor desc) {
         this.dd = desc;
         dd.setHelpCtx(new HelpCtx(AddAbilityPanel.class));
         actionPerformed(null);
