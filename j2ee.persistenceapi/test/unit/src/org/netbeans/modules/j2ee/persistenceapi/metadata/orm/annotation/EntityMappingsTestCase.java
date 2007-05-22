@@ -47,6 +47,14 @@ public class EntityMappingsTestCase extends JavaSourceTestCase {
         addCompileRoots(Collections.singletonList(root));
     }
 
+    /**
+     * Used to allow other classes in this package which are not subclasses
+     * of this one to call tearDown() directly.
+     */
+    protected void tearDown() {
+        super.tearDown();
+    }
+
     protected MetadataModel<EntityMappingsMetadata> createModel() throws IOException, InterruptedException {
         RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
         return EntityMappingsMetadataModelFactory.createMetadataModel(

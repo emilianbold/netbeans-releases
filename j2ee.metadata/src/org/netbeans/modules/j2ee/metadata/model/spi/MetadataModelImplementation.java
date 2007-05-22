@@ -20,6 +20,7 @@
 package org.netbeans.modules.j2ee.metadata.model.spi;
 
 import java.io.IOException;
+import java.util.concurrent.Future;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 
@@ -43,4 +44,22 @@ public interface MetadataModelImplementation<T> {
      * @throws IOException if an error occured while reading the model from its storage.
      */
     <R> R runReadAction(MetadataModelAction<T, R> action) throws MetadataModelException, IOException;
+
+    /**
+     * Corresponds to {@link org.netbeans.modules.j2ee.metadata.model.api.MetadataModel#isReady}.
+     *
+     * @return true if the model is ready, false otherwise.
+     */
+    boolean isReady();
+
+    /**
+     * Corresponds to {@link org.netbeans.modules.j2ee.metadata.model.api.MetadataModel#runReadActionWhenReady}.
+     *
+     * @param  action the action to be executed; never null.
+     * @return a {@link Future} encapsulating the value returned by the action's {@link MetadataModelAction#run} method.
+     * @throws MetadataModelException if the action's <code>run()</code> method
+     *         threw a checked exception.
+     * @throws IOException if an error occured while reading the model from its storage.
+     */
+    <R> Future<R> runReadActionWhenReady(MetadataModelAction<T, R> action) throws MetadataModelException, IOException;
 }

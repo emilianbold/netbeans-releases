@@ -21,8 +21,7 @@ package org.netbeans.modules.j2ee.persistenceapi.metadata.orm.annotation;
 
 import java.io.IOException;
 import java.util.concurrent.Callable;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.Future;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
@@ -50,6 +49,18 @@ public class EntityMappingsMetadataModelImpl implements MetadataModelImplementat
     public <R> R runReadAction(final MetadataModelAction<EntityMappingsMetadata, R> action) throws IOException {
         return helper.runJavaSourceTask(new Callable<R>() {
             public R call () throws Exception {
+                return action.run(metadata);
+            }
+        });
+    }
+
+    public boolean isReady() {
+        return !helper.isJavaScanInProgress();
+    }
+
+    public <R> Future<R> runReadActionWhenReady(final MetadataModelAction<EntityMappingsMetadata, R> action) throws IOException {
+        return helper.runJavaSourceTaskWhenScanFinished(new Callable<R>() {
+            public R call() throws Exception {
                 return action.run(metadata);
             }
         });

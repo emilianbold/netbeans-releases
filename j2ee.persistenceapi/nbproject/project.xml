@@ -83,7 +83,19 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.j2ee.metadata</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.j2ee.metadata.model.support</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <!-- this should not be necessary, should be able to recursively depend on the 
+                        tests of org.netbeans.modules.j2ee.metadata.model.support -->
+                        <code-name-base>org.openide.util</code-name-base>
                         <compile-dependency/>
                         <test/>
                     </test-dependency>

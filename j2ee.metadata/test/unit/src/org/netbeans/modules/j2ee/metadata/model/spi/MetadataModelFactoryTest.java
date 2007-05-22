@@ -35,7 +35,7 @@ public class MetadataModelFactoryTest extends TestCase {
     }
 
     public void testCreateMetadataModel() throws Exception {
-        MetadataModel<Void> model = MetadataModelFactory.createMetadataModel(new SimpleMetadataModelImpl<Void>());
+        MetadataModel<Void> model = MetadataModelFactory.createMetadataModel(new SimpleMetadataModelImpl<Void>(true));
         assertEquals("foo", model.runReadAction(new MetadataModelAction<Void, String>() {
             public String run(Void metadata) throws Exception {
                 return "foo";

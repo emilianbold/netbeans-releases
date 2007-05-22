@@ -84,6 +84,24 @@ is the proper place.
     <changes>
         <change>
             <api name="java_ee_metadata_model_api"/>
+            <summary>Added <code>MetadataModel.isReady()</code> and <code>MetadataModel.runReadActionWhenReady()</code></summary>
+            <version major="1" minor="3"/>
+            <date day="14" month="5" year="2007"/>
+            <author login="abadea"/>
+            <compatibility addition="yes" binary="incompatible" source="incompatible" semantic="incompatible" />
+            <description>
+                <p>
+                    Added methods to check if a model is ready (metadata in the model
+                    correspond exactly to their source) and to run a read action
+                    when a model becomes ready.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2ee.metadata.model.api" name="MetadataModel"/>
+            <class package="org.netbeans.modules.j2ee.metadata.model.spi" name="MetadataModelImplementation"/>
+            <issue number="103872"/>
+        </change>
+        <change>
+            <api name="java_ee_metadata_model_api"/>
             <summary>Initial version released</summary>
             <version major="1" minor="2"/>
             <date day="16" month="4" year="2007"/>

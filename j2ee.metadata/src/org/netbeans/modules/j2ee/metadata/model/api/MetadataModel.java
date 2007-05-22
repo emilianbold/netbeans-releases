@@ -20,6 +20,7 @@
 package org.netbeans.modules.j2ee.metadata.model.api;
 
 import java.io.IOException;
+import java.util.concurrent.Future;
 import org.netbeans.modules.j2ee.metadata.model.MetadataModelAccessor;
 import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelImplementation;
 import org.openide.util.Parameters;
@@ -50,7 +51,8 @@ public final class MetadataModel<T> {
     }
 
     /**
-     * Executes an action in the context of this model. This method is used to provide
+     * Executes an action in the context of this model and in the calling thread.
+     * This method is used to provide
      * the model client with access to the metadata contained in the model.
      *
      * <p>This method provides safe access to the model in the presence of concurrency.
@@ -70,6 +72,14 @@ public final class MetadataModel<T> {
      * that are not explicitly documented as immutable are not allowed to escape
      * the action's <code>run()</code> method.</strong></p>
      *
+     * <p><strong>This method may take a long time to execute. It is
+     * recommended that the method not be called from the AWT event thread. In some
+     * situations, though, the call needs to be made from the event thread, such
+     * as when computing the enabled state of an action. In this case it is
+     * recommended that the call not take place if the {@link #isReady} method
+     * returns false (and a default value be returned as the result of
+     * the computation).</strong></p>
+     *
      * @param  action the action to be executed.
      * @return the value returned by the action's <code>run()</code> method.
      * @throws MetadataModelException if a checked exception was thrown by
@@ -85,5 +95,68 @@ public final class MetadataModel<T> {
     public <R> R runReadAction(MetadataModelAction<T, R> action) throws MetadataModelException, IOException {
         Parameters.notNull("action", action); // NOI18N
         return impl.runReadAction(action);
+    }
+
+    /**
+     * Returns true if the metadata contained in the model correspond exactly
+     * to their source. For example, for a model containing metadata expressed
+     * in annotations in Java files, the model could be considered ready if
+     * no classpath scanning is taking place.
+     *
+     * <p><strong>It is not guaranteed that if this method returns true, a
+     * subsequent invocation of {@link #runReadAction runReadAction()} will see the model in a
+     * ready state.</strong> Therefore this method is intended just as a hint useful
+     * in best-effort scenarios. For example the method might be used by a client
+     * which needs immediate access to the model to make its best effort to
+     * ensure that the model will at least not be accessed when not ready.</p>
+     *
+     * @return true if the model is ready, false otherwise.
+     *
+     * @since 1.3
+     */
+    public boolean isReady() {
+        return impl.isReady();
+    }
+
+    /**
+     * Executes an action in the context of this model either immediately
+     * if the model is ready, or at a later point in time when the model becomes
+     * ready. The action is executed in the calling thread if executed immediately,
+     * otherwise it is executed in another, unspecified thread.
+     *
+     * <p>The same guarantees with respect to concurrency and constraints
+     * with respect to re-readability of metadata that apply to
+     * {@link #runReadAction runReadAction()} apply to this method too.
+     * Furthermore, it is guaranteed that the action will see the model
+     * in a ready state, that is, when invoked by the action, the
+     * {@link #isReady} method will return <code>true</code>.</p>
+     *
+     * <p><strong>This method may take a long time to execute (in the case
+     * the action is executed immediately). It is recommended that
+     * the method not be called from the AWT event thread.</strong></p>
+     *
+     * @param  action the action to be executed.
+     * @return a {@link Future} encapsulating the result of the action's
+     *         <code>run()</code> method. If the action was not run
+     *         immediately and it threw an exception (checked or unchecked),
+     *         the future's <code>get()</code> methods will throw an
+     *         {@link java.util.concurrent.ExecutionException} encapsulating
+     *         that exception.
+     * @throws MetadataModelException if the action was run immediately
+     *         and a checked exception was thrown by
+     *         the action's <code>run()</code> method. That checked exception
+     *         will be available as the return value of the {@link MetadataModelException#getCause getCause()}
+     *         method. This only applies to checked exceptions; unchecked exceptions
+     *         are propagated from the <code>run()</code> method unwrapped.
+     * @throws IOException if there was a problem reading the model from its storage (for
+     *         example an exception occured while reading the disk files
+     *         which constitute the source for the model's metadata).
+     * @throws NullPointerException if the <code>action</code> parameter was null.
+     *
+     * @since 1.3
+     */
+    public <R> Future<R> runReadActionWhenReady(MetadataModelAction<T, R> action) throws MetadataModelException, IOException {
+        Parameters.notNull("action", action); // NOI18N
+        return impl.runReadActionWhenReady(action);
     }
 }
