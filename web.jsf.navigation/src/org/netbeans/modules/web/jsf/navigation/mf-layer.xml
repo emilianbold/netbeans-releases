@@ -20,24 +20,24 @@
     
     <folder name="PageFlowEditor">
         <folder name="PopupActions">
-            <folder name="Node">
+            <folder name="PageFlowSceneElement">
                 <file name="OpenAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction" />                
+                    <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction" />                
                 </file>
                 <file name="RenameAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction" />                
+                    <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction" />                
                 </file>
                 <file name="DeleteAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction" />                
+                    <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction" />                
                 </file>
             </folder>
             <folder name="Scene">
-<!--                <file name="org-netbeans-modules-web-jsf-navigation-graph-actions-AddPageActionProvider.instance"/>
-
+                <!-- 
+                <file name="org-netbeans-modules-web-jsf-navigation-graph-actions-AddPageActionProvider.instance"/>
                 <file name="NewAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.NewAction" />
                 </file>
--->
+                -->
             </folder>
             <!--<file name="org-netbeans-modules-web-jsf-navigation-graph-actions-ConnectToAction.instance"/>-->
         </folder>
@@ -49,8 +49,8 @@
                 <file name="PaletteItem_2.xml" url="palette/simple-item.xml"/>
             </folder>
         </folder> 
-            <!-- This registers actions for the page flow editor toolbar. -->
-<!--
+        <!-- This registers actions for the page flow editor toolbar. -->
+        <!--
         <folder name="Toolbars">
             <file name="org-netbeans-modules-web-jsf-navigation-graph-actions-ProjectScopeAction.instance">
             </file>

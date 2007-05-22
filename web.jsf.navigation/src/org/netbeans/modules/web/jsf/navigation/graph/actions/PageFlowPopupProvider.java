@@ -73,7 +73,7 @@ public class PageFlowPopupProvider implements PopupMenuProvider {
     
     
     // <actions from layers>
-    private static final String PATH_PAGEFLOW_NODE_ACTIONS = "PageFlowEditor/PopupActions/Node"; // NOI18N
+    private static final String PATH_PAGEFLOW_NODE_ACTIONS = "PageFlowEditor/PopupActions/PageFlowSceneElement"; // NOI18N
     private static final String PATH_PAGEFLOW_SCENE_ACTIONS = "PageFlowEditor/PopupActions/Scene"; // NOI18N
     private void initialize() {
         InstanceContent ic = new InstanceContent();
