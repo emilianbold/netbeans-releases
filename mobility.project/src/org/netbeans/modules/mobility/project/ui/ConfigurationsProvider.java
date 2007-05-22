@@ -88,16 +88,19 @@ class ConfigurationsProvider
     {
         final private Action[] actions;
         final private Image icon;
+        final boolean origProp;
         
         FNode(Node original, Lookup lookup,Action[] acts,VisualClassPathItem it) {
             super(original,new ActionFilterChildren(original),lookup);
             actions=acts==null?act:acts;
             icon=((ImageIcon)it.getIcon()).getImage();
+            origProp=false;
         }
         
         FNode(Node original, Image it) {
             super(original,new ActionFilterChildren(original),null);
-            actions=emptyAction;
+            origProp=true;
+            actions=original.getActions(false);
             icon=it;
         }
         
@@ -123,22 +126,22 @@ class ConfigurationsProvider
 
         public boolean canDestroy()
         {
-            return false;
+            return origProp==true?super.canDestroy():false;
         }
 
         public boolean canRename()
         {
-            return false;
+            return origProp==true?super.canRename():false;
         }
 
         public boolean canCut()
         {
-            return false;
+            return origProp==true?super.canCut():false;
         }
 
         public boolean canCopy()
         {
-            return true;
+            return origProp==true?super.canCopy():true;
         }
         
         private static class ActionFilterChildren extends FilterNode.Children {
