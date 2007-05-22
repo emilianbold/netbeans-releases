@@ -173,7 +173,6 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                                     port = (WsdlPort) ports.get(0);
                             }
                         }
-
                         if (service != null && port != null) {
                             jTextFieldPort.setText(service.getName() + "#" + port.getName()); //NOI18N
                             if (wsdlHandler!=null) {
@@ -383,25 +382,27 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         
         String wsdlFilePath = jTextFieldWSDLFile.getText().trim();
         
-        if(wsdlFilePath == null || wsdlFilePath.length() == 0) {
+        if(wsdlFilePath.length() == 0) {
             wizardDescriptor.putProperty("WizardPanel_errorMessage",  // NOI18N
                     NbBundle.getMessage(WebServiceFromWSDLPanel.class, "MSG_EnterWsdlName")); // NOI18N
             return false; // unspecified WSDL file
         }
         
-        File f = new File(wsdlFilePath);
-        String wsdlFileText = f.getAbsolutePath();
-        f = getCanonicalFile(f);
-        if(f == null) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage",  // NOI18N
-                    NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_WsdlInvalid")); // NOI18N
-            return false; // invalid WSDL file
-        }
-        
-        if(!f.exists()) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage",  // NOI18N
-                    NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_WsdlDoesNotExist")); // NOI18N
-            return false; // invalid WSDL file
+        if (!wsdlFilePath.startsWith("http://") && !wsdlFilePath.startsWith("https://") && !wsdlFilePath.startsWith("www.")) { //NOI18N
+            File f = new File(wsdlFilePath);
+            String wsdlFileText = f.getAbsolutePath();
+            f = getCanonicalFile(f);
+            if(f == null) {
+                wizardDescriptor.putProperty("WizardPanel_errorMessage",  // NOI18N
+                        NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_WsdlInvalid")); // NOI18N
+                return false; // invalid WSDL file
+            }
+
+            if(!f.exists()) {
+                wizardDescriptor.putProperty("WizardPanel_errorMessage",  // NOI18N
+                        NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_WsdlDoesNotExist")); // NOI18N
+                return false; // invalid WSDL file
+            }
         }
         
         //if (Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project) ||
@@ -457,7 +458,14 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
     }
     
     void store(WizardDescriptor d) {
-        d.putProperty(WizardProperties.WSDL_FILE_PATH, jTextFieldWSDLFile.getText().trim());
+        String wsdlLocation =  jTextFieldWSDLFile.getText().trim();
+        if (wsdlLocation.startsWith("www.")) wsdlLocation = "http://"+wsdlLocation; //NOI18N
+        if(wsdlLocation.startsWith("http://") || wsdlLocation.startsWith("https://")) { //NOI18N
+            d.putProperty(WizardProperties.WSDL_URL, wsdlLocation);
+        } else {
+            d.putProperty(WizardProperties.WSDL_FILE_PATH,wsdlLocation);
+        }
+        //d.putProperty(WizardProperties.WSDL_FILE_PATH, jTextFieldWSDLFile.getText().trim());
         d.putProperty(WizardProperties.WSDL_MODEL, wsdlModel);
         d.putProperty(WizardProperties.WSDL_MODELER, wsdlModeler);
         d.putProperty(WizardProperties.WSDL_SERVICE, service);
@@ -497,34 +505,47 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         
         String wsdlFilePath = jTextFieldWSDLFile.getText().trim();
         
-        if(wsdlFilePath == null || wsdlFilePath.length() == 0) {
+        if(wsdlFilePath.length() == 0) {
             jButtonBrowsePort.setEnabled(false);
         } else {
-            File f = new File(wsdlFilePath);
-            String wsdlFileText = f.getAbsolutePath();
-            f = getCanonicalFile(f);
-            if(f == null) {
-                jButtonBrowsePort.setEnabled(false);
-            } else if(!f.exists()) {
-                jButtonBrowsePort.setEnabled(false);
-            } else {
-                fireChange(); //call to disable Finish button
-                if (Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project) ||
-                        (!jsr109Supported && !jsr109oldSupported ||
-                        (!jsr109Supported && jsr109oldSupported && jwsdpSupported))) {
-                    createModel();
+            if (!wsdlFilePath.startsWith("http://") && !wsdlFilePath.startsWith("https://") && !wsdlFilePath.startsWith("www.")) { //NOI18N
+                File f = new File(wsdlFilePath);
+                String wsdlFileText = f.getAbsolutePath();
+                f = getCanonicalFile(f);
+                if(f == null) {
+                    jButtonBrowsePort.setEnabled(false);
+                    return;
+                } else if(!f.exists()) {
+                    jButtonBrowsePort.setEnabled(false);
+                    return;
                 }
+            }
+            fireChange(); //call to disable Finish button
+            if (Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project) ||
+                    (!jsr109Supported && !jsr109oldSupported ||
+                    (!jsr109Supported && jsr109oldSupported && jwsdpSupported))) {
+                createModel();
             }
         }
     }
     
     private void createModel() {
-        File normalizedWsdlFilePath = FileUtil.normalizeFile(new File(jTextFieldWSDLFile.getText().trim()));
-        wsdlURL = null;
-        try {
-            wsdlURL = normalizedWsdlFilePath.toURL();
-        } catch (MalformedURLException ex) {
-            ex.printStackTrace();
+        String wsdlFilePath = jTextFieldWSDLFile.getText().trim();
+        if (wsdlFilePath.startsWith("www.")) wsdlFilePath = "http://"+wsdlFilePath;
+        if (wsdlFilePath.startsWith("http://") || wsdlFilePath.startsWith("https://")) {
+            try {
+                wsdlURL = new URL(wsdlFilePath);
+            } catch (MalformedURLException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+        } else {
+            File normalizedWsdlFilePath = FileUtil.normalizeFile(new File(jTextFieldWSDLFile.getText().trim()));
+            wsdlURL = null;
+            try {
+                wsdlURL = normalizedWsdlFilePath.toURL();
+            } catch (MalformedURLException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
         }
         
         generateWsdlModelTask.schedule(1000);

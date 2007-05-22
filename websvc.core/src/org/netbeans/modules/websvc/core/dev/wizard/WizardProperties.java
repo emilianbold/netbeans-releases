@@ -23,11 +23,10 @@ public class WizardProperties {
     public static final String WEB_SERVICE_TYPE = "webServiceType"; // NOI18N
     public static final String DELEGATE_TO_SESSION_BEAN = "delegateToSessionBean"; // NOI18N
     public static final String WSDL_FILE_PATH = "wsdlFilePath"; //NOI18N
+    public static final String WSDL_URL = "wsdl_url"; //NOI18N
     
     public static final int FROM_SCRATCH = 0;
     public static final int ENCAPSULATE_SESSION_BEAN = 1;
-//convert Java class not implemented for 5.5 release
-//    public static final int CONVERT_JAVA_CLASS = 2;
 
     public static final String WSDL_MODEL = "wsdlModel"; //NOI18N
     public static final String WSDL_MODELER = "wsdlModeler"; //NOI18N

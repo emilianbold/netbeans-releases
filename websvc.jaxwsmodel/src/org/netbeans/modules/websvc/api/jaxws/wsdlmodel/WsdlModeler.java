@@ -40,6 +40,7 @@ import java.util.logging.Logger;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXParseException;
 
 /**
@@ -157,7 +158,12 @@ public class WsdlModeler {
             }
         }
         try {
-            options.addWSDL(new File(wsdlUrl.toURI()));
+            if (wsdlUrl.toExternalForm().startsWith("http://") || wsdlUrl.toExternalForm().startsWith("https://")) { //NOI18N
+                InputSource source = new InputSource(wsdlUrl.toExternalForm());
+                options.addWSDL(source);
+            } else {
+                options.addWSDL(new File(wsdlUrl.toURI()));
+            }
             options.compatibilityMode = WsimportOptions.EXTENSION;
             
             if (packageName!=null) {

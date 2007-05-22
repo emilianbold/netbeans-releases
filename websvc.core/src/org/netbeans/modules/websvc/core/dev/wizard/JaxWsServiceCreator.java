@@ -361,9 +361,15 @@ public class JaxWsServiceCreator implements ServiceCreator {
     }
     private void generateWsFromWsdl15(final ProgressHandle handle) throws Exception {
         String wsdlFilePath = (String) wiz.getProperty(WizardProperties.WSDL_FILE_PATH);
-        File normalizedWsdlFilePath = FileUtil.normalizeFile(new File(wsdlFilePath));
-        //convert to URI first to take care of spaces
-        final URL wsdlURL = normalizedWsdlFilePath.toURI().toURL();
+        URL wsdlUrl = null;
+        if (wsdlFilePath == null) {
+            wsdlUrl = new URL((String) wiz.getProperty(WizardProperties.WSDL_URL));
+        } else {            
+            File normalizedWsdlFilePath = FileUtil.normalizeFile(new File(wsdlFilePath));
+            //convert to URI first to take care of spaces
+            wsdlUrl = normalizedWsdlFilePath.toURI().toURL();
+        }
+        final URL wsdlURL = wsdlUrl;
         final WsdlService service = (WsdlService) wiz.getProperty(WizardProperties.WSDL_SERVICE);
         if (service==null) {
             JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(projectInfo.getProject().getProjectDirectory());
