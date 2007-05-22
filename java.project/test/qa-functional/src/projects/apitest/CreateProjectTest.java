@@ -54,7 +54,6 @@ public class CreateProjectTest extends JellyTestCase {
         File projectDir = new File(getWorkDir(), projName1);
         projectDir.mkdir();
         AntProjectHelper project = org.netbeans.modules.java.j2seproject.J2SEProjectGenerator.createProject(projectDir, projName1, mainClass, null);
-        Utilities.waitScanFinished();
         assertNotNull(Utilities.openProject(projectDir));
     }
     
@@ -68,7 +67,6 @@ public class CreateProjectTest extends JellyTestCase {
         File projectDir = new File(getWorkDir(), projName1);
         projectDir.mkdir();
         AntProjectHelper project = org.netbeans.modules.java.j2seproject.J2SEProjectGenerator.createProject(projectDir, projName1, mainClass, null);
-        Utilities.waitScanFinished();
         Utilities.openProject(projectDir);
         assertNotNull(Utilities.closeProject(projName1));
     }
@@ -105,7 +103,6 @@ public class CreateProjectTest extends JellyTestCase {
         testFolders[1] = test2;
         
         AntProjectHelper project = org.netbeans.modules.java.j2seproject.J2SEProjectGenerator.createProject(projectDir, projName2, sourceFolders, testFolders, null);
-        Utilities.waitScanFinished();
         assertNotNull(Utilities.openProject(projectDir));
     }
     
@@ -134,7 +131,6 @@ public class CreateProjectTest extends JellyTestCase {
         testFolders[1] = test2;
         
         AntProjectHelper project = org.netbeans.modules.java.j2seproject.J2SEProjectGenerator.createProject(projectDir, projName2, sourceFolders, testFolders, null);
-        Utilities.waitScanFinished();
         Utilities.openProject(projectDir);
         assertTrue(Utilities.closeProject(projName2));
 

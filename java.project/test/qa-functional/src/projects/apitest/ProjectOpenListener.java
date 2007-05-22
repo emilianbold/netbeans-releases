@@ -31,11 +31,23 @@ import org.netbeans.api.project.ui.OpenProjects;
 
 public class ProjectOpenListener implements PropertyChangeListener {
     public boolean projectOpened = false;
-    
+    public boolean waiting = false;
     /** Listen for property which changes when project is hopefully opened. */
     public void propertyChange(PropertyChangeEvent evt) {
-        if(OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
-            projectOpened = true;
+        synchronized(this) {
+            if(OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
+                projectOpened = true;
+                if (waiting == true) {
+                    notify();
+                }
+            }
+            
+        }
+    }
+    
+    public  synchronized void  waitFinished() {
+        if (projectOpened) {
+            return ;
         }
     }
 }

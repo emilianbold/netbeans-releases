@@ -20,13 +20,14 @@
 
 package projects.apitest;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import projects.apitest.ProjectOpenListener;
 import java.io.File;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 
@@ -35,20 +36,16 @@ import org.openide.util.Mutex;
  * @author jaromiruhrik
  */
 public class Utilities {
-    
+    static Logger logger = Logger.getLogger(Utilities.class.getName());
     /** Creates a new instance of Utilities */
     public Utilities() {
-    }
-    /** Waits until metadata scanning is finished. */
-    public static boolean waitScanFinished() {
-        return true;
     }
     
     /** Opens project in specified directory.
      * @param projectDir a directory with project to open
      * @return Project instance of opened project
      */
-    public static Object openProject(File projectDir) {
+    public static Project openProject(File projectDir) {
         final ProjectOpenListener listener = new ProjectOpenListener();
         try {
             // open project
@@ -66,34 +63,23 @@ public class Utilities {
             // We need to wait until project is open and then we can start to
             // wait when scanning finishes. If we don't wait, scanning is started
             // too early and finishes immediatelly.
-            Thread waitThread = new Thread(new Runnable() {
-                public void run() {
-                    while(!listener.projectOpened) {
-                        try {
-                            Thread.sleep(50);
-                        } catch (Exception e) {
-                            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
-                        }
-                    }
-                }
-            });
-            waitThread.start();
-            try {
-                waitThread.join(60000L);  // wait 1 minute at the most
-            } catch (InterruptedException iex) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, iex);
-            }
-            if (waitThread.isAlive()) {
-                // time-out expired, project not opened -> interrupt the wait thread
-                ErrorManager.getDefault().log(ErrorManager.USER, "Project not opened in 60 second.");
-                waitThread.interrupt();
-            }
-            // WAIT PROJECT OPEN - end
-            // wait until metadata scanning is finished
-            waitScanFinished();
+            listener.waitFinished();
+//            try {
+//                waitThread.join(60000L);  // wait 1 minute at the most
+//            } catch (InterruptedException iex) {
+//                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, iex);
+//            }
+//            if (waitThread.isAlive()) {
+//                // time-out expired, project not opened -> interrupt the wait thread
+//                ErrorManager.getDefault().log(ErrorManager.USER, "Project not opened in 60 second.");
+//                waitThread.interrupt();
+//            }
+//            // WAIT PROJECT OPEN - end
+//            // wait until metadata scanning is finished
+//            waitScanFinished();
             return project;
         } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+            logger.log(Level.SEVERE, null, ex);
             return null;
         } finally {
             OpenProjects.getDefault().removePropertyChangeListener(listener);
