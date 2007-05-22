@@ -52,7 +52,7 @@ public class DeleteEjbGroupAction extends NodeAction
         String msg = null;
         if( activatedNodes.length == 1 )
         {
-            grpNameMsg = ((EjbGroupNode)activatedNodes[0]).getEjbGroup().getName();
+            grpNameMsg = activatedNodes[0].getDisplayName();
             msg = NbBundle.getMessage( DeleteEjbGroupAction.class, "DELETE_CONFIRMATION", grpNameMsg );
         }
         else
