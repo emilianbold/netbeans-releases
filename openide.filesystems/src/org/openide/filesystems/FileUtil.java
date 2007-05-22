@@ -1537,7 +1537,8 @@ public final class FileUtil extends Object {
      * @since org.openide/1 4.42
      */
     public static void preventFileChooserSymlinkTraversal(JFileChooser chooser, File currentDirectory) {
-        if (!(Utilities.isWindows() || (Utilities.getOperatingSystem() == Utilities.OS_OS2))) {
+        if (!(Utilities.isWindows() || (Utilities.getOperatingSystem() == Utilities.OS_OS2))
+                && System.getProperty("java.specification.version").startsWith("1.5")) { // NOI18N
             chooser.setCurrentDirectory(wrapFileNoCanonicalize(currentDirectory));
             chooser.setFileSystemView(new NonCanonicalizingFileSystemView());
         } else {
