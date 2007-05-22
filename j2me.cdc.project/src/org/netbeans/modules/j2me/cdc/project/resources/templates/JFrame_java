@@ -31,6 +31,10 @@ public class JFrame extends javax.swing.JFrame {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+        //NSIcom won't close app without this
+        this.addWindowListener(new java.awt.event.WindowAdapter() {
+	    public void windowClosing(java.awt.event.WindowEvent e) {System.exit(0);}
+	});
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
