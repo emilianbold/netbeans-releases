@@ -61,8 +61,9 @@ public class MeasureJ2EEActions  {
 	        
 	        suite.addTest(new MeasureSessionBeanAction("testAddBusinessMethod", "Add business method to SB"));
 	        suite.addTest(new MeasureEntityBeanAction("testAddBusinessMethod", "Add business method to EB"));
-	        suite.addTest(new MeasureEntityBeanAction("testAddFinderMethod", "Add finder method to EB"));
-	        suite.addTest(new MeasureEntityBeanAction("testAddSelectMethod", "Add select method to EB"));
+	        //Commented because of issue 91993
+                //suite.addTest(new MeasureEntityBeanAction("testAddFinderMethod", "Add finder method to EB"));
+	        //suite.addTest(new MeasureEntityBeanAction("testAddSelectMethod", "Add select method to EB"));
 	
                 //Commented due to missing JAX-RPC support in NB6.0,uncomment when probnlem is fixed
 	        //suite.addTest(new MeasureWebServiceAction("testAddOperation", "Add operation to WS"));
