@@ -21,12 +21,8 @@ package org.netbeans.modules.j2ee.jpa.verification.rules.attribute;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.VariableElement;
-import org.netbeans.modules.j2ee.jpa.model.AccessType;
 import org.netbeans.modules.j2ee.jpa.model.AttributeWrapper;
-import org.netbeans.modules.j2ee.jpa.model.ModelUtils;
 import org.netbeans.modules.j2ee.jpa.verification.JPAEntityAttributeCheck;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.common.Rule;
@@ -43,44 +39,30 @@ import org.openide.util.NbBundle;
 public class ValidModifiers extends JPAEntityAttributeCheck {
     
     public ErrorDescription[] check(JPAProblemContext ctx, AttributeWrapper attrib) {
-        VariableElement field = null;
-        ExecutableElement accesor = null;
-        
-        if (ctx.getAccessType() == AccessType.FIELD){
-            field = (VariableElement) attrib.getJavaElement();
-            accesor = ModelUtils.getAccesor(ctx.getJavaClass(), field.getSimpleName().toString());
-        } else if (ctx.getAccessType() == AccessType.PROPERTY) {
-            accesor = (ExecutableElement) attrib.getJavaElement();
-            String accesorName = ModelUtils.getFieldNameFromAccessor(accesor.getSimpleName().toString());
-            field = ModelUtils.getField(ctx.getJavaClass(), accesorName);
-        } else {
+        if (!attrib.isFullyResolved()) {
             return null;
         }
         
-        if (field != null && accesor != null){
-            Set<Modifier> fieldModifiers = field.getModifiers();
-            Set<Modifier> accesorModifiers = accesor.getModifiers();
-            
-            List<ErrorDescription> errors = new ArrayList<ErrorDescription>();
-            
-            if (fieldModifiers.contains(Modifier.PUBLIC)){
-                errors.add(Rule.createProblem(field, ctx,
-                        NbBundle.getMessage(ValidModifiers.class, "MSG_PublicVariable")));
-            }
-            
-            if (!accesorModifiers.contains(Modifier.PUBLIC) 
-                    && !accesorModifiers.contains(Modifier.PROTECTED)){
-                errors.add(Rule.createProblem(accesor, ctx,
-                        NbBundle.getMessage(ValidModifiers.class, "MSG_NonPublicAccesor")));
-            }
-            
-            if (accesorModifiers.contains(Modifier.FINAL)){
-                errors.add(Rule.createProblem(accesor, ctx,
-                        NbBundle.getMessage(ValidModifiers.class, "MSG_FinalAccesor")));
-            }
-            
-            return errors.toArray(new ErrorDescription[errors.size()]);
+        Set<Modifier> fieldModifiers = attrib.getInstanceVariable().getModifiers();
+        Set<Modifier> accesorModifiers = attrib.getAccesor().getModifiers();
+        List<ErrorDescription> errors = new ArrayList<ErrorDescription>();
+        
+        if (fieldModifiers.contains(Modifier.PUBLIC)){
+            errors.add(Rule.createProblem(attrib.getInstanceVariable(), ctx,
+                    NbBundle.getMessage(ValidModifiers.class, "MSG_PublicVariable")));
         }
-        return null;
+        
+        if (!accesorModifiers.contains(Modifier.PUBLIC)
+                && !accesorModifiers.contains(Modifier.PROTECTED)){
+            errors.add(Rule.createProblem(attrib.getAccesor(), ctx,
+                    NbBundle.getMessage(ValidModifiers.class, "MSG_NonPublicAccesor")));
+        }
+        
+        if (accesorModifiers.contains(Modifier.FINAL)){
+            errors.add(Rule.createProblem(attrib.getAccesor(), ctx,
+                    NbBundle.getMessage(ValidModifiers.class, "MSG_FinalAccesor")));
+        }
+        
+        return errors.toArray(new ErrorDescription[errors.size()]);
     }
 }

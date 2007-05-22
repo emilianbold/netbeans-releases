@@ -19,17 +19,21 @@
 package org.netbeans.modules.j2ee.jpa.model;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Basic;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Column;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Id;
 
 /**
  *
- * @author tomslot
+ * @author Tomasz.Slota@Sun.COM
  */
 public class AttributeWrapper {
     private Object modelElement;
     private Element javaElement;
+    private ExecutableElement accesor;
+    private VariableElement instanceVariable;
 
     public AttributeWrapper(Object modelElement) {
         this.modelElement = modelElement;
@@ -81,5 +85,25 @@ public class AttributeWrapper {
     
     public void setJavaElement(Element javaElement){
         this.javaElement = javaElement;
+    }
+    
+    public ExecutableElement getAccesor(){
+        return accesor;
+    }
+    
+    public void setAccesor(ExecutableElement accesor){
+        this.accesor = accesor;
+    }
+    
+    public VariableElement getInstanceVariable(){
+        return instanceVariable;
+    }
+    
+    public void setInstanceVariable(VariableElement instanceVariable){
+        this.instanceVariable = instanceVariable;
+    }
+    
+    public boolean isFullyResolved(){
+        return javaElement != null && instanceVariable != null && accesor != null;
     }
 }

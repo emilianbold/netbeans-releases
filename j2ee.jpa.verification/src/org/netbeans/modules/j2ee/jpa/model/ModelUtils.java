@@ -11,7 +11,6 @@ package org.netbeans.modules.j2ee.jpa.model;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -71,25 +70,17 @@ public class ModelUtils {
     }
     
     public static void resolveJavaElementFromModel(JPAProblemContext problemCtx, AttributeWrapper attr){
-        List <? extends Element> elementsToSearch = null;
-        String searchedName = null;
+        String attrName = attr.getName();
+        
+        attr.setInstanceVariable(getField(problemCtx.getJavaClass(), attrName));
+        attr.setAccesor(getAccesor(problemCtx.getJavaClass(), attrName));
         
         if (problemCtx.getAccessType() == AccessType.FIELD){
-            searchedName = attr.getName();
-            elementsToSearch = ElementFilter.fieldsIn(problemCtx.getJavaClass().getEnclosedElements());
+            attr.setJavaElement(attr.getInstanceVariable());
         }
         
         else if (problemCtx.getAccessType() == AccessType.PROPERTY){
-            searchedName = getAccesorName(attr.getName());
-            elementsToSearch = ElementFilter.methodsIn(problemCtx.getJavaClass().getEnclosedElements());
-        }
-        
-        if (searchedName != null){
-            for (Element elem : elementsToSearch){
-                if (elem.getSimpleName().contentEquals(searchedName)){
-                    attr.setJavaElement(elem);
-                }
-            }
+            attr.setJavaElement(attr.getAccesor());
         }
     }
     
