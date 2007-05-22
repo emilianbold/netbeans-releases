@@ -23,9 +23,6 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Actions">
         <folder name="Subversion">
-            <file name="org-netbeans-modules-subversion-ui-status-ShowTextAnnotationsAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.status.ShowTextAnnotationsAction"/>
-            </file>
             <file name="org-netbeans-modules-subversion-ui-status-OpenVersioningAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.status.OpenVersioningAction"/>
             </file>
@@ -93,13 +90,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
     <folder name="Menu"> 
-
-        <folder name="View">
-            <file name="org-netbeans-modules-subversion-ui-status-ShowTextAnnotationsAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-status-ShowTextAnnotationsAction.instance"/>
-            </file>            
-        </folder>
-        
         <folder name="Window">
             <folder name="Versioning">            
                 <attr name="org-netbeans-modules-subversion-ui-status-OpenVersioningAction.shadow/SeparatorVersioningOutput.instance" boolvalue="true"/>

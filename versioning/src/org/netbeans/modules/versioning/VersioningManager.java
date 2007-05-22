@@ -20,6 +20,7 @@ package org.netbeans.modules.versioning;
 
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.diff.DiffSidebarManager;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.openide.util.Lookup;
@@ -28,6 +29,8 @@ import org.openide.util.LookupEvent;
 
 import java.io.File;
 import java.util.*;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.PreferenceChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 
@@ -36,7 +39,7 @@ import java.beans.PropertyChangeEvent;
  * 
  * @author Maros Sandor
  */
-public class VersioningManager implements PropertyChangeListener, LookupListener {
+public class VersioningManager implements PropertyChangeListener, LookupListener, PreferenceChangeListener {
     
     /**
      * Indicates to the Versioning manager that the layout of versioned files may have changed. Previously unversioned 
@@ -112,6 +115,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         systemsLookupResult.addLookupListener(this);
         refreshVersioningSystems();
         filesystemInterceptor.init(this);
+        VersioningSupport.getPreferences().addPreferenceChangeListener(this);
     }
 
     /**
@@ -273,5 +277,9 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             flushFileOwnerCache();
             refreshDiffSidebars(null);
         }
+    }
+
+    public void preferenceChange(PreferenceChangeEvent evt) {
+        VersioningAnnotationProvider.instance.refreshAnnotations(null);
     }
 }

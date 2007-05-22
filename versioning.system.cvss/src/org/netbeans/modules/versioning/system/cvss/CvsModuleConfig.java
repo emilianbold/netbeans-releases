@@ -42,7 +42,6 @@ public class CvsModuleConfig {
     public static final String PROP_SEARCHHISTORY_FETCHTAGS = "searchHistory.fetchTags";  // NOI18N
     public static final String PROP_EXCLUDE_NEW_FILES = "excludeNewFiles";  // NOI18N
     public static final String ROOTS_CONFIG = "rootsConfig";  // NOI18N
-    public static final String PROP_ANNOTATIONS_VISIBLE = "textAnnotationsVisible";  // NOI18N
     public static final String PROP_ANNOTATIONS_FORMAT = "annotationsFormat";  // NOI18N
     private static final String PROP_WRAP_COMMIT_MESSAGE_LENGTH = "wrapCommitMessageLength";  // NOI18N
     

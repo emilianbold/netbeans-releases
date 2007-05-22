@@ -25,9 +25,6 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Repository">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.versioning.system.cvss.resources.Bundle" />
 
-            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-ShowTextAnnotationsAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.ShowTextAnnotationsAction"/>
-            </file>
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-status-OpenVersioningAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.status.OpenVersioningAction"/>
             </file>
@@ -87,12 +84,6 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Menu"> 
             
-        <folder name="View">
-            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-ShowTextAnnotationsAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-ShowTextAnnotationsAction.instance"/>
-            </file>            
-        </folder>
-        
         <folder name="Window">
             <folder name="Versioning">            
                 <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-status-OpenVersioningAction.shadow/SeparatorVersioningOutput.instance" boolvalue="true"/>

@@ -39,7 +39,6 @@ public class SvnModuleConfig {
     public static final String PROP_IGNORED_FILEPATTERNS    = "ignoredFilePatterns";                        // NOI18N
     public static final String PROP_COMMIT_EXCLUSIONS       = "commitExclusions";                           // NOI18N
     public static final String PROP_DEFAULT_VALUES          = "defaultValues";                              // NOI18N
-    public static final String PROP_TEXT_ANNOTATIONS_FORMAT = "textAnnotations";                            // NOI18N
     public static final String KEY_EXECUTABLE_BINARY        = "svnExecBinary";                              // NOI18N
     public static final String KEY_ANNOTATION_FORMAT        = "annotationFormat";                           // NOI18N
             

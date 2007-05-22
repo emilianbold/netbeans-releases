@@ -166,8 +166,8 @@ public class Annotator {
         name = htmlEncode(name);
         int status = info.getStatus();
         String textAnnotation;
-        String textAnnotationFormat = SvnModuleConfig.getDefault().getPreferences().get(SvnModuleConfig.PROP_TEXT_ANNOTATIONS_FORMAT, null);
-        if (textAnnotationFormat != null && file != null && (status & STATUS_TEXT_ANNOTABLE) != 0) {
+        boolean annotationsVisible = VersioningSupport.getPreferences().getBoolean(VersioningSupport.PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE, false);
+        if (annotationsVisible && file != null && (status & STATUS_TEXT_ANNOTABLE) != 0) {
             if (format != null) {
                 textAnnotation = formatAnnotation(info, file);
             } else {
@@ -293,8 +293,8 @@ public class Annotator {
         name = htmlEncode(name);
         int status = info.getStatus();
         String textAnnotation;
-        String textAnnotationFormat = SvnModuleConfig.getDefault().getPreferences().get(SvnModuleConfig.PROP_TEXT_ANNOTATIONS_FORMAT, null);        
-        if (textAnnotationFormat != null && file != null && (status & FileInformation.STATUS_MANAGED) != 0) {
+        boolean annotationsVisible = VersioningSupport.getPreferences().getBoolean(VersioningSupport.PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE, false);
+        if (annotationsVisible && file != null && (status & FileInformation.STATUS_MANAGED) != 0) {
 
             if (format != null) {
                 textAnnotation = formatAnnotation(info, file);

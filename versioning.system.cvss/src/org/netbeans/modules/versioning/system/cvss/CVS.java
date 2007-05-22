@@ -81,8 +81,6 @@ public class CVS extends VersioningSystem implements VersioningListener, Prefere
     public void preferenceChange(PreferenceChangeEvent evt) {
         if (evt.getKey().startsWith(CvsModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
             fireStatusChanged((Set<File>) null);
-        } else if (evt.getKey().startsWith(CvsModuleConfig.PROP_ANNOTATIONS_VISIBLE)) {
-            fireAnnotationsChanged(null);
         } else if (evt.getKey().startsWith(CvsModuleConfig.PROP_ANNOTATIONS_FORMAT)) {
             fireAnnotationsChanged(null);
         }

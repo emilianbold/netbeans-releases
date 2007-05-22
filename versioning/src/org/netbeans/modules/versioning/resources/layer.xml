@@ -41,6 +41,11 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- register into action pool to allow user to define shortcut, put it on toolbar etc. -->  
     <folder name="Actions">
+        <folder name="Versioning">
+            <file name="org-netbeans-modules-versioning-ShowTextAnnotationsAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.ShowTextAnnotationsAction"/>
+            </file>
+        </folder>
         <folder name="Tools">
             <file name="org-netbeans-modules-versioning-diff-ShowDiffSidebarAction.instance"/>
         </folder>
@@ -57,9 +62,11 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-versioning-diff-ShowDiffSidebarAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-versioning-diff-ShowDiffSidebarAction.instance"/>
             </file>
+            <file name="org-netbeans-modules-versioning-ShowTextAnnotationsAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Versioning/org-netbeans-modules-versioning-ShowTextAnnotationsAction.instance"/>
+            </file>            
             <attr name="org-netbeans-modules-editor-MainMenuAction$ShowToolBarAction.instance/org-netbeans-modules-versioning-diff-ShowDiffSidebarAction.shadow" boolvalue="true"/>
-            <attr name="org-netbeans-modules-versioning-diff-ShowDiffSidebarAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-ShowTextAnnotationsAction.shadow" boolvalue="true"/>
-            <attr name="org-netbeans-modules-versioning-diff-ShowDiffSidebarAction.shadow/org-netbeans-modules-subversion-ui-status-ShowTextAnnotationsAction.shadow" boolvalue="true"/>
+            <attr name="org-netbeans-modules-versioning-diff-ShowDiffSidebarAction.shadow/org-netbeans-modules-versioning-ShowTextAnnotationsAction.shadow" boolvalue="true"/>
         </folder>
 
         <attr name="RunProject/Versioning" boolvalue="true" />

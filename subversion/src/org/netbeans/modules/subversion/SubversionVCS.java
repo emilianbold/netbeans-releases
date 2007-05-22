@@ -71,8 +71,6 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
     public void preferenceChange(PreferenceChangeEvent evt) {
         if (evt.getKey().startsWith(SvnModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
             fireStatusChanged((Set<File>) null);
-        } else if (evt.getKey().startsWith(SvnModuleConfig.PROP_TEXT_ANNOTATIONS_FORMAT)) {
-            fireAnnotationsChanged((Set<File>) null);
         }
     }
 

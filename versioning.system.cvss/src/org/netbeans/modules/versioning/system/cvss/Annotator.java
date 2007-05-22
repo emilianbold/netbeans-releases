@@ -149,7 +149,7 @@ public class Annotator {
         name = htmlEncode(name);
         int status = info.getStatus();
         String textAnnotation;
-        boolean annotationsVisible = CvsModuleConfig.getDefault().getPreferences().getBoolean(CvsModuleConfig.PROP_ANNOTATIONS_VISIBLE, false);
+        boolean annotationsVisible = VersioningSupport.getPreferences().getBoolean(VersioningSupport.PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE, false);
         if (annotationsVisible && file != null && (status & STATUS_TEXT_ANNOTABLE) != 0) {
             textAnnotation = formatAnnotation(info, file);
             if (textAnnotation.equals(lastEmptyAnnotation)) textAnnotation = ""; // NOI18N
@@ -250,7 +250,7 @@ public class Annotator {
         name = htmlEncode(name);
         int status = info.getStatus();
         String textAnnotation;
-        boolean annotationsVisible = CvsModuleConfig.getDefault().getPreferences().getBoolean(CvsModuleConfig.PROP_ANNOTATIONS_VISIBLE, false);
+        boolean annotationsVisible = VersioningSupport.getPreferences().getBoolean(VersioningSupport.PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE, false);
         if (annotationsVisible && file != null && (status & FileInformation.STATUS_MANAGED) != 0) {
             textAnnotation = formatAnnotation(info, file);
             if (textAnnotation.equals(lastEmptyAnnotation)) textAnnotation = ""; // NOI18N
