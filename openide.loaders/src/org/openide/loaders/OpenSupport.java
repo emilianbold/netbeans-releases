@@ -92,7 +92,7 @@ public abstract class OpenSupport extends CloneableOpenSupport {
     * @return the message or null if nothing should be displayed
     */
     protected String messageOpened () {
-        return NbBundle.getMessage (OpenSupport.class, "CTL_ObjectOpened");
+        return null;
     }
 
 
