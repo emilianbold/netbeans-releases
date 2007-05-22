@@ -182,6 +182,10 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
             r.setSuspendPolicy (JPDABreakpoint.SUSPEND_ALL);
         else
             r.setSuspendPolicy (JPDABreakpoint.SUSPEND_EVENT_THREAD);
+        int hitCountFilter = getBreakpoint().getHitCountFilter();
+        if (hitCountFilter > 0) {
+            r.addCountFilter(hitCountFilter);
+        }
         r.enable ();
     }
 
