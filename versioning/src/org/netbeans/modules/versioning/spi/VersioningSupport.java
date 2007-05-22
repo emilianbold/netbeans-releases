@@ -20,8 +20,10 @@ package org.netbeans.modules.versioning.spi;
 
 import org.netbeans.modules.versioning.VersioningManager;
 import org.netbeans.modules.versioning.FlatFolder;
+import org.openide.util.NbPreferences;
 
 import java.io.File;
+import java.util.prefs.Preferences;
 
 /**
  * Collection of utility methods for Versioning systems implementors. 
@@ -30,9 +32,26 @@ import java.io.File;
  */
 public final class VersioningSupport {
     
+    /**
+     * Boolean property defining visibility of textual versioning annotations (aka Status Labels).
+     * 
+     * @see #getPreferences()
+     */
+    public static final String PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE = "textAnnotationsVisible";
+    
     private VersioningSupport() {
     }
     
+    /**
+     * Common settings and preferences for versioning modules are set in this preferences node.  
+     * 
+     * @return Preferences node for Versioning modules
+     * @see #PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE
+     */
+    public static Preferences getPreferences() {
+        return NbPreferences.forModule(VersioningSupport.class);
+    }
+        
     /**
      * Queries the Versioning infrastructure for file ownership.
      * 
