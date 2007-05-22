@@ -39,6 +39,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import org.netbeans.modules.java.hints.infrastructure.Pair;
+import org.netbeans.modules.java.hints.options.HintsSettings;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.Rule;
@@ -116,7 +117,7 @@ public class RulesManager {
                 
                 AbstractHint ah = (AbstractHint) r;
                 
-                Preferences p = ah.getPreferences();
+                Preferences p = ah.getPreferences(null);
                 
                 if (p == null) {
                     if (!onLine)
@@ -124,7 +125,7 @@ public class RulesManager {
                     continue;
                 }
                 
-                if (p.getInt(AbstractHint.SEVERITY_KEY, AbstractHint.SEVERITY_DEFAULT.ordinal()) == AbstractHint.HintSeverity.CURRENT_LINE_WARNING.ordinal()) {
+                if (ah.getSeverity() == AbstractHint.HintSeverity.CURRENT_LINE_WARNING) {
                     if (onLine)
                         nueRules.add(r);
                 } else {

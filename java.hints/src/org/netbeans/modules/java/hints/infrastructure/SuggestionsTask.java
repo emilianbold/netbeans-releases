@@ -95,9 +95,7 @@ public class SuggestionsTask extends ScanningCancellableTask<CompilationInfo> {
                         boolean enabled = true;
                         
                         if (rule instanceof AbstractHint) {
-                            Preferences p = HintsSettings.getPreferences((AbstractHint) rule);
-                            
-                            enabled = p.getBoolean(AbstractHint.ENABLED_KEY, AbstractHint.ENABLED_DEFAULT);
+                            enabled = HintsSettings.isEnabled((AbstractHint)rule);
                         }
                         
                         if (enabled) {

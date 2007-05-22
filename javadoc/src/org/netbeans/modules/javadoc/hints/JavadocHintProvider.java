@@ -105,7 +105,6 @@ import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 
 /**
  * Checks:
@@ -135,6 +134,7 @@ public final class JavadocHintProvider extends AbstractHint {
     private boolean createJavadocKind;
     
     private JavadocHintProvider(boolean createJavadocKind) {
+        super( true, true, createJavadocKind ? AbstractHint.HintSeverity.CURRENT_LINE_WARNING : AbstractHint.HintSeverity.WARNING );
         this.createJavadocKind = createJavadocKind;
     }
     
@@ -147,16 +147,9 @@ public final class JavadocHintProvider extends AbstractHint {
             return null;
         }
         
-        Severity severity;
-        HintSeverity hintSeverity = HintSeverity.values()[getPreferences().getInt(SEVERITY_KEY, AbstractHint.HintSeverity.CURRENT_LINE_WARNING.ordinal())];
-        
-        switch (hintSeverity) {
-        case ERROR: severity = Severity.ERROR; break;
-        case WARNING: severity = Severity.WARNING; break;
-        default:
-        case CURRENT_LINE_WARNING: severity = Severity.HINT; break;
-        }
-        
+        HintSeverity hintSeverity = getSeverity();
+        Severity severity = hintSeverity.toEditorSeverity();
+                
         Document doc = null;
         
         try {
@@ -383,7 +376,7 @@ public final class JavadocHintProvider extends AbstractHint {
         }
         
         private boolean isValid(TreePath path) {
-            Access access = Access.resolve(getPreferences().get(SCOPE_KEY, SCOPE_DEFAULT));
+            Access access = Access.resolve(getPreferences(null).get(SCOPE_KEY, SCOPE_DEFAULT));
             Tree leaf = path.getLeaf();
             int caret = CaretAwareJavaSourceTaskFactory.getLastPosition(javac.getFileObject());
             boolean onLine = hintSeverity == HintSeverity.CURRENT_LINE_WARNING;
@@ -1534,27 +1527,7 @@ public final class JavadocHintProvider extends AbstractHint {
     public String getDescription() {
         return NbBundle.getMessage(JavadocHintProvider.class, createJavadocKind ? "DESC_CREATE_JAVADOC_HINT" : "DESC_ERROR_IN_JAVADOC_HINT"); // NOI18N
     }
-    
-    private HintSeverity getDefaultHintSeverity() {
-        return createJavadocKind ? AbstractHint.HintSeverity.CURRENT_LINE_WARNING : AbstractHint.HintSeverity.WARNING;
-    
-    }
-    private static String getCurrentProfileId() {
-        return DEFAULT_PROFILE;
-    }
-    
-    @Override
-    public Preferences getPreferences() {
-        Preferences p = NbPreferences.forModule(JavadocHintProvider.class).node(HINTS).node(getCurrentProfileId()).node(getId());
         
-        if (!p.getBoolean(INITIALIZED, false)) {
-            p.putInt(AbstractHint.SEVERITY_KEY, getDefaultHintSeverity().ordinal());
-            p.put(SCOPE_KEY,SCOPE_DEFAULT);
-            p.putBoolean(INITIALIZED, true);
-        }
-        
-        return p;
-    }
     
     @Override
     public JComponent getCustomizer(final Preferences node) {

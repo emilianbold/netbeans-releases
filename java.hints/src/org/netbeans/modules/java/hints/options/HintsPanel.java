@@ -261,7 +261,7 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
             renderer.setText( treeRule.getDisplayName() );            
             
             Preferences node = logic.getCurrentPrefernces(treeRule);                        
-            renderer.setSelected( node.getBoolean(ENABLED_KEY, ENABLED_DEFAULT));            
+            renderer.setSelected( HintsSettings.isEnabled(treeRule, node));
         }
         else {
             renderer.setText( value.toString() );

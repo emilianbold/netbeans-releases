@@ -62,13 +62,13 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
 
     private Map<AbstractHint,ModifiedPreferences> changes;
     
-    private static Map<Integer,Integer> severity2index;
+    private static Map<HintSeverity,Integer> severity2index;
     
     static {
-        severity2index = new HashMap<Integer, Integer>();
-        severity2index.put( HintSeverity.ERROR.ordinal(), 0 );
-        severity2index.put( HintSeverity.WARNING.ordinal(), 1 );
-        severity2index.put( HintSeverity.CURRENT_LINE_WARNING.ordinal(), 2 );        
+        severity2index = new HashMap<HintSeverity, Integer>();
+        severity2index.put( HintSeverity.ERROR, 0  );
+        severity2index.put( HintSeverity.WARNING, 1  );
+        severity2index.put( HintSeverity.CURRENT_LINE_WARNING, 2  );        
     }
     
     private JTree errorTree;
@@ -116,7 +116,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     synchronized void applyChanges() {
         for (AbstractHint hint : changes.keySet()) {
             ModifiedPreferences mn = changes.get(hint);
-            mn.store(HintsSettings.getPreferences(hint));            
+            mn.store(hint.getPreferences(HintsSettings.getCurrentProfileId()));            
         }
     }
     
@@ -128,13 +128,13 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     
     synchronized Preferences getCurrentPrefernces( AbstractHint hint ) {
         Preferences node = changes.get(hint);
-        return node == null ? HintsSettings.getPreferences( hint ) : node;
+        return node == null ? hint.getPreferences( HintsSettings.getCurrentProfileId() ) : node;
     }
     
     synchronized Preferences getPreferences4Modification( AbstractHint hint ) {        
         Preferences node = changes.get(hint);        
         if ( node == null ) {
-            node = new ModifiedPreferences( HintsSettings.getPreferences( hint ) );
+            node = new ModifiedPreferences( hint.getPreferences( HintsSettings.getCurrentProfileId() ) );
             changes.put( hint, (ModifiedPreferences)node);
         }        
         return node;                
@@ -159,7 +159,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             Object o = ch.getUserObject();
             if ( o instanceof AbstractHint ) {
                 AbstractHint hint = (AbstractHint)o;
-                if ( getCurrentPrefernces(hint).getBoolean(ENABLED_KEY, ENABLED_DEFAULT)) {
+                if ( HintsSettings.isEnabled(hint, getCurrentPrefernces(hint)) ) {
                     return true;
                 }
             }
@@ -226,10 +226,10 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             
             Preferences p = getCurrentPrefernces(hint);
             
-            int severity = p.getInt(AbstractHint.SEVERITY_KEY, AbstractHint.SEVERITY_DEFAULT.ordinal());
+            HintSeverity severity = HintsSettings.getSeverity(hint, p);
             severityComboBox.setSelectedIndex(severity2index.get(severity));
             
-            boolean toTasklist = p.getBoolean(AbstractHint.IN_TASK_LIST_KEY, AbstractHint.IN_TASK_LIST_DEFAULT);
+            boolean toTasklist = HintsSettings.isShowInTaskList(hint, p);
             tasklistCheckBox.setSelected(toTasklist);
             
             String description = hint.getDescription();
@@ -264,7 +264,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             Preferences p = getPreferences4Modification(hint);
             
             if( severityComboBox.equals( e.getSource() ) )
-                p.putInt(AbstractHint.SEVERITY_KEY, severityComboBox.getSelectedIndex());
+                HintsSettings.setSeverity(p, index2severity(severityComboBox.getSelectedIndex()));            
         }
     }
 
@@ -276,7 +276,15 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     }
    
     // Private methods ---------------------------------------------------------
-    
+
+    private HintSeverity index2severity( int index ) {
+        for( Map.Entry<HintSeverity,Integer> e : severity2index.entrySet()) {
+            if ( e.getValue() == index ) {
+                return e.getKey();
+            }
+        }
+        throw new IllegalStateException( "Unknown severity");
+    }
        
     private boolean toggle( TreePath treePath ) {
 
@@ -291,9 +299,9 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
 
         if ( o instanceof AbstractHint ) {
             AbstractHint hint = (AbstractHint)o;
-            boolean value = getCurrentPrefernces(hint).getBoolean(ENABLED_KEY, ENABLED_DEFAULT);
+            boolean value = HintsSettings.isEnabled(hint,getCurrentPrefernces(hint));
             Preferences mn = getPreferences4Modification(hint);
-            mn.putBoolean(ENABLED_KEY, !value);                
+            HintsSettings.setEnabled(mn, !value);
             model.nodeChanged(node);
             model.nodeChanged(node.getParent());
         }
@@ -305,10 +313,10 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
                 Object cho = ch.getUserObject();
                 if ( cho instanceof AbstractHint ) {
                     AbstractHint hint = (AbstractHint)cho;
-                    boolean cv = getCurrentPrefernces(hint).getBoolean(ENABLED_KEY, ENABLED_DEFAULT);
+                    boolean cv = HintsSettings.isEnabled(hint,getCurrentPrefernces(hint));
                     if ( cv != value ) {                    
                         Preferences mn = getPreferences4Modification(hint);
-                        mn.putBoolean(ENABLED_KEY, value);
+                        HintsSettings.setEnabled(mn, value);
                         model.nodeChanged( ch );
                     }
                 }
@@ -326,8 +334,8 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             customizerPanel.getParent().invalidate();
             ((JComponent)customizerPanel.getParent()).revalidate();
             customizerPanel.getParent().repaint();
-            severityComboBox.setSelectedIndex(severity2index.get(AbstractHint.SEVERITY_DEFAULT.ordinal()));
-            tasklistCheckBox.setSelected(AbstractHint.IN_TASK_LIST_DEFAULT);
+            severityComboBox.setSelectedIndex(severity2index.get(HintsSettings.SEVERITY_DEFAUT));
+            tasklistCheckBox.setSelected(HintsSettings.IN_TASK_LIST_DEFAULT);
             descriptionTextArea.setText(""); // NOI18N
         }
         
