@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -979,7 +979,12 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             File goldenFile = getGoldenFile(goldenFilename);
             File testFile = new File(getWorkDir(),testFilename);
             File diffFile = new File(getWorkDir(),diffFilename);
-            assertFile("Files differ; check " + diffFile, testFile, goldenFile, diffFile);
+            String message = "Files differ";
+            if(System.getProperty("xtest.home") == null) {
+                // show location of diff file only when run without XTest (run file in IDE)
+                message += "; check "+diffFile;
+            }
+            assertFile(message, testFile, goldenFile, diffFile);
         } catch (IOException ioe) {
             fail("Could not obtain working direcory");
         }
