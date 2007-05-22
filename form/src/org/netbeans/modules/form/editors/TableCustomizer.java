@@ -29,8 +29,6 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TreeModelEvent;
-import javax.swing.event.TreeModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 import org.jdesktop.layout.GroupLayout;
@@ -48,8 +46,6 @@ import org.openide.util.NbBundle;
  */
 public class TableCustomizer extends JPanel implements Customizer, FormAwareEditor {
     private JTable table;
-    /** Property change support. */
-    private PropertyChangeSupport changeSupport;
     
     /** Property editor for model from component section. */
     private RADConnectionPropertyEditor modelFromComponentEd;
@@ -1104,15 +1100,6 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
     public void setObject(Object table) {
         assert (table instanceof JTable);
         this.table = (JTable)table;
-        changeSupport = new PropertyChangeSupport(table);
-    }
-
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        changeSupport.addPropertyChangeListener(listener);
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        changeSupport.removePropertyChangeListener(listener);
     }
 
     public void setContext(FormModel formModel, FormProperty property) {
