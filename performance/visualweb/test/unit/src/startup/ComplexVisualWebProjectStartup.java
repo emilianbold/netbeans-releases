@@ -19,6 +19,13 @@
 
 package startup;
 
+import java.awt.Component;
+import java.io.File;
+import java.io.IOException;
+import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.jemmy.operators.ComponentOperator;
+
 /**
  * Measure startup time by org.netbeans.core.perftool.StartLog.
  * Number of starts with new userdir is defined by property
@@ -46,6 +53,43 @@ public class ComplexVisualWebProjectStartup extends org.netbeans.performance.tes
     public void testStartIDEWithOpenedFilesNBproject() throws java.io.IOException {
         measureComplexStartupTime("Startup Time with opened Visual Web project");
     }
-    
+    protected long runIDEandMeasureStartup(String performanceDataName, File measureFile, File userdir, long timeout) throws IOException {
+        long startupTimeNoDocLoaded = super.runIDEandMeasureStartup(performanceDataName, measureFile, userdir, timeout);
+        long docLoadTime = waitDocumentLoaded();
+        reportPerformance(performanceDataName+ " | Page load", docLoadTime, "ms", 1);
+        return startupTimeNoDocLoaded+docLoadTime;
+        
+    }
+    private long waitDocumentLoaded() {
+        long startTime = System.currentTimeMillis();
+
+        TopComponentOperator tco = new TopComponentOperator("Page1");
+        long oldTimeout = tco.getTimeouts().getTimeout("ComponentOperator.WaitComponentTimeout");        
+        tco.getTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout", 1000000);
+            try {
+                new ComponentOperator(tco,new ComponentChooser() {
+                    
+                    public boolean checkComponent(Component arg0) {
+                        return arg0.getClass().getName().equals("org.netbeans.modules.visualweb.designer.DesignerPane");
+                    }
+                    
+                    public String getDescription() {
+                        return "Web Designer Component";
+                    }
+                });
+                
+            } catch (Exception exception) {
+                fail("WaitDocumentLoad failed because "+exception.getMessage());
+            }
+
+        tco.getTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout",oldTimeout);
+        
+        long stopTime = System.currentTimeMillis();
+        long delta = stopTime-startTime;
+        if(delta <= 0) {
+            fail("Measured value ["+delta+"] is not > 0 !");
+        }
+        return delta;
+    }
 
 }
