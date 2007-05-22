@@ -718,7 +718,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="originalFile" stringvalue="Actions/View/org-openide-actions-CustomizeAction.instance"/>
                 </file>
                 <file name="CustomizeBreakpoint.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-jpda-ui-actions-LineBreakpointCustomizeAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-jpda-ui-actions-BreakpointCustomizeAction.instance"/>
                 </file>
             </folder>
         </folder>
