@@ -3760,6 +3760,7 @@ public class ADCoreEngine extends DiagramEngine
                 }
             }
             retVal = bReadOnly ? false : bFlag;
+
         }
         else if (id.equals("MBK_SHOW_STEREOTYPE_ICONS") || 
             id.equals("MBK_HIDE_STEREOTYPE_ICONS"))
@@ -4638,9 +4639,11 @@ public class ADCoreEngine extends DiagramEngine
             {
                 IDrawingPropertyProvider pDrawingPropertyProvider = (IDrawingPropertyProvider) pDrawEngine;
                 int resourceKind;
+                String title;
+                
                 if (id.equals("MBK_CHANGE_SIMILAR_FONT_COLOR"))
                 {
-                    resourceKind = UIResources.CK_TEXTCOLOR;
+                    resourceKind = UIResources.CK_TEXTCOLOR;                    
                 }
                 else if (id.equals("MBK_CHANGE_SIMILAR_FILL_COLOR"))
                 {
@@ -4650,6 +4653,7 @@ public class ADCoreEngine extends DiagramEngine
                 {  // case of id.equals("MBK_CHANGE_SIMILAR_BORDER_COLOR")
                     resourceKind = UIResources.CK_BORDERCOLOR;
                 }
+                title = NbBundle.getMessage(ADCoreEngine.class, id);
                 String resourceName = pDrawEngine.getResourceName(resourceKind);
                 
                 Color oldColor = null;
@@ -4663,8 +4667,7 @@ public class ADCoreEngine extends DiagramEngine
                         break;
                     }
                 }
-                Color color = JColorChooser.showDialog(null, 
-                        NbBundle.getMessage(ETEditableCompartment.class, "TITLE_Color_Chooser"), oldColor);
+                Color color = JColorChooser.showDialog(null, title, oldColor);
                 if(color != null)
                 {
                     String engineID = pDrawEngine.getDrawEngineID();
