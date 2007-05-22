@@ -165,6 +165,10 @@ public abstract class DocumentModelAccess extends ModelAccess {
      */
     public abstract String getXmlFragment(Element element);
     
+    public String getCurrentDocumentText() {
+        throw new IllegalArgumentException();
+    }
+    
     /**
      * Sets the XML fragment text for given element content.
      * The XML fragment will be parsed and the resulting nodes will

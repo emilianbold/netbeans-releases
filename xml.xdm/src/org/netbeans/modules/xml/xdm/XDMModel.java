@@ -860,6 +860,10 @@ public class XDMModel {
 	}
     }
     
+    public synchronized String getCurrentDocumentText() {
+        return new FlushVisitor().flushModel(getCurrentDocument());
+    }
+    
     private BaseDocument getSwingDocument() {
         BaseDocument bd = (BaseDocument)
         source.getLookup().lookup(BaseDocument.class);

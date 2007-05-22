@@ -503,4 +503,9 @@ public class XDMAccess extends DocumentModelAccess {
             xdmElem.reorderChildren(permutation);
         }
     }
+    
+    @Override
+    public String getCurrentDocumentText() {
+        return xdmModel.getCurrentDocumentText();
+}
 }

@@ -131,6 +131,13 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
         protected CompoundEdit createCompoundEdit() {
             return createModelUndoableEdit();
         }
+        
+        protected void abortUpdate() {
+            ModelUndoableEdit mue = (ModelUndoableEdit) compoundEdit;
+            mue.justUndo();
+            super.compoundEdit = createCompoundEdit();
+            super.updateLevel = 0;
+    }
     }
     
     public boolean inSync() {
@@ -345,6 +352,23 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
         return true;
     }
     
+    public synchronized void rollbackTransaction() {
+        if (transaction == null) return;  // just no-op when not in transaction
+        validateWrite(); // ensures that the releasing thread really owns trnx
+        try {
+            if (inSync() || inUndoRedo()) {
+                throw new IllegalArgumentException("Should never call rollback during sync or undo/redo.");
+            }
+            ues.abortUpdate();
+        } finally {
+            transaction = null;
+            setInSync(false);
+            setInUndoRedo(false);
+            transactionSemaphore.release();
+            transactionCompleted();
+        }
+    }
+
     /**
      * This method ensures that a transaction is currently in progress and
      * that the current thread is able to write. 
@@ -549,6 +573,11 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
                 }
             }
         }
+        
+        public void justUndo() {
+            super.end();
+            super.undo();
+    }
     }
     
     public void undoableEditHappened(UndoableEditEvent e) {
