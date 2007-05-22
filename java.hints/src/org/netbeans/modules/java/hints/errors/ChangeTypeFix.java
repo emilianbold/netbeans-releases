@@ -41,14 +41,14 @@ import org.openide.util.NbBundle;
  *
  * @author Sandip Chitale
  */
-final class ChangeTypeHint implements Fix {
+final class ChangeTypeFix implements Fix {
     
     private JavaSource js;
     private String treeName;
     private String type;
     private int position;
     
-    public ChangeTypeHint(JavaSource js, String treeName, String type, int position) {
+    public ChangeTypeFix(JavaSource js, String treeName, String type, int position) {
         this.js = js;
         this.treeName = treeName;
         this.type = type;
@@ -91,7 +91,7 @@ final class ChangeTypeHint implements Fix {
     }
     
     public String getText() {
-        return NbBundle.getMessage(ChangeTypeHint.class, "MSG_ChangeVariablesType", treeName, type); // NOI18N
+        return NbBundle.getMessage(ChangeTypeFix.class, "MSG_ChangeVariablesType", treeName, type); // NOI18N
     }
 
 }

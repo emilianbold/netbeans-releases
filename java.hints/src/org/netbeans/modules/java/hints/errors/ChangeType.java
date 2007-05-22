@@ -35,6 +35,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.spi.editor.hints.Fix;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -89,8 +90,8 @@ public final class ChangeType implements ErrorRule<Void> {
     static
     {
         codes = new HashSet<String>();
-        codes.add("compiler.err.prob.found.req");
-        codes.add("compiler.err.incomparable.types");
+        codes.add("compiler.err.prob.found.req"); // NOI18N
+        codes.add("compiler.err.incomparable.types"); // NOI18N
         codes = Collections.unmodifiableSet(codes);
     }
     
@@ -114,7 +115,7 @@ public final class ChangeType implements ErrorRule<Void> {
         if (leaf[0] instanceof VariableTree) {
             if (tm[0] != null) {
                 int position = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), leaf[0]) + 1; // Need to add 1. Bug?
-                result.add(new ChangeTypeHint(info.getJavaSource(),
+                result.add(new ChangeTypeFix(info.getJavaSource(),
                         ((VariableTree) leaf[0]).getName().toString(), 
                         Utilities.getTypeName(expressionType[0], false).toString(), position));
             }
@@ -132,10 +133,10 @@ public final class ChangeType implements ErrorRule<Void> {
     }
     
     public String getDisplayName() {
-        return "Change Type Fix";
+        return  NbBundle.getMessage(ChangeType.class, "MSG_ChangeVariablesTypeDisplayName"); // NOI18N
     }
     
     public String getDescription() {
-        return "This hint changes the type of a variable to the type of initializer expression.";
+        return NbBundle.getMessage(ChangeType.class, "MSG_ChangeVariablesTypeDescription"); // NOI18N
     }
 }
