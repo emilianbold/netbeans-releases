@@ -24,44 +24,48 @@ import javax.swing.event.ChangeListener;
 import org.openide.nodes.Node;
 
 /**
- * A <code>Children.Keys</code>-like abstration for use in 
- * {@link org.netbeans.spi.project.ui.support.NodeFactory}
- * instances. For utility methods of creating a <code>NodeList</code> instance, see
- * {@link org.netbeans.spi.project.ui.support.NodeFactorySupport}
-
+ * Represents a series of nodes which can be spliced into a children list.
  * @param K the type of key you would like to use to represent nodes
  * @author mkleint
  * @since org.netbeans.modules.projectuiapi/1 1.18
+ * @see NodeFactory
+ * @see NodeFactorySupport
+ * @see org.openide.nodes.Children.Keys
  */
 public interface NodeList<K> {
     /**
-     * child keys for which we later create a  {@link org.openide.nodes.Node}
-     * in the node() method. If the change set of keys changes based on external
-     *  events, fire a <code>ChangeEvent</code> to notify the parent Node.
+     * Obtains child keys which will be passed to {@link #node}.
+     * If there is a change in the set of keys based on external events,
+     * fire a <code>ChangeEvent</code>.
+     * @return list of zero or more keys to display
      */
     List<K> keys();
     /**
-     * add a change listener, primarily to be used by the infrastructure
-     * A change in keys provided by this NodeList is supposed to trigger a ChangeEvent
+     * Adds a listener to a change in keys.
+     * @param l a listener to add
      */
-    void addChangeListener(ChangeListener l); // change in keys()
+    void addChangeListener(ChangeListener l);
     /**
-     * remove a change listener, primarily to be used by the infrastructure
-     * A change in keys is supposed to trigger ChangeEvent
+     * Removes a change listener.
+     * @param l a listener to remove
      */
     void removeChangeListener(ChangeListener l);
     /**
-     * create Node for a given key, equal in semantics to <code>Children.Keys.createNode()</code>
+     * Creates a node for a given key.
+     * @param key a key which was included in {@link #keys}
+     * @return a node which should represent that key visually
      */
     Node node(K key);
     /**
-     * callback from Children instance of the parent node, called by the infrastructure at <code>Children.addNotify()</code> time.
-     * To be used primarily for registering of listeners and caching of state.
+     * Called when the node list is to be active.
+     * If there is any need to register listeners or begin caching of state, do it here.
+     * @see org.openide.nodes.Children#addNotify
      */
     void addNotify();
     /**
-     * callback from Children instance of the parent node, called by the infrastructure at <code>Children.removeNotify()</code> time.
-     * To be used primarily for unregistering of listeners and general cleanup.
+     * Called when the node list is to be deactivated.
+     * Unregister any listeners and perform any general cleanup.
+     * @see org.openide.nodes.Children#removeNotify
      */
     void removeNotify();
 }
