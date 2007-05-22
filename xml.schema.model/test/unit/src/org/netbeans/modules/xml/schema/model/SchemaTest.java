@@ -224,7 +224,7 @@ public class SchemaTest extends TestCase {
         assertEquals("globalelement should be appended as last component", schema.getChildren().size()-1, index);
     }
     
-    /*public void testRollback() throws Exception {
+    public void testRollback() throws Exception {
         UndoManager um = new UndoManager();
         schema.getModel().addUndoableEditListener(um);
         
@@ -239,9 +239,8 @@ public class SchemaTest extends TestCase {
        model.startTransaction();
        schema.addElement(ge);
        String text = (( AbstractDocumentModel)model).getAccess().getCurrentDocumentText();
-       ( (AbstractModel)model).rollackTransaction();
        assertTrue(text.indexOf("newElement") > 0);
-       ( (AbstractModel)model).rollackTransaction();
+       ( (AbstractModel)model).rollbackTransaction();
        text = (( AbstractDocumentModel)model).getAccess().getCurrentDocumentText();
        assertTrue(text.indexOf("newElement") == -1);
        assertTrue(text.indexOf("stickAfterRollbackElement") > 0);
@@ -253,5 +252,5 @@ public class SchemaTest extends TestCase {
        um.redo();
        text = (( AbstractDocumentModel)model).getAccess().getCurrentDocumentText();
        assertTrue(text.indexOf("stickAfterRollbackElement") > 0);
-    }*/
+    }
 }
