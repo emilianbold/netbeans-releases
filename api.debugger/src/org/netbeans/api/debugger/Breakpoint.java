@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -38,15 +38,24 @@ public abstract class Breakpoint {
     public static final String          PROP_GROUP_NAME = "groupName"; // NOI18N
     /** Property name for breakpoint validity */
     public static final String          PROP_VALIDITY = "validity"; // NOI18N
+    /** Property name constant. */
+    public static final String          PROP_HIT_COUNT_FILTER = "hitCountFilter"; // NOI18N
     
     /** Validity values */
     public static enum                  VALIDITY { UNKNOWN, VALID, INVALID }
+    
+    /** The style of filtering of hit counts.
+     * The breakpoint is reported when the actual hit count is "equal to",
+     * "greater than" or "multiple of" the number specified by the hit count filter. */
+    public static enum                  HIT_COUNT_FILTERING_STYLE { EQUAL, GREATER, MULTIPLE }
     
     /** Support for property listeners. */
     private PropertyChangeSupport       pcs;
     private String                      groupName = "";
     private VALIDITY                    validity = VALIDITY.UNKNOWN;
     private String                      validityMessage;
+    private int                         hitCountFilter;
+    private HIT_COUNT_FILTERING_STYLE   hitCountFilteringStyle;
     
     { pcs = new PropertyChangeSupport (this); }
 
@@ -104,6 +113,57 @@ public abstract class Breakpoint {
             this.validity = validity;
         }
         firePropertyChange(PROP_VALIDITY, old, validity);
+    }
+    
+    /**
+     * Get the hit count filter.
+     * @return a positive hit count filter, or <code>zero</code> when no hit count filter is set.
+     */
+    public final synchronized int getHitCountFilter() {
+        return hitCountFilter;
+    }
+    
+    /**
+     * Get the style of hit count filtering.
+     * @return the style of hit count filtering, or <cpde>null</code> when no count filter is set.
+     */
+    public final synchronized HIT_COUNT_FILTERING_STYLE getHitCountFilteringStyle() {
+        return hitCountFilteringStyle;
+    }
+    
+    /**
+     * Set the hit count filter and the style of filtering.
+     * @param hitCountFilter a positive hit count filter, or <code>zero</code> to unset the filter.
+     * @param hitCountFilteringStyle the style of hit count filtering.
+     *        Can be <code>null</code> only when <code>hitCountFilter == 0</code>.
+     */
+    public final void setHitCountFilter(int hitCountFilter, HIT_COUNT_FILTERING_STYLE hitCountFilteringStyle) {
+        Object[] old;
+        Object[] newProp;
+        synchronized (this) {
+            if (hitCountFilter == this.hitCountFilter && hitCountFilteringStyle == this.hitCountFilteringStyle) {
+                return ;
+            }
+            if (hitCountFilteringStyle == null && hitCountFilter > 0) {
+                throw new NullPointerException("hitCountFilteringStyle must not be null.");
+            }
+            if (hitCountFilter == 0) {
+                hitCountFilteringStyle = null;
+            }
+            if (this.hitCountFilter == 0) {
+                old = null;
+            } else {
+                old = new Object[] { this.hitCountFilter, this.hitCountFilteringStyle };
+            }
+            if (hitCountFilter == 0) {
+                newProp = null;
+            } else {
+                newProp = new Object[] { hitCountFilter, hitCountFilteringStyle };
+            }
+            this.hitCountFilter = hitCountFilter;
+            this.hitCountFilteringStyle = hitCountFilteringStyle;
+        }
+        firePropertyChange(PROP_HIT_COUNT_FILTER, old, newProp);
     }
     
     public String getGroupName () {

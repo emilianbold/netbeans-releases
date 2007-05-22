@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -192,6 +192,30 @@ Microsystems, Inc. All Rights Reserved.
                 <code>Breakpoint.getValidityMessage()</code>,
                 <code>Breakpoint.setValidity()</code> - validity management.
             </p>
+        </description>
+    </change>
+    <change id="Breakpoint.hitCounts">
+        <api name="DebuggerCoreAPI"/>
+        <summary>Add filter for hit counts to breakpoints.</summary>
+        <version major="1" minor="11"/>
+        <date day="21" month="5" year="2007"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" addition="yes"/>
+        <description>
+             <p>
+             To be able to set breakpoint for number of iterations, we need to add a filter for hit counts into Breakpoint API.
+             </p>
+             <p>
+                 Added methods:<br/>
+                 <code>Breakpoint.getHitCountFilter()</code>,
+                 <code>Breakpoint.getHitCountFilteringStyle()</code>,
+                 <code>Breakpoint.setHitCountFilter()</code>.
+             </p>
+             <p>
+                 Added fields:<br/>
+                 <code>Breakpoint.PROP_HIT_COUNT_FILTER</code>,
+                 <code>Breakpoint.HIT_COUNT_FILTERING_STYLE</code>.
+             </p>
         </description>
     </change>
 
