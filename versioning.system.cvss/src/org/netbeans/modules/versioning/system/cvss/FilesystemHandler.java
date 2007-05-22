@@ -56,7 +56,7 @@ class FilesystemHandler extends VCSInterceptor {
 
     public void doDelete(File file) throws IOException {
         if (file.isDirectory() && hasMetadata(file)) {
-            new File(file, "CVS/.nb-removed").createNewFile();
+            CvsVisibilityQuery.hideFolder(file);
             cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN, true);
             return;
         }
@@ -107,8 +107,8 @@ class FilesystemHandler extends VCSInterceptor {
             for (File file : files) {
                 String fileName = file.getName();
                 if (file.isDirectory()) {
-                    if (fileName.equals("CVS")) {
-                        new File(file, ".nb-removed").createNewFile();
+                    if (fileName.equals(CvsVersioningSystem.FILENAME_CVS)) {
+                        CvsVisibilityQuery.hideFolder(file.getParentFile());
                         continue;
                     }
                     File toFile = new File(to, fileName);

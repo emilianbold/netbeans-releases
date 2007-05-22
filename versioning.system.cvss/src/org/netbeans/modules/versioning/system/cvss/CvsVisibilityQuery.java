@@ -19,15 +19,18 @@
 package org.netbeans.modules.versioning.system.cvss;
 
 import org.netbeans.spi.queries.VisibilityQueryImplementation;
-import org.netbeans.modules.versioning.util.VersioningListener;
+import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VersioningEvent;
+import org.netbeans.modules.versioning.util.VersioningListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.RequestProcessor;
 
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 import java.util.*;
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Hides folders that have 'Localy removed' status.
@@ -36,10 +39,20 @@ import java.io.File;
  */
 public class CvsVisibilityQuery implements VisibilityQueryImplementation, VersioningListener {
 
+    private static CvsVisibilityQuery instance;
+    private static final String MARKER_CVS_REMOVED = "CVS/.nb-removed";
+
     private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+    private final RequestProcessor.Task refreshVisibilityTask;
 
     public CvsVisibilityQuery() {
         CvsVersioningSystem.getInstance().getStatusCache().addVersioningListener(this);
+        instance = this;
+        refreshVisibilityTask = Utils.createTask(new Runnable() {
+            public void run() {
+                instance.fireVisibilityChanged();
+            }
+        });        
     }
 
     public boolean isVisible(FileObject fileObject) {
@@ -74,12 +87,13 @@ public class CvsVisibilityQuery implements VisibilityQueryImplementation, Versio
     }
 
     static boolean isHiddenFolder(File file) {
-        File marker = new File(file, "CVS/.nb-removed");
+        File marker = new File(file, MARKER_CVS_REMOVED);
         if (marker.exists()) {
             File [] files = file.listFiles();
             for (File child : files) {
                 if (child.lastModified() > marker.lastModified() && !CvsVersioningSystem.FILENAME_CVS.equals(child.getName())) {
                     marker.delete();
+                    refreshVisibility();
                     return false;
                 }
             }
@@ -89,10 +103,19 @@ public class CvsVisibilityQuery implements VisibilityQueryImplementation, Versio
         }
     }
     
-    private void fireVisibilityChanged() {
+    private synchronized void fireVisibilityChanged() {
         ChangeEvent event = new ChangeEvent(this);
         for (ChangeListener listener : listeners) {
             listener.stateChanged(event);          
         }          
+    }
+
+    private static void refreshVisibility() {
+        instance.refreshVisibilityTask.schedule(100);
+    }
+
+    static void hideFolder(File file) throws IOException {
+        new File(file, MARKER_CVS_REMOVED).createNewFile();
+        refreshVisibility();
     }
 }
