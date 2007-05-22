@@ -146,6 +146,7 @@ private void connectionComboActionPerformed(java.awt.event.ActionEvent evt) {//G
      * @return the component encapsulating the imported data.
      */
     public RADComponent importData(FormModel formModel) {
+        removeAll();
         initComponents();
         DatabaseExplorerUIs.connect(connectionCombo, ConnectionManager.getDefault());
         DialogDescriptor dd = new DialogDescriptor(
