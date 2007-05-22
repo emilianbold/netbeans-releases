@@ -375,6 +375,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../usersguide</project>
                 <project>../usersguide/j2seexamples</project>
                 <project>../utilities</project>
+                <project>../utilities/jumpto</project>
                 <project>../utilities/project</project>
                 <project>../versioncontrol</project>
                 <project>../versioncontrol/localhistory</project>
@@ -415,19 +416,31 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../xml/api</project>
                 <project>../xml/axi</project>
                 <project>../xml/catalog</project>
+                <project>../xml/catalogsupport</project>
                 <project>../xml/core</project>
+                <project>../xml/graph</project>
+                <project>../xml/jxpath</project>
                 <project>../xml/lexer</project>
                 <project>../xml/multiview</project>
+                <project>../xml/nbprefuse</project>
+                <project>../xml/prefuse</project>
+                <project>../xml/refactoring</project>
                 <project>../xml/retriever</project>
                 <project>../xml/schema</project>
+                <project>../xml/schema/abe</project>
                 <project>../xml/schema/api</project>
                 <project>../xml/schema/completion</project>
+                <project>../xml/schema/core</project>
+                <project>../xml/schema/refactoring</project>
+                <project>../xml/schema/schemaui</project>
                 <project>../xml/tageditorsupport</project>
                 <project>../xml/tax</project>
                 <project>../xml/text-edit</project>
                 <project>../xml/tools</project>
+                <project>../xml/validation</project>
                 <project>../xml/wsdl/api</project>
                 <project>../xml/xam</project>
+                <project>../xml/xamui</project>
                 <project>../xml/xdm</project>
                 <project>../xml/xsl</project>
             </subprojects>
