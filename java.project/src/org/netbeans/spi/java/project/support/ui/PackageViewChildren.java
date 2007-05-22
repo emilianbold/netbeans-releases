@@ -78,6 +78,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.MultiTransferObject;
@@ -951,8 +952,9 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             FileObject folder = dataFolder.getPrimaryFile();
             String path = FileUtil.getRelativePath(root, folder);
             if (path == null) {
-                // ???
-                return null;
+                // ??? - #103711: null cannot be returned because the icon 
+                // must be annotated; general package icon is returned instead
+                return Utilities.loadImage("org/netbeans/spi/java/project/support/ui/package.gif"); // NOI18N
             }
             return PackageDisplayUtils.getIcon(folder, path.replace('/', '.'), isLeaf() );
         }
