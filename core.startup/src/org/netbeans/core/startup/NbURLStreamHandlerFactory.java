@@ -294,7 +294,14 @@ final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory, Lookup
                 else
                     return 0;
             }
-            
+
+            public @Override long getLastModified() {
+                if (connected && /* #96928 */ !real.getURL().toExternalForm().contains("http:")) { // NOI18N
+                    return real.getLastModified();
+                }
+                return 0L;
+            }
+
             // [PENDING] might be some more methods it would be useful to delegate, possibly
             
         }
