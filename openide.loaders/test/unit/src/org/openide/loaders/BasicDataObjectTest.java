@@ -23,6 +23,7 @@ import javax.swing.SwingUtilities;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import java.beans.*;
+import java.util.logging.Level;
 import org.netbeans.junit.*;
 import org.openide.nodes.Node;
 
@@ -31,6 +32,7 @@ import org.openide.nodes.Node;
  * Settings, Default, Folder and Shadow.
  * @author js104452
  */
+import org.openide.util.Lookup;
 public class BasicDataObjectTest extends NbTestCase {
 
     /** Creates new BasicDataObjectTest */
@@ -55,6 +57,28 @@ public class BasicDataObjectTest extends NbTestCase {
     protected void tearDown() throws Exception {
         TestUtilHid.destroyLocalFileSystem (getName());
     }
+
+    
+    public void testLookupIsReturnedEvenIfDataObjectIsDeleted() throws Exception {
+        CharSequence log = Log.enable("org.openide.loaders", Level.WARNING);
+
+        DataObject obj = DataObject.find (
+            FileUtil.createData (subDir, "somedata.txt")
+        );
+        
+        Lookup l = obj.getLookup();
+        
+        obj.delete();
+        
+        assertFalse("Does not exist", obj.isValid());
+        
+        Lookup ln = obj.getLookup();
+        
+        assertEquals("Lookups are the same type", l.getClass(), ln.getClass());
+        
+     //   assertEquals("No warnings", "", log.toString());
+    }
+    
     
     public void testDirectCallToDataObjectContructorIsNotAllowed () throws Exception {
         try {
@@ -285,7 +309,7 @@ public class BasicDataObjectTest extends NbTestCase {
         DataObject query = obj.getLookup().lookup(DataObject.class);
         assertSame("Object is in its own lookup", obj, query);
     }
-    
+
     private void doSerTest (DataObject obj) throws Exception {
         org.openide.util.io.NbMarshalledObject mar = new org.openide.util.io.NbMarshalledObject (obj);
         
