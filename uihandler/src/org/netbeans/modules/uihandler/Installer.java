@@ -176,7 +176,7 @@ public class Installer extends ModuleInstall {
     public static List<LogRecord> getLogs() {
         File f = logFile(0);
         if (f == null || !f.exists()) {
-            return Collections.emptyList();
+            return new ArrayList<LogRecord>();
         }
         closeLogStream();
         

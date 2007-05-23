@@ -65,6 +65,13 @@ public class InstallerTest extends NbTestCase {
         installer.close();
     }
     
+    public void testEmptyLog() throws Exception {
+        List<LogRecord> list = Installer.getLogs();
+        assertEquals("Empty", 0, list.size());
+        list.add(null);
+        assertEquals("One", 1, list.size());
+    }
+    
     public void testLogsRereadOnStartup() throws Exception {
         Logger log = Logger.getLogger("org.netbeans.ui"); // NOI18N
         log.warning("Something happened");
