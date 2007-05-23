@@ -790,10 +790,12 @@ public class ReplaceDialogUI extends JCenterDialog
         }
         catch (Exception ex)
         {
-            JOptionPane.showMessageDialog(this,
-                    DefaultFindDialogResource.getString("IDS_ERROR1"),
-                    DefaultFindDialogResource.getString("IDS_PROJNAME2"),
-                    JOptionPane.INFORMATION_MESSAGE);
+            String str2 = FindUtilities.translateString("IDS_NONEFOUND2");
+            m_Status.setText(str2);
+//            JOptionPane.showMessageDialog(this,
+//                    DefaultFindDialogResource.getString("IDS_ERROR1"),
+//                    DefaultFindDialogResource.getString("IDS_PROJNAME2"),
+//                    JOptionPane.INFORMATION_MESSAGE);
         }
         finally
         {

@@ -23,24 +23,20 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-
 import javax.swing.Box;
 import javax.swing.JCheckBox;
 import javax.swing.JButton;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.WindowConstants;
-import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-
 import org.netbeans.modules.uml.ui.support.commondialogs.IErrorDialog;
 import org.netbeans.modules.uml.ui.support.commondialogs.MessageIconKindEnum;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-
 import org.netbeans.modules.uml.integration.finddialog.FindController;
 import org.netbeans.modules.uml.integration.finddialog.FindResults;
 import org.netbeans.modules.uml.integration.finddialog.FindUtilities;
@@ -756,10 +752,12 @@ public class FindDialogUI extends JCenterDialog
             }
             catch (Exception ex)
             {
-                JOptionPane.showMessageDialog(this,
-                        DefaultFindDialogResource.getString("IDS_ERROR1"),
-                        DefaultFindDialogResource.getString("IDS_PROJNAME2"),
-                        JOptionPane.INFORMATION_MESSAGE);
+                String noneStr = FindUtilities.translateString("IDS_NONEFOUND");
+                m_Status.setText(noneStr);
+//                JOptionPane.showMessageDialog(this,
+//                        DefaultFindDialogResource.getString("IDS_ERROR1"),
+//                        DefaultFindDialogResource.getString("IDS_PROJNAME2"),
+//                        JOptionPane.INFORMATION_MESSAGE);
             }
             finally
             {

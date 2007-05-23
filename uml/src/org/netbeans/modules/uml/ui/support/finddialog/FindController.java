@@ -548,12 +548,12 @@ public class FindController implements IFindController
                 m_Project = pProject;
                 search(pResults);
             } catch(Exception ex) {
-                Frame parent = ProductHelper.getProxyUserInterface().getWindowHandle();
-                JOptionPane.showMessageDialog(parent,
-                DefaultFindDialogResource.getString("IDS_ERROR1"),
-                DefaultFindDialogResource.getString("IDS_PROJNAME2"),
-                JOptionPane.INFORMATION_MESSAGE);
-                return;
+//                Frame parent = ProductHelper.getProxyUserInterface().getWindowHandle();
+//                JOptionPane.showMessageDialog(parent,
+//                DefaultFindDialogResource.getString("IDS_ERROR1"),
+//                DefaultFindDialogResource.getString("IDS_PROJNAME2"),
+//                JOptionPane.INFORMATION_MESSAGE);
+//                return;
             }
         }
 
