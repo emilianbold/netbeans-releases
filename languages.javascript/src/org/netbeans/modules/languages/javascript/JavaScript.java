@@ -271,7 +271,7 @@ public class JavaScript {
             FileObject fo = NbEditorUtilities.getFileObject (doc);
             //Collection<CompletionItem> globals = Index.getGlobalItems (fo, members.keySet ());
             //result.addAll (globals);
-            return result;
+            return merge (result);
         }
         
         List result = new ArrayList ();
@@ -281,7 +281,7 @@ public class JavaScript {
         String libraryContext = null;
         if (tokenText.equals ("new")) {
             result.addAll (getLibrary ().getCompletionItems ("constructor"));
-            return result;
+            return merge (result);
         }
         if (tokenText.equals (".")) {
             token = previousToken (ts);
@@ -297,7 +297,7 @@ public class JavaScript {
             } else
             if (token.text ().toString ().equals ("new")) {
                 result.addAll (getLibrary ().getCompletionItems ("constructor"));
-                return result;
+                return merge (result);
             }
         }
         
@@ -306,7 +306,33 @@ public class JavaScript {
             result.addAll (getLibrary ().getCompletionItems ("member"));
         } else
             result.addAll (getLibrary ().getCompletionItems ("root"));
-        return result;
+        return merge (result);
+    }
+    
+    private static List<CompletionItem> merge (List<CompletionItem> items) {
+        Map<String,CompletionItem> map = new HashMap<String,CompletionItem> ();
+        Iterator<CompletionItem> it = items.iterator ();
+        while (it.hasNext ()) {
+            CompletionItem completionItem = it.next ();
+            CompletionItem current = map.get (completionItem.getText ());
+            if (current != null) {
+                String library = current.getLibrary ();
+                if (library == null) library = "";
+                if (completionItem.getLibrary () != null &&
+                    library.indexOf (completionItem.getLibrary ()) < 0
+                )
+                    library += ',' + completionItem.getLibrary ();
+                completionItem = CompletionItem.create (
+                    current.getText (),
+                    current.getDescription (),
+                    library,
+                    current.getType (),
+                    current.getPriority ()
+                );
+            }
+            map.put (completionItem.getText (), completionItem);
+        }
+        return new ArrayList<CompletionItem> (map.values ());
     }
     
     private static Token previousToken (TokenSequence ts) {
