@@ -141,6 +141,9 @@ Microsystems, Inc. All Rights Reserved.
         </copy>
         <antcall target="copy_released_ide_cfg_file"/>
 
+        <!-- copy xsl transformator file for ActionTracker log into appropriate directory -->
+        <copy file="${performance.testutilities.dist.dir}/ActionTracker.xsl" todir="${xtest.results.testrun.dir}" />
+
         <executeTests pluginName="ide">
             <classpath refid="jemmy.and.jelly.path"/>
             <classpath location="${test.qa-functional.run.cp.extra}"/>
