@@ -50,7 +50,7 @@ public class CreateNewFile extends org.netbeans.performance.test.utilities.Perfo
     private String fileType;
     private String fileName;
     private String packageName;
-    
+    private boolean isEntity = false;
     /**
      * Creates a new instance of CreateNewFile 
      */
@@ -84,6 +84,7 @@ public class CreateNewFile extends org.netbeans.performance.test.utilities.Perfo
         fileType = "Entity Bean";
         fileName = "NewTestEntity";
         packageName = "test.newfiles";
+        isEntity = true;
         doMeasurement();
     }
     
@@ -114,7 +115,12 @@ public class CreateNewFile extends org.netbeans.performance.test.utilities.Perfo
         wizard.selectCategory(category);
         wizard.selectFileType(fileType);
         wizard.next();
-        new JTextFieldOperator(wizard).setText(fileName+Utils.getTimeIndex());
+        JTextFieldOperator eBname;
+        if(isEntity==true)
+             eBname = new JTextFieldOperator(wizard,1);
+        else
+             eBname = new JTextFieldOperator(wizard);
+        eBname.setText(fileName+Utils.getTimeIndex());
         new JComboBoxOperator(wizard,1).clearText();
         new JComboBoxOperator(wizard,1).typeText(packageName);
     }
