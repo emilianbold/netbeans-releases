@@ -86,7 +86,7 @@ is the proper place.
             <api name="java_ee_metadata_model_api"/>
             <summary>Added <code>MetadataModel.isReady()</code> and <code>MetadataModel.runReadActionWhenReady()</code></summary>
             <version major="1" minor="3"/>
-            <date day="14" month="5" year="2007"/>
+            <date day="22" month="5" year="2007"/>
             <author login="abadea"/>
             <compatibility addition="yes" binary="incompatible" source="incompatible" semantic="incompatible" />
             <description>
