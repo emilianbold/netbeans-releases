@@ -77,7 +77,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="check-perf-classes">
-        <available file="../../performance/build/test/qa-functional/classes" property="perf.classes.exist" type="dir"/>
+        <available file="../../../performance/build/test/qa-functional/classes" property="perf.classes.exist" type="dir"/>
     </target>
     
     <target name="build-performance" unless="perf.classes.exist" depends="check-perf-classes">
@@ -212,6 +212,8 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="${xtest.workdir}/sys/ide_backup"/>
         </copy>
         <antcall target="copy_released_ide_cfg_file"/>
+        <!-- copy xsl transformator file for ActionTracker log into appropriate directory -->
+        <copy file="${performance.testutilities.dist.dir}/ActionTracker.xsl" todir="${xtest.results.testrun.dir}" />
         <executeTests pluginName="ide">
             <classpath refid="jemmy.and.jelly.path"/>
             <classpath refid="perf.util"/>
