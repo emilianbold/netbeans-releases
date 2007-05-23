@@ -27,7 +27,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.InvalidKeyException;
-import java.security.KeyManagementException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateEncodingException;
@@ -59,6 +58,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
@@ -108,7 +108,7 @@ public class SvnClientExceptionHandler {
     public final static int EX_FILE_ALREADY_EXISTS = 8192;
     public final static int EX_IS_OUT_OF_DATE = 16384;            
     public final static int EX_NO_SVN_CLIENT = 32768;            
-    
+          
   
     public final static int EX_HANDLED_EXCEPTIONS = EX_AUTHENTICATION | EX_NO_CERTIFICATE | EX_NO_HOST_CONNECTION;
     public final static int EX_DEFAULT_HANDLED_EXCEPTIONS = EX_HANDLED_EXCEPTIONS;
@@ -138,7 +138,7 @@ public class SvnClientExceptionHandler {
         }
         throw getException();
     }
-        
+         
     private boolean handleRepositoryConnectError() {
         SVNUrl url = client.getSvnUrl();
         String title = org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters");                 // NOI18N
@@ -511,7 +511,26 @@ public class SvnClientExceptionHandler {
     private static boolean isHTTP405(String msg) {
         return msg.indexOf("405") > -1;                                                     // NOI18N
     }
+
+    public static boolean isReportOf200(String msg) {  
+        msg = msg.toLowerCase();
+        int idx = msg.indexOf("svn: report of");
+        if(idx < 0) {
+            return false;
+        }
+        return msg.indexOf("200", idx) > -1;               // NOI18N
+    }
     
+    public static boolean isSecureConnTruncated(String msg) {
+        msg = msg.toLowerCase();
+        return msg.indexOf("could not read chunk size: secure connection truncated") > -1;  // NOI18N
+    }        
+
+    public static boolean isFileNotFoundInRevision(String msg) {
+        msg = msg.toLowerCase();
+        return msg.indexOf("file not found: revision") > -1;  // NOI18N
+    }      
+        
     private static boolean isAlreadyAWorkingCopy(String msg) {        
         return msg.indexOf("is already a working copy for a different url") > -1;           // NOI18N
     }
@@ -555,7 +574,7 @@ public class SvnClientExceptionHandler {
             String msg = getCustomizedMessage(ex);
             if(msg == null) {
                 if(ex instanceof SVNClientException) {
-                    msg = parseExceptionMessage((SVNClientException)ex);    
+                    msg = parseExceptionMessage((SVNClientException) ex);    
                 } else {
                     msg = ex.getMessage();                        
                 }                
@@ -564,6 +583,19 @@ public class SvnClientExceptionHandler {
         }         
     }       
 
+    public static boolean handleLogException(SVNUrl url, SVNRevision revision, SVNClientException e) {
+        String protocol = url.getProtocol();
+        if(  ( protocol.startsWith("https") && SvnClientExceptionHandler.isSecureConnTruncated(e.getMessage()) ) ||                    
+             ( protocol.startsWith("http") && SvnClientExceptionHandler.isReportOf200(e.getMessage())              ) ||
+             ( ( protocol.startsWith("file") || protocol.startsWith("svn+") ) && SvnClientExceptionHandler.isFileNotFoundInRevision(e.getMessage()) ) ) 
+        {            
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);    // keep track
+            annotate(NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_ErrorFileNotFoundInRevision", new String[] {revision.toString()} )); // NOI18N                      
+            return true;
+        } 
+        return false;
+    }     
+    
     private static void notifyNoClient() {
         MissingSvnClient msc = new MissingSvnClient();
         msc.show();
@@ -572,8 +604,7 @@ public class SvnClientExceptionHandler {
     private static String getCustomizedMessage(Exception exception) {
         String msg = null;
         if (isHTTP405(exception.getMessage())) {
-            msg = exception.getMessage() + "\n\n" + // NOI18N
-                    NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error405"); // NOI18N
+            msg = exception.getMessage() + "\n\n" + NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error405");                                // NOI18N
         } else if(isOutOfDate(exception.getMessage())) {
             msg = exception.getMessage() + "\n\n" + org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_OutOfDate") + "\n"; // NOI18N
             

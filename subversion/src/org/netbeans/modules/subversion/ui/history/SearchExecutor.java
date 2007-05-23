@@ -157,14 +157,15 @@ class SearchExecutor implements Runnable {
         if (progressSupport.isCanceled()) {
             searchCanceled = true;
             return;
-        }
-        
+        }        
         if (searchingUrl()) {
             try {
                 ISVNLogMessage [] messages = client.getLogMessages(rootUrl, null, fromRevision, toRevision, false, true, 0);
                 appendResults(rootUrl, messages);
             } catch (SVNClientException e) {
-                progressSupport.annotate(e);
+                if(!SvnClientExceptionHandler.handleLogException(rootUrl, toRevision, e)) {
+                    progressSupport.annotate(e);
+                }
             }
         } else {
             String [] paths = new String[files.size()];
@@ -176,10 +177,14 @@ class SearchExecutor implements Runnable {
                 ISVNLogMessage [] messages = client.getLogMessages(rootUrl, paths, fromRevision, toRevision, false, true);
                 appendResults(rootUrl, messages);
             } catch (SVNClientException e) {
-                progressSupport.annotate(e);
+                if(!SvnClientExceptionHandler.handleLogException(rootUrl, toRevision, e)) {
+                    progressSupport.annotate(e);
+                }
             }
         }
     }
+            
+  
     
     /**
      * Processes search results from a single repository. 
