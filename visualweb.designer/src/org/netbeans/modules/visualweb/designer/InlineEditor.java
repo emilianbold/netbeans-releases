@@ -28,10 +28,12 @@ import java.awt.Rectangle;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
+import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.visualweb.api.designer.Designer.DesignerEvent;
 
-import org.openide.ErrorManager;
 import org.openide.awt.MouseUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -214,6 +216,12 @@ public abstract class InlineEditor {
         }
 
         if (chosenProperty == -1) {
+            if (useDefault) {
+                // #104462 No default inline editable property specified.
+                warn("There is no default inline editable property specified for the component (missing '*' char)" // NOI18N
+                        + ", inline editable properties=" + Arrays.asList(properties) // NOI18N
+                        + ", component root element=" + componentRootElement); // NOI18N
+            }
             return null;
         }
 
@@ -233,8 +241,7 @@ public abstract class InlineEditor {
                     componentRootElement,
                     name);
             if (inlineEditorSupport == null) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new NullPointerException(
-                        "Missing inline editor support, componentRootElement=" + componentRootElement + ", propertyName=" + name)); // NOI18N
+                log(new NullPointerException("Missing inline editor support, componentRootElement=" + componentRootElement + ", propertyName=" + name)); // NOI18N
                 return null;
             }
             
@@ -453,8 +460,7 @@ public abstract class InlineEditor {
                     return element;
                 }
             } else {
-                ErrorManager.getDefault().log("Inline editing xpath expression not understood: " + // NOI18N
-                    xpath);
+                info("Inline editing xpath expression not understood: " + xpath); // NOI18N
             }
         }
 
@@ -648,4 +654,24 @@ public abstract class InlineEditor {
     /** XXX Invokes delete next char action.
      * FIXME There shouldn't be an action invocation, but rather utility method call. */
     public abstract void invokeDeleteNextCharAction(ActionEvent evt);
+
+    
+    private static void log(Exception ex) {
+        Logger logger = getLogger();
+        logger.log(Level.INFO, null, ex);
+    }
+    
+    private static void info(String message) {
+        Logger logger = getLogger();
+        logger.info(message);
+    }
+    
+    private static void warn(String message) {
+        Logger logger = getLogger();
+        logger.warning(message);
+    }
+    
+    private static Logger getLogger() {
+        return Logger.getLogger(InlineEditor.class.getName());
+    }
 }
