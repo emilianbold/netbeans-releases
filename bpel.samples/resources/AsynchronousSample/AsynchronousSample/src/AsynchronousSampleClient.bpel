@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <process 
-    name="AsynchronousSampleClient" 
-    targetNamespace="http://enterprise.netbeans.org/bpel/AsynchronousSampleClient"
+    name="AsynchronousSampleClient" targetNamespace="http://enterprise.netbeans.org/bpel/AsynchronousSampleClient"
     xmlns:partnerNS="http://enterprise.netbeans.org/bpel/AsynchronousSample"
     xmlns:wsdlNS="http://enterprise.netbeans.org/bpel/AsynchronousSampleClient"
     xmlns:xs="http://enterprise.netbeans.org/bpel/AsynchronousSampleClient"

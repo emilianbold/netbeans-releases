@@ -4,10 +4,12 @@
             targetNamespace="http://xml.netbeans.org/schema/SynchronousSample"
             xmlns:tns="http://xml.netbeans.org/schema/SynchronousSample"
             elementFormDefault="qualified">
+
     <xsd:complexType name="simpleProcess">
         <xsd:sequence>
             <xsd:element name="paramA" type="xsd:string"/>
         </xsd:sequence>
     </xsd:complexType>
+
     <xsd:element name="typeA" type="tns:simpleProcess"/>
 </xsd:schema>

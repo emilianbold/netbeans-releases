@@ -75,5 +75,4 @@
         part="resultType">
         <bpws:query>/typeA/id</bpws:query>        
     </bpws:propertyAlias>
-    
 </wsdl:definitions>
