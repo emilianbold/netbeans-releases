@@ -63,6 +63,8 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.form.FormEditorSupport;
+import org.netbeans.modules.form.FormModelEvent;
+import org.netbeans.modules.form.FormModelListener;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
@@ -1339,5 +1341,41 @@ public class ActionManager {
         }
         
         abstract Object run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement);
+    }
+    
+    
+    private static Set<FormModel> registeredForms = new HashSet<FormModel>();
+    
+    public static void registerFormModel(final FormModel formModel, final FileObject sourceFile) {
+        if(formModel == null) return;
+        if(sourceFile == null) return;
+        
+        if(registeredForms.contains(formModel)) {
+            return;
+        }
+        
+        formModel.addFormModelListener(new FormModelListener() {
+            public void formChanged(FormModelEvent[] events) {
+                if(events != null) {
+                    for(FormModelEvent e : events) {
+                        if(e.getChangeType() == e.FORM_TO_BE_CLOSED) {
+                            ActionManager am = ActionManager.getActionManager(sourceFile);
+                            if(am != null) {
+                                am.removeAllBoundComponents(e.getFormModel());
+                            }
+                            final FormModelListener ths = this;
+                            final FormModel mod = e.getFormModel();
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    mod.removeFormModelListener(ths);
+                                    registeredForms.remove(mod);
+                                }
+                            });
+                        }
+                    }
+                }
+            }
+        });
+        registeredForms.add(formModel);
     }
 }

@@ -108,20 +108,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
     // property editor impl
     public void setContext(FormModel formModel, FormProperty property) {
         this.formModel = formModel;
-        if(formModel != null) {
-            formModel.addFormModelListener(new FormModelListener() {
-                public void formChanged(FormModelEvent[] events) {
-                    if(events != null) {
-                        for(FormModelEvent e : events) {
-                            if(e.getChangeType() == e.FORM_TO_BE_CLOSED) {
-                                ActionManager am = ActionManager.getActionManager(getSourceFile());
-                                am.removeAllBoundComponents(e.getFormModel());
-                            }
-                        }
-                    }
-                }
-            });
-        }
+        ActionManager.registerFormModel(formModel,getSourceFile());
         this.formProperty = (RADProperty)property;
         this.radComponent = formProperty.getRADComponent();
         this.componentClass = formProperty.getRADComponent().getBeanInstance().getClass();
