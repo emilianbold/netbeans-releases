@@ -30,8 +30,8 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.lib.lexer.test.simple.SimplePlainTokenId;
-import org.netbeans.lib.lexer.test.simple.SimpleTokenId;
+import org.netbeans.lib.lexer.lang.TestPlainTokenId;
+import org.netbeans.lib.lexer.lang.TestTokenId;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeEvent;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
@@ -52,27 +52,27 @@ public class SyntaxHighlightingTest extends NbTestCase {
     }
     
     public void testSimple() {
-        checkText("+ - / * public", SimpleTokenId.language());
+        checkText("+ - / * public", TestTokenId.language());
     }
     
     public void testEmbedded() {
-        checkText("/**//* this is a comment */", SimpleTokenId.language());
+        checkText("/**//* this is a comment */", TestTokenId.language());
     }
     
     public void testComplex() {
         checkText(
             "public       /**/ +/-  private /** hello */ something /* this is a comment */ \"hi hi hi\" xyz    ", 
-            SimpleTokenId.language());
+            TestTokenId.language());
     }
 
     public void testNoPrologEpilogEmbedding() {
         checkText(
             "hello world 0-1-2-3-4-5-6-7-8-9-A-B-C-D-E-F      Ooops", 
-            SimplePlainTokenId.language());
+            TestPlainTokenId.language());
     }
     
     public void testConcurrentModifications() throws BadLocationException {
-        Document doc = createDocument(SimpleTokenId.language(), "NetBeans NetBeans NetBeans");
+        Document doc = createDocument(TestTokenId.language(), "NetBeans NetBeans NetBeans");
         SyntaxHighlighting layer = new SyntaxHighlighting(doc);
         
         {
@@ -135,13 +135,13 @@ public class SyntaxHighlightingTest extends NbTestCase {
 
     public void testEvents() throws BadLocationException {
         final String text = "Hello !";
-        Document doc = createDocument(SimpleTokenId.language(), text);
+        Document doc = createDocument(TestTokenId.language(), text);
         SyntaxHighlighting layer = new SyntaxHighlighting(doc);
         L listener = new L();
         layer.addHighlightsChangeListener(listener);
         
         assertHighlights(
-            TokenHierarchy.create(text, SimpleTokenId.language()).tokenSequence(), 
+            TokenHierarchy.create(text, TestTokenId.language()).tokenSequence(), 
             layer.getHighlights(Integer.MIN_VALUE, Integer.MAX_VALUE), 
             true, 
             ""

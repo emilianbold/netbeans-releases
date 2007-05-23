@@ -35,7 +35,7 @@ public class ZOrderTest extends NbTestCase {
     
     public void testOrder() throws Exception {
         ZOrder zOrderA = ZOrder.DEFAULT_RACK;
-        ZOrder zOrderB = ZOrder.above("layerA");
+        ZOrder zOrderB = ZOrder.DEFAULT_RACK.forPosition(10);
         
         HighlightsLayer [] layers = new HighlightsLayer [] {
             simpleLayer("layerB", zOrderB),
@@ -52,11 +52,11 @@ public class ZOrderTest extends NbTestCase {
     }
 
     public void testOrder2() throws Exception {
-        ZOrder zOrderA = ZOrder.DEFAULT_RACK.belowLayers("layerB");
-        ZOrder zOrderB = ZOrder.DEFAULT_RACK.aboveLayers("layerA").belowLayers("layerC");
-        ZOrder zOrderC = ZOrder.DEFAULT_RACK.aboveLayers("layerB").belowLayers("layerD");
-        ZOrder zOrderD = ZOrder.DEFAULT_RACK.aboveLayers("layerC").belowLayers("layerE");
-        ZOrder zOrderE = ZOrder.DEFAULT_RACK.aboveLayers("layerD");
+        ZOrder zOrderA = ZOrder.DEFAULT_RACK.forPosition(1);
+        ZOrder zOrderB = ZOrder.DEFAULT_RACK.forPosition(2);
+        ZOrder zOrderC = ZOrder.DEFAULT_RACK.forPosition(3);
+        ZOrder zOrderD = ZOrder.DEFAULT_RACK.forPosition(4);
+        ZOrder zOrderE = ZOrder.DEFAULT_RACK.forPosition(5);
         
         HighlightsLayer [] layers = new HighlightsLayer [] {
             simpleLayer("layerD", zOrderD),
@@ -78,87 +78,6 @@ public class ZOrderTest extends NbTestCase {
         }
     }
 
-    public void testCreation() {
-        ZOrder zOrder = ZOrder.DEFAULT_RACK;
-        assertNotNull("ZOrder.DEFAULT", zOrder);
-        assertEquals("DEFAULT.layersAbove", 1, zOrder.layersAbove.size());
-        assertEquals("DEFAULT.layersBelow", 1, zOrder.layersBelow.size());
-        
-        zOrder = ZOrder.BOTTOM_RACK;
-        assertNotNull("ZOrder.BOTTOM", zOrder);
-        assertEquals("BOTTOM.layersAbove", 1, zOrder.layersAbove.size());
-        assertEquals("BOTTOM.layersBelow", 0, zOrder.layersBelow.size());
-        
-        zOrder = ZOrder.TOP_RACK;
-        assertNotNull("ZOrder.TOP", zOrder);
-        assertEquals("TOP.layersAbove", 0, zOrder.layersAbove.size());
-        assertEquals("TOP.layersBelow", 1, zOrder.layersBelow.size());
-        
-        zOrder = ZOrder.above("layerA");
-        assertEquals("layersAbove should be empty", 0, zOrder.layersAbove.size());
-        assertEquals("Wrong number of layersBelow", 1, zOrder.layersBelow.size());
-        assertEquals("Wrong layersBelow", "layerA", zOrder.layersBelow.iterator().next());
-        
-        zOrder = ZOrder.below("layerA");
-        assertEquals("layersBelow should be empty", 0, zOrder.layersBelow.size());
-        assertEquals("Wrong number of layersAbove", 1, zOrder.layersAbove.size());
-        assertEquals("Wrong layersAbove", "layerA", zOrder.layersAbove.iterator().next());
-        
-        zOrder = ZOrder.DEFAULT_RACK.aboveLayers("layerA");
-        assertNotSame("ZOrder was not cloned", ZOrder.DEFAULT_RACK, zOrder);
-        assertEquals("layersAbove should be empty", 1, zOrder.layersAbove.size());
-        assertEquals("Wrong number of layersBelow", 2, zOrder.layersBelow.size());
-        assertTrue("Wrong layersBelow", zOrder.layersBelow.contains("layerA"));
-        
-        zOrder = ZOrder.DEFAULT_RACK.belowLayers("layerA");
-        assertNotSame("ZOrder was not cloned", ZOrder.DEFAULT_RACK, zOrder);
-        assertEquals("layersBelow should be empty", 1, zOrder.layersBelow.size());
-        assertEquals("Wrong number of layersAbove", 2, zOrder.layersAbove.size());
-        assertTrue("Wrong layersAbove", zOrder.layersAbove.contains("layerA"));
-        
-        zOrder = ZOrder.DEFAULT_RACK.aboveLayers("layerA").belowLayers("layerB");
-        assertEquals("Wrong number of layersAbove", 2, zOrder.layersAbove.size());
-        assertTrue("Wrong layersAbove", zOrder.layersAbove.contains("layerB"));
-        assertEquals("Wrong number of layersBelow", 2, zOrder.layersBelow.size());
-        assertTrue("Wrong layersBelow", zOrder.layersBelow.contains("layerA"));
-    }
-    
-    public void testTop() throws TopologicalSortException {
-        ZOrder zOrderA = ZOrder.TOP_RACK;
-        ZOrder zOrderB = ZOrder.above("layerA");
-        
-        HighlightsLayer [] layers = new HighlightsLayer [] {
-            simpleLayer("layerB", zOrderB),
-            simpleLayer("layerA", zOrderA),
-        };
-        
-        HighlightsLayer [] sortedLayers = ZOrder.sort(layers);
-        
-        assertNotNull("Sorted layers should not be null", sortedLayers);
-        assertEquals("Wrong size of sortedLayers array", layers.length, sortedLayers.length);
-        
-        assertSame("Wrong order", layers[0], sortedLayers[1]);
-        assertSame("Wrong order", layers[1], sortedLayers[0]);
-    }
-    
-    public void testBottom() throws TopologicalSortException {
-        ZOrder zOrderA = ZOrder.BOTTOM_RACK;
-        ZOrder zOrderB = ZOrder.below("layerA");
-        
-        HighlightsLayer [] layers = new HighlightsLayer [] {
-            simpleLayer("layerA", zOrderA),
-            simpleLayer("layerB", zOrderB),
-        };
-        
-        HighlightsLayer [] sortedLayers = ZOrder.sort(layers);
-        
-        assertNotNull("Sorted layers should not be null", sortedLayers);
-        assertEquals("Wrong size of sortedLayers array", layers.length, sortedLayers.length);
-        
-        assertSame("Wrong order", layers[0], sortedLayers[1]);
-        assertSame("Wrong order", layers[1], sortedLayers[0]);
-    }
-    
     public void testRacks() throws TopologicalSortException {
         HighlightsLayer [] layers = new HighlightsLayer [] {
             simpleLayer("layerE", ZOrder.SHOW_OFF_RACK),
@@ -183,9 +102,9 @@ public class ZOrderTest extends NbTestCase {
     
     public void testComplex() throws TopologicalSortException {
         ZOrder zOrderA = ZOrder.BOTTOM_RACK;
-        ZOrder zOrderB = ZOrder.DEFAULT_RACK.aboveLayers("layerA").belowLayers("layerC");
-        ZOrder zOrderC = ZOrder.DEFAULT_RACK.aboveLayers("layerB").belowLayers("layerD");
-        ZOrder zOrderD = ZOrder.DEFAULT_RACK.aboveLayers("layerC").belowLayers("layerE");
+        ZOrder zOrderB = ZOrder.DEFAULT_RACK.forPosition(-10);
+        ZOrder zOrderC = ZOrder.DEFAULT_RACK;
+        ZOrder zOrderD = ZOrder.DEFAULT_RACK.forPosition(10);
         ZOrder zOrderE = ZOrder.TOP_RACK;
         
         HighlightsLayer [] layers = new HighlightsLayer [] {

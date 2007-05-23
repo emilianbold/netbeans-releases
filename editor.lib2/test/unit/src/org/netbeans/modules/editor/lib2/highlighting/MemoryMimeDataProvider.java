@@ -21,7 +21,6 @@ package org.netbeans.modules.editor.lib2.highlighting;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;

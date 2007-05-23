@@ -207,38 +207,25 @@ Microsystems, Inc. All Rights Reserved.
   <p>
   Since there can be multiple layers suplying highlights for one document and the
   highlights can generally overlap it is important to sort the layers according
-  to their Z-order. For this purpose each layer has to supply appropriate
-  <code>ZOrder</code> and its unique identification when it is constructed.
-  </p>
-  
-  <p>The layers are identified by their <i>layer type id</i>, which is simply
-  a <code>String</code> uniquely identifying layers of the same type.
-  An example of a layer type can be a 'syntax highlighting' layer.
-  Since this layer can
-  be implemented using the new Lexer framework the same implementation can be used
-  for many types of a document (e.g. java files, properties, manifests, etc.). This
-  means that there is likely to be many instances of the 'syntax highlighting'
-  layer - one for each opened document - and each of those instances will have
-  the same layer type id and <code>ZOrder</code> positioning it among
-  the other layers created for that particular document.
+  to their Z-order. For this purpose each layer has to supply an appropriate
+  <code><a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/highlighting/ZOrder.html">ZOrder</a></code>.
   </p>
   
   <p>
   <code>ZOrder</code> maintains a position of a layer
-  relatively to other layers by keeping a list of ids of layers laying above
-  the <code>ZOrder</code>'s layer and a list of layer ids laying below the
-  layer. Instances of the <code>ZOrder</code> class are immutable making it
+  relatively to other layers as a simple integer number. The higher the number
+  the higher (more visible) the layer is in the z-order hierarchy.
+  Instances of the <code>ZOrder</code> class are immutable making it
   impossible to dynamically change a position of a layer in the z-order stack
-  created for a document. There is a couple of static methods allowing creation
-  of an instance of <code>ZOrder</code> and also methods for creating
-  an instance of <code>ZOrder</code> based on another instance.
+  created for a document. 
   </p>
   
   <p>
-  The <code>ZOrder</code> class contains several predefined z-order constants,
+  The <code>ZOrder</code> class contains several predefined constants,
   which can be used as well-known positions. These constants are called z-order
-  racks and are meant to be used as a starting point for positioning a layer. The
-  racks are listed below in their respective z-order.
+  racks and are meant to be used as a starting point for positioning a layer. An
+  exact z-order can then be specified by choosing an integer position of the layer
+  within a rack. The racks are listed below in their respective z-order. 
   </p>
   
   <ul>
@@ -249,6 +236,7 @@ Microsystems, Inc. All Rights Reserved.
         text selection or text search layers.
       </li>
       <li><code>DEFAULT_RACK</code> - the rack for general layers</li>
+      <li><code>CARET_RACK</code> - layers that highlight a caret</li>
       <li>
         <code>SYNTAX_RACK</code> - layers providing syntax or semantic
         highlighting of text</li>

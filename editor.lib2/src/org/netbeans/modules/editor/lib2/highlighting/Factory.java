@@ -53,31 +53,31 @@ public class Factory implements HighlightsLayerFactory {
         );
 
         layers.add(HighlightsLayer.create(
-            CaretBasedBlockHighlighting.TextSelectionHighlighting.LAYER_TYPE_ID,
-            ZOrder.SHOW_OFF_RACK.aboveLayers(CaretBasedBlockHighlighting.CaretRowHighlighting.LAYER_TYPE_ID), 
-            true, 
-            new CaretBasedBlockHighlighting.TextSelectionHighlighting(context.getComponent()))
-        );
-
-        layers.add(HighlightsLayer.create(
             BLOCK_SEARCH_LAYER, 
-            ZOrder.SHOW_OFF_RACK.aboveLayers(CaretBasedBlockHighlighting.CaretRowHighlighting.LAYER_TYPE_ID),
+            ZOrder.SHOW_OFF_RACK.forPosition(100),
             true,
             new BlockHighlighting(BLOCK_SEARCH_LAYER, context.getComponent()))
         );
 
         layers.add(HighlightsLayer.create(
             TextSearchHighlighting.LAYER_TYPE_ID,
-            ZOrder.SHOW_OFF_RACK.aboveLayers(BLOCK_SEARCH_LAYER),
+            ZOrder.SHOW_OFF_RACK.forPosition(200),
             true,
             new TextSearchHighlighting(context.getComponent()))
         );
 
         layers.add(HighlightsLayer.create(
             INC_SEARCH_LAYER, 
-            ZOrder.SHOW_OFF_RACK.aboveLayers(TextSearchHighlighting.LAYER_TYPE_ID).belowLayers(CaretBasedBlockHighlighting.TextSelectionHighlighting.LAYER_TYPE_ID),
+            ZOrder.SHOW_OFF_RACK.forPosition(300),
             true,
             new BlockHighlighting(INC_SEARCH_LAYER, context.getComponent()))
+        );
+
+        layers.add(HighlightsLayer.create(
+            CaretBasedBlockHighlighting.TextSelectionHighlighting.LAYER_TYPE_ID,
+            ZOrder.SHOW_OFF_RACK.forPosition(400), 
+            true, 
+            new CaretBasedBlockHighlighting.TextSelectionHighlighting(context.getComponent()))
         );
 
         // If there is a lexer for the document create lexer-based syntax highlighting

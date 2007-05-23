@@ -47,7 +47,7 @@ public final class HLFactory implements HighlightsLayerFactory {
         
         layers.add(HighlightsLayer.create(
             GuardedBlocksHighlighting.LAYER_TYPE_ID, 
-            ZOrder.BOTTOM_RACK.belowLayers(CaretRowHighlighting.LAYER_TYPE_ID), 
+            ZOrder.BOTTOM_RACK, 
             true,  // fixedSize
             new GuardedBlocksHighlighting(d, mimeType)
         ));

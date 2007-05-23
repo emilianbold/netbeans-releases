@@ -102,10 +102,10 @@ public class HighlightingManagerTest extends NbTestCase {
 
         MemoryMimeDataProvider.reset(null);
         MemoryMimeDataProvider.addInstances("text/plain",
-            new SingletonLayerFactory("layerB", ZOrder.above("layerA"), false, bagB),
-            new SingletonLayerFactory("layerD", ZOrder.above("layerC"), true, bagD),
+            new SingletonLayerFactory("layerB", ZOrder.DEFAULT_RACK.forPosition(2), false, bagB),
+            new SingletonLayerFactory("layerD", ZOrder.DEFAULT_RACK.forPosition(6), true, bagD),
             new SingletonLayerFactory("layerA", ZOrder.DEFAULT_RACK, true, bagA),
-            new SingletonLayerFactory("layerC", ZOrder.above("layerB"), true, bagC)
+            new SingletonLayerFactory("layerC", ZOrder.DEFAULT_RACK.forPosition(4), true, bagC)
         );
         
         JEditorPane pane = new JEditorPane();
@@ -200,10 +200,10 @@ public class HighlightingManagerTest extends NbTestCase {
 
         MemoryMimeDataProvider.reset(null);
         MemoryMimeDataProvider.addInstances("text/plain",
-            new SingletonLayerFactory("layerB", ZOrder.above("layerA"), false, bagB),
-            new SingletonLayerFactory("layerD", ZOrder.above("layerC"), true, bagD),
+            new SingletonLayerFactory("layerB", ZOrder.DEFAULT_RACK.forPosition(2), false, bagB),
+            new SingletonLayerFactory("layerD", ZOrder.DEFAULT_RACK.forPosition(6), true, bagD),
             new SingletonLayerFactory("layerA", ZOrder.DEFAULT_RACK, true, bagA),
-            new SingletonLayerFactory("layerC", ZOrder.above("layerB"), true, bagC)
+            new SingletonLayerFactory("layerC", ZOrder.DEFAULT_RACK.forPosition(4), true, bagC)
         );
 
         JEditorPane pane = new JEditorPane();
@@ -278,9 +278,9 @@ public class HighlightingManagerTest extends NbTestCase {
         bagD.addHighlight(55, 65, attribsD);
 
         SingletonLayerFactory layerA = new SingletonLayerFactory("layerA", ZOrder.DEFAULT_RACK, true, bagA);
-        SingletonLayerFactory layerB = new SingletonLayerFactory("layerB", ZOrder.DEFAULT_RACK.aboveLayers("layerA"), false, bagB);
-        SingletonLayerFactory layerC = new SingletonLayerFactory("layerC", ZOrder.DEFAULT_RACK.aboveLayers("layerA", "layerB"), true, bagC);
-        SingletonLayerFactory layerD = new SingletonLayerFactory("layerD", ZOrder.DEFAULT_RACK.aboveLayers("layerA", "layerB", "layerC"), true, bagD);
+        SingletonLayerFactory layerB = new SingletonLayerFactory("layerB", ZOrder.DEFAULT_RACK.forPosition(1), false, bagB);
+        SingletonLayerFactory layerC = new SingletonLayerFactory("layerC", ZOrder.DEFAULT_RACK.forPosition(2), true, bagC);
+        SingletonLayerFactory layerD = new SingletonLayerFactory("layerD", ZOrder.DEFAULT_RACK.forPosition(3), true, bagD);
         
         MemoryMimeDataProvider.reset(null);
         MemoryMimeDataProvider.addInstances(mimeType, layerA, layerD);
