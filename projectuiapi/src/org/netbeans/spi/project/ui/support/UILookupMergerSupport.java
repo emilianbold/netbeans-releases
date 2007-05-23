@@ -47,7 +47,7 @@ public final class UILookupMergerSupport {
      * templates from multiple sources. 
      * @return instance to include in project lookup
      */
-    public static LookupMerger createRecommendedTemplatesMerger() {
+    public static LookupMerger<RecommendedTemplates> createRecommendedTemplatesMerger() {
         return new RecommendedMerger();
     }
     
@@ -57,7 +57,7 @@ public final class UILookupMergerSupport {
      * templates from multiple sources. 
      * @return instance to include in project lookup
      */
-    public static LookupMerger createPrivilegedTemplatesMerger() {
+    public static LookupMerger<PrivilegedTemplates> createPrivilegedTemplatesMerger() {
         return new PrivilegedMerger();
     }
     
@@ -70,7 +70,7 @@ public final class UILookupMergerSupport {
      * @return instance to include in project lookup
      * @since org.netbeans.modules.projectuiapi 1.24
      */
-    public static LookupMerger createProjectOpenHookMerger(ProjectOpenedHook defaultInstance) {
+    public static LookupMerger<ProjectOpenedHook> createProjectOpenHookMerger(ProjectOpenedHook defaultInstance) {
         return new OpenMerger(defaultInstance);
     }
     
