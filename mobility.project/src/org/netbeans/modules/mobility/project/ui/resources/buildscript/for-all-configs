@@ -13,7 +13,11 @@
                 <echo>Active project configuration: @{cfg}</echo>
                 <antcall target="${{target.to.call}}" inheritall="false" inheritrefs="false">
                     <param name="config.active" value="@{{cfg}}"/>
+                    <propertyset>
+                        <propertyref name="no.deps"/>
+                    </propertyset>    
                 </antcall>
+                <property name="no.deps" value="true"/>
             </sequential>
         </for>
     </target>
