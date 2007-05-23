@@ -41,6 +41,7 @@ import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactoryImplementation;
+import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -607,8 +608,9 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             RefactoringCustomUI cui = (RefactoringCustomUI) ui;
             this.left.remove(scrollPane);
             this.left.add(c, BorderLayout.CENTER);
+            UI.setComponentForRefactoringPreview(null);
+            this.splitPane.validate();
             tree=null;
-            this.repaint();
         } else {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
