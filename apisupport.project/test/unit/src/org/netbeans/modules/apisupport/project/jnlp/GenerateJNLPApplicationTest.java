@@ -39,13 +39,11 @@ import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
-import org.netbeans.modules.apisupport.project.suite.SuiteProjectTest;
 import org.netbeans.modules.apisupport.project.ui.SuiteActions;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDescriptor;
-import org.openide.ErrorManager;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -76,7 +74,7 @@ public class GenerateJNLPApplicationTest extends TestBase {
     }
 
 
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         LOG = Logger.getLogger("test." + getName());
         
         super.setUp();
@@ -86,7 +84,7 @@ public class GenerateJNLPApplicationTest extends TestBase {
         suite = TestBase.generateSuite(new File(getWorkDir(), "projects"), "suite");
         NbModuleProject proj = TestBase.generateSuiteComponent(suite, "mod1");
         
-        SuiteProjectTest.openSuite(suite);
+        suite.open();
         proj.open();
     }
     
@@ -165,7 +163,7 @@ public class GenerateJNLPApplicationTest extends TestBase {
         LOG.info("Testing the content of the directory");
         
         FileObject[] arr = suite.getProjectDirectory().getChildren();
-        List subobj = new ArrayList (Arrays.asList(arr));
+        List<FileObject> subobj = new ArrayList<FileObject>(Arrays.asList(arr));
         subobj.remove(suite.getProjectDirectory().getFileObject("mod1"));
         subobj.remove(suite.getProjectDirectory().getFileObject("nbproject"));
         subobj.remove(suite.getProjectDirectory().getFileObject("build.xml"));
@@ -304,7 +302,7 @@ public class GenerateJNLPApplicationTest extends TestBase {
         LOG.info("Testing the content of the directory");
         
         FileObject[] arr = suite.getProjectDirectory().getChildren();
-        List subobj = new ArrayList (Arrays.asList(arr));
+        List<FileObject> subobj = new ArrayList<FileObject>(Arrays.asList(arr));
         subobj.remove(suite.getProjectDirectory().getFileObject("mod1"));
         subobj.remove(suite.getProjectDirectory().getFileObject("nbproject"));
         FileObject buildXML = suite.getProjectDirectory().getFileObject("build.xml");

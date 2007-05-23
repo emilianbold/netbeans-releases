@@ -24,7 +24,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
@@ -110,7 +109,7 @@ public final class NbModuleProject implements Project {
     
     private final AntProjectHelper helper;
     private final Evaluator eval;
-    private Lookup lookup;
+    private final Lookup lookup;
     private Map<FileObject,Element> extraCompilationUnits;
     private final GeneratedFilesHelper genFilesHelper;
     private final NbModuleProviderImpl typeProvider;
@@ -196,7 +195,7 @@ public final class NbModuleProject implements Project {
                 sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
             }
         });
-        lookup = Lookups.fixed(
+        Lookup baseLookup = Lookups.fixed(
             this,
             new Info(),
             helper.createAuxiliaryConfiguration(),
@@ -217,7 +216,7 @@ public final class NbModuleProject implements Project {
                 // currently these are hardcoded
                 "build", // NOI18N
             }),
-            sourcesHelper.createSources(),                    
+            sourcesHelper.createSources(),
             new AntArtifactProviderImpl(this, helper, evaluator()),
             new CustomizerProviderImpl(this, getHelper(), evaluator()),
             new SuiteProviderImpl(),
@@ -232,10 +231,10 @@ public final class NbModuleProject implements Project {
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             new TemplateAttributesProvider(getHelper(), getModuleType() == NbModuleType.NETBEANS_ORG),
             new FileEncodingQueryImpl());
-        lookup = LookupProviderSupport.createCompositeLookup(lookup, "Projects/org-netbeans-modules-apisupport-project/Lookup"); //NOI18N
+        lookup = LookupProviderSupport.createCompositeLookup(baseLookup, "Projects/org-netbeans-modules-apisupport-project/Lookup"); //NOI18N
     }
     
-    public String toString() {
+    public @Override String toString() {
         return "NbModuleProject[" + getProjectDirectory() + "]"; // NOI18N
     }
     
@@ -614,12 +613,76 @@ public final class NbModuleProject implements Project {
         return javacSource;
     }
     
+    private ClassPath[] boot, source, compile;
+    private final class OpenedHook extends ProjectOpenedHook {
+        OpenedHook() {}
+        protected void projectOpened() {
+            open();
+        }
+        protected void projectClosed() {
+            try {
+                ProjectManager.getDefault().saveProject(NbModuleProject.this);
+            } catch (IOException e) {
+                Util.err.notify(e);
+            }
+            // XXX could discard caches, etc.
+            // unregister project's classpaths to GlobalClassPathRegistry
+            assert boot != null && source != null && compile != null : "#46802: project being closed which was never opened?? " + NbModuleProject.this;
+            GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, boot);
+            GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, source);
+            GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, compile);
+            boot = null;
+            source = null;
+            compile = null;
+        }
+    }
     /**
      * Run the open hook.
      * For use from unit tests.
      */
     public void open() {
-        getLookup().lookup(OpenedHook.class).projectOpened();
+        // write user.properties.file=$userdir/build.properties to platform-private.properties
+        if (getModuleType() == NbModuleProvider.STANDALONE) {
+            // XXX skip this in case nbplatform.active is not defined
+            ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+                public Void run() {
+                    String path = "nbproject/private/platform-private.properties"; // NOI18N
+                    EditableProperties ep = getHelper().getProperties(path);
+                    File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
+                    ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N
+                    getHelper().putProperties(path, ep);
+                    try {
+                        ProjectManager.getDefault().saveProject(NbModuleProject.this);
+                    } catch (IOException e) {
+                        ErrorManager.getDefault().notify(e);
+                    }
+                    return null;
+                }
+            });
+        }
+        // register project's classpaths to GlobalClassPathRegistry
+        ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
+        ClassPath[] _boot = cpProvider.getProjectClassPaths(ClassPath.BOOT);
+        assert _boot != null : "No BOOT path";
+        ClassPath[] _source = cpProvider.getProjectClassPaths(ClassPath.SOURCE);
+        assert _source != null : "No SOURCE path";
+        ClassPath[] _compile = cpProvider.getProjectClassPaths(ClassPath.COMPILE);
+        assert _compile != null : "No COMPILE path";
+        // Possible cause of #68414: do not change instance vars until after the dangerous stuff has been computed.
+        GlobalPathRegistry.getDefault().register(ClassPath.BOOT, _boot);
+        GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, _source);
+        GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, _compile);
+        boot = _boot;
+        source = _source;
+        compile = _compile;
+        // refresh build.xml and build-impl.xml for external modules
+        if (getModuleType() != NbModuleProvider.NETBEANS_ORG) {
+            try {
+                refreshBuildScripts(true);
+            } catch (IOException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
+        }
     }
     
     /**
@@ -693,78 +756,6 @@ public final class NbModuleProject implements Project {
             if (evt.getPropertyName() == ProjectInformation.PROP_DISPLAY_NAME) {
                 setDisplayName((String) evt.getNewValue());
             }
-        }
-        
-    }
-    
-    final class OpenedHook extends ProjectOpenedHook {
-        
-        private ClassPath[] boot, source, compile;
-
-        OpenedHook() {}
-        
-        protected void projectOpened() {
-            // write user.properties.file=$userdir/build.properties to platform-private.properties
-            if (getModuleType() == NbModuleProvider.STANDALONE) {
-                // XXX skip this in case nbplatform.active is not defined
-                ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
-                    public Void run() {
-                        String path = "nbproject/private/platform-private.properties"; // NOI18N
-                        EditableProperties ep = getHelper().getProperties(path);
-                        File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
-                        ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N
-                        getHelper().putProperties(path, ep);
-                        try {
-                            ProjectManager.getDefault().saveProject(NbModuleProject.this);
-                        } catch (IOException e) {
-                            ErrorManager.getDefault().notify(e);
-                        }
-                        return null;
-                    }
-                });
-            }
-            // register project's classpaths to GlobalClassPathRegistry
-            ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
-            ClassPath[] _boot = cpProvider.getProjectClassPaths(ClassPath.BOOT);
-            assert _boot != null : "No BOOT path";
-            ClassPath[] _source = cpProvider.getProjectClassPaths(ClassPath.SOURCE);
-            assert _source != null : "No SOURCE path";
-            ClassPath[] _compile = cpProvider.getProjectClassPaths(ClassPath.COMPILE);
-            assert _compile != null : "No COMPILE path";
-            // Possible cause of #68414: do not change instance vars until after the dangerous stuff has been computed.
-            GlobalPathRegistry.getDefault().register(ClassPath.BOOT, _boot);
-            GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, _source);
-            GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, _compile);
-            boot = _boot;
-            source = _source;
-            compile = _compile;
-            // refresh build.xml and build-impl.xml for external modules
-            if (getModuleType() != NbModuleProvider.NETBEANS_ORG) {
-                try {
-                    refreshBuildScripts(true);
-                } catch (IOException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                }
-            }
-        }
-        
-        protected void projectClosed() {
-            try {
-                ProjectManager.getDefault().saveProject(NbModuleProject.this);
-            } catch (IOException e) {
-                Util.err.notify(e);
-            }
-            
-            // XXX could discard caches, etc.
-            
-            // unregister project's classpaths to GlobalClassPathRegistry
-            assert boot != null && source != null && compile != null : "#46802: project being closed which was never opened?? " + NbModuleProject.this;
-            GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, boot);
-            GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, source);
-            GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, compile);
-            boot = null;
-            source = null;
-            compile = null;
         }
         
     }
@@ -940,7 +931,7 @@ public final class NbModuleProject implements Project {
                 }
                 if (mf != null) {
                     getManifestFile().addFileChangeListener(new FileChangeAdapter() {
-                        public void fileChanged(FileEvent fe) {
+                        public @Override void fileChanged(FileEvent fe) {
                             // cannot reload manifest-dependent things immediately (see 67961 for more details)
                             bundleInfo = null;
                         }

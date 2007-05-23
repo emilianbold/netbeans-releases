@@ -69,7 +69,7 @@ public class BuildZipDistributionTest extends TestBase {
     }
 
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         clearWorkDir();
 
         LOG = Logger.getLogger("test." + getName());
@@ -81,7 +81,7 @@ public class BuildZipDistributionTest extends TestBase {
         suite = TestBase.generateSuite(new File(getWorkDir(), "projects"), "suite");
         NbModuleProject proj = TestBase.generateSuiteComponent(suite, "mod1");
         
-        SuiteProjectTest.openSuite(suite);
+        suite.open();
         proj.open();
         
         LOG.info("Workdir " + getWorkDirPath());
@@ -126,7 +126,7 @@ public class BuildZipDistributionTest extends TestBase {
         assertEquals("Finished ok", 0, task.result());
         
         FileObject[] arr = suite.getProjectDirectory().getChildren();
-        List subobj = new ArrayList (Arrays.asList(arr));
+        List<FileObject> subobj = new ArrayList<FileObject>(Arrays.asList(arr));
         subobj.remove(suite.getProjectDirectory().getFileObject("mod1"));
         subobj.remove(suite.getProjectDirectory().getFileObject("nbproject"));
         subobj.remove(suite.getProjectDirectory().getFileObject("build.xml"));

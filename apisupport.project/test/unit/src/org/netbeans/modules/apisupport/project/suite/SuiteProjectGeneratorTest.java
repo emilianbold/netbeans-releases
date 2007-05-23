@@ -55,7 +55,7 @@ public class SuiteProjectGeneratorTest extends TestBase {
         // Make sure generated files are created too - simulate project opening.
         Project p = ProjectManager.getDefault().findProject(fo);
         assertNotNull("have a project in " + targetPrjDir, p);
-        SuiteProjectTest.openSuite(p);
+        ((SuiteProject) p).open();
         // check generated module
         for (int i=0; i < SUITE_CREATED_FILES.length; i++) {
             assertNotNull(SUITE_CREATED_FILES[i]+" file/folder cannot be found",

@@ -106,7 +106,7 @@ public final class SuiteProject implements Project {
         lookup = LookupProviderSupport.createCompositeLookup(lookup, "Projects/org-netbeans-modules-apisupport-project-suite/Lookup");
     }
     
-    public String toString() {
+    public @Override String toString() {
         return "SuiteProject[" + getProjectDirectory() + "]"; // NOI18N
     }
     
@@ -250,42 +250,43 @@ public final class SuiteProject implements Project {
         
     }
     
-    public final class OpenedHook extends ProjectOpenedHook {
-        
-        OpenedHook() {}
-        
-        public void projectOpened() {
-            // XXX skip this in case nbplatform.active is not defined
-            ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
-                public Void run() {
-                    String path = "nbproject/private/platform-private.properties"; // NOI18N
-                    EditableProperties ep = helper.getProperties(path);
-                    File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
-                    ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N
-                    helper.putProperties(path, ep);
-                    try {
-                        ProjectManager.getDefault().saveProject(SuiteProject.this);
-                    } catch (IOException e) {
-                        ErrorManager.getDefault().notify(e);
-                    }
-                    return null;
+    /** For access from tests. */
+    public void open() {
+        // XXX skip this in case nbplatform.active is not defined
+        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+            public Void run() {
+                String path = "nbproject/private/platform-private.properties"; // NOI18N
+                EditableProperties ep = helper.getProperties(path);
+                File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
+                ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N
+                helper.putProperties(path, ep);
+                try {
+                    ProjectManager.getDefault().saveProject(SuiteProject.this);
+                } catch (IOException e) {
+                    ErrorManager.getDefault().notify(e);
                 }
-            });
-            // refresh build.xml and build-impl.xml
-            try {
-                genFilesHelper.refreshBuildScript(
-                        GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                        SuiteProject.class.getResource("resources/build-impl.xsl"),
-                        true);
-                genFilesHelper.refreshBuildScript(
-                        GeneratedFilesHelper.BUILD_XML_PATH,
-                        SuiteProject.class.getResource("resources/build.xsl"),
-                        true);
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                return null;
             }
+        });
+        // refresh build.xml and build-impl.xml
+        try {
+            genFilesHelper.refreshBuildScript(
+                    GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                    SuiteProject.class.getResource("resources/build-impl.xsl"),
+                    true);
+            genFilesHelper.refreshBuildScript(
+                    GeneratedFilesHelper.BUILD_XML_PATH,
+                    SuiteProject.class.getResource("resources/build.xsl"),
+                    true);
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
-        
+    }
+    private final class OpenedHook extends ProjectOpenedHook {
+        OpenedHook() {}
+        public void projectOpened() {
+            open();
+        }
         protected void projectClosed() {
             try {
                 ProjectManager.getDefault().saveProject(SuiteProject.this);
@@ -293,7 +294,6 @@ public final class SuiteProject implements Project {
                 Util.err.notify(e);
             }
         }
-        
     }
     
     private final class SavedHook extends ProjectXmlSavedHook {

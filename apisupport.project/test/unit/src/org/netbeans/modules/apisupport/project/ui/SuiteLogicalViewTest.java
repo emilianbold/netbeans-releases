@@ -28,7 +28,6 @@ import java.util.Set;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
-import org.netbeans.modules.apisupport.project.suite.SuiteProjectTest;
 import org.netbeans.modules.apisupport.project.ui.SuiteLogicalView.SuiteRootNode;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -93,7 +92,7 @@ public class SuiteLogicalViewTest extends TestBase {
     public void testProjectFiles() throws Exception {
         SuiteProject suite = generateSuite("suite");
         TestBase.generateSuiteComponent(suite, "module");
-        SuiteProjectTest.openSuite(suite);
+        suite.open();
         SuiteRootNode rootNode = (SuiteRootNode) suite.getLookup().lookup(LogicalViewProvider.class).createLogicalView();
         Set<FileObject> expected = new HashSet<FileObject>(Arrays.asList(
             suite.getProjectDirectory().getFileObject("nbproject"),
@@ -139,7 +138,7 @@ public class SuiteLogicalViewTest extends TestBase {
     
     private static final class NL extends NodeAdapter {
         public final Set<String> changed = new HashSet<String>();
-        public void propertyChange(PropertyChangeEvent evt) {
+        public @Override void propertyChange(PropertyChangeEvent evt) {
             changed.add(evt.getPropertyName());
         }
     }

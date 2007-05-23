@@ -25,7 +25,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectGenerator;
-import org.netbeans.modules.apisupport.project.suite.SuiteProjectTest;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -52,7 +51,7 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
     /** the user dir */
     private File user;
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
         NbPlatform.reset();
@@ -63,7 +62,7 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
         TestBase.makePlatform(install);
         // Now set up build.properties accordingly:
         InstalledFileLocatorImpl.registerDestDir(install);
-        ((Install) SharedClassObject.findObject(Install.class, true)).restored();
+        SharedClassObject.findObject(Install.class, true).restored();
         assertEquals("set up run correctly", install.getAbsolutePath(), PropertyUtils.getGlobalProperties().getProperty("nbplatform.default.netbeans.dest.dir"));
         install2 = new File(getWorkDir(), "install2");
         TestBase.makePlatform(install2);
@@ -125,7 +124,7 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
         File sd = new File(getWorkDir(), "suite");
         SuiteProjectGenerator.createSuiteProject(sd, NbPlatform.PLATFORM_ID_DEFAULT);
         SuiteProject s = (SuiteProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(sd));
-        SuiteProjectTest.openSuite(s);
+        s.open();
         assertEquals(Collections.singletonMap("user.properties.file", new File(user, "build.properties").getAbsolutePath()),
                 Util.loadProperties(s.getProjectDirectory().getFileObject("nbproject/private/platform-private.properties")));
     }
@@ -159,7 +158,7 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
         assertNotNull(pl);
         assertEquals(install, pl.getDestDir());
         assertEquals(pl, p.getPlatform(true));
-        SuiteProjectTest.openSuite(s);
+        s.open();
         p.open(); // just in case
         assertEquals(Collections.singletonMap("user.properties.file", new File(user, "build.properties").getAbsolutePath()),
                 Util.loadProperties(props));

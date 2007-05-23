@@ -27,7 +27,6 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
-import org.netbeans.modules.apisupport.project.suite.SuiteProjectTest;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
@@ -59,7 +58,7 @@ public class CompilationDependencyTest extends TestBase {
         super(testName);
     }
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         clearWorkDir();
         super.setUp();
         InstalledFileLocatorImpl.registerDestDir(destDirF);
@@ -67,7 +66,7 @@ public class CompilationDependencyTest extends TestBase {
         
     }
     
-    protected void tearDown() throws Exception {
+    protected @Override void tearDown() throws Exception {
         TestAntLogger.getDefault().setEnabled(false);
     }
     
@@ -139,7 +138,7 @@ public class CompilationDependencyTest extends TestBase {
     public void testCompileAgainstRemovedModule68716() throws Exception {
         SuiteProject suite = TestBase.generateSuite(new File(getWorkDir(), "projects"), "suite");
         NbModuleProject proj = TestBase.generateSuiteComponent(suite, "mod1");
-        SuiteProjectTest.openSuite(suite);
+        suite.open();
         Util.addDependency(proj, WINDOWS);
         
         // remove WINDOWS from platform

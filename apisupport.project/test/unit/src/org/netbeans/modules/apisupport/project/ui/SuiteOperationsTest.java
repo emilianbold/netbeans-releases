@@ -29,7 +29,6 @@ import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
-import org.netbeans.modules.apisupport.project.suite.SuiteProjectTest;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ProjectOperations;
@@ -54,14 +53,14 @@ public class SuiteOperationsTest extends TestBase {
         super(name);
     }
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
         InstalledFileLocatorImpl.registerDestDir(destDirF);
     }
     
     public void testDeleteOfEmptySuite() throws Exception {
         SuiteProject suite = generateSuite("suite");
-        SuiteProjectTest.openSuite(suite);
+        suite.open();
         SuiteActions ap = (SuiteActions) suite.getLookup().lookup(ActionProvider.class);
         assertNotNull("have an action provider", ap);
         assertTrue("delete action is enabled", ap.isActionEnabled(ActionProvider.COMMAND_DELETE, null));
@@ -72,7 +71,7 @@ public class SuiteOperationsTest extends TestBase {
         ap.invokeActionImpl(ActionProvider.COMMAND_BUILD, suite.getLookup()).waitFinished();
         assertNotNull("suite was build", prjDir.getFileObject("build"));
         
-        FileObject[] expectedMetadataFiles = new FileObject[] {
+        FileObject[] expectedMetadataFiles = {
             prjDir.getFileObject(GeneratedFilesHelper.BUILD_XML_PATH),
             prjDir.getFileObject("nbproject"),
         };
@@ -96,7 +95,7 @@ public class SuiteOperationsTest extends TestBase {
         module1.open();
         module2.open();
         
-        SuiteProjectTest.openSuite(suite);
+        suite.open();
         SuiteActions ap = (SuiteActions) suite.getLookup().lookup(ActionProvider.class);
         assertNotNull("have an action provider", ap);
         assertTrue("delete action is enabled", ap.isActionEnabled(ActionProvider.COMMAND_DELETE, null));

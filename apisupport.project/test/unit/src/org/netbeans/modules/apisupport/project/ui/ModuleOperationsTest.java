@@ -63,7 +63,7 @@ public class ModuleOperationsTest extends TestBase {
         super(name);
     }
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
         InstalledFileLocatorImpl.registerDestDir(destDirF);
     }
@@ -71,7 +71,7 @@ public class ModuleOperationsTest extends TestBase {
     public void testDelete() throws Exception {
         NbModuleProject project = generateStandaloneModule("module");
         project.open();
-        ActionProvider ap = (ActionProvider) project.getLookup().lookup(ActionProvider.class);
+        ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
         assertNotNull("have an action provider", ap);
         assertTrue("delete action is enabled", ap.isActionEnabled(ActionProvider.COMMAND_DELETE, null));
         
@@ -84,7 +84,7 @@ public class ModuleOperationsTest extends TestBase {
         ActionUtils.runTarget(buildXML, new String[] { "compile" }, null).waitFinished();
         assertNotNull("project was build", prjDir.getFileObject("build"));
         
-        FileObject[] expectedMetadataFiles = new FileObject[] {
+        FileObject[] expectedMetadataFiles = {
             buildXML,
             prjDir.getFileObject("manifest.mf"),
             prjDir.getFileObject("nbproject"),
@@ -92,7 +92,7 @@ public class ModuleOperationsTest extends TestBase {
         };
         assertEquals("correct metadata files", Arrays.asList(expectedMetadataFiles), ProjectOperations.getMetadataFiles(project));
         
-        FileObject[] expectedDataFiles = new FileObject[] {
+        FileObject[] expectedDataFiles = {
             prjDir.getFileObject("src"),
             prjDir.getFileObject("test"),
         };
@@ -109,7 +109,7 @@ public class ModuleOperationsTest extends TestBase {
         cgpi.setProject(project);
         DialogDisplayerImpl dd = (DialogDisplayerImpl) Lookup.getDefault().lookup(DialogDisplayer.class);
         dd.setDialog(new JDialog() {
-            public void setVisible(boolean b) { /* do not show during test-run */ }
+            public @Override void setVisible(boolean b) { /* do not show during test-run */ }
         });
         FileObject lock = FileUtil.createData(project.getProjectDirectory(), "build/testuserdir/lock");
         EventQueue.invokeAndWait(new Runnable() {

@@ -57,7 +57,7 @@ public class BuildNBMSTest extends TestBase {
         return Level.FINE;
     }
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         clearWorkDir();
         
         super.setUp();
@@ -67,7 +67,7 @@ public class BuildNBMSTest extends TestBase {
         suite = TestBase.generateSuite(new File(getWorkDir(), "projects"), "suite");
         NbModuleProject proj = TestBase.generateSuiteComponent(suite, "mod1");
         
-        SuiteProjectTest.openSuite(suite);
+        suite.open();
         proj.open();
     }
     
