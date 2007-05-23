@@ -27,7 +27,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.spi.ui.JavaActionsImplementationProvider;
 import org.netbeans.modules.refactoring.java.ui.ExtractInterfaceRefactoringUI;
-import org.netbeans.modules.refactoring.java.ui.RefactoringActionsProvider.NodeToFileObject;
+import org.netbeans.modules.refactoring.java.ui.RefactoringActionsProvider.NodeToFileObjectTask;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -46,23 +46,25 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
     }
     @Override
     public void doExtractInterface(final Lookup lookup) {
+        Runnable task;
         EditorCookie ec = lookup.lookup(EditorCookie.class);
         if (RefactoringActionsProvider.isFromEditor(ec)) {
-            new RefactoringActionsProvider.TextComponentRunnable(ec) {
+            task = new RefactoringActionsProvider.TextComponentTask(ec) {
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
                     return new ExtractInterfaceRefactoringUI(selectedElement, info);
                 }
-            }.run();
+            };
         } else {
-            new NodeToFileObject(lookup.lookupAll(Node.class)) {
+            task = new NodeToFileObjectTask(lookup.lookupAll(Node.class)) {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
                     TreePathHandle tph = handles.iterator().next();
                     return new ExtractInterfaceRefactoringUI(tph, cinfo.get());
                 }
-            }.run();
+            };
         }
+        task.run();
     }
 
     @Override
@@ -85,23 +87,25 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
 
     @Override
     public void doExtractSuperclass(Lookup lookup) {
+        Runnable task;
         EditorCookie ec = lookup.lookup(EditorCookie.class);
         if (RefactoringActionsProvider.isFromEditor(ec)) {
-            new RefactoringActionsProvider.TextComponentRunnable(ec) {
+            task = new RefactoringActionsProvider.TextComponentTask(ec) {
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
                     return new ExtractSuperclassRefactoringUI(selectedElement, info);
                 }
-            }.run();
+            };
         } else {
-            new NodeToFileObject(lookup.lookupAll(Node.class)) {
+            task = new NodeToFileObjectTask(lookup.lookupAll(Node.class)) {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
                     TreePathHandle tph = handles.iterator().next();
                     return new ExtractSuperclassRefactoringUI(tph, cinfo.get());
                 }
-            }.run();
+            };
         }
+        task.run();
     }
 
     @Override
@@ -124,24 +128,26 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
     
     @Override
     public void doPushDown(final Lookup lookup) {
+        Runnable task;
         EditorCookie ec = lookup.lookup(EditorCookie.class);
         final Dictionary dictionary = lookup.lookup(Dictionary.class);
         if (RefactoringActionsProvider.isFromEditor(ec)) {
-            new RefactoringActionsProvider.TextComponentRunnable(ec) {
+            task = new RefactoringActionsProvider.TextComponentTask(ec) {
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
                     Element selected = selectedElement.resolveElement(info);
                     return new PushDownRefactoringUI(new TreePathHandle[]{selectedElement}, info);
                 }
-            }.run();
+            };
         } else {
-            new NodeToFileObject(lookup.lookupAll(Node.class)) {
+            task = new NodeToFileObjectTask(lookup.lookupAll(Node.class)) {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
                     return new PushDownRefactoringUI(new TreePathHandle[]{handles.iterator().next()}, cinfo.get());
                 }
-            }.run();
+            };
         }
+        task.run();
     }
 
     @Override
@@ -164,24 +170,26 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
     
     @Override
     public void doPullUp(final Lookup lookup) {
+        Runnable task;
         EditorCookie ec = lookup.lookup(EditorCookie.class);
         final Dictionary dictionary = lookup.lookup(Dictionary.class);
         if (RefactoringActionsProvider.isFromEditor(ec)) {
-            new RefactoringActionsProvider.TextComponentRunnable(ec) {
+            task = new RefactoringActionsProvider.TextComponentTask(ec) {
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
                     Element selected = selectedElement.resolveElement(info);
                     return new PullUpRefactoringUI(new TreePathHandle[]{selectedElement}, info);
                 }
-            }.run();
+            };
         } else {
-            new NodeToFileObject(lookup.lookupAll(Node.class)) {
+            task = new NodeToFileObjectTask(lookup.lookupAll(Node.class)) {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
                     return new PullUpRefactoringUI(new TreePathHandle[]{handles.iterator().next()}, cinfo.get());
                 }
-            }.run();
+            };
         }
+        task.run();
     }
 
     @Override
@@ -220,10 +228,11 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
 
     @Override
     public void doUseSuperType(Lookup lookup) {
+        Runnable task;
         EditorCookie ec = lookup.lookup(EditorCookie.class);
         final Dictionary dictionary = lookup.lookup(Dictionary.class);
         if (RefactoringActionsProvider.isFromEditor(ec)) {
-            new RefactoringActionsProvider.TextComponentRunnable(ec){
+            task = new RefactoringActionsProvider.TextComponentTask(ec){
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,
                                                             int startOffset,
                                                             int endOffset,
@@ -231,7 +240,8 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                     Element selected = selectedElement.resolveElement(info);
                     return new UseSuperTypeRefactoringUI(selectedElement);
                 }
-            }.run();
+            };
+            task.run();
         }
     }
     
@@ -257,8 +267,9 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
 
     @Override
     public void doChangeParameters(Lookup lookup) {
+        Runnable task;
         EditorCookie ec = lookup.lookup(EditorCookie.class);
-        new RefactoringActionsProvider.TextComponentRunnable(ec){
+        task = new RefactoringActionsProvider.TextComponentTask(ec){
             protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,
                     int startOffset,
                     int endOffset,
@@ -266,7 +277,8 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 Element selected = selectedElement.resolveElement(info);
                 return new ChangeParametersUI(selectedElement, info);
             }
-        }.run();
+        };
+        task.run();
     }
     
     @Override
@@ -290,8 +302,9 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
 
     @Override
     public void doInnerToOuter(Lookup lookup) {
+        Runnable task;
         EditorCookie ec = lookup.lookup(EditorCookie.class);
-        new RefactoringActionsProvider.TextComponentRunnable(ec){
+        task = new RefactoringActionsProvider.TextComponentTask(ec){
             protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,
                     int startOffset,
                     int endOffset,
@@ -299,6 +312,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 Element selected = selectedElement.resolveElement(info);
                 return new InnerToOuterRefactoringUI(selectedElement, info);
             }
-        }.run();
+        };
+        task.run();
     }    
 }

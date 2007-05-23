@@ -67,7 +67,6 @@ import org.openide.windows.TopComponent;
 /**
  *
  * @author Jan Becicka
- * TODO: avoid Runnables
  */
 public class RefactoringActionsProvider extends ActionsImplementationProvider{
     
@@ -76,10 +75,11 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     }
     @Override
     public void doRename(final Lookup lookup) {
+        Runnable task;
         EditorCookie ec = lookup.lookup(EditorCookie.class);
         final Dictionary dictionary = lookup.lookup(Dictionary.class);
         if (isFromEditor(ec)) {
-            new TextComponentRunnable(ec) {
+            task = new TextComponentTask(ec) {
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, final CompilationInfo info) {
                     Element selected = selectedElement.resolveElement(info);
@@ -106,9 +106,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                         return new RenameRefactoringUI(selectedElement, info);
                     }
                 }
-            }.run();
+            };
         } else {
-            new NodeToFileObject(lookup.lookupAll(Node.class)) {
+            task = new NodeToFileObjectTask(lookup.lookupAll(Node.class)) {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
                     String newName = getName(dictionary);
@@ -124,8 +124,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                         else
                             return new RenameRefactoringUI(selectedElements[0], handles==null||handles.isEmpty()?null:handles.iterator().next(), cinfo==null?null:cinfo.get());
                 }
-            }.run();
+            };
         }
+        task.run();
     }
 
     /**
@@ -156,6 +157,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     
     @Override
     public void doCopy(final Lookup lookup) {
+        Runnable task;
         EditorCookie ec = lookup.lookup(EditorCookie.class);
         final Dictionary dictionary = lookup.lookup(Dictionary.class);
 //        if (isFromEditor(ec)) {
@@ -172,13 +174,14 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 //                }
 //            };
 //        } else {
-            new NodeToFileObject(lookup.lookupAll(Node.class)) {
+            task = new NodeToFileObjectTask(lookup.lookupAll(Node.class)) {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handle) {
                     return new CopyClassRefactoringUI(selectedElements[0], getTarget(dictionary), getPaste(dictionary));
                 }
-            }.run();
+            };
 //        }
+        task.run();
     }
 
     /**
@@ -236,21 +239,23 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 
     @Override
     public void doFindUsages(Lookup lookup) {
+        Runnable task;
         EditorCookie ec = lookup.lookup(EditorCookie.class);
         if (isFromEditor(ec)) {
-            new TextComponentRunnable(ec) {
+            task = new TextComponentTask(ec) {
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
                     return new WhereUsedQueryUI(selectedElement, info);
                 }
-            }.run();
+            };
         } else {
-            new NodeToElement(lookup.lookupAll(Node.class)) {
+            task = new NodeToElementTask(lookup.lookupAll(Node.class)) {
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement, CompilationInfo info) {
                     return new WhereUsedQueryUI(selectedElement, info);
                 }
-            }.run();
+            };
         }
+        task.run();
     }
 
     /**
@@ -274,9 +279,10 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 
     @Override
     public void doDelete(final Lookup lookup) {
+        Runnable task;
         EditorCookie ec = lookup.lookup(EditorCookie.class);
         if (isFromEditor(ec)) {
-            new TextComponentRunnable(ec) {
+            task = new TextComponentTask(ec) {
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
                     Element selected = selectedElement.resolveElement(info);
@@ -286,16 +292,17 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                         return new SafeDeleteUI(new TreePathHandle[]{selectedElement}, info);
                     }
                 }
-            }.run();
+            };
         } else {
-            new NodeToFileObject(lookup.lookupAll(Node.class)) {
+            task = new NodeToFileObjectTask(lookup.lookupAll(Node.class)) {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
                     return new SafeDeleteUI(selectedElements, handles);
                 }
                 
-            }.run();
+            };
         }
+        task.run();
     }
     
     private FileObject getTarget(Dictionary dict) {
@@ -396,10 +403,11 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 
     @Override
     public void doMove(final Lookup lookup) {
+        Runnable task;
         EditorCookie ec = lookup.lookup(EditorCookie.class);
         final Dictionary dictionary = lookup.lookup(Dictionary.class);
         if (isFromEditor(ec)) {
-            new TextComponentRunnable(ec) {
+            task = new TextComponentTask(ec) {
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
                     Element e = selectedElement.resolveElement(info);
@@ -431,9 +439,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                         }
                     }
                 }
-            }.run();
+            };
         } else {
-            new NodeToFileObject(lookup.lookupAll(Node.class)) {
+            task = new NodeToFileObjectTask(lookup.lookupAll(Node.class)) {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
                     PasteType paste = getPaste(dictionary);
@@ -451,19 +459,20 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                     }
                 }
                 
-            }.run();
+            };
         }
+        task.run();
     }    
 
     
-    public static abstract class TextComponentRunnable implements Runnable {
+    public static abstract class TextComponentTask implements Runnable, CancellableTask<CompilationController> {
         private JTextComponent textC;
         private int caret;
         private int start;
         private int end;
         private RefactoringUI ui;
         
-        public TextComponentRunnable(EditorCookie ec) {
+        public TextComponentTask(EditorCookie ec) {
             this.textC = ec.getOpenedPanes()[0];
             this.caret = textC.getCaretPosition();
             this.start = textC.getSelectionStart();
@@ -473,27 +482,27 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             assert end != -1;
         }
         
+        public void cancel() {
+        }
+        
+        public void run(CompilationController cc) throws Exception {
+            TreePath selectedElement = null;
+            cc.toPhase(Phase.RESOLVED);
+            selectedElement = cc.getTreeUtilities().pathFor(caret);
+            //workaround for issue 89064
+            if (selectedElement.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
+                List<? extends Tree> decls = cc.getCompilationUnit().getTypeDecls();
+                if (!decls.isEmpty()) {
+                    selectedElement = TreePath.getPath(cc.getCompilationUnit(), decls.get(0));
+                }
+            }
+            ui = createRefactoringUI(TreePathHandle.create(selectedElement, cc), start, end, cc);
+        }
+        
         public final void run() {
             try {
                 JavaSource source = JavaSource.forDocument(textC.getDocument());
-                source.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
-                    }
-                    
-                    public void run(CompilationController cc) throws Exception {
-                        TreePath selectedElement = null;
-                        cc.toPhase(Phase.RESOLVED);
-                        selectedElement = cc.getTreeUtilities().pathFor(caret);
-                        //workaround for issue 89064
-                        if (selectedElement.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
-                            List<? extends Tree> decls = cc.getCompilationUnit().getTypeDecls();
-                            if (!decls.isEmpty()) {
-                                selectedElement = TreePath.getPath(cc.getCompilationUnit(), decls.get(0));
-                            }
-                        }
-                        ui = createRefactoringUI(TreePathHandle.create(selectedElement, cc), start, end, cc);
-                    }
-                }, false);
+                source.runUserActionTask(this, false);
             } catch (IOException ioe) {
                 ErrorManager.getDefault().notify(ioe);
                 return ;
@@ -510,13 +519,23 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         protected abstract RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info);
     }
     
-    public static abstract class NodeToElement implements Runnable {
+    public static abstract class NodeToElementTask implements Runnable, CancellableTask<CompilationController>  {
         private Node node;
         private RefactoringUI ui;
         
-        public NodeToElement(Collection<? extends Node> nodes) {
+        public NodeToElementTask(Collection<? extends Node> nodes) {
             assert nodes.size() == 1;
             this.node = nodes.iterator().next();
+        }
+        
+        public void cancel() {
+        }
+        
+        public void run(CompilationController info) throws Exception {
+            info.toPhase(Phase.ELEMENTS_RESOLVED);
+            CompilationUnitTree unit = info.getCompilationUnit();
+            TreePathHandle representedObject = TreePathHandle.create(TreePath.getPath(unit, unit.getTypeDecls().get(0)),info);
+            ui = createRefactoringUI(representedObject, info);
         }
         
         public final void run() {
@@ -524,18 +543,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             JavaSource source = JavaSource.forFileObject(o.getPrimaryFile());
             assert source != null;
             try {
-                source.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
-                    }
-
-                    public void run(CompilationController info) throws Exception {
-                        info.toPhase(Phase.ELEMENTS_RESOLVED);
-                        CompilationUnitTree unit = info.getCompilationUnit();
-                        TreePathHandle representedObject = TreePathHandle.create(TreePath.getPath(unit, unit.getTypeDecls().get(0)),info);
-                        ui = createRefactoringUI(representedObject, info);
-                    }
-                    
-                }, false);
+                source.runUserActionTask(this, false);
             } catch (IllegalArgumentException ex) {
                 ex.printStackTrace();
             } catch (IOException ex) {
@@ -546,21 +554,38 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         protected abstract RefactoringUI createRefactoringUI(TreePathHandle selectedElement, CompilationInfo info);
     }
     
-    public static abstract class NodeToFileObject implements Runnable {
+    public static abstract class NodeToFileObjectTask implements Runnable, CancellableTask<CompilationController> {
         private Collection<? extends Node> nodes;
         private RefactoringUI ui;
         public NonRecursiveFolder pkg[];
         public WeakReference<CompilationInfo> cinfo;
-        
-        public NodeToFileObject(Collection<? extends Node> nodes) {
+        Collection<TreePathHandle> handles = new ArrayList<TreePathHandle>();
+     
+        public NodeToFileObjectTask(Collection<? extends Node> nodes) {
             this.nodes = nodes;
+        }
+        
+        public void cancel() {
+        }
+        
+        public void run(CompilationController info) throws Exception {
+            info.toPhase(Phase.ELEMENTS_RESOLVED);
+            CompilationUnitTree unit = info.getCompilationUnit();
+            for (Tree t: unit.getTypeDecls()) {
+                Element e = info.getTrees().getElement(TreePath.getPath(unit, t));
+                if (e.getSimpleName().toString().equals(info.getFileObject().getName())) {
+                    TreePathHandle representedObject = TreePathHandle.create(TreePath.getPath(unit,t),info);
+                    handles.add(representedObject);
+                    break;
+                }
+            }
+            cinfo=new WeakReference<CompilationInfo>(info);
         }
         
         public void run() {
             FileObject[] fobs = new FileObject[nodes.size()];
             pkg = new NonRecursiveFolder[fobs.length];
             int i = 0;
-            final Collection<TreePathHandle> handles = new ArrayList<TreePathHandle>();
             for (Node node:nodes) {
                 DataObject dob = (DataObject) node.getCookie(DataObject.class);
                 if (dob!=null) {
@@ -569,25 +594,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                         JavaSource source = JavaSource.forFileObject(fobs[i]);
                         assert source != null;
                         try {
-                            source.runUserActionTask(new CancellableTask<CompilationController>() {
-                                public void cancel() {
-                                }
-                                
-                                public void run(CompilationController info) throws Exception {
-                                    info.toPhase(Phase.ELEMENTS_RESOLVED);
-                                    CompilationUnitTree unit = info.getCompilationUnit();
-                                    for (Tree t: unit.getTypeDecls()) {
-                                        Element e = info.getTrees().getElement(TreePath.getPath(unit, t));
-                                        if (e.getSimpleName().toString().equals(info.getFileObject().getName())) {
-                                            TreePathHandle representedObject = TreePathHandle.create(TreePath.getPath(unit,t),info);
-                                            handles.add(representedObject);
-                                            break;
-                                        }
-                                    }
-                                    cinfo=new WeakReference<CompilationInfo>(info);
-                                }
-                                
-                            }, false);
+                            source.runUserActionTask(this, false);
                         } catch (IllegalArgumentException ex) {
                             ex.printStackTrace();
                         } catch (IOException ex) {
