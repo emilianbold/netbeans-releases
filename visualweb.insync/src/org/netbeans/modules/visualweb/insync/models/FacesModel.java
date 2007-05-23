@@ -36,7 +36,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.visualweb.insync.java.Method;
 import org.openide.ErrorManager;
 import org.openide.cookies.CloseCookie;
@@ -49,7 +48,6 @@ import org.openide.loaders.OperationEvent;
 import org.openide.loaders.OperationListener;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.WeakListeners;
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -88,6 +86,8 @@ import org.netbeans.modules.visualweb.insync.live.LiveUnit;
 import org.netbeans.modules.visualweb.insync.live.LiveUnitWrapper;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
 import java.io.File;
+import java.util.Collection;
+import java.util.Iterator;
 
 import javax.swing.SwingUtilities;
 
@@ -1029,23 +1029,6 @@ public class FacesModel extends Model {
         facesModelSet.getFacesContainer().getFacesContext();  // make sure the context is available to components via thread lookup
         boolean synced = unit.sync();
     
-        // If the unit is busted we need to abort some of this, and wait until the sync completes successfully
-        if (!unit.getState().isBusted()) {
-	        // On first sync we dont want to do any xref
-	        // Will be done by either the FacesModelSet constructor, or FacesModelSet.itemAdded
-	        if (firstSyncCompleted)
-	            // Should look to this to see if it is a slow operation
-	            // Prior to this, the xref would only happen on addItem or project open, now it will happen as user
-	            // saves their source
-	            ((FacesModelSet) getOwner()).ensureXRrefBothDirectionsAndFlushFacesModel(this);
-	        else
-	            firstSyncCompleted = unit.getState().isBusted();
-	        // If the sync operation modified the model, then auto-flush it to the buffer now
-	        if (unit.getState() == Unit.State.MODELDIRTY) {
-	            unit.writeLock(null);
-	            unit.writeUnlock(null);
-	        }
-        }
         if (liveUnitWrapper != null) {
             // Only do this if the unit was not busted on sync
             // update MBM as needed
@@ -1056,6 +1039,16 @@ public class FacesModel extends Model {
             if (opened && facesModelSet.hasDesignProjectListeners())
                 facesModelSet.fireContextOpened(getLiveUnit());
         }
+        
+        Object newProject = beansUnit.getModel().getProject().getProjectDirectory().getAttribute("NewProject"); //NOI18N
+        if(!(newProject instanceof Boolean && (Boolean)newProject)) {
+             Object newFile = getFile().getAttribute("NewFile"); //NOI18N
+             if(newFile instanceof Boolean && (Boolean)newFile) {
+                 FacesModel model = (FacesModel) beansUnit.getModel();
+                 model.addXRefAccessors();
+             }
+        }
+        
         if (synced)
             fireModelChanged();
     }
@@ -1798,4 +1791,26 @@ public class FacesModel extends Model {
         
         public void operationCreateFromTemplate(OperationEvent.Copy ev) {}
     } // End of ModelSetOperationListener.
+    
+    public void addXRefAccessors() {
+        FacesModelSet modelSet = getFacesModelSet();
+        FacesConfigModel facesConfigModel = modelSet.getFacesConfigModel();
+        ManagedBean managedBean = facesConfigModel.getManagedBean(beansUnit.getBeanName());
+        ManagedBean.Scope scope = null;
+        if (managedBean != null) {
+            scope = managedBean.getManagedBeanScope();
+        }
+        if (scope == null) {
+            scope = getScope(beansUnit.getThisClass());
+        }
+        Collection names = modelSet.getBeanNamesToXRef(scope, this);
+        for (Iterator iterator=names.iterator(); iterator.hasNext(); ) {
+            String name = (String) iterator.next();
+            // Ignore adding a xref to myself
+            if (!name.equals(beansUnit.getBeanName())) {
+                managedBean = facesConfigModel.getManagedBean(name);
+                beansUnit.addXRefAccessor(name, managedBean.getManagedBeanClass());
+            }
+        }
+    }
 }

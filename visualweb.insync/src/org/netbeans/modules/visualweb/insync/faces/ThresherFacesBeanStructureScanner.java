@@ -29,7 +29,7 @@ import java.util.ListIterator;
 import org.netbeans.modules.visualweb.insync.java.Statement;
 import org.openide.util.NbBundle;
 
-public class ThresherFacesBeanStructureScanner extends FacesBeanStructureScanner {
+public class ThresherFacesBeanStructureScanner extends BeanStructureScanner {
     public static String PROP_INITMETHOD = "_init";
     public static String INITMETHOD = "init";
     public static String DESTROYMETHOD = "destroy";

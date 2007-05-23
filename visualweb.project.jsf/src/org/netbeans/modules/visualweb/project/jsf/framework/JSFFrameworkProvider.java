@@ -108,7 +108,8 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         // Create Visual Web files
         ProjectManager.mutex().postReadRequest(new Runnable() {
             public void run() {
-                try{ 
+                try{
+                    project.getProjectDirectory().setAttribute("NewProject", Boolean.TRUE); // NOI18N
                     template.create(project, webModule.getJ2eePlatformVersion(), pageName);
                     VWPDeployment.OpenProjectsListener.registerListener(webModule);
                 } catch (IOException ioe){

@@ -23,6 +23,7 @@ import java.awt.Container;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -1015,24 +1016,37 @@ public abstract class ModelSet implements FileChangeListener {
         MdrInSyncSynchronizer.get().doOutsideOfRefactoringSession(new Runnable() {
             public void run() {
  */
-                ModelCreateVisitor visitor = new ModelCreateVisitor();
-                visitor.visit(fileObject);
-                Collection modelsAdded = visitor.getModelsAdded();
-                for (Iterator i = modelsAdded.iterator(); i.hasNext(); ) {
-                    Model model = (Model) i.next();
-                    // We do a sync here to make sure that the model REALLY is a valid one
-                    // The visitor above can create models that should not really be models
-                    // but we can only find out once we perform a sync.  If as a result
-                    // of the sync, the model has no owner, this indicates that sync destroy'ed
-                    // the model and that it should not be a model after all
-                    model.sync();
-                    if (model.isValid()) {
-                        model.saveUnits();
-                    } else {
-                        models.remove(fileObject);
-                        model = null;
-                    }
+        ModelCreateVisitor visitor = new ModelCreateVisitor();
+        visitor.visit(fileObject);
+        Collection modelsAdded = visitor.getModelsAdded();
+        for (Iterator i = modelsAdded.iterator(); i.hasNext(); ) {
+            Model model = (Model) i.next();
+            // We do a sync here to make sure that the model REALLY is a valid one
+            // The visitor above can create models that should not really be models
+            // but we can only find out once we perform a sync.  If as a result
+            // of the sync, the model has no owner, this indicates that sync destroy'ed
+            // the model and that it should not be a model after all
+            try {
+                //Set an attribute to indicate the file is newly created which is
+                //used to decide the addition of cross referencing accessors
+                model.getFile().setAttribute("NewFile", Boolean.TRUE); //NOI18N
+                model.sync();
+            }catch(IOException ioe) {
+                assert Trace.trace("insync.model", "Failed to set the attribute: " + model.getFile());  //NOI18N
+            }finally {
+                try {
+                    model.getFile().setAttribute("NewFile", null); //NOI18N
+                }catch(IOException ioe) {
+                    assert Trace.trace("insync.model", "Failed to reset the attribute: " + model.getFile());  //NOI18N
                 }
+            }
+            if (model.isValid()) {
+                model.saveUnits();
+            } else {
+                models.remove(fileObject);
+                model = null;
+            }
+        }
 /*
             }
         });

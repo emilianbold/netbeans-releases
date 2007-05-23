@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.visualweb.insync.faces;
 
+import org.netbeans.modules.visualweb.insync.beans.BeanStructureScanner;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
 
@@ -27,7 +28,7 @@ import org.netbeans.modules.visualweb.insync.models.FacesModel;
  * @author eric
  *
  */
-public class ReefFacesBeanStructureScanner extends FacesBeanStructureScanner {
+public class ReefFacesBeanStructureScanner extends BeanStructureScanner {
 
     public  ReefFacesBeanStructureScanner(FacesUnit unit) {
         super(unit);

@@ -347,23 +347,42 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
         facesConfigModel = new FacesConfigModel(this);
         setConfigModel(facesConfigModel);
 
-        // sync all models so that they are ready and can be cross-referenced, and remove any dead
-        // ones that aborted opening.
-        syncAll();
-        for (Iterator i = models.values().iterator(); i.hasNext(); ) {
-            Model m = (Model)i.next();
-            if (!m.isValid())
-                i.remove();
+        //In case of new project, we need to model all the managed beans in order
+        //to generate the cross referencing accessors
+        Object newProject = project.getProjectDirectory().getAttribute("NewProject"); //NOI18N
+        if(newProject instanceof Boolean && (Boolean)newProject) {
+            //Sync all models
+            try {
+                syncAll();
+            }finally {
+                try {
+                    //Reset the attribute to prevent initial modeling during the startup
+                    project.getProjectDirectory().setAttribute("NewProject", null); //NOI18N
+                }catch(IOException ioe) {
+                    assert Trace.trace(this.getClass(), "Failed to reset the attribute: " + project);  //NOI18N
+                }
+            }
+            //Remove any dead ones that aborted opening.
+            for (Iterator i = models.values().iterator(); i.hasNext(); ) {
+                Model m = (Model)i.next();
+                if (!m.isValid())
+                    i.remove();
+            }
+            //We cannot add accessors when each managed bean is modeled during project creation
+            //because we do not know the order of creation of managed beans. Therefore adding
+            //the accessors after syncAll()
+            for (Iterator i = models.values().iterator(); i.hasNext(); ) {
+                Model m = (Model)i.next();
+                if (m instanceof FacesModel) {
+                    ((FacesModel)m).addXRefAccessors();
+                }
+            }
+            
+            // run flush once in case any models self-adjusted themselves
+            flushAll();
+            // save the files to prevent them being open unsaved
+            saveAll();       
         }
-        for (Iterator i = models.values().iterator(); i.hasNext(); ) {
-            Model m = (Model)i.next();
-            if (m instanceof FacesModel)
-                ensureXRefAccessors((FacesModel)m, true);
-        }
-        // run flush once in case any models self-adjusted themselves
-        flushAll();
-        // save the files to prevent them being open unsaved
-        saveAll();
         
         projectBuiltQueryStatus = ProjectBuiltQuery.getStatus(project);
         projectBuiltQueryStatusChangeListener  = new ChangeListener() {
@@ -519,44 +538,6 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
                             String ps = props[pi].getValueSource();
                             if (ps != null && ps.startsWith(match))
                                 props[pi].unset();
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-
-    /**
-     * Ensure that the cross-reference accessors are in place from / to a given model
-     * @param model
-     * @param fromA If true, then ensure accessors in A are in place to other models. If false,
-     *              ensure that other models have accessors to A
-     */
-    public void ensureXRefAccessors(FacesModel aModel, boolean fromA) {
-        if (aModel.isBusted())
-            return;
-        FacesConfigModel facesConfigModel = getFacesConfigModel();
-        String aName = aModel.getBeanName();
-        ManagedBean aMb = facesConfigModel.getManagedBean(aName);
-        if (aMb != null && (fromA || FacesConfigModel.getPackageName(aMb).length() > 0)) {
-            ManagedBean.Scope aScope = aMb.getManagedBeanScope();
-            FacesModel[] bModels = getFacesModels();
-            for (int i = 0; i < bModels.length; i++) {
-                if (bModels[i] != aModel && ! bModels[i].isBusted()) {
-                    String bName = bModels[i].getBeanName();
-                    if (bName != null) {
-                        ManagedBean bMb = facesConfigModel.getManagedBean(bName);
-                        if (bMb != null) {
-                            ManagedBean.Scope bScope = bMb.getManagedBeanScope();
-                            if (fromA) {
-                                if (isModelToXRef(aModel, aScope, bModels[i])) {
-                                    aModel.getBeansUnit().ensureXRefAccessor(bName, bMb.getManagedBeanClass());
-                                }
-                            } else {
-                                if (!fromA && aScope.compareTo(bScope) > 0)
-                                    bModels[i].getBeansUnit().ensureXRefAccessor(aName, aMb.getManagedBeanClass());
-                            }
                         }
                     }
                 }
@@ -1088,20 +1069,6 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
     public Image getLargeIcon() { return null; }
     public Image getSmallIcon() { return null; }
     public String getHelpKey() { return null; }
-
-    /**
-     * Assumes that a sync has already been performed on model and that the model is not busted.
-     * @param model
-     */
-    public void ensureXRrefBothDirectionsAndFlushFacesModel(FacesModel model) {
-        if (model.isBusted())
-            return;
-        ensureXRefAccessors(model, true);
-        model.flush();
-        syncAll();
-        ensureXRefAccessors(model, false);
-        flushAll();
-    }
 
     /**
      * Respond to changes in the project class path by updating the models.

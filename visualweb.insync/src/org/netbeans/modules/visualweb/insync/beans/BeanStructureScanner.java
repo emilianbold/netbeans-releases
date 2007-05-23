@@ -318,10 +318,8 @@ public class BeanStructureScanner {
     * @param bname
     * @param type
     */
-   public void ensureXRefAccessor(String bname, String type) {
+   public void addXRefAccessor(String bname, String type) {
        String mname = bname.replaceAll("/", "_");
-       if (findXRefAccessor(mname) != null)
-           return;
        // Identify whether type has a package name, if not then skip creating an accessor for it
        int index = type.lastIndexOf('.');
        if (index == -1)

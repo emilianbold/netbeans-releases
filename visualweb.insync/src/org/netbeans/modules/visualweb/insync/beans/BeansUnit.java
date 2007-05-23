@@ -735,8 +735,8 @@ public class BeansUnit implements Unit {
      * @param bname
      * @param type
      */
-    public void ensureXRefAccessor(String bname, String type) {
-        getBeanStructureScanner().ensureXRefAccessor(bname, type);
+    public void addXRefAccessor(String bname, String type) {
+        getBeanStructureScanner().addXRefAccessor(bname, type);
     }
 
     //-------------------------------------------------------------------------------- Event Methods
