@@ -28,7 +28,7 @@ import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule;
 import org.netbeans.modules.j2ee.jpa.verification.JPAEntityAttributeCheck;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
-import org.netbeans.modules.j2ee.jpa.verification.rules.attribute.TemporalFieldsAnnotated;
+import org.netbeans.modules.j2ee.jpa.verification.rules.attribute.ValidBasicType;
 import org.netbeans.modules.j2ee.jpa.verification.rules.attribute.ValidColumnName;
 import org.netbeans.modules.j2ee.jpa.verification.rules.attribute.ValidModifiers;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Basic;
@@ -45,6 +45,7 @@ public class ValidAttributes extends JPAClassRule {
     private static JPAEntityAttributeCheck[] attribChecks = new JPAEntityAttributeCheck[]{
         new ValidColumnName(),
         new ValidModifiers(),
+        new ValidBasicType(),
         //TODO: enable this check once #104484 is fixed
         // new TemporalFieldsAnnotated()
     };
