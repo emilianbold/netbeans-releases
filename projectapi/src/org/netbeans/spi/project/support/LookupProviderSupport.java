@@ -16,6 +16,7 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.spi.project.support;
 
 import java.lang.ref.Reference;
@@ -32,10 +33,6 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.LookupProvider;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.FolderLookup;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -52,17 +49,16 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public final class LookupProviderSupport {
     
-    /** Creates a new instance of LookupProviderSupport */
     private LookupProviderSupport() {
     }
     
     /**
      * Creates a project lookup instance that combines the content from multiple sources. 
-     * A convenience factory method for implementors of Project
+     * A convenience factory method for implementors of Project.
      * 
      * @param baseLookup initial, base content of the project lookup created by the project owner
-     * @param folderPath the path in the System Filesystem that is used as root for lookup composition.
-     *        The content of the folder is assumed to be {@link org.netbeans.spi.project.LookupProvider} instances
+     * @param folderPath the path in the System Filesystem that is used as root for lookup composition, as for {@link Lookups#forPath}.
+     *        The content of the folder is assumed to be {@link LookupProvider} instances.
      * @return a lookup to be used in project
      */ 
     public static Lookup createCompositeLookup(Lookup baseLookup, String folderPath) {
@@ -76,19 +72,8 @@ public final class LookupProviderSupport {
      * content from multiple sources.
      * @return instance to include in project lookup
      */
-    public static LookupMerger createSourcesMerger() {
+    public static LookupMerger<Sources> createSourcesMerger() {
         return new SourcesMerger();
-    }
-    
-    //TODO maybe have just one single instance for a given path?
-    private static Lookup createLookup(String folderPath) {
-        FileObject root = Repository.getDefault().getDefaultFileSystem().findResource(folderPath);
-        if (root != null) {
-            DataFolder folder = DataFolder.findFolder(root);
-            return new FolderLookup(folder).getLookup();
-        } else { // #87544
-            return Lookup.EMPTY;
-        }
     }
     
     static class DelegatingLookupImpl extends ProxyLookup implements LookupListener {
@@ -104,7 +89,7 @@ public final class LookupProviderSupport {
         private List<Lookup.Result<?>> results = new ArrayList<Lookup.Result<?>>();
         
         public DelegatingLookupImpl(Lookup base, String path) {
-            this(base, createLookup(path));
+            this(base, Lookups.forPath(path));
         }
         
         public DelegatingLookupImpl(Lookup base, Lookup providerLookup) {
