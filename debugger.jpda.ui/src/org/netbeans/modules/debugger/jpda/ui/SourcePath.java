@@ -84,8 +84,16 @@ public class SourcePath {
     }
     
     static SourcePathProvider getDefaultContext() {
-        return (SourcePathProvider) DebuggerManager.getDebuggerManager().
-                lookupFirst("netbeans-JPDASession", SourcePathProvider.class);
+        List providers = DebuggerManager.getDebuggerManager().
+                lookup("netbeans-JPDASession", SourcePathProvider.class);
+        for (Iterator it = providers.iterator(); it.hasNext(); ) {
+            Object provider = it.next();
+            // Hack - find our provider:
+            if (provider.getClass().getName().equals("org.netbeans.modules.debugger.jpda.projects.SourcePathProviderImpl")) {
+                return (SourcePathProvider) provider;
+            }
+        }
+        return null;
     }
 
     

@@ -704,8 +704,13 @@ public class EditorContextImpl extends EditorContext {
                     List classMemberElements = elms.getAllMembers(classElement);
                     for (Iterator it = classMemberElements.iterator(); it.hasNext(); ) {
                         Element elm = (Element) it.next();
-                        if (elm.getKind() == ElementKind.METHOD) {
-                            String name = elm.getSimpleName().toString();
+                        if (elm.getKind() == ElementKind.METHOD || elm.getKind() == ElementKind.CONSTRUCTOR) {
+                            String name;
+                            if (elm.getKind() == ElementKind.CONSTRUCTOR && !methodName.equals("<init>")) {
+                                name = elm.getEnclosingElement().getSimpleName().toString();
+                            } else {
+                                name = elm.getSimpleName().toString();
+                            }
                             if (name.equals(methodName)) {
                                 if (methodSignature == null || methodSignature.equals(createSignature((ExecutableElement) elm))) {
                                     SourcePositions positions =  ci.getTrees().getSourcePositions();
@@ -756,8 +761,12 @@ public class EditorContextImpl extends EditorContext {
                         Element el = ci.getTrees().getElement(ci.getTrees().getPath(ci.getCompilationUnit(), tree));
                     
                         //Element el = ci.getTrees().getElement(ci.getTreeUtilities().pathFor(offset));
-                        if (el != null && el.getKind() == ElementKind.METHOD) {
+                        if (el != null && (el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR)) {
                             currentMethodPtr[0] = el.getSimpleName().toString();
+                            if (currentMethodPtr[0].equals("<init>")) {
+                                // The constructor name is the class name:
+                                currentMethodPtr[0] = el.getEnclosingElement().getSimpleName().toString();
+                            }
                             currentMethodPtr[1] = createSignature((ExecutableElement) el);
                         }
                     }
@@ -1274,6 +1283,10 @@ public class EditorContextImpl extends EditorContext {
                         Element el = scope.getEnclosingMethod();
                         if (el != null) {
                             currentElementPtr[0] = el.getSimpleName().toString();
+                            if (currentElementPtr[0].equals("<init>")) {
+                                // The constructor name is the class name:
+                                currentElementPtr[0] = el.getEnclosingElement().getSimpleName().toString();
+                            }
                         }
                     } else if (kind == ElementKind.FIELD) {
                         int offset = currentOffset;

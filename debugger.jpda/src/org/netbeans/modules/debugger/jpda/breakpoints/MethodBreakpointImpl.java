@@ -168,6 +168,12 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
         Set<String> exitMethodNames = null;
         boolean locationEntry = false;
         String methodName = breakpoint.getMethodName();
+        String constructorName = referenceType.name();
+        int index = constructorName.lastIndexOf('.');
+        if (index > 0) constructorName = constructorName.substring(index + 1);
+        if (methodName.equals(constructorName)) {
+            methodName = "<init>"; // Constructor
+        }
         while (methods.hasNext ()) {
             Method method = (Method) methods.next ();
             if (methodName.equals("") || match (method.name (), methodName)) {
