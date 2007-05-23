@@ -31,7 +31,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -165,10 +164,10 @@ public class GetterSetterGenerator implements CodeGenerator {
             title = NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_setter"); //NOI18N
         else
             title = NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_getter_and_setter"); //NOI18N
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, title);
+        DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, title);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
         dialog.setVisible(true);
-        if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
+        if (dialogDescriptor.getValue() == dialogDescriptor.getDefaultValue()) {
             JavaSource js = JavaSource.forDocument(component.getDocument());
             if (js != null) {
                 try {

@@ -120,10 +120,10 @@ public class ConstructorGenerator implements CodeGenerator {
         final List<ElementHandle<? extends Element>> fieldHandles;
         if (constructorDescription != null || fieldsDescription != null) {
             ConstructorPanel panel = new ConstructorPanel(constructorDescription, fieldsDescription);
-            DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_constructor")); //NOI18N
+            DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_constructor")); //NOI18N
             Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
             dialog.setVisible(true);
-            if (dialogDescriptor.getValue() != DialogDescriptor.OK_OPTION)
+            if (dialogDescriptor.getValue() != dialogDescriptor.getDefaultValue())
                 return;
             if (constructorHandle == null)
                 constructorHandle = panel.getInheritedConstructor();

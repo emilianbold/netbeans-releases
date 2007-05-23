@@ -100,10 +100,10 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
 
     public void invoke(JTextComponent component) {
         final EqualsHashCodePanel panel = new EqualsHashCodePanel(description);
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_equals_and_hashcode")); //NOI18N
+        DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_equals_and_hashcode")); //NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
         dialog.setVisible(true);
-        if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
+        if (dialogDescriptor.getValue() == dialogDescriptor.getDefaultValue()) {
             JavaSource js = JavaSource.forDocument(component.getDocument());
             if (js != null) {
                 try {

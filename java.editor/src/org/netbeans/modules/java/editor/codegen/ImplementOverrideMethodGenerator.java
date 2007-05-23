@@ -25,13 +25,11 @@ import com.sun.source.util.TreePath;
 import java.awt.Dialog;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.swing.text.JTextComponent;
@@ -119,10 +117,11 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
 
     public void invoke(JTextComponent component) {
         final ImplementOverridePanel panel = new ImplementOverridePanel(description, isImplement);
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, isImplement ?  "LBL_generate_implement" : "LBL_generate_override")); //NOI18N
+        DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, 
+                NbBundle.getMessage(ConstructorGenerator.class, isImplement ?  "LBL_generate_implement" : "LBL_generate_override")); //NOI18N  //NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
         dialog.setVisible(true);
-        if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
+        if (dialogDescriptor.getValue() == dialogDescriptor.getDefaultValue()) {
             JavaSource js = JavaSource.forDocument(component.getDocument());
             if (js != null) {
                 try {

@@ -127,10 +127,10 @@ public class DelegateMethodGenerator implements CodeGenerator {
 
     public void invoke(JTextComponent component) {
         final DelegatePanel panel = new DelegatePanel(component, description);
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_delegate")); //NOI18N
+        DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_delegate")); //NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
         dialog.setVisible(true);
-        if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
+        if (dialogDescriptor.getValue() == dialogDescriptor.getDefaultValue()) {
             JavaSource js = JavaSource.forDocument(component.getDocument());
             if (js != null) {
                 try {
