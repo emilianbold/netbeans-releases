@@ -193,9 +193,13 @@ public class Schema2BeansUtil {
                 return;
             } else {
                 TraceLogger.error(
-                        "Attributes merge error: " + node.getClass().getName() + "  " + node.getClass().getName());
+                        "Attributes merge error: " + node.getClass().getName() + "  " + otherNode.getClass().getName());
                 return;
             }
+        } else if (otherAttributes == null) {
+            TraceLogger.error(
+                    "Attributes merge error: " + node.getClass().getName() + "  " + otherNode.getClass().getName());
+            return;
         }
         List names = new LinkedList();
         for (int i = 0; i < attributes.getLength(); i++) {
