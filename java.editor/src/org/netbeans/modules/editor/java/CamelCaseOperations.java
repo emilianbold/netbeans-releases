@@ -97,6 +97,12 @@ import org.openide.ErrorManager;
 
         // get current caret position
         int offset = textComponent.getCaretPosition();
+
+        // Are we at the beginning of the document
+        if (offset == 0) {
+            return -1;
+        }
+
         try {
             // get token chain at the offset
             TokenItem tokenItem = ((ExtSyntaxSupport) syntaxSupport).getTokenChain(offset - 1, offset);
