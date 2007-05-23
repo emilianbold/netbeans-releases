@@ -98,8 +98,14 @@ public class DiffModuleConfig {
         DiffProvider provider = Lookup.getDefault().lookup(DiffProvider.class);
         if (provider instanceof BuiltInDiffProvider) {
             ((BuiltInDiffProvider) provider).setTrimLines(isIgnoreWhitespace());
+        } else if (provider instanceof CmdlineDiffProvider) {
+            ((CmdlineDiffProvider) provider).setDiffCommand(getDiffCommand());
         }
         return provider;
+    }
+
+    private String getDiffCommand() {
+        return getPreferences().get(PREF_EXTERNAL_DIFF_COMMAND, "diff {0} {1}");
     }
 
     public void setIgnoreWhitespace(boolean ignoreWhitespace) {
