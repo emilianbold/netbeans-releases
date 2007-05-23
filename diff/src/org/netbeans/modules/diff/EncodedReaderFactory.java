@@ -395,13 +395,13 @@ public class EncodedReaderFactory {
     }
 
     /** Uses heuritisc to detect file encoding or null. */
-    public String getEncoding(FileObject fo) {
-        return getEncoding(FileUtil.toFile(fo));
+    public String getEncoding(File file) {
+        return getEncoding(FileUtil.toFileObject(FileUtil.normalizeFile(file)));
     }
 
-    public static String decodeName(File fo) {
-        String ret = fo.getName();
-        if (fo.getParent() != null && fo.getParent().endsWith("CVS" + File.separator + "RevisionCache")) { // NOI18N
+    public static String decodeName(FileObject fo) {
+        String ret = fo.getNameExt();
+        if (fo.getParent() != null && fo.getParent().getPath().endsWith("CVS" + File.separator + "RevisionCache")) { // NOI18N
             String name = fo.getName();
             int hashOffset = name.lastIndexOf("#");  // NOI18N
             if (hashOffset != 1) {
@@ -411,8 +411,8 @@ public class EncodedReaderFactory {
         return ret;
     }
 
-    public String getEncoding(File file) {
-        String name = decodeName(file).toLowerCase();
+    public String getEncoding(FileObject fo) {
+        String name = decodeName(fo).toLowerCase();
 
         if (name.endsWith(".properties")) {
             return findPropertiesEncoding();
@@ -422,8 +422,6 @@ public class EncodedReaderFactory {
         }
 
         Object encoding = null;
-        file = FileUtil.normalizeFile(file);
-        FileObject fo = FileUtil.toFileObject(file);
         if (fo != null) {
             if (name.endsWith(".java")) {
                 encoding = findJavaEncoding(fo); // is not in cache
@@ -436,11 +434,11 @@ public class EncodedReaderFactory {
         if (name.endsWith(".xml") || name.endsWith(".dtd") || name.endsWith(".xsd") || name.endsWith(".xsl")) {  // NOI18N
             InputStream in = null;
             try {
-                in = new BufferedInputStream(new FileInputStream(file), 2048);
+                in = new BufferedInputStream(fo.getInputStream(), 2048);
                 encoding = XMLEncodingHelper.detectEncoding(in);
             } catch (IOException e) {
                 ErrorManager err = ErrorManager.getDefault();
-                err.annotate(e, "Can not detect encoding for: " + file);  // NOI18N
+                err.annotate(e, "Can not detect encoding for: " + fo.getPath());  // NOI18N
                 err.notify(ErrorManager.INFORMATIONAL, e);
             } finally {
                 if (in != null) {
