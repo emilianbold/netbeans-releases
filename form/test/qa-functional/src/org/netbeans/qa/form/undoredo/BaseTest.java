@@ -1,4 +1,4 @@
-    package org.netbeans.qa.form.undoredo;
+        package org.netbeans.qa.form.undoredo;
 /*
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
@@ -18,15 +18,11 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-import java.io.PrintStream;
-import java.io.PrintWriter;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.junit.NbTestCase;
 
 import org.netbeans.junit.NbTestSuite;
 
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.modules.form.*;
 import org.netbeans.jellytools.modules.form.properties.editors.*;
@@ -36,12 +32,7 @@ import org.netbeans.jellytools.actions.*;
 
 import org.netbeans.jemmy.operators.*;
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
 import org.netbeans.jellytools.properties.Property;
-import org.netbeans.jemmy.ComponentSearcher;
-import org.netbeans.jemmy.operators.JTabbedPaneOperator;
-import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
 //import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.qa.form.*;
@@ -78,11 +69,14 @@ public class BaseTest extends JellyTestCase {
     public void selectPropertiesTab(PropertySheetOperator pso){
         selectTab(pso, 0);
     }
-    public void selectEventsTab(PropertySheetOperator pso){
+    public void selectBindTab(PropertySheetOperator pso){
         selectTab(pso, 1);
     }
-    public void selectCodeTab(PropertySheetOperator pso){
+    public void selectEventsTab(PropertySheetOperator pso){
         selectTab(pso, 2);
+    }
+    public void selectCodeTab(PropertySheetOperator pso){
+        selectTab(pso, 3);
     }
     //select tab in PropertySheet
     public void selectTab(PropertySheetOperator pso, int index){
@@ -171,16 +165,27 @@ public class BaseTest extends JellyTestCase {
         // change generated code
         inspector.selectComponent("[JFrame]|JPanel2 [JPanel]|jButton1 [JButton]");
         
-        new Property(pso, "text").openEditor();
-        FormCustomEditorOperator fceo = new FormCustomEditorOperator("text");
-        fceo.advanced();
-        FormCustomEditorAdvancedOperator fceao = new FormCustomEditorAdvancedOperator();
-        fceao.setGeneratePreInitializationCode(true);
-        fceao.setPreInitializationCode("aaa");
-        fceao.setGeneratePostInitializationCode(true);
-        fceao.setPostInitializationCode("bbb");
-        fceao.ok();
-        fceo.ok();
+        selectCodeTab(pso);
+        sleep(1000);
+        new Property(pso, "Pre-Creation Code").setValue("aaa");
+        new Property(pso, "Post-Init Code").setValue("bbb");
+        
+        sleep(2000);
+        
+        
+        //new Property(pso, "text").openEditor();
+        
+        
+    
+                
+//        fceo.advanced();
+//        FormCustomEditorAdvancedOperator fceao = new FormCustomEditorAdvancedOperator();
+//        fceao.setGeneratePreInitializationCode(true);
+//        fceao.setPreInitializationCode("aaa");
+//        fceao.setGeneratePostInitializationCode(true);
+//        fceao.setPostInitializationCode("bbb");
+//        fceao.ok();
+        //fceo.ok();
         
         // event
         selectEventsTab(pso);
@@ -192,7 +197,7 @@ public class BaseTest extends JellyTestCase {
         //   selectPropertiesTab(pso);
         
         
-        for (int i=0;i<2;i++) {
+        for (int i=0;i<1;i++) {
             // section undo testing
             
             openAction.perform(formnode);
@@ -204,25 +209,26 @@ public class BaseTest extends JellyTestCase {
             
             // check if aaa, bbb are generated
             
-            assertTrue("check in Editor 10b",checkEditor("aaa,bbb"));
+           assertTrue("check in Editor 10b",checkEditor("aaa,bbb"));
+           assertTrue("check in Editor 10c",!checkEditor("private void myAction"));
             
-            undo(1);
+           undo(1);
             
             // check if aaa, bbb are not in editor
             assertTrue("check i// assertTrun Editor 10a",!checkEditor("aaa,bbb"));
             
             
             //now it's not possible to check, in editore, there is different code (no on the same row)
-            assertTrue("check in Editor 9b",checkEditor("jPanel2.add(jButton1),jPanel2.add(jButton2)"));
+            assertTrue("check in Editor 9a",checkEditor("jPanel2.add(jButton1),jPanel2.add(jButton2)"));
             
             undo(1);
             //check if panel order was changed
-            assertTrue("check in Editor 9b",checkEditor("jPanel2.add(jButton2),jPanel2.add(jButton1)"));
+            assertTrue("check in Editor 9b",!checkEditor("jPanel2.add(jButton2),jPanel2.add(jButton1)"));
             
             
             assertTrue("check in Editor 8b",checkEditor("<html>"));
             
-            undo(1);
+            undo(2);
             
             assertTrue("check in Editor 8a",!checkEditor("<html>"));
             
