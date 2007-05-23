@@ -511,7 +511,7 @@ public class WebProjectUtilities {
         //(it would be nice to have a possibily to set this property in the wizard)
         ep.setProperty(WebProjectProperties.RESOURCE_DIR, DEFAULT_RESOURCE_FOLDER);
 
-        String webInfDir = FileUtil.getRelativePath(fo, webInfFolder);
+        String webInfDir = createFileReference(referenceHelper, fo, wmFO, webInfFolder);
         ep.setProperty(WebProjectProperties.WEBINF_DIR, webInfDir);
         
         ep.setProperty(WebProjectProperties.JAVA_SOURCE_BASED,javaSourceBased+"");
