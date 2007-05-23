@@ -519,9 +519,10 @@ public class BreakpointsNodeModel implements NodeModel {
     }
     
     public void setCurrentBreakpoint (JPDABreakpoint currentBreakpoint) {
-        if (this.currentBreakpoint != null)
-            fireNodeChanged (this.currentBreakpoint);
+        JPDABreakpoint oldCurrentBreakpoint = this.currentBreakpoint;
         this.currentBreakpoint = currentBreakpoint;
+        if (oldCurrentBreakpoint != null)
+            fireNodeChanged (oldCurrentBreakpoint);
         if (currentBreakpoint != null)
             fireNodeChanged (currentBreakpoint);
     }
