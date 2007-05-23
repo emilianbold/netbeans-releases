@@ -106,7 +106,6 @@ import org.netbeans.modules.java.source.engine.RootTree;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.TreeLoader;
-import org.netbeans.modules.java.source.builder.UndoListService;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
@@ -1052,10 +1051,6 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 List<CompilationUnitTree> units = new ArrayList<CompilationUnitTree>();
                 units.add(tree);
                 s.setRoot(new RootTree(units));
-                UndoListService undoList = UndoListService.instance(currentInfo.getJavacTask().getContext());
-                if (undoList != null) {
-                    undoList.reset(); //setRoot above created an undo event - clear it
-                }
                 assert !it.hasNext();
                 currentPhase = Phase.PARSED;
                 long end = System.currentTimeMillis();

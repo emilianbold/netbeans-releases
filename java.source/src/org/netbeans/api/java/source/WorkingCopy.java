@@ -41,7 +41,6 @@ import org.netbeans.modules.java.source.transform.ChangeSet;
 import org.netbeans.modules.java.source.query.QueryException;
 import org.netbeans.modules.java.source.transform.Transformer;
 import org.netbeans.modules.java.source.engine.RootTree;
-import org.netbeans.modules.java.source.builder.UndoListService;
 import org.netbeans.modules.java.source.builder.ASTService;
 import org.netbeans.modules.java.source.builder.DefaultEnvironment;
 import org.netbeans.modules.java.source.builder.TreeFactory;
@@ -63,7 +62,7 @@ import org.openide.text.CloneableEditorSupport;
  */
 public class WorkingCopy extends CompilationController {
     
-    private EngineEnvironment ce;
+    private DefaultEnvironment ce;
     private ChangeSet changes;
     private boolean afterCommit = false;
     private WorkingCopyContext wcc;
@@ -84,7 +83,6 @@ public class WorkingCopy extends CompilationController {
             List<CompilationUnitTree> units = new ArrayList<CompilationUnitTree>();
             units.add(tree);
             model.setRoot(TreeFactory.instance(context).Root(units));
-            UndoListService.instance(context).reset();
         }
         
         JavacTaskImpl task = this.delegate.getJavacTask();

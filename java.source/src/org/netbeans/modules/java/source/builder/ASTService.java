@@ -40,8 +40,6 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.*;
 import com.sun.tools.javac.util.*;
 import java.util.Collections;
-import org.netbeans.modules.java.source.transform.UndoEntry;
-import org.netbeans.modules.java.source.transform.UndoList;
 
 import static com.sun.tools.javac.tree.JCTree.*;
 
@@ -51,7 +49,7 @@ import static com.sun.tools.javac.tree.JCTree.*;
 public final class ASTService implements ASTModel {
     
     private RootTree root;
-    private UndoList undoList;
+    private RootTree oldRoot;
     private Map<JavaFileObject, Map<JCTree, Integer>> endPosTables;
 
     private static final Context.Key<ASTService> treeKey = new Context.Key<ASTService>();
@@ -68,7 +66,6 @@ public final class ASTService implements ASTModel {
      */
     protected ASTService(Context context) {
         context.put(treeKey, this);
-        undoList = UndoListService.instance(context);
         endPosTables = new HashMap<JavaFileObject, Map<JCTree, Integer>>();
     }
     
@@ -79,6 +76,10 @@ public final class ASTService implements ASTModel {
         return root;
     }
     
+    public Tree getOldRoot() {
+        return oldRoot;
+    }
+    
     /**
      * Replace the current root tree.
      */
@@ -86,22 +87,8 @@ public final class ASTService implements ASTModel {
     public void setRoot(final RootTree tree) throws ReattributionException {
         if (tree == root)
             return;
-        
-        undoList.addAndApply(new UndoEntry() {
-            private final RootTree old = root;
-            @Override
-            public void undo() {
-                root = old;
-            }
-            @Override
-            public void redo() {
-                root = tree;
-            }
-            @Override
-            public <T> T getOld(T o) {
-                return (o == tree) ? (T)old : null;
-            }
-        });
+        oldRoot = root;
+        root = tree;
     }
     
     /**
@@ -446,4 +433,5 @@ public final class ASTService implements ASTModel {
             return ((ClassTree)tree).getMembers();
         return Collections.emptyList();
     }
+
 }
