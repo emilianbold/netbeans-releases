@@ -176,48 +176,22 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
             return;
         }
         
-        final Browser browser = 
-            new Browser(
-                browserPurpose,
-                browserMode,
-                new RepositoryFile(getRepositoryUrl(), revision), 
-                repositoryFilesToSelect, 
-                browserActions);        
-        
-        final DialogDescriptor dialogDescriptor = 
-                new DialogDescriptor(browser.getBrowserPanel(), java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/browser/Bundle").getString("CTL_RepositoryPath_BrowseFolders_Title")); 
-        dialogDescriptor.setModal(true);
-        dialogDescriptor.setHelpCtx(new HelpCtx(Browser.class));
-        dialogDescriptor.setValid(false);
-        
-        browser.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if( ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName()) ) {
-                    dialogDescriptor.setValid(browser.getSelectedNodes().length > 0);
-                }
-            }
-        });        
-        
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);     
-        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RepositoryPaths.class, "CTL_RepositoryPath_BrowseFolders_Title"));
-        dialog.setVisible(true);
+        RepositoryFile repositoryFile = new RepositoryFile(getRepositoryUrl(), revision);
+        Browser browser = new Browser(browserPurpose, browserMode, repositoryFile, repositoryFilesToSelect, browserActions);                               
 
-        // handle results
-        if (DialogDescriptor.OK_OPTION.equals(dialogDescriptor.getValue())) {       
-            RepositoryFile[] selectedFiles = browser.getSelectedFiles();
-                        
-            if(selectedFiles.length > 0) {                
-                StringBuffer paths = new StringBuffer();
-                for (int i = 0; i < selectedFiles.length; i++) {
-                    paths.append(selectedFiles[i].getPath());
-                    if(i < selectedFiles.length - 1) {
-                        paths.append(", "); // NOI18N
-                    }
-                }  
-                setRepositoryTextField(paths.toString());
-            }             
-        } 
-        browser.cancelTasks();  // however the dialog was closed, we always cancel all running tasks 
+        // handle results    
+        RepositoryFile[] selectedFiles = browser.getRepositoryFiles();
+
+        if(selectedFiles.length > 0) {                
+            StringBuffer paths = new StringBuffer();
+            for (int i = 0; i < selectedFiles.length; i++) {
+                paths.append(selectedFiles[i].getPath());
+                if(i < selectedFiles.length - 1) {
+                    paths.append(", "); // NOI18N
+                }
+            }  
+            setRepositoryTextField(paths.toString());
+        }             
     }          
     
     private void searchRepository() {

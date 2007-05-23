@@ -64,7 +64,7 @@ public class CertificateFile extends SVNCredentialFile {
 
     private void setFailures(int failures) {
         setValue(getFailuresKey(), String.valueOf(failures));
-    }        
+    }
 
     public static File getSystemCertFile(String realmString) {
         File file = new File(SvnConfigFiles.getUserConfigPath() + "auth/svn.ssl.server/" + getFileName(realmString)); // NOI18N

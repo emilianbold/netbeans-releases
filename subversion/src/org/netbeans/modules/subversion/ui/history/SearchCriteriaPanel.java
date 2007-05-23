@@ -329,30 +329,12 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
             browserMode = Browser.BROWSER_SHOW_FILES;                        
         }        
         browser = new Browser(title, browserMode, repoFile, null, null);        
-        final DialogDescriptor dialogDescriptor = 
-                new DialogDescriptor(browser.getBrowserPanel(), NbBundle.getMessage(SearchCriteriaPanel.class, "LBL_Search_BrowseRepository")); // NOI18N 
-        dialogDescriptor.setModal(true);
-        dialogDescriptor.setHelpCtx(new HelpCtx(Browser.class));
-        dialogDescriptor.setValid(false);
-        
-        browser.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if( ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName()) ) {
-                    dialogDescriptor.setValid(browser.getSelectedNodes().length > 0);
-                }
-            }
-        });
-        
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);        
-        dialog.setVisible(true);
-
-        // handle results
-        if (!DialogDescriptor.OK_OPTION.equals(dialogDescriptor.getValue())) {       
-            browser.cancelTasks();
+        RepositoryFile[] repositoryFiles = browser.getRepositoryFiles();
+        if(repositoryFiles == null || repositoryFiles.length == 0) {
             return;
         }
-
-        final SVNUrl tagURL = browser.getSelectedFiles()[0].getFileUrl();
+        
+        final SVNUrl tagURL = repositoryFiles[0].getFileUrl();
         destination.setText(NbBundle.getMessage(SearchCriteriaPanel.class, "MSG_Search_PleaseWait")); // NOI18N
 
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);

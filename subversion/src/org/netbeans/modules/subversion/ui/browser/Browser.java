@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.subversion.ui.browser;
 
+import java.awt.Dialog;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -33,9 +34,13 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
@@ -122,6 +127,50 @@ public class Browser implements VetoableChangeListener, BrowserClient {
         
     }       
 
+    public RepositoryFile[] getRepositoryFiles() {
+        if(!show()) {
+            cancel();  
+            return EMPTY_ROOT;
+        }
+        
+        // get the nodes first
+        Node[] nodes = (Node[]) getExplorerManager().getSelectedNodes();
+        // clean up - however the dialog was closed, we always cancel all running tasks 
+        cancel();  
+        
+        if(nodes.length == 0) {
+            return EMPTY_ROOT;
+        }
+        
+        RepositoryFile[] ret = new RepositoryFile[nodes.length];
+        for (int i = 0; i < nodes.length; i++) {
+            ret[i] = ((RepositoryPathNode) nodes[i]).getEntry().getRepositoryFile();
+        }                        
+        return ret;
+    }    
+    
+    private boolean show() {
+        final DialogDescriptor dialogDescriptor = 
+                new DialogDescriptor(getBrowserPanel(), NbBundle.getMessage(Browser.class, "CTL_Browser_BrowseFolders_Title")); 
+        dialogDescriptor.setModal(true);
+        dialogDescriptor.setHelpCtx(new HelpCtx(Browser.class));
+        dialogDescriptor.setValid(false);
+        
+        addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if( ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName()) ) {
+                    dialogDescriptor.setValid(getSelectedNodes().length > 0);
+                }
+            }
+        });        
+        
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);     
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(Browser.class, "CTL_Browser_BrowseFolders_Title"));
+        dialog.setVisible(true);                
+
+        return DialogDescriptor.OK_OPTION.equals(dialogDescriptor.getValue());
+    }
+    
     private Node[] getSelectedNodes(RepositoryPathNode rootNode, RepositoryFile repositoryRoot, RepositoryFile[] select) {        
         if(select==null || select.length <= 0) {
             return null;
@@ -147,7 +196,7 @@ public class Browser implements VetoableChangeListener, BrowserClient {
     /**
      * Cancels all running tasks
      */
-    public void cancelTasks() {                   
+    private void cancel() {                   
         SvnProgressSupport[] progressSupports = null;    
         synchronized(supportList) {            
             cancelled = true; 
@@ -246,27 +295,13 @@ public class Browser implements VetoableChangeListener, BrowserClient {
         return ret;
     }
     
-    public JPanel getBrowserPanel() {
+    private JPanel getBrowserPanel() {
         return panel;
     }
     
     public Node[] getSelectedNodes() {
         return getExplorerManager().getSelectedNodes();
     }
-
-    public RepositoryFile[] getSelectedFiles() {
-        Node[] nodes = (Node[]) getExplorerManager().getSelectedNodes();
-        
-        if(nodes.length == 0) {
-            return EMPTY_ROOT;
-        }
-        
-        RepositoryFile[] ret = new RepositoryFile[nodes.length];
-        for (int i = 0; i < nodes.length; i++) {
-            ret[i] = ((RepositoryPathNode) nodes[i]).getEntry().getRepositoryFile();
-        }
-        return ret;
-    }    
     
     public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {

@@ -62,11 +62,7 @@ public class CreateFolderAction extends BrowserAction implements PropertyChangeL
         Browser browser = getBrowser();
         if(browser == null) {
             return false;
-        }
-        
-        if(browser.getBrowserPanel()==null) {
-            return false;
-        }
+        }        
         if(browser.getExplorerManager().getRootContext() == Node.EMPTY) {
             return false;
         }
