@@ -403,11 +403,11 @@ public class Installer extends ModuleInstall {
                     
                     List<Object> addTo = "left".equals(align) ? left : buttons;
                     
-                    if ("hidden".equals(type) && "submit".equals(name)) { // NOI18N
+                    if ("hidden".equals(type) && Button.SUBMIT.isCommand(name)) { // NOI18N
                         f.submitValue = value;
                         JButton b = new JButton();
                         Mnemonics.setLocalizedText(b, f.submitValue);
-                        b.setActionCommand("submit"); // NOI18N
+                        b.setActionCommand(Button.SUBMIT.getName()); // NOI18N
                         b.putClientProperty("url", f.url); // NOI18N
                         b.setDefaultCapable(addTo.isEmpty() && addTo == buttons);
                         b.putClientProperty("alt", alt); // NOI18N
@@ -425,12 +425,12 @@ public class Installer extends ModuleInstall {
                         b.setDefaultCapable(addTo.isEmpty() && addTo == buttons);
                         b.putClientProperty("alt", alt); // NOI18N
                         b.putClientProperty("now", value); // NOI18N
-                        b.setEnabled(enabled);
+                        b.setEnabled(enabled && Button.isKnown(name));
                         addTo.add(b);
-                        if ("exit".equals(name)) { // NOI18N
+                        if (Button.EXIT.isCommand(name)) { // NOI18N
                             defaultButton = null;
-                        }else if ("redirect".equals(name)){
-                            b.putClientProperty("url", f.url);
+                        }else if (Button.REDIRECT.isCommand(name)){
+                            b.putClientProperty("url", f.url); // NOI18N
                         }
                     }
                 }
@@ -822,7 +822,7 @@ public class Installer extends ModuleInstall {
             final URL[] url = new URL[1];
             String actionURL = decodeButtons(e.getSource(), url);
             
-            if ("submit".equals(e.getActionCommand())) { // NOI18N
+            if (Button.SUBMIT.isCommand(e.getActionCommand())) { // NOI18N
                 final List<LogRecord> recs = getLogs();
                 if (report) reportPanel.saveUserName();
                 recs.add(getUserData());
@@ -838,7 +838,7 @@ public class Installer extends ModuleInstall {
                 return;
             }
             
-            if ("redirect".equals(e.getActionCommand())){
+            if (Button.REDIRECT.isCommand(e.getActionCommand())){
                 if (url[0] != null) {
                     HtmlBrowser.URLDisplayer.getDefault().showURL(url[0]);
                 }
@@ -847,7 +847,7 @@ public class Installer extends ModuleInstall {
                 return ;
             }
             
-            if ("view-data".equals(e.getActionCommand())) { // NOI18N
+            if (Button.VIEW_DATA.isCommand(e.getActionCommand())) { // NOI18N
                 if (panel == null) {
                     panel = new SubmitPanel();
                     AbstractNode root = new AbstractNode(new Children.Array());
@@ -891,7 +891,7 @@ public class Installer extends ModuleInstall {
                 return;
             }
             
-            if ("never-again".equals(e.getActionCommand())) { // NOI18N
+            if (Button.NEVER_AGAIN.isCommand(e.getActionCommand())) { // NOI18N
                 LOG.log(Level.FINE, "Assigning ask.never.again.{0} to true", msg); // NOI18N
                 NbPreferences.forModule(Installer.class).putBoolean("ask.never.again." + msg, true); // NOI18N
                 okToExit = true;
@@ -901,7 +901,7 @@ public class Installer extends ModuleInstall {
                 return;
             }
             
-            if ("exit".equals(e.getActionCommand())) {
+            if (Button.EXIT.isCommand(e.getActionCommand())) {
                 // this should close the descriptor
                 dd.setValue(DialogDescriptor.CLOSED_OPTION);
                 closeDialog();
@@ -916,5 +916,36 @@ public class Installer extends ModuleInstall {
                 notifyAll();
             }
         }
+        
     } // end Submit
+
+    private static enum Button {
+        EXIT("exit"),
+        NEVER_AGAIN("never-again"),
+        VIEW_DATA("view-data"),
+        REDIRECT("redirect"),
+        SUBMIT("submit");
+        
+        private final String name;
+        Button(String name) {
+            this.name = name;
+        }
+        
+        public String getName() {
+            return name;
+        }
+        
+        public boolean isCommand(String s) {
+            return name.equals(s);
+        }
+        
+        public static boolean isKnown(String n) {
+            for (Button b : Button.values()) {
+                if (n.equals(b.getName())) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    } // end of Buttons
 }
