@@ -29,7 +29,10 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.client.PropertiesClient;
+import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.commit.CommitAction;
+import org.netbeans.modules.subversion.ui.status.StatusAction;
+import org.netbeans.modules.subversion.ui.update.UpdateAction;
 import org.netbeans.api.diff.DiffController;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.Difference;
@@ -104,6 +107,8 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
     private DiffFileTable           fileTable;
     private boolean                 dividerSet;
 
+    private SvnProgressSupport executeStatusSupport;
+    
     /**
      * Creates diff panel and immediatelly starts loading...
      */
@@ -157,6 +162,9 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         if (prepareTask != null) {
             prepareTask.cancel();
         }
+        if(executeStatusSupport!=null) {
+            executeStatusSupport.cancel();
+        }
     }
 
     /**
@@ -183,6 +191,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         allToggle.addActionListener(this);
         
         commitButton.setToolTipText(NbBundle.getMessage(MultiDiffPanel.class, "MSG_CommitDiff_Tooltip", contextName));
+        updateButton.setToolTipText(NbBundle.getMessage(MultiDiffPanel.class, "MSG_UpdateDiff_Tooltip", contextName));
         ButtonGroup grp = new ButtonGroup();
         grp.add(localToggle);
         grp.add(remoteToggle);
@@ -343,6 +352,30 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         else if (source == localToggle || source == remoteToggle || source == allToggle) onDiffTypeChanged();
     }
 
+    private void onRefreshButton() {
+        if (context == null || context.getRoots().size() == 0) {
+            return;
+        }
+
+        if(executeStatusSupport!=null) {
+            executeStatusSupport.cancel();
+            executeStatusSupport = null;
+        }
+        
+        LifecycleManager.getDefault().saveAll();
+        RequestProcessor rp = Subversion.getInstance().getRequestProcessor();
+        executeStatusSupport = new SvnProgressSupport() {
+            public void perform() {                                                
+                StatusAction.executeStatus(context, this);
+            }
+        };
+        refreshSetups();        
+    }
+
+    private void onUpdateButton() {
+        UpdateAction.performUpdate(context);
+    }
+    
     private void onCommitButton() {
         LifecycleManager.getDefault().saveAll();
         CommitAction.commit(contextName, context);
@@ -645,6 +678,9 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         nextButton = new javax.swing.JButton();
         prevButton = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
+        refreshButton = new javax.swing.JButton();
+        updateButton = new javax.swing.JButton();
+        jPanel5 = new javax.swing.JPanel();
         commitButton = new javax.swing.JButton();
         splitPane = new javax.swing.JSplitPane();
 
@@ -731,13 +767,13 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         prevButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         controlsToolBar.add(prevButton);
 
-        jPanel2.setMaximumSize(new java.awt.Dimension(20, 32767));
+        jPanel2.setMaximumSize(new java.awt.Dimension(30, 32767));
 
         org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 20, Short.MAX_VALUE)
+            .add(0, 30, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -745,6 +781,44 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         );
 
         controlsToolBar.add(jPanel2);
+
+        refreshButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/refresh.png"))); // NOI18N
+        refreshButton.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "refreshButton.toolTipText")); // NOI18N
+        refreshButton.setFocusable(false);
+        refreshButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        refreshButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        refreshButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                refreshButtonActionPerformed(evt);
+            }
+        });
+        controlsToolBar.add(refreshButton);
+
+        updateButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/update.png"))); // NOI18N
+        updateButton.setFocusable(false);
+        updateButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        updateButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        updateButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                updateButtonActionPerformed(evt);
+            }
+        });
+        controlsToolBar.add(updateButton);
+
+        jPanel5.setMaximumSize(new java.awt.Dimension(20, 32767));
+
+        org.jdesktop.layout.GroupLayout jPanel5Layout = new org.jdesktop.layout.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 20, Short.MAX_VALUE)
+        );
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 23, Short.MAX_VALUE)
+        );
+
+        controlsToolBar.add(jPanel5);
 
         commitButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/commit.png"))); // NOI18N
         commitButton.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "MSG_CommitDiff_Tooltip")); // NOI18N
@@ -770,6 +844,14 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
                 .add(splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void updateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateButtonActionPerformed
+        onUpdateButton();
+    }//GEN-LAST:event_updateButtonActionPerformed
+
+    private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
+        onRefreshButton();
+    }//GEN-LAST:event_refreshButtonActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -780,11 +862,14 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
     private javax.swing.JToggleButton localToggle;
     private javax.swing.JButton nextButton;
     private javax.swing.JButton prevButton;
+    private javax.swing.JButton refreshButton;
     private javax.swing.JToggleButton remoteToggle;
     private javax.swing.JSplitPane splitPane;
+    private javax.swing.JButton updateButton;
     // End of variables declaration//GEN-END:variables
     
     /** Interprets property blob. */
