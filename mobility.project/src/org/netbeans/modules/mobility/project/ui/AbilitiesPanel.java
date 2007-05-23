@@ -36,7 +36,7 @@ import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
+import java.util.Map.Entry;
 import java.util.Vector;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -44,6 +44,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
@@ -120,6 +121,8 @@ public class AbilitiesPanel implements NavigatorPanel
     private static String MULTIPLE_VALUES=NbBundle.getMessage(AbilitiesPanel.class,"LBL_MultipleValues");
     private static String REMOVE=NbBundle.getMessage(AbilitiesPanel.class,"LBL_RemoveAbility");
     private static String ADD=NbBundle.getMessage(AbilitiesPanel.class,"LBL_AddAbility");
+    private static String COPY=NbBundle.getMessage(AbilitiesPanel.class,"LBL_CopyAbility");
+    private static String PASTE=NbBundle.getMessage(AbilitiesPanel.class,"LBL_PasteAbility");
     
     static class ABPanel extends JPanel implements ExplorerManager.Provider
     {
@@ -130,8 +133,121 @@ public class AbilitiesPanel implements NavigatorPanel
         private static J2MEProject project=null;
         private static Node[] selectedNodes=null;
         private static Node defaultConfig=null;
-        private static Action[] actions = { new AddAction(), new RemoveAction() };
+        private static Action[] actions = { new AddAction(), new RemoveAction(), new CopyAction(), new PasteAction() };
         private static ExplorerManager manager=new ExplorerManager();
+        private static HashMap<String,String> copiedAbilities=new HashMap<String,String>();
+        
+        //To disable paste at the beginning
+        static
+        {
+            actions[3].setEnabled(false);
+        }
+        
+        static void addAbility(EditableProperties ep,AntProjectHelper helper, String key, String value)
+        {
+            //Save the change
+            if (defaultConfig != null)
+            {   
+                String abilities=ep.getProperty(DefaultPropertiesDescriptor.ABILITIES);
+                Map<String,String> ab=CommentingPreProcessor.decodeAbilitiesMap(abilities);
+                //We don't want to overwite existing ability, it may happen just in case of PastAction not AddAction, 
+                //which has internal check to avoid this
+                if (!ab.containsKey(key))
+                {
+                    ab.put(key,value);
+                    abilities=CommentingPreProcessor.encodeAbilitiesMap(ab);
+                    ep.put(DefaultPropertiesDescriptor.ABILITIES,abilities);
+                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,ep);   
+                }
+                else
+                {
+                    ErrorManager.getDefault().log(ErrorManager.WARNING,"Ability "+key+" already exist in the configuration "+ProjectConfigurationsHelper.DEFAULT_CONFIGURATION_NAME
+                            +". Its value will not be modified");
+                }
+            }
+
+            for (Node node : selectedNodes)
+            {
+                if (node != defaultConfig)
+                {
+                    ProjectConfiguration conf=node.getLookup().lookup(ProjectConfiguration.class);
+                    String abilities = ep.getProperty(J2MEProjectProperties.CONFIG_PREFIX + conf.getDisplayName() + "." + DefaultPropertiesDescriptor.ABILITIES);
+                    if (abilities == null)
+                        // Let's take a default value if we inherit from default configuration
+                        abilities = ep.getProperty(DefaultPropertiesDescriptor.ABILITIES);
+                    Map<String,String> ab=CommentingPreProcessor.decodeAbilitiesMap(abilities);
+                    //if key is present it means default config is used and we don't need to added'
+                    String oldVal=ab.get(key);
+                    if (!ab.containsKey(key))
+                    {
+                        ab.put(key,value);
+                        abilities=CommentingPreProcessor.encodeAbilitiesMap(ab);
+                        ep.put(J2MEProjectProperties.CONFIG_PREFIX+conf.getDisplayName()+"."+DefaultPropertiesDescriptor.ABILITIES,abilities);
+                    }
+                    else
+                    {
+                        ErrorManager.getDefault().log(ErrorManager.WARNING,"Ability "+key+" already exist in the configuration "+conf.getDisplayName()
+                                +". Its value will not be modified");
+                    }
+                }
+            }
+            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,ep);   
+        }
+        
+        static private class CopyAction extends AbstractAction {
+            private CopyAction()
+            {
+                putValue(Action.NAME,COPY);
+                putValue(Action.ACCELERATOR_KEY,KeyStroke.getKeyStroke ("ctrl C"));
+            }
+
+            public void actionPerformed(ActionEvent e)
+            {                
+                final int rows[]=table.getSelectedRows();
+                copiedAbilities=new HashMap<String,String>(rows.length);
+                for (int row : rows)
+                {
+                    String key=tableModel.getValueAt(row,0);
+                    String value=tableModel.getValueAt(row,1);
+                    copiedAbilities.put(key,value);
+                }
+                actions[3].setEnabled(true);
+            }
+        }
+        
+        static private class PasteAction extends AbstractAction {
+            private PasteAction()
+            {
+                putValue(Action.NAME,PASTE);
+                putValue(Action.ACCELERATOR_KEY,KeyStroke.getKeyStroke ("ctrl V"));
+            }
+                       
+            public void actionPerformed(ActionEvent e)
+            {
+                ProjectManager.mutex().writeAccess(new Runnable() 
+                {
+                    public void run() 
+                    {
+                        final AntProjectHelper helper=project.getLookup().lookup(AntProjectHelper.class);
+                        final EditableProperties ep=helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                        
+                        for (Entry<String,String> entry : copiedAbilities.entrySet())
+                        {
+                            addAbility(ep,helper,entry.getKey(),entry.getValue());
+                            tableModel.addRow(entry.getKey(), entry.getValue());
+                        }
+                        try
+                        {
+                            ProjectManager.getDefault().saveProject(project);
+                        } catch (Exception ex)
+                        {
+                            ErrorManager.getDefault().notify(ex);
+                        }
+                    }
+                });
+
+            }
+        }
         
         static private class AddAction extends AbstractAction {
 
@@ -177,41 +293,8 @@ public class AbilitiesPanel implements NavigatorPanel
                                 {
                                     public void run() 
                                     {
-                                        //Save the change
-                                        if (defaultConfig != null)
-                                        {   
-                                            String abilities=ep.getProperty(DefaultPropertiesDescriptor.ABILITIES);
-                                            Map<String,String> ab=CommentingPreProcessor.decodeAbilitiesMap(abilities);
-                                            ab.put(key,value);
-                                            abilities=CommentingPreProcessor.encodeAbilitiesMap(ab);
-                                            ep.put(DefaultPropertiesDescriptor.ABILITIES,abilities);
-                                            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,ep);   
-                                        }
-
-                                        for (Node node : selectedNodes)
-                                        {
-                                            if (node != defaultConfig)
-                                            {
-                                                ProjectConfiguration conf=node.getLookup().lookup(ProjectConfiguration.class);
-                                                String abilities = ep.getProperty(J2MEProjectProperties.CONFIG_PREFIX + conf.getDisplayName() + "." + DefaultPropertiesDescriptor.ABILITIES);
-                                                if (abilities == null)
-                                                    // Let's take a default value if we inherit from default configuration
-                                                    abilities = ep.getProperty(DefaultPropertiesDescriptor.ABILITIES);
-                                                Map<String,String> ab=CommentingPreProcessor.decodeAbilitiesMap(abilities);
-                                                //if key is present it means default config is used and we don't need to added'
-                                                String oldVal=ab.get(key);
-                                                if (!ab.containsKey(key) || 
-                                                    (oldVal == null && value != null) || 
-                                                    (oldVal != null && !oldVal.equals(value)))
-                                                {
-                                                    ab.put(key,value);
-                                                    abilities=CommentingPreProcessor.encodeAbilitiesMap(ab);
-                                                    ep.put(J2MEProjectProperties.CONFIG_PREFIX+conf.getDisplayName()+"."+DefaultPropertiesDescriptor.ABILITIES,abilities);
-                                                }
-                                            }
-                                        }
+                                        addAbility(ep,helper,key,value);
                                         //Save the properties
-                                        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,ep);
                                         try
                                         {
                                             ProjectManager.getDefault().saveProject(project);

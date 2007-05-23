@@ -337,6 +337,8 @@ class ProjCfgNode extends ActionNode implements AntProjectListener, PropertyChan
             public Transferable paste() throws IOException
             {
                 final J2MEProject projectDrop=ProjCfgNode.this.getLookup().lookup(J2MEProject.class);
+                if (projectDrop==null) 
+                    return null;
                 final J2MEProjectProperties dropProperties = new J2MEProjectProperties( projectDrop, 
                                                     projectDrop.getLookup().lookup(AntProjectHelper.class),
                                                     projectDrop.getLookup().lookup(ReferenceHelper.class), 
