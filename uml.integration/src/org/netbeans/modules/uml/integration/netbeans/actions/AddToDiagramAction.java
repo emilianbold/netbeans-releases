@@ -34,6 +34,7 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CookieAction;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 public final class AddToDiagramAction extends CookieAction
 {
@@ -46,7 +47,7 @@ public final class AddToDiagramAction extends CookieAction
             new ArrayList<IProjectTreeItem>(nodes.length);
         
         for (Node node: nodes)
-        {
+        {   
             IElement ele = (IElement)node.getCookie(IElement.class);
             
             if (ele != null)
@@ -93,9 +94,9 @@ public final class AddToDiagramAction extends CookieAction
 
         if (elements.size() != 0)
         {
-            TopComponent topComp = org.openide.windows.WindowManager
-                .getDefault().findMode("editor").getSelectedTopComponent(); // NOI18N
-
+            TopComponent topComp = WindowManager.getDefault().
+                  findMode("editor").getSelectedTopComponent(); // NOI18N
+            
             if (topComp != null)
             {
                 ADDrawingAreaControl daControl = (ADDrawingAreaControl)topComp
@@ -103,29 +104,38 @@ public final class AddToDiagramAction extends CookieAction
 
                 if (daControl != null)
                 {
-                    // addImportedElements mehtod does nothting but calls the method 
-                    // processOnDropElement(IElement) for each element.
-                    // A better place to call processOnDropElement(IElement) is right before 
-                    // we add the element on the diagram. Hence commenting this line.
-                     
-                    //addImportedElements(daControl, elements);
-
-                    List<IETGraphObject> selitems = daControl.getSelected3();
-
-                    daControl.getGraphWindow().deselectAll(true);
-                    daControl.refresh(true);
-                    
-                    List<IETGraphObject> addedNodes = 
-                        daControl.addNodeToCenter(elements);
-                    
-                    if (addedNodes == null || addedNodes.size() == 0)
-                        daControl.selectThese(selitems);
-                    
-                    else
-                        daControl.selectThese(addedNodes);
-
-                    daControl.refresh(true);
-                    daControl.setFocus();
+                   // Fixed issue 103231.
+                   // Check if the Project tab is currently actived. If yes, 
+                   // process the actived node and deactivate any selected item on palette
+                   
+                   // Get the currently active top component
+                    TopComponent activeTopComp = WindowManager.getDefault().getRegistry().getActivated();
+                    if (activeTopComp != null && "Projects".equals(activeTopComp.getName()))
+                    {  
+                       // if an item on platte was selected, deselected it
+                       String selectedPaletteItem = daControl.getSelectedPaletteButton();
+                       if (selectedPaletteItem != null && selectedPaletteItem.length() > 0 )
+                       {
+                           daControl.setSelectStateOnPalette();
+                           daControl.switchToDefaultState();
+                       }
+                       List<IETGraphObject> selitems = daControl.getSelected3();
+                       
+                       daControl.getGraphWindow().deselectAll(true);
+                       daControl.refresh(true);
+                       
+                       List<IETGraphObject> addedNodes =
+                             daControl.addNodeToCenter(elements);
+                       
+                       if (addedNodes == null || addedNodes.size() == 0)
+                          daControl.selectThese(selitems);
+                       
+                       else
+                          daControl.selectThese(addedNodes);
+                       
+                       daControl.refresh(true);
+                       daControl.setFocus();
+                    }
                 }
             }
         }
