@@ -20,6 +20,7 @@
 package gui.action;
 
 import footprint.VWPFootprintUtilities;
+import gui.window.WebFormDesignerOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
@@ -71,11 +72,12 @@ public class CreateWebPackProject extends org.netbeans.performance.test.utilitie
     
     public void initialize(){
         log("::initialize::");
+        PerformanceCounters.initPerformanceCounters(this);
     }
     
     public void prepare(){
         log("::prepare");
-        createProject();
+        createProject();        
     }
     
     private void createProject() {
@@ -108,12 +110,18 @@ public class CreateWebPackProject extends org.netbeans.performance.test.utilitie
     
     public ComponentOperator open(){
         log("::open");
-        wizard_location.finish();
+        PerformanceCounters.addPerformanceCounter("Wait Wizard closed");
+            wizard_location.finish();
+        PerformanceCounters.endPerformanceCounter("Wait Wizard closed");
+        PerformanceCounters.addPerformanceCounter("Wait document");
+            WebFormDesignerOperator.findWebFormDesignerOperator("Page1");
+        PerformanceCounters.endPerformanceCounter("Wait document");
         return null;
     }
     
     public void close(){
         log("::close");
+        PerformanceCounters.reportPerformanceCounters();
         try {
             new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
         } catch (Exception ex) {
