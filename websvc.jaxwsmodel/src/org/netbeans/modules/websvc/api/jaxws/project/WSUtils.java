@@ -286,7 +286,7 @@ public class WSUtils {
         FileObject[] children = sourceFolder.getChildren();
         for (int i=0;i<children.length;i++) {
             if (children[i].isFolder()) {
-                FileObject folder = targetFolder.createFolder(children[i].getName());
+                FileObject folder = targetFolder.createFolder(children[i].getNameExt());
                 copyFiles(children[i],folder);
             } else {
                 children[i].copy(targetFolder, children[i].getName(), children[i].getExt());
