@@ -13,12 +13,12 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.openide.actions;
 
-import org.openide.text.PrintSettings;
+import org.openide.text.PrintPreferences;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
@@ -34,9 +34,8 @@ public final class PageSetupAction extends CallableSystemAction {
     }
 
     public synchronized void performAction() {
-        PrintSettings ps = (PrintSettings) PrintSettings.findObject(PrintSettings.class, true);
         PrinterJob pj = PrinterJob.getPrinterJob();
-        ps.setPageFormat(pj.pageDialog(PrintSettings.getPageFormat(pj)));
+        PrintPreferences.setPageFormat(pj.pageDialog(PrintPreferences.getPageFormat(pj)));
     }
 
     protected boolean asynchronous() {

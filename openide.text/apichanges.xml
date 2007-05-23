@@ -23,7 +23,72 @@ Microsystems, Inc. All Rights Reserved.
 <apidef name="text">Text API</apidef>
 </apidefs>
 <changes>
-    <change id="Line.SHOW_REUSE">
+    <change id="NbDocument.Colors">
+        <api name="text"/>
+        <summary>Public static inner class <code>NbDocument.Colors</code> moved to org.openide.options.</summary>
+        <version major="6" minor="16"/>
+        <date day="22" month="5" year="2007"/>
+        <author login="mslama"/>
+        <compatibility deletion="yes" binary="compatible" source="incompatible"/>
+        <description>
+            <p>
+                Class <code>NbDocument.Colors</code> was removed to remove dependency on org.openide.options.
+                Runtime backward compatibility was ensured by moving into org.openide.options module which is
+                already deprecated.
+            </p>
+        </description>
+        <class package="org.openide.text" name="NbDocument.Colors"/>
+        <issue number="88531"/>
+    </change>
+    <change id="NbDocument.COLORS">
+        <api name="text"/>
+        <summary>Remove public field <code>NbDocument.COLORS</code></summary>
+        <version major="6" minor="16"/>
+        <date day="22" month="5" year="2007"/>
+        <author login="mslama"/>
+        <compatibility deletion="yes" binary="incompatible" source="incompatible"/>
+        <description>
+            <p>
+                Field <code>NbDocument.COLORS</code> was removed to remove dependency on org.openide.options.
+            </p>
+        </description>
+        <class package="org.openide.text" name="NbDocument"/>
+        <issue number="88531"/>
+    </change>
+    <change id="PrintPreferences">
+        <api name="text"/>
+        <summary>Adding <code>PrintPreferences</code></summary>
+        <version major="6" minor="16"/>
+        <date day="22" month="5" year="2007"/>
+        <author login="rmatous"/>
+        <compatibility addition="yes" binary="compatible" source="compatible"/>
+        <description>
+            <p>
+                Class <code>PrintPreferences</code> was added as replacement for original
+                class <code>PrintSettings</code>.
+            </p>
+        </description>
+        <class package="org.openide.text" name="PrintPreferences"/>
+        <issue number="88531"/>
+    </change>
+    <change id="PrintSettings">
+        <api name="text"/>
+        <summary>Removing <code>PrintSettings</code></summary>
+        <version major="6" minor="16"/>
+        <date day="22" month="5" year="2007"/>
+        <author login="rmatous"/>
+        <compatibility deletion="yes" binary="compatible" source="incompatible"/>
+        <description>
+            <p>
+                Classes <code>PrintSettings</code> and <code>PrintSettingsBeanInfo</code> 
+                were removed. Runtime backward compatibility was ensured
+                by moving both into org.openide.options module which is already deprecated.
+            </p>
+        </description>
+        <class package="org.openide.text" name="PrintSettings"/>
+        <issue number="88531"/>
+    </change>
+    <change id="Line.SHOW_REUSE">    
         <api name="text"/>
         <summary>Adding Line.SHOW_REUSE and Line.SHOW_REUSE_NEW constants for Line.show method</summary>
         <version major="6" minor="14"/>

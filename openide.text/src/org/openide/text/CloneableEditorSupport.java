@@ -974,7 +974,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             if (o instanceof Pageable) {
                 job.setPageable((Pageable) o);
             } else {
-                PageFormat pf = PrintSettings.getPageFormat(job);
+                PageFormat pf = PrintPreferences.getPageFormat(job);
                 job.setPrintable((Printable) o, pf);
             }
 

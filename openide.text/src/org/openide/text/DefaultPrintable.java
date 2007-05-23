@@ -40,10 +40,7 @@ import org.openide.util.NbBundle;
 final class DefaultPrintable extends Object implements Printable {
     /** Number of args. */
     private static final int ARG_SIZE = 3;
-
-    /** Options */
-    private static PrintSettings printSettings;
-
+    
     /** Font for CancellationDialog */
     private static Font fontInstance;
 
@@ -115,11 +112,7 @@ final class DefaultPrintable extends Object implements Printable {
         if ((iter == null) || (iter.length == 0)) {
             throw new IllegalArgumentException();
         }
-
-        if (printSettings == null) {
-            printSettings = PrintSettings.findObject(PrintSettings.class, true);
-        }
-
+        
         // bugfix for sun.awt.Bidi line 250
         replaceEmptyIterators(iter);
 
@@ -431,7 +424,7 @@ final class DefaultPrintable extends Object implements Printable {
     * @param width page width
     * @param alignment one of @see PageSettings#LEFT @see PageSettings#CENTER @see PageSettings#RIGHT
     */
-    private static float computeStart(Rectangle2D rect, float width, int alignment) {
+    private static float computeStart(Rectangle2D rect, float width, PrintPreferences.Alignment alignment) {
         float x;
 
         if (rect instanceof Rectangle2D.Float) {
@@ -444,14 +437,11 @@ final class DefaultPrintable extends Object implements Printable {
             return 0;
         }
 
-        switch (alignment) {
-        case PrintSettings.LEFT:
+        if (alignment == PrintPreferences.Alignment.LEFT) {
             return 0;
-
-        case PrintSettings.RIGHT:
+        } else if (alignment == PrintPreferences.Alignment.RIGHT) {        
             return (width - x);
-
-        default:
+        } else {
             return (width - x) / 2;
         }
     }
@@ -547,42 +537,42 @@ final class DefaultPrintable extends Object implements Printable {
 
     /** @return true iff wrapping is on*/
     private static boolean wrap() {
-        return printSettings.getWrap();
+        return PrintPreferences.getWrap();
     }
 
     /** @return String describing header */
     private static String getHeaderFormat() {
-        return printSettings.getHeaderFormat();
+        return PrintPreferences.getHeaderFormat();
     }
 
     /** @return String describing footer */
     private static String getFooterFormat() {
-        return printSettings.getFooterFormat();
+        return PrintPreferences.getFooterFormat();
     }
 
     /** @return font for header */
     private static Font getHeaderFont() {
-        return printSettings.getHeaderFont();
+        return PrintPreferences.getHeaderFont();
     }
 
     /** @return font for footer */
     private static Font getFooterFont() {
-        return printSettings.getFooterFont();
+        return PrintPreferences.getFooterFont();
     }
 
     /** @return an alignment constant for footer */
-    private static int getFooterAlignment() {
-        return printSettings.getFooterAlignment();
+    private static PrintPreferences.Alignment getFooterAlignment() {
+        return PrintPreferences.getFooterAlignment();
     }
 
     /** @return an alignment constant for header */
-    private static int getHeaderAlignment() {
-        return printSettings.getHeaderAlignment();
+    private static PrintPreferences.Alignment getHeaderAlignment() {
+        return PrintPreferences.getHeaderAlignment();
     }
 
     /** @return a line ascent correction */
     private static float getLineAscentCorrection() {
-        return printSettings.getLineAscentCorrection();
+        return PrintPreferences.getLineAscentCorrection();
     }
 
     /** @return false */
@@ -669,9 +659,9 @@ final class DefaultPrintable extends Object implements Printable {
         cancellationPanel = new CancellationPanel(job);
 
         DialogDescriptor ddesc = new DialogDescriptor(
-                cancellationPanel, NbBundle.getMessage(PrintSettings.class, "CTL_Print_cancellation"), false,
-                new Object[] { NbBundle.getMessage(PrintSettings.class, "CTL_Cancel") },
-                NbBundle.getMessage(PrintSettings.class, "CTL_Cancel"), DialogDescriptor.BOTTOM_ALIGN, null,
+                cancellationPanel, NbBundle.getMessage(PrintPreferences.class, "CTL_Print_cancellation"), false,
+                new Object[] { NbBundle.getMessage(PrintPreferences.class, "CTL_Cancel") },
+                NbBundle.getMessage(PrintPreferences.class, "CTL_Cancel"), DialogDescriptor.BOTTOM_ALIGN, null,
                 new java.awt.event.ActionListener() {
                     public void actionPerformed(java.awt.event.ActionEvent ev) {
                         setCancelled(job);
@@ -760,7 +750,7 @@ final class DefaultPrintable extends Object implements Printable {
                 throw new IllegalArgumentException();
             }
 
-            format = new MessageFormat(NbBundle.getMessage(PrintSettings.class, "CTL_Print_progress"));
+            format = new MessageFormat(NbBundle.getMessage(PrintPreferences.class, "CTL_Print_progress"));
             msgParams = new Object[1];
 
             setLayout(new java.awt.BorderLayout());

@@ -73,11 +73,7 @@ public final class NbDocument extends Object {
     * as anything special.
     */
     public static final String NORMAL_STYLE_NAME = "NbNormalStyle"; // NOI18N
-
-    /** @deprecated Not useful for anything. */
-    @Deprecated
-    public static final Colors COLORS = new Colors();
-
+    
     private NbDocument() {
     }
 
@@ -605,41 +601,7 @@ public final class NbDocument extends Object {
          * @param annotation annotation which is going to be removed */
         public void removeAnnotation(Annotation annotation);
     }
-
-    /** @deprecated Not useful for anything. */
-    @Deprecated
-    public static final class Colors extends org.openide.options.SystemOption {
-        public static final String PROP_BREAKPOINT = BREAKPOINT_STYLE_NAME;
-        public static final String PROP_ERROR = ERROR_STYLE_NAME;
-        public static final String PROP_CURRENT = CURRENT_STYLE_NAME;
-        static final long serialVersionUID = -9152250591365746193L;
-
-        public void setBreakpoint(Color c) {
-        }
-
-        public Color getBreakpoint() {
-            return new Color(127, 127, 255);
-        }
-
-        public void setError(Color c) {
-        }
-
-        public Color getError() {
-            return Color.red;
-        }
-
-        public void setCurrent(Color c) {
-        }
-
-        public Color getCurrent() {
-            return Color.magenta;
-        }
-
-        public String displayName() {
-            return "COLORS"; // NOI18N
-        }
-    }
-
+    
     private static final class DocumentRenderer implements Runnable {
         private static final int FIND_LINE_NUMBER = 0;
         private static final int FIND_LINE_COLUMN = 1;
