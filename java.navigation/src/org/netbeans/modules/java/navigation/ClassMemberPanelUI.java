@@ -14,9 +14,9 @@ import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyVetoException;
 import javax.lang.model.element.Element;
-import javax.swing.JLabel;
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
-import javax.swing.border.EmptyBorder;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.api.java.source.ElementHandle;
@@ -48,7 +48,6 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     private ExplorerManager manager = new ExplorerManager();
     private MyBeanTreeView elementView;
     private TapPanel filtersPanel;
-    private JLabel filtersLbl;
     private Lookup lookup = null; // XXX may need better lookup
     private ClassMemberFilters filters;
     
@@ -68,9 +67,6 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                
         // filters
         filtersPanel = new TapPanel();
-        filtersLbl = new JLabel(NbBundle.getMessage(ClassMemberPanelUI.class, "LBL_Filter")); //NOI18N
-        filtersLbl.setBorder(new EmptyBorder(0, 5, 5, 0));
-        filtersPanel.add(filtersLbl);
         filtersPanel.setOrientation(TapPanel.DOWN);
         // tooltip
         KeyStroke toggleKey = KeyStroke.getKeyStroke(KeyEvent.VK_T,
@@ -80,7 +76,9 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         
         filters = new ClassMemberFilters( this );
         filters.getInstance().hookChangeListener(this);
-        filtersPanel.add(filters.getComponent());
+        JComponent buttons = filters.getComponent();
+        buttons.setBorder(BorderFactory.createEmptyBorder(0, 5, 5, 0));
+        filtersPanel.add(buttons);
         
         actions = new Action[] {            
             new SortByNameAction( filters ),
@@ -174,7 +172,9 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     }
     
     public void sort() {
-        getRootNode().refreshRecursively();
+        ElementNode root = getRootNode();
+        if( null != root )
+            root.refreshRecursively();
     }
     
     public ClassMemberFilters getFilters() {

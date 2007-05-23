@@ -54,22 +54,8 @@ final class TrivialLayout implements LayoutManager {
      */
     private void layoutComp (Container parent) {
         Component[] c = parent.getComponents ();
-        if ( c.length > 1 ) {
-            Dimension d1 = c[ 0 ].getPreferredSize ();
-            Dimension d2 = c[ 1 ].getPreferredSize ();
-            int labely = 0;
-            d1.width += 10; //Aqua displays elipsis
-            if ( d2.height > d1.height ) {
-                labely = ( d2.height / 2 ) - ( d1.height / 2 );
-            }
-            if ( parent.getWidth () - d1.width < d2.width ) {
-                c[ 0 ].setBounds ( 0, 0, 0, 0 );
-                c[ 1 ].setBounds ( 0, 0, parent.getWidth (), parent.getHeight () );
-            } else {
-                c[ 0 ].setBounds ( 0, labely, d1.width, d1.height );
-                c[ 1 ].setBounds ( d1.width + 1, 0, parent.getWidth () - d1.width,
-                        Math.min ( parent.getHeight (), d2.height ) );
-            }
+        if ( c.length > 0 ) {
+            c[ 0 ].setBounds ( 0, 0, parent.getWidth (), parent.getHeight () );
         }
     }
 
@@ -78,28 +64,14 @@ final class TrivialLayout implements LayoutManager {
      */
     private void layoutTapPanel (TapPanel tp) {
         Component[] c = tp.getComponents ();
-        if ( c.length > 1 ) {
-            Dimension d1 = c[ 0 ].getPreferredSize ();
-            Dimension d2 = c[ 1 ].getPreferredSize ();
-            int labely = 0;
-            if ( d2.height > d1.height ) {
-                labely = ( ( d2.height / 2 ) - ( d1.height / 2 ) ) + 2; //+2 fudge factor for font baseline
-            }
-
+        if ( c.length > 0 ) {
+            Dimension d2 = c[ 0 ].getPreferredSize ();
             if ( tp.isExpanded () ) {
                 int top = tp.getOrientation () == tp.UP ? 0 : tp.getMinimumHeight ();
                 int height = Math.min ( tp.getHeight () - tp.getMinimumHeight (), d2.height );
-                if ( tp.getWidth () - d1.width < d2.width ) {
-                    c[ 0 ].setBounds ( 0, 0, 0, 0 );
-                    c[ 1 ].setBounds ( 0, top, tp.getWidth (), height );
-                } else {
-                    c[ 0 ].setBounds ( 0, top + labely, d1.width, d1.height );
-                    c[ 1 ].setBounds ( d1.width + 1, top, tp.getWidth () - d1.width,
-                            height );
-                }
+                c[ 0 ].setBounds ( 0, top, tp.getWidth (), height );
             } else {
                 c[ 0 ].setBounds ( 0, 0, 0, 0 );
-                c[ 1 ].setBounds ( 0, 0, 0, 0 );
             }
         }
     }
@@ -109,11 +81,10 @@ final class TrivialLayout implements LayoutManager {
         Dimension result = new Dimension ( 20, 10 );
         Component[] c = parent.getComponents ();
         TapPanel tp = (TapPanel) parent;
-        if ( c.length > 1 ) {
-            Dimension d1 = c[ 0 ].getPreferredSize ();
-            Dimension d2 = c[ 1 ].getPreferredSize ();
-            result.width = d1.width + d2.width;
-            result.height = tp.isExpanded () ? Math.max ( d1.height, d2.height ) + tp.getMinimumHeight () : tp.getMinimumHeight ();
+        if ( c.length > 0 ) {
+            Dimension d2 = c[ 0 ].getPreferredSize ();
+            result.width = d2.width;
+            result.height = tp.isExpanded () ? d2.height + tp.getMinimumHeight () : tp.getMinimumHeight ();
         }
         return result;
     }

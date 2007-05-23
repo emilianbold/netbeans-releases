@@ -31,6 +31,7 @@ import java.util.prefs.Preferences;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JToggleButton;
@@ -69,7 +70,8 @@ public final class FiltersManager {
     }
 
     /** @return component instance visually representing filters */ 
-    public JComponent getComponent () {
+    public JComponent getComponent ( JToggleButton[] sortButtons ) {
+        comp.addSortButtons( sortButtons );
         return comp;
     }
     
@@ -119,6 +121,8 @@ public final class FiltersManager {
         private Object STATES_LOCK = new Object();
         /** copy of filter states for accessing outside AWT */
         private Map<String,Boolean> filterStates;
+        
+        private JToolBar toolbar;
 
         /** Returns selected state of given filter, thread safe.
          */
@@ -191,7 +195,7 @@ public final class FiltersManager {
             setBorder(new EmptyBorder(1, 2, 3, 5));
 
             // configure toolbar
-            JToolBar toolbar = new NoBorderToolBar(JToolBar.HORIZONTAL);
+            toolbar = new NoBorderToolBar(JToolBar.HORIZONTAL);
             toolbar.setFloatable(false);
             toolbar.setRollover(true);
             toolbar.setBorderPainted(false);
@@ -226,6 +230,18 @@ public final class FiltersManager {
             // initialize member states map
             synchronized (STATES_LOCK) {
                 filterStates = fStates;
+            }
+        }
+        
+        private void addSortButtons( JToggleButton[] sortButtons ) {
+            Dimension space = new Dimension(3, 0);
+            for( JToggleButton button : sortButtons ) {
+                Icon icon = button.getIcon();
+                Dimension size = new Dimension(icon.getIconWidth() + 6, icon.getIconHeight() + 4);
+                button.setPreferredSize(size);
+                button.setMargin(new Insets(2,3,2,3));
+                toolbar.addSeparator(space);
+                toolbar.add( button );
             }
         }
         

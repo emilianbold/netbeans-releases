@@ -22,10 +22,12 @@ package org.netbeans.modules.java.navigation.actions;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import org.netbeans.modules.java.navigation.ClassMemberFilters;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
 
 /** "Radio button" type action, base class designed for subclassing
@@ -58,6 +60,7 @@ public abstract class SortActionSupport extends AbstractAction implements Presen
     
     protected abstract void updateMenuItem ();
     
+    public static final String SELECTED = "selected";
     
     /** Enables sorting by names when selected
      */
@@ -66,6 +69,7 @@ public abstract class SortActionSupport extends AbstractAction implements Presen
         public SortByNameAction ( ClassMemberFilters filters) {
             super(filters);
             putValue(Action.NAME, NbBundle.getMessage(SortByNameAction.class, "LBL_SortByName")); //NOI18N
+            putValue(Action.SMALL_ICON, new ImageIcon (Utilities.loadImage("org/netbeans/modules/java/navigation/resources/sortAlpha.png"))); //NOI18N
         }
     
         public void actionPerformed (ActionEvent e) {
@@ -86,6 +90,7 @@ public abstract class SortActionSupport extends AbstractAction implements Presen
         public SortBySourceAction ( ClassMemberFilters filters ) {
             super(filters);
             putValue(Action.NAME, NbBundle.getMessage(SortBySourceAction.class, "LBL_SortBySource")); //NOI18N
+            putValue(Action.SMALL_ICON, new ImageIcon (Utilities.loadImage("org/netbeans/modules/java/navigation/resources/sortPosition.png"))); //NOI18N
         }
     
         public void actionPerformed (ActionEvent e) {
