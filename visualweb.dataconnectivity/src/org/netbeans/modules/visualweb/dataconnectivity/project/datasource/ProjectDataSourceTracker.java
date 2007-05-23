@@ -22,6 +22,7 @@ import org.netbeans.modules.visualweb.dataconnectivity.explorer.ProjectDataSourc
 import org.netbeans.modules.visualweb.dataconnectivity.model.JdbcDriverInfoManager;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignProperty;
+import java.lang.ref.WeakReference;
 import org.netbeans.modules.visualweb.insync.Model;
 import org.netbeans.modules.visualweb.insync.ModelSet;
 import org.netbeans.modules.visualweb.insync.ModelSetListener;
@@ -602,7 +603,7 @@ public class ProjectDataSourceTracker{
         }
 
         private  void addListener( ProjectDataSourceListener listener) {
-            listeners.add( listener );
+            listeners.add( new WeakReference(listener) );
         }
 
         private void removeListener( ProjectDataSourceListener listener) {
@@ -610,7 +611,7 @@ public class ProjectDataSourceTracker{
         }
         
         private  void addListener( ProjectDataSourcesListener listener) {
-            listenersForDSContainer.add( listener );
+            listenersForDSContainer.add( new WeakReference(listener) );
         }
 
         private void removeListener( ProjectDataSourcesListener listener) {

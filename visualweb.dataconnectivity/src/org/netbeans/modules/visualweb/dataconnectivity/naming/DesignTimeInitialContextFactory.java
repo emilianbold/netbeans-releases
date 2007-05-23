@@ -81,7 +81,7 @@ public class DesignTimeInitialContextFactory implements InitialContextFactory {
         if (CurrentProject.getInstance() == null)
             currentProj = OpenProjects.getDefault().getMainProject();
         else
-            currentProj = CurrentProject.getInstance().getOpenedProject();
+            currentProj = CurrentProject.getInstance().getProject();
         
                 
         //Setup cache of projects per context

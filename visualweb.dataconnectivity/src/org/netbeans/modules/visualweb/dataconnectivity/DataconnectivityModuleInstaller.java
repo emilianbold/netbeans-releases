@@ -43,6 +43,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
+import org.netbeans.modules.visualweb.dataconnectivity.model.OpenProjectDetector;
 import org.netbeans.modules.visualweb.dataconnectivity.naming.DatabaseSettingsImporter;
 import org.netbeans.modules.visualweb.dataconnectivity.naming.DerbyWaiter;
 import org.openide.modules.InstalledFileLocator;
@@ -148,6 +149,7 @@ public class DataconnectivityModuleInstaller extends ModuleInstall {
         WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
             public void run() {
                 // code to be invoked when system UI is ready
+                new OpenProjectDetector().notifyProjectOpened();
                 CurrentProject.getInstance().setup();
                 
                 // Dataconnectivity implementation to support Project migration of previous releases projects

@@ -22,6 +22,7 @@ package org.netbeans.modules.visualweb.dataconnectivity.datasource;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -29,8 +30,11 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.core.api.multiview.MultiViews;
+import org.netbeans.modules.visualweb.dataconnectivity.model.OpenProjectDetector;
 import org.netbeans.modules.visualweb.dataconnectivity.model.ProjectChangeEvent;
 import org.netbeans.modules.visualweb.dataconnectivity.model.ProjectChangeListener;
+import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectOpenedEvent;
+import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectOpenedListener;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
@@ -42,14 +46,15 @@ import org.openide.windows.TopComponent;
  *
  * @author JohnBaker
  */
-public class CurrentProject   {
+public class CurrentProject implements ProjectOpenedListener  {
     private static CurrentProject _instance = null;
-    private static Project project = null;
+    private Project project = null;
     private final PropertyChangeListener topComponentRegistryListener = new TopComponentRegistryListener();
     private TopComponent.Registry registry  = null;
     Set listeners = new HashSet();
-    private static Project previousProject = null;
+    private Project previousProject = null;
     private static boolean datasourcesUpdated = false;
+    private OpenProjectDetector openedProject;
     
     /** Creates a new instance of CurrentProject */
     private CurrentProject() {                        
@@ -62,6 +67,9 @@ public class CurrentProject   {
         if (project != null){
             setPreviousProject(project);
         }
+        
+        openedProject = new OpenProjectDetector();
+        openedProject.addProjectOpenedListener(this);
     }
 
     
@@ -95,26 +103,15 @@ public class CurrentProject   {
 
     }            
     
-    public static Project getProject() {        
+    public Project getProject() {        
         return project;
     }
     
-    public static Project getOpenedProject() {
-        if (TopComponent.getRegistry().getActivated() != null) {
-            Lookup lookup = TopComponent.getRegistry().getActivated().getLookup();
-            DataObject obj = (DataObject)lookup.lookup(DataObject.class);  
-            if (obj != null){
-                FileObject fileObject = obj.getPrimaryFile();
-                project = FileOwnerQuery.getOwner(fileObject);
-            }
-        } else
-            project = OpenProjects.getDefault().getMainProject();
-        
-        return project;
+    public void setProject(Project prj) {
+        project = prj;
     }
     
-    
-     private class TopComponentRegistryListener implements PropertyChangeListener {
+    private class TopComponentRegistryListener implements PropertyChangeListener {
                 
         public void propertyChange(PropertyChangeEvent evt) {
             if (TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName()))
@@ -124,7 +121,7 @@ public class CurrentProject   {
     } 
      
     public void addProjectChangeListener(ProjectChangeListener listener){
-        listeners.add(listener);
+        listeners.add(new WeakReference(listener));
     }
     
     public void removeProjectChangeListener(ProjectChangeListener listener){
@@ -137,6 +134,14 @@ public class CurrentProject   {
     
     public Project getPreviousProject() {
         return previousProject;
+    }
+
+    public void addProjectOpened(ProjectOpenedEvent evt) {
+        setProject(evt.getProject());
+    }
+
+    public void removeProjectOpened(ProjectOpenedEvent evt) {
+        openedProject.removeProjectOpenedListener(this);
     }
                 
 }
