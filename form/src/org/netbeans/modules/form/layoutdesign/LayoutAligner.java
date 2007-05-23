@@ -773,6 +773,9 @@ class LayoutAligner implements LayoutConstants {
             }
             layoutModel.addInterval(newSequence, parParent, -1);
         }
+        if (alignment == CENTER) {
+            layoutModel.setGroupAlignment(parParent, alignment);
+        }
         
         // Check resizability
         if ((gapsToResize.size() > 0) && !resizable && (alignment != CENTER)) {
