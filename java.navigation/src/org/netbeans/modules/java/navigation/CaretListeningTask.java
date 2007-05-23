@@ -102,6 +102,7 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
             case CLASS:
             case INTERFACE:
             case ENUM:
+            case ANNOTATION_TYPE:
             case METHOD:
             case CONSTRUCTOR:
             case INSTANCE_INIT:
