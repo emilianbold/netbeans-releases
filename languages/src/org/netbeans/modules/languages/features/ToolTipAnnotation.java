@@ -68,9 +68,9 @@ public class ToolTipAnnotation extends Annotation {
                 ) + lp.getColumn ();
             TokenHierarchy tokenHierarchy = TokenHierarchy.get (doc);
             if (tokenHierarchy == null) return null;
+            Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
             if (doc instanceof NbEditorDocument)
                 ((NbEditorDocument) doc).readLock ();
-            Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
             try {
                 TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
                 tokenSequence.move (offset);
