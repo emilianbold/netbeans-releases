@@ -446,6 +446,21 @@ public class EditorContextImpl extends EditorContext {
     }
 
     /**
+     * Returns signature of method currently selected in editor or null.
+     *
+     * @return signature of method currently selected in editor or null
+     */
+    public String getCurrentMethodSignature () {
+        Element[] elementPtr = new Element[] { null };
+        getCurrentElement(ElementKind.METHOD, elementPtr);
+        if (elementPtr[0] != null) {
+            return createSignature((ExecutableElement) elementPtr[0]);
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Returns name of field currently selected in editor or <code>null</code>.
      *
      * @return name of field currently selected in editor or <code>null</code>
@@ -712,7 +727,7 @@ public class EditorContextImpl extends EditorContext {
                                 name = elm.getSimpleName().toString();
                             }
                             if (name.equals(methodName)) {
-                                if (methodSignature == null || methodSignature.equals(createSignature((ExecutableElement) elm))) {
+                                if (methodSignature == null || egualMethodSignatures(methodSignature, createSignature((ExecutableElement) elm))) {
                                     SourcePositions positions =  ci.getTrees().getSourcePositions();
                                     Tree tree = SourceUtils.treeFor(ci, elm);
                                     int pos = (int)positions.getStartPosition(ci.getCompilationUnit(), tree);
@@ -729,6 +744,14 @@ public class EditorContextImpl extends EditorContext {
             return -1;
         }
         return result[0];
+    }
+    
+    private static boolean egualMethodSignatures(String s1, String s2) {
+        int i = s1.lastIndexOf(")");
+        if (i > 0) s1 = s1.substring(0, i);
+        i = s2.lastIndexOf(")");
+        if (i > 0) s2 = s2.substring(0, i);
+        return s1.equals(s2);
     }
     
     public String[] getCurrentMethodDeclaration() {
@@ -816,7 +839,7 @@ public class EditorContextImpl extends EditorContext {
         } else if (javaType.endsWith("[]")) {
             return "["+getSignature(javaType.substring(0, javaType.length() - 2));
         } else {
-            return "L"+javaType+";";
+            return "L"+javaType.replace('.', '/')+";";
         }
     }
     
@@ -1253,7 +1276,11 @@ public class EditorContextImpl extends EditorContext {
 //    public void fileRenamed (org.openide.filesystems.FileRenameEvent fe) {}
     
     
-    private String getCurrentElement(final ElementKind kind) {
+    private String getCurrentElement(ElementKind kind) {
+        return getCurrentElement(kind, null);
+    }
+    
+    private String getCurrentElement(final ElementKind kind, final Element[] elementPtr) {
         Node[] nodes = TopComponent.getRegistry ().getCurrentNodes ();
         if (nodes == null) return null;
         if (nodes.length != 1) return null;
@@ -1272,15 +1299,17 @@ public class EditorContextImpl extends EditorContext {
                     if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) //TODO: ELEMENTS_RESOLVED may be sufficient
                         return;
 
+                    Element el = null;
                     if (kind == ElementKind.CLASS) {
                         Scope scope = ci.getTreeUtilities().scopeFor(currentOffset);
                         TypeElement te = scope.getEnclosingClass();
                         if (te != null) {
                             currentElementPtr[0] = ElementUtilities.getBinaryName(te);
                         }
+                        el = te;
                     } else if (kind == ElementKind.METHOD) {
                         Scope scope = ci.getTreeUtilities().scopeFor(currentOffset);
-                        Element el = scope.getEnclosingMethod();
+                        el = scope.getEnclosingMethod();
                         if (el != null) {
                             currentElementPtr[0] = el.getSimpleName().toString();
                             if (currentElementPtr[0].equals("<init>")) {
@@ -1311,7 +1340,7 @@ public class EditorContextImpl extends EditorContext {
                          
                         Tree tree = ci.getTreeUtilities().pathFor(offset).getLeaf();
                         if (tree.getKind() == Tree.Kind.VARIABLE) {
-                            Element el = ci.getTrees().getElement(ci.getTrees().getPath(ci.getCompilationUnit(), tree));
+                            el = ci.getTrees().getElement(ci.getTrees().getPath(ci.getCompilationUnit(), tree));
                             if (el.getKind() == ElementKind.FIELD || el.getKind() == ElementKind.ENUM_CONSTANT) {
                                 currentElementPtr[0] = ((VariableTree) tree).getName().toString();
                             }
@@ -1322,6 +1351,9 @@ public class EditorContextImpl extends EditorContext {
                             currentElementPtr[0] = el.getSimpleName().toString();
                         }
                          */
+                    }
+                    if (elementPtr != null) {
+                        elementPtr[0] = el;
                     }
                 }
             }, true);

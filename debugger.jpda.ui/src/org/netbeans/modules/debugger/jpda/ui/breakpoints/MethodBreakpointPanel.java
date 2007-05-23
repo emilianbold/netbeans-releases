@@ -22,10 +22,10 @@ package org.netbeans.modules.debugger.jpda.ui.breakpoints;
 import javax.swing.JPanel;
 import javax.swing.JOptionPane;
 import org.netbeans.api.debugger.DebuggerManager;
-
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.spi.debugger.ui.Controller;
+import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 /**
@@ -48,6 +48,7 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
             EditorContextBridge.getCurrentClassName (),
             EditorContextBridge.getCurrentMethodName ()
         );
+        mb.setMethodSignature(EditorContextBridge.getCurrentMethodSignature());
         mb.setPrintText (
             NbBundle.getBundle (MethodBreakpointPanel.class).getString 
                 ("CTL_Method_Breakpoint_Print_Text")
@@ -83,7 +84,7 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
             cbAllMethods.setSelected (true);
             tfMethodName.setEnabled (false);
         } else {
-            tfMethodName.setText (b.getMethodName ());
+            tfMethodName.setText (b.getMethodName () + " " + createParamTypesFromSignature(b.getMethodSignature()));
         }
         cbStopOnEntry.setSelected((b.getBreakpointType() & b.TYPE_METHOD_ENTRY) != 0);
         cbStopOnExit.setSelected((b.getBreakpointType() & b.TYPE_METHOD_EXIT) != 0);
@@ -98,6 +99,123 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
         // in the 'Add Breakpoint' dialog and when invoked in the 'Breakpoints' view
         putClientProperty("HelpID_AddBreakpointPanel", "debug.add.breakpoint.java.method"); // NOI18N
         // </RAVE>
+    }
+    
+    /** @return comma-separated parameter types */
+    private static String createParamTypesFromSignature(String signature) {
+        if (signature == null || signature.length() == 0) return "";
+        int end = signature.lastIndexOf(")");
+        if (end < 0) {
+            ErrorManager.getDefault().notify(new IllegalArgumentException("Bad signature: "+signature));
+            return "";
+        }
+        StringBuilder paramTypes = new StringBuilder("(");
+        int[] s = new int[] { 1 }; // skipping the opening '('
+        while (s[0] < signature.length()) {
+            if (signature.charAt(s[0]) == ')') {
+                break; // We're done
+            }
+            if (s[0] > 1) paramTypes.append(',');
+            paramTypes.append(getType(signature, s));
+        }
+        paramTypes.append(')');
+        return paramTypes.toString();
+    }
+    
+    /** @param paramTypes comma-separated parameter types */
+    private static String createSignatureFromParamTypes(String paramTypes) {
+        StringBuilder signature = new StringBuilder("(");
+        int s = 0;
+        int e;
+        while (s < paramTypes.length()) {
+            e = paramTypes.indexOf(',', s);
+            if (e < 0) {
+                e = paramTypes.length();
+            }
+            String type = paramTypes.substring(s, e);
+            signature.append(getSignature(type.trim()));
+            s = e + 1;
+        }
+        signature.append(')');
+        // ignoring return type
+        return signature.toString();
+    }
+    
+    private static String getSignature(String javaType) {
+        if (javaType.equals("boolean")) {
+            return "Z";
+        } else if (javaType.equals("byte")) {
+            return "B";
+        } else if (javaType.equals("char")) {
+            return "C";
+        } else if (javaType.equals("short")) {
+            return "S";
+        } else if (javaType.equals("int")) {
+            return "I";
+        } else if (javaType.equals("long")) {
+            return "J";
+        } else if (javaType.equals("float")) {
+            return "F";
+        } else if (javaType.equals("double")) {
+            return "D";
+        } else if (javaType.endsWith("[]")) {
+            return "["+getSignature(javaType.substring(0, javaType.length() - 2));
+        } else {
+            return "L"+javaType.replace('.', '/')+";";
+        }
+    }
+    
+    private static String getType(String signature, int[] pos) throws IllegalArgumentException {
+        char c = signature.charAt(pos[0]);
+        if (c == 'Z') {
+            pos[0]++;
+            return "boolean";
+        }
+        if (c == 'B') {
+            pos[0]++;
+            return "byte";
+        }
+        if (c == 'C') {
+            pos[0]++;
+            return "char";
+        }
+        if (c == 'S') {
+            pos[0]++;
+            return "short";
+        }
+        if (c == 'I') {
+            pos[0]++;
+            return "int";
+        }
+        if (c == 'J') {
+            pos[0]++;
+            return "long";
+        }
+        if (c == 'F') {
+            pos[0]++;
+            return "float";
+        }
+        if (c == 'D') {
+            pos[0]++;
+            return "double";
+        }
+        if (c == 'L') {
+            pos[0]++;
+            int typeEnd = signature.indexOf(";", pos[0]);
+            if (typeEnd < 0) {
+                throw new IllegalArgumentException("Bad signature: '"+signature+"', 'L' not followed by ';' at position "+pos[0]);
+            }
+            String type = signature.substring(pos[0], typeEnd);
+            type = type.replace('/', '.');
+            pos[0] = typeEnd + 1;
+            return type;
+        }
+        if (c == '[') {
+            pos[0]++;
+            String type = getType(signature, pos);
+            return type + "[]";
+        }
+        throw new IllegalArgumentException("Bad signature: '"+signature+"', unrecognized element '"+c+"' at position "+pos[0]);
     }
     
     // <RAVE>
@@ -335,10 +453,28 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
             className += '.';
         className += tfClassName.getText ().trim ();
         breakpoint.setClassFilters (new String[] {className});
-        if (!cbAllMethods.isSelected ())
-            breakpoint.setMethodName (tfMethodName.getText ().trim ());
-        else
+        if (!cbAllMethods.isSelected ()) {
+            String methodAndSignature = tfMethodName.getText ().trim ();
+            String methodName;
+            String signature;
+            int index = methodAndSignature.indexOf("(");
+            if (index < 0) {
+                methodName = methodAndSignature;
+                signature = null;
+            } else {
+                methodName = methodAndSignature.substring(0, index).trim();
+                int end = methodAndSignature.indexOf(")", index);
+                if (end < 0) {
+                    end = methodAndSignature.length();
+                }
+                signature = methodAndSignature.substring(index + 1, end);
+                signature = createSignatureFromParamTypes(signature);
+            }
+            breakpoint.setMethodName (methodName);
+            breakpoint.setMethodSignature(signature);
+        } else {
             breakpoint.setMethodName ("");
+        }
         breakpoint.setCondition (tfCondition.getText ());
         int bpType = 0;
         if (cbStopOnEntry.isSelected()) {

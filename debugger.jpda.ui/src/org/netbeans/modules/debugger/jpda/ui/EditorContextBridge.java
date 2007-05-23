@@ -199,6 +199,22 @@ public class EditorContextBridge {
     }
 
     /**
+     * Returns signature of method currently selected in editor or <code>null</code>.
+     *
+     * @return signature of method currently selected in editor or <code>null</code>
+     */
+    public static String getCurrentMethodSignature () {
+        // TODO: return getContext ().getCurrentMethodSignature ();
+        try {
+        return (String) getContext ().getClass().getMethod("getCurrentMethodSignature", new Class[] {}).
+                invoke(getContext(), new Object[] {});
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ex);
+            return "";
+        }
+    }
+
+    /**
      * Returns name of field currently selected in editor or <code>null</code>.
      *
      * @return name of field currently selected in editor or <code>null</code>

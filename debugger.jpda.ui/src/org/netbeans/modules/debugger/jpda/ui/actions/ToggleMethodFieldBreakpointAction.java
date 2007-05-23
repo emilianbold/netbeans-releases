@@ -149,6 +149,7 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
             b.setPrintText(NbBundle.getMessage(FieldBreakpointPanel.class, "CTL_Field_Breakpoint_Print_Text"));
         } else {
             b = MethodBreakpoint.create(className, methodName);
+            ((MethodBreakpoint) b).setMethodSignature(methodSignature);
             b.setPrintText(NbBundle.getMessage(MethodBreakpointPanel.class, "CTL_Method_Breakpoint_Print_Text"));
         }
         d.addBreakpoint(b);

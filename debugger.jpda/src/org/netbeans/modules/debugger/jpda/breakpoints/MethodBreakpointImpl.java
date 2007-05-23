@@ -174,9 +174,12 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
         if (methodName.equals(constructorName)) {
             methodName = "<init>"; // Constructor
         }
+        String signature = breakpoint.getMethodSignature();
         while (methods.hasNext ()) {
             Method method = (Method) methods.next ();
-            if (methodName.equals("") || match (method.name (), methodName)) {
+            if (methodName.equals("") || match (method.name (), methodName) &&
+                                         (signature == null ||
+                                          egualMethodSignatures(signature, method.signature()))) {
                 
                 if ((breakpoint.getBreakpointType() & breakpoint.TYPE_METHOD_ENTRY) != 0) {
                     if (method.location () != null && !method.isNative()) {
@@ -220,9 +223,23 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
         if (locationEntry || entryReq != null || exitReq != null) {
             setValidity(VALIDITY.VALID, null);
         } else {
-            setValidity(VALIDITY.INVALID,
-                    NbBundle.getMessage(MethodBreakpointImpl.class, "MSG_NoMethod", referenceType.name(), methodName));
+            if (signature == null) {
+                setValidity(VALIDITY.INVALID,
+                        NbBundle.getMessage(MethodBreakpointImpl.class, "MSG_NoMethod", referenceType.name(), methodName));
+            } else {
+                setValidity(VALIDITY.INVALID,
+                        NbBundle.getMessage(MethodBreakpointImpl.class, "MSG_NoMethodSign", referenceType.name(), methodName, signature));
+            }
         }
     }
+    
+    private static boolean egualMethodSignatures(String s1, String s2) {
+        int i = s1.lastIndexOf(")");
+        if (i > 0) s1 = s1.substring(0, i);
+        i = s2.lastIndexOf(")");
+        if (i > 0) s2 = s2.substring(0, i);
+        return s1.equals(s2);
+    }
+    
 }
 
