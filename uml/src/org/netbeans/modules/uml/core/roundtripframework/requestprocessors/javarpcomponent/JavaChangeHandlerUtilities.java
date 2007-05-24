@@ -4064,7 +4064,7 @@ public class JavaChangeHandlerUtilities
 
     public boolean capAttributeNameInAccessor()
     {
-        return getBooleanPreferenceValue("CAP_ON_ACCESSORS");
+        return getBooleanPreferenceValue("UML_CAP_ON_ACCESSORS");
     }
 
     public String capAttributeName(String attrName)

@@ -143,6 +143,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  * @author sumitabhk
@@ -5513,10 +5514,10 @@ public class UMLParsingIntegrator
         if (pSpace == null || m_Project == null || m_Project == null)
             return false;
         
-        String prefVal = ProductHelper.getPreferenceManager()
-            .getPreferenceValue("Default", "PromptToSaveProject"); // NOI18N
+        boolean prefVal = NbPreferences.forModule (UMLParsingIntegrator.class).getBoolean("UML_Prompt_to_Save_Project", true);
+        
 
-        if (!m_Project.isDirty() || prefVal.equals("PSK_NO"))
+        if (!m_Project.isDirty() || ! prefVal)
             return true;
 
         // prompt user to save the target UML project
@@ -5531,8 +5532,7 @@ public class UMLParsingIntegrator
         if (result == SaveNotifier.SAVE_ALWAYS_OPTION)
         {
             success = true;
-            ProductHelper.getPreferenceManager().setPreferenceValue(
-                "Default", "PromptToSaveProject", "PSK_NO"); // NOI18N
+            NbPreferences.forModule (UMLParsingIntegrator.class).putBoolean("UML_Prompt_to_Save_Project", false); // NOI18N 
         }
 
         else if (result == NotifyDescriptor.OK_OPTION)
@@ -5546,70 +5546,7 @@ public class UMLParsingIntegrator
         
         return success;
     }
-    
-    
-//    protected boolean saveProject(INamespace pSpace)
-//    {
-//        boolean success = false;
-//        m_BaseDirectory = null;
-//        if (pSpace != null)
-//        {
-//            if (m_Project != null)
-//            {
-//                if (m_Project.isDirty())
-//                {
-//                    IPreferenceQuestionDialog pDialog = new SwingPreferenceQuestionDialog();
-//                    if (pDialog != null)
-//                    {
-//                        String sKey = "Default";
-//                        String sPath = "RoundTrip";
-//                        String sName = "PromptToSaveProject";
-//                        int result = 0;
-//                        
-//                        String projectName = m_Project.getName();
-//                        if (projectName != null)
-//                        {
-//                            String msg = REIntegrationMessages.getString("IDS_SAVE_QUESTION", new Object[] { projectName });
-//                            String title = REIntegrationMessages.getString("IDS_SAVE_QUESTION_TITLE", new Object[] { projectName });
-//                            
-//                            result =
-//                                (int) pDialog.displayFromStrings(sKey,
-//                                sPath,
-//                                sName,
-//                                "PSK_ALWAYS",
-//                                "",
-//                                "PSK_ASK",
-//                                msg,
-//                                SimpleQuestionDialogResultKind.SQDRK_RESULT_YES,
-//                                title,
-//                                SimpleQuestionDialogKind.SQDK_YESNOALWAYS,
-//                                ErrorDialogIconKind.EDIK_ICONQUESTION,
-//                                null);
-//                            // Parent window handle
-//                            
-//                            if (result == SimpleQuestionDialogResultKind.SQDRK_RESULT_YES)
-//                            {
-//                                m_Project.save(m_Project.getFileName(), true);
-//                                success = true;
-//                            }
-//                            if (result == SimpleQuestionDialogResultKind.SQDRK_RESULT_NO)
-//                            {
-//                                success = false;
-//                            }
-//                        }
-//                    }
-//                    else
-//                    {
-//                        success = false;
-//                    }
-//                }
-//                else
-//                    success = true;
-//            }
-//        }
-//        return success;
-//    }
-    
+
     protected INavigableEnd getNavigableEnd(IAssociation assoc, IClassifier to)
     {
         INavigableEnd pVal = null;

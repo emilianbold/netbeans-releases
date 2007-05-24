@@ -603,13 +603,10 @@ public class DiagramTopComponent extends CloneableTopComponent
     
     private int saveDiagram()
     {
-        String prefVal = ProductHelper.getPreferenceManager()
-                .getPreferenceValue("Default", "PromptToSaveDiagram"); // NOI18N
+        //kris richards - pref PromptToSaveDiagram removed - set to PSK_YES
+        String prefVal = "PSK_YES";
         
-        // if Prompt to Save Diagram pref is set to No, then auto-save
-        // without prompting to ask
-        if (prefVal.equals("PSK_NO"))
-            return RESULT_YES;
+
         
         String title = NbBundle.getMessage(DiagramTopComponent.class,
                 "LBL_DIALOG_TITLE_SaveDiagram"); // NOI18N
@@ -629,9 +626,6 @@ public class DiagramTopComponent extends CloneableTopComponent
         if (response == SaveNotifierYesNo.SAVE_ALWAYS_OPTION)
         {
             result = RESULT_YES;
-            
-            ProductHelper.getPreferenceManager().setPreferenceValue(
-                    "Default", "PromptToSaveDiagram", "PSK_NO"); // NOI18N
         }
         
         else if (response == NotifyDescriptor.YES_OPTION)

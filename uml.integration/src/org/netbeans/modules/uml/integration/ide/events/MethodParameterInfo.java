@@ -38,6 +38,7 @@ import org.netbeans.modules.uml.integration.ide.UMLSupport;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameter;
 import org.netbeans.modules.uml.integration.ide.JavaClassUtils;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
+import org.openide.util.NbPreferences;
 
 /**
  * The MethodParameterInfo is used to store the parameter information used
@@ -312,9 +313,8 @@ public class MethodParameterInfo implements Cloneable
     {
         // TODO: conover - eventually, use the atribute level property
         // instead of this global preference
-        return ProductHelper.getPreferenceValue(
-            "Default|RoundTrip|Java", "USE_GENERICS_DEFAULT") // NOI18N
-            .equals(Preferences.PSK_YES);
+        //kris richards - made change to nbpreferences
+        return NbPreferences.forModule(MethodParameterInfo.class).getBoolean("UML_USE_GENERICS_DEFAULT", false); // NOI18N
     }
     
     public IParameter getParameterElement()

@@ -33,6 +33,7 @@ import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
 import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 import org.netbeans.modules.uml.core.support.umlsupport.Log;
+import org.openide.util.NbPreferences;
 
 /**
  * @author sumitabhk
@@ -196,17 +197,8 @@ public class WSElementImpl implements IWSElement
 	*/
    private boolean showAliasedNames()
    {
-		boolean showAlias = false;
-		ICoreProduct prod = ProductRetriever.retrieveProduct();
-		if (prod != null)
-		{
-			IPreferenceManager2 pMgr = prod.getPreferenceManager();
-			if (pMgr != null)
-			{
-				showAlias = pMgr.getShowAliasedNames();
-			}
-		}
-		return showAlias;
+       //kris richards - changing to NbPrefs
+       return NbPreferences.forModule (WSElementImpl.class).getBoolean ("UML_Show_Aliases", false) ;
    }
 
    /**

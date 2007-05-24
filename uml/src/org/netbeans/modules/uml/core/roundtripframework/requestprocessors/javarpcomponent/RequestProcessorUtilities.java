@@ -42,6 +42,7 @@ import org.netbeans.modules.uml.ui.support.commondialogs.MessageDialogKindEnum;
 import org.netbeans.modules.uml.ui.support.commondialogs.MessageIconKindEnum;
 import org.netbeans.modules.uml.ui.support.commondialogs.MessageResultKindEnum;
 import org.netbeans.modules.uml.ui.swing.commondialogs.SwingQuestionDialogImpl;
+import org.openide.util.NbPreferences;
 
 /**
  * @author Aztec
@@ -70,9 +71,9 @@ public class RequestProcessorUtilities implements IRequestProcessorUtilities
      */
     public boolean getBooleanPreferenceValue(String prefName)
     {
-        if("PSK_YES".equals(getPreferenceValue(prefName)))
-            return true;
-        return false;
+        //kris richards - changing to NbPreferences. This was setup to return false
+        //if something went wrong. Mimicing that behavior.
+        return NbPreferences.forModule(RequestProcessorUtilities.class).getBoolean (prefName, false) ;
     }
 
     /* (non-Javadoc)

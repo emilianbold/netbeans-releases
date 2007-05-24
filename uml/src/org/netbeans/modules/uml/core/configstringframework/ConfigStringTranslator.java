@@ -682,8 +682,6 @@ public class ConfigStringTranslator implements IConfigStringTranslator {
             
             addToMap("PSK_RTCONTROLS", "IDS_STRING572");
             addToMap("PSK_RTCONTROLS_HLP", "IDS_STRING573");
-            addToMap("PSK_RTLARGEIMPACT", "IDS_STRING574");
-            addToMap("PSK_RTLARGEIMPACT_HLP", "IDS_STRING575");
             addToMap("PSK_RTTRANSFORMWARNING", "IDS_STRING584");
             addToMap("PSK_RTTRANSFORMWARNING_HLP", "IDS_STRING585");
             addToMap("PSK_SHOWDUPEOPDIALOG", "IDS_STRING682");
@@ -825,8 +823,6 @@ public class ConfigStringTranslator implements IConfigStringTranslator {
             addToMap("PSK_EMAIL_INCLUDESOURCEARTS_HLP" ,           "IDS_STRING1666 ");
             addToMap("PSK_EMAIL_INCLUDEREFLIBS" ,                  "IDS_STRING1667 ");
             addToMap("PSK_EMAIL_INCLUDEREFLIBS_HLP" ,              "IDS_STRING1668 ");
-//            addToMap("PSK_PROMPTTOSAVEPROJECT" ,                   "IDS_STRING1669 ");
-//            addToMap("PSK_PROMPTTOSAVEPROJECT_HLP" ,               "IDS_STRING1670 ");
             addToMap("PSK_EMAIL_LONGSEARCH", "IDS_STRING1671");
             addToMap("PSK_EMAIL_LONGSEARCH_HLP", "IDS_STRING1672");
             
@@ -922,10 +918,6 @@ public class ConfigStringTranslator implements IConfigStringTranslator {
             addToMap("PSK_REGIONS", "IDS_STRING890");
             addToMap("PSK_EXTERNALINTERFACES", "IDS_STRING907");
             
-            addToMap("PSK_AUTOSAVEOPERATION", "IDS_STRING916");
-            addToMap("PSK_AUTOSAVEOPERATION_HLP", "IDS_STRING917");
-            addToMap("PSK_AUTOSAVEINTERVAL", "IDS_STRING918");
-            addToMap("PSK_AUTOSAVEINTERVAL_HLP", "IDS_STRING919");
             
             addToMap("PSK_PACKAGE_IMPORT", "IDS_STRING920 ");
             addToMap("PSK_PACKAGE_IMPORTS", "IDS_STRING921 ");
@@ -1231,9 +1223,7 @@ public class ConfigStringTranslator implements IConfigStringTranslator {
             addToMap("Names","PSK_NAMES","IDS_STRING1570 ");
             addToMap("Values","PSK_VALUES", "IDS_STRING1571");
             
-            addToMap("PSK_ARTIFACTDELETEDELETESFILE", "IDS_STRING1572 ");
-            addToMap("PSK_ARTIFACTDELETEDELETESFILE_HLP", "IDS_STRING1573 ");
-            
+           
             // Another property editor preference as well as compare and merge preferences
             addToMap("PSK_PEPROPERTYORDER", "IDS_STRING1580 ");
             addToMap("PSK_PEPROPERTYORDER_HLP", "IDS_STRING1565 ");

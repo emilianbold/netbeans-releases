@@ -48,6 +48,7 @@ import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.integration.ide.Preferences;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
+import org.openide.util.NbPreferences;
 
 /**
  * The MemberInfo communicates with the EventManager to update Describe.
@@ -377,8 +378,8 @@ public class MemberInfo extends ElementInfo
     {
         // TODO: conover - change this to use attribute level property
         // rather than the global preference
-        return ProductHelper.getPreferenceValue(
-            "Default|RoundTrip|Java", "COLLECTION_OVERRIDE_DEFAULT"); // NOI18N
+        //kris richards - made change to nbpreferences
+        return NbPreferences.forModule(MemberInfo.class).get("UML_COLLECTION_OVERRIDE_DEFAULT", "java.util.ArrayList"); // NOI18N
     }
 
     public boolean isCollectionType() 
@@ -399,9 +400,9 @@ public class MemberInfo extends ElementInfo
     {
         // TODO: conover - eventually, use the atribute level property
         // instead of this global preference
-        return ProductHelper.getPreferenceValue(
-            "Default|RoundTrip|Java", "USE_GENERICS_DEFAULT") // NOI18N
-            .equals(Preferences.PSK_YES);
+        //kris richards - made change to nbpreferences
+        return NbPreferences.forModule(MemberInfo.class).getBoolean("UML_USE_GENERICS_DEFAULT", false); // NOI18N
+        
     }
 
     /**

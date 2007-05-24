@@ -805,7 +805,7 @@ public class PreferenceManager implements IPreferenceManager2{
 	 * preference structure. For example, "DefaultFilter" will return "PSK_DATA".
 	 * 
 	 *
-	 *	@param key[in]		The top preference to search
+	 * @param key[in]		The top preference to search
 	 * @param path[in]		A "|" delimited string telling what preference structure path to search
 	 * @param prefName[in]	The preference name
 	 * @param pVal[out]		The value of the found preference
@@ -1641,30 +1641,7 @@ public class PreferenceManager implements IPreferenceManager2{
 		return canWrite(m_EleManager.getElementFile());
 	}
 
-	/**
-	 * This method is used to determine if we should show the aliased names
-	 */
-	public boolean getShowAliasedNames()
-	{
-		String val = getPreferenceValue("", "ShowAliasedNames");
-		return val != null && val.equals("PSK_YES");
-	}
-	
-	/**
-	 * This method is used to determine if we should show the aliased names
-	 */
-	public void setShowAliasedNames(boolean newVal)
-	{
-		setPreferenceValue("", "ShowAliasedNames", newVal ? "PSK_YES" : "PSK_NO");
-	}
 
-	/**
-	 * This method is used to toggle the aliased name value
-	 */
-	public void toggleShowAliasedNames()
-	{
-		setShowAliasedNames(!getShowAliasedNames());
-	}
 	/**
 	 *
 	 * Retrieves a preference value give the absolute path to the preference. 

@@ -63,6 +63,7 @@ import org.netbeans.modules.uml.integration.netbeans.NBFileUtils;
 import org.netbeans.modules.uml.project.UMLProjectHelper;
 //import org.netbeans.modules.uml.project.ui.java.UMLJavaAssociationUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 
 /**
@@ -261,8 +262,8 @@ public class UMLSupport
     
     public String getCollectionOverride()
     {
-        return ProductHelper.getPreferenceValue(
-            "Default|RoundTrip|Java", "COLLECTION_OVERRIDE_DEFAULT"); // NOI18N
+        //kris richards - made change to nbpreferences
+        return NbPreferences.forModule(UMLSupport.class).get("UML_COLLECTION_OVERRIDE_DEFAULT", "java.util.ArrayList"); // NOI18N
     }
     
     public IApplication getApplication()
@@ -516,8 +517,8 @@ public class UMLSupport
  
     public static boolean getUseGenericsDefault()
     {
-        return ProductHelper.getPreferenceValue(
-            "Default|RoundTrip|Java", "USE_GENERICS_DEFAULT").equals("PSK_YES"); // NOI18N
+        //kris richards - made change to nbpreferences
+        return NbPreferences.forModule(UMLSupport.class).getBoolean("UML_USE_GENERICS_DEFAULT", false); // NOI18N
     }
     
     

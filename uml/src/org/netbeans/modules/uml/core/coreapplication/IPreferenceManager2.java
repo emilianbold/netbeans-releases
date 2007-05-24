@@ -222,9 +222,5 @@ public interface IPreferenceManager2
 
 	public boolean isEditable(IPropertyElement pEle);
 
-	public boolean getShowAliasedNames();
-	public void setShowAliasedNames(boolean newVal);
-	
-	public void toggleShowAliasedNames();
 	public String getPreferenceValueWithFullPath(String fullPathToPreference);
 }

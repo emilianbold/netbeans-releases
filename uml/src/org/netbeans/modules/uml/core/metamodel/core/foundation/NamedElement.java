@@ -41,6 +41,7 @@ import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.typemanagement.IPickListManager;
 import org.netbeans.modules.uml.core.typemanagement.ITypeManager;
+import org.openide.util.NbPreferences;
 /**
  * <p>Title: </p>
  * <p>Description: </p>
@@ -754,23 +755,10 @@ public class NamedElement extends Element implements INamedElement{
 	 *         not be.
 	 *
 	 */
-	private boolean useProjectInQualifiedName() {
-		boolean useProject = false;
-		ICoreProduct prod = ProductRetriever.retrieveProduct();
-		if (prod != null)
-		{
-			IPreferenceManager2 prefMan = prod.getPreferenceManager();
-			if (prefMan != null)
-			{
-				String value = prefMan.getPreferenceValue( "", "ProjectNamespace" );
-				if (value.equals("PSK_YES"))
-				{
-					useProject = true;
-				}
-			}
-		}
-		return useProject;
-	}
+        private boolean useProjectInQualifiedName() {
+            //kris richards - "ProjectNamespace" pref has been removed; set to false.
+            return false;
+        }
 
 	/**
 	 *
@@ -1061,23 +1049,13 @@ public class NamedElement extends Element implements INamedElement{
 		}
 	}
 
-	/**
-	 * @return
-	 */
-	protected boolean showAliasedNames()
-	{
-		boolean showAlias = false;
-		ICoreProduct prod = ProductRetriever.retrieveProduct();
-		if (prod != null)
-		{
-			IPreferenceManager2 pMgr = prod.getPreferenceManager();
-			if (pMgr != null)
-			{
-				showAlias = pMgr.getShowAliasedNames();
-			}
-		}
-		return showAlias;
-	}
+        /**
+         * @return
+         */
+        protected boolean showAliasedNames() {
+            //kris richards - changing to NbPrefs
+            return NbPreferences.forModule(NamedElement.class).getBoolean("UML_Show_Aliases", false) ;
+        }
     
     /**
      * The default behavior to this method is to return true if the names of the

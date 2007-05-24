@@ -42,6 +42,7 @@ import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 import org.netbeans.modules.uml.core.support.umlsupport.Log;
 import org.netbeans.modules.uml.ui.support.commondialogs.IErrorDialog;
 import org.netbeans.modules.uml.ui.swing.commondialogs.SwingErrorDialog;
+import org.openide.util.NbPreferences;
 
 public class FormatterHelper
 {
@@ -452,78 +453,61 @@ public class FormatterHelper
     * an element should use the aliasing feature or not
     */
 
-   public class AliasMarker
-   {
-	/**
-	 *
-	 * If the Aliasing mode is currently on, this method marks the passed-in node
-	 * with the "embt__Aliased" xml attribute, setting it's value to "on". This
-	 * xml attribute will be removed after the node has been properly transformed.
-	 *
-	 * @param node[in] The node to potentially affect
-	 * @param manager[in] The preference manager
-	 *
-	 */
-      public AliasMarker( Node node )
-      {
-		   if( node != null)
-		   {
-				String bstrQuery = "ancestor::UML:Project";
-		      	Node cpXMLDOMNode = null;
-				try
-				{
-					cpXMLDOMNode = node.selectSingleNode( bstrQuery );
-				}
-				catch (Exception e)
-				{
-					//just ignore, as DOM4J can throw an exception while doing ancestor queries
-				}
-			    if( cpXMLDOMNode != null )
-			    {
-			    	if (cpXMLDOMNode instanceof org.dom4j.Element)
-			    	{
-						m_Project = (org.dom4j.Element)cpXMLDOMNode;
-			    	}
-			    }
-		        if( m_Project != null )
-		        {
-		           ICoreProduct pProduct = ProductRetriever.retrieveProduct();
-			       if( pProduct != null )
-		           {
-		           		IPreferenceManager2 pPrefManager = pProduct.getPreferenceManager();
-			            if (pPrefManager != null)
-			            {
-			               boolean bIsAliased = pPrefManager.getShowAliasedNames();
-			               if( bIsAliased )
-			               {
-			                  XMLManip.setAttributeValue( m_Project, "embt__Aliased", "on" );
-			               }
-			            }
-		           }
-		      }
-		   }
-      }
-		/**
-		 *
-		 * Removes the "embt__Aliased" xml attribute set in the constructor
-		 * of this object
-		 *
-		 */			
-		public void clear()
-		{
-		   if( m_Project != null)
-		   {
-			  // we removed the throw from around this because when executing the WebReport
-			  // we were throwing here
-			  Attribute attr = m_Project.attribute("embt__Aliased");
-			  if(attr != null)
-			  {
-			  	  m_Project.remove( attr );
-			  }
-		   }
-		}
-      
-	  private org.dom4j.Element m_Project;  // project of the initializing node
+   public class AliasMarker {
+       /**
+        *
+        * If the Aliasing mode is currently on, this method marks the passed-in node
+        * with the "embt__Aliased" xml attribute, setting it's value to "on". This
+        * xml attribute will be removed after the node has been properly transformed.
+        *
+        * @param node[in] The node to potentially affect
+        * @param manager[in] The preference manager
+        *
+        */
+       public AliasMarker( Node node ) {
+           if( node != null) {
+               String bstrQuery = "ancestor::UML:Project";
+               Node cpXMLDOMNode = null;
+               try {
+                   cpXMLDOMNode = node.selectSingleNode( bstrQuery );
+               } catch (Exception e) {
+                   //just ignore, as DOM4J can throw an exception while doing ancestor queries
+               }
+               if( cpXMLDOMNode != null ) {
+                   if (cpXMLDOMNode instanceof org.dom4j.Element) {
+                       m_Project = (org.dom4j.Element)cpXMLDOMNode;
+                   }
+               }
+               if( m_Project != null ) {
+                   
+                   //kris richards - changing to NbPrefs
+                   boolean bIsAliased = NbPreferences.forModule(FormatterHelper.class).getBoolean("UML_Show_Aliases", false) ;
+                   
+                   if( bIsAliased ) {
+                       XMLManip.setAttributeValue( m_Project, "embt__Aliased", "on" );
+                   }
+               }
+           }
+       }
+       
+       /**
+        *
+        * Removes the "embt__Aliased" xml attribute set in the constructor
+        * of this object
+        *
+        */
+       public void clear() {
+           if( m_Project != null) {
+               // we removed the throw from around this because when executing the WebReport
+               // we were throwing here
+               Attribute attr = m_Project.attribute("embt__Aliased");
+               if(attr != null) {
+                   m_Project.remove( attr );
+               }
+           }
+       }
+       
+       private org.dom4j.Element m_Project;  // project of the initializing node
    };
 
    private Node 		m_cpNode;

@@ -40,6 +40,7 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
+import org.openide.util.NbPreferences;
 
 
 /**
@@ -150,13 +151,11 @@ public class DiagramDataObject extends MultiDataObject
         }
         public void edit()
         {
-            // open previously opened diagrams on project loading
-            String prefVal = ProductHelper.getPreferenceManager()
-                .getPreferenceValue("", "OpenProjectDiagrams"); // NOI18N
-            if (("PSK_YES").equals(prefVal))
-            {
-                open();
-            }
+            //open previously opened diagrams on project loading
+            //kris richards - changed to NbPreference
+            if (NbPreferences.forModule(DiagramDataObject.class).getBoolean("UML_Open_Project_Diagrams", true))
+                open() ;
+            
         }
     }
     

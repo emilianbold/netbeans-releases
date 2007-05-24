@@ -57,6 +57,7 @@ import org.netbeans.modules.uml.core.scm.ISCMIntegrator;
 import org.netbeans.modules.uml.ui.swing.propertyeditor.IPropertyEditor;
 import org.netbeans.modules.uml.ui.addins.diagramcreator.IDiagCreatorAddIn;
 import org.netbeans.modules.uml.ui.addins.diagramcreator.DiagCreatorAddIn;
+import org.openide.util.NbPreferences;
 
 /**
  * @author treys
@@ -456,52 +457,27 @@ public class ProductHelper
 	 */
 	public static boolean useProjectInQualifiedName()
    {
-		boolean useProject = false;
-		IPreferenceManager2 cpPreferenceManager2 = getPreferenceManager();
-		if( cpPreferenceManager2 != null)
-		{
-			String value = cpPreferenceManager2.getPreferenceValue("", "ProjectNamespace");
-			if( value.equals("PSK_YES"))
-			{
-				useProject = true;
-			}
-		}
-		return useProject;
+            //kris richards - "ProjectNamespace" pref has been removed; set to false.
+            return false;
+		
    }
 
 	/// Returns the type of the executable IDE that is running this code
 	//ApplicationIDEType GetApplicationIDEType() throw();
 
 	/// Helpers for the aliased names
-	public static boolean getShowAliasedNames()
-	{
-		boolean bShow = false;
-   
-		IPreferenceManager2 cpPreferenceManager2 = getPreferenceManager();
-		if( cpPreferenceManager2 != null)
-		{
-			bShow = cpPreferenceManager2.getShowAliasedNames();
-		}
-		return bShow;
-	}
-	
-	public static void setShowAliasedNames(boolean bShow)
-	{
-		IPreferenceManager2 cpPreferenceManager2 = getPreferenceManager();
-		if( cpPreferenceManager2 != null)
-		{
-			cpPreferenceManager2.setShowAliasedNames(bShow);
-		}
-	}
-	
-	public static void toggleShowAliasedNames()
-	{
-		IPreferenceManager2 cpPreferenceManager2 = getPreferenceManager();
-		if( cpPreferenceManager2 != null)
-		{
-		   cpPreferenceManager2.toggleShowAliasedNames();
-		}
-	}
+        public static boolean getShowAliasedNames() {
+            //kris richards - changing to NbPrefs
+            return NbPreferences.forModule(ProductHelper.class).getBoolean("UML_Show_Aliases", false) ;
+        }
+        
+        public static void setShowAliasedNames(boolean bShow) {
+            NbPreferences.forModule(ProductHelper.class).putBoolean("UML_Show_Aliases", bShow) ;
+        }
+        
+        public static void toggleShowAliasedNames() {
+            setShowAliasedNames (!getShowAliasedNames());
+        }
 	
 	private static ProductHelper m_Instance = null;  
 

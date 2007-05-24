@@ -78,6 +78,7 @@ import org.netbeans.modules.uml.ui.support.SimpleQuestionDialogKind;
 import org.netbeans.modules.uml.ui.support.SimpleQuestionDialogResultKind;
 import org.netbeans.modules.uml.ui.support.commondialogs.IQuestionDialog;
 import org.netbeans.modules.uml.ui.swing.commondialogs.SwingQuestionDialogImpl;
+import org.openide.util.NbPreferences;
 
 /**
  */
@@ -1310,6 +1311,10 @@ public class JavaRequestProcessor implements IJavaRequestProcessor
                 {
                     ICoreProduct prod = ProductRetriever.retrieveProduct();
                     IPreferenceManager2 prefManager = prod.getPreferenceManager();
+                    
+                    boolean showme = 
+                            NbPreferences.forModule (JavaRequestProcessor.class).getBoolean ("UML_ShowMe_Dont_Show_Filter_Warning_Dialog", true) ;
+                    
                     String str = prefManager.getPreferenceValue("RoundTrip", "TransformWarning");
                     
                     if (str != null && str.equals("PSK_NEVER"))
@@ -1532,67 +1537,41 @@ public class JavaRequestProcessor implements IJavaRequestProcessor
         // C++ method is empty
     }
     
-    public void onPreImpacted(IClassifier classifier, ETList<IVersionableElement> impacted, IResultCell cell )
-    {
+    public void onPreImpacted(IClassifier classifier, ETList<IVersionableElement> impacted, IResultCell cell ) {
         boolean isLanguage = checkIfCorrectLanguage(classifier);
-        try
-        {
-            if (isLanguage)
-            {
-                if ( impacted != null )
-                {
+        try {
+            if (isLanguage) {
+                if ( impacted != null ) {
                     int count = impacted.size();
                     
-                    IPreferenceManager2 pManager =
-                            m_Utils.getPreferenceManager();
-                    if ( pManager != null )
-                    {
-                        String key = "Default";
-                        // String path = "RoundTrip";
-                        String path = "ModelElementAutomation";
-                        String prefName = "LargeImpact";
-                        String prefValue = pManager.getPreferenceValue(key, path, prefName);
-                        
-                        // Now we must try to read this preference value as an integer.
-                        if ( prefValue != null && prefValue.length() > 0 )
-                        {
-                            int value = 0;
-                            Integer valInt = Integer.valueOf(prefValue);
-                            if (valInt != null)
-                                value = valInt.intValue();
+                    
+                    int value = 50; //kris richards - removed LargeImpact pref. Hard coded to 50.
+                    
+                    if ( count > value ) {
+                        IQuestionDialog pDiag = new SwingQuestionDialogImpl();
+                        if ( pDiag != null ) {
+                            String message = RPMessages.getString("IDS_JRT_LARGE_IMPACT");
+                            String title = RPMessages.getString("IDS_JRT_LARGE_IMPACT_TITLE");
                             
-                            if ( count > value )
-                            {
-                                IQuestionDialog pDiag = new SwingQuestionDialogImpl();
-                                if ( pDiag != null )
-                                {
-                                    String message = RPMessages.getString("IDS_JRT_LARGE_IMPACT");
-                                    String title = RPMessages.getString("IDS_JRT_LARGE_IMPACT_TITLE");
-                                    
-                                    int defaultresult = SimpleQuestionDialogResultKind.SQDRK_RESULT_YES;
-                                    QuestionResponse result = pDiag.displaySimpleQuestionDialogWithCheckbox(
-                                            SimpleQuestionDialogKind.SQDK_YESNO,
-                                            ErrorDialogIconKind.EDIK_ICONQUESTION,
-                                            message,
-                                            "",
-                                            title,
-                                            defaultresult,
-                                            false);
-                                    
-                                    if ( result.getResult() == SimpleQuestionDialogResultKind.SQDRK_RESULT_NO )
-                                    {
-                                        // DENIED BY USER
-                                        cell.setContinue(false);
-                                    }
-                                }
+                            int defaultresult = SimpleQuestionDialogResultKind.SQDRK_RESULT_YES;
+                            QuestionResponse result = pDiag.displaySimpleQuestionDialogWithCheckbox(
+                                    SimpleQuestionDialogKind.SQDK_YESNO,
+                                    ErrorDialogIconKind.EDIK_ICONQUESTION,
+                                    message,
+                                    "",
+                                    title,
+                                    defaultresult,
+                                    false);
+                            
+                            if ( result.getResult() == SimpleQuestionDialogResultKind.SQDRK_RESULT_NO ) {
+                                // DENIED BY USER
+                                cell.setContinue(false);
                             }
                         }
                     }
                 }
             }
-        }
-        catch(Exception e)
-        {
+        } catch(Exception e) {
             e.printStackTrace();
         }
     }
