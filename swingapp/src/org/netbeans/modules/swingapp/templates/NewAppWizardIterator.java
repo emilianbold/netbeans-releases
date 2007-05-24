@@ -191,8 +191,6 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
             return null;
 
         projectDirectory = FileUtil.normalizeFile(projectDirectory);
-        // remember project location in ProjectChooser
-        ProjectChooser.setProjectsFolder(projectDirectory.getParentFile());
 
         FileObject template = (FileObject) wizard.getProperty("appshell"); // NOI18N
         String[] templateNames = getTemplateNames(template);
@@ -204,6 +202,9 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
         // create the project from template
         FileObject projectFolderFO = AppProjectGenerator.createProjectFromTemplate(
                 template, projectDirectory, templateNames, substNames);
+
+        // remember project location in ProjectChooser
+        ProjectChooser.setProjectsFolder(projectDirectory.getParentFile());
 
         FileObject mainFrameFO = AppProjectGenerator.getGeneratedFile(
                 projectFolderFO, "src/applicationpackage/ShellFrame.java", // NOI18N
