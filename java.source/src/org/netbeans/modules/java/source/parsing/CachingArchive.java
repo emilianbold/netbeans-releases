@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.tools.JavaFileObject;
@@ -67,8 +68,8 @@ public class CachingArchive implements Archive {
         }
         else {
             assert !keepOpened || zipFile != null;
-            List<JavaFileObject> l = new ArrayList<JavaFileObject>(files.idx / 4);
-            for (int i = 0; i < files.idx; i += 4){
+            List<JavaFileObject> l = new ArrayList<JavaFileObject>(files.idx / files.delta);
+            for (int i = 0; i < files.idx; i += files.delta){
                 l.add(create(folderName, files, i));
             }
             return l;
@@ -94,7 +95,14 @@ public class CachingArchive implements Archive {
         String baseName = getString(f.indices[off], f.indices[off+1]);
         long mtime = join(f.indices[off+3], f.indices[off+2]);
         if (zipFile == null) {
-            return FileObjects.zipFileObject(archiveFile, pkg, baseName, mtime);
+            if (f.delta == 4) {
+                return FileObjects.zipFileObject(archiveFile, pkg, baseName, mtime);
+            }
+            else {
+                assert f.delta == 6;
+                long offset = join(f.indices[off+5], f.indices[off+4]);
+                return FileObjects.zipFileObject(archiveFile, pkg, baseName, mtime, offset);
+            }
         } else {
             return FileObjects.zipFileObject( zipFile, pkg, baseName, mtime);
         }
@@ -112,7 +120,7 @@ public class CachingArchive implements Archive {
         return folders != null;
     }
     
-    public synchronized void initialize() {
+    public synchronized void initialize() throws IOException {
         names = new byte[16384];
         folders = createMap( archiveFile );
         trunc();
@@ -120,7 +128,7 @@ public class CachingArchive implements Archive {
     
     // Private methods ---------------------------------------------------------
     
-    private synchronized void doInit() {
+    private synchronized void doInit() throws IOException {
         if ( !isInitialized() ) {
             initialize();
         }
@@ -138,50 +146,74 @@ public class CachingArchive implements Archive {
         }
     }
 
-    private Map<String,Folder> createMap(File file ) {        
-        if (file.canRead()) {
+    private Map<String,Folder> createMap(File file ) throws IOException {        
+        if (!file.canRead()) {
+            return Collections.<String, Folder>emptyMap();
+        }
+        Map<String,Folder> map = null;
+        if (!keepOpened) {
+            map = new HashMap<String,Folder>();
             try {
-                ZipFile zip = new ZipFile (file);
-                try {
-                    final Map<String,Folder> map = new HashMap<String,Folder>();
-
-                    for ( Enumeration<? extends ZipEntry> e = zip.entries(); e.hasMoreElements(); ) {
-                        ZipEntry entry = e.nextElement();
-                        String name = entry.getName();
-                        int i = name.lastIndexOf('/');
-                        String dirname = i == -1 ? "" : name.substring(0, i /* +1 */);
-                        String basename = name.substring(i+1);
-                        if (basename.length() == 0) {
-                            basename = null;
-                        }
-                        Folder fld = map.get(dirname);
-                        if (fld == null) {
-                            fld = new Folder();                
-                            map.put(new String(dirname).intern(), fld);
-                        }
-
-                        if ( basename != null ) {
-                            fld.appendEntry(this, basename, entry.getTime());
-                        }
+                Iterable<? extends FastJar.Entry> e = FastJar.list(file);
+                for (FastJar.Entry entry : e) {
+                    String name = entry.name;
+                    int i = name.lastIndexOf('/');
+                    String dirname = i == -1 ? "" : name.substring(0, i /* +1 */);
+                    String basename = name.substring(i+1);
+                    if (basename.length() == 0) {
+                        basename = null;
                     }
-                    return map;
-                } finally {
-                    if (keepOpened) {
-                        this.zipFile = zip;
+                    Folder fld = map.get(dirname);
+                    if (fld == null) {
+                        fld = new Folder (true);                
+                        map.put(new String(dirname).intern(), fld);
                     }
-                    else {
-                        try {
-                            zip.close();
-                        } catch (IOException ioe) {
-                            Exceptions.printStackTrace(ioe);
-                        }
+                    if ( basename != null ) {
+                        fld.appendEntry(this, basename, entry.getTime(), entry.offset);
                     }
                 }
             } catch (IOException ioe) {
-                
+                map = null;
+                Logger.getLogger(CachingArchive.class.getName()).warning("Fallback to ZipFile: " + file.getPath());       //NOI18N
             }
-        }
-        return Collections.<String,Folder>emptyMap();
+        }            
+        if (map == null) {
+            map = new HashMap<String,Folder>();
+            ZipFile zip = new ZipFile (file);
+            try {
+                for ( Enumeration<? extends ZipEntry> e = zip.entries(); e.hasMoreElements(); ) {
+                    ZipEntry entry = e.nextElement();
+                    String name = entry.getName();
+                    int i = name.lastIndexOf('/');
+                    String dirname = i == -1 ? "" : name.substring(0, i /* +1 */);
+                    String basename = name.substring(i+1);
+                    if (basename.length() == 0) {
+                        basename = null;
+                    }
+                    Folder fld = map.get(dirname);
+                    if (fld == null) {
+                        fld = new Folder(false);                
+                        map.put(new String(dirname).intern(), fld);
+                    }
+
+                    if ( basename != null ) {
+                        fld.appendEntry(this, basename, entry.getTime(),-1);
+                    }
+                }                    
+            } finally {
+                if (keepOpened) {
+                    this.zipFile = zip;
+                }
+                else {
+                    try {
+                        zip.close();
+                    } catch (IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
+                    }
+                }
+            }
+        }            
+        return map;
     }
     
     // Innerclasses ------------------------------------------------------------
@@ -205,14 +237,21 @@ public class CachingArchive implements Archive {
     private static class Folder {
         int[] indices = EMPTY; // off, len, mtimeL, mtimeH
         int idx = 0;
+        private final int delta;
 
-        public Folder() {
+        public Folder(boolean fast) {
+            if (fast) {
+                delta = 6;
+            }
+            else {
+                delta = 4;
+            }
         }
 
-        void appendEntry(CachingArchive outer, String name, long mtime) {
+        void appendEntry(CachingArchive outer, String name, long mtime, long offset) {
             // ensure enough space
-            if ((idx + 4) > indices.length) {
-                int[] newInd = new int[(2 * indices.length) + 4];
+            if ((idx + delta) > indices.length) {
+                int[] newInd = new int[(2 * indices.length) + delta];
                 System.arraycopy(indices, 0, newInd, 0, idx);
                 indices = newInd;
             }
@@ -223,6 +262,10 @@ public class CachingArchive implements Archive {
                 indices[idx++] = bytes.length;
                 indices[idx++] = (int)(mtime & 0xFFFFFFFF);
                 indices[idx++] = (int)(mtime >> 32);
+                if (delta == 6) {
+                    indices[idx++] = (int)(offset & 0xFFFFFFFF);;
+                    indices[idx++] = (int)(offset >> 32);
+                }
             } catch (UnsupportedEncodingException e) {
                 throw new InternalError("No UTF-8");
             }

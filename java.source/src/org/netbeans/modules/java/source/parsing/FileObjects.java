@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -83,9 +83,12 @@ public class FileObjects {
     
     
     /**
-     * Creates {@link JavaFileObject} for a ZIP entry of given name
-     * @param zip a zip file
-     * @param name the name of entry, the '/' char is a separator
+     * Creates {@link JavaFileObject} for a file inside an archive file. The archive file
+     * is opened every time an input stream of this {@link JavaFileObject} is needed, it may
+     * slow down the javac attribution.
+     * @param zip an archive file
+     * @param folder in the archive
+     * @param name the base (simple name)
      * @return {@link JavaFileObject}, never returns null
      */
     public static JavaFileObject zipFileObject( File zipFile, String folder, String baseName, long mtime) {
@@ -93,6 +96,31 @@ public class FileObjects {
         return new ZipFileObject( zipFile, folder, baseName, mtime);
     }
     
+    /**
+     * Creates {@link JavaFileObject} for a file inside an archive file. The returned {@link JavaFileObject}
+     * tries to use {@link RandomAccessFile} to read the archive entry, in the case when it's not able to
+     * find the entry (unsupported zip file format) it delegates into the {@link ZipFile}.
+     * @param zip an archive file
+     * @param folder in the archive
+     * @param name the base (simple name)
+     * @param offset the start of zip entry in the zip file
+     * @return {@link JavaFileObject}, never returns null
+     */
+    public static JavaFileObject zipFileObject (File zipFile, String folder, String baseName, long mtime, long offset) {
+        assert zipFile != null;
+        return new FastZipFileObject (zipFile, folder, baseName, mtime, offset);
+    }
+    
+    /**
+     * Creates {@link JavaFileObject} for a file inside an {@link ZipFile}. The returned {@link JavaFileObject}
+     * uses an opened ZipFile. It's a fastes way to read the archive file content, but the opened {@link ZipFile}s
+     * cannot be modified. So, this {@link JavaFileObject}s can be used only for platform classpath.
+     * @param zip an archive file
+     * @param folder in the archive
+     * @param name the base (simple name)
+     * @param offset the start of zip entry in the zip file
+     * @return {@link JavaFileObject}, never returns null
+     */
     public static JavaFileObject zipFileObject(ZipFile zipFile, String folder, String baseName, long mtime) {
         assert zipFile != null;
         return new CachedZipFileObject (zipFile, folder, baseName, mtime);
@@ -702,7 +730,7 @@ public class FileObjects {
 
 	/** The zipfile containing the entry.
 	 */
-	private final File archiveFile;
+	protected final File archiveFile;
         
 
         ZipFileObject(final File archiveFile, final String folderName, final String baseName, long mtime) {
@@ -762,6 +790,40 @@ public class FileObjects {
                 return ze == null ? 0L : ze.getSize();
             } finally {
                 zf.close();
+            }
+        }
+    }
+    
+    private static class FastZipFileObject extends ZipFileObject {
+        
+        private long offset;
+        
+        FastZipFileObject (final File archiveFile, final String folderName, final String baseName, long mtime, long offset) {            
+            super (archiveFile, folderName, baseName, mtime);
+            this.offset = offset;
+        }
+        
+        @Override
+        public InputStream openInputStream () throws IOException {
+            try {
+                return FastJar.getInputStream(archiveFile, offset);
+            } catch (IOException e) {
+                return super.openInputStream();
+            }
+        }
+        
+        @Override 
+        public long getSize () throws IOException {
+            try {
+                ZipEntry e = FastJar.getZipEntry (archiveFile, offset);
+                if (e != null) {
+                    return e.getSize();
+                }
+                else {
+                    return super.getSize();
+                }
+            } catch (IOException e) {
+                return super.getSize();
             }
         }
     }
