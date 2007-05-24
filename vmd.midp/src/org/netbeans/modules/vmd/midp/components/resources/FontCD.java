@@ -108,9 +108,9 @@ public final class FontCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
                     .addProperty("Kind", PropertyEditorComboBox.createInstance(getKindTypes(), TYPEID), PROP_FONT_KIND)
-                    .addProperty("Face", PropertyEditorComboBox.createInstance(getFaceTypes(), TYPEID, LABEL_KIND_CUSTOM), PROP_FACE)
-                    .addProperty("Size", PropertyEditorComboBox.createInstance(getSizeTypes(), TYPEID, LABEL_KIND_CUSTOM), PROP_SIZE)
-                    .addProperty("Style", PropertyEditorComboBox.createInstance(getStyleTypes(), TYPEID, LABEL_KIND_CUSTOM), PROP_STYLE);
+                    .addProperty("Face", PropertyEditorComboBox.createInstance(getFaceTypes(), TYPEID, TYPEID), PROP_FACE)
+                    .addProperty("Size", PropertyEditorComboBox.createInstance(getSizeTypes(), TYPEID, TYPEID), PROP_SIZE)
+                    .addProperty("Style", PropertyEditorComboBox.createInstance(getStyleTypes(), TYPEID, TYPEID), PROP_STYLE);
     }
 
     private static Presenter createSetterPresenter() {

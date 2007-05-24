@@ -24,16 +24,18 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorElement;
 import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorUserCode;
 import org.openide.awt.Mnemonics;
@@ -46,23 +48,22 @@ import org.openide.util.NbBundle;
  */
 public final class PropertyEditorComboBox extends PropertyEditorUserCode implements PropertyEditorElement {
     
-    private static Map<TypeID, List<PropertyEditorComboBox>> instances = new HashMap<TypeID, List<PropertyEditorComboBox>>();
-    
+    private DesignDocument document;
     private final Map<String, PropertyValue> values;
     private String[] tags;
     
     private TypeID typeID;
-    private Object enableValue;
+    private TypeID enableTypeID;
     
     private CustomEditor customEditor;
     private JRadioButton radioButton;
     
-    private PropertyEditorComboBox(Map<String, PropertyValue> values, TypeID typeID, Object enableValue) {
+    private PropertyEditorComboBox(Map<String, PropertyValue> values, TypeID typeID, TypeID enableTypeID) {
         super();
         
         this.values = values;
         this.typeID = typeID;
-        this.enableValue = enableValue;
+        this.enableTypeID = enableTypeID;
         createTags();
         initComponents();
         
@@ -75,7 +76,7 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
         return createInstance(values, typeID, null);
     }
     
-    public static PropertyEditorComboBox createInstance(Map<String, PropertyValue> values, TypeID typeID, Object enableValue) {
+    public static PropertyEditorComboBox createInstance(Map<String, PropertyValue> values, TypeID typeID, TypeID enableTypeID) {
         if (values == null) {
             throw new IllegalArgumentException("Argument values can't be null"); // NOI18N
         }
@@ -86,18 +87,8 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
             }
         }
         
-        PropertyEditorComboBox instance = new PropertyEditorComboBox(values, typeID, enableValue);
-        registerInstance(instance, typeID);
+        PropertyEditorComboBox instance = new PropertyEditorComboBox(values, typeID, enableTypeID);
         return instance;
-    }
-    
-    private static void registerInstance(PropertyEditorComboBox instance, TypeID typeID) {
-        List<PropertyEditorComboBox> list = instances.get(typeID);
-        if (list == null) {
-            list = new ArrayList<PropertyEditorComboBox>();
-            instances.put(typeID, list);
-        }
-        list.add(instance);
     }
     
     private void initComponents() {
@@ -183,30 +174,34 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
         }
     }
     
-   public Boolean canEditAsText() {
-        if (getTags() == null)
+    public void init(DesignComponent component) {
+        super.init(component);
+        document = component.getDocument();
+    }
+    
+    public Boolean canEditAsText() {
+        if (getTags() == null) {
             return super.canEditAsText();
+        }
         return null;
     }
     
     public boolean canWrite() {
+        final boolean[] canWrite = new boolean[] { true };
         if (!MidpPropertyEditorSupport.singleSelectionEditAsTextOnly()) {
-            return false;
-        }
-        
-        if (enableValue != null) {
-            List<PropertyEditorComboBox> list = instances.get(typeID);
-            if (list == null) {
-                return true;
+            canWrite[0] = false;
+        } else if (enableTypeID != null) {
+            if (enableTypeID == FontCD.TYPEID) {
+                document.getTransactionManager().readAccess( new Runnable() {
+                    public void run() {
+                        DesignComponent component = document.getSelectedComponents().iterator().next();
+                        int kind = MidpTypes.getInteger(component.readProperty(FontCD.PROP_FONT_KIND));
+                        canWrite[0] = kind == FontCD.VALUE_KIND_CUSTOM;
+                    }
+                });
             }
-            for (PropertyEditorComboBox propertyEditorComboBox : list) {
-                if (enableValue.equals(propertyEditorComboBox.getAsText())) {
-                    return true;
-                }
-            }
-            return false;
         }
-        return true;
+        return canWrite[0];
     }
     
     private class CustomEditor extends JPanel implements ActionListener {
