@@ -114,7 +114,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
     protected static int repeat_memory = Integer.getInteger("org.netbeans.performance.memory.repeat", -1).intValue();
 
     /** Performance data. */
-    private static java.util.ArrayList<NbPerformanceTest.PerformanceData> data;
+    private static java.util.ArrayList<NbPerformanceTest.PerformanceData> data = new java.util.ArrayList<NbPerformanceTest.PerformanceData>();
 
     /** Warmup finished flag. */
     private static boolean warmupFinished = false;
@@ -190,21 +190,9 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * SetUp test cases: redirect log/ref, initialize performance data.
      */
     public void setUp() {
-
         checkScanFinished();
         checkWarmup();
-
-        // XXX load our EQ and repaint manager
-        /*
-        tr = ActionTracker.getInstance();
-        rm = new LoggingRepaintManager(tr);
-        rm.setEnabled(true);
-        leq = new LoggingEventQueue(tr);
-        leq.setEnabled(true);
-         */
-
         data = new java.util.ArrayList<NbPerformanceTest.PerformanceData>();
-
     }
 
     /**
