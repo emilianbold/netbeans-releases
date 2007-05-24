@@ -29,7 +29,6 @@ import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 
 import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.actions.EditAction;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
@@ -147,12 +146,7 @@ public class PrepareIDEForUMLComplexMeasurements extends JellyTestCase {
      */
     public void openProjects() {
         try {
-            String projectsLocation = System.getProperty("xtest.tmpdir") + File.separator + "TravelReservationService" + File.separator;
-            ProjectSupport.openProject(projectsLocation + "ReservationPartnerServices");
-            ProjectSupport.waitScanFinished();
-            ProjectSupport.openProject(projectsLocation + "TravelReservationService");
-            ProjectSupport.waitScanFinished();
-            ProjectSupport.openProject(projectsLocation + "TravelReservationServiceApplication");
+            ProjectSupport.openProject(System.getProperty("xtest.tmpdir") + File.separator + "jEdit-Model");
             ProjectSupport.waitScanFinished();
         }catch(Exception exc){
             test_failed = true;
@@ -164,25 +158,15 @@ public class PrepareIDEForUMLComplexMeasurements extends JellyTestCase {
      * Open 10 selected files from Travel Reservation projects
      */
     public void openFiles(){
-        String OPEN = "Open";
-        String EDIT = "Edit";
-        
         try {
             String[][] nodes_path = {
-                {"ReservationPartnerServices","Enterprise Beans","ReservationCallbackProviderMDB", "ReservationCallbackProviderBean.java", OPEN},
-                {"ReservationPartnerServices","Source Packages","partnerservices|AirlineReservationPortType_Impl.java", "AirlineReservationPortType_Impl.java", OPEN},
-                {"ReservationPartnerServices","Source Packages","partnerservices|HotelReservationPortType_Impl.java", "HotelReservationPortType_Impl.java", OPEN},
-                {"ReservationPartnerServices","Source Packages","partnerservices|VehicleReservationPortType_Impl.java", "VehicleReservationPortType_Impl.java", OPEN},
-                {"ReservationPartnerServices","Configuration Files","ejb-jar.xml", null, OPEN},
-                {"ReservationPartnerServices","Configuration Files","sun-ejb-jar.xml", null, EDIT},
-                {"TravelReservationService","Process Files","AirlineReservationService.wsdl", null, EDIT},
-                {"TravelReservationService","Process Files","HotelReservationService.wsdl", null, EDIT},
-                {"TravelReservationService","Process Files","OTA_TravelItinerary.xsd", null, OPEN},
-                {"TravelReservationService","Process Files","TravelReservationService.bpel", null, OPEN}
+                {"jEdit-Model", "Diagrams", "ClassDiagram"},
+                {"jEdit-Model", "Diagrams", "ActivityDiagram"},
+                {"jEdit-Model", "Diagrams", "SequenceDiagram"},
+                {"jEdit-Model", "Diagrams", "StateDiagram"}
             };
             
             ArrayList<Node> openFileNodes = new ArrayList<Node>();
-            ArrayList<Node> editFileNodes = new ArrayList<Node>();
             Node node, fileNode;
             
             // create exactly (full match) and case sensitively comparing comparator
@@ -201,12 +185,7 @@ public class PrepareIDEForUMLComplexMeasurements extends JellyTestCase {
                 //try to avoid issue 56825
                 fileNode.select();
                 
-                if(nodes_path[i][4].equals(OPEN)) {
-                    openFileNodes.add(fileNode);
-                } else if(nodes_path[i][4].equals(EDIT)) {
-                    editFileNodes.add(fileNode);
-                } else
-                    throw new Exception("Not supported operation [" + nodes_path[i][4] + "] for node: " + fileNode.getPath());
+                openFileNodes.add(fileNode);
                 
                 // open file one by one, opening all files at once causes never ending loop (java+mdr)
                 //new OpenAction().performAPI(openFileNodes[i]);
@@ -216,7 +195,6 @@ public class PrepareIDEForUMLComplexMeasurements extends JellyTestCase {
             // it doesn't finish in the real-time -> hard to reproduced by hand
             try {
                 new OpenAction().performAPI(openFileNodes.toArray(new Node[0]));
-                new EditAction().performAPI(editFileNodes.toArray(new Node[0]));
             }catch(Exception exc){
                 err.println("---------------------------------------");
                 err.println("issue 56825 : EXCEPTION catched during OpenAction");
@@ -224,17 +202,13 @@ public class PrepareIDEForUMLComplexMeasurements extends JellyTestCase {
                 err.println("---------------------------------------");
                 err.println("issue 56825 : Try it again");
                 new OpenAction().performAPI(openFileNodes.toArray(new Node[0]));
-                new EditAction().performAPI(editFileNodes.toArray(new Node[0]));
                 err.println("issue 56825 : Success");
             }
             
             
             // check whether files are opened in editor
             for(int i=0; i<nodes_path.length; i++) {
-                if(nodes_path[i][3]!=null)
-                    new TopComponentOperator(nodes_path[i][3]);
-                else
-                    new TopComponentOperator(nodes_path[i][2]);
+                new TopComponentOperator(nodes_path[i][2]);
             }
 //        new org.netbeans.jemmy.EventTool().waitNoEvent(60000);
             

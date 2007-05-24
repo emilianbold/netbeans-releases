@@ -22,11 +22,10 @@
 
 <mconfig name="Performance unit tests config">
 
-
     <testbag testattribs="all or startup or complex_startup" prio="1" executor="prepare_ide" name="Prepare IDE for complex startup time measurement">
 	<testset dir="unit/src">
 	    <patternset>
-		<include name="prepare/PrepareIDEForEnterpriseComplexMeasurements.class"/>
+		<include name="prepare/PrepareIDEForUMLComplexMeasurements.class"/>
 	    </patternset>
 	</testset>
     </testbag>
@@ -34,7 +33,7 @@
     <testbag testattribs="all or startup or complex_startup" prio="2" executor="execute_complex_startup" name="IDE complex startup time">
 	<testset dir="unit/src">
 	    <patternset>
-		<include name="startup/ComplexEnterpriseProjectStartup.class"/>
+		<include name="startup/ComplexUMLDiagramStartup.class"/>
 	    </patternset>
 	</testset>
     </testbag>

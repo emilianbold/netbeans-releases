@@ -35,23 +35,8 @@ public class UMLSetupTest extends IDESetupTest {
         super(testName);
     }
     
-    public void openReservationPartnerServicesProject() {
-        UMLUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + File.separator + "TravelReservationService" + File.separator + "ReservationPartnerServices");
+    public void openJeditModelProject() {
+        UMLUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + File.separator + "jEdit-Model");
     }
     
-    public void openTravelReservationServiceProject() {
-        UMLUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + File.separator + "TravelReservationService" + File.separator + "TravelReservationService");
-    }
-    
-    public void openTravelReservationServiceApplicationProject() {
-        UMLUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + File.separator + "TravelReservationService" + File.separator + "TravelReservationServiceApplication");
-    }
-    
-    public void openSoaTestProject() {
-        UMLUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + File.separator + "SOATestProject");
-    }
-    
-    public void openBPELTestProject() {
-        UMLUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + File.separator + "BPELTestProject");
-    }
 }

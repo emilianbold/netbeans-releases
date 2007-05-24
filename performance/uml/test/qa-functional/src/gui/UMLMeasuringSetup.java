@@ -27,7 +27,7 @@ import org.netbeans.junit.NbTestSuite;
  * Test suite that actually does not perform any test but sets up user directory
  * for UI responsiveness tests
  *
- * @author  rkubacki@netbeans.org, mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
 public class UMLMeasuringSetup extends NbTestSuite {
 
@@ -39,15 +39,9 @@ public class UMLMeasuringSetup extends NbTestSuite {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Setup suite for UML Pack");
 
         suite.addTest(new UMLSetupTest("closeMemoryToolbar"));
-        
         suite.addTest(new UMLSetupTest("closeWelcome"));
         
-        suite.addTest(new UMLSetupTest("openReservationPartnerServicesProject"));
-        suite.addTest(new UMLSetupTest("openTravelReservationServiceProject"));
-        suite.addTest(new UMLSetupTest("openTravelReservationServiceApplicationProject"));
-
-        suite.addTest(new UMLSetupTest("openSoaTestProject"));
-        suite.addTest(new UMLSetupTest("openBPELTestProject"));
+        suite.addTest(new UMLSetupTest("openJeditModelProject"));
         
         suite.addTest(new UMLSetupTest("closeAllDocuments"));
         
