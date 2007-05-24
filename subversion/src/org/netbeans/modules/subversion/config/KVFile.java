@@ -107,21 +107,22 @@ public class KVFile {
      * @return map
      */
     private Map<Key, byte[]> getMap() {
-        if(map==null) {
+        if(map == null) {
             map = new TreeMap<Key, byte[]>();
         }
         return map;
     }
 
     public Map<String, byte[]> getNormalizedMap() {
-        Map<String, byte[]> ret = new HashMap<String, byte[]>(map.size());
-        Iterator<Map.Entry<Key, byte[]>> it = map.entrySet().iterator();
+        Map<Key, byte[]> keyValue = getMap();
+        Map<String, byte[]> stringValue = new HashMap<String, byte[]>(keyValue.size());
+        Iterator<Map.Entry<Key, byte[]>> it = keyValue.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry next = it.next();
             // getKey().toString() == the normalization
-            ret.put(next.getKey().toString(), (byte[]) next.getValue());
+            stringValue.put(next.getKey().toString(), (byte[]) next.getValue());
         }
-        return ret;
+        return stringValue;
     }
     
     /**
@@ -233,7 +234,7 @@ public class KVFile {
             os = FileUtils.createOutputStream(file);            
             for (Iterator it = getMap().keySet().iterator(); it.hasNext();) {
                 Key key = (Key) it.next();
-                byte[] value = (byte[]) map.get(key);                
+                byte[] value = (byte[]) getMap().get(key);                
                 
                 StringBuffer sb = new StringBuffer();
                 sb.append("K "); // NOI18N
