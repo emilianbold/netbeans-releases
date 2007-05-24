@@ -165,7 +165,7 @@ public class MakeUpdateDesc extends MatchingTask {
         return s2.toString();
     }
 
-    public void execute () throws BuildException {
+    public @Override void execute () throws BuildException {
         Group root = new Group();
         for (FileSet fs : filesets) {
             root.addFileSet(fs);
@@ -300,7 +300,7 @@ public class MakeUpdateDesc extends MatchingTask {
                             } else {
                                 prefix = dist_base + "/";
                             }
-                            module.setAttribute("distribution", prefix + m.nbm.getName());
+                            module.setAttribute("distribution", prefix + m.relativePath);
                         }
                         NodeList licenseList = module.getElementsByTagName("license");
                         if (licenseList.getLength() > 0) {
@@ -342,6 +342,7 @@ public class MakeUpdateDesc extends MatchingTask {
         public Module() {}
         public Element xml;
         public File nbm;
+        public String relativePath;
     }
     
     private Map<String,Collection<Module>> loadNBMs() throws BuildException {
@@ -401,6 +402,7 @@ public class MakeUpdateDesc extends MatchingTask {
                                     }
                                 }).getDocumentElement();
                                 m.nbm = n_file;
+                                m.relativePath = file.replace(File.separatorChar, '/');
                                 Collection<Module> target = modules;
                                 if (automaticGrouping && g.name == null) {
                                     // insert modules with no explicit grouping into group acc. to manifest:
