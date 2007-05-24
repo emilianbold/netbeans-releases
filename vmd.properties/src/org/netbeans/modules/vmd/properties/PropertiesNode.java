@@ -75,6 +75,7 @@ public class PropertiesNode extends AbstractNode{
     
     public void updateNode(Sheet sheet) {
         setSheet(sheet);
+        setName(createName());
     }
     
 }

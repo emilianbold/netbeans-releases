@@ -111,7 +111,7 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         if (superText != null) {
             return superText;
         }
-        
+        System.out.println(inputMode);
         return getValueAsText((PropertyValue) super.getValue());
     }
     

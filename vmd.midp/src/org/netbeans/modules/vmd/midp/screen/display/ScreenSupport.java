@@ -46,7 +46,11 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.vmd.api.io.DataObjectContext;
 
 /**
  *
@@ -160,23 +164,22 @@ public final class ScreenSupport {
         String imagePath = MidpTypes.getString(imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH));
         if (imagePath == null)
             return null;
-        DesignDocument document = imageComponent.getDocument ();
-
-        List<SourceGroup> sourceGroups = ProjectUtils.getSourceGroups(document.getDocumentInterface ().getProjectID ());
-        if (! sourceGroups.isEmpty ()) {
-            SourceGroup sourceGroup = sourceGroups.get(0); // CLDC project has always only one source root
-            FileObject sourceRoot = sourceGroup.getRootFolder ();
-            Icon sourceIcon = resolveImageForRoot (sourceRoot, imagePath);
+        DesignDocument document = imageComponent.getDocument();
+        
+        Set<FileObject> foldersToScan = getFoldersToScan(imageComponent);
+        
+        for (FileObject folder: foldersToScan) {
+            Icon sourceIcon = resolveImageForRoot(folder, imagePath);
             if (sourceIcon != null)
                 return sourceIcon;
         }
-
-        Project project = MidpProjectSupport.getProjectForDocument (document);
-        for (ProjectResourceResolver resolver : MidpProjectSupport.getAllResolvers ()) {
-            Collection<FileObject> collection = resolver.getResourceRoots (project, MidpDocumentSupport.PROJECT_TYPE_MIDP);
+        
+        Project project = MidpProjectSupport.getProjectForDocument(document);
+        for (ProjectResourceResolver resolver : MidpProjectSupport.getAllResolvers()) {
+            Collection<FileObject> collection = resolver.getResourceRoots(project, MidpDocumentSupport.PROJECT_TYPE_MIDP);
             if (collection != null)
                 for (FileObject root : collection) {
-                    Icon icon = resolveImageForRoot (root, imagePath);
+                    Icon icon = resolveImageForRoot(root, imagePath);
                     if (icon != null)
                         return icon;
                 }
@@ -184,11 +187,11 @@ public final class ScreenSupport {
         Debug.warning("Resource path property in " + imageComponent + " contains incorrect value"); // NOI18N
         return null;
     }
-
-    private static Icon resolveImageForRoot (FileObject root, String imagePath) {
-        FileObject imageFile = root.getFileObject (imagePath);
+    
+    private static Icon resolveImageForRoot(FileObject root, String imagePath) {
+        FileObject imageFile = root.getFileObject(imagePath);
         if (imageFile != null) {
-            File input = FileUtil.toFile (imageFile);
+            File input = FileUtil.toFile(imageFile);
             if (input != null) {
                 try {
                     BufferedImage img = ImageIO.read(input);
@@ -200,11 +203,28 @@ public final class ScreenSupport {
         }
         return null;
     }
-
+    
     public static int getFontHeight(Graphics g, Font f) {
         assert (g != null) && (f != null);
         FontMetrics fm = g.getFontMetrics(f);
         return fm.getHeight();
+    }
+    
+    private static  Set<FileObject> getFoldersToScan(DesignComponent component) {
+        DesignDocument document = component.getDocument();
+        Set<FileObject> filesToScan = new HashSet<FileObject>();
+        
+        FileObject projectDirectory = ProjectUtils.getProject(document).getProjectDirectory();
+        DataObjectContext dac = ProjectUtils.getDataObjectContextForDocument(document);
+        //Resources
+        for (FileObject f : ClassPath.getClassPath(projectDirectory, ClassPath.COMPILE).getRoots()) {
+            filesToScan.add((f));
+        }
+        //Sources
+        for (SourceGroup g : ProjectUtils.getSourceGroups(dac)) {
+            filesToScan.add((g.getRootFolder()));
+        }
+        return filesToScan;
     }
     
 }

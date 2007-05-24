@@ -114,6 +114,10 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
         return getDecodeValue(value);
     }
     
+    public Boolean canEditAsText() {
+        return null;
+    }
+    
     public void setText(String text) {
         saveValue(text);
     }

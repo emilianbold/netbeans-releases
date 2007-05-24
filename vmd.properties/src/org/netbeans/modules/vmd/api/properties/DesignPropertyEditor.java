@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.DesignEvent;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
@@ -202,8 +203,14 @@ public abstract class DesignPropertyEditor extends PropertyEditorSupport impleme
     public String getCustomEditorTitle() {
         if (component == null)
             return null;
+        
         component.get().getDocument().getTransactionManager().readAccess((new Runnable() {
             public void run() {
+                DesignDocument document = component.get().getDocument();
+                if (component.get().getParentComponent() == null && document.getRootComponent() != component.get()) {
+                    customEditorTitle = null;
+                    return;
+                }
                 customEditorTitle = InfoPresenter.getDisplayName(component.get()) + " - " + propertyDisplayName; //NOI18N
             }
         }));

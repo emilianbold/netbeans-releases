@@ -94,5 +94,4 @@ public class SplashScreenCD extends ComponentDescriptor {
             createSetterPresenter ()
         );
     }
-
 }
