@@ -780,9 +780,10 @@ public class CasaWrapperModel extends CasaModelImpl {
      * <LI> there is no existing visible connection involving the Consumes
      *      endpoint (there could be existing visible connections involving
      *      the Provides endpoint though);
-     * <LI> the two endpoints don't have incompatible defined interfaces;
-     * <LI> at least one of the two endpoints is from a service engine
-     *      service unit.
+     * <LI> at least one of the two endpoints has a defined interface;
+     * <LI> the two endpoints don't have incompatible defined interfaces;     
+     * <LI> the two endpoint cannot be both external endpoints;
+     * <LI> the two endpoints don't belong to the same binding component;
      * </UL>
      */
     public boolean canConnect(final CasaEndpointRef endpointRef1,
@@ -821,13 +822,24 @@ public class CasaWrapperModel extends CasaModelImpl {
                     "MSG_CANNOT_CONNECT_TWO_PROVIDES_WITH_ONE_CONSUMES"); // NOI18N            
         }
         
-        if (isBindingComponentEndpoint(endpointRef1) &&
-                isBindingComponentEndpoint(endpointRef2)) {
+        CasaPort casaPort1 = getCasaPort(endpointRef1);
+        CasaPort casaPort2 = getCasaPort(endpointRef2);
+        if (casaPort1 != null && casaPort2 != null && casaPort1 == casaPort2) {
             return NbBundle.getMessage(this.getClass(), 
-                    "MSG_CANNOT_CONNECT_BC_TO_BC"); // NOI18N            
+                    "MSG_CANNOT_CONNECT_SAME_BC_TO_BC"); // NOI18N            
         }
         
-        if (isEndpointDefined(endpointRef1) && isEndpointDefined(endpointRef2)) {
+        CasaServiceEngineServiceUnit sesu1 = getCasaEngineServiceUnit(endpointRef1);
+        CasaServiceEngineServiceUnit sesu2 = getCasaEngineServiceUnit(endpointRef2);
+        if (sesu1 != null && sesu2 != null && 
+                !sesu1.isInternal() && !sesu2.isInternal()) {
+            return NbBundle.getMessage(this.getClass(), 
+                        "MSG_CANNOT_CONNECT_TWO_EXTERNAL_ENDPOINTS"); // NOI18N
+        }
+        
+        boolean endpoint1Defined = isEndpointDefined(endpointRef1);
+        boolean endpoint2Defined = isEndpointDefined(endpointRef2);
+        if (endpoint1Defined && endpoint2Defined) {
             QName consumesInterfaceQName = endpointRef1.getInterfaceQName();
             QName providesInterfaceQName = endpointRef2.getInterfaceQName();
             if (!consumesInterfaceQName.equals(providesInterfaceQName)) {
@@ -836,7 +848,11 @@ public class CasaWrapperModel extends CasaModelImpl {
             }
         }
         
-        // Do we allow both endpoints to be undefined?
+        if (!endpoint1Defined && !endpoint2Defined) {
+            return NbBundle.getMessage(this.getClass(), 
+                        "MSG_CANNOT_CONNECT_TWO_UNDEFINED_ENDPOINTS"); // NOI18N
+        }
+        
         return null;
     }
     
