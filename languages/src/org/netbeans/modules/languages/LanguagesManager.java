@@ -227,18 +227,19 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
                 toolbarDefault.setAttribute ("comment/uncomment", Boolean.TRUE);
                 FileUtil.createData (toolbarDefault, "uncomment");
                 
-                /*
-                if (root.getFileObject("Defaults/keybindings.xml") == null) {
+                if (root.getFileObject("Keybindings/NetBeans/Defaults/keybindings.xml") == null) {
                     fs.runAtomicAction (new AtomicAction () {
                         public void run () {
                             try {
                                 InputStream is = getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/languages/resources/DefaultKeyBindings.xml");
                                 try {
-                                    FileObject defaults = root.getFileObject("Defaults");
-                                    if (defaults == null) {
-                                        defaults = root.createFolder("Defaults");
+                                    FileObject fo = root.getFileObject("Keybindings/NetBeans/Defaults");
+                                    if (fo == null) {
+                                        fo = root.createFolder("Keybindings");
+                                        fo = fo.createFolder("NetBeans");
+                                        fo = fo.createFolder("Defaults");
                                     }
-                                    FileObject bindings = defaults.createData("keybindings.xml");
+                                    FileObject bindings = fo.createData("keybindings.xml");
                                     OutputStream os = bindings.getOutputStream();
                                     try {
                                         FileUtil.copy(is, os);
@@ -254,7 +255,6 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
                         }
                     });
                 }
-                 */
             }
         } catch (IOException ex) {
             Utils.notify (ex);
