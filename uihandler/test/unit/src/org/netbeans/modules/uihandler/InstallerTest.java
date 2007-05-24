@@ -134,6 +134,25 @@ public class InstallerTest extends NbTestCase {
         assertEquals("It is named", "Send Feedback", b.getText());
         assertEquals("It url attribute is set", "http://xyz.cz", b.getClientProperty("url"));
     }
+    public void testAutosubmitButtonIsAlsoSubmitButton() throws Exception {
+        String page = "<html><body><form action='http://xyz.cz' method='POST'>" +
+            "<input type='hidden' name='auto-submit' value=\"Send Feedback\"/>" +
+            "\n" +
+            "</form></body></html>";
+        
+        InputStream is = new ByteArrayInputStream(page.getBytes());
+        JButton def = new JButton("Default");
+        Object[] buttons = parseButtons(is, def);
+        is.close();
+        
+        assertNotNull("buttons parsed", buttons);
+        assertEquals("Second is default", def, buttons[1]);
+        assertEquals("There is one button", 2, buttons.length);
+        assertEquals("It is a button", JButton.class, buttons[0].getClass());
+        JButton b = (JButton)buttons[0];
+        assertEquals("It is named", "Send Feedback", b.getText());
+        assertEquals("It url attribute is set", "http://xyz.cz", b.getClientProperty("url"));
+    }
     public void testDisabledButton() throws Exception {
         String page = "<html><body><form action='http://xyz.cz' method='POST'>" +
             "<input type='hidden' name='submit' disabled='true' value=\"Send Feedback\"/>" +

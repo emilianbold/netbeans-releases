@@ -22,9 +22,7 @@ package org.netbeans.modules.uihandler;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -67,7 +65,7 @@ implements ActionListener, Runnable, Callable<JButton> {
     }
     
     public void run() {
-        Installer.displaySummary("ERROR_URL", true); // NOI18N
+        Installer.displaySummary("ERROR_URL", true, false); // NOI18N
     }
 
     private JButton button;

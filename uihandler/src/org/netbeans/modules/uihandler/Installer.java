@@ -41,12 +41,14 @@ import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -103,6 +105,7 @@ public class Installer extends ModuleInstall {
     private static final Preferences prefs = NbPreferences.forModule(Installer.class);
     private static OutputStream logStream;
     private static int logsSize;
+    private static URL hintURL;
     
     @Override
     public void restored() {
@@ -150,6 +153,9 @@ public class Installer extends ModuleInstall {
             if (logsSize >= UIHandler.MAX_LOGS) {
                 prefs.putInt("count", UIHandler.MAX_LOGS);
                 closeLogStream();
+                if (isHintsMode()) {
+                    displaySummary("WELCOME_URL", true, true);
+                }
                 File f = logFile(0);
                 f.renameTo(new File(f.getParentFile(), f.getName() + ".1"));
                 logsSize = 0;
@@ -164,6 +170,12 @@ public class Installer extends ModuleInstall {
         }
     }
     
+    static URL hintsURL() {
+        return hintURL;
+    }
+    static boolean isHintsMode() {
+        return prefs.getBoolean("autoSubmitWhenFull", false);
+    }
 
     static int timesSubmitted() {
         return prefs.getInt("submitted", 0);
@@ -309,11 +321,11 @@ public class Installer extends ModuleInstall {
             return true;
         }
         
-        return displaySummary("EXIT_URL", false); // NOI18N
+        return displaySummary("EXIT_URL", false, false); // NOI18N
     }
     
     private static AtomicReference<String> DISPLAYING = new AtomicReference<String>();
-    static boolean displaySummary(String msg, boolean explicit) {
+    static boolean displaySummary(String msg, boolean explicit, boolean auto) {
         if (!DISPLAYING.compareAndSet(null, msg)) {
             return true;
         }
@@ -328,7 +340,7 @@ public class Installer extends ModuleInstall {
                 }
             }
             
-            v = doDisplaySummary(msg);
+            v = doDisplaySummary(msg, auto);
         } finally {
             DISPLAYING.set(null);
         }
@@ -350,8 +362,8 @@ public class Installer extends ModuleInstall {
         return null;// no throwable found
     }
     
-    private static boolean doDisplaySummary(String msg) {
-        Submit submit = new Submit(msg);
+    private static boolean doDisplaySummary(String msg, boolean auto) {
+        Submit submit = auto ? new SubmitAutomatic(msg, Button.SUBMIT) : new SubmitInteractive(msg);
         submit.doShow();
         return submit.okToExit;
     }
@@ -403,11 +415,11 @@ public class Installer extends ModuleInstall {
                     
                     List<Object> addTo = "left".equals(align) ? left : buttons;
                     
-                    if ("hidden".equals(type) && Button.SUBMIT.isCommand(name)) { // NOI18N
+                    if ("hidden".equals(type) && Button.isSubmitTrigger(name)) { // NOI18N
                         f.submitValue = value;
                         JButton b = new JButton();
                         Mnemonics.setLocalizedText(b, f.submitValue);
-                        b.setActionCommand(Button.SUBMIT.getName()); // NOI18N
+                        b.setActionCommand(name); // NOI18N
                         b.putClientProperty("url", f.url); // NOI18N
                         b.setDefaultCapable(addTo.isEmpty() && addTo == buttons);
                         b.putClientProperty("alt", alt); // NOI18N
@@ -475,7 +487,8 @@ public class Installer extends ModuleInstall {
     private static URL uLogs(ProgressHandle h, URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs) throws IOException {
         h.start(100 + recs.size());
         h.progress(NbBundle.getMessage(Installer.class, "MSG_UploadConnecting")); // NOI18N
-        
+    
+        LOG.log(Level.FINE, "uploadLogs, postURL = {0}", postURL); // NOI18N
         URLConnection conn = postURL.openConnection();
         
         h.progress(50);
@@ -488,6 +501,7 @@ public class Installer extends ModuleInstall {
         conn.setRequestProperty("Cache-control", "no-cache");
         
         h.progress(NbBundle.getMessage(Installer.class, "MSG_UploadSending"), 60);
+        LOG.log(Level.FINE, "uploadLogs, header sent"); // NOI18N
         
         PrintStream os = new PrintStream(conn.getOutputStream());
         /*
@@ -503,6 +517,7 @@ public class Installer extends ModuleInstall {
             os.println();
             os.println(en.getValue().getBytes());
         }
+        LOG.log(Level.FINE, "uploadLogs, attributes sent"); // NOI18N
         
         h.progress(70);
         
@@ -521,11 +536,13 @@ public class Installer extends ModuleInstall {
         data.write("<uigestures version='1.0'>\n".getBytes("utf-8")); // NOI18N
         
         int cnt = 80;
+        LOG.log(Level.FINE, "uploadLogs, sending records"); // NOI18N
         for (LogRecord r : recs) {
             h.progress(cnt++);
             LogRecords.write(data, r);
         }
         data.write("</uigestures>\n".getBytes("utf-8")); // NOI18N
+        LOG.log(Level.FINE, "uploadLogs, flushing"); // NOI18N
         data.flush();
         gzip.finish();
         os.println("----------konec<>bloku--");
@@ -533,6 +550,7 @@ public class Installer extends ModuleInstall {
         
         h.progress(NbBundle.getMessage(Installer.class, "MSG_UploadReading"), cnt + 10);
         
+        LOG.log(Level.FINE, "uploadLogs, reading reply"); // NOI18N
         InputStream is = conn.getInputStream();
         StringBuffer redir = new StringBuffer();
         for (;;) {
@@ -546,20 +564,21 @@ public class Installer extends ModuleInstall {
         
         h.progress(cnt + 20);
         
-        LOG.info("Reply from uploadLogs:");
-        LOG.info(redir.toString());
+        LOG.log(Level.FINE, "uploadLogs, Reply from uploadLogs: {0}", redir);
         
         Pattern p = Pattern.compile("<meta\\s*http-equiv=.Refresh.\\s*content.*url=['\"]?([^'\" ]*)\\s*['\"]", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
         Matcher m = p.matcher(redir);
         
         
         if (m.find()) {
+            LOG.log(Level.FINE, "uploadLogs, found url = {0}", m.group(1)); // NOI18N
             return new URL(m.group(1));
         } else {
             File f = File.createTempFile("uipage", "html");
             FileWriter w = new FileWriter(f);
             w.write(redir.toString());
             w.close();
+            LOG.log(Level.FINE, "uploadLogs, temporary url = {0}", f.toURI()); // NOI18N
             return f.toURI().toURL();
         }
     }
@@ -580,62 +599,31 @@ public class Installer extends ModuleInstall {
         }
     }
     
-    private static final class Submit implements ActionListener, Runnable {
-        private String msg;
-        boolean okToExit;
-        private DialogDescriptor dd;
-        private Dialog d;
-        private SubmitPanel panel;
-        private HtmlBrowser browser;
+    private static abstract class Submit implements ActionListener, Runnable {
+        protected String exitMsg;
+        protected DialogDescriptor dd;
+        protected String msg;
+        protected boolean report;//property tells me wheather I'm in report mode
+        protected boolean okToExit;
         private URL url;
-        private String exitMsg;
-        private boolean report;//property tells me wheather I'm in report mode
-        private ReportPanel reportPanel;
-        
+        private boolean dialogCreated;
+
         public Submit(String msg) {
             this.msg = msg;
             if ("ERROR_URL".equals(msg)) report = true; // NOI18N
             else report = false;
         }
         
-        private LogRecord getUserData(){
-            LogRecord userData;
-            ExceptionsSettings settings = new ExceptionsSettings();
-            ArrayList<String> params = new ArrayList<String>(6);
-            params.add(getOS());
-            params.add(getVM());
-            params.add(getVersion());
-            if ((reportPanel != null)&&(report)) reportPanel.saveUserName();
-            params.add(settings.getUserName());
-            if ((reportPanel != null)&&(report)){
-                params.add(reportPanel.getSummary());
-                params.add(reportPanel.getComment());
-            }
-            userData = new LogRecord(Level.CONFIG, USER_CONFIGURATION);
-            userData.setResourceBundle(NbBundle.getBundle(Installer.class));
-            userData.setResourceBundleName(Installer.class.getPackage().getName()+".Bundle");
-            userData.setParameters(params.toArray());
-            return userData;
-        }
-        
-        private String getOS(){
-            String unknown = "unknown";                                   // NOI18N
-            String str = System.getProperty("os.name", unknown)+", "+     // NOI18N
-                    System.getProperty("os.version", unknown)+", "+       // NOI18N
-                    System.getProperty("os.arch", unknown);               // NOI18N
-            return str;
-        }
-        
-        private String getVersion(){
-            String str = MessageFormat.format(
-                    NbBundle.getBundle("org.netbeans.core.startup.Bundle").getString("currentVersion"), // NOI18N
-                    new Object[] {System.getProperty("netbeans.buildnumber")});                         // NOI18N
-            return str;
-        }
-        
-        private String getVM(){
-            return System.getProperty("java.vm.name", "unknown") + ", " + System.getProperty("java.vm.version", ""); // NOI18N
-        }
+        protected abstract void createDialog();
+        protected abstract Object showDialogAndGetValue(DialogDescriptor dd);
+        protected abstract void closeDialog();
+        protected abstract void alterMessage(DialogDescriptor dd);
+        protected abstract void viewData();
+        protected abstract void assignInternalURL(URL u);
+        protected abstract void saveUserName();
+        protected abstract void addMoreLogs(List<? super String> params);
+        protected abstract void showURL(URL externalURL);
+
         
         public void doShow() {
             Logger log = Logger.getLogger("org.netbeans.ui"); // NOI18N
@@ -651,6 +639,7 @@ public class Installer extends ModuleInstall {
             exitMsg = NbBundle.getMessage(Installer.class, "MSG_" + msg + "_EXIT"); // NOI18N
             
             String defaultURI = NbBundle.getMessage(Installer.class, msg);
+            LOG.log(Level.FINE, "doShow, exitMsg = {0}, defaultURI = {1}", new Object[] { exitMsg, defaultURI }); // NOI18N
             if (defaultURI == null || defaultURI.length() == 0) {
                 okToExit = true;
                 return;
@@ -658,7 +647,7 @@ public class Installer extends ModuleInstall {
             
             synchronized (this) {
                 RequestProcessor.getDefault().post(this);
-                while (d == null) {
+                while (!dialogCreated) {
                     try {
                         wait();
                     } catch (InterruptedException ex) {
@@ -667,6 +656,7 @@ public class Installer extends ModuleInstall {
                 }
             }
             
+            LOG.log(Level.FINE, "doShow, dialog has been created"); // NOI18N
             
             for (;;) {
                 try {
@@ -674,6 +664,7 @@ public class Installer extends ModuleInstall {
                         url = new URL(defaultURI); // NOI18N
                     }
                     
+                    LOG.log(Level.FINE, "doShow, reading from = {0}", url);
                     URLConnection conn = url.openConnection();
                     conn.setConnectTimeout(5000);
                     File tmp = File.createTempFile("uigesture", ".html");
@@ -682,16 +673,11 @@ public class Installer extends ModuleInstall {
                     FileUtil.copy(conn.getInputStream(), os);
                     os.close();
                     conn.getInputStream().close();
+                    LOG.log(Level.FINE, "doShow, all read from = {0}", url); // NOI18N
                     InputStream is = new FileInputStream(tmp);
                     parseButtons(is, exitMsg, dd);
-                    if ("ERROR_URL".equals(msg)&(dd.getOptions().length > 1)){
-                        Object obj = dd.getOptions()[0];
-                        AbstractButton abut = null;
-                        String report=null;
-                        if (obj instanceof AbstractButton ) abut = (AbstractButton)obj;
-                        if (abut != null)report = (String) abut.getClientProperty("alt");
-                        if ("reportDialog".equals(report)) dd.setMessage(reportPanel);
-                    }
+                    LOG.log(Level.FINE, "doShow, parsing buttons: " + Arrays.toString(dd.getOptions())); // NOI18N
+                    alterMessage(dd);
                     is.close();
                     url = tmp.toURI().toURL();
                 } catch (ParserConfigurationException ex) {
@@ -715,13 +701,12 @@ public class Installer extends ModuleInstall {
                 }
                 break;
             }
-            
-            if (browser != null) {
-                browser.setURL(url);
-            }
+
+            LOG.log(Level.FINE, "doShow, assignInternalURL = {0}", url);
+            assignInternalURL(url);
             
             synchronized (this) {
-                while (d != null) {
+                while (dialogCreated) {
                     try {
                         wait();
                     } catch (InterruptedException ex) {
@@ -729,7 +714,14 @@ public class Installer extends ModuleInstall {
                     }
                 }
             }
-            
+            LOG.log(Level.FINE, "doShow, dialogCreated, exiting");
+        }
+        
+        private synchronized final void doCloseDialog() {
+            dialogCreated = false;
+            closeDialog();
+            notifyAll();
+            LOG.log(Level.FINE, "doCloseDialog");
         }
         
         private void catchConnectionProblem(Exception exception){
@@ -738,13 +730,178 @@ public class Installer extends ModuleInstall {
             report = false;
             msg = null;
         }
-        
         private URL getUnknownHostExceptionURL() {
             String resource = NbBundle.getMessage(Installer.class, "URL_UnknownHostException");
             return getClass().getResource(resource);
         }
         
         public void run() {
+            createDialog();
+            synchronized (this) {
+                dialogCreated = true;
+                // dialog created let the code go on
+                notifyAll();
+            }
+
+            LOG.log(Level.FINE, "run, showDialogAndGetValue");
+            Object res = showDialogAndGetValue(dd);
+            LOG.log(Level.FINE, "run, showDialogAndGetValue, res = {0}", res);
+            
+            if (res == exitMsg) {
+                okToExit = true;
+            }
+            LOG.log(Level.FINE, "run, okToExit = {0}", okToExit);
+            doCloseDialog();
+        }
+        
+        public void actionPerformed(ActionEvent e) {
+            final URL[] url = new URL[1];
+            String actionURL = decodeButtons(e.getSource(), url);
+            
+            LOG.log(Level.FINE, "actionPerformed: command = {0}", e.getActionCommand()); // NOI18N
+            
+            boolean submit = Button.SUBMIT.isCommand(e.getActionCommand());
+            if (Button.AUTO_SUBMIT.isCommand(e.getActionCommand())) {
+                submit = true;
+                prefs.putBoolean("autoSubmitWhenFull", true); // NOI18N
+            }
+            
+            if (submit) { // NOI18N
+                final List<LogRecord> recs = getLogs();
+                saveUserName();
+                recs.add(getUserData());
+                RP.post (new Runnable() {
+                    public void run() {
+                        uploadAndPost(recs, url[0]);
+                    }
+                });
+                okToExit = false;
+                // this should close the descriptor
+                doCloseDialog();
+                return;
+            }
+            
+            if (Button.REDIRECT.isCommand(e.getActionCommand())){
+                if (url[0] != null) {
+                    showURL(url[0]);
+                }
+                doCloseDialog();
+                return ;
+            }
+            
+            if (Button.VIEW_DATA.isCommand(e.getActionCommand())) { // NOI18N
+                viewData();
+                if (e.getSource() instanceof AbstractButton) {
+                    AbstractButton abut = (AbstractButton)e.getSource();
+                    String alt = (String) abut.getClientProperty("alt"); // NOI18N
+                    if (alt != null) {
+                        String now = (String)abut.getClientProperty("now"); // NOI18N
+                        Mnemonics.setLocalizedText(abut, alt);
+                        abut.putClientProperty("alt", now); // NOI18N
+                        abut.putClientProperty("now", alt); // NOI18N
+                    }
+                }
+                return;
+            }
+            
+            if (Button.NEVER_AGAIN.isCommand(e.getActionCommand())) { // NOI18N
+                LOG.log(Level.FINE, "Assigning ask.never.again.{0} to true", msg); // NOI18N
+                NbPreferences.forModule(Installer.class).putBoolean("ask.never.again." + msg, true); // NOI18N
+                okToExit = true;
+                // this should close the descriptor
+                doCloseDialog();
+                return;
+            }
+            
+            if (Button.EXIT.isCommand(e.getActionCommand())) {
+                // this should close the descriptor
+                doCloseDialog();
+                return;
+            }
+        }
+        
+        
+        private void uploadAndPost(List<LogRecord> recs, URL u) {
+            URL nextURL = null;
+            
+            prefs.putInt("submitted", 1 + prefs.getInt("submitted", 0)); // NOI18N
+            
+            try {
+                nextURL = uploadLogs(u, findIdentity(), Collections.<String,String>emptyMap(), recs);
+            } catch (IOException ex) {
+                LOG.log(Level.INFO, null, ex);
+                String txt;
+                if (!report){
+                    txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailed", u.getHost(), u.toExternalForm());
+                }else{
+                    txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailedReport", u.getHost(), u.toExternalForm());
+                }
+                NotifyDescriptor dd = new NotifyDescriptor.Message(txt, NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(dd);
+            }
+            if (nextURL != null) {
+                clearLogs();
+                showURL(nextURL);
+            }
+        }
+        
+        
+        protected final LogRecord getUserData() {
+            LogRecord userData;
+            ExceptionsSettings settings = new ExceptionsSettings();
+            ArrayList<String> params = new ArrayList<String>(6);
+            params.add(getOS());
+            params.add(getVM());
+            params.add(getVersion());
+            saveUserName();
+            params.add(settings.getUserName());
+            addMoreLogs(params);
+            userData = new LogRecord(Level.CONFIG, USER_CONFIGURATION);
+            userData.setResourceBundle(NbBundle.getBundle(Installer.class));
+            userData.setResourceBundleName(Installer.class.getPackage().getName()+".Bundle");
+            userData.setParameters(params.toArray());
+            return userData;
+        }
+        
+        private String getOS(){
+            String unknown = "unknown";                                   // NOI18N
+            String str = System.getProperty("os.name", unknown)+", "+     // NOI18N
+                    System.getProperty("os.version", unknown)+", "+       // NOI18N
+                    System.getProperty("os.arch", unknown);               // NOI18N
+            return str;
+        }
+        
+        private String getVersion(){
+            String str = "";
+            try {
+                str = MessageFormat.format(
+                    NbBundle.getBundle("org.netbeans.core.startup.Bundle").getString("currentVersion"), // NOI18N
+                    new Object[] {System.getProperty("netbeans.buildnumber")} // NOI18N
+                );
+            } catch (MissingResourceException ex) {
+                LOG.log(Level.FINE, ex.getMessage(), ex);
+            }
+            return str;
+        }
+        
+        private String getVM(){
+            return System.getProperty("java.vm.name", "unknown") + ", " + System.getProperty("java.vm.version", ""); // NOI18N
+        }
+        
+    } // end of Submit
+    
+    private static final class SubmitInteractive extends Submit {
+        private Dialog d;
+        private SubmitPanel panel;
+        private HtmlBrowser browser;
+        private ReportPanel reportPanel;
+        
+        public SubmitInteractive(String msg) {
+            super(msg);
+        }
+        
+        protected void createDialog() {
+            
             if (reportPanel==null) reportPanel = new ReportPanel();
             Throwable t = getThrown();
             if ((t != null)&&(reportPanel !=null)){
@@ -777,153 +934,146 @@ public class Installer extends ModuleInstall {
             dd.setButtonListener(this);
             dd.setModal(true);
             d = DialogDisplayer.getDefault().createDialog(dd);
-            synchronized (this) {
-                // dialog created let the code go on
-                notify();
-            }
-            d.setVisible(true);
-            
-            Object res = dd.getValue();
-            
-            if (res == exitMsg) {
-                okToExit = true;
-            }
-            synchronized (this) {
-                d = null;
-                notifyAll();
-            }
         }
         
-        private void uploadAndPost(List<LogRecord> recs, URL u) {
-            URL nextURL = null;
-            
-            prefs.putInt("submitted", 1 + prefs.getInt("submitted", 0)); // NOI18N
-            
-            try {
-                nextURL = uploadLogs(u, findIdentity(), Collections.<String,String>emptyMap(), recs);
-            } catch (IOException ex) {
-                LOG.log(Level.INFO, null, ex);
-                String txt;
-                if (!report){
-                    txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailed", u.getHost(), u.toExternalForm());
-                }else{
-                    txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailedReport", u.getHost(), u.toExternalForm());
-                }
-                NotifyDescriptor dd = new NotifyDescriptor.Message(txt, NotifyDescriptor.ERROR_MESSAGE);
-                DialogDisplayer.getDefault().notifyLater(dd);
-            }
-            if (nextURL != null) {
-                clearLogs();
-                HtmlBrowser.URLDisplayer.getDefault().showURL(nextURL);
-            }
-        }
-        
-        public void actionPerformed(ActionEvent e) {
-            final URL[] url = new URL[1];
-            String actionURL = decodeButtons(e.getSource(), url);
-            
-            if (Button.SUBMIT.isCommand(e.getActionCommand())) { // NOI18N
-                final List<LogRecord> recs = getLogs();
-                if (report) reportPanel.saveUserName();
-                recs.add(getUserData());
-                RP.post (new Runnable() {
-                    public void run() {
-                        uploadAndPost(recs, url[0]);
-                    }
-                });
-                okToExit = false;
-                // this should close the descriptor
-                dd.setValue(DialogDescriptor.CLOSED_OPTION);
-                closeDialog();
+        protected void closeDialog() {
+            if (d == null) {
                 return;
             }
             
-            if (Button.REDIRECT.isCommand(e.getActionCommand())){
-                if (url[0] != null) {
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(url[0]);
-                }
-                dd.setValue(DialogDescriptor.CLOSED_OPTION);
-                closeDialog();
-                return ;
-            }
-            
-            if (Button.VIEW_DATA.isCommand(e.getActionCommand())) { // NOI18N
-                if (panel == null) {
-                    panel = new SubmitPanel();
-                    AbstractNode root = new AbstractNode(new Children.Array());
-                    root.setName("root"); // NOI18N
-                    List<LogRecord> recs = getLogs();
-                    recs.add(getUserData());
-                    root.setDisplayName(NbBundle.getMessage(Installer.class, "MSG_RootDisplayName", recs.size(), new Date()));
-                    root.setIconBaseWithExtension("org/netbeans/modules/uihandler/logs.gif");
-                    LinkedList<Node> reverted = new LinkedList<Node>();
-                    for (LogRecord r : recs) {
-                        reverted.addFirst(UINode.create(r));
-                        panel.addRecord(r);
-                    }
-                    root.getChildren().add(reverted.toArray(new Node[0]));
-                    panel.getExplorerManager().setRootContext(root);
-                }
-                
-                if (report) {
-                    if (dd.getMessage() == reportPanel) {
-                        dd.setMessage(panel);
-                    } else {
-                        dd.setMessage(reportPanel);
-                    }
-                } else {
-                    if (dd.getMessage() == browser) {
-                        dd.setMessage(panel);
-                    } else {
-                        dd.setMessage(browser);
-                    }
-                }
-                if (e.getSource() instanceof AbstractButton) {
-                    AbstractButton abut = (AbstractButton)e.getSource();
-                    String alt = (String) abut.getClientProperty("alt"); // NOI18N
-                    if (alt != null) {
-                        String now = (String)abut.getClientProperty("now"); // NOI18N
-                        Mnemonics.setLocalizedText(abut, alt);
-                        abut.putClientProperty("alt", now); // NOI18N
-                        abut.putClientProperty("now", alt); // NOI18N
-                    }
-                }
-                return;
-            }
-            
-            if (Button.NEVER_AGAIN.isCommand(e.getActionCommand())) { // NOI18N
-                LOG.log(Level.FINE, "Assigning ask.never.again.{0} to true", msg); // NOI18N
-                NbPreferences.forModule(Installer.class).putBoolean("ask.never.again." + msg, true); // NOI18N
-                okToExit = true;
-                // this should close the descriptor
-                dd.setValue(DialogDescriptor.CLOSED_OPTION);
-                closeDialog();
-                return;
-            }
-            
-            if (Button.EXIT.isCommand(e.getActionCommand())) {
-                // this should close the descriptor
-                dd.setValue(DialogDescriptor.CLOSED_OPTION);
-                closeDialog();
-                return;
-            }
-        }
-        
-        private void closeDialog() {
+            dd.setValue(DialogDescriptor.CLOSED_OPTION);
             d.setVisible(false);
-            synchronized (this) {
-                d = null;
-                notifyAll();
+            d = null;
+        }
+
+        protected void viewData() {
+            if (panel == null) {
+                panel = new SubmitPanel();
+                AbstractNode root = new AbstractNode(new Children.Array());
+                root.setName("root"); // NOI18N
+                List<LogRecord> recs = getLogs();
+                recs.add(getUserData());
+                root.setDisplayName(NbBundle.getMessage(Installer.class, "MSG_RootDisplayName", recs.size(), new Date()));
+                root.setIconBaseWithExtension("org/netbeans/modules/uihandler/logs.gif");
+                LinkedList<Node> reverted = new LinkedList<Node>();
+                for (LogRecord r : recs) {
+                    reverted.addFirst(UINode.create(r));
+                    panel.addRecord(r);
+                }
+                root.getChildren().add(reverted.toArray(new Node[0]));
+                panel.getExplorerManager().setRootContext(root);
+            }
+            
+            if (report) {
+                if (dd.getMessage() == reportPanel) {
+                    dd.setMessage(panel);
+                } else {
+                    dd.setMessage(reportPanel);
+                }
+            } else {
+                if (dd.getMessage() == browser) {
+                    dd.setMessage(panel);
+                } else {
+                    dd.setMessage(browser);
+                }
             }
         }
+        protected void assignInternalURL(URL u) {
+            if (browser != null) {
+                browser.setURL(u);
+            }
+        }
+        protected void showURL(URL u) {
+            HtmlBrowser.URLDisplayer.getDefault().showURL(u);            
+        }
+        protected void saveUserName() {
+            if (reportPanel != null && report) {
+                reportPanel.saveUserName();
+            }
+        }
+        protected void addMoreLogs(List<? super String> params) {
+            if ((reportPanel != null)&&(report)){
+                params.add(reportPanel.getSummary());
+                params.add(reportPanel.getComment());
+            }
+        }
+        protected Object showDialogAndGetValue(DialogDescriptor dd) {
+            d.setVisible(true);
+            return dd.getValue();
+        }
+        protected void alterMessage(DialogDescriptor dd) {
+            if ("ERROR_URL".equals(msg)&(dd.getOptions().length > 1)){
+                Object obj = dd.getOptions()[0];
+                AbstractButton abut = null;
+                String report=null;
+                if (obj instanceof AbstractButton ) abut = (AbstractButton)obj;
+                if (abut != null)report = (String) abut.getClientProperty("alt");
+                if ("reportDialog".equals(report)) dd.setMessage(reportPanel);
+            }
+        }
+    } // end SubmitInteractive
+    
+    private static final class SubmitAutomatic extends Submit {
+        Button def;
+        private boolean urlComputed;
         
-    } // end Submit
+        public SubmitAutomatic(String msg, Button def) {
+            super(msg);
+            this.def = def;
+        }
+        
+        protected void createDialog() {
+        }
+        
+        protected void closeDialog() {
+        }
+
+        protected void viewData() {
+            assert false;
+        }
+        protected synchronized void assignInternalURL(URL u) {
+            urlComputed = true;
+            notifyAll();
+        }
+        protected void showURL(URL u) {
+            hintURL = u;
+        }
+        protected void saveUserName() {
+        }
+        protected void addMoreLogs(List<? super String> params) {
+        }
+        protected Object showDialogAndGetValue(DialogDescriptor dd) {
+            while (!urlComputed) {
+                synchronized (this) {
+                    try {
+                        wait();
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+            for (Object o : dd.getOptions()) {
+                if (o instanceof JButton) {
+                    JButton b = (JButton)o;
+                    if (def.isCommand(b.getActionCommand())) {
+                        actionPerformed(new ActionEvent(b, 0, b.getActionCommand()));
+                        return b;
+                    }
+                }
+            }
+            return DialogDescriptor.CLOSED_OPTION;
+        }
+        protected void alterMessage(DialogDescriptor dd) {
+        }
+    } // end SubmitAutomatic
+    
 
     private static enum Button {
         EXIT("exit"),
         NEVER_AGAIN("never-again"),
         VIEW_DATA("view-data"),
         REDIRECT("redirect"),
+        AUTO_SUBMIT("auto-submit"),
         SUBMIT("submit");
         
         private final String name;
@@ -946,6 +1096,9 @@ public class Installer extends ModuleInstall {
                 }
             }
             return false;
+        }
+        public static boolean isSubmitTrigger(String n) {
+            return SUBMIT.isCommand(n) || AUTO_SUBMIT.isCommand(n);
         }
     } // end of Buttons
 }

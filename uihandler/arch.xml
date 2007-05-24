@@ -1230,6 +1230,15 @@ Microsystems, Inc. All Rights Reserved.
             <api name="org.netbeans.modules.autoupdate.ideIdentity" category="friend" group="preferences" type="import">
                 This module shares the identity with autoupdate and reads it from its preferences node.
             </api>
+            <api name="org.netbeans.modules.uihandler.autoautoSubmitWhenFull" category="devel" group="preferences" type="export">
+                This property allows other parts of the system to turn on/off the
+                automatic submission of log files to the server. This can be
+                used for example by installer to query the user and on his
+                confirmation create <code>config/Preferences/org/netbeans/modules/uihandler.properties</code>
+                file in user dir or in nbX.Y cluster with one line saying:
+                <code>autoSubmitWhenFull=true</code>. This works since 
+                version 1.30 of this module.
+            </api>
         </p>
     </answer>
     
