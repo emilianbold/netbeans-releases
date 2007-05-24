@@ -63,10 +63,10 @@ public class ValidBasicType extends JPAEntityAttributeCheck {
         Types types = ctx.getCompilationInfo().getTypes(); 
         TypeMirror attrType = attrib.getType();
         
-        TypeMirror typeSerializable = treeUtils.parseType("java.io.Serializable",
+        TypeMirror typeSerializable = treeUtils.parseType("java.io.Serializable", //NOI18N
                 ctx.getJavaClass());
         
-        TypeMirror typeEnum = treeUtils.parseType("java.lang.Enum",
+        TypeMirror typeEnum = treeUtils.parseType("java.lang.Enum", //NOI18N
                 ctx.getJavaClass());
         
         if (types.isAssignable(attrType, typeSerializable)
