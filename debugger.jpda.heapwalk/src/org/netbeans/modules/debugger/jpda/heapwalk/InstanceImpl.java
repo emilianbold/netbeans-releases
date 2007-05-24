@@ -131,7 +131,13 @@ public class InstanceImpl implements Instance {
         for (org.netbeans.api.debugger.jpda.Field field : varFields) {
             if (!field.isStatic()) {
                 if (field instanceof ObjectVariable) {
-                    fields.add(new ObjectFieldValueImpl(heap, this, field, InstanceImpl.createInstance(heap, (ObjectVariable) field)));
+                    Instance instance;
+                    if (((ObjectVariable) field).getUniqueID() == 0L) {
+                        instance = null;
+                    } else {
+                        instance = InstanceImpl.createInstance(heap, (ObjectVariable) field);
+                    }
+                    fields.add(new ObjectFieldValueImpl(heap, this, field, instance));
                 } else {
                     fields.add(new FieldValueImpl(heap, this, field));
                 }

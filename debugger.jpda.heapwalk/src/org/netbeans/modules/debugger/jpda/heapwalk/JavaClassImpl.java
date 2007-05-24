@@ -121,7 +121,13 @@ public class JavaClassImpl implements JavaClass {
         for (org.netbeans.api.debugger.jpda.Field field : refFields) {
             if (field.isStatic()) {
                 if (field instanceof ObjectVariable) {
-                    fields.add(new ObjectFieldValueImpl(heap, null, field, InstanceImpl.createInstance(heap, (ObjectVariable) field)));
+                    Instance instance;
+                    if (((ObjectVariable) field).getUniqueID() == 0L) {
+                        instance = null;
+                    } else {
+                        instance = InstanceImpl.createInstance(heap, (ObjectVariable) field);
+                    }
+                    fields.add(new ObjectFieldValueImpl(heap, null, field, instance));
                 } else {
                     fields.add(new FieldValueImpl(heap, null, field));
                 }
