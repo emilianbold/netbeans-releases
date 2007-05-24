@@ -34,6 +34,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.Action;
+import org.netbeans.modules.mobility.project.ui.BuildConfigurationAction;
+import org.netbeans.modules.mobility.project.ui.BuildConfigurationAction;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
@@ -208,6 +210,7 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
                                     Lookups.fixed(new Object[] {project, cfg, AbilitiesPanel.hintInstance}),
                                     cfg.getDisplayName(),PLATFORM_ICON,
                                     new Action[] {
+                                                  SystemAction.get(BuildConfigurationAction.class),
                                                   SetConfigurationAction.getStaticInstance(),
                                                   null,
                                                   SystemAction.get(CopyAction.class),
@@ -278,12 +281,14 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
                 new CfgNode(new ConfigChildren(), 
                     Lookups.fixed(new Object[] {project, confs[i], AbilitiesPanel.hintInstance}),
                     confs[i].getDisplayName(),PLATFORM_ICON,
-                    new Action[] {SetConfigurationAction.getStaticInstance(),
+                    new Action[] {SystemAction.get(BuildConfigurationAction.class),
+                                  SetConfigurationAction.getStaticInstance(),
                                  }) :
                 new CfgNode(new ConfigChildren(),
                     Lookups.fixed(new Object[] {project, confs[i], AbilitiesPanel.hintInstance}),
                     confs[i].getDisplayName(),PLATFORM_ICON,
                     new Action[] {
+                                  SystemAction.get(BuildConfigurationAction.class),
                                   SetConfigurationAction.getStaticInstance(),
                                   null,
                                   SystemAction.get(CopyAction.class),

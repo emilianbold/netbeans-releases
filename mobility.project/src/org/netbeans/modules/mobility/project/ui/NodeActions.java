@@ -37,14 +37,20 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.StringTokenizer;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
 import javax.swing.KeyStroke;
 import javax.swing.filechooser.FileFilter;
+import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.mobility.project.J2MEProject;
@@ -59,6 +65,7 @@ import org.netbeans.modules.project.support.customizer.AntArtifactChooser;
 import org.netbeans.modules.project.support.customizer.AntArtifactChooser.ArtifactItem;
 import org.netbeans.modules.project.support.customizer.LibrariesChooser;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.DialogDescriptor;
@@ -620,6 +627,70 @@ class AddConfigurationAction extends ContextAction
     }
 }
     
+class BuildConfigurationAction extends ContextAction
+{
+    final static String aName  = NbBundle.getMessage(ContextAction.class,"Title_CfgSelection_build-all");
+    final static Action action = new BuildConfigurationAction();
+    
+    private BuildConfigurationAction()
+    {
+        super(aName);
+    }
+    
+    public static Action getStaticInstance()
+    {
+        return action;
+    }
+    
+    protected void performAction(final Node[] activatedNodes)
+    {
+        final HashMap<J2MEProject,String> todo=new HashMap<J2MEProject,String>();        
+               
+        for (Node node : activatedNodes)
+        {
+            J2MEProject project=node.getLookup().lookup(J2MEProject.class);
+            String tobuild=todo.get(project);
+            if (tobuild==null)
+            {
+                todo.put(project,tobuild=new String());
+            }                
+            String conf=node.getLookup().lookup(ProjectConfiguration.class).getDisplayName();
+            String comma=(tobuild==null||tobuild.length()==0)?"":",";
+            if (ProjectConfigurationsHelper.DEFAULT_CONFIGURATION_NAME.equals(conf))
+                tobuild=" "+comma+tobuild;
+            else
+                tobuild+=comma+conf;
+            todo.put(project,tobuild);
+        }
+        
+        final Runnable action = new Runnable() 
+        {
+            public void run() 
+            {
+                for (Map.Entry<J2MEProject,String> entry : todo.entrySet())
+                {
+                    int tokens=new StringTokenizer(entry.getValue(),",").countTokens();
+                    final String[] targetNames=new String[] {"build-all"};
+                    final Properties props=new Properties();
+                    props.put(DefaultPropertiesDescriptor.SELECTED_CONFIGURATIONS,
+                              entry.getValue());
+                    
+                    try 
+                    {
+                        ActionUtils.runTarget(entry.getKey().getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH), 
+                                              targetNames, props);
+                    } catch (IOException e) {
+                        ErrorManager.getDefault().notify(e);
+                    }
+                }
+            }
+        };
+        
+        action.run();
+    }
+    
+}
+
 class RemoveConfigurationAction extends ContextAction
 {
     final static String aName  = NbBundle.getMessage(CustomizerLibraries.class,"ACSN_RemovePanel");
