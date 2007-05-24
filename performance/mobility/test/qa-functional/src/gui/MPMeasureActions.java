@@ -43,7 +43,7 @@ public class MPMeasureActions  {
         suite.addTest(new CreateVisualMIDlet("measureTime","Create Visual MIDlet"));
         suite.addTest(new CreateMIDlet("measureTime","Create MIDlet"));
         suite.addTest(new SwitchConfiguration("measureTime","Switch Configuration"));
-        suite.addTest(new OpenMobileproject("measureTime","Open Mobile CLDC project "));
+        suite.addTest(new OpenMobileproject("measureTime","Open Mobile CLDC project"));
         return suite;
     }
     
