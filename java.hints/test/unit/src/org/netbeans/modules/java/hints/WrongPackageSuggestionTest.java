@@ -43,6 +43,8 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.hints.WrongPackageSuggestion.CorrectPackageDeclarationFix;
+import org.netbeans.modules.java.hints.options.HintsSettings;
+import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -70,6 +72,7 @@ public class WrongPackageSuggestionTest extends NbTestCase {
     }
     
     protected void setUp() throws Exception {
+        HintsSettings.setSeverity(new WrongPackageSuggestion().getPreferences(null), HintSeverity.WARNING);
         super.setUp();
     }
     
