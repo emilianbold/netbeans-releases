@@ -21,16 +21,12 @@
 package org.netbeans.modules.vmd.properties;
 
 import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
-import org.netbeans.modules.vmd.api.properties.GroupValue;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 
@@ -48,6 +44,10 @@ public class PropertiesNode extends AbstractNode{
         super(Children.LEAF, lookup);
         this.component = new WeakReference<DesignComponent>(component);
         this.context = new WeakReference<DataObjectContext>(context);
+    }
+    
+    public DesignComponent getComponent() {
+        return component.get();
     }
     
     public Sheet createSheet() {
@@ -73,47 +73,8 @@ public class PropertiesNode extends AbstractNode{
         return displayName;
     }
     
-    public void updateNode() {
-        Object value = null;
-        setName(createName());
-        for (PropertySet set : getSheet().toArray()) {
-            for (Property property : set.getProperties()) {
-                value = null;
-                try {
-                    value = property.getValue();
-                } catch (IllegalAccessException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (InvocationTargetException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                if (value instanceof GroupValue) {
-                    GroupValue oldValue = (GroupValue) value;
-                    GroupValue newValue = new GroupValue(java.util.Arrays.asList(oldValue.getPropertyNames()));
-                    for (java.lang.String propertyName : newValue.getPropertyNames()) {
-                        newValue.putValue(propertyName, oldValue.getValue(propertyName));
-                    }
-                    firePropertyChange(property.getName(), oldValue, newValue);
-                }
-                if (value instanceof PropertyValue) {
-                    PropertyValue oldValue = (PropertyValue) value;
-                    PropertyValue newValue = null;
-                    if (oldValue.getKind() == PropertyValue.Kind.ARRAY)
-                        newValue = PropertyValue.createArray(oldValue.getType(), oldValue.getArray());
-                    else  if (oldValue.getKind() == PropertyValue.Kind.ENUM)
-                        newValue = PropertyValue.createValue(component.get().getDocument().getDocumentInterface().getProjectType(), oldValue.getType(), oldValue.getPrimitiveValue());
-                    else  if (oldValue.getKind() == PropertyValue.Kind.NULL)
-                        newValue = PropertyValue.createNull();
-                    else  if (oldValue.getKind() == PropertyValue.Kind.REFERENCE)
-                        newValue = PropertyValue.createComponentReference(oldValue.getComponent());
-                    else  if (oldValue.getKind() == PropertyValue.Kind.USERCODE)
-                        newValue = PropertyValue.createUserCode(oldValue.getUserCode());
-                    else  if (oldValue.getKind() == PropertyValue.Kind.VALUE)
-                        newValue = PropertyValue.createValue(component.get().getDocument().getDocumentInterface().getProjectType(), oldValue.getType(), oldValue.getPrimitiveValue());
-                    if (newValue != null)
-                        firePropertyChange(property.getName(), oldValue, newValue);
-                }
-            }
-        }
+    public void updateNode(Sheet sheet) {
+        setSheet(sheet);
     }
     
 }

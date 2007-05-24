@@ -54,7 +54,6 @@ public final class PropertiesNodesManager implements ActiveDocumentSupport.Liste
     private WeakHashMap<DataEditorView, InstanceContent> icMap;
     private Collection<InstanceContent> ics;
     private WeakHashMap<InstanceContent, WeakSet<Node>> nodesToRemoveMap;
-    private WeakHashMap<DesignComponent, Sheet> sheetMap;
     private WeakReference<DataObjectContext> context;
     private WeakHashMap<DesignComponent, WeakSet<DefaultPropertySupport>> propertySupportMap;
 
@@ -70,7 +69,6 @@ public final class PropertiesNodesManager implements ActiveDocumentSupport.Liste
     
     private PropertiesNodesManager(DataObjectContext context) {
         nodesToRemoveMap = new WeakHashMap<InstanceContent, WeakSet<Node>>();
-        sheetMap = new WeakHashMap<DesignComponent, Sheet>();
         this.context = new WeakReference<DataObjectContext>(context);
         icMap = new WeakHashMap<DataEditorView, InstanceContent>();
         ics = new HashSet();
@@ -118,12 +116,7 @@ public final class PropertiesNodesManager implements ActiveDocumentSupport.Liste
     
     public synchronized Sheet getSheet(DesignComponent component) {
         assert (component != null);
-        Sheet sheet = sheetMap.get(component);
-        if (sheet == null) {
-            sheet = createSheet(component);
-            sheetMap.put(component, sheet);
-        }
-        return sheet;
+        return createSheet(component);
     }
     
     private synchronized static void createCategoriesSet(Sheet sheet, List<String> categories) {
@@ -184,7 +177,6 @@ public final class PropertiesNodesManager implements ActiveDocumentSupport.Liste
                 }
             }
         });
-        
         return sheet;
     }
     
@@ -200,22 +192,17 @@ public final class PropertiesNodesManager implements ActiveDocumentSupport.Liste
     public void updatePropertyEditorsValues(DataEditorView view, Collection<DesignComponent> components) {
          if (components == null)
             return;
-        for (DesignComponent component : components) {
-            Set<DefaultPropertySupport> propertySupports = propertySupportMap.get(component);
-            if (propertySupports == null)
-                return;
-            for (DefaultPropertySupport ps : propertySupports) {
-                ps.update();
-            }
-        }
         Collection<InstanceContent> tempIcs = new HashSet<InstanceContent>();
         tempIcs.addAll(ics);
         if (icMap.get(view) != null)
             tempIcs.add(icMap.get(view));
         for (InstanceContent ic : tempIcs) {
             WeakSet<Node> nodesToRemove = nodesToRemoveMap.get(ic);
+            if (nodesToRemove == null)
+                continue;
             for (Node node : nodesToRemove) {
-                ((PropertiesNode)node).updateNode();
+                PropertiesNode pn = (PropertiesNode) node;
+                pn.updateNode(createSheet(pn.getComponent()));
             }
         }
     }
