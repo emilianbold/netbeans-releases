@@ -94,7 +94,8 @@ public final class ModelViewMapper {
         if (lb == null) {
             // Caret positions should always be in a linebox unless we're inline editing;
             // in inline editing mode we can delete backwards until we have no caret position
-            assert webform.getManager().isInlineEditing() : pos;
+            // XXX #104463 This doesn't seem to be correct here.
+//            assert webform.getManager().isInlineEditing() : pos;
 
 //            return Position.NONE;
             return DomPosition.NONE;
