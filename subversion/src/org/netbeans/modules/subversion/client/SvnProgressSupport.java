@@ -55,7 +55,6 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
         task.addTaskListener(new TaskListener() {
             public void taskFinished(org.openide.util.Task task) {
                 delegate = null;
-                delegate = null;
             }
         });
         return task;
@@ -91,10 +90,10 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
     }
 
     public synchronized boolean cancel() {
-        getLogger().flushLog();
         if (canceled) {
             return false;
-        }        
+        }                
+        getLogger().flushLog();
         if(task != null) {
             task.cancel();
         }

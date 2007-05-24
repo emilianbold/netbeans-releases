@@ -150,6 +150,15 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                     return null; 
                 }
                 throw ex;
+            } catch (Throwable t) {
+                if(t instanceof InterruptedException) {
+                    throw new SVNClientException(SvnClientExceptionHandler.ACTION_CANCELED_BY_USER);                     
+                } 
+                Throwable c = t.getCause();
+                if(c instanceof InterruptedException) {                    
+                    throw new SVNClientException(SvnClientExceptionHandler.ACTION_CANCELED_BY_USER);                     
+                } 
+                throw t;
             }
         }
     }
