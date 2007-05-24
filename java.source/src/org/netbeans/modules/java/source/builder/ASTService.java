@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.java.source.builder;
 
-import org.netbeans.modules.java.source.engine.ASTModel;
 import org.netbeans.modules.java.source.engine.TreeFinder;
 import org.netbeans.modules.java.source.engine.RootTree;
 import java.util.HashMap;
@@ -46,7 +45,7 @@ import static com.sun.tools.javac.tree.JCTree.*;
 /**
  * A javac abstract syntax tree which maps all nodes to a single root.
  */
-public final class ASTService implements ASTModel {
+public final class ASTService {
     
     private RootTree root;
     private RootTree oldRoot;

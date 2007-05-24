@@ -45,7 +45,6 @@ import org.netbeans.modules.java.source.builder.ASTService;
 import org.netbeans.modules.java.source.builder.DefaultEnvironment;
 import org.netbeans.modules.java.source.builder.TreeFactory;
 import org.netbeans.modules.java.source.engine.DefaultApplicationContext;
-import org.netbeans.modules.java.source.engine.EngineEnvironment;
 import org.netbeans.modules.java.source.engine.ReattributionException;
 import org.netbeans.modules.java.source.engine.SourceReader;
 import org.netbeans.modules.java.source.engine.SourceRewriter;
@@ -99,7 +98,7 @@ public class WorkingCopy extends CompilationController {
     
     // API of the class --------------------------------------------------------
 
-    EngineEnvironment getCommandEnvironment() {
+    DefaultEnvironment getCommandEnvironment() {
         return ce;
     }
 

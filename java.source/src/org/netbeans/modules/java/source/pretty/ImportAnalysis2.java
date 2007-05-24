@@ -49,10 +49,9 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.source.builder.ASTService;
+import org.netbeans.modules.java.source.builder.DefaultEnvironment;
 import org.netbeans.modules.java.source.builder.TreeFactory;
-import org.netbeans.modules.java.source.query.QueryEnvironment;
-import org.netbeans.modules.java.source.engine.ASTModel;
-import org.netbeans.modules.java.source.engine.EngineEnvironment;
 import org.netbeans.modules.java.source.transform.ChangeSet;
 
 /**
@@ -64,7 +63,7 @@ public class ImportAnalysis2 {
     private Elements elements;
     private Types types;
     private Trees trees;
-    private ASTModel model;
+    private ASTService model;
     private TreeFactory make;
     private List<ImportTree> imports;
     private Set<Element> imported;
@@ -76,14 +75,14 @@ public class ImportAnalysis2 {
     private ChangeSet changes;
     private WorkingCopy copy;
     
-    public ImportAnalysis2(QueryEnvironment env) {
+    public ImportAnalysis2(DefaultEnvironment env) {
         elements = env.getElements();
         types = env.getTypes();
-        model = ((EngineEnvironment)env).getModel();
+        model = env.getModel();
         make = env.getTreeMaker();
         trees = env.getTrees();
         
-        unnamedPackage = Symtab.instance(((EngineEnvironment) env).getContext()).unnamedPackage;
+        unnamedPackage = Symtab.instance(env.getContext()).unnamedPackage;
     }
     
     public void setPackage(ExpressionTree packageNameTree) {

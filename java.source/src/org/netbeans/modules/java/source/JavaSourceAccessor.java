@@ -28,7 +28,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.source.query.QueryEnvironment;
+import org.netbeans.modules.java.source.builder.DefaultEnvironment;
 import org.openide.ErrorManager;
 
 /**
@@ -72,7 +72,7 @@ public abstract class JavaSourceAccessor {
      * @param copy {@link WorkingCopy} for which {@link QueryEnvironment} should be obtained
      * @return {@link CQueryEnvironment associated with the given working copy
      */
-    public abstract QueryEnvironment getCommandEnvironment(WorkingCopy copy);
+    public abstract DefaultEnvironment getCommandEnvironment(WorkingCopy copy);
     
     /**
      * Returns a cached compilation info when available or null

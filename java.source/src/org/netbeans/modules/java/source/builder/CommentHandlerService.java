@@ -23,7 +23,6 @@ import org.netbeans.modules.java.source.builder.ASTService;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.modules.java.source.query.CommentHandler;
 import org.netbeans.modules.java.source.query.CommentSet;
-import org.netbeans.modules.java.source.engine.ASTModel;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
@@ -65,7 +64,7 @@ public class CommentHandlerService implements CommentHandler {
     }
 
     private Map<Tree, CommentSetImpl> map = new WeakHashMap<Tree, CommentSetImpl>();
-    protected ASTModel model;
+    protected ASTService model;
     
     private CommentHandlerService(Context context) {
         model = ASTService.instance(context);

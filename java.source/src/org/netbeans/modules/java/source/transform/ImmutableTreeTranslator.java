@@ -19,12 +19,8 @@
 
 package org.netbeans.modules.java.source.transform;
 
-import org.netbeans.modules.java.source.engine.EngineEnvironment;
 import org.netbeans.modules.java.source.query.CommentHandler;
 import org.netbeans.modules.java.source.engine.RootTree;
-import org.netbeans.modules.java.source.query.QueryEnvironment;
-import org.netbeans.modules.java.source.engine.EngineEnvironment;
-import org.netbeans.modules.java.source.engine.ASTModel;
 import org.netbeans.modules.java.source.query.Query;
 
 import com.sun.source.tree.*;
@@ -33,6 +29,8 @@ import javax.lang.model.element.Element;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.java.source.builder.ASTService;
+import org.netbeans.modules.java.source.builder.DefaultEnvironment;
 import org.netbeans.modules.java.source.builder.QualIdentTree;
 import org.netbeans.modules.java.source.builder.TreeFactory;
 import org.netbeans.modules.java.source.pretty.ImportAnalysis2;
@@ -61,15 +59,15 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 
     protected TreeFactory make;
     protected CommentHandler comments;
-    protected ASTModel model;
-    protected QueryEnvironment env;
+    protected ASTService model;
+    protected DefaultEnvironment env;
     private CompilationUnitTree topLevel;
     private ImportAnalysis2 importAnalysis;
 
-    public void attach(QueryEnvironment env) {
+    public void attach(DefaultEnvironment env) {
 	make = env.getTreeMaker();
 	comments = env.getCommentHandler();
-        this.model = ((EngineEnvironment)env).getModel();
+        this.model = env.getModel();
         this.env = env;
         importAnalysis = new ImportAnalysis2(env);
     }

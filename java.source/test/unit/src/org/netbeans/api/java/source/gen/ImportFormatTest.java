@@ -26,9 +26,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import org.netbeans.modules.java.source.engine.ASTModel;
 import org.netbeans.modules.java.source.transform.Transformer;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.java.source.builder.ASTService;
 import org.openide.filesystems.FileStateInvalidException;
 
 /**
@@ -339,7 +339,7 @@ public class ImportFormatTest extends GeneratorTestMDRCompat {
         return "org/netbeans/test/codegen/indent/imports/";
     }
     
-    private static Tree getParent(Tree t, ASTModel model) {
+    private static Tree getParent(Tree t, ASTService model) {
         Tree root = model.getRoot();
         Tree[] tp = model.makePath(root, t);
         if (tp.length == 0)

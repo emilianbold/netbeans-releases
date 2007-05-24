@@ -95,7 +95,6 @@ import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.timers.TimesCollector;
 import org.netbeans.editor.Registry;
-import org.netbeans.modules.java.source.query.QueryEnvironment;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.netbeans.modules.java.source.builder.ASTService;
 import org.netbeans.modules.java.source.builder.Scanner;
@@ -106,6 +105,7 @@ import org.netbeans.modules.java.source.engine.RootTree;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.TreeLoader;
+import org.netbeans.modules.java.source.builder.DefaultEnvironment;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
@@ -1737,7 +1737,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         }
         
         @Override
-        public QueryEnvironment getCommandEnvironment(WorkingCopy copy) {
+        public DefaultEnvironment getCommandEnvironment(WorkingCopy copy) {
             assert copy != null;
             return copy.getCommandEnvironment();
         }
