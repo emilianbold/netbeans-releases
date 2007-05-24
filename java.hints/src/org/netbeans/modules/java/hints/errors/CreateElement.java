@@ -551,12 +551,16 @@ public final class CreateElement implements ErrorRule<Void> {
         if (efl.getExpression() != error) {
             return null;
         }
+                        
+        TypeElement iterable = info.getElements().getTypeElement("java.lang.Iterable"); //NOI18N
+        if (iterable == null) {
+            return null;
+        }
         
         types.add(FixTypes.PARAM);
         types.add(FixTypes.LOCAL);
         types.add(FixTypes.FIELD);
         
-        TypeElement iterable = info.getElements().getTypeElement("java.lang.Iterable");
         TypeMirror argument = info.getTrees().getTypeMirror(new TreePath(new TreePath(parent, efl.getVariable()), efl.getVariable().getType()));
         
         return Collections.singletonList(info.getTypes().getDeclaredType(iterable, argument));
