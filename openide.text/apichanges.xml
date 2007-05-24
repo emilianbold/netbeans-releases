@@ -37,7 +37,7 @@ Microsystems, Inc. All Rights Reserved.
                 already deprecated.
             </p>
         </description>
-        <class package="org.openide.text" name="NbDocument.Colors"/>
+        <class package="org.openide.text" name="NbDocument"/>
         <issue number="88531"/>
     </change>
     <change id="NbDocument.COLORS">
@@ -85,7 +85,7 @@ Microsystems, Inc. All Rights Reserved.
                 by moving both into org.openide.options module which is already deprecated.
             </p>
         </description>
-        <class package="org.openide.text" name="PrintSettings"/>
+        <class package="org.openide.text" name="PrintSettings" link="no"/>
         <issue number="88531"/>
     </change>
     <change id="Line.SHOW_REUSE">    
