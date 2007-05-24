@@ -141,14 +141,14 @@ public class SvnClientExceptionHandler {
          
     private boolean handleRepositoryConnectError() {
         SVNUrl url = client.getSvnUrl();
-        String title = org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters");                 // NOI18N
-        Repository repository = new Repository(Repository.FLAG_SHOW_PROXY, title); 
+        Repository repository = new Repository(Repository.FLAG_SHOW_PROXY, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters"));  // NOI18N
         repository.selectUrl(url, true);
         
         JButton retryButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Retry"));           // NOI18N        
-        Object option = repository.show(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_AuthFailed"),          // NOI18N    
-                                        new HelpCtx(this.getClass()),
-                                        new Object[] {retryButton, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Cancel")});   // NOI18N
+        String title = ((exceptionMask & EX_NO_HOST_CONNECTION) == exceptionMask) ? 
+                            org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_CouldNotConnect") : 
+                            org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_AuthFailed");
+        Object option = repository.show(title, new HelpCtx(this.getClass()), new Object[] {retryButton, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Cancel")});   // NOI18N
                 
 
         boolean ret = (option == retryButton);
