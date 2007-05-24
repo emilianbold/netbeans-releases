@@ -163,6 +163,8 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="WoodstockWizardBranch.comp_palette_item/WoodstockWizardBranchSteps.comp_palette_item" boolvalue="true"/>
             <attr name="WoodstockWizardBranchSteps.comp_palette_item/WoodstockWizardStep.comp_palette_item" boolvalue="true"/>
             <attr name="WoodstockWizardStep.comp_palette_item/WoodstockWizardSubstepBranch" boolvalue="true"/> 
+		<attr name="WoodstockEditableField.comp_palette_item/WoodstockEditableField" boolean="true"/>
+
             <!-- End of Woodstock components not included in VWP -->
             
             <!-- End Sort -->
@@ -191,6 +193,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="WoodstockWizardBranchSteps.comp_palette_item" url="resources/WoodstockWizardBranchSteps.comp_palette_item"/>
             <file name="WoodstockWizardStep.comp_palette_item" url="resources/WoodstockWizardStep.comp_palette_item"/>
             <file name="WoodstockWizardSubstepBranch.comp_palette_item" url="resources/WoodstockWizardSubstepBranch.comp_palette_item"/> 
+		<file name="WoodstockEditableField.comp_palette_item" url="resources/WoodstockEditableField.comp_palette_item"/>
             <!-- End fo Woodstock components not included in VWP -->
         </folder>
         <folder name="Advanced">
