@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.modules.debugger;
@@ -80,7 +80,7 @@ public class AttachDialogOperator extends NbDialogOperator {
      */
     public JLabelOperator lblDebugger() {
         if (_lblDebugger==null) {
-            _lblDebugger = new JLabelOperator(this, Bundle.getString(
+            _lblDebugger = new JLabelOperator(this, Bundle.getStringTrimmed(
                                 "org.netbeans.modules.debugger.ui.actions.Bundle",
                                 "CTL_Connect_through"));
         }
