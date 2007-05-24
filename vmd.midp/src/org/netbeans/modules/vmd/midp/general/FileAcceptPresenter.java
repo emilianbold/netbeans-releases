@@ -32,8 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
@@ -207,12 +205,10 @@ public abstract class FileAcceptPresenter extends AbstractAcceptPresenter {
         DataObjectContext dac = ProjectUtils.getDataObjectContextForDocument(document);
         //Resources
         for (FileObject f : ClassPath.getClassPath(projectDirectory, ClassPath.COMPILE).getRoots()) {
-            System.out.println(f.getName());
             filesToScan.add((f));
         }
         //Sources
         for (SourceGroup g : ProjectUtils.getSourceGroups(dac)) {
-            System.out.println(g.getRootFolder().getName());
             filesToScan.add((g.getRootFolder()));
         }
         return filesToScan;
