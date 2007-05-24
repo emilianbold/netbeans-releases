@@ -87,9 +87,15 @@ public final class ExcludeFromCommitAction extends ContextAction {
         ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
             public void perform() {
                 SvnModuleConfig config = SvnModuleConfig.getDefault();
-                int status = getActionStatus(nodes);
-                File [] files = getContext(nodes).getFiles();
-                List<String> paths = new ArrayList<String>(files.length);
+                int status = getActionStatus(nodes);                
+                List<File> files = new ArrayList<File>();
+                for (Node node : nodes) {                    
+                    File aFile = node.getLookup().lookup(File.class);
+                    if (aFile != null) {
+                        files.add(aFile);                        
+                    }
+                }
+                List<String> paths = new ArrayList<String>(files.size());
                 for (File file : files) {
                     paths.add(file.getAbsolutePath());
                 }
