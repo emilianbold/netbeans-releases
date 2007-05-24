@@ -32,12 +32,15 @@
                 </file>
             </folder>
             <folder name="Scene">
-                <!-- 
-                <file name="org-netbeans-modules-web-jsf-navigation-graph-actions-AddPageActionProvider.instance"/>
+                <!--
+                <file name="org-netbeans-modules-web-jsf-navigation-graph-actions-AddPageActionProvider.instance"/>                
                 <file name="NewAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.NewAction" />
+                    <attr name="instanceClass" stringvalue="org.openide.actions.NewAction" />
                 </file>
                 -->
+                <file name="org-netbeans-modules-project-ui-NewFile.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.NewFile"/>
+                </file>
             </folder>
             <!--<file name="org-netbeans-modules-web-jsf-navigation-graph-actions-ConnectToAction.instance"/>-->
         </folder>
