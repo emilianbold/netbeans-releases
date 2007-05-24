@@ -24,34 +24,34 @@
 				<tocitem text="Visual Designer" target="projrave_ui_elements_options_visual_editor" />
 			</tocitem>
 		</tocitem>
-		<tocitem text="Starting With Visual Web Application Projects" expand="false">
-			<tocitem text="About Visual Web Application Projects" target="projrave_projects_aboutprojects" />
-			<tocitem text="Working With Visual Web Application Projects" target="projrave_projects_project_process" />
-			<tocitem text="Visual Web Application Project Tasks: Quick Reference" target="projrave_projects_howtoprojects_howtoprojects" />
-			<tocitem text="Creating and Opening Visual Web Application Projects">
-				<tocitem text="Creating a Visual Web Application Project" target="projrave_projects_howtoprojects_create_project" />
+		<tocitem text="Starting With Visual Web Projects" expand="false">
+			<tocitem text="About Visual Web Projects" target="projrave_projects_aboutprojects" />
+			<tocitem text="Working With Visual Web Projects" target="projrave_projects_project_process" />
+			<tocitem text="Visual Web Project Tasks: Quick Reference" target="projrave_projects_howtoprojects_howtoprojects" />
+			<tocitem text="Creating and Opening Visual Web Projects">
+				<tocitem text="Creating a Visual Web Project" target="projrave_projects_howtoprojects_create_project" />
 				<tocitem text="Setting the Main Project" target="projrave_projects_howtoprojects_proj_main" />
 				<tocitem text="Opening a Project" target="projrave_projects_howtoprojects_open_project" />
 				<tocitem text="Copying a Project" target="projrave_projects_howtoprojects_copy_project" />
 			</tocitem>
-			<tocitem text="Developing a Visual Web Application Project">
+			<tocitem text="Developing a Visual Web Project">
 				<tocitem text="Saving a Project" target="projrave_projects_howtoprojects_save_project" />
 				<tocitem text="Running a Project" target="projrave_projects_howtoprojects_run_project" />
 				<tocitem text="Setting Project Properties" target="projrave_projects_howtoprojects_set_project_properties" />
 				<tocitem text="Deleting a Project" target="projrave_projects_howtoprojects_delete_project" />
 			</tocitem>
-			<tocitem text="Working Inside a Visual Web Application Project">
+			<tocitem text="Working Inside a Visual Web Project">
 				<tocitem text="Finding Files or Items in a Project" target="projrave_projects_howtoprojects_find_files" />
 				<tocitem text="Setting the Start Page in a Project" target="projrave_projects_howtoprojects_set_start_page" />
 				<tocitem text="Renaming a Page" target="projrave_projects_howtoprojects_rename_page" />
 				<tocitem text="Adding a Project Item" target="projrave_projects_howtoprojects_add_object" />
-				<tocitem text="Adding an Image File to a Visual Web Application Project" target="projrave_projects_howtoprojects_add_image" />
+				<tocitem text="Adding an Image File to a Visual Web Project" target="projrave_projects_howtoprojects_add_image" />
 				<tocitem text="Adding a CSS File to a Project" target="projrave_projects_howtoprojects_add_css_file" />
 				<tocitem text="Adding a Theme" target="projrave_projects_howtoprojects_add_theme" />
 				<tocitem text="Deleting a Project Item" target="projrave_projects_howtoprojects_delete_proj_item" />
 				<tocitem text="About Regular Expressions" target="projrave_projects_howtoprojects_aboutregularexpn" />
 				<tocitem text="Library References">
-					<tocitem text="About Library References in Visual Web Application Projects" target="projrave_projects_about_lib_refs" />
+					<tocitem text="About Library References in Visual Web Projects" target="projrave_projects_about_lib_refs" />
 					<tocitem text="Creating a Library Reference" target="projrave_projects_howtoprojects_create_library" />
 					<tocitem text="Adding a Library Reference to a Project" target="projrave_projects_howtoprojects_import_libraries" />
 					<tocitem text="Modifying a Library Reference" target="projrave_projects_howtoprojects_modify_library" />
@@ -59,7 +59,7 @@
 				</tocitem>
 			</tocitem>
 			<tocitem text="Building and Compiling">
-				<tocitem text="Building a Visual Web Application Project" target="projrave_projects_howtoprojects_build_project" />
+				<tocitem text="Building a Visual Web Project" target="projrave_projects_howtoprojects_build_project" />
 				<tocitem text="Compiling a File" target="projrave_projects_howtoprojects_compile_file" />
 				<tocitem text="Cleaning a Project" target="projrave_projects_howtoprojects_clean_project" />
 			</tocitem>
@@ -119,7 +119,7 @@
 					<tocitem text="Editing a Database Server Type" target="projrave_connect_data_howtodata_configure_jdbc_driver" />
 					<tocitem text="Modifying a Database Connection" target="projrave_connect_data_howtodata_modify_ds_properties" />
 					<tocitem text="Modifying Database Connection Properties" target="projrave_connect_data_howtodata_modify_ds_properties" />
-					<tocitem text="Removing a Database Connection from the Runtime Window" target="projrave_connect_data_howtodata_remove_data_source" />
+					<tocitem text="Removing a Database Connection from the Services Window" target="projrave_connect_data_howtodata_remove_data_source" />
 					<tocitem text="Resolving a Data Source" target="projrave_ui_elements_dialogs_resolve_data_source_db" />
 				</tocitem>
 				<tocitem text="Accessing the Data">
@@ -145,10 +145,10 @@
 			<tocitem text="Page Navigation Tasks: Quick Reference" target="projrave_multiple_forms_howtomultiforms_howtomultiforms" />
 			<tocitem text="Creating Pages and Components">
 				<tocitem text="Creating a Page in a Visual Web Project" target="projrave_multiple_forms_howtomultiforms_create_form" />
-				<tocitem text="Adding Components in the Page Navigation Editor" target="projrave_multiple_forms_howtomultiforms_add_comp_nav_editor" />
-				<tocitem text="Opening Pages From the Page Navigation Editor" target="projrave_multiple_forms_howtomultiforms_open_page_nav_editor" />
+				<tocitem text="Adding Components in the Page Flow Editor" target="projrave_multiple_forms_howtomultiforms_add_comp_nav_editor" />
+				<tocitem text="Opening Pages From the Page Flow Editor" target="projrave_multiple_forms_howtomultiforms_open_page_nav_editor" />
 				<tocitem text="Deleting a Page in a Visual Web Project" target="projrave_multiple_forms_howtomultiforms_delete_page" />
-				<tocitem text="Viewing Page Contents in the Page Navigation Editor" target="projrave_multiple_forms_howtomultiforms_preview_nav_page" />
+				<tocitem text="Viewing Page Contents in the Page Flow Editor" target="projrave_multiple_forms_howtomultiforms_preview_nav_page" />
 			</tocitem>
 			<tocitem text=" Connecting Multiple Pages">
 				<tocitem text="Setting Up Static Page Navigation" target="projrave_multiple_forms_howtomultiforms_set_form_navigation" />
@@ -188,7 +188,6 @@
 					<tocitem text="Projects Window" target="projrave_ui_elements_project_nav_portfoliological" />
 					<tocitem text="Project Node" target="projrave_ui_elements_project_nav_webapp_node" />
 					<tocitem text="Web Pages Node" target="projrave_ui_elements_project_nav_webforms_node" />
-					<tocitem text="Page Navigation Node" target="projrave_ui_elements_project_nav_pagenav_node" />
 					<tocitem text="Managed Beans Node" target="projrave_ui_elements_project_nav_man_beans_node" />
 					<tocitem text="Session Bean Node" target="projrave_ui_elements_project_nav_session_bean_node" />
 					<tocitem text="Request Bean Node" target="projrave_ui_elements_project_nav_request_bean_node" />
@@ -405,7 +404,7 @@
 				<tocitem text="URL Property Editor" target="projrave_ui_elements_propeditors_url_prop_ed" />
 				<tocitem text="urlLang / lang Property Editor" target="projrave_ui_elements_propeditors_lang_domain_prop_ed" />
 			</tocitem>
-			<tocitem text="Runtime Window" expand="true">
+			<tocitem text="Services Window" expand="true">
 				<tocitem text="Run Query Document Window" target="projrave_ui_elements_server_nav_run_query" />
 				<tocitem text="Servers Node" target="projrave_ui_elements_server_nav_deployment_srvrnode" />
 				<tocitem text="Dialog Boxes">

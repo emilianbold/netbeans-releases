@@ -487,7 +487,6 @@
 	<mapID target="projrave_ui_elements_project_nav_node_prop_sheets_request_bean_node_props" url="ui_elements/project_nav/node_prop_sheets/request_bean_node_props.html"/>
 	<mapID target="projrave_ui_elements_project_nav_node_prop_sheets_session_bean_node_props" url="ui_elements/project_nav/node_prop_sheets/session_bean_node_props.html"/>
 	<mapID target="projrave_ui_elements_project_nav_node_prop_sheets_web_pages_node_props" url="ui_elements/project_nav/node_prop_sheets/web_pages_node_props.html"/>
-	<mapID target="projrave_ui_elements_project_nav_pagenav_node" url="ui_elements/project_nav/pagenav_node.html"/>
 	<mapID target="projrave_ui_elements_project_nav_portfoliofilesystem" url="ui_elements/project_nav/projectfilesystem.html"/>
 	<mapID target="projrave_ui_elements_project_nav_portfoliological" url="ui_elements/project_nav/projectlogical.html"/>
 	<mapID target="projrave_ui_elements_project_nav_project_props_build" url="ui_elements/project_nav/project_props_build.html"/>
@@ -541,7 +540,6 @@
 	<mapID target="projrave_ui_elements_server_nav_run_query" url="ui_elements/server_nav/run_query.html"/>
 	<mapID target="projrave_ui_elements_server_nav_run_query_options_dialog" url="ui_elements/server_nav/run_query_options_dialog.html"/>
 	<mapID target="projrave_ui_elements_server_nav_runtime_nav_driver_node_popup" url="ui_elements/server_nav/runtime_nav_driver_node_popup.html"/>
-	<mapID target="projrave_ui_elements_server_nav_runtime_nav_graphic" url="ui_elements/server_nav/runtime_nav_graphic.html"/>
 	<mapID target="projrave_ui_elements_server_nav_runtime_navigator" url="ui_elements/server_nav/runtime_navigator.html"/>
 	<mapID target="projrave_ui_elements_wizards_new_project_choose_type" url="ui_elements/wizards/new_project_choose_type.html"/>
 	<mapID target="projrave_ui_elements_wizards_new_project_name" url="ui_elements/wizards/new_project_name.html"/>
@@ -684,4 +682,5 @@
 	<mapID target="org.netbeans.modules.web.struts.wizards.ActionPanel" url="web/create/tag/framework/struts/file_ActionPanel.html"/>
 	<mapID target="org.netbeans.modules.web.struts.wizards.ActionPanel1" url="web/create/tag/framework/struts/file_ActionPanel1.html"/>
 	<mapID target="org.netbeans.modules.web.struts.wizards.FormBeanNewPanel" url="web/create/tag/framework/struts/file_FormBeanNewPanel.html"/>
+	<mapID target="projrave_ui_elements_server_nav_services_win_popup" url="ui_elements/server_nav/services_win_popup.html"/>
 </map>
