@@ -29,6 +29,7 @@ import java.awt.event.*;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.text.DateFormat;
+import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 
@@ -52,8 +53,8 @@ class SvnSearchView implements ComponentListener {
         resultsList = new JList(new SvnSearchListModel());
         resultsList.setFixedCellHeight(-1);
         resultsList.setCellRenderer(new SvnSearchListCellRenderer());
-      //  master.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SvnSearchView.class, "ACSN_SummaryView_List"));
-      //  master.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SvnSearchView.class, "ACSD_SummaryView_List"));
+        resultsList.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SvnSearchView.class, "ACSN_SummaryView_ListName"));
+        resultsList.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SvnSearchView.class, "ACSD_SummaryView_ListDesc"));
         resultsList.addComponentListener(this);        
         pane = new JScrollPane(resultsList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
     }

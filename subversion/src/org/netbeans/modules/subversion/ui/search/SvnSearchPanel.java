@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.subversion.ui.search;
 
-import org.openide.explorer.ExplorerManager;
-
 /**
  *
  * @author  tst
@@ -39,10 +37,12 @@ public class SvnSearchPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
 
         setPreferredSize(new java.awt.Dimension(650, 330));
+
         dateFromTextField.setText(org.openide.util.NbBundle.getMessage(SvnSearchPanel.class, "SvnSearchPanel.dateFromTextField.text")); // NOI18N
 
         listButton.setText(org.openide.util.NbBundle.getMessage(SvnSearchPanel.class, "SvnSearchPanel.listButton.text_1")); // NOI18N
@@ -57,7 +57,7 @@ public class SvnSearchPanel extends javax.swing.JPanel {
         noContentPanel.setLayout(noContentPanelLayout);
         noContentPanelLayout.setHorizontalGroup(
             noContentPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 556, Short.MAX_VALUE)
+            .add(0, 626, Short.MAX_VALUE)
         );
         noContentPanelLayout.setVerticalGroup(
             noContentPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -72,13 +72,13 @@ public class SvnSearchPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, noContentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(listPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 556, Short.MAX_VALUE)
+                    .add(listPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 626, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(jLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(dateFromTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 101, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 227, Short.MAX_VALUE)
+                        .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(listButton)))
                 .addContainerGap())
@@ -98,6 +98,10 @@ public class SvnSearchPanel extends javax.swing.JPanel {
                 .add(noContentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
+
+        dateFromTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SvnSearchPanel.class, "dateFromTextField.AccessibleContext.accessibleName")); // NOI18N
+        dateFromTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SvnSearchPanel.class, "dateFromTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        listButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SvnSearchPanel.class, "listButton.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     

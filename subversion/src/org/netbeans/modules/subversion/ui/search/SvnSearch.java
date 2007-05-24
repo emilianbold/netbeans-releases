@@ -65,6 +65,9 @@ public class SvnSearch implements ActionListener, DocumentListener {
     public SvnSearch(RepositoryFile... repositoryFile) {
         this.repositoryFiles = repositoryFile;
         panel = new SvnSearchPanel();
+        panel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SvnSearch.class, "ACSN_SummaryView_Name"));
+        panel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SvnSearch.class, "ACSD_SummaryView_Desc"));
+        
         panel.listButton.addActionListener(this);
         panel.dateFromTextField.getDocument().addDocumentListener(this); 
         
