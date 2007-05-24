@@ -31,6 +31,7 @@ import org.netbeans.jellytools.modules.form.ComponentPaletteOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 
 /**
  * Tests adding and removing beans into/from palette
@@ -82,7 +83,9 @@ public class AddAndRemoveBeansTest  extends ExtJellyTestCase {
      * Tests removing bean using Palette Manager
      */
     public void testRemovingBeans() {
-        new ActionNoBlock("Tools|Palette Manager|Swing/AWT Components", null).perform(); // NOI18N
+         Action ac = new Action("Tools|Palette|Swing/AWT Components", null);
+         ac.setComparator(new DefaultStringComparator(true, true));
+         ac.perform();
         
         PaletteManagerOperator manOp = new PaletteManagerOperator();
         JTreeOperator treeOp = manOp.treePaletteContentsTree();
