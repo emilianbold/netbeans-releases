@@ -526,9 +526,6 @@
 				<tocitem text="About Servlets" target="about_servlet" />
 				<tocitem text="Creating a Servlet" target="servlet_create" />
 				<tocitem text="Editing a Servlet" target="servlet_edit" />
-				<tocitem text="Calling an Enterprise Bean" />
-				<tocitem text="Adding Java Persistence to a Web Application" />
-				<tocitem text="Accessing a Connection Pool from a Java Class" />
 				<tocitem text="Viewing a JSP File's Servlet" target="jsp_servletview" />
 				<tocitem text="Passing Request Parameters" target="jsp_queryparams" />
 				<tocitem text="Running a Servlet" target="servlet_run" />
@@ -548,7 +545,6 @@
 		</tocitem>
 		<tocitem text="Configuring Web Applications">
 			<tocitem text="About Configuring Web Applications" target="about_webapp_configure" />
-			<tocitem text="About Deployment Descriptors" />
 			<tocitem text="Configuring Web Application Deployment Descriptors" target="configure_webapp_dd" />
 		</tocitem>
 		<tocitem text="Building Web Applications">
@@ -561,7 +557,6 @@
 			<tocitem text="About Deploying Web Applications" target="about_deploy" />
 			<tocitem text="Web Application Deployment Tasks: Quick Reference" target="deploy_quickref" />
 			<tocitem text="Passing Request Parameters" target="jsp_queryparams" />
-			<tocitem text="Setting a Context Path" />
 			<tocitem text="Authenticating the Tomcat Web Server" target="deploy_tomcat_manager" />
 			<tocitem text="Deploying a Web Application" target="deploy_webapp" />
 			<tocitem text="Changing the Target Server" target="deploy_changeserver" />
