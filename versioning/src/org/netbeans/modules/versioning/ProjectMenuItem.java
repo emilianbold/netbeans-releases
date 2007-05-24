@@ -25,6 +25,7 @@ import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
+import org.openide.awt.Actions;
 import org.openide.windows.TopComponent;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.spi.VCSContext;
@@ -116,8 +117,14 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
     }
 
     private JMenuItem createmenuItem(Action action) {
-        JMenuItem item = new JMenuItem(action);
-        Mnemonics.setLocalizedText(item, (String) action.getValue(Action.NAME));
+        JMenuItem item;
+        if (action instanceof SystemAction) {
+            item = new JMenuItem();
+            Actions.connect(item, action);
+        } else {
+            item = new JMenuItem(action);
+            Mnemonics.setLocalizedText(item, (String) action.getValue(Action.NAME));
+        }
         return item;
     }
 
