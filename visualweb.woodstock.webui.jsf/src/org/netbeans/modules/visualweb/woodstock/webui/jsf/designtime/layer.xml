@@ -162,8 +162,8 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="WoodstockWizard.comp_palette_item/WoodstockWizardBranch.comp_palette_item" boolvalue="true"/>
             <attr name="WoodstockWizardBranch.comp_palette_item/WoodstockWizardBranchSteps.comp_palette_item" boolvalue="true"/>
             <attr name="WoodstockWizardBranchSteps.comp_palette_item/WoodstockWizardStep.comp_palette_item" boolvalue="true"/>
-            <attr name="WoodstockWizardStep.comp_palette_item/WoodstockWizardSubstepBranch" boolvalue="true"/> 
-		<attr name="WoodstockEditableField.comp_palette_item/WoodstockEditableField" boolean="true"/>
+            <attr name="WoodstockWizardStep.comp_palette_item/WoodstockWizardSubstepBranch.comp_palette_item" boolvalue="true"/> 
+		<attr name="WoodstockEditableField.comp_palette_item/WoodstockEditableField.comp_palette_item" boolean="true"/>
 
             <!-- End of Woodstock components not included in VWP -->
             
