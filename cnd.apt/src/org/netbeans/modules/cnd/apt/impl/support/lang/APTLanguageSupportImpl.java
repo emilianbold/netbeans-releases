@@ -29,13 +29,13 @@ import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
  * @author Vladimir Voskresensky
  */
 public class APTLanguageSupportImpl {
-    private static Map/*<String, APTLanguageFilter>*/ langFilters = new HashMap();
+    private static Map<String, APTLanguageFilter> langFilters = new HashMap<String, APTLanguageFilter>();
     
     private APTLanguageSupportImpl() {
     }
     
     public static APTLanguageFilter getFilter(String lang) {
-        APTLanguageFilter filter = (APTLanguageFilter) langFilters.get(lang);
+        APTLanguageFilter filter = langFilters.get(lang);
         if (filter == null) {
             filter = createFilter(lang);
         }
@@ -46,7 +46,7 @@ public class APTLanguageSupportImpl {
         langFilters.put(lang, filter);
     }
     
-    private static Map/*<String, APTLanguageFilter>*/ getFilters() {
+    private static Map<String, APTLanguageFilter> getFilters() {
         return langFilters;
     }
 

@@ -28,6 +28,7 @@ public class BooleanConfiguration {
 
     private boolean value;
     private boolean modified;
+    private boolean dirty = false;
 
     public BooleanConfiguration(BooleanConfiguration master, boolean def) {
 	this.master = master;
@@ -58,12 +59,21 @@ public class BooleanConfiguration {
 	else
 	    return value;
     }
+    
     public void setModified(boolean b) {
 	this.modified = b;
     }
     public boolean getModified() {
 	return modified;
     }
+    
+    public void setDirty(boolean dirty) {
+        this.dirty = dirty;
+    }
+    public boolean getDirty() {
+        return dirty;
+    }
+    
     public boolean getDefault() {
 	return def;
     }
@@ -80,6 +90,7 @@ public class BooleanConfiguration {
 
     // Clone and Assign
     public void assign(BooleanConfiguration conf) {
+        dirty |= conf.getValue()^getValue();
 	setValue(conf.getValue());
 	setModified(conf.getModified());
     }

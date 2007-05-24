@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import org.netbeans.modules.cnd.apt.support.APTPreprocState;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
@@ -52,18 +52,18 @@ public class ParserThread implements Runnable {
                     }
                     Diagnostic.StopWatch stw = (TraceFlags.TIMING_PARSE_PER_FILE_FLAT && ! file.isParsed()) ? new Diagnostic.StopWatch() : null;
                     try {
-                            APTPreprocState preprocState = null;
-                            APTPreprocState.State state = entry.getPreprocStateState();
+                            APTPreprocHandler preprocHandler = null;
+                            APTPreprocHandler.State state = entry.getPreprocState();
                             if (state != null) {
                                 // init from entry
-                                preprocState = file.getProjectImpl().createDefaultPreprocState(file.getBuffer().getFile());
+                                preprocHandler = file.getProjectImpl().createDefaultPreprocHandler(file.getBuffer().getFile());
                                 if( TraceFlags.TRACE_PARSER_QUEUE ) {
                                     System.err.println("before ensureParse on " + file.getAbsolutePath() + 
-                                            ParserQueue.tracePreprocStateState(state)); 
+                                            ParserQueue.tracePreprocState(state)); 
                                 }
-                                preprocState.setState(state);
+                                preprocHandler.setState(state);
                             }
-                            file.ensureParsed(preprocState);
+                            file.ensureParsed(preprocHandler);
                     }
                     catch( Throwable thr ) {
                         thr.printStackTrace(System.err);

@@ -59,7 +59,6 @@ public class LineBreakpoint extends GdbBreakpoint {
      */
     public static LineBreakpoint create(String url, int lineNumber) {
         LineBreakpoint b = new LineBreakpointComparable();
-	b.setID();
         b.setURL(url);
         b.setLineNumber(lineNumber);
         return b;

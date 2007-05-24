@@ -60,16 +60,17 @@ public class CCSyntax extends Syntax {
     private static final int ISI_HEX = 32; // hex number
     private static final int ISA_DOT = 33; // after '.'
     private static final int ISA_HASH = 34; // after "#"
-    private static final int ISA_BACKSLASH = 35; // after backslash
-    private static final int ISA_LINE_CONTINUATION = 36; // after backslash eol
-    private static final int ISA_COMMA = 37; // after backslash eol
-    private static final int ISA_INCLUDE = 38; // after #include 
-    private static final int ISA_INCLUDE_A_WS = 39; // after #include and whitespaces
-    private static final int ISI_SYS_INCLUDE = 40; // inside <filename> include directive
-    private static final int ISI_USR_START_INCLUDE = 41; // inside "filename" include directive at first '"'
-    private static final int ISI_USR_INCLUDE = 42; // inside "filename" include directive
-    private static final int ISA_COLON = 43; // after ':'
-    private static final int ISA_ARROW = 44; // after '->'
+    private static final int ISA_HASH_WS = ISA_HASH + 1; // after "#" and whitespace
+    private static final int ISA_BACKSLASH = ISA_HASH_WS + 1; // after backslash
+    private static final int ISA_LINE_CONTINUATION = ISA_BACKSLASH + 1; // after backslash eol
+    private static final int ISA_COMMA = ISA_LINE_CONTINUATION + 1; // after backslash eol
+    private static final int ISA_INCLUDE = ISA_COMMA + 1; // after #include 
+    private static final int ISA_INCLUDE_A_WS = ISA_INCLUDE + 1; // after #include and whitespaces
+    private static final int ISI_SYS_INCLUDE = ISA_INCLUDE_A_WS + 1; // inside <filename> include directive
+    private static final int ISI_USR_START_INCLUDE = ISI_SYS_INCLUDE + 1; // inside "filename" include directive at first '"'
+    private static final int ISI_USR_INCLUDE = ISI_USR_START_INCLUDE + 1; // inside "filename" include directive
+    private static final int ISA_COLON = ISI_USR_INCLUDE + 1; // after ':'
+    private static final int ISA_ARROW = ISA_COLON + 1; // after '->'
     
     protected static final String IS_CPLUSPLUS = "C++"; // NOI18N
     protected static final String IS_C = "C"; // NOI18N
@@ -328,7 +329,7 @@ public class CCSyntax extends Syntax {
                 break;
 
             case ISA_INCLUDE:
-                if (!(Character.isWhitespace(actChar) || actChar == '"' || actChar == '<')) {
+                if (!(isSpaceChar(actChar) || actChar == '"' || actChar == '<')) {
                     state = INIT;
                     return CCTokenContext.CPPINCLUDE;                                        
                 }                 
@@ -336,7 +337,7 @@ public class CCSyntax extends Syntax {
                 break;
                 
             case ISA_INCLUDE_A_WS:
-                if (Character.isWhitespace(actChar)) {
+                if (isSpaceChar(actChar)) {
                     state = ISA_INCLUDE_A_WS;
                     break;
                 }
@@ -443,17 +444,11 @@ public class CCSyntax extends Syntax {
                 return CCTokenContext.BACKSLASH;
 
 	    case ISA_HASH:
-                // Check for whitespace
-                if (Character.isWhitespace(actChar)) {
-                    state = ISA_HASH;
+                // Check for whitespace, but not eol
+                if (isSpaceChar(actChar)) {
+                    state = ISA_HASH_WS;
                     break;
                 }
-//
-//                // Check for digit
-//                if (Character.isDigit(actChar)) {
-//                    state = ISI_INT;
-//                    break;
-//                }
 
                 // Check for identifier
 
@@ -486,31 +481,53 @@ public class CCSyntax extends Syntax {
                     break;
                 }
                 
+                state = INIT;
                 if (actChar == '#') {
                     offset++;
-                    state = INIT;
                     return CCTokenContext.DOUBLE_HASH;
                 }
+                return CCTokenContext.HASH;
 
-                offset++;
-                return CCTokenContext.INVALID_CHAR;                
-//		// For a comment of why we use isJAVAidentifier here,
-//		// grep backwards for isJavaIdentifierStart
-//		// The logic below didn't work if there were no newline or whitepsace after the preprocessor keyword,
-//		// so added a hack to work around this.
-//                if (!(Character.isJavaIdentifierPart(actChar)) || offset == (stopOffset-1)) {
-//		    int len = offset - tokenOffset;
-//		    if (Character.isJavaIdentifierPart(actChar)) {
-//			len++;
-//			offset++;
-//		    } else {
-//                        state = INIT;
-//                    }
-//                    TokenID tid = matchCPPKeyword(buffer, tokenOffset, len);
-//                    return (tid != null) ? tid : CCTokenContext.IDENTIFIER;
-//		}
-//		break;
-		
+	    case ISA_HASH_WS:
+                // Check for whitespace, but not eol
+                if (isSpaceChar(actChar)) {
+                    state = ISA_HASH_WS;
+                    break;
+                }
+
+                // Check for identifier
+
+                // At this point, you're probably wondering
+                // "why is he using isJavaIdentifier here
+                // when this is C++, not Java?
+                // The answer is that isJavaIdentifierStart
+                // is implemented very efficiently. Implementing
+                // something equivalent requires a huge lookup
+                // table, probably not worth the extra footprint
+                // considering that isJavaIdentifierStart pretty
+                // closely matches what is considered an
+                // identifier in C++.  The main difference seems
+                // to be that allowable unicode characters that
+                // are not ASCII *would* be allowed by this
+                // function. Not worth the trouble IMHO.
+
+                // XXX Perhaps I should write an efficient
+                // recognizor here which ONLY considers ASCII
+                // characters valid! (as identifiers that is).
+                // That allows a small table (or even fairly simple
+                // bit operations on the character value)
+                // since I can take advantage of unicode's
+                // ASCII range.
+                // But this might require some convoluted logic since the
+                // compiler PARTIALLY allows other code sets.
+                // Nay, I say, isJ* is okay!
+                if (Character.isJavaIdentifierStart(actChar)) {
+                    state = ISI_IDENTIFIER;
+                    break;
+                }
+                state = INIT;
+                return CCTokenContext.HASH;
+                
             case ISA_EQ:
                 switch (actChar) {
                 case '=':
@@ -1776,11 +1793,11 @@ public class CCSyntax extends Syntax {
             offset++;
             len--;
         }
-	
+	TokenID defCPPToken = CCTokenContext.CPPIDENTIFIER;
         if (len > 15)
-            return null;
+            return defCPPToken;
         if (len <= 1)
-            return null;
+            return defCPPToken;
         switch (buffer[offset++]) {
         case 'd': // define
 	    return (len == 6
@@ -1789,38 +1806,38 @@ public class CCSyntax extends Syntax {
 		    && buffer[offset++] == 'i'
 		    && buffer[offset++] == 'n'
 		    && buffer[offset++] == 'e')
-		? CCTokenContext.CPPDEFINE : null;
+		? CCTokenContext.CPPDEFINE : defCPPToken;
 	case 'e': // elif, else, endif, error
 	    if (len <= 3)
-		return null;
+		return defCPPToken;
 	    switch (buffer[offset++]) {
 	    case 'l': // elif, else
 		switch (buffer[offset++]) {
 		case 's': // else
 		    return (len == 4
 			    && buffer[offset++] == 'e')
-			? CCTokenContext.CPPELSE : null;
+			? CCTokenContext.CPPELSE : defCPPToken;
 		case 'i': // endif
 		    return (len == 4
 			    && buffer[offset++] == 'f')
-			? CCTokenContext.CPPELIF : null;
+			? CCTokenContext.CPPELIF : defCPPToken;
 		default:
-		    return null;
+		    return defCPPToken;
 		}
 	    case 'n': // endif
 		return (len == 5
 			&& buffer[offset++] == 'd'
 			&& buffer[offset++] == 'i'
 			&& buffer[offset++] == 'f')
-		    ? CCTokenContext.CPPENDIF : null;
+		    ? CCTokenContext.CPPENDIF : defCPPToken;
 	    case 'r': // error
 		return (len == 5
 			&& buffer[offset++] == 'r'
 			&& buffer[offset++] == 'o'
 			&& buffer[offset++] == 'r')
-		    ? CCTokenContext.CPPERROR : null;
+		    ? CCTokenContext.CPPERROR : defCPPToken;
 	    default:
-		return null;
+		return defCPPToken;
 	    }
         case 'i': // if, ifdef, ifndef, include
             switch (buffer[offset++]) {
@@ -1833,15 +1850,15 @@ public class CCSyntax extends Syntax {
                     return (len == 5
                             && buffer[offset++] == 'e'
                             && buffer[offset++] == 'f')
-                           ? CCTokenContext.CPPIFDEF : null;
+                           ? CCTokenContext.CPPIFDEF : defCPPToken;
                 case 'n':
                     return (len == 6
                             && buffer[offset++] == 'd'
                             && buffer[offset++] == 'e'
                             && buffer[offset++] == 'f')
-                           ? CCTokenContext.CPPIFNDEF : null;
+                           ? CCTokenContext.CPPIFNDEF : defCPPToken;
                 default:
-                    return null;
+                    return defCPPToken;
                 }
             case 'n': // include
                 if (len >= 7 
@@ -1860,43 +1877,22 @@ public class CCSyntax extends Syntax {
                             && buffer[offset++] == 't') {
                         return CCTokenContext.CPPINCLUDE_NEXT;
                     } else {
-                        return null;
+                        return defCPPToken;
                     }
-                }
-                if (len == 7 
-                        && buffer[offset++] == 'c'
-                        && buffer[offset++] == 'l'
-                        && buffer[offset++] == 'u'
-                        && buffer[offset++] == 'd'
-                        && buffer[offset++] == 'e') {
-                    return CCTokenContext.CPPINCLUDE;
-                } else if (len == 12 
-                        && buffer[offset++] == 'c'
-                        && buffer[offset++] == 'l'
-                        && buffer[offset++] == 'u'
-                        && buffer[offset++] == 'd'
-                        && buffer[offset++] == 'c'
-                        && buffer[offset++] == 'e'
-                        && buffer[offset++] == '_'
-                        && buffer[offset++] == 'n'
-                        && buffer[offset++] == 'e'
-                        && buffer[offset++] == 'x'
-                        && buffer[offset++] == 't') {
-                    return CCTokenContext.CPPINCLUDE_NEXT;
                 } else {
-                    return null;
+                    return defCPPToken;
                 }
             default:
-                return null;
+                return defCPPToken;
             }
         case 'l': // line
 	    if (len != 4) {
-		return null;
+		return defCPPToken;
 	    }
 	    return (   buffer[offset++] == 'i'
 		    && buffer[offset++] == 'n'
 		    && buffer[offset++] == 'e')
-		? CCTokenContext.CPPLINE : null;
+		? CCTokenContext.CPPLINE : defCPPToken;
         case 'p': // pragma
 	    return (len == 6
 		    && buffer[offset++] == 'r'
@@ -1904,27 +1900,35 @@ public class CCSyntax extends Syntax {
 		    && buffer[offset++] == 'g'
 		    && buffer[offset++] == 'm'
 		    && buffer[offset++] == 'a')
-		? CCTokenContext.CPPPRAGMA : null;
+		? CCTokenContext.CPPPRAGMA : defCPPToken;
 	case 'u': // undef
 	    if (len != 5)
-		return null;
+		return defCPPToken;
 	    return (   buffer[offset++] == 'n'
 		    && buffer[offset++] == 'd'
 		    && buffer[offset++] == 'e'
 		    && buffer[offset++] == 'f')
-		? CCTokenContext.CPPUNDEF : null;
+		? CCTokenContext.CPPUNDEF : defCPPToken;
 	case 'w': // warning
 	    if (len != 7)
-		return null;
+		return defCPPToken;
 	    return (   buffer[offset++] == 'a'
 		    && buffer[offset++] == 'r'
 		    && buffer[offset++] == 'n'
 		    && buffer[offset++] == 'i'
 		    && buffer[offset++] == 'n'
 		    && buffer[offset++] == 'g')
-		? CCTokenContext.CPPWARNING : null;
+		? CCTokenContext.CPPWARNING : defCPPToken;
 	default:
-	  return null;
+	  return defCPPToken;
 	}
+    }
+    
+    public static boolean isSpaceChar(char actChar) {
+        return Character.isSpaceChar(actChar) || actChar == '\t';
+    }
+    
+    public static boolean isLineSeparator(char actChar) {
+        return actChar == '\n' || actChar == '\r';
     }
 }

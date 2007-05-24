@@ -34,17 +34,17 @@ import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
 public class APTIncludeResolverImpl implements APTIncludeResolver {
     private final String baseFileIncludeDir;
     private final String baseFile;
-    private final List/*<String>*/ systemIncludePaths;
-    private final List/*<String>*/ userIncludePaths;  
+    private final List<String> systemIncludePaths;
+    private final List<String> userIncludePaths;  
     
-    public APTIncludeResolverImpl(String path, List/*<String>*/ systemIncludePaths,
-                                    List/*<String>*/ userIncludePaths) {
+    public APTIncludeResolverImpl(String path, List<String> systemIncludePaths,
+                                    List<String> userIncludePaths) {
         this(path, null, systemIncludePaths, userIncludePaths);
     }
     
     public APTIncludeResolverImpl(String path, String baseFileIncludeDir, 
-                                    List/*<String>*/ systemIncludePaths,
-                                    List/*<String>*/ userIncludePaths) {
+                                    List<String> systemIncludePaths,
+                                    List<String> userIncludePaths) {
         this.baseFile = path;
         this.systemIncludePaths = systemIncludePaths;
         this.userIncludePaths = userIncludePaths;

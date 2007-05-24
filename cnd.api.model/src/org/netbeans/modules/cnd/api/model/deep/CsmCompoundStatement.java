@@ -32,5 +32,5 @@ import java.util.List;
  */
 public interface CsmCompoundStatement extends CsmStatement, CsmScope {
     /** Gets statements this one consists of*/
-    List/*<CsmStatement>*/ getStatements();
+    List<CsmStatement> getStatements();
 }

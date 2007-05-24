@@ -37,7 +37,7 @@ import org.netbeans.modules.cnd.apt.utils.ListBasedTokenStream;
 public abstract class APTIfConditionBaseNode extends APTTokenAndChildBasedNode
                                             implements Serializable {
     private static final long serialVersionUID = 1068728941146083839L;
-    private List condition;
+    private List<Token> condition;
     private int endOffset;
     
     /** Copy constructor */
@@ -93,7 +93,7 @@ public abstract class APTIfConditionBaseNode extends APTTokenAndChildBasedNode
             return false;
         } else if (!APTUtils.isCommentToken(ttype)) {
             if (condition == null) {
-                condition = new ArrayList();
+                condition = new ArrayList<Token>();
             }
             condition.add(token);
         }

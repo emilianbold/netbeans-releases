@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.cnd.repository.queue;
 
-import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.testbench.Stats;

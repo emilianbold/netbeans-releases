@@ -23,7 +23,7 @@ import java.io.*;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
-import org.netbeans.modules.cnd.apt.support.APTPreprocState;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.FilePathCache;
 import org.netbeans.modules.cnd.modelimpl.platform.*;
 
@@ -52,25 +52,25 @@ public final class LibProjectImpl extends ProjectBase {
 	// NB: for those who decide to implement this: don't forget to check the language
     }
     
-    public FileImpl findFile(File srcFile, int fileType, APTPreprocState preprocState,
-            boolean scheduleParseIfNeed, APTPreprocState.State initial) {
+    public FileImpl findFile(File srcFile, int fileType, APTPreprocHandler preprocHandler,
+            boolean scheduleParseIfNeed, APTPreprocHandler.State initial) {
         FileImpl impl = getFile(srcFile);
         if( impl == null ) {
             synchronized( fileContainer ) {
                 impl = getFile(srcFile);
                 if( impl == null ) {
-                    impl = new FileImpl(ModelSupport.instance().getFileBuffer(srcFile), this, fileType, preprocState);
+                    impl = new FileImpl(ModelSupport.instance().getFileBuffer(srcFile), this, fileType, preprocHandler);
                     putFile(srcFile, impl, initial);
                     //impl.parse();
                     if( scheduleParseIfNeed ) {
-                        APTPreprocState.State ppState = preprocState == null ? null : preprocState.getState();
+                        APTPreprocHandler.State ppState = preprocHandler == null ? null : preprocHandler.getState();
                         ParserQueue.instance().addLast(impl, ppState);
                     }
                 }
             }
         }
-        if (initial != null && getPreprocStateState(srcFile)==null){
-            putPreprocStateState(srcFile, initial);
+        if (initial != null && getPreprocState(srcFile)==null){
+            putPreprocState(srcFile, initial);
         }
         return impl;
     }
@@ -81,7 +81,9 @@ public final class LibProjectImpl extends ProjectBase {
     }
     
     public void onFileRemoved(File file) {}
+    public void onFileRemoved(List<NativeFileItem> file) {}
     public void onFileAdded(NativeFileItem file) {}
+    public void onFileAdded(List<NativeFileItem> file) {}
     public void onFilePropertyChanged(NativeFileItem nativeFile) {}
     public void onFilePropertyChanged(List<NativeFileItem> nativeFiles) {}
     
@@ -92,16 +94,16 @@ public final class LibProjectImpl extends ProjectBase {
      * @return true if it's first time of file including
      *          false if file was included before
      */
-    public FileImpl onFileIncluded(String file, APTPreprocState preprocState, int mode) throws IOException {
+    public FileImpl onFileIncluded(String file, APTPreprocHandler preprocHandler, int mode) throws IOException {
         if( ONLY_LEX_SYS_INCLUDES ) {
-            return super.onFileIncluded(file, preprocState, GATHERING_MACROS);
+            return super.onFileIncluded(file, preprocHandler, GATHERING_MACROS);
         } else {
-            return super.onFileIncluded(file, preprocState, mode);
+            return super.onFileIncluded(file, preprocHandler, mode);
         }
     }
     
     
-    protected void scheduleIncludedFileParsing(FileImpl csmFile, APTPreprocState.State state) {
+    protected void scheduleIncludedFileParsing(FileImpl csmFile, APTPreprocHandler.State state) {
         // add library file to the tail
         ParserQueue.instance().addLast(csmFile, state);
     }

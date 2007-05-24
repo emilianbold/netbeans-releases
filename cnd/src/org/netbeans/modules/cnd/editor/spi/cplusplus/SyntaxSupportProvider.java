@@ -22,6 +22,10 @@ package org.netbeans.modules.cnd.editor.spi.cplusplus;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.SyntaxSupport;
 
+/**
+ *
+ * @author Vladimir Voskresensky
+ */
 public interface SyntaxSupportProvider {
 
     public SyntaxSupport createSyntaxSupport(BaseDocument doc);

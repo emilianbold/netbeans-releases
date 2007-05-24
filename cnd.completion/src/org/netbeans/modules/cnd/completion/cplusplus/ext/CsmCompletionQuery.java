@@ -77,7 +77,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
     private static CsmItemFactory itemFactory;
 
     // the only purpose of this method is that NbJavaCompletionQuery
-    // can use it to retrieve document's fileobject and create correct
+    // can use it to retrieve baseDocument's fileobject and create correct
     // CompletionResolver with the correct classpath of project to which the file belongs
     protected BaseDocument getBaseDocument(){
         return baseDocument;
@@ -103,23 +103,29 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         return query(component, offset, support, false, sort);
     }
 
-    /** Perform the query on the given component. The query usually
-    * gets the component's document, the caret position and searches back
-    * to find the last command start. Then it inspects the text up to the caret
-    * position and returns the result.
-    * @param component the component to use in this query.
-    * @param offset position in the component's document to which the query will
-    *   be performed. Usually it's a caret position.
-    * @param support syntax-support that will be used during resolving of the query.
-    * @param openingSource whether the query is performed to open the source file.
-    *  The query tries to return exact matches if this flag is true
-    * @return result of the query or null if there's no result.
-    */
+    /**
+     * Perform the query on the given component. The query usually
+     * gets the component's baseDocument, the caret position and searches back
+     * to find the last command start. Then it inspects the text up to the caret
+     * position and returns the result.
+     * 
+     * @param component the component to use in this query.
+     * @param offset position in the component's baseDocument to which the query will
+     *   be performed. Usually it's a caret position.
+     * @param support syntax-support that will be used during resolving of the query.
+     * @param openingSource whether the query is performed to open the source file.
+     *  The query tries to return exact matches if this flag is true
+     * @return result of the query or null if there's no result.
+     */
     public CompletionQuery.Result query(JTextComponent component, int offset,
                                         SyntaxSupport support, boolean openingSource, boolean sort) {
         BaseDocument doc = (BaseDocument)component.getDocument();
-        
-        // remember document here. it is accessible by getBaseDocument()
+        return query(component, doc, offset, support, openingSource, sort);
+    }
+
+    public CompletionQuery.Result query(JTextComponent component, BaseDocument doc, int offset,
+                                        SyntaxSupport support, boolean openingSource, boolean sort) {    
+        // remember baseDocument here. it is accessible by getBaseDocument()
         // method for subclasses of JavaCompletionQuery, ie. NbJavaCompletionQuery
         baseDocument = doc;
         
@@ -192,7 +198,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             return ctx.result;
         } else {
             boolean isProjectBeeingParsed = isProjectBeeingParsed(openingSource);
-            return new CsmCompletionResult(component, Collections.EMPTY_LIST, "", exp, 0, isProjectBeeingParsed);
+            return new CsmCompletionResult(component, getBaseDocument(), Collections.EMPTY_LIST, "", exp, 0, isProjectBeeingParsed);
         }
 //	CompletionQuery.Result result = null;
 //	
@@ -481,7 +487,9 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         /** Text component */
         private JTextComponent component;
 
-        /** Syntax support for the given document */
+        /**
+         * Syntax support for the given baseDocument
+         */
         private CsmSyntaxSupport sup;
 
         /** Whether the query is performed to open the source file. It has slightly
@@ -621,7 +629,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                             res = findFieldsAndMethods(finder, contextElement, cls, "", false, staticOnly, false, true, sort); // NOI18N
                         }
                         // Get all fields and methods of the cls
-                        result = new CsmCompletionResult(component, res, formatType(lastType, true, true, true),
+                        result = new CsmCompletionResult(component, getBaseDocument(), res, formatType(lastType, true, true, true),
                                                 exp, substPos, 0, cls.getName().length() + 1, isProjectBeeingParsed());
                     } else { // Found package (otherwise ok would be false)
                         if (true) {
@@ -658,7 +666,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                 res.addAll(finder.findClasses(lastNamespace, "", false, false)); // package classes
                             }
                         }
-                        result = new CsmCompletionResult(component, res, searchPkg + '*',
+                        result = new CsmCompletionResult(component, getBaseDocument(), res, searchPkg + '*',
                                                 exp, substPos, 0, 0, isProjectBeeingParsed());
                     }
                 }
@@ -700,7 +708,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                             res.addAll(nestedClassifiers);                            
                         }
                         // Get all fields and methods of the cls
-                        result = new CsmCompletionResult(component, res, formatType(lastType, true, true, true),
+                        result = new CsmCompletionResult(component, getBaseDocument(), res, formatType(lastType, true, true, true),
                                                 exp, substPos, 0, 0/*cls.getName().length() + 1*/, isProjectBeeingParsed());
                     } else { // Found package (otherwise ok would be false)
                         String searchPkg = lastNamespace.getName() + CsmCompletion.SCOPE;
@@ -732,7 +740,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                 res.addAll(finder.findNamespaceElements(lastNamespace, "", false, false)); // namespace elements //NOI18N
                             }
                         }
-                        result = new CsmCompletionResult(component, res, searchPkg + '*',  //NOI18N
+                        result = new CsmCompletionResult(component, getBaseDocument(), res, searchPkg + '*',  //NOI18N
                                                 exp, substPos, 0, 0, isProjectBeeingParsed());
                     }
                 }
@@ -740,7 +748,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 
             case CsmCompletionExpression.NEW: // 'new' keyword
                 List res = finder.findClasses(null, "", false, false); // Find all classes by name // NOI18N
-                result = new CsmCompletionResult(component, res, "*", exp, endOffset, 0, 0, isProjectBeeingParsed()); // NOI18N
+                result = new CsmCompletionResult(component, getBaseDocument(), res, "*", exp, endOffset, 0, 0, isProjectBeeingParsed()); // NOI18N
                 break;
 
             case CsmCompletionExpression.CASE:
@@ -826,7 +834,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                 if (compResolver.refresh() && compResolver.resolve(varPos, var, openingSource)) {
                                     res = compResolver.getResult();
                                 }
-//                                CsmClass cls = sup.getClass(varPos); // get document class
+//                                CsmClass cls = sup.getClass(varPos); // get baseDocument class
 //                                if (cls != null) {
 //                                    res.addAll(findFieldsAndMethods(finder, getNamespaceName(cls), cls, var, false,
 //                                                                    sup.isStaticBlock(varPos), true));
@@ -856,7 +864,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //                                    }
 //                                    
 //                                }
-                                result = new CsmCompletionResult(component, res, var + '*', item, 0, isProjectBeeingParsed());  //NOI18N
+                                result = new CsmCompletionResult(component, getBaseDocument(), res, var + '*', item, 0, isProjectBeeingParsed());  //NOI18N
                             } else { // not last item or finding type
                                 lastType = (CsmType)sup.findType(var, varPos);
                                 if (lastType != null) { // variable found
@@ -919,7 +927,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                     List nestedClassifiers = findNestedClassifiers(finder, contextElement, cls, var, false, true, sort);
                                     res.addAll(nestedClassifiers);
                                     result = new CsmCompletionResult(
-                                                 component,
+                                                 component, getBaseDocument(), 
 //                                                 findFieldsAndMethods(finder, curCls == null ? null : getNamespaceName(curCls), cls, var, false, staticOnly, false),
                                                  res,
                                                  formatType(lastType, true, true, false) + var + '*',
@@ -945,7 +953,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                         String searchPkg = lastNamespace.getName() + CsmCompletion.SCOPE + var;
                                         List res = finder.findNestedNamespaces(lastNamespace, var, openingSource, false); // find matching nested namespaces
                                         res.addAll(finder.findNamespaceElements(lastNamespace, var, openingSource, false)); // matching classes
-                                        result = new CsmCompletionResult(component, res, searchPkg + '*', item, 0, isProjectBeeingParsed());
+                                        result = new CsmCompletionResult(component, getBaseDocument(), res, searchPkg + '*', item, 0, isProjectBeeingParsed());
                                     }
                                 }
                             }
@@ -996,7 +1004,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //                res.addAll(finder.findNestedNamespaces("", false, false)); // find all packages
 //                res.addAll(finder.findClasses(null, "", false)); // find all classes
                 
-                result = new CsmCompletionResult(component, res, "*", item, endOffset, 0, 0, isProjectBeeingParsed()); // NOI18N
+                result = new CsmCompletionResult(component, getBaseDocument(), res, "*", item, endOffset, 0, 0, isProjectBeeingParsed()); // NOI18N
                  
                 switch (item.getTokenID(0).getNumericID()) {
                     case CCTokenContext.EQ_ID: // Assignment operators
@@ -1260,7 +1268,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                         }
                         if (mtdList.size() > 0) {
                             if (last && !findType) {
-                                result = new CsmCompletionResult(component, mtdList,
+                                result = new CsmCompletionResult(component, getBaseDocument(), mtdList,
                                         formatType(lastType, true, true, false) + mtdName + '(' + parmStr + ')',
                                         item, endOffset, 0, 0, isProjectBeeingParsed());
                             } else {
@@ -1279,7 +1287,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                         compResolver.setResolveTypes(CompletionResolver.RESOLVE_CONTEXT);
                         if (compResolver.refresh() && compResolver.resolve(varPos, "", false)) {
                             res = compResolver.getResult();
-                            result = new CsmCompletionResult(component, res, mtdName + '*', mtdNameExp, 0, isProjectBeeingParsed());
+                            result = new CsmCompletionResult(component, getBaseDocument(), res, mtdName + '*', mtdNameExp, 0, isProjectBeeingParsed());
                         }                              
 
 //                        } else {
@@ -1363,23 +1371,28 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
         /** Component to update */
         private JTextComponent component;
+
+        /**
+         * baseDocument to work with
+         */
+        private BaseDocument baseDocument;
         
-        public CsmCompletionResult(JTextComponent component, List data, String title,
+        public CsmCompletionResult(JTextComponent component, BaseDocument doc, List data, String title,
                    CsmCompletionExpression substituteExp, int classDisplayOffset, boolean isProjectBeeingParsed) {
-            this(component, data, title, substituteExp, substituteExp.getTokenOffset(0),
+            this(component, doc, data, title, substituteExp, substituteExp.getTokenOffset(0),
                  substituteExp.getTokenLength(0), classDisplayOffset, isProjectBeeingParsed);
         }
       
-        public CsmCompletionResult(JTextComponent component, CompletionResolver.Result res, String title,
+        public CsmCompletionResult(JTextComponent component, BaseDocument doc, CompletionResolver.Result res, String title,
                    CsmCompletionExpression substituteExp, int classDisplayOffset, boolean isProjectBeeingParsed) {
-            this(component, res, title, substituteExp, substituteExp.getTokenOffset(0),
+            this(component, doc, res, title, substituteExp, substituteExp.getTokenOffset(0),
                  substituteExp.getTokenLength(0), classDisplayOffset, isProjectBeeingParsed);
         }
         
-        public CsmCompletionResult(JTextComponent component, CompletionResolver.Result res, String title,
+        public CsmCompletionResult(JTextComponent component, BaseDocument doc, CompletionResolver.Result res, String title,
                    CsmCompletionExpression substituteExp, int substituteOffset,
                    int substituteLength, int classDisplayOffset, boolean isProjectBeeingParsed) {
-            this(component, 
+            this(component, doc, 
                     convertData(res, classDisplayOffset, substituteExp, substituteOffset), 
                     true, 
                     title, 
@@ -1388,14 +1401,14 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                     substituteLength, classDisplayOffset, isProjectBeeingParsed);
         }
         
-        public CsmCompletionResult(JTextComponent component, List data, String title,
+        public CsmCompletionResult(JTextComponent component, BaseDocument doc, List data, String title,
                    CsmCompletionExpression substituteExp, int substituteOffset,
                    int substituteLength, int classDisplayOffset, boolean isProjectBeeingParsed) {
-            this(component, convertData(data, classDisplayOffset, substituteExp, substituteOffset), true, title, substituteExp, substituteOffset, 
+            this(component, doc, convertData(data, classDisplayOffset, substituteExp, substituteOffset), true, title, substituteExp, substituteOffset, 
                     substituteLength, classDisplayOffset, isProjectBeeingParsed);
         }
         
-        public CsmCompletionResult(JTextComponent component, List data, boolean updateTitle, String title,
+        public CsmCompletionResult(JTextComponent component, BaseDocument doc, List data, boolean updateTitle, String title,
                    CsmCompletionExpression substituteExp, int substituteOffset,
                    int substituteLength, int classDisplayOffset, boolean isProjectBeeingParsed) {
             super(component, 
@@ -1405,6 +1418,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                     substituteLength);
             
             this.component = component;
+            this.baseDocument = doc;
             this.substituteExp = substituteExp;
             this.substituteOffset = substituteOffset;
             this.substituteLength = substituteLength;
@@ -1511,7 +1525,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 // how to get getCommonText to CompletionQuery.ResultItem ???
             }
             
-            BaseDocument doc = (BaseDocument)component.getDocument();
+            BaseDocument doc = baseDocument;
             try {
                 String prefix = doc.getText(substituteOffset, substituteLength);
                 String commonText = getCommonText(prefix);
@@ -1547,7 +1561,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             // it should be removed later if all data will be CompletionQuery.ResultItem
             
 
-            BaseDocument doc = (BaseDocument)component.getDocument();
+            BaseDocument doc = baseDocument;
             String text = null;
             int selectionStartOffset = -1;
             int selectionEndOffset = -1;
@@ -1644,7 +1658,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                     if (text.equals(textToReplace)) return false;
                     doc.remove(substituteOffset, substituteLength);
                     doc.insertString(substituteOffset, text, null);
-                    if (selectionStartOffset >= 0) {
+                    if (selectionStartOffset >= 0 && component != null) { // component could be null in non-UI tests
                         component.select(substituteOffset + selectionStartOffset,
                                          substituteOffset + selectionEndOffset);
                     }

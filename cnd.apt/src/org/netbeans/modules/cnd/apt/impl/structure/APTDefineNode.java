@@ -74,11 +74,11 @@ public final class APTDefineNode extends APTMacroBaseNode
         return APT.Type.DEFINE;
     }
     
-    public Collection getParams() {
+    public Collection<Token> getParams() {
         if (params == null) {
             return null;
         } else {
-            return Collections.unmodifiableList(params);// != null ? (Token[]) params.toArray(new Token[params.size()]) : null;
+            return Collections.<Token>unmodifiableList(params);// != null ? (Token[]) params.toArray(new Token[params.size()]) : null;
         }
     }
     
@@ -89,8 +89,8 @@ public final class APTDefineNode extends APTMacroBaseNode
     /**
      * returns List of Tokens of macro body
      */
-    public List getBody() {
-        return bodyTokens != null ? bodyTokens : Collections.EMPTY_LIST;
+    public List<Token> getBody() {
+        return bodyTokens != null ? bodyTokens : Collections.<Token>emptyList();
     }
     
     /**
@@ -117,11 +117,11 @@ public final class APTDefineNode extends APTMacroBaseNode
                 case AFTER_MACRO_NAME:
                 {
                     if (token.getType() == APTTokenTypes.FUN_LIKE_MACRO_LPAREN) {
-                        params = new ArrayList();
+                        params = new ArrayList<Token>();
                         state = IN_PARAMS;
                     } else {
                         if (bodyTokens == null) {
-                            bodyTokens = new ArrayList();
+                            bodyTokens = new ArrayList<Token>();
                         }
                         bodyTokens.add(token);                        
                         state = IN_BODY;
@@ -163,7 +163,7 @@ public final class APTDefineNode extends APTMacroBaseNode
                 {
                     // init body list if necessary
                     if (bodyTokens == null) {
-                        bodyTokens = new ArrayList();
+                        bodyTokens = new ArrayList<Token>();
                     }
                     // check for errors:
                     if (token.getType() == APTTokenTypes.SHARP) {

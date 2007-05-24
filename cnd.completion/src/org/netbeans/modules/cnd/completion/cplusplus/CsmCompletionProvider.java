@@ -39,6 +39,7 @@ import org.netbeans.editor.ext.ExtEditorUI;
 import org.netbeans.editor.ext.ExtUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmSyntaxSupport;
 import org.netbeans.modules.cnd.completion.csm.CompletionUtilities;
@@ -76,6 +77,10 @@ public class CsmCompletionProvider implements CompletionProvider {
         else if (queryType == TOOLTIP_QUERY_TYPE)
             return new AsyncCompletionTask(new ToolTipQuery(), component);
         return null;
+    }
+    
+    public static final CsmCompletionQuery getCompletionQuery() {
+        return new NbCsmCompletionQuery();
     }
     
     static final class Query extends AsyncCompletionQuery {

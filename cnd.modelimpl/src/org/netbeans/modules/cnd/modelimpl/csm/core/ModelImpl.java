@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import java.io.File;
+import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.WeakList;
 import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
@@ -29,6 +31,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
+import org.netbeans.modules.cnd.apt.support.APTSystemStorage;
 import org.netbeans.modules.cnd.apt.utils.FilePathCache;
 import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
@@ -107,8 +110,18 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         }
 
     }
-    
+
     public CsmProject getProject(Object id) {
+        if(id instanceof Project) {
+            NativeProject prj = (NativeProject) ((Project)id).getLookup().lookup(NativeProject.class);
+            if (prj != null) {
+                id = prj;
+            }
+        }
+        return findProject(id);
+    }
+    
+    public CsmProject _getProject(Object id) {
         ProjectBase prj = null;
         if (id != null) {
             synchronized( lock ) {
@@ -129,6 +142,19 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
                     String name;
                     if( id instanceof NativeProject ) {
                         name = ((NativeProject) id).getProjectDisplayName();
+                        if (false) {
+                            String root = ((NativeProject) id).getProjectRoot();
+                            for (Object o : platf2csm.keySet()){
+                                if (o instanceof NativeProject) {
+                                    if (name.equals( ((NativeProject)o).getProjectDisplayName() )){
+                                        System.err.println("ModelImpl.getProject() creates a duplicated project "+name+":");
+                                        System.err.println("   existent root:"+root);
+                                        System.err.println("   new      root:"+((NativeProject)o).getProjectRoot());
+                                        System.err.println("   Code model features can work wrong");
+                                    }
+                                }
+                            }
+                        }
                     }
                     else {
                         new IllegalStateException("CsmProject does not exist: " + id).printStackTrace(System.err); // NOI18N
@@ -254,7 +280,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         if (TraceFlags.TRACE_CLOSE_PROJECT) System.err.println("project closed " + name);
     }
     
-    public Collection/*<CsmProject>*/ projects() {
+    public Collection<CsmProject> projects() {
         synchronized (lock) {
             if (TraceFlags.USE_REPOSITORY) {
                 Collection<CsmUID<CsmProject>> vals = platf2csm.values();
@@ -266,7 +292,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
                 }
                 return out;
             } else {
-                return new ArrayList(platf2csmOLD.values());
+                return new ArrayList<CsmProject>(platf2csmOLD.values());
             }
         }
     }
@@ -388,6 +414,16 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
                      }
                  }
              }
+        }
+        // try the same with canonical path
+        String canonical;
+        try {
+            canonical = new File(absPath).getCanonicalPath();
+        } catch (IOException ex) {
+            canonical=null;
+        }
+        if (canonical != null && !canonical.equals(absPath)) {
+            return findFile(canonical);
         }
         return null;
     }
@@ -626,7 +662,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         synchronized( lock ) {
             disabledProjects.remove(nativeProject);
         }
-	ProjectBase csmProject = (ProjectBase) getProject(nativeProject);
+	ProjectBase csmProject = (ProjectBase) _getProject(nativeProject);
 	fireProjectOpened(csmProject);
     }
     
@@ -655,6 +691,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
             UIDManager.instance().dispose();
         }
         APTIncludeUtils.clearFileExistenceCache();
+        APTSystemStorage.getDefault().dispose();
     }
     
     private Object lock = new Object();

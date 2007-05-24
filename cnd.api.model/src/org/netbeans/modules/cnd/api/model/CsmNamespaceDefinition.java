@@ -28,7 +28,7 @@ import java.util.List;
 public interface CsmNamespaceDefinition extends CsmQualifiedNamedElement, CsmOffsetableDeclaration<CsmNamespaceDefinition> {
 
     /** Gets elements declared within this namesapce declaration */
-    List/*<CsmDeclaration>*/ getDeclarations();
+    List<CsmOffsetableDeclaration> getDeclarations();
 
     /** Gets correspondent namespace */
     CsmNamespace getNamespace();

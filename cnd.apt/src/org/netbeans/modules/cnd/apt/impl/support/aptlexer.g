@@ -25,12 +25,16 @@ package org.netbeans.modules.cnd.apt.impl.support.generated;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 
+
 }
 
 options {
 	language = "Java"; // NOI18N
 } 
 
+{
+@SuppressWarnings({"unchecked", "cast"})
+}
 class APTLexer extends Lexer;
 
 options {

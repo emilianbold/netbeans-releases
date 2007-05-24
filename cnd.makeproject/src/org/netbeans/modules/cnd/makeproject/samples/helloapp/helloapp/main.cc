@@ -21,12 +21,16 @@
 
 #include "../hello1lib/hello1.h"
 #include "../hello2lib/hello2.h"
+#include "../hello3lib/hello3.h"
+#include "../hello4lib/hello4.h"
 
 int main(int argc, char**argv) {
     // Print welcome messages...
     cout << "Hello from main...\n";
     cout << hello1();
     cout << hello2();
+    cout << hello3();
+    cout << hello4();
     
     // Prints arguments...
     if (argc > 1) {

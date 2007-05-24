@@ -39,9 +39,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeCustomizer;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -52,10 +49,7 @@ import org.openide.util.NbBundle;
  */
 public class MakeCustomizerProvider implements CustomizerProvider {
     
-    private final Project project;
-    private final AntProjectHelper antProjectHelper;   
-    private final PropertyEvaluator evaluator;
-    private final ReferenceHelper refHelper;
+    private final Project project; 
     
     // Option indexes
     private static final int OPTION_OK = 0;
@@ -71,11 +65,8 @@ public class MakeCustomizerProvider implements CustomizerProvider {
     private Map customizerPerProject = new WeakHashMap (); // Is is weak needed here?
     private ConfigurationDescriptorProvider projectDescriptorProvider;
     
-    public MakeCustomizerProvider(Project project, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper, ConfigurationDescriptorProvider projectDescriptorProvider) {
+    public MakeCustomizerProvider(Project project, ConfigurationDescriptorProvider projectDescriptorProvider) {
         this.project = project;
-        this.antProjectHelper = antProjectHelper;
-        this.evaluator = evaluator;
-        this.refHelper = refHelper;
         this.projectDescriptorProvider = projectDescriptorProvider;
     }
             
@@ -144,7 +135,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
 	Vector controls = new Vector();
 	controls.add(options[OPTION_OK]);
         MakeCustomizer innerPane = new MakeCustomizer(project, preselectedNodeName, clonedProjectdescriptor, item, folder, controls);
-        ActionListener optionsListener = new OptionListener( project, projectDescriptorProvider.getConfigurationDescriptor(), clonedProjectdescriptor, antProjectHelper, innerPane, folder, item);
+        ActionListener optionsListener = new OptionListener( project, projectDescriptorProvider.getConfigurationDescriptor(), clonedProjectdescriptor, innerPane, folder, item);
         options[ OPTION_OK ].addActionListener( optionsListener );
         options[ OPTION_CANCEL ].addActionListener( optionsListener );
         options[ OPTION_APPLY ].addActionListener( optionsListener );
@@ -179,16 +170,14 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         private Project project;
 	private ConfigurationDescriptor projectDescriptor;
 	private ConfigurationDescriptor clonedProjectdescriptor;
-	private AntProjectHelper antProjectHelper;
 	private MakeCustomizer makeCustomizer;
         private Folder folder;
         private Item item;
         
-        OptionListener( Project project, ConfigurationDescriptor projectDescriptor, ConfigurationDescriptor clonedProjectdescriptor, AntProjectHelper antProjectHelper, MakeCustomizer makeCustomizer, Folder folder, Item item) {
+        OptionListener( Project project, ConfigurationDescriptor projectDescriptor, ConfigurationDescriptor clonedProjectdescriptor, MakeCustomizer makeCustomizer, Folder folder, Item item) {
             this.project = project;
 	    this.projectDescriptor = projectDescriptor;
 	    this.clonedProjectdescriptor = clonedProjectdescriptor;
-	    this.antProjectHelper = antProjectHelper;
 	    this.makeCustomizer = makeCustomizer;
             this.folder = folder;
             this.item = item;

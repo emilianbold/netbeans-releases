@@ -77,7 +77,7 @@ Microsystems, Inc. All Rights Reserved.
                             <attr name="template" boolvalue="true"/>
                             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/samples/helloapp.html"/>
                             <attr name="mainProjectLocation" stringvalue="helloapp"/>
-                            <attr name="subProjectLocations" stringvalue="hello1lib,hello2lib"/>
+                            <attr name="subProjectLocations" stringvalue="hello1lib,hello2lib,hello3lib,hello4lib"/>
                             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
                             <attr name="instantiatingIterator" newvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator"/>
                         </file>
@@ -192,13 +192,9 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-cnd-makeproject-api-actions-AddExistingItemAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-api-actions-AddExistingItemAction.instance"/>
             </file>
-            <file name="org-netbeans-modules-cnd-makeproject-api-actions-NewFolderAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-api-actions-NewFolderAction.instance"/>
-            </file>
             
             <attr name="org-netbeans-modules-project-ui-NewFile.shadow/org-netbeans-modules-cnd-makeproject-api-actions-AddExistingItemAction.shadow" boolvalue="true"/>
-            <attr name="org-netbeans-modules-cnd-makeproject-api-actions-AddExistingItemAction.shadow/org-netbeans-modules-cnd-makeproject-api-actions-NewFolderAction.shadow" boolvalue="true"/>
-            <attr name="org-netbeans-modules-cnd-makeproject-api-actions-NewFolderAction.shadow/SeparatorNew.instance" boolvalue="true"/> 
+            <attr name="org-netbeans-modules-cnd-makeproject-api-actions-AddExistingItemAction.shadow/SeparatorNew.instance" boolvalue="true"/>
         </folder>
     </folder>
     

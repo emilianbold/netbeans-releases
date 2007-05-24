@@ -298,7 +298,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
                 newPath = IpeUtils.toRelativePath(getBaseDir(), path);
             else
                 newPath = IpeUtils.toAbsolutePath(getBaseDir(), path);
-            item = (Item)(Item)externalFileItems.findItemByPath(newPath);
+            item = (Item)projectItems.get(FilePathAdaptor.normalize(newPath)); 
         }
         return item;
     }
@@ -532,16 +532,20 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
             handle = ProgressHandleFactory.createHandle(getString("AddingFilesTxt"));
         }
         public void run() {
-            handle.setInitialDelay(500);
-            handle.start();
             ArrayList filesAdded = new ArrayList();
-            while (iterator.hasNext()) {
-                FolderEntry folderEntry = (FolderEntry)iterator.next();
-                Folder top = new Folder(folder.getConfigurationDescriptor(), folder, folderEntry.getFile().getName(), folderEntry.getFile().getName(), true);
-                addFiles(top, folderEntry.getFile(), folderEntry.isAddSubfoldersSelected(), folderEntry.getFileFilter(), handle, filesAdded);
-                folder.addFolder(top);
+            try {
+                handle.setInitialDelay(500);
+                handle.start();
+                while (iterator.hasNext()) {
+                    FolderEntry folderEntry = (FolderEntry)iterator.next();
+                    Folder top = new Folder(folder.getConfigurationDescriptor(), folder, folderEntry.getFile().getName(), folderEntry.getFile().getName(), true);
+                    addFiles(top, folderEntry.getFile(), folderEntry.isAddSubfoldersSelected(), folderEntry.getFileFilter(), handle, filesAdded);
+                    folder.addFolder(top);
+                }
             }
-            handle.finish();
+            finally {
+                handle.finish();
+            }
             getNativeProject().fireFilesAdded(filesAdded);
         }
     }

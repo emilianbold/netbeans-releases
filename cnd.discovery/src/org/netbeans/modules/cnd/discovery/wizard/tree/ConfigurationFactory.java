@@ -19,9 +19,11 @@
 
 package org.netbeans.modules.cnd.discovery.wizard.tree;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -57,13 +59,20 @@ public class ConfigurationFactory {
         // remove empty root
         StringTokenizer st = new StringTokenizer(rootFolder,"/\\"); // NOI18N
         StringBuilder currentName = new StringBuilder();
+        List<String> list = new ArrayList<String>();
         while (st.hasMoreTokens()){
-            st.nextToken();
+            list.add(st.nextToken());
+        }
+        while (true){
             FolderConfigurationImpl r = root.cut();
             if (r == null) {
                 break;
             }
             root = r;
+            String name = r.getFolderName();
+            if (list.size()>0 && list.get(list.size()-1).equals(name)){
+                break;
+            }
         }
         return new ProjectConfigurationImpl(project, root);
     }

@@ -228,7 +228,9 @@ public class BracketCompletion {
                 int tokenOffset = caretOffset;
                 TokenItem token = ((ExtSyntaxSupport)doc.getSyntaxSupport()).
                         getTokenChain(tokenOffset - 1, tokenOffset);
-                
+                if (token == null){
+                    return false;
+                }
                 addRightBrace = true; // suppose that right brace should be added
                 
                 // Disable right brace adding if caret not positioned within whitespace

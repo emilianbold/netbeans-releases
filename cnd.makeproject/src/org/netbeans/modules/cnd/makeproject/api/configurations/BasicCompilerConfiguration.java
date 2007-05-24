@@ -194,15 +194,13 @@ public class BasicCompilerConfiguration {
             if (absPath.charAt(0) != '/')
                 absPath = '/' + absPath;
             absPath = dirName + '/' + MakeConfiguration.EXT_FOLDER + absPath; // UNIX path
-            absPath = absPath.replace(':', '_');
-            absPath = absPath.replace(' ', '_');
+            absPath = IpeUtils.replaceOddCharacters(absPath, '_');
             return absPath;
         }
 	else if (filePath.startsWith("..")) { // NOI18N
             String absPath = IpeUtils.toAbsolutePath(getBaseDir(), fileName);
             absPath = FilePathAdaptor.normalize(absPath);
-            absPath = absPath.replace(':', '_');
-            absPath = absPath.replace(' ', '_');
+            absPath = IpeUtils.replaceOddCharacters(absPath, '_');
             if (absPath.charAt(0) != '/')
                 absPath = '/' + absPath;
 	    return dirName + '/' + MakeConfiguration.EXT_FOLDER + absPath; // UNIX path

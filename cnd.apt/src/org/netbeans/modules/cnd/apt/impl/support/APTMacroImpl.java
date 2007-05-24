@@ -37,11 +37,11 @@ import org.netbeans.modules.cnd.apt.utils.ListBasedTokenStream;
  */
 public class APTMacroImpl implements APTMacro {
     private final Token name;
-    private final Collection params;
-    private final List/*<Token>*/ body;
+    private final Collection<Token> params;
+    private final List<Token> body;
     private final boolean system;
 
-    public APTMacroImpl(Token name, Collection params, List/*<Token>*/ body, boolean system) {
+    public APTMacroImpl(Token name, Collection<Token> params, List<Token> body, boolean system) {
         assert (name != null);
         this.name = name;
         this.params = params;
@@ -61,7 +61,7 @@ public class APTMacroImpl implements APTMacro {
         return name;
     }
 
-    public Collection getParams() {
+    public Collection<Token> getParams() {
         return params;
     }
 
@@ -98,8 +98,8 @@ public class APTMacroImpl implements APTMacro {
         retValue.append(getName());
         if (params != null) {
             retValue.append("["); // NOI18N
-            for (Iterator it = params.iterator();it.hasNext();) {
-                Token elem = (Token) it.next();
+            for (Iterator<Token> it = params.iterator();it.hasNext();) {
+                Token elem = it.next();
                 retValue.append(elem);
                 if (it.hasNext()) {
                     retValue.append(", "); // NOI18N

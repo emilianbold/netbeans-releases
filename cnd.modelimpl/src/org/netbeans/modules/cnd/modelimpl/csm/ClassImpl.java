@@ -42,7 +42,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 
     private final CsmDeclaration.Kind kind;
     
-    private final List/*<CsmMember>*/ membersOLD = new ArrayList/*<CsmMember>*/();
+    private final List<CsmMember> membersOLD = new ArrayList<CsmMember>();
     private final List<CsmUID<CsmMember>> members = new ArrayList<CsmUID<CsmMember>>();
     
     private final List<CsmInheritance> inheritances = new ArrayList<CsmInheritance>();
@@ -279,7 +279,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         return this.kind;
     }
     
-    public List/*<CsmMember>*/ getMembers() {
+    public List<CsmMember> getMembers() {
         if (TraceFlags.USE_REPOSITORY) {
             List<CsmMember> out;
             synchronized (members) {
@@ -291,7 +291,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         }
     }
     
-    public List/*<CsmInheritance>*/ getBaseClasses() {
+    public List<CsmInheritance> getBaseClasses() {
         return inheritances;
     }
     
@@ -320,8 +320,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         return leftBracketPos;
     }
 
-    public List getScopeElements() {
-        return getMembers();
+    public List<CsmScopeElement> getScopeElements() {
+        return (List)getMembers();
     }
     
     public void dispose() {

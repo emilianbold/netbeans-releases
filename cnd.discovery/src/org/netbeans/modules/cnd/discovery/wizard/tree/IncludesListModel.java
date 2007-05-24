@@ -35,8 +35,8 @@ public class IncludesListModel implements ListModel {
     
     public IncludesListModel(NodeConfigurationImpl configuration, boolean resulting){
         this.configuration = configuration;
-        names = new ArrayList(configuration.getUserInludePaths(resulting));
-        Collections.sort(names);
+        names = new ArrayList<String>(configuration.getUserInludePaths(resulting));
+        Collections.<String>sort(names);
     }
     
     public int getSize() {

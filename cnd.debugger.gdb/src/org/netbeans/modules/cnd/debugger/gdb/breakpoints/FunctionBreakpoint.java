@@ -66,7 +66,6 @@ public class FunctionBreakpoint extends GdbBreakpoint {
      */
     public static FunctionBreakpoint create(String function) {
         FunctionBreakpoint b = new FunctionBreakpointComparable();
-	b.setID();
         b.setFunctionName(function);
         return b;
     }

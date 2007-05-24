@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.cnd.modelutil;
 
+import java.io.IOException;
 import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
@@ -171,7 +172,10 @@ public class CsmUtilities {
 	return mod;
     }
     
-    /** Get level from modifiers. */
+    /** Get level from modifiers. 
+     * @param modifiers 
+     * @return one of correspond constant (PUBLIC_LEVEL, PROTECTED_LEVEL, PRIVATE_LEVEL)
+     */
     public static int getLevel(int modifiers) {
         if ((modifiers & PUBLIC) != 0) {
             return PUBLIC_LEVEL;
@@ -241,19 +245,19 @@ public class CsmUtilities {
         // FIXUP: till we have NativeFileItemCookie
 	CsmFile csmFile = null;
 	try {
-	    Project prj = FileOwnerQuery.getOwner(fo);
-            NativeProject nativeProject = null;
-            if (prj != null) {
-                nativeProject = (NativeProject) prj.getLookup().lookup(NativeProject.class);
-            } 
-            CsmProject csmPrj = CsmModelAccessor.getModel().getProject(nativeProject);
+	    //Project prj = FileOwnerQuery.getOwner(fo);
+            //NativeProject nativeProject = null;
+            //if (prj != null) {
+            //    nativeProject = (NativeProject) prj.getLookup().lookup(NativeProject.class);
+            //} 
+            //CsmProject csmPrj = CsmModelAccessor.getModel().getProject(nativeProject);
             File file = FileUtil.normalizeFile(FileUtil.toFile(fo));
-            if (csmPrj != null) {
-                csmFile = csmPrj.findFile(file.getAbsolutePath());
-            } else {
+            //if (csmPrj != null) {
+            //    csmFile = csmPrj.findFile(file.getAbsolutePath());
+            //} else {
                 // search in projects
                 csmFile = CsmModelAccessor.getModel().findFile(file.getAbsolutePath());
-            }
+            //}
 	} catch (NullPointerException exc) {
 	    exc.printStackTrace();
 	}
@@ -273,7 +277,11 @@ public class CsmUtilities {
         FileObject fo = null;
         if (csmFile != null) {
             try {
-                fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(csmFile.getAbsolutePath())));
+                try {
+                    fo = FileUtil.toFileObject(new File(csmFile.getAbsolutePath()).getCanonicalFile());
+                } catch (IOException e) {
+                    fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(csmFile.getAbsolutePath())));
+                }
             } catch (IllegalArgumentException ex) {
                 ex.printStackTrace();
             }
@@ -565,15 +573,15 @@ public class CsmUtilities {
     }    
     
 
-    public static Collection merge(Collection orig, Collection newList) {
-        orig = orig != null ? orig : new ArrayList();
+    public static <T> Collection<T> merge(Collection<T> orig, Collection<T> newList) {
+        orig = orig != null ? orig : new ArrayList<T>();
         if (newList != null && newList.size() > 0) {
             orig.addAll(newList);
         }
         return orig;
     }
     
-    public static boolean removeAll(Collection dest, Collection removeItems) {
+    public static <T> boolean removeAll(Collection<T> dest, Collection<T> removeItems) {
         if (dest != null && removeItems != null) {
             return dest.removeAll(removeItems);
         }
@@ -602,6 +610,7 @@ public class CsmUtilities {
     /**
      * Gets function signature in the form that is shown to client
      * @param fun function, which signature should be returned
+     * @return signature of the function
      */
     public static String getSignature(CsmFunction fun) {
 	return getSignature(fun, true);
@@ -611,6 +620,7 @@ public class CsmUtilities {
      * Gets function signature in the form that is shown to client
      * @param fun function, which signature should be returned
      * @param showParamNames determines whether to include parameter names in signature
+     * @return signature of the function
      */
     public static String getSignature(CsmFunction fun, boolean showParamNames) {
         StringBuilder sb = new StringBuilder(fun.getName());

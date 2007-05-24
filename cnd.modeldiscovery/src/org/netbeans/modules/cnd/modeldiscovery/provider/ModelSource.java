@@ -167,8 +167,12 @@ public class ModelSource implements SourceFileProperties {
                 // unresolved include
                 String path = guessPath(include);
                 if (path != null) {
+                    resolved = file.getProject().findFile(path+File.separatorChar+include.getIncludeName());
                     path = getRelativepath(path);
                     res.add(path);
+                    if (level < 5 && resolved != null) {
+                        analyzeUnresolved(res, resolved, level+1);
+                    }
                 }
             } else {
                 includedFiles.add(resolved.getAbsolutePath());

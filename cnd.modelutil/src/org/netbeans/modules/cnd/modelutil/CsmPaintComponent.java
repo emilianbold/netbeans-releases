@@ -68,7 +68,7 @@ public abstract class CsmPaintComponent extends JPanel {
     
    // private String text;
     
-    private ArrayList postfixes;
+    private ArrayList<PostfixString> postfixes;
     
     private static final String THROWS = " throws "; // NOI18N
     
@@ -90,7 +90,7 @@ public abstract class CsmPaintComponent extends JPanel {
     public CsmPaintComponent(){
         super(layout, true);        
         setBorder(BORDER);
-        postfixes = new ArrayList();        
+        postfixes = new ArrayList<PostfixString>();        
     }
     
     public void setSelected(boolean isSelected){

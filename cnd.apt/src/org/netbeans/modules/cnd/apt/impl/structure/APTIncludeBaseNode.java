@@ -24,7 +24,7 @@ import antlr.TokenStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.cnd.apt.impl.support.APTExpandedStream;
+import org.netbeans.modules.cnd.apt.support.APTExpandedStream;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.support.APTMacroCallback;
@@ -181,14 +181,14 @@ public abstract class APTIncludeBaseNode extends APTTokenBasedNode
     
     //TODO: what about Serializable
     private static class MultiTokenInclude extends APTTokenAbstact {
-        private List/*<Token>*/ origTokens;
+        private List<Token> origTokens;
         
         public MultiTokenInclude(Token token) {
             if (token != null) {
-                origTokens = new ArrayList(1);
+                origTokens = new ArrayList<Token>(1);
                 origTokens.add(token);
             } else {
-                origTokens = new ArrayList(0);
+                origTokens = new ArrayList<Token>(0);
             }
         }
         
@@ -205,12 +205,12 @@ public abstract class APTIncludeBaseNode extends APTTokenBasedNode
             }
         }
         
-        public List getTokenList() {
+        public List<Token> getTokenList() {
             return origTokens;
         }
     };
     
-    private static String stringize(List/*<Token>*/ tokens, APTMacroCallback callback) {
+    private static String stringize(List<Token> tokens, APTMacroCallback callback) {
         TokenStream expanded;
         if (callback != null) {
             expanded = new APTExpandedStream(new ListBasedTokenStream(tokens), callback);

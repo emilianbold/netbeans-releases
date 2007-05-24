@@ -29,6 +29,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 
 /**
  * CsmFunction + CsmMember implementation
+ * @param T 
  * @author Vladimir Kvashin
  */
 public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod<T> {

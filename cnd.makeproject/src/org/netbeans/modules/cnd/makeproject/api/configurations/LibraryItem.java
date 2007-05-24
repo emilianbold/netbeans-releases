@@ -147,6 +147,7 @@ public class LibraryItem {
 	    String libPath = getMakeArtifact().getOutput();
 	    if (!IpeUtils.isPathAbsolute(libPath))
 		libPath = getMakeArtifact().getProjectLocation() + '/' + libPath; // UNIX path
+            libPath = IpeUtils.escapeOddCharacters(libPath);
 	    String libDir = IpeUtils.getDirName(libPath);
 	    String libName = IpeUtils.getBaseName(libPath);
             

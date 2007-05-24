@@ -62,7 +62,8 @@ public class ProjectBridge {
     private String baseFolder;
     private MakeConfigurationDescriptor makeConfigurationDescriptor;
     private Project project;
-    private Set resultSet = new HashSet();
+    private Set<Project> resultSet = new HashSet<Project>();
+    private Map<String,Item> canonicalItems;
     
     public ProjectBridge(Project project) {
         this.project = project;
@@ -101,7 +102,24 @@ public class ProjectBridge {
      * Find project item by relative path.
      */
     public Item getProjectItem(String path){
-        return makeConfigurationDescriptor.findProjectItemByPath(path);
+        Item item = makeConfigurationDescriptor.findProjectItemByPath(path);
+        if (item == null){
+            if (!IpeUtils.isPathAbsolute(path)) {
+                path = IpeUtils.toAbsolutePath(baseFolder, path);
+            }
+            item = findByCanonicalName(path);
+        }
+        return item;
+    }
+    
+    private Item findByCanonicalName(String path){
+        if (canonicalItems == null) {
+            canonicalItems = new HashMap<String,Item>();
+            for(Item item : makeConfigurationDescriptor.getProjectItems()){
+                canonicalItems.put(item.getCanonicalFile().getAbsolutePath(),item);
+            }
+        }
+        return canonicalItems.get(path);
     }
     
     public Object getAuxObject(Item item){
@@ -218,6 +236,7 @@ public class ProjectBridge {
     }
     
     public Set getResult(){
+        makeConfigurationDescriptor.save();
         if (SwingUtilities.isEventDispatchThread()) {
             makeConfigurationDescriptor.checkForChangedItems(project, null, null);
         } else {
@@ -284,6 +303,35 @@ public class ProjectBridge {
         BooleanConfiguration excl =itemConfiguration.getExcluded();
         if (excl.getValue() ^ exclude){
             excl.setValue(exclude);
+        }
+        itemConfiguration.setTool(3);
+    }
+    
+    public void setHeaderTool(Item item){
+        MakeConfiguration makeConfiguration = (MakeConfiguration)item.getFolder().getConfigurationDescriptor().getConfs().getActive();
+        ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
+        if (itemConfiguration == null) {
+            return;
+        }
+        if (itemConfiguration.getTool() == Tool.CCCompiler || itemConfiguration.getTool() == Tool.CCompiler) {
+            itemConfiguration.setTool(Tool.CustomTool);
+        }
+    }
+
+    public void setSourceTool(Item item, boolean isCPP){
+        MakeConfiguration makeConfiguration = (MakeConfiguration)item.getFolder().getConfigurationDescriptor().getConfs().getActive();
+        ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
+        if (itemConfiguration == null) {
+            return;
+        }
+        if (isCPP) {
+            if (itemConfiguration.getTool() != Tool.CCCompiler) {
+                itemConfiguration.setTool(Tool.CCCompiler);
+            }
+        } else {
+            if (itemConfiguration.getTool() != Tool.CCompiler) {
+                itemConfiguration.setTool(Tool.CCompiler);
+            }
         }
     }
     

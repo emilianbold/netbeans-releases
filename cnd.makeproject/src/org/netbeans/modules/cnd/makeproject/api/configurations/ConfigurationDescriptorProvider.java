@@ -20,7 +20,6 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import javax.swing.SwingUtilities;
@@ -29,8 +28,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
 public class ConfigurationDescriptorProvider {
-    private static HashSet auxObjectProviders = new HashSet();
-    
     private FileObject projectDirectory;
     private ConfigurationDescriptor projectDescriptor = null;
     boolean hasTried = false;
@@ -54,7 +51,7 @@ public class ConfigurationDescriptorProvider {
                     // check again that someone already havn't read
                     if (!hasTried) {
                         if (SwingUtilities.isEventDispatchThread()) {
-                             System.err.println("ConfigurationDescriptorProvider: I/O in EQ is not good idea"); // NOI18N
+                            System.err.println("ConfigurationDescriptorProvider: I/O in EQ is not good idea"); // NOI18N
                         }
                         ConfigurationXMLReader reader;
                         reader = new ConfigurationXMLReader(projectDirectory);
@@ -63,7 +60,7 @@ public class ConfigurationDescriptorProvider {
                         } catch (java.io.IOException x) {
                             ;	// most likely open failed
                         }
-
+                        
                         if (projectDescriptor == null) {
                             // Big problems: cannot read descriptor. All information lost....
                             /*
@@ -85,42 +82,20 @@ public class ConfigurationDescriptorProvider {
         return projectDescriptor;
     }
     
-    /*
-     * Now deprecated. 
-     * @deprecated. Use sercies instaed to register a ConfigurationAuxObjectProvider
-     */
-    public static void addAuxObjectProvider(ConfigurationAuxObjectProvider paop) {
-        synchronized(auxObjectProviders) {
-            auxObjectProviders.add(paop);
-        }
-    }
-    
-    /*
-     * Now deprecated. 
-     * @deprecated. Use sercies instaed to register a ConfigurationAuxObjectProvider
-     */
-    public static void removeAuxObjectProvider(ConfigurationAuxObjectProvider paop) {
-        synchronized(auxObjectProviders) {
-            auxObjectProviders.remove(paop);
-        }
-    }
-    
-    
     public static ConfigurationAuxObjectProvider[] getAuxObjectProviders() {
-        synchronized(auxObjectProviders) {
-            Lookup.Template template = new Lookup.Template(ConfigurationAuxObjectProvider.class);
-            Lookup.Result result = Lookup.getDefault().lookup(template);
-            Collection collection = result.allInstances();
-//            System.err.println("-------------------------------collection " + collection);
-            Iterator iterator = collection.iterator();
-            while (iterator.hasNext()) {
-                Object caop = iterator.next();
-                if (caop instanceof ConfigurationAuxObjectProvider) {
-                    auxObjectProviders.add(caop);
-                }
+        HashSet auxObjectProviders = new HashSet();
+        Lookup.Template template = new Lookup.Template(ConfigurationAuxObjectProvider.class);
+        Lookup.Result result = Lookup.getDefault().lookup(template);
+        Collection collection = result.allInstances();
+//      System.err.println("-------------------------------collection " + collection);
+        Iterator iterator = collection.iterator();
+        while (iterator.hasNext()) {
+            Object caop = iterator.next();
+            if (caop instanceof ConfigurationAuxObjectProvider) {
+                auxObjectProviders.add(caop);
             }
-//            System.err.println("-------------------------------auxObjectProviders " + auxObjectProviders);
-            return (ConfigurationAuxObjectProvider[])auxObjectProviders.toArray(new ConfigurationAuxObjectProvider[auxObjectProviders.size()]);
         }
+//      System.err.println("-------------------------------auxObjectProviders " + auxObjectProviders);
+        return (ConfigurationAuxObjectProvider[])auxObjectProviders.toArray(new ConfigurationAuxObjectProvider[auxObjectProviders.size()]);
     }
 }

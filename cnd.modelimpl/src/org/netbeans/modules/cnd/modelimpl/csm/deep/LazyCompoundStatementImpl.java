@@ -60,12 +60,12 @@ public final class LazyCompoundStatementImpl extends StatementBase implements Cs
         return CsmStatement.Kind.COMPOUND;
     }
     
-    public List/*<CsmStatement>*/ getStatements() {
+    public List<CsmStatement> getStatements() {
 	if( statements == null ) {
 	    return createStatements();
 	}
 	else {
-	    List/*<CsmStatement>*/ list = statements.get();
+	    List<CsmStatement> list = statements.get();
 	    return (list == null) ? createStatements() : list;
 	}
     }
@@ -149,8 +149,8 @@ public final class LazyCompoundStatementImpl extends StatementBase implements Cs
         }
     }
 
-    public List getScopeElements() {
-        return getStatements();
+    public List<CsmScopeElement> getScopeElements() {
+        return (List)getStatements();
     }
 
     private AST resolveLazyCompoundStatement(TokenStream tokenStream) {

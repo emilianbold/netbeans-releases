@@ -40,21 +40,21 @@ import org.netbeans.modules.cnd.apt.utils.FilePathCache;
  * @author Vladimir Voskresensky
  */
 public class APTIncludeHandlerImpl implements APTIncludeHandler {
-    private List/*<String>*/ systemIncludePaths;
-    private List/*<String>*/ userIncludePaths;    
+    private List<String> systemIncludePaths;
+    private List<String> userIncludePaths;    
     
-    private Map/*<String, Integer>*/ recurseIncludes = null;
+    private Map<String, Integer> recurseIncludes = null;
     private static final int MAX_INCLUDE_DEEP = 5;    
-    private Stack/*IncludeInfoImpl*/ inclStack = null;
+    private Stack<IncludeInfo> inclStack = null;
     private String startFile;
     
-    public APTIncludeHandlerImpl(String startFile) {
-        this(startFile, new ArrayList(), new ArrayList());
+    /*package*/ APTIncludeHandlerImpl(String startFile) {
+        this(startFile, new ArrayList<String>(), new ArrayList<String>());
     }
     
     public APTIncludeHandlerImpl(String startFile, 
-                                    List/*<String>*/ systemIncludePaths,
-                                    List/*<String>*/ userIncludePaths) {
+                                    List<String> systemIncludePaths,
+                                    List<String> userIncludePaths) {
         this.startFile = FilePathCache.getString(startFile);
         this.systemIncludePaths = systemIncludePaths;
         this.userIncludePaths = userIncludePaths;        
@@ -76,19 +76,17 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         return startFile;
     }
     
-    public String getCurPath() {
+    private String getCurPath() {
         assert (inclStack != null);
-        IncludeInfo info = (IncludeInfo) inclStack.peek();
-        return (String) info.getIncludedPath();
+        IncludeInfo info = inclStack.peek();
+        return info.getIncludedPath();
     }
     
     ////////////////////////////////////////////////////////////////////////////
     // manage state (save/restore)
     
     public State getState() {
-        StateImpl state = createStateImpl();
-        state.initFrom(this);
-        return state;
+        return createStateImpl();
     }
     
     public void setState(State state) {
@@ -98,86 +96,77 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     }
     
     protected StateImpl createStateImpl() {
-        return new StateImpl();
+        return new StateImpl(this);
     }
     
+    /** immutable state object of include handler */ 
     public final static class StateImpl implements State {
         // for now just remember lists
-        private List/*<String>*/ systemIncludePaths = null;
-        private List/*<String>*/ userIncludePaths = null;    
-        private String           startFile = null;
+        private final List<String> systemIncludePaths;
+        private final List<String> userIncludePaths;    
+        private final String           startFile;
         
-        private Map/*<String, Integer>*/ recurseIncludes = null;   
-        private Stack<IncludeInfo> inclStack = null;        
+        private final Map<String, Integer> recurseIncludes;
+        private final Stack<IncludeInfo> inclStack;
         
-        protected StateImpl() {
-        }
-        
-        private StateImpl(StateImpl other) {
-            // shared information
-            this.startFile = other.startFile;
-            this.systemIncludePaths = other.systemIncludePaths;
-            this.userIncludePaths = other.userIncludePaths;
-            
-            // own copy of include information
-            if (other.inclStack != null) {
-                this.inclStack = new Stack();
-                this.inclStack.addAll(other.inclStack);
-            }
-            if (other.recurseIncludes != null) {
-                this.recurseIncludes = new HashMap();
-                this.recurseIncludes.putAll(other.recurseIncludes);
-            }
-        }
-        
-        void initFrom(APTIncludeHandlerImpl handler) {
+        protected StateImpl(APTIncludeHandlerImpl handler) {
             this.systemIncludePaths = handler.systemIncludePaths;
             this.userIncludePaths = handler.userIncludePaths;
             this.startFile = handler.startFile;
             
             if (handler.recurseIncludes != null && !handler.recurseIncludes.isEmpty()) {
-                this.recurseIncludes = new HashMap();
+                assert (handler.inclStack != null && !handler.inclStack.empty()) : "must be in sync with inclStack";
+                this.recurseIncludes = new HashMap<String, Integer>();
                 this.recurseIncludes.putAll(handler.recurseIncludes);
+            } else {
+                this.recurseIncludes = null;
             }
             if (handler.inclStack != null && !handler.inclStack.empty()) {
-                this.inclStack = new Stack();
+                assert (handler.recurseIncludes != null && !handler.recurseIncludes.isEmpty()) : "must be in sync with recurseIncludes";
+                this.inclStack = new Stack<IncludeInfo>();
                 this.inclStack.addAll(handler.inclStack);
+            } else {
+                this.inclStack = null;
             }
         }
         
-        void restoreTo(APTIncludeHandlerImpl handler) {
+        private StateImpl(StateImpl other, boolean cleanState) {
+            // shared information
+            this.startFile = other.startFile;
+            this.systemIncludePaths = other.systemIncludePaths;
+            this.userIncludePaths = other.userIncludePaths;
+            
+            // state object is immutable => safe to share stacks
+            this.inclStack = other.inclStack;
+            
+            if (!cleanState) {
+                this.recurseIncludes = other.recurseIncludes;
+            } else {
+                this.recurseIncludes = null;
+            }
+        }
+        
+        private void restoreTo(APTIncludeHandlerImpl handler) {
             handler.userIncludePaths = this.userIncludePaths;
             handler.systemIncludePaths = this.systemIncludePaths;
             handler.startFile = this.startFile;
             
-            if (this.recurseIncludes != null) {
-                handler.recurseIncludes = new HashMap();
-                handler.recurseIncludes.putAll(this.recurseIncludes);
-            }
-            if (this.inclStack != null) {
-                handler.inclStack = new Stack();
-                handler.inclStack.addAll(this.inclStack);
+            // do not restore include info if state is cleaned
+            if (!isCleaned()) {
+                if (this.recurseIncludes != null) {
+                    handler.recurseIncludes = new HashMap<String, Integer>();
+                    handler.recurseIncludes.putAll(this.recurseIncludes);
+                }
+                if (this.inclStack != null) {
+                    handler.inclStack = new Stack<IncludeInfo>();
+                    handler.inclStack.addAll(this.inclStack);
+                }
             }
         }
 
         public String toString() {
             return APTIncludeHandlerImpl.toString(startFile, systemIncludePaths, userIncludePaths, recurseIncludes, inclStack);
         }
-
-        public boolean cleanExceptIncludeStack() {
-            boolean cleaned = false;
-            if (inclStack != null && inclStack.size() != 0) {
-                cleaned = true;
-            }
-            recurseIncludes = null;
-            return cleaned;
-        }
-
-        public Stack/*<IncludeInfo>*/ cleanIncludeStack() {
-            Stack out = this.inclStack;
-            this.inclStack = null;
-            return out;
-        }        
 
         public void write(DataOutput output) {
             throw new UnsupportedOperationException("Not yet implemented"); // NOI18N
@@ -213,12 +202,20 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             } else {
                 return inclStack2 == null;
             }
-        }
+        }        
 
-        
-        public APTIncludeHandler.State copy() {
-            return new StateImpl(this);
+        /*package*/ List<IncludeInfo> getIncludeStack() {
+            return this.inclStack;
         }
+        
+        /*package*/ boolean isCleaned() {
+            return this.recurseIncludes == null && this.inclStack != null; // was created as clean state
+        }
+        
+        /*package*/ APTIncludeHandler.State copy(boolean cleanState) {
+            return new StateImpl(this, cleanState);
+        }
+        
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -227,10 +224,10 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     private boolean pushIncludeImpl(String path, int directiveLine) {
         if (recurseIncludes == null) {
             assert (inclStack == null): inclStack.toString() + " started on " + startFile;
-            inclStack = new Stack();
-            recurseIncludes = new HashMap();
+            inclStack = new Stack<IncludeInfo>();
+            recurseIncludes = new HashMap<String, Integer>();
         }
-        Integer counter = (Integer) recurseIncludes.get(path);
+        Integer counter = recurseIncludes.get(path);
         counter = (counter == null) ? new Integer(1) : new Integer(counter.intValue()+1);
         if (counter.intValue() < MAX_INCLUDE_DEEP) {
             recurseIncludes.put(path, counter);
@@ -282,9 +279,9 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         assert (inclStack != null);
         assert (!inclStack.isEmpty());
         assert (recurseIncludes != null);
-        IncludeInfo inclInfo = (IncludeInfo) inclStack.pop();
+        IncludeInfo inclInfo = inclStack.pop();
         String path = inclInfo.getIncludedPath();
-        Integer counter = (Integer)recurseIncludes.remove(path);
+        Integer counter = recurseIncludes.remove(path);
         assert (counter != null) : "must be added before"; // NOI18N
         // decrease include counter
         counter = new Integer(counter.intValue()-1);
@@ -300,10 +297,10 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     }    
     
     private static String toString(String startFile, 
-                                    List/*<String>*/ systemIncludePaths,
-                                    List/*<String>*/ userIncludePaths,
-                                    Map/*<String, Integer>*/ recurseIncludes,
-                                    Stack/*IncludeInfo*/ inclStack) {
+                                    List<String> systemIncludePaths,
+                                    List<String> userIncludePaths,
+                                    Map<String, Integer> recurseIncludes,
+                                    Stack<IncludeInfo> inclStack) {
         StringBuilder retValue = new StringBuilder();
         retValue.append("User includes:\n"); // NOI18N
         retValue.append(APTUtils.includes2String(userIncludePaths));
@@ -312,16 +309,16 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         retValue.append("\nInclude Stack starting from:\n"); // NOI18N
         retValue.append(startFile).append("\n"); // NOI18N
         retValue.append(includesStack2String(inclStack));
-        return retValue.toString();        
+        return retValue.toString();
     }
 
-    private static String includesStack2String(Stack/*IncludeInfo*/ inclStack) {
+    private static String includesStack2String(Stack<IncludeInfo> inclStack) {
         StringBuilder retValue = new StringBuilder();
         if (inclStack == null) {
             retValue.append("<not from #include>"); // NOI18N
         } else {
-            for (Iterator it = inclStack.iterator(); it.hasNext();) {
-                IncludeInfo info = (IncludeInfo) it.next();
+            for (Iterator<IncludeInfo>  it = inclStack.iterator(); it.hasNext();) {
+                IncludeInfo info = it.next();
                 retValue.append(info);
                 if (it.hasNext()) {
                     retValue.append("->\n"); // NOI18N

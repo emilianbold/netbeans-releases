@@ -34,7 +34,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  * @author Vladimir Voskresensky
  */
 public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
-    private Map filter/*<getTokenTextKey(token),Integer(ttype)>*/ = new HashMap();    
+    private Map<Object/*getTokenTextKey(token)*/,Integer/*ttype*/> filter = new HashMap<Object,Integer>();    
 
     // uncomment to use reduced memory
 //    private static final int BUFFERED_COUNT = 256;
@@ -81,7 +81,7 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
     }
     
     private Token onID(Token token) {
-        Integer newType = (Integer)filter.get(APTUtils.getTokenTextKey(token));
+        Integer newType = filter.get(APTUtils.getTokenTextKey(token));
         if (newType != null) {
             int ttype = newType.intValue();
             token = createKeyword(token, ttype);
@@ -91,7 +91,7 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
     
     private Token createKeyword(Token token, int ttype) {
         APTToken newToken = APTUtils.createAPTToken(token, ttype);
-        return (Token)newToken;
+        return newToken;
     }
     
     private final class FilterStream implements TokenStream {

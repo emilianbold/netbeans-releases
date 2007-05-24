@@ -30,6 +30,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver.Result;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -240,7 +241,8 @@ public class CompletionResolverImpl implements CompletionResolver {
             if (clazz != null) {
                 boolean staticContext = false;
                 // get class methods visible in this method
-                classMethods = contResolver.getMethods(clazz, funDef, strPrefix, staticContext, match, true);
+                CsmOffsetableDeclaration contextDeclaration = funDef != null ? funDef : CsmContextUtilities.getClass(context, false);
+                classMethods = contResolver.getMethods(clazz, contextDeclaration, strPrefix, staticContext, match, true);
             }            
         }
         if (needFileLocalMacros(context, offset)) {

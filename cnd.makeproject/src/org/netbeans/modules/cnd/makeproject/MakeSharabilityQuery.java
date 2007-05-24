@@ -75,6 +75,10 @@ public class MakeSharabilityQuery implements SharabilityQueryImplementation {
 			return new Integer(SharabilityQuery.SHARABLE);
 		    else if (subString.startsWith("nbproject" + File.separator + "Makefile-")) // NOI18N
 			return new Integer(SharabilityQuery.SHARABLE);
+		    else if (subString.equals("build")) // NOI18N
+			return new Integer(SharabilityQuery.NOT_SHARABLE);
+		    else if (subString.equals("dist")) // NOI18N
+			return new Integer(SharabilityQuery.NOT_SHARABLE);
                     return new Integer(SharabilityQuery.UNKNOWN);
                 }
             }

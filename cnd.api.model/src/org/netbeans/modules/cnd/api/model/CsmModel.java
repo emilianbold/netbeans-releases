@@ -32,7 +32,7 @@ public interface CsmModel {
     /** @param id Netbeans project */
     CsmProject getProject(Object id);
 
-    Collection/*<CsmProject>*/ projects();
+    Collection<CsmProject> projects();
 
     void addModelListener(CsmModelListener listener);
 

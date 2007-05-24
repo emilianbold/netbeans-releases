@@ -399,7 +399,7 @@ public class CsmContextUtilities {
             CsmStatement.Kind kind = ((CsmStatement)scpElem).getKind();
             if (kind == CsmStatement.Kind.DECLARATION) {
                 List<CsmDeclaration> decls = ((CsmDeclarationStatement)scpElem).getDeclarators();
-                List/*<CsmObject>*/ listByName = CsmSortUtilities.filterList(decls, strPrefix, match, caseSensitive);
+                List<CsmNamedElement> listByName = CsmSortUtilities.filterList(decls, strPrefix, match, caseSensitive);
                 list.addAll(listByName);
                 for (CsmDeclaration elem : decls) {
                     if (CsmKindUtilities.isEnum(elem)) {

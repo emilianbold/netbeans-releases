@@ -19,153 +19,60 @@
 
 package org.netbeans.modules.cnd.modelimpl.trace;
 
-import antlr.TokenStreamException;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
-import org.netbeans.modules.cnd.apt.impl.support.APTConditionResolver;
 import org.netbeans.modules.cnd.apt.structure.APT;
-import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
-import org.netbeans.modules.cnd.apt.structure.APTIncludeNext;
-import org.netbeans.modules.cnd.apt.structure.APTUndefine;
+import org.netbeans.modules.cnd.apt.support.APTAbstractWalker;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
-import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
-import org.netbeans.modules.cnd.apt.support.APTIncludeResolver;
-import org.netbeans.modules.cnd.apt.support.APTMacroMap;
-import org.netbeans.modules.cnd.apt.support.APTWalker;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBufferFile;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ParserThreadManager;
 
 /**
  * simple test implementation of walker
  * @author Vladimir Voskresensky
  */
-public class APTWalkerTest extends APTWalker {
-    private APTIncludeHandler inclHandler;
-    private String path;
-    
-    public APTWalkerTest(APTFile apt, APTMacroMap macros, APTIncludeHandler inclHandler) {
-        super(apt, macros);
-        this.path = apt.getPath();
-        this.inclHandler = inclHandler;
+public class APTWalkerTest extends APTAbstractWalker {
+
+    public APTWalkerTest(APTFile apt, APTPreprocHandler ppHandler) {
+        super(apt, ppHandler);
     }
 
     private long resolvingTime = 0;
+    private long lastTime = 0;
     public long getIncludeResolvingTime() {
         return resolvingTime;
     }
 
     protected void onInclude(APT apt) {
-        if (inclHandler != null) {
-            long time = System.currentTimeMillis();
-            APTIncludeResolver resolver = inclHandler.getResolver(path);
-            String path = resolver.resolveInclude((APTInclude)apt, getMacroMap());
-            resolvingTime += System.currentTimeMillis() - time;
-            if (path == null) {
-                APTUtils.LOG.log(Level.WARNING, 
-                        "failed resolving path from {0} for {1}", // NOI18N
-                        new Object[] {});
-            }
-            include(path, apt.getToken().getLine());
-        }
+        lastTime = System.currentTimeMillis();
+        super.onInclude(apt);
     }
 
     protected void onIncludeNext(APT apt) {
-        if (inclHandler != null) {
-            long time = System.currentTimeMillis();
-            APTIncludeResolver resolver = inclHandler.getResolver(path);           
-            String path = resolver.resolveIncludeNext((APTIncludeNext)apt, getMacroMap());
-            resolvingTime += System.currentTimeMillis() - time;
-            if (path == null) {
-                APTUtils.LOG.log(Level.WARNING, 
-                        "failed resolving path from {0} for {1}", // NOI18N
-                        new Object[] {});
-            }
-            include(path, apt.getToken().getLine());
-        }
+        lastTime = System.currentTimeMillis();
+        super.onIncludeNext(apt);
     }
 
-    protected void onDefine(APT apt) {
-        APTDefine define = (APTDefine)apt;
-        if (define.isValid()) {
-            getMacroMap().define(define.getName(), define.getParams(), define.getBody());
-        } else {
-            if (ParserThreadManager.instance().isStandalone()) {
-                if (APTUtils.LOG.getLevel().intValue() <= Level.SEVERE.intValue()) {
-                    System.err.println("INCORRECT #define directive: in " + path + " for:\n\t" + apt);// NOI18N
-                }
-            } else {
-                APTUtils.LOG.log(Level.SEVERE,
-                        "INCORRECT #define directive: in {0} for:\n\t{1}", // NOI18N
-                        new Object[] { path, apt });
-            }               
-        }
-    }
-
-    protected void onUndef(APT apt) {
-        APTUndefine undef = (APTUndefine)apt;
-        getMacroMap().undef(undef.getName());
-    }
-
-    protected boolean onIf(APT apt) {
-        return eval(apt);
-    }
-
-    protected boolean onIfdef(APT apt) {
-        return eval(apt);
-    }
-
-    protected boolean onIfndef(APT apt) {
-        return eval(apt);
-    }
-
-    protected boolean onElif(APT apt, boolean wasInPrevBranch) {
-        return !wasInPrevBranch && eval(apt);
-    }
-
-    protected boolean onElse(APT apt, boolean wasInPrevBranch) {
-        return !wasInPrevBranch;
-    }
-
-    protected void onEndif(APT apt, boolean wasInBranch) {
-    }
-
-//    protected Token onToken(Token token) {
-//        return token;
-//    }
-       
-    ////////////////////////////////////////////////////////////////////////////
-    // implementation details
-    
-    private boolean eval(APT apt) {
-        APTUtils.LOG.log(Level.ALL, "eval condition for " + apt);// NOI18N
-        boolean res = false;
-        try {
-            res = APTConditionResolver.evaluate(apt, getMacroMap());
-        } catch (TokenStreamException ex) {
-            APTUtils.LOG.log(Level.SEVERE, "error on evaluating condition node " + apt, ex);// NOI18N
-        }
-        return res;
-    }
-
-    private void include(String path, int directiveLine) {
-        if (path != null && inclHandler.pushInclude(path, directiveLine)) {
+    protected void include(String resolvedPath, APTInclude aptInclude) {
+        resolvingTime += System.currentTimeMillis() - lastTime;
+        if (resolvedPath != null && getIncludeHandler().pushInclude(resolvedPath, aptInclude.getToken().getLine())) {
             APTFile apt;
             boolean res = false;
             try {
-                apt = APTDriver.getInstance().findAPTLight(new FileBufferFile(new File(path)));
-                APTWalkerTest walker = new APTWalkerTest(apt, getMacroMap(), inclHandler);
+                apt = APTDriver.getInstance().findAPTLight(new FileBufferFile(new File(resolvedPath)));
+                APTWalkerTest walker = new APTWalkerTest(apt, getPreprocHandler());
                 walker.visit();
                 resolvingTime += walker.resolvingTime;
                 res = true;               
             } catch (IOException ex) {
-                APTUtils.LOG.log(Level.SEVERE, "error on include " + path, ex);// NOI18N
+                APTUtils.LOG.log(Level.SEVERE, "error on include " + resolvedPath, ex);// NOI18N
             } finally {
-                inclHandler.popInclude(); 
+                getIncludeHandler().popInclude(); 
             }
-        }
+        }        
     }
 }

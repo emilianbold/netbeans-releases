@@ -159,9 +159,7 @@ public class ModelSupport implements PropertyChangeListener {
         
         public void filesRemoved(List<NativeFileItem> fileItems) {
             for (List<NativeFileItem> list : divideByProjects(fileItems)){
-                for(NativeFileItem item : list){
-                    onProjectItemRemoved(item);
-                }
+                onProjectItemRemoved(list);
             }
         }
     
@@ -218,14 +216,7 @@ public class ModelSupport implements PropertyChangeListener {
             try {
                 final ProjectBase project = getProject(items.get(0), true);
                 if( project != null ) {
-                    try {
-                        ParserQueue.instance().onStartAddingProjectFiles(project);
-                        for(NativeFileItem item : items) {
-                            project.onFileAdded(item);
-                        }
-                    } finally{
-                        ParserQueue.instance().onEndAddingProjectFiles(project);
-                    }
+                    project.onFileAdded(items);
                 }
             } catch( Exception e ) {
                 e.printStackTrace(System.err);
@@ -244,6 +235,19 @@ public class ModelSupport implements PropertyChangeListener {
             //TODO: FIX (most likely in Makeproject: path == null in this situation,
             //this cause NPE
             e.printStackTrace(System.err);
+        }
+    }
+    
+    protected void onProjectItemRemoved(final List<NativeFileItem> items) {
+        if (items.size()>0){
+            try {
+                final ProjectBase project = getProject(items.get(0), false);
+                if( project != null ) {
+                    project.onFileRemoved(items);
+                }
+            } catch( Exception e ) {
+                e.printStackTrace(System.err);
+            }
         }
     }
 
@@ -321,7 +325,7 @@ public class ModelSupport implements PropertyChangeListener {
             NativeProject nativeProject = nativeFile.getNativeProject();
 	    assert(nativeProject != null) : "NativeFileItem should never return null NativeProject";
             if (nativeProject != null) {
-                csmProject = createIfNeeded ? (ProjectBase) model.getProject(nativeProject) :
+                csmProject = createIfNeeded ? (ProjectBase) model._getProject(nativeProject) :
                     (ProjectBase) model.findProject(nativeProject);
             }
         } catch(NullPointerException ex) {

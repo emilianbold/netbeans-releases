@@ -26,7 +26,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
-import org.netbeans.modules.cnd.apt.support.APTPreprocState;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.modelimpl.cache.*;
 
@@ -79,12 +79,12 @@ public final class FileCacheImpl implements Serializable, FileCache {
         this.aptFull = aptFull;
     }    
     
-    public AST getAST(APTPreprocState preprocState) {
+    public AST getAST(APTPreprocHandler preprocHandler) {
         // we use the same AST now
         return ast;
     }
 
-    public void setAST(AST ast, APTPreprocState preprocState) {
+    public void setAST(AST ast, APTPreprocHandler preprocHandler) {
         // we use the same AST now
         this.ast = ast;
     }

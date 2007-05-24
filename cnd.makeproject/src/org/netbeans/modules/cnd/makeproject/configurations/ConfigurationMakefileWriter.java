@@ -211,20 +211,24 @@ public class ConfigurationMakefileWriter {
         bw.write("# Object Files\n"); // NOI18N
         bw.write("OBJECTFILES=" + getObjectFiles(projectDescriptor, conf) + "\n"); // NOI18N
         bw.write("\n"); // NOI18N
-        bw.write("# C Compiler Flags\n"); // NOI18N
-        bw.write("CFLAGS=" +conf.getCCompilerConfiguration().getCFlags(cCompiler) + "\n"); // NOI18N
-        bw.write("\n"); // NOI18N
-        bw.write("# CC Compiler Flags\n"); // NOI18N
-        bw.write("CCFLAGS=" +conf.getCCCompilerConfiguration().getCCFlags(ccCompiler) + "\n"); // NOI18N
-        bw.write("CXXFLAGS=" +conf.getCCCompilerConfiguration().getCCFlags(ccCompiler) + "\n"); // NOI18N
-        bw.write("\n"); // NOI18N
+        if (cCompiler != null) {
+            bw.write("# C Compiler Flags\n"); // NOI18N
+            bw.write("CFLAGS=" +conf.getCCompilerConfiguration().getCFlags(cCompiler) + "\n"); // NOI18N
+            bw.write("\n"); // NOI18N
+        }
+        if (ccCompiler != null) {
+            bw.write("# CC Compiler Flags\n"); // NOI18N
+            bw.write("CCFLAGS=" +conf.getCCCompilerConfiguration().getCCFlags(ccCompiler) + "\n"); // NOI18N
+            bw.write("CXXFLAGS=" +conf.getCCCompilerConfiguration().getCCFlags(ccCompiler) + "\n"); // NOI18N
+            bw.write("\n"); // NOI18N
+        }
         if (fortranCompiler != null) {
             bw.write("# Fortran Compiler Flags\n"); // NOI18N
             bw.write("FFLAGS=" +conf.getFortranCompilerConfiguration().getFFlags(fortranCompiler) + "\n"); // NOI18N
             bw.write("\n"); // NOI18N
         }
         bw.write("# Link Libraries and Options\n"); // NOI18N
-        bw.write("LDLIBSOPTIONS=" + CppUtils.reformatWhitespaces(conf.getLinkerConfiguration().getLibraryItems(), "\\\n\t", "")  + "\n"); // NOI18N
+        bw.write("LDLIBSOPTIONS=" + conf.getLinkerConfiguration().getLibraryItems() + "\n"); // NOI18N
         bw.write("\n"); // NOI18N
     }
     
@@ -308,7 +312,7 @@ public class ConfigurationMakefileWriter {
                 ItemConfiguration itemConfiguration = items[i].getItemConfiguration(conf); //ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(items[i].getPath()));
                 if (itemConfiguration.getExcluded().getValue())
                     continue;
-                file = escapeDriveLetter(IpeUtils.escapeSpaces(items[i].getPath())); // FIXUP: cygdrive hard-coded...
+                file = escapeDriveLetter(IpeUtils.escapeOddCharacters(items[i].getPath())); // FIXUP: cygdrive hard-coded...
                 command = ""; // NOI18N
                 comment = null;
 		additionalDep = null;
@@ -317,9 +321,11 @@ public class ConfigurationMakefileWriter {
                     BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(itemConfiguration.getTool());
                     BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
                     target = compilerConfiguration.getOutputFile(items[i].getPath(true), conf, false);
-                    command += compilerConfiguration.getOptions(compiler) + " "; // NOI18N
-                    command += "-o " + target + " "; // NOI18N
-                    command += IpeUtils.escapeSpaces(items[i].getPath(true));
+                    if (compiler != null) {
+                        command += compilerConfiguration.getOptions(compiler) + " "; // NOI18N
+                        command += "-o " + target + " "; // NOI18N
+                        command += IpeUtils.escapeOddCharacters(items[i].getPath(true));
+                    }
                     additionalDep = compilerConfiguration.getAdditionalDependencies().getValue();
                 } else if (itemConfiguration.getTool() == Tool.CustomTool) {
                     CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
@@ -355,7 +361,7 @@ public class ConfigurationMakefileWriter {
         String cwd = makefileConfiguration.getBuildCommandWorkingDirValue();
         String command = makefileConfiguration.getBuildCommand().getValue();
         //bw.write(target + ":" + "\n"); // NOI18N
-        bw.write("\tcd " + IpeUtils.escapeSpaces(cwd) + " && " + command + "\n"); // NOI18N
+        bw.write("\tcd " + IpeUtils.escapeOddCharacters(cwd) + " && " + command + "\n"); // NOI18N
     }
     
     private void writeSubProjectBuildTargets(MakeConfiguration conf, BufferedWriter bw) throws IOException {
@@ -371,7 +377,7 @@ public class ConfigurationMakefileWriter {
                 String location = makeArtifact.getWorkingDirectory();
                 if (!makeArtifact.getBuild())
                     continue;
-                bw.write("\tcd " + IpeUtils.escapeSpaces(location) + " && " + makeArtifact.getBuildCommand() + "\n"); // NOI18N
+                bw.write("\tcd " + IpeUtils.escapeOddCharacters(location) + " && " + makeArtifact.getBuildCommand() + "\n"); // NOI18N
             }
         }
     }
@@ -389,7 +395,7 @@ public class ConfigurationMakefileWriter {
                 String location = makeArtifact.getWorkingDirectory();
                 if (!makeArtifact.getBuild())
                     continue;
-                bw.write("\tcd " + IpeUtils.escapeSpaces(location) + " && " + makeArtifact.getCleanCommand() + "\n"); // NOI18N
+                bw.write("\tcd " + IpeUtils.escapeOddCharacters(location) + " && " + makeArtifact.getCleanCommand() + "\n"); // NOI18N
             }
         }
     }
@@ -425,7 +431,7 @@ public class ConfigurationMakefileWriter {
             String cwd = makefileConfiguration.getBuildCommandWorkingDirValue();
             String command = makefileConfiguration.getCleanCommand().getValue();
             
-            bw.write("\tcd " + IpeUtils.escapeSpaces(cwd) + " && " + command + "\n"); // NOI18N
+            bw.write("\tcd " + IpeUtils.escapeOddCharacters(cwd) + " && " + command + "\n"); // NOI18N
         }
         
         writeSubProjectCleanTargets(conf, bw);

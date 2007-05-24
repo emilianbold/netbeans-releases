@@ -60,7 +60,7 @@ public interface TraceFlags {
     
     public static final boolean TRACE_MODEL_STATE = Boolean.getBoolean("cnd.modelimpl.installer.trace");
 
-    public static final boolean USE_CANONICAL_PATH = DebugUtils.getBoolean("cnd.modelimpl.use.canonical.path", true);
+    public static final boolean USE_CANONICAL_PATH = DebugUtils.getBoolean("cnd.modelimpl.use.canonical.path", false);
     
     public static final boolean CHECK_MEMORY = DebugUtils.getBoolean("cnd.check.memory", false);
     
@@ -93,4 +93,8 @@ public interface TraceFlags {
 
     // see IZ#101952 and IZ#101953
     public static final boolean SAFE_UID_ACCESS = DebugUtils.getBoolean("cnd.modelimpl.safe.uid", true);
+    
+    public static final boolean TRACE_CANONICAL_FIND_FILE = DebugUtils.getBoolean("cnd.modelimpl.trace.canonical.find", false);    
+
+    public static final boolean NEED_TO_TRACE_UNRESOLVED_INCLUDE = DebugUtils.getBoolean("cnd.modelimpl.trace.failed.include", false);   
 }

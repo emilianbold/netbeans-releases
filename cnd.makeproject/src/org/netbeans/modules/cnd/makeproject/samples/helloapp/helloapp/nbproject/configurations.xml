@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="27">
+<configurationDescriptor version="35">
   <logicalFolder name="root" displayName="root" projectFiles="true">
-    <logicalFolder name="ExternalFiles"
-                   displayName="Important Files"
-                   projectFiles="false">
-      <itemPath>Makefile</itemPath>
-    </logicalFolder>
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
                    projectFiles="true">
@@ -19,15 +14,17 @@
                    displayName="Resource Files"
                    projectFiles="true">
     </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
   </logicalFolder>
+  <projectmakefile>Makefile</projectmakefile>
   <defaultConf>0</defaultConf>
   <confs>
     <conf name="Debug" type="1">
       <compileType>
-        <cCompilerTool>
-        </cCompilerTool>
-        <ccCompilerTool>
-        </ccCompilerTool>
         <linkerTool>
           <output>dist/Debug/helloapp</output>
           <linkerLibItems>
@@ -55,13 +52,35 @@
                             OP="dist/Debug/libhello2lib.a">
               </makeArtifact>
             </linkerLibProjectItem>
+            <linkerLibProjectItem>
+              <makeArtifact PL="../hello3lib"
+                            CT="2"
+                            CN="Debug"
+                            AC="true"
+                            BL="true"
+                            WD="../hello3lib"
+                            BC="${MAKE}  -f Makefile CONF=Debug"
+                            CC="${MAKE}  -f Makefile CONF=Debug clean"
+                            OP="dist/Debug/X-LIBPREFIX-Xhello3lib.X-LIBSUFFIX-X">
+              </makeArtifact>
+            </linkerLibProjectItem>
+            <linkerLibProjectItem>
+              <makeArtifact PL="../hello4lib"
+                            CT="2"
+                            CN="Debug"
+                            AC="true"
+                            BL="true"
+                            WD="../hello4lib"
+                            BC="${MAKE}  -f Makefile CONF=Debug"
+                            CC="${MAKE}  -f Makefile CONF=Debug clean"
+                            OP="dist/Debug/X-LIBPREFIX-Xhello4lib.X-LIBSUFFIX-X">
+              </makeArtifact>
+            </linkerLibProjectItem>
           </linkerLibItems>
         </linkerTool>
       </compileType>
       <item path="main.cc">
         <itemTool>1</itemTool>
-        <ccCompilerTool>
-        </ccCompilerTool>
       </item>
     </conf>
     <conf name="Release" type="1">
@@ -99,13 +118,35 @@
                             OP="dist/Release/libhello2lib.a">
               </makeArtifact>
             </linkerLibProjectItem>
+            <linkerLibProjectItem>
+              <makeArtifact PL="../hello3lib"
+                            CT="2"
+                            CN="Release"
+                            AC="false"
+                            BL="true"
+                            WD="../hello3lib"
+                            BC="${MAKE}  -f Makefile CONF=Release"
+                            CC="${MAKE}  -f Makefile CONF=Release clean"
+                            OP="dist/Release/X-LIBPREFIX-Xhello3lib.X-LIBSUFFIX-X">
+              </makeArtifact>
+            </linkerLibProjectItem>
+            <linkerLibProjectItem>
+              <makeArtifact PL="../hello4lib"
+                            CT="2"
+                            CN="Release"
+                            AC="false"
+                            BL="true"
+                            WD="../hello4lib"
+                            BC="${MAKE}  -f Makefile CONF=Release"
+                            CC="${MAKE}  -f Makefile CONF=Release clean"
+                            OP="dist/Release/X-LIBPREFIX-Xhello4lib.X-LIBSUFFIX-X">
+              </makeArtifact>
+            </linkerLibProjectItem>
           </linkerLibItems>
         </linkerTool>
       </compileType>
       <item path="main.cc">
         <itemTool>1</itemTool>
-        <ccCompilerTool>
-        </ccCompilerTool>
       </item>
     </conf>
   </confs>

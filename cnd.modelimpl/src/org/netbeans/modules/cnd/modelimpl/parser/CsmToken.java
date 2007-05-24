@@ -20,7 +20,7 @@
 package org.netbeans.modules.cnd.modelimpl.parser;
 
 import java.io.*;
-import org.netbeans.modules.cnd.apt.impl.support.APTBaseToken;
+import org.netbeans.modules.cnd.apt.support.APTBaseToken;
 
 /**
  *

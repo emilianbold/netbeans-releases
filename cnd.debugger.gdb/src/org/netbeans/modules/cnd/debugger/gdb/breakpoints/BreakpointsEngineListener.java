@@ -71,9 +71,10 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getOldValue() == GdbDebugger.STATE_STARTING && evt.getNewValue() == GdbDebugger.STATE_LOADING) {
+        if (evt.getNewValue() == GdbDebugger.STATE_LOADING) {
 	    createBreakpointImpls();
 	    DebuggerManager.getDebuggerManager().addDebuggerListener(DebuggerManager.PROP_BREAKPOINTS, this);
+            debugger.setReady();
         }
     }
     

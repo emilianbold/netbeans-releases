@@ -73,14 +73,7 @@ package org.netbeans.modules.cnd.modelimpl.parser;
 
 import antlr.*;
 import antlr.collections.AST;
-import java.io.BufferedInputStream;
 import java.util.Hashtable;
-import java.io.DataInputStream;
-import java.io.InputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.Vector;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPParser;
 
@@ -462,6 +455,9 @@ public class CPPParserEx extends CPPParser {
 		// Starts with "T<".  Skip <...>
 		tmp_k++;
 		tmp_k = skipTemplateQualifiers(tmp_k);
+                if (tmp_k == -1) {
+                    return true;
+                }
 	    } else {// skip ID;
 		tmp_k++;
 	    }

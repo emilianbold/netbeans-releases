@@ -45,7 +45,7 @@ public class CsmNode extends AbstractCsmNode {
 	    this.data = null;
 	}
 	else {
-	    this.data = new WeakReference(data);
+	    this.data = new WeakReference<CsmObject>(data);
 	}
     }
     

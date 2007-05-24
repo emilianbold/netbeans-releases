@@ -105,14 +105,14 @@ public class FileSystemFactory {
         }
     }
     
-    private static Set<String> getSourceSuffixes() {
+    public static Set<String> getSourceSuffixes() {
         Set<String> suffixes = new HashSet<String>();
         addSuffices(suffixes, CCDataLoader.getInstance().getExtensions());
         addSuffices(suffixes, CDataLoader.getInstance().getExtensions());
         return suffixes;
     }
     
-    private static Set<String> getHeaderSuffixes() {
+    public static Set<String> getHeaderSuffixes() {
         Set<String> suffixes = new HashSet<String>();
         addSuffices(suffixes, HDataLoader.getInstance().getExtensions());
         return suffixes;

@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 
@@ -41,16 +42,16 @@ public class EmptyCompoundStatementImpl extends StatementBase implements CsmComp
         ast.setFirstChild(null);
     }
     
-    public List getStatements() {
-        return Collections.EMPTY_LIST;
+    public List<CsmStatement> getStatements() {
+        return Collections.<CsmStatement>emptyList();
     }
     
     public CsmStatement.Kind getKind() {
         return Kind.COMPOUND;
     }
     
-    public List getScopeElements() {
-        return Collections.EMPTY_LIST;
+    public List<CsmScopeElement> getScopeElements() {
+        return Collections.<CsmScopeElement>emptyList();
     }
     
     public void write(DataOutput output) throws IOException {

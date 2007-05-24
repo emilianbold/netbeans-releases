@@ -145,38 +145,38 @@ public class CallStackNodeModel implements NodeModel {
      * @return Call Stack Frame name.
      */
     public static String getCSFName(Session s, CallStackFrame csf, boolean useFullName) {
-        final String DOUBLE_QUESTION = "??"; // NOI18N
-        
-        String csfName = ""; // NOI18N
+        String csfName;
         String functionName = csf.getFunctionName();
-        if (functionName != null && !functionName.equals(DOUBLE_QUESTION)) {
+        
+        if (functionName != null && !functionName.equals("??")) { // NOI18N
             // By default use function name
             csfName = functionName;
-        }
-        else if (csf.getAddr() != null) {  
+        } else if (csf.getAddr() != null) {  
             //If function name is not available, use address
-            csfName = NbBundle.getMessage(CallStackNodeModel.class,
+            csfName= NbBundle.getMessage(CallStackNodeModel.class,
 			"CTL_CallstackModel_Msg_Format", csf.getAddr()); // NOI18N
-	}        
+	} else {
+            csfName = ""; // NOI18N
+        }     
         // add filename:line, if no functionName available use full path name.
         int ln = csf.getLineNumber();
-        if (csfName.length() == 0)
-        {
+        if (csfName.length() == 0) {
             String fileName = useFullName ? csf.getFullname() : csf.getFileName();
-            if (ln<0) {
-                if (fileName == null)
-                    csfName = DOUBLE_QUESTION;
-                else
+            if (ln < 0) {
+                if (fileName == null) {
+                    csfName = "??"; // NOI18N
+                } else {
                     csfName = fileName;
+                }
             }
-        }
-        else
-        {
+        } else {
             String fileName = csf.getFileName();
-            if (fileName != null && ln>=0)
-                csfName += ';' + ' ' + fileName + ':' + ln;
+            if (fileName != null && ln >= 0) {
+                csfName = NbBundle.getMessage(CallStackNodeModel.class, "FMT_StackFrame", // NOI18N
+                        new Object[] { csfName, fileName, String.valueOf(ln) });
+            }
 	}
-        return csfName;
+        return csfName.toString();
     }
             
     

@@ -48,7 +48,7 @@ public final class APTMacroMapSnapshot {
             APTMacro macro = currentSnap.macros.get(key);
             if (macro != null) {
                 // If UNDEFINED_MACRO is found then the requested macro is undefined, return null
-                return (macro != UNDEFINED_MACRO) ? (APTMacro)macro : null;
+                return (macro != UNDEFINED_MACRO) ? macro : null;
             }
             currentSnap = currentSnap.parent;
         }
@@ -56,17 +56,16 @@ public final class APTMacroMapSnapshot {
     }
     
     public String toString() {
-        Map tmpMap = new HashMap();
+        Map<String, APTMacro> tmpMap = new HashMap<String, APTMacro>();
         addAllMacros(this, tmpMap);
         return APTUtils.macros2String(tmpMap);
     }
     
-    public static void addAllMacros(APTMacroMapSnapshot snap, Map out) {
+    public static void addAllMacros(APTMacroMapSnapshot snap, Map<String, APTMacro> out) {
         if (snap.parent != null) {
             addAllMacros(snap.parent, out);
         }
-        for (Iterator iter=snap.macros.entrySet().iterator(); iter.hasNext();) {
-            Map.Entry cur = (Map.Entry)iter.next();
+        for (Map.Entry<String, APTMacro> cur : snap.macros.entrySet()) {
             if (cur.getValue() != UNDEFINED_MACRO) {
                 out.put(cur.getKey(), cur.getValue());
             } else {
@@ -112,7 +111,7 @@ public final class APTMacroMapSnapshot {
             throw new UnsupportedOperationException("Not supported in fake impl"); // NOI18N
         }
 
-        public Collection getParams() {
+        public Collection<Token> getParams() {
             throw new UnsupportedOperationException("Not supported in fake impl"); // NOI18N
         }
 

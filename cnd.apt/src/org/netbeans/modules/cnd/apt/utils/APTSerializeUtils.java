@@ -37,11 +37,13 @@ import org.netbeans.modules.cnd.apt.impl.support.APTFileMacroMap;
 import org.netbeans.modules.cnd.apt.impl.support.APTIncludeHandlerImpl;
 import org.netbeans.modules.cnd.apt.impl.support.APTMacroImpl;
 import org.netbeans.modules.cnd.apt.impl.support.APTMacroMapSnapshot;
+import org.netbeans.modules.cnd.apt.impl.support.APTPreprocHandlerImpl;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 
 /**
  * utilities for APT serialization
@@ -213,6 +215,29 @@ public class APTSerializeUtils {
         return state;
     }    
 
+    public static void writePreprocState(APTPreprocHandler.State state, DataOutput output) throws IOException {
+        assert state != null;
+        if (state instanceof APTPreprocHandlerImpl.StateImpl) {
+            output.writeInt(PREPROC_STATE_STATE_IMPL);
+            ((APTPreprocHandlerImpl.StateImpl)state).write(output);
+        } else {
+            throw new IllegalArgumentException("unknown preprocessor state" + state);  //NOI18N
+        }        
+    }
+    
+    public static APTPreprocHandler.State readPreprocState(DataInput input) throws IOException {
+        int handler = input.readInt();
+        APTPreprocHandler.State out;
+        switch (handler) {
+            case PREPROC_STATE_STATE_IMPL:
+                out = new APTPreprocHandlerImpl.StateImpl(input);
+                break;
+            default:
+                throw new IllegalArgumentException("unknown preprocessor state handler" + handler);  //NOI18N
+        }
+        return out;
+    } 
+    
     ////////////////////////////////////////////////////////////////////////////
     // persist snapshots
     
@@ -284,9 +309,10 @@ public class APTSerializeUtils {
     
     private static final int NULL_POINTER               = -1;
     private static final int MACRO_MAP_STATE_IMPL       = 1;
-    private static final int MACRO_MAP_FILE_STATE_IMPL  = 2;
-    private static final int MACRO_MAP_SNAPSHOT         = 3;
-    private static final int UNDEFINED_MACRO            = 4;
-    private static final int MACRO_IMPL                 = 5;
+    private static final int MACRO_MAP_FILE_STATE_IMPL  = MACRO_MAP_STATE_IMPL + 1;
+    private static final int PREPROC_STATE_STATE_IMPL   = MACRO_MAP_FILE_STATE_IMPL + 1;
+    private static final int MACRO_MAP_SNAPSHOT         = PREPROC_STATE_STATE_IMPL + 1;
+    private static final int UNDEFINED_MACRO            = MACRO_MAP_SNAPSHOT + 1;
+    private static final int MACRO_IMPL                 = UNDEFINED_MACRO + 1;
     
 }

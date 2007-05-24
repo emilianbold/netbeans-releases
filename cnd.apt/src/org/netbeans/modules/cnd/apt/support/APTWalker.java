@@ -258,7 +258,7 @@ public abstract class APTWalker {
         if (visits.isEmpty()) {
             return false;
         }
-        WalkerState state = (WalkerState)visits.pop();
+        WalkerState state = visits.pop();
         curAPT = state.lastNode;
         curWasInChild = state.wasInChild;
         return true;
@@ -279,7 +279,7 @@ public abstract class APTWalker {
         tokenLoop:
         for (;;) {           
             while (!tokens.isEmpty()) {
-                TokenStream ts = (TokenStream) tokens.peek();
+                TokenStream ts = tokens.peek();
                 theRetToken = ts.nextToken();
                 if (!APTUtils.isEOF(theRetToken)) {
                     return theRetToken;
@@ -388,8 +388,8 @@ public abstract class APTWalker {
     // fields to be used when generating token stream
     private APT curAPT;
     private boolean curWasInChild;
-    private LinkedList/**/ tokens = new LinkedList();
-    private Stack/*<WalkerState>*/ visits = new Stack();
+    private LinkedList<TokenStream> tokens = new LinkedList<TokenStream>();
+    private Stack<WalkerState> visits = new Stack<WalkerState>();
     
     private static final class WalkerState {
         APT lastNode;

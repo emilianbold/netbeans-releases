@@ -19,21 +19,16 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
-import antlr.Token;
 import antlr.TokenStream;
-import antlr.TokenStreamException;
-import antlr.TokenStreamRecognitionException;
-import java.util.logging.Level;
-import org.netbeans.modules.cnd.apt.impl.structure.*;
+import org.netbeans.modules.cnd.apt.impl.structure.APTBuilderImpl;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
-import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  * builds APT from TokenStream and APTLight from APT
  * @author Vladimir Voskresensky
  */
-public class APTBuilder {
+public final class APTBuilder {
     /** Creates a new instance of APTBuilder */
     private APTBuilder() {
     }

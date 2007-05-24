@@ -109,7 +109,7 @@ public final class APTBuilderImpl {
     }
     
     //////Build APT without recursion (a little bit faster, can be tuned even more)
-    private Stack nodeStack = new Stack();
+    private Stack<APTBaseNode> nodeStack = new Stack<APTBaseNode>();
     
     private Token build(APTBaseNode root, TokenStream stream) throws TokenStreamException {
         assert(stream != null);
@@ -125,7 +125,7 @@ public final class APTBuilderImpl {
                 
                 if (APTUtils.isEndCondition(nextToken)) {
                     assert (!nodeStack.empty()) : nextToken.getText() + " found without corresponding if: " + nextToken;
-                    root = (APTBaseNode)nodeStack.pop();
+                    root = nodeStack.pop();
                     root.addChild(activeNode);
                     nextToken = stream.nextToken();
                     continue;
@@ -150,7 +150,7 @@ public final class APTBuilderImpl {
                     }
                     if (activeNode.getType() == APT.Type.ENDIF) {
                         assert (!nodeStack.empty()) : "endif found without corresponding if: " + nextToken;
-                        root = (APTBaseNode)nodeStack.pop();
+                        root = nodeStack.pop();
                         activeNode = null;
                     } else if (root.getType() == APT.Type.CONDITION_CONTAINER) {
                         nodeStack.push(root);

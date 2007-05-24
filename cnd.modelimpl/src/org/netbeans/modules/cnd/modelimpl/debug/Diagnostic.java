@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.apt.impl.support.generated.APTLexer;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPParser;
 
 /**
@@ -757,7 +756,7 @@ public class Diagnostic {
             protected boolean isStopElement(StackTraceElement curElem) {
                 // stop if not in lexer's method
                 // we are not interested in stack before lexer call
-                if (!curElem.getClassName().equals(APTLexer.class.getName())) {
+                if (!curElem.getClassName().equals("org.netbeans.modules.cnd.apt.impl.support.generated.APTLexer")) { // NOI18N
                     return true;
                 } else if (curElem.getMethodName().equals("nextToken")) { // NOI18N
                     // also we stop on nextToken()

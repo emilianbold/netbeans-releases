@@ -82,13 +82,13 @@ public class ProjectNode extends NPNode {
     private Node[] loadingNodes = null;
     
     private class TraverseAction extends AbstractAction {
-        private Map map;
+        private Map<BaseNode,BaseNode> map;
         public TraverseAction() {
             putValue(Action.NAME, "Measure traverse project node time and memory."); //NOI18N
         }
         
         public void actionPerformed(ActionEvent e) {
-            map = new HashMap();
+            map = new HashMap<BaseNode,BaseNode>();
             System.gc();
             long time = System.currentTimeMillis();
             long mem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();

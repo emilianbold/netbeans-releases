@@ -39,6 +39,8 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
  * @author Vladimir Voskresensky
  */
 public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
+    private static final boolean NEED_TO_TRACE_UNRESOLVED_INCLUDE = getBoolean("cnd.modelimpl.trace.failed.include", false); 
+   
     
     /** Creates a new instance of CsmIncludeHyperlinkProvider */
     public CsmIncludeHyperlinkProvider() {
@@ -62,9 +64,22 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         if (!preJump(doc, target, offset, "opening-include-element")) { //NOI18N
             return false;
         }
+        CsmOffsetable item = findTargetObject(doc, offset);
+        return postJump(item, "goto_source_source_not_found", "cannot-open-include-element"); //NOI18N
+    }
+
+    /*package*/ CsmOffsetable findTargetObject(final BaseDocument doc, final int offset) {
         CsmInclude incl = findInclude(doc, offset);
         CsmOffsetable item = incl == null ? null : new IncludeTarget(incl);
-        return postJump(item, "goto_source_source_not_found", "cannot-open-include-element"); //NOI18N
+        if (incl != null && NEED_TO_TRACE_UNRESOLVED_INCLUDE && incl.getIncludeFile() == null) {
+            System.setProperty("cnd.modelimpl.trace.trace_now", "yes"); //NOI18N
+            try {
+                incl.getIncludeFile();
+            } finally {
+                System.setProperty("cnd.modelimpl.trace.trace_now", "no"); //NOI18N
+            }
+        }
+        return item;
     }
     
     private CsmInclude findInclude(BaseDocument doc, int offset) {
@@ -80,7 +95,15 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         }
         return null;
     }
-    
+
+    private static boolean getBoolean(String name, boolean result) {
+        String text = System.getProperty(name);
+        if( text != null ) {
+            result = Boolean.parseBoolean(text);
+        }
+        return result;
+    } 
+
     private static final class IncludeTarget implements CsmOffsetable {
         private CsmInclude include;
         

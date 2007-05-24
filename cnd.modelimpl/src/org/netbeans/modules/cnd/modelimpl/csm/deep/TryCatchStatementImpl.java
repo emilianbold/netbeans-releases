@@ -28,7 +28,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import antlr.collections.AST;
-import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
@@ -38,7 +37,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 public class TryCatchStatementImpl extends StatementBase implements CsmTryCatchStatement {
     
     private StatementBase tryStatement;
-    private List/*<CsmExceptionHandler>*/ handlers;
+    private List<CsmExceptionHandler> handlers;
     
     public TryCatchStatementImpl(AST ast, CsmFile file) {
         super(ast, file);
@@ -55,7 +54,7 @@ public class TryCatchStatementImpl extends StatementBase implements CsmTryCatchS
         return tryStatement;
     }
     
-    public List/*<CsmExceptionHandler>*/ getHandlers() {
+    public List<CsmExceptionHandler> getHandlers() {
         if( handlers == null ) {
             render();
         }
@@ -63,7 +62,7 @@ public class TryCatchStatementImpl extends StatementBase implements CsmTryCatchS
     }
     
     private void render() {
-        handlers = new ArrayList/*<CsmExceptionHandler>*/();
+        handlers = new ArrayList<CsmExceptionHandler>();
         for( AST token = getAst().getFirstChild(); token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
                 case CPPTokenTypes.CSM_COMPOUND_STATEMENT:

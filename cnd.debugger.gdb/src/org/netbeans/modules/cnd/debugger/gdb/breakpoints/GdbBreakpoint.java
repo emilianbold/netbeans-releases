@@ -51,7 +51,7 @@ public abstract class GdbBreakpoint extends Breakpoint {
     public static final String          PROP_PRINT_TEXT = "printText"; // NOI18N
     public static final String          PROP_BREAKPOINT_STATE = "breakpointState"; // NOI18N
     
-    public static final int            MIN_GDB_ID = 500;
+    public static final int            MIN_GDB_ID = 2; // 1 is the temp bp at main...
     
     /* valid breakpoint states */
     /** breakpoint is unvalidated by gdb (which may not be running) */
@@ -78,16 +78,13 @@ public abstract class GdbBreakpoint extends Breakpoint {
     private static Map                  bplist = Collections.synchronizedMap(new HashMap());
     private GdbDebuggerImpl		debugger;
     private Object			LOCK = new Object();
-    private int				id;
-    private static int			nextid = MIN_GDB_ID;
+    private int				id = 0;
     
     /**
      *  Provide a unique ID for each requested breakpoint
      */
-    protected void setID() {
-	synchronized (LOCK) {
-	    id = ++nextid;
-	}
+    protected void setID(int id) {
+	this.id = id;
     }
     
     public int getID() {
@@ -113,6 +110,11 @@ public abstract class GdbBreakpoint extends Breakpoint {
 	return (GdbBreakpoint) pending.get(Integer.valueOf(id));
     }
     
+    public void setPending() {
+        setState(VALIDATION_PENDING);
+        pending.put(Integer.valueOf(id), this);
+    }
+    
     /**
      * Get the state of this breakpoint
      */
@@ -130,11 +132,6 @@ public abstract class GdbBreakpoint extends Breakpoint {
 		breakpointNumber = -1;
 	    }
         }
-    }
-    
-    public void setPending() {
-        setState(VALIDATION_PENDING);
-        pending.put(Integer.valueOf(id), this);
     }
     
     public void setValidationResult(int id, String breakpointNumber) {

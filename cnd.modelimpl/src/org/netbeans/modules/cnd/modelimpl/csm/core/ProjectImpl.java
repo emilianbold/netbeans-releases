@@ -25,10 +25,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
-import org.netbeans.modules.cnd.apt.support.APTPreprocState;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
@@ -49,31 +48,31 @@ public final class ProjectImpl extends ProjectBase {
     
     protected void createIfNeed(NativeFileItem nativeFile, boolean isSourceFile) {
         assert (nativeFile != null && nativeFile.getFile() != null);
-        if( ! isLanguageSupported(nativeFile.getLanguage() )) {
+        if( ! acceptNativeItem(nativeFile)) {
             return;
         }
         File file = nativeFile.getFile();
-        APTPreprocState preprocState = getDefaultPreprocState(nativeFile);
+        APTPreprocHandler preprocHandler = createPreprocHandler(nativeFile);
         if (isSourceFile) {
-            findFile(file, FileImpl.SOURCE_FILE, preprocState, true, preprocState.getState());
+            findFile(file, FileImpl.SOURCE_FILE, preprocHandler, true, preprocHandler.getState());
         } else {
-            findFile(file, FileImpl.HEADER_FILE, preprocState, true, preprocState.getState());
+            findFile(file, FileImpl.HEADER_FILE, preprocHandler, true, preprocHandler.getState());
         }
     }
     
-    protected FileImpl findFile(File file, int fileType, APTPreprocState preprocState,
-            boolean scheduleParseIfNeed, APTPreprocState.State initial) {
+    protected FileImpl findFile(File file, int fileType, APTPreprocHandler preprocHandler,
+            boolean scheduleParseIfNeed, APTPreprocHandler.State initial) {
         FileImpl impl = getFile(file);
         if( impl == null ) {
             synchronized( fileContainer ) {
                 impl = getFile(file);
                 if( impl == null ) {
-                    preprocState = preprocState == null ? getPreprocState(file) : preprocState;
-                    impl = new FileImpl(ModelSupport.instance().getFileBuffer(file), this, fileType, preprocState);
+                    preprocHandler = preprocHandler == null ? getPreprocHandler(file) : preprocHandler;
+                    impl = new FileImpl(ModelSupport.instance().getFileBuffer(file), this, fileType, preprocHandler);
                     putFile(file, impl, initial);
                     // NB: parse only after putting into a map
                     if( scheduleParseIfNeed ) {
-                        APTPreprocState.State ppState = preprocState == null ? null : preprocState.getState();
+                        APTPreprocHandler.State ppState = preprocHandler == null ? null : preprocHandler.getState();
                         ParserQueue.instance().addLast(impl, ppState);
                     }
                 }
@@ -84,19 +83,19 @@ public final class ProjectImpl extends ProjectBase {
         } else if (fileType == FileImpl.HEADER_FILE && !impl.isHeaderFile()){
             impl.setHeaderFile();
         }
-        if (initial != null && getPreprocStateState(file)==null){
-            putPreprocStateState(file, initial);
+        if (initial != null && getPreprocState(file)==null){
+            putPreprocState(file, initial);
         }
         return impl;
     }
     
-    protected void scheduleIncludedFileParsing(FileImpl csmFile, APTPreprocState.State state) {
+    protected void scheduleIncludedFileParsing(FileImpl csmFile, APTPreprocHandler.State state) {
         // add project's file to the head
         ParserQueue.instance().addFirst(csmFile, state, true);
     }
     
     public void onFileEditStart(FileBuffer buf, NativeFileItem nativeFile) {
-        if( ! isLanguageSupported(nativeFile.getLanguage() )) {
+        if( !acceptNativeItem(nativeFile)) {
             return;
         }
         if( TraceFlags.DEBUG ) Diagnostic.trace("------------------------- onFileEditSTART " + buf.getFile().getName()); // NOI18N
@@ -105,8 +104,8 @@ public final class ProjectImpl extends ProjectBase {
             synchronized( fileContainer ) {
                 file = getFile(buf.getFile());
                 if( file == null ) {
-                    APTPreprocState preprocState = getDefaultPreprocState(nativeFile);
-                    putFile(buf.getFile(), new FileImpl(buf, this), preprocState.getState());
+                    APTPreprocHandler preprocHandler = createPreprocHandler(nativeFile);
+                    putFile(buf.getFile(), new FileImpl(buf, this), preprocHandler.getState());
                 }
             }
         }
@@ -124,207 +123,98 @@ public final class ProjectImpl extends ProjectBase {
     }
     
     public void onFileEditEnd(FileBuffer buf, NativeFileItem nativeFile) {
-        if( ! isLanguageSupported(nativeFile.getLanguage() )) {
+        if( ! acceptNativeItem(nativeFile)) {
             return;
         }
         if( TraceFlags.DEBUG ) Diagnostic.trace("------------------------- onFileEditEND " + buf.getFile().getName()); // NOI18N
         FileImpl file = getFile(buf.getFile());
         if( file != null ) {
             synchronized( editedFiles ) {
-                editedFiles.remove(file);
+                if (!editedFiles.remove(file)){
+                    // FixUp double file edit end on mounted files
+                    return;
+                }
             }
             file.setBuffer(buf);
             if (TraceFlags.USE_DEEP_REPARSING) {
-                reparseCoherence(file);
+                DeepReparsingUtils.reparseOnEdit(file,this);
             } else {
-                ParserQueue.instance().addFirst(file, getPreprocState(buf.getFile()).getState(), false);
+                ParserQueue.instance().addFirst(file, getPreprocHandler(buf.getFile()).getState(), false);
             }
-        }
-    }
-    
-    private void reparseCoherence(FileImpl file) {
-        Set<CsmFile> topParents = getGraph().getTopParentFiles(file);
-        if (topParents.size()>0){
-            Set<CsmFile> coherence = getGraph().getCoherenceFiles(file);
-            for(CsmFile parent : coherence){
-                if (!topParents.contains(parent)){
-                    if ((parent instanceof FileImpl) &&
-                            parent.getProject() == this){
-                        FileImpl parentImpl = (FileImpl) parent;
-                        Object stateLock = fileContainer.getLock(parentImpl.getBuffer().getFile());
-                        synchronized (stateLock) {
-                            APTPreprocState.State state = getPreprocStateState(parentImpl.getBuffer().getFile());
-                            if (state != null) {
-                                state.invalidate();
-                            }
-                        }
-                        parentImpl.stateChanged(false);
-                        if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
-                            System.out.println("Invalidate file to reparse "+parentImpl.getBuffer().getFile().getAbsolutePath());
-                        }
-                    }
-                }
-            }
-            boolean progress = false;
-            try {
-                if (topParents.size()>5) {
-                    ParserQueue.instance().onStartAddingProjectFiles(this);
-                    progress = true;
-                }
-                for(CsmFile parent : topParents){
-                    if ((parent instanceof FileImpl) &&
-                            parent.getProject() == this){
-                        FileImpl parentImpl = (FileImpl) parent;
-                        parentImpl.stateChanged(false);
-                        ParserQueue.instance().addFirst(parentImpl, getPreprocState(parentImpl.getBuffer().getFile()).getState(), false);
-                        if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
-                            System.out.println("Add top file to reparse "+parentImpl.getBuffer().getFile().getAbsolutePath());
-                        }
-                    }
-                }
-            } finally{
-                if (progress) {
-                    ParserQueue.instance().onEndAddingProjectFiles(this);
-                }
-            }
-        } else {
-            ParserQueue.instance().addFirst(file, getPreprocState(file.getBuffer().getFile()).getState(), false);
         }
     }
     
     public void onFilePropertyChanged(NativeFileItem nativeFile) {
-        if( ! isLanguageSupported(nativeFile.getLanguage() )) {
+        if( ! acceptNativeItem(nativeFile)) {
             return;
         }
         if( TraceFlags.DEBUG ) Diagnostic.trace("------------------------- onFilePropertyChanged " + nativeFile.getFile().getName()); // NOI18N
-        FileImpl file = getFile(nativeFile.getFile());
-        if( file != null ) {
-            file.stateChanged(true);
-            APTPreprocState.State state;
-            if (file.isSourceFile()) {
-                if (TraceFlags.USE_DEEP_REPARSING) {
-                    Set<CsmFile> coherence = getGraph().getIncludedFiles(file);
-                    for(CsmFile parent : coherence){
-                        if ((parent instanceof FileImpl) &&
-                                parent.getProject() == this){
-                            FileImpl parentImpl = (FileImpl) parent;
-                            Object stateLock = fileContainer.getLock(parentImpl.getBuffer().getFile());
-                            synchronized (stateLock) {
-                                state = getPreprocStateState(parentImpl.getBuffer().getFile());
-                                if (state != null) {
-                                    state.invalidate();
-                                }
-                            }
-                            parentImpl.stateChanged(false);
-                            if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
-                                System.out.println("Invalidate file to reparse "+parentImpl.getBuffer().getFile().getAbsolutePath());
-                            }
-                        }
-                    }
-                    if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
-                        System.out.println("Add file to reparse "+nativeFile.getFile().getAbsolutePath());
-                    }
-                }
-                state = getDefaultPreprocState(nativeFile).getState();
-            } else {
-                state = getPreprocState(nativeFile.getFile()).getState();
-            }
-            ParserQueue.instance().addFirst(file, state, false);
-        }
+        DeepReparsingUtils.reparseOnPropertyChanged(nativeFile, this);
     }
     
     public void onFilePropertyChanged(List<NativeFileItem> items) {
         if (items.size()>0){
-            try {
-                ParserQueue.instance().onStartAddingProjectFiles(this);
-                if (TraceFlags.USE_DEEP_REPARSING) {
-                    Set<CsmFile> top = new HashSet<CsmFile>();
-                    Set<CsmFile> coherence = new HashSet<CsmFile>();
-                    for(NativeFileItem item : items) {
-                        FileImpl file = getFile(item.getFile());
-                        if( file != null ) {
-                            top.add(file);
-                            coherence.addAll(getGraph().getIncludedFiles(file));
-                        }
-                    }
-                    for(CsmFile parent : coherence){
-                        if (!top.contains(parent)){
-                            if ((parent instanceof FileImpl) &&
-                                    parent.getProject() == this){
-                                FileImpl parentImpl = (FileImpl) parent;
-                                Object stateLock = fileContainer.getLock(parentImpl.getBuffer().getFile());
-                                synchronized (stateLock) {
-                                    APTPreprocState.State state = getPreprocStateState(parentImpl.getBuffer().getFile());
-                                    if (state != null) {
-                                        state.invalidate();
-                                    }
-                                }
-                                parentImpl.stateChanged(false);
-                                if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
-                                    System.out.println("Invalidate file to reparse "+parentImpl.getBuffer().getFile().getAbsolutePath());
-                                }
-                            }
-                        }
-                    }
-                }
-                for(NativeFileItem item : items) {
-                    if (TraceFlags.USE_AST_CACHE) {
-                        CacheManager.getInstance().invalidate(item.getFile().getAbsolutePath());
-                    }
-                    FileImpl file = getFile(item.getFile());
-                    if( file != null ) {
-                        file.stateChanged(true);
-                        APTPreprocState.State state;
-                        if (file.isSourceFile()) {
-                            state = getDefaultPreprocState(item).getState();
-                        } else {
-                            state = getPreprocState(item.getFile()).getState();
-                        }
-                        ParserQueue.instance().addFirst(file, state, false);
-                        if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
-                            System.out.println("Add file to reparse "+item.getFile().getAbsolutePath());
-                        }
-                    }
-                }
-            } catch( Exception e ) {
-                e.printStackTrace(System.err);
-            } finally {
-                ParserQueue.instance().onEndAddingProjectFiles(this);
-            }
+            DeepReparsingUtils.reparseOnPropertyChanged(items, this);
         }
     }
-
     
     public void onFileRemoved(File file) {
         try {
             //Notificator.instance().startTransaction();
-            //File file = nativeFile.getFile();
-	    APTIncludeUtils.clearFileExistenceCache();
-            FileImpl impl = getFile(file);
+            FileImpl impl =_onFileRemoved(file);
             if( impl != null ) {
-                synchronized( editedFiles ) {
-                    editedFiles.remove(impl);
-                }
-                impl.dispose();
-                removeFile(file);
-                if (TraceFlags.USE_AST_CACHE) {
-                    CacheManager.getInstance().invalidate(impl);
-                } else {
-                    APTDriver.getInstance().invalidateAPT(impl.getBuffer());
-                }
-                ParserQueue.instance().remove(impl);
-                if (TraceFlags.USE_DEEP_REPARSING) {
-                    getGraph().removeFile(impl);
-                }
+                DeepReparsingUtils.reparseOnRemoved(impl,this);
             }
         } finally {
             //Notificator.instance().endTransaction();
             Notificator.instance().flush();
         }
     }
-    
+
+    private FileImpl _onFileRemoved(File file) {
+        APTIncludeUtils.clearFileExistenceCache();
+        FileImpl impl = getFile(file);
+        if( impl != null ) {
+            synchronized( editedFiles ) {
+                editedFiles.remove(impl);
+            }
+            impl.dispose();
+            removeFile(file);
+            if (TraceFlags.USE_AST_CACHE) {
+                CacheManager.getInstance().invalidate(impl);
+            } else {
+                APTDriver.getInstance().invalidateAPT(impl.getBuffer());
+            }
+            ParserQueue.instance().remove(impl);
+        }
+        return impl;
+    }
+
+    public void onFileRemoved(List<NativeFileItem> items) {
+        try {
+            ParserQueue.instance().onStartAddingProjectFiles(this);
+            List<FileImpl> toReparse = new ArrayList<FileImpl>();
+            for(NativeFileItem item : items) {
+                File file = item.getFile();
+                try {
+                    //Notificator.instance().startTransaction();
+                    FileImpl impl =_onFileRemoved(file);
+                    if( impl != null ) {
+                        toReparse.add(impl);
+                    }
+                } finally {
+                    //Notificator.instance().endTransaction();
+                    Notificator.instance().flush();
+                }
+            }
+            DeepReparsingUtils.reparseOnRemoved(toReparse,this);
+        } finally{
+            ParserQueue.instance().onEndAddingProjectFiles(this);
+        }
+    }
+
     public void onFileAdded(NativeFileItem nativeFile) {
-        if( isLanguageSupported(nativeFile.getLanguage() )) {
+        if( acceptNativeItem(nativeFile)) {
 	    APTIncludeUtils.clearFileExistenceCache();
             try {
                 //Notificator.instance().startTransaction();
@@ -333,6 +223,38 @@ public final class ProjectImpl extends ProjectBase {
                 //Notificator.instance().endTransaction();
                 Notificator.instance().flush();
             }
+            DeepReparsingUtils.reparseOnAdded(nativeFile,this);
+        }
+    }
+
+    private NativeFileItem _onFileAdded(NativeFileItem nativeFile) {
+        if( acceptNativeItem(nativeFile)) {
+	    APTIncludeUtils.clearFileExistenceCache();
+            try {
+                //Notificator.instance().startTransaction();
+                createIfNeed(nativeFile, isSourceFile(nativeFile));
+                return nativeFile;
+            } finally {
+                //Notificator.instance().endTransaction();
+                Notificator.instance().flush();
+            }
+        }
+        return null;
+    }
+
+    public void onFileAdded(List<NativeFileItem> items) {
+        try {
+            ParserQueue.instance().onStartAddingProjectFiles(this);
+            List<NativeFileItem> toReparse = new ArrayList<NativeFileItem>();
+            for(NativeFileItem item : items) {
+                NativeFileItem done = _onFileAdded(item);
+                if(done != null) {
+                    toReparse.add(done);
+                }
+            }
+            DeepReparsingUtils.reparseOnAdded(toReparse,this);
+        } finally{
+            ParserQueue.instance().onEndAddingProjectFiles(this);
         }
     }
     
@@ -342,7 +264,7 @@ public final class ProjectImpl extends ProjectBase {
             for( Iterator iter = editedFiles.iterator(); iter.hasNext(); ) {
                 FileImpl file = (FileImpl) iter.next();
                 if( ! file.isParsingOrParsed() ) {
-                    ParserQueue.instance().addLast(file, getPreprocState(file.getBuffer().getFile()).getState());
+                    ParserQueue.instance().addLast(file, getPreprocHandler(file.getBuffer().getFile()).getState());
                 }
             }
         }

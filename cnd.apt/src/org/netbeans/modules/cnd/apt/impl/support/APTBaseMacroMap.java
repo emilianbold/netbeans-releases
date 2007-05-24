@@ -50,11 +50,11 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     ////////////////////////////////////////////////////////////////////////////
     // manage define/undef macros
     
-    public final void define(Token name, List value) {
+    public final void define(Token name, List<Token> value) {
         define(name, null, value);
     }
 
-    public void define(Token name, Collection params, List value) {
+    public void define(Token name, Collection<Token> params, List<Token> value) {
         active.macros.put(APTUtils.getTokenTextKey(name), createMacro(name, params, value));
     }
     
@@ -63,7 +63,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     }
     
     /** method to implement in children */
-    protected abstract APTMacro createMacro(Token name, Collection params, List/*<Token>*/ value);
+    protected abstract APTMacro createMacro(Token name, Collection<Token> params, List<Token> value);
     
     ////////////////////////////////////////////////////////////////////////////
     // manage macro access
@@ -102,27 +102,23 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     }
     
     public static class StateImpl implements State {
-        public APTMacroMapSnapshot snap;
+        public final APTMacroMapSnapshot snap;
         
         public StateImpl(APTMacroMapSnapshot snap) {
             this.snap = snap;
+        }
+        
+        protected StateImpl(StateImpl state, boolean cleanedState) {
+            this.snap = cleanedState ? getFirstSnapshot(state.snap) : state.snap;
         }
         
         public String toString() {
             return snap != null ? snap.toString() : "<no snap>"; // NOI18N
         }
 
-        public boolean clean() {
-            boolean cleaned = false;
-            if (snap != null) {
-                while (snap.parent != null) {
-                    snap = snap.parent;
-                    cleaned = true;
-                }
-            }
-            return cleaned;
-        }
-        
+        public StateImpl copyCleaned() {
+            return new StateImpl(this, true);
+        }        
         ////////////////////////////////////////////////////////////////////////
         // persistence support
 
@@ -132,14 +128,24 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
 
         public StateImpl(DataInput input) throws IOException {
             this.snap = APTSerializeUtils.readSnapshot(input);
-        }         
+        }    
+        
+        ////////////////////////////////////////////////////////////////////////
+        private APTMacroMapSnapshot getFirstSnapshot(APTMacroMapSnapshot snap) {
+            if (snap != null) {
+                while (snap.parent != null) {
+                    snap = snap.parent;
+                }
+            }
+            return snap;
+        }        
     }
     
     ////////////////////////////////////////////////////////////////////////////
     // implementation details    
 
     public String toString() {
-        Map tmpMap = new HashMap();
+        Map<String, APTMacro> tmpMap = new HashMap<String, APTMacro>();
         APTMacroMapSnapshot.addAllMacros(active, tmpMap);
         return APTUtils.macros2String(tmpMap);
     }

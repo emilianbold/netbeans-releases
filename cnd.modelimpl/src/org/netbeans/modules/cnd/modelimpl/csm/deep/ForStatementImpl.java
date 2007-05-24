@@ -28,7 +28,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import antlr.collections.AST;
-import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
@@ -122,18 +121,18 @@ public class ForStatementImpl extends StatementBase implements CsmForStatement {
         }
     }
 
-    public List getScopeElements() {
+    public List<CsmScopeElement> getScopeElements() {
         //return DeepUtil.merge(getInitStatement(), getCondition(), getBody());
-        List l = new ArrayList();
+        List<CsmScopeElement> l = new ArrayList<CsmScopeElement>();
         CsmStatement stmt = getInitStatement();
         if( stmt != null ) {
             l.add(stmt);
         }
         CsmCondition cond = getCondition();
         if( cond != null ) {
-            CsmDeclaration decl = cond.getDeclaration();
+            CsmVariable decl = cond.getDeclaration();
             if( decl != null ) {
-                l.add(cond);
+                l.add(decl);
             }
         }
         stmt = getBody();

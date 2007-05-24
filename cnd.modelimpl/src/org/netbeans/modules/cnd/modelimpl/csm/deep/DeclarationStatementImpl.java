@@ -28,7 +28,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import antlr.collections.AST;
-import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
@@ -37,7 +36,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
  */
 public class DeclarationStatementImpl extends StatementBase implements CsmDeclarationStatement {
 
-    private List/*<CsmVariableImpl>*/ declarators;
+    private List<CsmDeclaration> declarators;
     
     public DeclarationStatementImpl(AST ast, CsmFile file) {
             super(ast, file);
@@ -47,9 +46,9 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
         return CsmStatement.Kind.DECLARATION;
     }
 
-    public List getDeclarators() {
+    public List<CsmDeclaration> getDeclarators() {
         if( declarators == null ) {
-            declarators = new ArrayList/*<CsmVariableImpl>*/();
+            declarators = new ArrayList<CsmDeclaration>();
             render();
         }
         return declarators;

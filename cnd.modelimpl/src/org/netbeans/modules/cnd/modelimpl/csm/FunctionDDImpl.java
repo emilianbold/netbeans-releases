@@ -65,8 +65,8 @@ public final class FunctionDDImpl extends FunctionImpl<CsmFunctionDefinition> im
         return CsmDeclaration.Kind.FUNCTION_DEFINITION;
     }
     
-    public List getScopeElements() {
-        List l = new ArrayList();
+    public List<CsmScopeElement> getScopeElements() {
+        List<CsmScopeElement> l = new ArrayList<CsmScopeElement>();
         l.addAll(getParameters());
         l.add(getBody());
         return l;

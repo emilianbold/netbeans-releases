@@ -23,4 +23,12 @@ Microsystems, Inc. All Rights Reserved.
 <project name="org.netbeans.modules.cnd.completion" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.netbeans.modules.cnd.completion.</description>
     <import file="nbproject/build-impl.xml"/>
+    
+    <target name="do-test-build" depends="-build-cnd-tests,projectized-common.do-test-build">
+    </target>
+
+    <target name="-build-cnd-tests">
+        <ant dir="../core" target="test-build" inheritall="false" />
+        <ant dir="../modelimpl" target="test-build" inheritall="false" />
+    </target>     
 </project>

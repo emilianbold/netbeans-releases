@@ -89,7 +89,6 @@ public class StartActionProvider extends ActionsProvider {
      * @param l new listener.
      */
     public void addActionsProviderListener(ActionsProviderListener l) {
-        
     }
     
 
@@ -99,7 +98,6 @@ public class StartActionProvider extends ActionsProvider {
      * @param l removed listener.
      */
     public void removeActionsProviderListener(ActionsProviderListener l) {
-        
     }
     
     /**
@@ -112,8 +110,7 @@ public class StartActionProvider extends ActionsProvider {
      *        done.
      * @since 1.5
      */
-    public void postAction(final Object action,
-                            final Runnable actionPerformedNotifier) {
+    public void postAction(final Object action, final Runnable actionPerformedNotifier) {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {

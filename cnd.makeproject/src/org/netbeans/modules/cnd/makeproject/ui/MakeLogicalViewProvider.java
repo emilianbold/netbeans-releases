@@ -72,9 +72,6 @@ import org.netbeans.modules.cnd.makeproject.api.ui.LogicalViewNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.ui.LogicalViewNodeProviders;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SubprojectProvider;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
@@ -117,26 +114,18 @@ import org.openidex.search.SearchInfo;
 public class MakeLogicalViewProvider implements LogicalViewProvider {
     
     private final Project project;
-    private final AntProjectHelper helper;
-    private final PropertyEvaluator evaluator;
     private final SubprojectProvider spp;
-    private final ReferenceHelper resolver;
     
     private static final MessageFormat ITEM_VIEW_FLAVOR = new MessageFormat("application/x-org-netbeans-modules-cnd-makeproject-uidnd; class=org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider$ViewItemNode; mask={0}"); // NOI18N
     static final String PRIMARY_TYPE = "application"; // NOI18N
     static final String SUBTYPE = "x-org-netbeans-modules-cnd-makeproject-uidnd"; // NOI18N
     static final String MASK = "mask"; // NOI18N
     
-    public MakeLogicalViewProvider(Project project, AntProjectHelper helper, PropertyEvaluator evaluator, SubprojectProvider spp, ReferenceHelper resolver) {
+    public MakeLogicalViewProvider(Project project, SubprojectProvider spp) {
         this.project = project;
         assert project != null;
-        this.helper = helper;
-        assert helper != null;
-        this.evaluator = evaluator;
-        assert evaluator != null;
         this.spp = spp;
         assert spp != null;
-        this.resolver = resolver;
     }
     
     public Node createLogicalView() {
@@ -173,8 +162,12 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         if (item == null) {
             item = makeConfigurationDescriptor.findExternalItemByPath(file.getAbsolutePath());
             if (item == null) {
-                //not found:
-                return null;
+                // try to find any item
+                item = makeConfigurationDescriptor.findItemByFile(file);
+                if (item == null) {
+                    //not found:
+                    return null;
+                }
             }
         }
         
@@ -347,7 +340,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     
     // Private innerclasses ----------------------------------------------------
     
-    public static boolean hasBrokenLinks(AntProjectHelper helper, ReferenceHelper resolver) {
+    public static boolean hasBrokenLinks() {
         return false;
         /*
         return BrokenReferencesSupport.isBroken(helper, resolver, BREAKABLE_PROPERTIES,
@@ -400,7 +393,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             brokenIncludesResult.addLookupListener(this);
             resultChanged(null);
             
-            if (hasBrokenLinks(helper, resolver) || hasBrokenIncludes(project)) {
+            if (hasBrokenLinks() || hasBrokenIncludes(project)) {
                 broken = true;
             }
             brokenLinksAction = new BrokenLinksAction();
@@ -435,7 +428,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
          * Something in the folder has changed
          **/
         public void stateChanged(ChangeEvent e) {
-            broken = hasBrokenLinks(helper, resolver) || hasBrokenIncludes(project);
+            broken = hasBrokenLinks() || hasBrokenIncludes(project);
             updateAnnotationFiles();
             fireIconChange();
             fireOpenedIconChange();
@@ -475,6 +468,9 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             for (int i = 0; i < standardActions.length; i++)
                 actions.add(standardActions[i]);
             addActionsFromLayers(actions, "NativeProjects/Actions"); // NOI18N
+            if(broken ) {
+		actions.add(getBrokenIncludesAction(project));
+	    }
             addActionsFromLayers(actions, "Projects/Actions"); // NOI18N
             // Add remaining actions
             actions.add(null);
@@ -557,7 +553,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, bundle.getString( "LBL_RebuildAction_Name" ), null ), // NOI18N
                 ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString( "LBL_CleanAction_Name" ), null ), // NOI18N
                 ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, "Batch Build...", null ), // NOI18N
-                new SetConfigurationAction(project, helper),
+                new SetConfigurationAction(project),
                 null,
                 ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_RUN, bundle.getString( "LBL_RunAction_Name" ), null ), // NOI18N
                 //new DebugMenuAction(project, helper),
@@ -574,8 +570,6 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 CommonProjectActions.moveProjectAction(),
                 CommonProjectActions.copyProjectAction(),
                 CommonProjectActions.deleteProjectAction(),
-                null,
-                (broken ? getBrokenIncludesAction(project) : null),
             };
             
         }
@@ -655,7 +649,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             
             public synchronized void run() {
                 boolean old = broken;
-                broken = hasBrokenLinks(helper, resolver);
+                broken = hasBrokenLinks();
                 if (old != broken) {
                     setEnabled(broken);
                     fireIconChange();

@@ -31,6 +31,6 @@ public interface CsmTryCatchStatement extends CsmStatement {
     CsmStatement getTryStatement();
 
     /** Gets a list of handlers */
-    List/*CsmExceptionHandler*/ getHandlers();
+    List<CsmExceptionHandler> getHandlers();
 
 }

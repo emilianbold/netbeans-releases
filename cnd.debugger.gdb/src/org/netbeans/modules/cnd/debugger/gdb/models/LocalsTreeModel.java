@@ -460,12 +460,10 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
         private RequestProcessor.Task task;
         
         public void propertyChange(PropertyChangeEvent e) {
-            if ( ( (e.getPropertyName() ==
-                    debugger.PROP_CURRENT_CALL_STACK_FRAME) ||
+            if ( ( (e.getPropertyName() == debugger.PROP_CURRENT_CALL_STACK_FRAME) ||
                     //(e.getPropertyName () == debugger.PROP_CURRENT_THREAD) ||
                     (e.getPropertyName() == debugger.PROP_STATE)
-                    ) && (debugger.getState() == debugger.STATE_STOPPED)
-                    ) {
+                    ) && (debugger.getState() == debugger.STATE_STOPPED)) {
                 // IF state has been changed to STOPPED or
                 // IF current call stack frame has been changed & state is stoped
                 final LocalsTreeModel ltm = getModel();

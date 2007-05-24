@@ -38,7 +38,7 @@ public class ElfStaticLibraryFileFilter extends javax.swing.filechooser.FileFilt
     }
 
     public String getDescription() {
-	return getString("ELF_STATIC_LIB_FILTER"); // NOI18N
+	return getString("STATIC_LIB_FILTER"); // NOI18N
     }
     
     public boolean accept(File f) {

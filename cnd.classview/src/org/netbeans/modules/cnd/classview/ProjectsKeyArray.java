@@ -80,6 +80,13 @@ public class ProjectsKeyArray extends Children.Keys {
         return new SortedName(0,project.getName(), 0);
     }
     
+    public boolean isEmpty(){
+        if (myProjects != null) {
+            return myProjects.size()==0;
+        }
+        return true;
+    }
+    
     public void openProject(CsmProject project){
         if (myProjects == null){
             return;
@@ -170,7 +177,7 @@ public class ProjectsKeyArray extends Children.Keys {
     }
     
     private Set<CsmProject> gatherLibs(Set<CsmProject> projects) {
-        Set<CsmProject> libs = new HashSet();
+        Set<CsmProject> libs = new HashSet<CsmProject>();
         if (ClassViewModel.isShowLibs() ) {
             for(CsmProject p : projects) {
                 libs.addAll(p.getLibraries());

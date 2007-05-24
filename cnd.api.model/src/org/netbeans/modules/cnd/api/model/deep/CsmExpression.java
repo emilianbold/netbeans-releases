@@ -177,5 +177,5 @@ public interface CsmExpression extends CsmOffsetable, CsmObject {
     /**
      * Gets this expression operands
      */
-    List/*<CsmExpression>*/ getOperands();
+    List<CsmExpression> getOperands();
 }

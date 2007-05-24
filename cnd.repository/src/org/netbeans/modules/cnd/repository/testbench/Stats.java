@@ -46,7 +46,6 @@ public class Stats {
     public static final boolean useNullWorkaround = getBoolean("cnd.repository.workaround.nulldata", false); //NOI18N
     public static final boolean deleteCacheFiles = getBoolean("cnd.repository.delete.cache.files", true); //NOI18N
     
-    public static final boolean useHardCache = getBoolean("cnd.repository.use.hardcache", false); //NOI18N
     public static final boolean useHardRefRepository = getBoolean("cnd.repository.hardrefs", false); //NOI18N
     public static final boolean queueTiming = getBoolean("cnd.repository.queue.timing", false); //NOI18N
     public static final boolean queueTrace = getBoolean("cnd.repository.queue.trace", false); //NOI18N

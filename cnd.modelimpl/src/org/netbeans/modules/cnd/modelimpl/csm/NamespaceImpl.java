@@ -54,15 +54,15 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     private final String qualifiedName;
     
     /** maps namespaces FQN to namespaces */
-    private Map/*<String, CsmNamespaceImpl>*/ nestedMapOLD = Collections.synchronizedMap(new HashMap/*<String, CsmNamespaceImpl>*/());
+    private Map<String, CsmNamespace> nestedMapOLD = Collections.synchronizedMap(new HashMap<String, CsmNamespace>());
     private Map<String, CsmUID<CsmNamespace>> nestedMap = Collections.synchronizedMap(new HashMap<String, CsmUID<CsmNamespace>>());
     
-    private Map/*<String,CsmDeclaration>*/ declarationsOLD = Collections.synchronizedMap(new HashMap/*<String,CsmDeclaration>*/());
+    private Map<String,CsmOffsetableDeclaration> declarationsOLD = Collections.synchronizedMap(new HashMap<String,CsmOffsetableDeclaration>());
     private Map<String,CsmUID<CsmOffsetableDeclaration>> declarations = Collections.synchronizedMap(new HashMap<String,CsmUID<CsmOffsetableDeclaration>>());
     //private Collection/*<CsmNamespace>*/ nestedNamespaces = Collections.synchronizedList(new ArrayList/*<CsmNamespace>*/());
     
 //    private Collection/*<CsmNamespaceDefinition>*/ definitions = new ArrayList/*<CsmNamespaceDefinition>*/();
-    private Map/*<String,CsmNamespaceDefinition>*/ definitionsOLD = Collections.synchronizedSortedMap(new TreeMap/*<String,CsmNamespaceDefinition>*/());
+    private Map<String,CsmNamespaceDefinition> definitionsOLD = Collections.synchronizedSortedMap(new TreeMap<String,CsmNamespaceDefinition>());
     private Map<String,CsmUID<CsmNamespaceDefinition>> nsDefinitions = Collections.synchronizedSortedMap(new TreeMap<String,CsmUID<CsmNamespaceDefinition>>());
     
     private final boolean global;
@@ -183,21 +183,21 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         return _getParentNamespace();
     }
     
-    public Collection/*<CsmNamespace>*/ getNestedNamespaces() {
+    public Collection<CsmNamespace> getNestedNamespaces() {
         if (TraceFlags.USE_REPOSITORY) {
             List<CsmNamespace> out = UIDCsmConverter.UIDsToNamespaces(new ArrayList(nestedMap.values()));
             return out;
         } else {
-            return new ArrayList(nestedMapOLD.values());
+            return new ArrayList<CsmNamespace>(nestedMapOLD.values());
         }
     }
     
-    public Collection/*<CsmDeclaration>*/ getDeclarations() {
+    public Collection<CsmOffsetableDeclaration> getDeclarations() {
         if (TraceFlags.USE_REPOSITORY) {
             List<CsmOffsetableDeclaration> decls = UIDCsmConverter.UIDsToDeclarations(new ArrayList<CsmUID<CsmOffsetableDeclaration>>(declarations.values()));
             return decls;
         } else {
-            return new ArrayList(declarationsOLD.values());
+            return new ArrayList<CsmOffsetableDeclaration>(declarationsOLD.values());
         }
     }
     
@@ -373,14 +373,14 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         Notificator.instance().registerRemovedDeclaration(declaration);
     }
     
-    public Collection/*<CsmNamespaceDefinition>*/ getDefinitions()  {
+    public Collection<CsmNamespaceDefinition> getDefinitions()  {
 //        return definitions;
         if (TraceFlags.USE_REPOSITORY) {
             List<CsmUID<CsmNamespaceDefinition>> uids = new ArrayList<CsmUID<CsmNamespaceDefinition>>(nsDefinitions.values());
             List<CsmNamespaceDefinition> defs = UIDCsmConverter.UIDsToDeclarations(uids);
             return defs;
         } else {
-            return new ArrayList(definitionsOLD.values());
+            return new ArrayList<CsmNamespaceDefinition>(definitionsOLD.values());
         }
     }
     
@@ -432,7 +432,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         return sb.toString();
     }
     
-    public List getScopeElements() {
+    public List<CsmScopeElement> getScopeElements() {
         return (List) getDeclarations();
     }
     

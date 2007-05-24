@@ -24,7 +24,7 @@ import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.WeakList;
-import org.netbeans.modules.cnd.apt.support.APTPreprocState;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -38,25 +38,25 @@ public class ParserQueue {
     public static class Entry {
         
         private FileImpl file;
-        private APTPreprocState.State ppStateState;
+        private APTPreprocHandler.State ppState;
         private Entry prev;
         private Entry next;
         
-        private Entry(FileImpl file, APTPreprocState.State ppStateState) {
+        private Entry(FileImpl file, APTPreprocHandler.State ppState) {
             if( TraceFlags.TRACE_PARSER_QUEUE ) {
                 System.err.println("creating entry for " + file.getAbsolutePath() +
-                        " as " + tracePreprocStateState(ppStateState));            
+                        " as " + tracePreprocState(ppState));            
             }
             this.file = file;
-            this.ppStateState = ppStateState;
+            this.ppState = ppState;
         }
         
         public FileImpl getFile() {
             return file;
         }
         
-        public APTPreprocState.State getPreprocStateState() {
-            return ppStateState;
+        public APTPreprocHandler.State getPreprocState() {
+            return ppState;
         }
         
         public String toString() {
@@ -67,44 +67,44 @@ public class ParserQueue {
             StringBuilder retValue = new StringBuilder();
             retValue.append("ParserQueue.Entry " + file.getAbsolutePath()); // NOI18N
             if( detailed ) {
-                retValue.append("\nwith PreprocStateState:\n"+ppStateState); // NOI18N
+                retValue.append("\nwith PreprocState:\n"+ppState); // NOI18N
             }
             return retValue.toString();
         }
         
-        public void setPreprocStateStateIfNeed(APTPreprocState.State ppStateState) {
+        public void setPreprocStateIfNeed(APTPreprocHandler.State ppState) {
             // TODO: IZ#87204: AssertionError on _Bvector_base opening
             // review why it could be null
             // FIXUP: remove assert checks and update if statements to prevent NPE
-            //            assert (ppStateState != null) : "why do pass null snapshot?";
-            //            assert (this.ppStateState != null) : "if it was already included, where is the state?";
+            //            assert (ppState != null) : "why do pass null snapshot?";
+            //            assert (this.ppState != null) : "if it was already included, where is the state?";
 
             if( TraceFlags.TRACE_PARSER_QUEUE ) {
-                System.err.println("setPreprocStateStateIfNeed for " + file.getAbsolutePath() +
-                        " as " + tracePreprocStateState(ppStateState) + " with current " + tracePreprocStateState(this.ppStateState));
+                System.err.println("setPreprocStateIfNeed for " + file.getAbsolutePath() +
+                        " as " + tracePreprocState(ppState) + " with current " + tracePreprocState(this.ppState));
             }
-            if (this.ppStateState != null && this.ppStateState.isStateCorrect()) {
+            if (this.ppState != null && this.ppState.isStateCorrect()) {
                 // do nothing
-            } else if (ppStateState != null && ppStateState.isStateCorrect()) {
+            } else if (ppState != null && ppState.isStateCorrect()) {
                 // override state with new one
-                this.ppStateState = ppStateState;
+                this.ppState = ppState;
             }
         }
     }
     
-    /*package*/static String tracePreprocStateState(APTPreprocState.State ppStateState) {
-        if (ppStateState == null) {
+    /*package*/static String tracePreprocState(APTPreprocHandler.State ppState) {
+        if (ppState == null) {
             return "null";
         } else {
             StringBuilder msg = new StringBuilder("[");
-            if (!ppStateState.isCleaned()) {
+            if (!ppState.isCleaned()) {
                 msg.append("not");
             }
             msg.append(" cleaned, ");
-            if (!ppStateState.isStateCorrect()) {
+            if (!ppState.isStateCorrect()) {
                 msg.append("not");
             }
-            msg.append(" correct stateState]");
+            msg.append(" correct State]");
             return msg.toString();
         }
     }
@@ -247,17 +247,17 @@ public class ParserQueue {
      * if it already is, does nothing)
      */
 //    public void addLast(FileImpl file) {
-//        addLast(file, file.getPreprocStateState());
+//        addLast(file, file.getPreprocState());
 //    }
     
-    //    public void addLast(FileImpl file, APTPreprocState.State ppStateState, boolean onInclude) {
+    //    public void addLast(FileImpl file, APTPreprocHandler.State ppState, boolean onInclude) {
     //        if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: addLast " + file.getName());
     //        synchronized ( lock ) {
     //            Set/*<FileImpl>*/ files = getProjectFiles(file.getProjectImpl());
     //            if( ! files.contains(file) ) {
     //                files.add(file);
     //                //queue.add(file);
-    //                Entry entry = new Entry(file, ppStateState, onInclude);
+    //                Entry entry = new Entry(file, ppState, onInclude);
     //                if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: added as Last with entry " + entry);
     //                queue.addLast(entry);
     //                lock.notifyAll();
@@ -265,7 +265,7 @@ public class ParserQueue {
     //        }
     //    }
     
-    public void addLast(FileImpl file, APTPreprocState.State ppStateState) {
+    public void addLast(FileImpl file, APTPreprocHandler.State ppState) {
         if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: addLast " + file.getAbsolutePath());
         synchronized ( lock ) {
             if( state == State.OFF ) return;
@@ -278,13 +278,13 @@ public class ParserQueue {
             if( files.contains(file) ) {
                 entry = queue.find(file); //TODO: think over / profile, probably this line is expensive
                 if( entry != null ) {
-                    entry.setPreprocStateStateIfNeed(ppStateState);
+                    entry.setPreprocStateIfNeed(ppState);
                 }
             } else {
                 files.add(file);
             }
             if (entry == null) {
-                entry = new Entry(file, ppStateState);
+                entry = new Entry(file, ppState);
                 if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: added as Last with entry " + entry.toString(TraceFlags.TRACE_PARSER_QUEUE_DETAILS));
                 queue.addLast(entry);
             }
@@ -297,10 +297,10 @@ public class ParserQueue {
      * otherwise moves it there
      */
 //    public void addFirst(FileImpl file) {
-//        addFirst(file, file.getPreprocStateState(), false);
+//        addFirst(file, file.getPreprocState(), false);
 //    }
     
-    public void addFirst(FileImpl file, APTPreprocState.State ppStateState, boolean onInclude) {
+    public void addFirst(FileImpl file, APTPreprocHandler.State ppState, boolean onInclude) {
         if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: addFirst " + file.getAbsolutePath());
         synchronized ( lock ) {
             if( state == State.OFF  ) return;
@@ -314,13 +314,13 @@ public class ParserQueue {
                 entry = queue.find(file); //TODO: think over / profile, probably this line is expensive
                 if( entry != null ) {
                     queue.remove(entry);
-                    entry.setPreprocStateStateIfNeed(ppStateState);
+                    entry.setPreprocStateIfNeed(ppState);
                 }
             } else {
                 files.add(file);
             }
             if (entry == null) {
-                entry = new Entry(file, ppStateState);
+                entry = new Entry(file, ppState);
             }
             if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: added as First with entry " + entry.toString(TraceFlags.TRACE_PARSER_QUEUE_DETAILS));
             queue.addFirst(entry);

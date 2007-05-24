@@ -31,6 +31,6 @@ public interface APTMacro {
     public boolean isSystem();
     public boolean isFunctionLike();
     public Token getName();
-    public Collection getParams();
+    public Collection<Token> getParams();
     public TokenStream getBody();
 }

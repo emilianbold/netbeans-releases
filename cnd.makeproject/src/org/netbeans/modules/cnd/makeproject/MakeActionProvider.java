@@ -63,7 +63,6 @@ import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanelModel;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDescriptor;
@@ -109,9 +108,6 @@ public class MakeActionProvider implements ActionProvider {
     // Project
     MakeProject project;
     
-    // Ant project helper of the project
-    private AntProjectHelper antProjectHelper;
-    
     // Project Descriptor
     ConfigurationDescriptor projectDescriptor = null;
     
@@ -121,7 +117,7 @@ public class MakeActionProvider implements ActionProvider {
     
     private boolean lastValidation = false;
     
-    public MakeActionProvider( MakeProject project, AntProjectHelper antProjectHelper ) {
+    public MakeActionProvider( MakeProject project) {
         
         commands = new HashMap();
         commands.put(COMMAND_BUILD, new String[] {"save", "build"}); // NOI18N
@@ -145,7 +141,6 @@ public class MakeActionProvider implements ActionProvider {
         commandsNoBuild.put(COMMAND_DEBUG_LOAD_ONLY, new String[] {"debug-load-only"}); // NOI18N
         commandsNoBuild.put(COMMAND_CUSTOM_ACTION, new String[] {"save", "custom-action"}); // NOI18N
         
-        this.antProjectHelper = antProjectHelper;
         this.project = project;
     }
     

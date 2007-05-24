@@ -32,23 +32,9 @@ public interface APTIncludeHandler {
     public State getState();
     public void setState(State state);
     
+    /** immutable state object of include handler */    
     public interface State {
-        /**
-         * clear cached restorable information of state
-         * @return true if there were cleaned information which will need further restoring
-         */
-        public boolean cleanExceptIncludeStack();
-
-        /**
-         * get include stack and clean this information internally
-         */
-        public Stack/*<IncludeInfo>*/ cleanIncludeStack();
-
-        /**
-         * get copy of this state object
-         */        
-        public State copy();
-    };     
+    };
     
     /*
      * 

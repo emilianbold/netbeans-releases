@@ -30,7 +30,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
@@ -44,14 +43,12 @@ public class SetConfigurationAction extends AbstractAction implements Presenter.
     private JMenu subMenu;
 
     private Project project;
-    private AntProjectHelper helper;
     
     /** Creates a new instance of BrowserAction */
-    public SetConfigurationAction(Project project, AntProjectHelper helper) {
+    public SetConfigurationAction(Project project) {
         super( NbBundle.getMessage( SetConfigurationAction.class, "LBL_SetConfigurationAction_Name"),   // NOI18N
                null );
 	this.project = project;
-	this.helper = helper;
         //OpenProjectList.getDefault().addPropertyChangeListener( this );
     }
     

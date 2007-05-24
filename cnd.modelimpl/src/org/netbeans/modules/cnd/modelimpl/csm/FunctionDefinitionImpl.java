@@ -26,8 +26,6 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import org.netbeans.modules.cnd.apt.utils.TextCache;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -134,8 +132,8 @@ public class FunctionDefinitionImpl extends FunctionImplEx<CsmFunctionDefinition
         return getContainingFile();
     }
 
-    public List getScopeElements() {
-        List l = new ArrayList();
+    public List<CsmScopeElement> getScopeElements() {
+        List<CsmScopeElement> l = new ArrayList<CsmScopeElement>();
         l.addAll(getParameters());
         l.add(getBody());
         return l;

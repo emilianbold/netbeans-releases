@@ -20,6 +20,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.deep.CsmCondition;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
@@ -31,32 +32,32 @@ import java.util.*;
  */
 public class DeepUtil {
 
-    public static List/*<CsmScopeElement>*/ merge(CsmVariable var, List/*CsmStatements*/ statements) {
+    public static List<CsmScopeElement> merge(CsmVariable var, List<CsmStatement> statements) {
         if( var == null ) {
-            return statements;
+            return (List)statements;
         }
         else {
-            List l = new ArrayList();
+            List<CsmScopeElement> l = new ArrayList<CsmScopeElement>();
             l.add(var);
             l.addAll(statements);
             return l;
         }
     }
     
-    public static List/*<CsmScopeElement>*/ merge(CsmCondition condition, CsmStatement statement) {
+    public static List<CsmScopeElement> merge(CsmCondition condition, CsmStatement statement) {
         return merge(condition == null ? null : condition.getDeclaration(),  statement);
     }
 
-    public static List/*<CsmScopeElement>*/ merge(CsmCondition condition, CsmStatement statement1, CsmStatement statement2) {
-        List l = merge(condition.getDeclaration(),  statement1);
+    public static List<CsmScopeElement> merge(CsmCondition condition, CsmStatement statement1, CsmStatement statement2) {
+        List<CsmScopeElement> l = merge(condition.getDeclaration(),  statement1);
         if( statement2 != null ) {
             l.add(statement2);
         }
         return l;
     }
     
-    public static List/*<CsmScopeElement>*/ merge(CsmVariable var, CsmStatement statement) {
-        List l = new ArrayList();
+    public static List<CsmScopeElement> merge(CsmVariable var, CsmStatement statement) {
+        List<CsmScopeElement> l = new ArrayList<CsmScopeElement>();
         if( var != null ) {
             l.add(var);
         }

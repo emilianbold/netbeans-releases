@@ -20,6 +20,7 @@
 package org.netbeans.modules.cnd.api.model.deep;
 
 import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 
 /**
@@ -43,5 +44,5 @@ public interface CsmDeclarationStatement extends CsmStatement {
      * But our API treats each variable as a separate declaration - that's why this method returns a list.
      *      
      */
-    List/*CsmDeclaration*/ getDeclarators();
+    List<CsmDeclaration> getDeclarators();
 }

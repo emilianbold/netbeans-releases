@@ -21,7 +21,6 @@ package org.netbeans.modules.cnd.api.utils;
 
 import java.awt.Component;
 import java.io.File;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Stack;
 import java.util.StringTokenizer;
@@ -128,14 +127,14 @@ public class IpeUtils {
             
             if (match > 1 && match == pnames.length && bnames.length > pnames.length) {
                 // path is a substring of
-                StringBuffer s = new StringBuffer();
+                StringBuilder s = new StringBuilder();
                 for (int cnt = 0; cnt < (bnames.length - match-1); cnt++) {
                     s.append(".." + File.separator);					// NOI18N
                 }
                 s.append("..");					// NOI18N
                 return s.toString();
             } else if (match > 1) {
-                StringBuffer s = new StringBuffer();
+                StringBuilder s = new StringBuilder();
                 
                 for (int cnt = bnames.length - match; cnt > 0; cnt--) {
                     s.append(".." + File.separator);					// NOI18N
@@ -295,7 +294,7 @@ public class IpeUtils {
         int max = filename.length(); // Length of filename
         int beginIndex;
         int endIndex;
-        StringBuffer dp = new StringBuffer(256); // Result buffer
+        StringBuilder dp = new StringBuilder(256); // Result buffer
         
         // Skip leading whitespace
         while (si < max && Character.isSpaceChar(filename.charAt(si))) {
@@ -672,13 +671,39 @@ public class IpeUtils {
         return true;
     }
     
-    public static String escapeSpaces(String s) {
-        if (s.indexOf(' ') < 0)
-            return s;
-        else {
-            //return s.replace(" ", "\\ "); // NOI8N JDK1.5
-            return s.replaceAll(" ", "\\\\ "); // NOI18N
+    public static String escapeOddCharacters(String s) {
+        int n = s.length();
+        StringBuilder ret = new StringBuilder(n);
+        for (int i = 0; i < n; i++) {
+            char c = s.charAt(i);
+            if ((c == ' ') || (c == '\t') ||
+                    (c == ':') || (c == '\'') ||
+                    (c == '*') || (c == '\"') ||
+                    (c == '[') || (c == ']') ||
+                    (c == '(') || (c == ')')) {
+                ret.append('\\');
+            }
+            ret.append(c);
         }
+        return ret.toString();
+    }
+    
+    public static String replaceOddCharacters(String s, char replaceChar) {
+        int n = s.length();
+        StringBuilder ret = new StringBuilder(n);
+        for (int i = 0; i < n; i++) {
+            char c = s.charAt(i);
+            if ((c == ' ') || (c == '\t') ||
+                    (c == ':') || (c == '\'') ||
+                    (c == '*') || (c == '\"') ||
+                    (c == '[') || (c == ']') ||
+                    (c == '(') || (c == ')')) {
+                ret.append(replaceChar);
+            }
+            else
+                ret.append(c);
+        }
+        return ret.toString();
     }
 
     public static String escapeQuotes(String s) {

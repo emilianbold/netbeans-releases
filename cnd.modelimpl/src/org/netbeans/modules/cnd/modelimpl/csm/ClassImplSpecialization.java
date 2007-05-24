@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
@@ -28,11 +27,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
 /**
  * Implements 

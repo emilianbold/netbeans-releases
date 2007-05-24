@@ -68,7 +68,7 @@ public class NamespaceNode extends NPNode {
     private Action createOpenAction() {
         CsmNamespace ns = getNamespace();
         if (ns != null){
-            Collection<CsmOffsetableDeclaration> arr = ns.getDefinitions();
+            Collection<? extends CsmOffsetableDeclaration> arr = ns.getDefinitions();
             if (arr.size() > 0) {
                 return new GoToDeclarationAction(arr.iterator().next());
             }
@@ -80,7 +80,7 @@ public class NamespaceNode extends NPNode {
         Action action = createOpenAction();
         if (action != null){
             CsmNamespace ns = getNamespace();
-            Collection<CsmOffsetableDeclaration> arr = ns.getDefinitions();
+            Collection<? extends CsmOffsetableDeclaration> arr = ns.getDefinitions();
             if (arr.size() > 1){
                 Action more = new MoreDeclarations(arr);
                 return new Action[] { action, more };

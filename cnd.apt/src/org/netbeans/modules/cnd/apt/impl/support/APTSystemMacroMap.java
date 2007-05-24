@@ -43,7 +43,7 @@ public class APTSystemMacroMap extends APTBaseMacroMap {
          this.preMacroMap = preMacroMap;
     }
     
-    protected APTMacro createMacro(Token name, Collection params, List/*<Token>*/ value) {
+    protected APTMacro createMacro(Token name, Collection<Token> params, List<Token> value) {
         return new APTMacroImpl(name, params, value, true);
     }
     

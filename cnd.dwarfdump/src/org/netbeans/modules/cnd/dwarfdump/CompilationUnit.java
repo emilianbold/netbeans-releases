@@ -100,10 +100,15 @@ public class CompilationUnit {
         
         try {
             String dir = getCompilationDir();
+            String name = getSourceFileName();
             if (dir != null) {
-                result = new File(getCompilationDir() + File.separator + getSourceFileName()).getCanonicalPath();
+                if (name.startsWith("/")) {
+                    result = new File(name).getCanonicalPath();
+                } else {
+                    result = new File(dir + File.separator + name).getCanonicalPath();
+                }
             } else {
-                result = new File(getSourceFileName()).getCanonicalPath();
+                result = new File(name).getCanonicalPath();
             }
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -116,10 +121,15 @@ public class CompilationUnit {
         String result = null;
         
         String dir = getCompilationDir();
+        String name = getSourceFileName();
         if (dir != null) {
-            result = new File(getCompilationDir() + File.separator + getSourceFileName()).getAbsolutePath();
+            if (name.startsWith("/")) {
+                result = new File(name).getAbsolutePath();
+            } else {
+                result = new File(dir + File.separator + name).getAbsolutePath();
+            }
         } else {
-            result = new File(getSourceFileName()).getAbsolutePath();
+            result = new File(name).getAbsolutePath();
         }
         
         return result;

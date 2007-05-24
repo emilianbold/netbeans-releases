@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import org.netbeans.modules.cnd.apt.impl.support.APTBaseToken;
+import org.netbeans.modules.cnd.apt.support.APTBaseToken;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 
 /**

@@ -19,8 +19,19 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
-import antlr.Token;
+import antlr.TokenStream;
+import antlr.TokenStreamException;
+import java.io.File;
+import java.util.logging.Level;
+import org.netbeans.modules.cnd.apt.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.structure.APT;
+import org.netbeans.modules.cnd.apt.structure.APTDefine;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.apt.structure.APTInclude;
+import org.netbeans.modules.cnd.apt.structure.APTIncludeNext;
+import org.netbeans.modules.cnd.apt.structure.APTUndefine;
+import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  * abstract Tree walker for APT
@@ -28,44 +39,119 @@ import org.netbeans.modules.cnd.apt.structure.APT;
  */
 public abstract class APTAbstractWalker extends APTWalker {
     
-    /** Creates a new instance of APTAbstractWalker */
-    public APTAbstractWalker(APT apt, APTMacroMap macros) {
-        super(apt, macros);
+    private final APTPreprocHandler preprocHandler;
+    private final String startPath;
+    
+    protected APTAbstractWalker(APTFile apt, APTPreprocHandler preprocHandler) {
+        super(apt, preprocHandler == null ? null: preprocHandler.getMacroMap());
+        this.startPath = apt.getPath();
+        this.preprocHandler = preprocHandler;
     }
-
+    
     protected void onInclude(APT apt) {
+        if (getIncludeHandler() != null) {
+            APTIncludeResolver resolver = getIncludeHandler().getResolver(startPath);
+            String resolvedPath = resolver.resolveInclude((APTInclude)apt, getMacroMap());
+            if (resolvedPath == null) {
+                if (DebugUtils.STANDALONE) {
+                    if (APTUtils.LOG.getLevel().intValue() <= Level.SEVERE.intValue()) {
+                        System.err.println("FAILED INCLUDE: from " + new File(startPath).getName() + " for:\n\t" + apt);// NOI18N
+                    }
+                } else {
+                    APTUtils.LOG.log(Level.WARNING,
+                            "failed resolving path from {0} for {1}", // NOI18N
+                            new Object[] { startPath, apt });
+                }
+            }
+            include(resolvedPath, (APTInclude)apt);
+        }
     }
-
+    
     protected void onIncludeNext(APT apt) {
+        if (getIncludeHandler() != null) {
+            APTIncludeResolver resolver = getIncludeHandler().getResolver(startPath);
+            String resolvedPath = resolver.resolveIncludeNext((APTIncludeNext)apt, getMacroMap());
+            if (resolvedPath == null) {
+                if (DebugUtils.STANDALONE) {
+                    if (APTUtils.LOG.getLevel().intValue() <= Level.SEVERE.intValue()) {
+                        System.err.println("FAILED INCLUDE: from " + new File(startPath).getName() + " for:\n\t" + apt);// NOI18N
+                    }
+                } else {
+                    APTUtils.LOG.log(Level.WARNING,
+                            "failed resolving path from {0} for {1}", // NOI18N
+                            new Object[] { startPath, apt });
+                }
+            }
+            include(resolvedPath, (APTInclude) apt);
+        }
     }
-
+    
+    abstract protected void include(String resolvedPath, APTInclude aPTInclude);
+   
     protected void onDefine(APT apt) {
+        APTDefine define = (APTDefine)apt;
+        if (define.isValid()) {
+            getMacroMap().define(define.getName(), define.getParams(), define.getBody());
+        } else {
+            if (DebugUtils.STANDALONE) {
+                if (APTUtils.LOG.getLevel().intValue() <= Level.SEVERE.intValue()) {
+                    System.err.println("INCORRECT #define directive: in " + new File(startPath).getName() + " for:\n\t" + apt);// NOI18N
+                }
+            } else {
+                APTUtils.LOG.log(Level.SEVERE,
+                        "INCORRECT #define directive: in {0} for:\n\t{1}", // NOI18N
+                        new Object[] { new File(startPath).getName(), apt });
+            }
+        }
     }
-
+    
     protected void onUndef(APT apt) {
+        APTUndefine undef = (APTUndefine)apt;
+        getMacroMap().undef(undef.getName());
     }
-
+    
     protected boolean onIf(APT apt) {
-        return true;
+        return eval(apt);
     }
-
+    
     protected boolean onIfdef(APT apt) {
-        return true;
+        return eval(apt);
     }
-
+    
     protected boolean onIfndef(APT apt) {
-        return true;
+        return eval(apt);
     }
-
+    
     protected boolean onElif(APT apt, boolean wasInPrevBranch) {
-        return true;
+        return !wasInPrevBranch && eval(apt);
     }
-
+    
     protected boolean onElse(APT apt, boolean wasInPrevBranch) {
-        return true;
+        return !wasInPrevBranch;
     }
-
+    
     protected void onEndif(APT apt, boolean wasInBranch) {
     }
 
+    protected APTPreprocHandler getPreprocHandler() {
+        return preprocHandler;
+    }
+    
+    protected APTIncludeHandler getIncludeHandler() {
+        return getPreprocHandler() == null ? null: getPreprocHandler().getIncludeHandler();
+    }   
+ 
+    ////////////////////////////////////////////////////////////////////////////
+    // implementation details
+   
+    private boolean eval(APT apt) {
+        APTUtils.LOG.log(Level.FINE, "eval condition for {0}", new Object[] {apt});// NOI18N
+        boolean res = false;
+        try {
+            res = APTConditionResolver.evaluate(apt, getMacroMap());
+        } catch (TokenStreamException ex) {
+            APTUtils.LOG.log(Level.SEVERE, "error on evaluating condition node " + apt, ex);// NOI18N
+        }
+        return res;
+    }
 }

@@ -23,6 +23,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Collection;
 import java.util.Enumeration;
 
 import org.netbeans.modules.cnd.MIMENames;
@@ -76,6 +77,19 @@ public final class HDataLoader extends CndAbstractDataLoader {
             instance = (HDataLoader) SharedClassObject.findObject(HDataLoader.class, true);
         }
         return instance;
+    }
+    
+    public void addExtensions(Collection<String> newExt) {
+        // Discovery wizard can detect headers' extensions.
+        // See IZ#104651:Newly found file extensions are not suggested to be included into known object type list        
+        // If discovery registered extension discovered file items with extensions are disappeared.
+        // Fix depend on IZ#94935:File disappears from project when user is adding new extension
+        ExtensionList oldList = getExtensions();
+        ExtensionList newList = (ExtensionList) oldList.clone();
+        for (String name : newExt) {
+            newList.addExtension(name);
+        }   
+        putProperty(PROP_EXTENSIONS, newList, true);
     }
     
     public boolean resolveMimeType(String ext){

@@ -21,6 +21,7 @@ package org.netbeans.modules.cnd.api.model.util;
 
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
@@ -41,6 +42,7 @@ import java.util.List;
  *
  * @author Vladimir Voskresensky
  */
+@SuppressWarnings("unchecked")
 public class CsmSortUtilities {
     
     /* ------------------- COMPARATORS --------------------------- */
@@ -79,14 +81,14 @@ public class CsmSortUtilities {
 	return false;
     }   
     
-    public static List/*<CsmObject>*/ filterList(List/*<Object*/ list, String strPrefix, boolean match, boolean caseSensitive) {
-	List res = new ArrayList();
+    public static List<CsmNamedElement> filterList(List<? extends CsmDeclaration> list, String strPrefix, boolean match, boolean caseSensitive) {
+	List<CsmNamedElement> res = new ArrayList<CsmNamedElement>();
 	Iterator it = list.iterator();
 	while (it.hasNext()) {
 	    Object elem = it.next();
 	    if (CsmKindUtilities.isNamedElement(elem) && 
                     matchName(((CsmNamedElement)elem).getName(), strPrefix, match, caseSensitive)) {
-		res.add(elem);
+		res.add((CsmNamedElement)elem);
 	    }
 	}
 	return res;

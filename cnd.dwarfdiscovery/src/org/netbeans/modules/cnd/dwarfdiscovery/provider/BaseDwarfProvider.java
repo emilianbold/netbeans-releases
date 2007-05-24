@@ -36,6 +36,8 @@ import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -97,7 +99,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                 if (isStoped) {
                     break;
                 }
-                for(SourceFileProperties f : getSourceFileProperties(PathCache.getString(file))){
+                for(SourceFileProperties f : getSourceFileProperties(PathCache.getString(file), map)){
                     if (isStoped) {
                         break;
                     }
@@ -163,7 +165,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         return res;
     }
     
-    private List<SourceFileProperties> getSourceFileProperties(String objFileName){
+    private List<SourceFileProperties> getSourceFileProperties(String objFileName, HashMap<String,SourceFileProperties> map){
         List<SourceFileProperties> list = new ArrayList<SourceFileProperties>();
         Dwarf dump = null;
         try{
@@ -187,14 +189,25 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                         }
                         continue;
                     }
+                    DwarfSource source = null;
                     if (LANG.DW_LANG_C.toString().equals(lang) ||
                             LANG.DW_LANG_C89.toString().equals(lang) ||
                             LANG.DW_LANG_C99.toString().equals(lang)) {
-                        list.add(new DwarfSource(cu,false,getCommpilerSettings()));
+                        source = new DwarfSource(cu,false,getCommpilerSettings(), grepBase);
                     } else if (LANG.DW_LANG_C_plus_plus.toString().equals(lang)) {
-                        list.add(new DwarfSource(cu,true,getCommpilerSettings()));
+                        source = new DwarfSource(cu,true,getCommpilerSettings(), grepBase);
                     } else {
                         // Ignore other languages
+                    }
+                    if (source != null) {
+                        String name = PathCache.getString(source.getItemPath());
+                        SourceFileProperties old = map.get(name);
+                        if (old != null && old.getUserInludePaths().size() > 0) {
+                            // do not process processed item
+                            continue;
+                        }
+                        source.process(cu);
+                        list.add(source);
                     }
                 }
             } else {
@@ -225,6 +238,8 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         }
         return list;
     }
+
+    private Map<String,List<String>> grepBase = new HashMap<String,List<String>>();
     
     public CompilerSettings getCommpilerSettings(){
         return myCommpilerSettings;
@@ -234,12 +249,14 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         myCommpilerSettings = new CompilerSettings(project);
     }
     private CompilerSettings myCommpilerSettings;
-    
+
     public static class CompilerSettings{
         private List<String> systemIncludePathsC;
         private List<String> systemIncludePathsCpp;
         private Map<String,String> systemMacroDefinitionsC;
         private Map<String,String> systemMacroDefinitionsCpp;
+        private Map<String,String> normalizedPaths = new HashMap<String,String>();
+        
         public CompilerSettings(ProjectProxy project){
             systemIncludePathsCpp = ProjectUtil.getSystemIncludePaths(project, true);
             systemIncludePathsC = ProjectUtil.getSystemIncludePaths(project,false);
@@ -261,6 +278,23 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             } else {
                 return systemMacroDefinitionsC;
             }
+        }
+        
+        public String getNormalizedPath(String path){
+            String res = normalizedPaths.get(path);
+            if (res == null) {
+                res = normalizePath(path);
+                normalizedPaths.put(path,res);
+            }
+            return res;
+        }
+
+        private String normalizePath(String path){
+            path = FileUtil.normalizeFile(new File(path)).getAbsolutePath();
+            if (Utilities.isWindows()) {
+                path = path.replace('\\', '/');
+            }
+            return path;
         }
     }
 }

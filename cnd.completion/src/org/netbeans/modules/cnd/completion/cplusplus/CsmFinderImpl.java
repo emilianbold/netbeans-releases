@@ -716,6 +716,10 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
         CsmClass clazz = c;
         CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());
 //        CsmVisibility vis = CsmInheritanceUtilities.getContextVisibility(contextClass, clazz);
+        if (contextDeclaration == null) {
+            // in global context get all
+            contextDeclaration = clazz;
+        }
         List classFields = contResolver.getMethods(clazz, contextDeclaration, name, staticOnly, exactMatch, inspectParentClasses);
         return classFields;          
     }

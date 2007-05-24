@@ -397,7 +397,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return vec;
     }
 
-    private boolean isHeaderFile() {
+    public boolean isHeaderFile() {
         ExtensionList hlist = HDataLoader.getInstance().getExtensions();
         if (hlist.isRegistered(getPath())) {
             return true;
@@ -441,5 +441,16 @@ public class Item implements NativeFileItem, PropertyChangeListener {
      **/
     public LanguageFlavor getLanguageFlavor() {
         return NativeFileItem.LanguageFlavor.GENERIC;
+    }
+
+    /**
+     * NativeFileItem interface
+     **/
+    public boolean isExcluded() {
+        ItemConfiguration itemConfiguration = getItemConfiguration(getMakeConfiguration());
+        if (itemConfiguration != null) {
+            return itemConfiguration.getExcluded().getValue();
+        }
+        return true;
     }
 }

@@ -20,7 +20,11 @@
 package org.netbeans.modules.cnd.classview.actions;
 
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -35,22 +39,56 @@ import org.openide.util.actions.Presenter;
  */
 public class MoreDeclarations extends AbstractAction implements Presenter.Popup {
     private static final String PROP_DECLARATION = "prop_declaration"; // NOI18N
-    private Collection<CsmOffsetableDeclaration> arr;
-    public MoreDeclarations(Collection<CsmOffsetableDeclaration> arr) {
+    private Collection<? extends CsmOffsetableDeclaration> arr;
+    public MoreDeclarations(Collection<? extends CsmOffsetableDeclaration> arr) {
         this.arr = arr;
     }
     public JMenuItem getPopupPresenter() {
         JMenu result = new JMenu();
-        result.setText(I18n.getMessage("LBL_MoreDeclarations")); //NOI18N
+        List<ItemWrapper> list = new ArrayList<ItemWrapper>();
         for (CsmOffsetableDeclaration decl : arr) {
-            JMenuItem item = new JMenuItem();
-            CsmFile file = decl.getContainingFile();
-            item.setText(file.getName());
-            item.putClientProperty(PROP_DECLARATION, decl);
-            item.addActionListener(this);
-            result.add(item);
+            list.add(new ItemWrapper(decl));
+        }
+        Collections.sort(list);
+        result.setText(I18n.getMessage("LBL_MoreDeclarations")); //NOI18N
+        if (list.size() < 36) {
+            for (ItemWrapper i : list) {
+                result.add(createItem(i.decl));
+            }
+        } else {
+            int n = (int)Math.ceil(Math.sqrt((double)list.size()));
+            Iterator<ItemWrapper> i = list.iterator();
+            while(i.hasNext()){
+                JMenu current = new JMenu();
+                CsmOffsetableDeclaration first = null;
+                CsmOffsetableDeclaration last = null;
+                for (int j = 0; j < n && i.hasNext(); j++){
+                    CsmOffsetableDeclaration decl = i.next().decl;
+                    if (j == 0) {
+                        first = decl;
+                    } else {
+                        last = decl;
+                    }
+                    current.add(createItem(decl));
+                }
+                if (first != null && last != null){
+                    current.setText(first.getContainingFile().getName()+" ... "+last.getContainingFile().getName()); // NOI18N
+                    result.add(current);
+                } else {
+                    result.add(createItem(first));
+                }
+            }
         }
         return result;
+    }
+
+    private JMenuItem createItem(final CsmOffsetableDeclaration decl) {
+        JMenuItem item = new JMenuItem();
+        CsmFile file = decl.getContainingFile();
+        item.setText(file.getName());
+        item.putClientProperty(PROP_DECLARATION, decl);
+        item.addActionListener(this);
+        return item;
     }
 
     public void actionPerformed(ActionEvent ae) {
@@ -58,5 +96,17 @@ public class MoreDeclarations extends AbstractAction implements Presenter.Popup 
         CsmOffsetableDeclaration decl = (CsmOffsetableDeclaration) item.getClientProperty(PROP_DECLARATION);
         GoToDeclarationAction action = new GoToDeclarationAction(decl);
         action.actionPerformed(null);
+    }
+    
+    private class ItemWrapper implements Comparable<ItemWrapper>{
+        private String name;
+        private CsmOffsetableDeclaration decl;
+        private ItemWrapper(CsmOffsetableDeclaration decl){
+            this.decl = decl;
+            name = decl.getContainingFile().getName();
+        }
+        public int compareTo(MoreDeclarations.ItemWrapper o) {
+            return name.compareTo(o.name);
+        }
     }
 }

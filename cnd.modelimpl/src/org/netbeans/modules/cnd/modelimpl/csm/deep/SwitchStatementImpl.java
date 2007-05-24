@@ -28,7 +28,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import antlr.collections.AST;
-import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
@@ -72,7 +71,7 @@ public class SwitchStatementImpl extends StatementBase implements CsmSwitchState
         return body;
     }
 
-    public List getScopeElements() {
+    public List<CsmScopeElement> getScopeElements() {
         return DeepUtil.merge(getCondition(), getBody());
     }
     

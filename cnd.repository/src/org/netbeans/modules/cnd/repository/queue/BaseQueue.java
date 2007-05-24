@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.cnd.repository.queue;
 
-import java.util.Collection;
-
 /**
  * The most common base class for linked queues.
  *

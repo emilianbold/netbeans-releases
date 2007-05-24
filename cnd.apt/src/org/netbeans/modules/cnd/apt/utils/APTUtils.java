@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
-import org.netbeans.modules.cnd.apt.impl.support.APTBaseToken;
+import org.netbeans.modules.cnd.apt.support.APTBaseToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTCommentToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTConstTextToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTTestToken;
@@ -143,14 +143,13 @@ public class APTUtils {
         return retValue.toString();
     }
     
-    public static String macros2String(Map/*<getTokenTextKey(token), APTMacro>*/ macros) {
+    public static String macros2String(Map<String/*getTokenTextKey(token)*/, APTMacro> macros) {
         StringBuilder retValue = new StringBuilder();
         retValue.append("MACROS (sorted "+macros.size()+"):\n"); // NOI18N
-        List macrosSorted = new ArrayList(macros.keySet());
+        List<String> macrosSorted = new ArrayList<String>(macros.keySet());
         Collections.sort(macrosSorted);
-        for (Iterator it = macrosSorted.iterator(); it.hasNext();) {
-            String key = (String) it.next();
-            APTMacro macro = (APTMacro) macros.get(APTUtils.getTokenTextKey(new APTBaseToken(key)));
+        for (String key : macrosSorted) {
+            APTMacro macro = macros.get(APTUtils.getTokenTextKey(new APTBaseToken(key)));
             assert(macro != null);
             retValue.append(macro);
             retValue.append("'\n"); // NOI18N
@@ -158,10 +157,10 @@ public class APTUtils {
         return retValue.toString();
     }
     
-    public static String includes2String(List/*<String>*/ includePaths) {
+    public static String includes2String(List<String> includePaths) {
         StringBuilder retValue = new StringBuilder();
-        for (Iterator it = includePaths.iterator(); it.hasNext();) {
-            String path = (String) it.next();
+        for (Iterator<String> it = includePaths.iterator(); it.hasNext();) {
+            String path = it.next();
             retValue.append(path);
             if (it.hasNext()) {
                 retValue.append('\n'); // NOI18N
@@ -311,8 +310,8 @@ public class APTUtils {
         return false;
     }
     
-    public static List toList(TokenStream ts) {
-        List tokens = new ArrayList();
+    public static List<Token> toList(TokenStream ts) {
+        List<Token> tokens = new ArrayList<Token>();
         try {
             Token token = ts.nextToken();
             while (!isEOF(token)) {

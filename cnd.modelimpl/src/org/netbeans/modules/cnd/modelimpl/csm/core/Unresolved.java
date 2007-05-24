@@ -55,12 +55,12 @@ public final class Unresolved implements Disposable {
         public boolean isTemplate() {
             return false;
         }
-        public List getScopeElements() {
-            return Collections.EMPTY_LIST;
+        public List<CsmScopeElement> getScopeElements() {
+            return Collections.<CsmScopeElement>emptyList();
         }
         
-        public List getMembers() {
-            return Collections.EMPTY_LIST;
+        public List<CsmMember> getMembers() {
+            return Collections.<CsmMember>emptyList();
         }
         
         public int getLeftBracketOffset() {
@@ -71,8 +71,8 @@ public final class Unresolved implements Disposable {
             return null;
         }
         
-        public List getBaseClasses() {
-            return Collections.EMPTY_LIST;
+        public List<CsmInheritance> getBaseClasses() {
+            return Collections.<CsmInheritance>emptyList();
         }
         
         public boolean isValid() {
@@ -138,8 +138,8 @@ public final class Unresolved implements Disposable {
         public String getText() {
             return "";
         }
-        public List getScopeElements() {
-            return Collections.EMPTY_LIST;
+        public List<CsmScopeElement> getScopeElements() {
+            return Collections.<CsmScopeElement>emptyList();
         }
         public CsmProject getProject() {
             return _getProject(projectUID, projectRef);

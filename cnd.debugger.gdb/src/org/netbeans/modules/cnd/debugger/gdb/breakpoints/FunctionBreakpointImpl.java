@@ -61,10 +61,13 @@ public class FunctionBreakpointImpl extends BreakpointImpl {
             int bps = breakpoint.getState();
             // If state is UNVALIDATED - set breakpoint
             if (bps == GdbBreakpoint.UNVALIDATED) {
+                int token;
+                
                 //Performance measurements: 91-107 mls (2006/08/29)
                 //getDebugger().getGdbProxy().globalStartTimeSetBreakpoint = System.currentTimeMillis(); // DEBUG
                 functionName = breakpoint.getFunctionName();
-                getDebugger().getGdbProxy().break_insert(breakpoint.getID(), functionName);
+                token = getDebugger().getGdbProxy().break_insert(functionName);
+                breakpoint.setID(token);
                 breakpoint.setPending();
                 return;
             }

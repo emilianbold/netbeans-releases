@@ -28,7 +28,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import antlr.collections.AST;
-import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
@@ -86,7 +85,7 @@ public class LoopStatementImpl extends StatementBase implements CsmLoopStatement
         }
     }
 
-    public List getScopeElements() {
+    public List<CsmScopeElement> getScopeElements() {
         return DeepUtil.merge(getCondition(), getBody());
     }
     

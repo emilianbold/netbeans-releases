@@ -96,6 +96,9 @@ public class ConfSelectorPanel extends javax.swing.JPanel {
         label.setDisplayedMnemonic(getString("SELECTED_CONF_MN").charAt(0));
         selectAllButton.getAccessibleContext().setAccessibleDescription(getString("SELECT_ALL_BUTTON_AD"));
         deselectAllButton.getAccessibleContext().setAccessibleDescription(getString("DESELECT_ALL_BUTTON_AD"));
+        
+        // Verify any checked
+        checkCheckBoxes();
     }
 
     private boolean sameAsLastTime(Configuration[] configurationItems) {

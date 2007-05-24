@@ -172,11 +172,11 @@ public final class DiscoveryWizardAction extends NodeAction {
                         newBase.append(File.separator);
                         newBase.append(segment);
                         if (rootName.equals(segment) && st.hasMoreTokens()) {
-                            try {
-                                return new File(newBase.toString()).getCanonicalPath();
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                            }
+                            //try {
+                                return FileUtil.normalizeFile(new File(newBase.toString())).getAbsolutePath();
+                            //} catch (IOException ex) {
+                            //    ex.printStackTrace();
+                            //}
                         }
                     }
                 }

@@ -22,7 +22,7 @@ package org.netbeans.modules.cnd.api.utils;
 import org.openide.util.NbBundle;
 
 public class ResourceFileFilter extends SourceFileFilter {
-    private static String suffixes[] = {"gif", "jpg", "png", "htm", "html", "xml", "txt", "mk", "Makefile"}; // NOI18N
+    private static String suffixes[] = {"gif", "jpg", "png", "htm", "html", "xml", "txt", "mk", "Makefile", "makefile"}; // NOI18N
     private static ResourceFileFilter instance = null;
 
     public static ResourceFileFilter getInstance() {
@@ -40,7 +40,7 @@ public class ResourceFileFilter extends SourceFileFilter {
         for (int i = 0; i < getSuffixes().length; i++) {
             if (i > 0)
                 ret += " "; // NOI18N
-            if (!getSuffixes()[i].equals("Makefile")) // NOI18N
+            if (!getSuffixes()[i].equals("Makefile") && !getSuffixes()[i].equals("makefile")) // NOI18N
                 ret += ".";  // NOI18N
             ret += getSuffixes()[i]; // NOI18N
         }

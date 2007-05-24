@@ -67,7 +67,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         return res;
     }
     
-    public void define(Token name, Collection params, List value) {
+    public void define(Token name, Collection<Token> params, List<Token> value) {
         if (sysMacroMap != null && sysMacroMap.isDefined(name)) {
             // TODO: report error about redefining system macros
         } else {
@@ -82,7 +82,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         super.undef(name);
     }
     
-    protected APTMacro createMacro(Token name, Collection params, List/*<Token>*/ value) {
+    protected APTMacro createMacro(Token name, Collection<Token> params, List<Token> value) {
         return new APTMacroImpl(name, params, value, false);
     }
     
@@ -111,6 +111,11 @@ public class APTFileMacroMap extends APTBaseMacroMap {
             this.sysMacroMap = sysMacroMap;
         }
 
+        private FileStateImpl(FileStateImpl state, boolean cleanedState) {
+            super(state, cleanedState);
+            this.sysMacroMap = state.sysMacroMap;
+        }
+        
         public String toString() {
             StringBuilder retValue = new StringBuilder();
             retValue.append("FileState\n"); // NOI18N
@@ -132,12 +137,16 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         public FileStateImpl(DataInput input) throws IOException {
             super(input);
             this.sysMacroMap = APTSerializeUtils.readSystemMacroMap(input);
-        }          
+        }  
+        
+        public StateImpl copyCleaned() {
+            return new FileStateImpl(this, true);
+        }
     }
     ////////////////////////////////////////////////////////////////////////////
     // manage macro expanding stack
     
-    private Stack expandingMacros = new Stack();
+    private Stack<String> expandingMacros = new Stack<String>();
     
     public boolean pushExpanding(Token token) {
         assert (token != null);

@@ -38,7 +38,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  */
 public class EnumImpl extends ClassEnumBase<CsmEnum>  implements CsmEnum, CsmMember<CsmEnum> {
     
-    private List/*CsmEnumerator*/ enumeratorsOLD = Collections.EMPTY_LIST;
+    private List<CsmEnumerator> enumeratorsOLD = new ArrayList<CsmEnumerator>();
     private final List<CsmUID<CsmEnumerator>> enumerators = new ArrayList<CsmUID<CsmEnumerator>>();
     
     private EnumImpl(AST ast, CsmFile file) {
@@ -111,7 +111,7 @@ public class EnumImpl extends ClassEnumBase<CsmEnum>  implements CsmEnum, CsmMem
         }
     }
     
-    public List getEnumerators() {
+    public List<CsmEnumerator> getEnumerators() {
         if (TraceFlags.USE_REPOSITORY) {
             List<CsmEnumerator> out = UIDCsmConverter.UIDsToDeclarations(enumerators);
             return out;
@@ -125,15 +125,12 @@ public class EnumImpl extends ClassEnumBase<CsmEnum>  implements CsmEnum, CsmMem
             CsmUID<CsmEnumerator> uid = RepositoryUtils.put(enumerator);
             enumerators.add(uid);
         } else {
-            if(enumeratorsOLD == Collections.EMPTY_LIST) {
-                enumeratorsOLD = new ArrayList();
-            }
             enumeratorsOLD.add(enumerator);
         }
     }
     
-    public List getScopeElements() {
-        return getEnumerators();
+    public List<CsmScopeElement> getScopeElements() {
+        return (List)getEnumerators();
     }
     
     public CsmDeclaration.Kind getKind() {

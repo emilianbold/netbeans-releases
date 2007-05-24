@@ -36,7 +36,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
  * Storage for include graph.
  * @author Alexander Simon
  */
-/*package-local*/ class GraphContainer {
+public class GraphContainer {
     
     /** Creates a new instance of GraphContainer */
     public GraphContainer() {

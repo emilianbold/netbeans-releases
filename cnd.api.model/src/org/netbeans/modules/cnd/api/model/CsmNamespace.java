@@ -32,16 +32,16 @@ import java.util.List;
 public interface CsmNamespace extends CsmQualifiedNamedElement, CsmScope, CsmIdentifiable<CsmNamespace> {
 
     CsmNamespace getParent();
-    Collection/*<CsmNamespace>*/ getNestedNamespaces();
+    Collection<CsmNamespace> getNestedNamespaces();
 
     /** Gets top-level objects */
     //TODO: what is the common ancestor for the namespace objects?
-    Collection/*<CsmDeclaration>*/ getDeclarations();
+    Collection<CsmOffsetableDeclaration> getDeclarations();
 
     /**
      * Gets all definitions for this namespace
      */
-    Collection/*<CsmNamespaceDefinition>*/ getDefinitions();
+    Collection<CsmNamespaceDefinition> getDefinitions();
     
     //TODO: think over the relationship between projects and namespaces
     ///** Gets the project, to which this namespace belong */

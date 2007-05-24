@@ -22,7 +22,7 @@ package org.netbeans.modules.cnd.modelimpl.cache;
 import antlr.collections.AST;
 
 import org.netbeans.modules.cnd.apt.structure.APTFile;
-import org.netbeans.modules.cnd.apt.support.APTPreprocState;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 
 /**
  * cache entry 
@@ -33,6 +33,6 @@ public interface FileCache {
 
     public APTFile getAPTLight();
 
-    public AST getAST(APTPreprocState preprocState);
+    public AST getAST(APTPreprocHandler preprocHandler);
     
 }

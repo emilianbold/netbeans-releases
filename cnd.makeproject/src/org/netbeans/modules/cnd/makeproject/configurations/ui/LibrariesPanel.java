@@ -33,16 +33,20 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.api.utils.ElfDynamicLibraryFileFilter;
+import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
 import org.netbeans.modules.cnd.api.utils.ElfStaticLibraryFileFilter;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.api.utils.PeDynamicLibraryFileFilter;
+import org.netbeans.modules.cnd.api.utils.PeExecutableFileFilter;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provider, PropertyChangeListener {
     private Project project;
@@ -245,7 +249,17 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
 		seed = FileChooser.getCurrectChooserFile().getPath();
 	    if (seed == null)
 		seed = baseDir;
-	    FileFilter[] filters = new FileFilter[] {ElfDynamicLibraryFileFilter.getInstance(), ElfStaticLibraryFileFilter.getInstance()};
+            FileFilter[] filters;
+            if (Utilities.isWindows()){
+                filters = new FileFilter[] {
+                ElfStaticLibraryFileFilter.getInstance(),
+                PeDynamicLibraryFileFilter.getInstance()};
+            } else {
+                filters = new FileFilter[] {
+                ElfStaticLibraryFileFilter.getInstance(),
+                ElfDynamicLibraryFileFilter.getInstance()};
+            }
+//	    FileFilter[] filters = new FileFilter[] {ElfDynamicLibraryFileFilter.getInstance(), ElfStaticLibraryFileFilter.getInstance()};
 	    FileChooser fileChooser = new FileChooser(getString("SELECT_LIBRARY_CHOOSER_TITLE"), getString("SELECT_CHOOSER_BUTTON"), JFileChooser.FILES_ONLY, filters, seed, true);
 	    int ret = fileChooser.showOpenDialog(myListEditorPanel);
 	    if (ret == JFileChooser.CANCEL_OPTION)
@@ -298,6 +312,8 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
 	    DialogDescriptor dialogDescriptor = new DialogDescriptor(libraryOptionPanel, getString("SELECT_OPTION_DIALOG_TITLE"));
 	    DialogDisplayer.getDefault().notify(dialogDescriptor);
 	    if (dialogDescriptor.getValue() != DialogDescriptor.OK_OPTION)
+		return;
+            if (libraryOptionPanel.getOption(conf).length() == 0)
 		return;
 	    myListEditorPanel.addObjectAction(new LibraryItem.OptionItem(libraryOptionPanel.getOption(conf)));
 	}

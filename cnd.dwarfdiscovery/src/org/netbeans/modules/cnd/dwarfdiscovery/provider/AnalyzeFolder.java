@@ -186,7 +186,10 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                 for (int i = 0; i < ff.length; i++) {
                     if (ff[i].isFile()) {
                         String name = ff[i].getName();
-                        if (name.endsWith(".o") || name.endsWith(".so") || name.endsWith(".a")){ // NOI18N
+                        if (name.endsWith(".o") ||
+                            name.endsWith(".so") ||
+                            name.endsWith(".a") ||
+                            isExecutable(ff[i])){ // NOI18N
                             String path = ff[i].getAbsolutePath();
                             if (Utilities.isWindows()) {
                                 path = path.replace('\\', '/');
@@ -200,6 +203,22 @@ public class AnalyzeFolder extends BaseDwarfProvider {
         return map;
     }
     
+    private boolean isExecutable(File file){
+        String name = file.getName();
+        if (Utilities.isWindows()) {
+            return name.endsWith(".exe") || name.endsWith(".dll");
+        } else if (Utilities.isUnix()){
+            // FIXUP: There are no way to detect "executable".
+            return name.indexOf('.') < 0;
+            //try{
+            //    //Since 1.6
+            //    return file.canExecute();
+            //} catch (SecurityException ex) {
+            //}
+        }
+        return false;
+    }
+    
     private void gatherSubFolders(File d, HashSet<String> set){
         if (isStoped) {
             return;
@@ -209,7 +228,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
             if (Utilities.isWindows()) {
                 path = path.replace('\\', '/');
             }
-            if (path.endsWith("/SCCS") || path.endsWith("/CVS")) { // NOI18N
+            if (path.endsWith("/SCCS") || path.endsWith("/CVS") || path.endsWith("/SunWS_cache")) { // NOI18N
                 return;
             }
             if (!set.contains(path)){

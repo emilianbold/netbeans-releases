@@ -37,8 +37,8 @@ public class MacrosListModel implements ListModel {
     public MacrosListModel(NodeConfigurationImpl configuration, boolean resulting){
         this.configuration = configuration;
         map = configuration.getUserMacros(resulting);
-        names = new ArrayList(map.keySet());
-        Collections.sort(names);
+        names = new ArrayList<String>(map.keySet());
+        Collections.<String>sort(names);
     }
     public int getSize() {
         return names.size();

@@ -39,7 +39,7 @@ public interface APTDefine extends APT {
      * if function-like macro => return is non null
      * otherwise it is null
      */
-    public Collection getParams();
+    public Collection<Token> getParams();
     
     /** 
      * returns true if macro was defined as function
@@ -52,7 +52,7 @@ public interface APTDefine extends APT {
     /** 
      * returns List of tokens of macro body
      */      
-    public List getBody();
+    public List<Token> getBody();
     
     /**
      * returns true if #define directive is valid

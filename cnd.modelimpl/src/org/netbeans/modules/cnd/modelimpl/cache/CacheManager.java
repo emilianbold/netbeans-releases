@@ -26,7 +26,7 @@ import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
-import org.netbeans.modules.cnd.apt.support.APTPreprocState;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.cache.impl.CacheManagerImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
@@ -76,9 +76,9 @@ public final class CacheManager implements CsmModelListener {
     /**
      * get or create AST
      */
-    public FileCache findCacheWithAST(CsmFile file, APTPreprocState preprocState) {
+    public FileCache findCacheWithAST(CsmFile file, APTPreprocHandler preprocHandler) {
         // delegate to impl
-        return impl.findCacheWithAST(file, preprocState);
+        return impl.findCacheWithAST(file, preprocHandler);
     }    
     
     /**

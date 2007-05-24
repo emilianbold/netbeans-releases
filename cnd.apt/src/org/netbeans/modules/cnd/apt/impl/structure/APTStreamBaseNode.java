@@ -36,7 +36,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 public abstract class APTStreamBaseNode extends APTTokenBasedNode
                                         implements Serializable {
     private static final long serialVersionUID = -1498074871896804293L;
-    private List tokens;
+    private List<Token> tokens;
     
     /** Copy constructor */
     /**package*/ APTStreamBaseNode(APTStreamBaseNode orig) {
@@ -128,7 +128,7 @@ public abstract class APTStreamBaseNode extends APTTokenBasedNode
     private void appendToken(Token token) {
         assert (validToken(token)) : "must append only valid tokens"; // NOI18N
         if (tokens == null) {
-            tokens = new ArrayList();
+            tokens = new ArrayList<Token>();
         }
         tokens.add(token);
     }
@@ -145,7 +145,7 @@ public abstract class APTStreamBaseNode extends APTTokenBasedNode
                 token = getToken();
                 index++;
             } else if (tokens != null && index < tokens.size()) {
-                token = (Token) tokens.get(index++);
+                token = tokens.get(index++);
             } else {
                 token = APTUtils.EOF_TOKEN;
             };

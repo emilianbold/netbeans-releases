@@ -40,7 +40,7 @@ import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
-import org.netbeans.modules.cnd.apt.support.APTPreprocState;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.cache.FileCache;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -83,8 +83,8 @@ public final class CacheManagerImpl {
         return getSyncCacheBridge((FileImpl)file).findAPTLight();
     }
     
-    public FileCache findCacheWithAST(CsmFile file, APTPreprocState preprocState) {
-        return getSyncCacheBridge((FileImpl)file).findCacheWithAST(preprocState);
+    public FileCache findCacheWithAST(CsmFile file, APTPreprocHandler preprocHandler) {
+        return getSyncCacheBridge((FileImpl)file).findCacheWithAST(preprocHandler);
     }    
     
     public void projectOpened(CsmProject project) {

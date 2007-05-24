@@ -91,8 +91,8 @@ public class CsmModelAccessor {
     
     private static class ModelStub implements CsmModel {
 	
-	public Collection projects() {
-	    return Collections.EMPTY_LIST;
+	public Collection<CsmProject> projects() {
+	    return Collections.<CsmProject>emptyList();
 	}
 	
 	public CsmProject getProject(Object id) {

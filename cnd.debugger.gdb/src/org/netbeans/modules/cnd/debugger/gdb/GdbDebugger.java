@@ -28,6 +28,7 @@ import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
+import org.netbeans.spi.debugger.ContextProvider;
 //import org.netbeans.modules.cnd.debugger.Variable;
 //import org.netbeans.modules.cnd.debugger.event.CndBreakpointEvent;
 
@@ -60,6 +61,7 @@ public abstract class GdbDebugger {
     public static final String             STATE_NONE = "state_none"; // NOI18N
     public static final String             STATE_STARTING = "state_starting"; // NOI18N
     public static final String             STATE_LOADING = "state_loading"; // NOI18N
+    public static final String             STATE_READY = "state_ready"; // NOI18N
     public static final String             STATE_RUNNING = "state_running"; // NOI18N
     public static final String             STATE_STOPPED = "state_stopped"; // NOI18N
     public static final String             STATE_EXITED  = "state_exited"; // NOI18N
@@ -95,6 +97,8 @@ public abstract class GdbDebugger {
 //            DebuggerInfo.create(SESSION_ID, new Object[] {})
 //        );
 //    }
+    
+    public abstract ContextProvider getLookup();
 
 
     /**

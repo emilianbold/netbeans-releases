@@ -55,6 +55,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
 import org.netbeans.modules.cnd.modelutil.ParamStr;
 import org.netbeans.modules.cnd.editor.cplusplus.CCSettingsNames;
@@ -1140,7 +1141,7 @@ public abstract class CsmResultItem
         
         
         protected String getName(){
-            return cls.getName();
+            return cls.isTemplate() ? ((CsmTemplate)cls).getDisplayName() : cls.getName(); 
         }
         
         protected String getReplaceText(){

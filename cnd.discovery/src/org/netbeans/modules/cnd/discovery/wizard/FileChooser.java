@@ -48,11 +48,11 @@ public class FileChooser extends JFileChooser {
 
 	if (feedFilePath != null && feedFilePath.length() > 0) {
 	    feedFilePathFile = new File(feedFilePath);
-	    try {
-		feedFilePathFile = feedFilePathFile.getCanonicalFile();
-	    }
-	    catch (IOException e) {
-	    }
+	    //try {
+            //	feedFilePathFile = feedFilePathFile.getCanonicalFile();
+	    //}
+	    //catch (IOException e) {
+	    //}
 	}
 
 	if (feedFilePathFile != null && feedFilePathFile.exists()) {

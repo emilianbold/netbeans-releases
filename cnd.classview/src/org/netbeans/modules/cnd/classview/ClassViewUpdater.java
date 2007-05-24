@@ -33,7 +33,7 @@ public class ClassViewUpdater extends Thread {
     
     private static class BlockingQueue {
         
-        private LinkedList data = new LinkedList();
+        private LinkedList<SmartChangeEvent> data = new LinkedList<SmartChangeEvent>();
         
         private Object lock = new Object();
         
@@ -42,7 +42,7 @@ public class ClassViewUpdater extends Thread {
                 while( data.isEmpty() ) {
                     lock.wait();
                 }
-                return (SmartChangeEvent) data.removeFirst();
+                return data.removeFirst();
             }
         }
         
@@ -58,7 +58,7 @@ public class ClassViewUpdater extends Thread {
                 while( data.isEmpty() ) {
                     lock.wait();
                 }
-                return (SmartChangeEvent) data.peek();
+                return data.peek();
             }
         }
         

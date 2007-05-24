@@ -111,7 +111,8 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
         CCompilerConfiguration master;
         
         String options = ""; // NOI18N
-        options += compiler.getDevelopmentModeOptions(getDevelopmentMode().getValue()) + " "; // NOI18N
+        if (getDevelopmentMode().getValue() != DEVELOPMENT_MODE_TEST)
+            options += compiler.getDevelopmentModeOptions(getDevelopmentMode().getValue()) + " "; // NOI18N
         options += compiler.getWarningLevelOptions(getWarningLevel().getValue()) + " "; // NOI18N
         options += compiler.getStripOption(getStrip().getValue()) + " "; // NOI18N
         options += getPreprocessorOptions();

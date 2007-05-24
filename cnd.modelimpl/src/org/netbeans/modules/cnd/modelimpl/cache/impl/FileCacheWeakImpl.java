@@ -23,7 +23,7 @@ import antlr.collections.AST;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
-import org.netbeans.modules.cnd.apt.support.APTPreprocState;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.cache.*;
 
 /**
@@ -68,12 +68,12 @@ final class FileCacheWeakImpl implements FileCache {
         this.aptFull = new SoftReference(aptFull);
     }    
     
-    public AST getAST(APTPreprocState preprocState) {
+    public AST getAST(APTPreprocHandler preprocHandler) {
         // we use the same AST now
         return ast != null ? (AST) ast.get() : null;
     }
 
-    public void setAST(AST ast, APTPreprocState preprocState) {
+    public void setAST(AST ast, APTPreprocHandler preprocHandler) {
         // we use the same AST now
         this.ast = new SoftReference(ast);
     }

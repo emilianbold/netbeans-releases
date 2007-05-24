@@ -24,6 +24,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableIdentifiableBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.textcache.FileNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -112,6 +113,28 @@ public class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> implemen
             if (file == null && includeFileUID != null) {
                 // include file was removed
                 includeFileUID = null;
+            }
+            if (TraceFlags.NEED_TO_TRACE_UNRESOLVED_INCLUDE) {
+                if (file == null && "yes".equals(System.getProperty("cnd.modelimpl.trace.trace_now"))){ //NOI18N
+                    CsmFile container = getContainingFile();
+                    if (container != null){
+                        CsmProject prj = container.getProject();
+                        if (prj instanceof ProjectImpl){
+                            System.out.println("File "+container.getAbsolutePath());
+                            ProjectImpl impl = (ProjectImpl) prj;
+                            boolean find = false;
+                            for(CsmFile top : impl.getGraph().getTopParentFiles(container)){
+                                if (container != top) {
+                                    System.out.println("  icluded from "+top.getAbsolutePath()); //NOI18N
+                                    find = true;
+                                }
+                            }
+                            if (!find){
+                                System.out.println("  there are no files included the file"); //NOI18N
+                            }
+                        }
+                    }
+                }
             }
             return file;
         } else {

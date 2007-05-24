@@ -40,13 +40,14 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
 /**
  *
+ * @param T 
  * @author Dmitriy Ivanov, Vladimir Kvashin
  */
 public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements CsmFunction<T>, Disposable, RawNamable {
     
     private String name;
     private final CsmType returnType;
-    private final List/*<CsmParameter>*/  parametersOLD;
+    private final List<CsmParameter>  parametersOLD;
     private final List<CsmUID<CsmParameter>>  parameters;
     private String signature;
     
@@ -83,7 +84,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         returnType = initReturnType(ast);
 
         // set parameters, do it in constructor to have final fields
-        List parameters = initParameters(ast);
+        List<CsmParameter> parameters = initParameters(ast);
         if (TraceFlags.USE_REPOSITORY) {
             if (parameters == null) {
                 this.parameters = null;
@@ -166,7 +167,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     }
 
     
-    /** Gets this element name */
+    /** Gets this element name 
+     * @return name
+     */
     public String getName() {
         return name;
     }
@@ -201,7 +204,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         return CsmDeclaration.Kind.FUNCTION;
     }
     
-    /** Gets this function's declaration text */
+    /** Gets this function's declaration text 
+     * @return declaration text
+     */
     public String getDeclarationText() {
         return "";
     }
@@ -209,6 +214,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     /** 
      * Gets this function definition 
      * TODO: describe getDefiition==this ...
+     * @return definition
      */
     public CsmFunctionDefinition getDefinition() {
         String uname = CsmDeclaration.Kind.FUNCTION_DEFINITION.toString() + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
@@ -240,6 +246,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     /** 
      * Returns true if this class is template, otherwise false.
      * If isTemplate() returns true, this class is an instance of CsmTemplate
+     * @return flag indicated if function is template
      */
     public boolean isTemplate() {
         return false;
@@ -251,6 +258,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
      * (getDefinition() == null) ? null : getDefinition().getBody();
      *
      * TODO: perhaps it isn't worth keeping duplicate to getDefinition().getBody()? (though convenient...)
+     * @return body of function
      */
     public CsmCompoundStatement getBody() {
         return null;
@@ -300,7 +308,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         return null;
     }
     
-    private List initParameters(AST node) {
+    private List<CsmParameter> initParameters(AST node) {
         AST ast = AstUtil.findChildOfType(node, CPPTokenTypes.CSM_PARMLIST);
         if( ast != null ) {
             // for K&R-style
@@ -312,7 +320,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         return AstRenderer.renderParameters(ast, getContainingFile());
     }
     
-    public List/*<CsmParameter>*/  getParameters() {
+    public List<CsmParameter>  getParameters() {
         return _getParameters();
     }
     

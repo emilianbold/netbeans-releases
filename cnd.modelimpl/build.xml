@@ -92,5 +92,11 @@ Microsystems, Inc. All Rights Reserved.
         </antlr>         
     </target>
     
+    <target name="do-test-build" depends="-build-cnd-tests,projectized-common.do-test-build">
+    </target>
+
+    <target name="-build-cnd-tests">
+        <ant dir="../core" target="test-build" inheritall="false" />
+    </target> 
     
 </project>

@@ -204,9 +204,10 @@ public class CCTokenContext extends TokenContext {
     public static final int CPPPRAGMA_ID = CPPLINE_ID + 1;
     public static final int CPPUNDEF_ID = CPPPRAGMA_ID + 1;
     public static final int CPPWARNING_ID = CPPUNDEF_ID + 1;
+    public static final int CPPIDENTIFIER_ID = CPPWARNING_ID + 1; // not recognized # id
 
     // include directives
-    public static final int SYS_INCLUDE_ID = CPPWARNING_ID + 1; // <filename>
+    public static final int SYS_INCLUDE_ID = CPPIDENTIFIER_ID + 1; // <filename>
     public static final int USR_INCLUDE_ID = SYS_INCLUDE_ID + 1; // "filename"
     
     // Incomplete tokens
@@ -310,10 +311,10 @@ public class CCTokenContext extends TokenContext {
     
     // Operators
     public static final BaseImageTokenID HASH
-    = new BaseImageTokenID("hash", HASH_ID, OPERATORS, "#"); // NOI18N
+    = new BaseImageTokenID("hash", HASH_ID, CPP, "#"); // NOI18N
 
     public static final BaseImageTokenID DOUBLE_HASH
-    = new BaseImageTokenID("double-hash", DOUBLE_HASH_ID, OPERATORS, "##"); // NOI18N     
+    = new BaseImageTokenID("double-hash", DOUBLE_HASH_ID, CPP, "##"); // NOI18N     
         
     public static final BaseImageTokenID EQ
     = new BaseImageTokenID("eq", EQ_ID, OPERATORS, "=");  // NOI18N
@@ -714,6 +715,9 @@ public class CCTokenContext extends TokenContext {
     public static final BaseImageTokenID CPPWARNING
     = new BaseImageTokenID("#warning", CPPWARNING_ID, CPP); // NOI18N
 
+    public static final BaseImageTokenID CPPIDENTIFIER
+    = new BaseImageTokenID("#preproc-identifier", CPPIDENTIFIER_ID, CPP); // NOI18N
+    
     // Incomplete and error token-ids
     public static final BaseTokenID INCOMPLETE_STRING_LITERAL
 	= new BaseTokenID("incomplete-string-literal",  // NOI18N

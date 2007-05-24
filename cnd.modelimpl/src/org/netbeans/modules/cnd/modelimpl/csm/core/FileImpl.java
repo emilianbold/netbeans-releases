@@ -23,6 +23,7 @@ import antlr.TokenStream;
 import antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
+import org.netbeans.modules.cnd.apt.utils.APTHandlersSupport;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
@@ -36,12 +37,9 @@ import org.netbeans.modules.cnd.modelimpl.cache.FileCache;
 import org.netbeans.modules.cnd.modelimpl.cache.impl.FileCacheImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.cnd.apt.impl.support.APTFileMacroMap;
-import org.netbeans.modules.cnd.apt.impl.support.APTIncludeHandlerImpl;
-import org.netbeans.modules.cnd.modelimpl.parser.apt.APTPreprocStateImpl;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
-import org.netbeans.modules.cnd.apt.support.APTPreprocState;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
@@ -97,7 +95,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     private int fileType = UNDEFINED_FILE;
     
-    private APTPreprocState myPreprocState;
+    private APTPreprocHandler myPreprocHandler;
     
     private Object stateLock = new Object();
     
@@ -106,7 +104,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     private final Object fakeLock;
 
-    public FileImpl(FileBuffer fileBuffer, ProjectBase project, int fileType, APTPreprocState preprocState) {
+    public FileImpl(FileBuffer fileBuffer, ProjectBase project, int fileType, APTPreprocHandler preprocHandler) {
         setBuffer(fileBuffer);
         if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {
             this.projectUID = UIDCsmConverter.projectToUID(project);
@@ -115,14 +113,14 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             this.projectRef = project;
             this.projectUID = null;
         }
-        this.myPreprocState = preprocState;
+        this.myPreprocHandler = preprocHandler;
         this.fileType = fileType;
         this.fakeLock = new String("File Lock for " + fileBuffer.getFile().getAbsolutePath()); // NOI18N
         Notificator.instance().registerNewFile(this);
     }    
     
     public FileImpl(FileBuffer fileBuffer, ProjectBase project) {
-	this(fileBuffer, project, UNDEFINED_FILE, (APTPreprocState)null);
+	this(fileBuffer, project, UNDEFINED_FILE, (APTPreprocHandler)null);
     }
     
     private ProjectBase _getProject(boolean assertNotNull) {
@@ -168,18 +166,18 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return APTLanguageSupport.getInstance().getFilter(lang);
     }
     
-    private APTPreprocState getCreatePreprocState() {
+    private APTPreprocHandler getCreatePreprocHandler() {
         // use current
-        APTPreprocState preprocState = this.myPreprocState;
+        APTPreprocHandler preprocHandler = this.myPreprocHandler;
         // else ask project
-        if (preprocState == null && (getProjectImpl() != null)) {
-            preprocState = getProjectImpl().getPreprocState(fileBuffer.getFile());
+        if (preprocHandler == null && (getProjectImpl() != null)) {
+            preprocHandler = getProjectImpl().getPreprocHandler(fileBuffer.getFile());
         }
         // otherwise create default
-        if (preprocState == null) {
-            preprocState = new APTPreprocStateImpl(new APTFileMacroMap(), new APTIncludeHandlerImpl(getAbsolutePath()), false);
+        if (preprocHandler == null) {
+            preprocHandler = APTHandlersSupport.createEmptyPreprocHandler(getAbsolutePath());
         }
-        return preprocState;
+        return preprocHandler;
     }
     
     public void setBuffer(FileBuffer fileBuffer) {
@@ -199,15 +197,15 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return this.fileBuffer;
     }
     
-    public void ensureParsed(APTPreprocState preprocState) {
+    public void ensureParsed(APTPreprocHandler preprocHandler) {
         synchronized( stateLock ) {
             switch( state ) {
                 case STATE_INITIAL:
-                    parse(preprocState);
+                    parse(preprocHandler);
 		    if( TraceFlags.DUMP_PARSE_RESULTS ) new CsmTracer().dumpModel(this);
                     break;
                 case STATE_MODIFIED:
-                    reparse(preprocState);
+                    reparse(preprocHandler);
 		    if( TraceFlags.DUMP_PARSE_RESULTS || TraceFlags.DUMP_REPARSE_RESULTS ) new CsmTracer().dumpModel(this);
                     break;
             }
@@ -248,12 +246,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
      * Removes old content from te file and model,
      * then parses the current buffer
      */
-    public void reparse(APTPreprocState preprocState) {
+    public void reparse(APTPreprocHandler preprocHandler) {
         synchronized( stateLock ) {
             state = STATE_BEING_PARSED;
             try {
-                if( preprocState != null ) {
-                    setPreprocState(preprocState);
+                if( preprocHandler != null ) {
+                    setPreprocHandler(preprocHandler);
                 }
                 _reparse();
             }
@@ -365,12 +363,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
     
-    public AST parse(APTPreprocState preprocState) {
+    public AST parse(APTPreprocHandler preprocHandler) {
         synchronized( stateLock ) {
             state = STATE_BEING_PARSED;
             try {
-                if( preprocState != null ) {
-                    setPreprocState(preprocState);
+                if( preprocHandler != null ) {
+                    setPreprocHandler(preprocHandler);
                 }
                 return _parse();
             }
@@ -430,7 +428,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public TokenStream getTokenStream() {
-        APTPreprocState preprocState = getCreatePreprocState(); 
+        APTPreprocHandler preprocHandler = getCreatePreprocHandler(); 
         APTFile apt = null;
 	if (TraceFlags.USE_AST_CACHE) {
 	    apt = CacheManager.getInstance().findAPT(this);
@@ -445,7 +443,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (apt == null) {
             return null;
         }
-        APTParseFileWalker walker = new APTParseFileWalker(apt, this, preprocState);
+        APTParseFileWalker walker = new APTParseFileWalker(apt, this, preprocHandler);
         return walker.getFilteredTokenStream(getLanguageFilter());
     }
     
@@ -462,8 +460,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
         }
 
-        APTPreprocState preprocState = getCreatePreprocState(); 
-        APTPreprocState.State oldState = preprocState.getState();
+        APTPreprocHandler preprocHandler = getCreatePreprocHandler(); 
+        APTPreprocHandler.State oldState = preprocHandler.getState();
 
         // 1. get cache with AST
         // 2a if cache has AST => use AST and APTLight
@@ -473,9 +471,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         APTFile aptLight = null;
         APTFile aptFull = null;
         if (TraceFlags.USE_AST_CACHE) {
-            FileCache cacheWithAST = CacheManager.getInstance().findCacheWithAST(this, preprocState);
+            FileCache cacheWithAST = CacheManager.getInstance().findCacheWithAST(this, preprocHandler);
             assert (cacheWithAST != null);
-            ast  = cacheWithAST.getAST(preprocState);
+            ast  = cacheWithAST.getAST(preprocHandler);
             aptLight = cacheWithAST.getAPTLight();
             aptFull = cacheWithAST.getAPT();        
         } else {
@@ -495,7 +493,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             assert (aptLight != null);
             boolean skip = TraceFlags.CACHE_SKIP_APT_VISIT;
             if (!skip) {
-                APTParseFileWalker walker = new APTParseFileWalker(aptLight, this, preprocState);
+                APTParseFileWalker walker = new APTParseFileWalker(aptLight, this, preprocHandler);
                 walker.addMacroAndIncludes(true);
                 walker.visit();          
             } else {
@@ -509,9 +507,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 System.err.println("CACHE: parsing using full APT for " + getAbsolutePath());
             }             
             // make real parse
-            APTParseFileWalker walker = new APTParseFileWalker(aptFull, this, preprocState);
+            APTParseFileWalker walker = new APTParseFileWalker(aptFull, this, preprocHandler);
             if (TraceFlags.DEBUG) {
-                System.err.println("doParse " + getAbsolutePath() + " with " + ParserQueue.tracePreprocStateState(oldState));
+                System.err.println("doParse " + getAbsolutePath() + " with " + ParserQueue.tracePreprocState(oldState));
             }
             CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter()), flags);
             long time = (emptyAstStatictics) ? System.currentTimeMillis() : 0;
@@ -552,7 +550,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         // we need keeping state for TraceModel. It will set it to null afterwards
         if(!TraceModel.LEAVE_PP_STATE_UNCLEANED) {
-            setPreprocState(null);
+            setPreprocHandler(null);
             if (getProjectImpl() != null && getBuffer().isFileBased()) {
                 getProjectImpl().cleanPreprocStateAfterParse(this, oldState);
             }
@@ -782,8 +780,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return fileBuffer.getFile().getAbsolutePath();
     }
 
-    public List getScopeElements() {
-        List l = new ArrayList();
+    public List<CsmScopeElement> getScopeElements() {
+        List<CsmScopeElement> l = new ArrayList<CsmScopeElement>();
         //TODO: add static functions
         for( Iterator iter = getDeclarations().iterator(); iter.hasNext(); ) {
             CsmDeclaration decl = (CsmDeclaration) iter.next();
@@ -803,14 +801,14 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return project != null && project.isValid();    
     }
 
-    public void setPreprocState(APTPreprocState preprocState) {
-        this.myPreprocState = preprocState;
+    public void setPreprocHandler(APTPreprocHandler preprocHandler) {
+        this.myPreprocHandler = preprocHandler;
     }
     
     // for tests only
-    public APTPreprocState.State testGetPreprocStateState() {
-        if (myPreprocState != null) {
-            return myPreprocState.getState();
+    public APTPreprocHandler.State testGetPreprocState() {
+        if (myPreprocHandler != null) {
+            return myPreprocHandler.getState();
         } else {
             return null;
         }
@@ -832,12 +830,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         scheduleParsing(wait, null);
     }
   
-    public void scheduleParsing(boolean wait, APTPreprocState.State ppStateState) throws InterruptedException {
+    public void scheduleParsing(boolean wait, APTPreprocHandler.State ppState) throws InterruptedException {
         //if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("> File " + getName() + " @" + hashCode() + " waiting for parse; thread: " + Thread.currentThread().getName());
         synchronized( stateLock ) {
             //if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("  sync " + getName() + " @" + hashCode() + " waiting for parse; thread: " + Thread.currentThread().getName());
             while( ! isParsed() ) {
-                ParserQueue.instance().addFirst(this, ppStateState, false);
+                ParserQueue.instance().addFirst(this, ppState, false);
                 //if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("  !prs " + getName() + " @" + hashCode() + " waiting for parse; thread: " + Thread.currentThread().getName());
                 if( wait ) {
                     stateLock.wait();
@@ -882,7 +880,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
         }
 	for (Iterator iter = fakes.iterator(); iter.hasNext();) {
-            FunctionDefinitionImpl curElem = (FunctionDefinitionImpl)iter.next();
+            FunctionImplEx curElem = (FunctionImplEx)iter.next();
 	    curElem.fixFakeRegistration();
 	}
     }

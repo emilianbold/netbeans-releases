@@ -29,7 +29,7 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.apt.support.APTBuilder;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
-import org.netbeans.modules.cnd.apt.support.APTPreprocState;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
 import org.netbeans.modules.cnd.modelimpl.cache.FileCache;
@@ -157,7 +157,7 @@ final class FileCacheSyncBridge {
         return aptLight;
     }
     
-    public FileCache findCacheWithAST(APTPreprocState preprocState) {
+    public FileCache findCacheWithAST(APTPreprocHandler preprocHandler) {
         if (TraceFlags.TRACE_CACHE) {
             System.err.println("CACHE: findCacheWithAST for " + _getAbsolutePath());
         }            
@@ -166,21 +166,21 @@ final class FileCacheSyncBridge {
         APTFile aptFull = null;
         FileCache loaded = null;
         synchronized (astLock) {
-            ast = storage.getAST(preprocState);
+            ast = storage.getAST(preprocHandler);
             if (ast == null) {
                 if (TraceFlags.TRACE_CACHE) {
                     System.err.println("CACHE: findCacheWithAST AST not in memory for " + _getAbsolutePath());
                 }                 
                 if (validCache && astMaybeOnDisk) {
                     synchronized (loadLock) {                       
-                        ast = storage.getAST(preprocState);
+                        ast = storage.getAST(preprocHandler);
                         if (ast == null && validCache && astMaybeOnDisk) {
                             if (TraceFlags.TRACE_CACHE) {
                                 System.err.println("CACHE: findCacheWithAST loading AST for " + _getAbsolutePath()); 
                             }                                   
                             loaded = loadValidCache();
                             if (loaded != null) {
-                                ast = loaded.getAST(preprocState);                                   
+                                ast = loaded.getAST(preprocHandler);                                   
                                 if (TraceFlags.TRACE_CACHE) {
                                     System.err.println("CACHE: findCacheWithAST loaded AST from disk for " + _getAbsolutePath());
                                 }                                 
@@ -244,8 +244,8 @@ final class FileCacheSyncBridge {
 //        return findAPTLight();
 //    }
 //    
-//    public AST getAST(APTPreprocState preprocState) {
-//        return findCacheWithAST(preprocState).getAST(preprocState);
+//    public AST getAST(APTPreprocHandler preprocHandler) {
+//        return findCacheWithAST(preprocHandler).getAST(preprocHandler);
 //    }
     
     public void updateStorage(FileCache cache) {

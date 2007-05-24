@@ -36,6 +36,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
 /**
  *
+ * @param T 
  * @author Dmitriy Ivanov
  */
 public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements CsmVariable<T>, Disposable {
@@ -51,12 +52,23 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     private final boolean _extern;
     private ExpressionBase initExpr;
     
-    /** Creates a new instance of VariableImpl */
+    /** Creates a new instance of VariableImpl 
+     * @param ast 
+     * @param file 
+     * @param type 
+     * @param name 
+     */
     public <T> VariableImpl(AST ast, CsmFile file, CsmType type, String name) {
         this(ast, file, type, name, true);
     }
     
-    /** Creates a new instance of VariableImpl */
+    /** Creates a new instance of VariableImpl 
+     * @param ast 
+     * @param file 
+     * @param type 
+     * @param name 
+     * @param registerInProject 
+     */
     public <T> VariableImpl(AST ast, CsmFile file, CsmType type, String name, boolean registerInProject) {
         super(ast, file);
         initInitialValue(ast);
@@ -85,7 +97,9 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     }
     
     
-    /** Gets this element name */
+    /** Gets this element name 
+     * @return 
+     */
     public String getName() {
         return name;
     }
@@ -98,7 +112,9 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         return getName();
     }
     
-    /** Gets this variable type */
+    /** Gets this variable type 
+     * @return 
+     */
     // TODO: fix it
     public CsmType getType() {
         return type;
@@ -116,7 +132,9 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         }
     }
     
-    /** Gets this variable initial value */
+    /** Gets this variable initial value 
+     * @return 
+     */
     public CsmExpression getInitialValue() {
         return initExpr;
     }

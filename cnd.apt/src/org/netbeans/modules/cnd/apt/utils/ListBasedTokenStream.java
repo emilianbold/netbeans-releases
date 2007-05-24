@@ -31,11 +31,11 @@ import java.util.List;
  * @author Vladimir Voskresensky
  */
 public class ListBasedTokenStream implements TokenStream {
-    private final List/*<Token>*/ tokens;
-    private Iterator position;
+    private final List<Token> tokens;
+    private Iterator<Token> position;
     
     /** Creates a new instance of ListBasedTokenStream */
-    public ListBasedTokenStream(List/*<Token>*/ tokens) {
+    public ListBasedTokenStream(List<Token> tokens) {
         assert(tokens != null) : "not valid to pass null list"; // NOI18N
         this.tokens = tokens;
         position = tokens.iterator();
@@ -43,7 +43,7 @@ public class ListBasedTokenStream implements TokenStream {
 
     public Token nextToken() throws TokenStreamException {
         if (position.hasNext()) {
-            return (Token) position.next();
+            return position.next();
         } else {
             return APTUtils.EOF_TOKEN;
         }
@@ -53,7 +53,7 @@ public class ListBasedTokenStream implements TokenStream {
         return APTUtils.toString(new ListBasedTokenStream(tokens));
     }
     
-    public List/*<Token>*/ getList() {
+    public List<Token> getList() {
         return tokens;
     }
 }

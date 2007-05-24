@@ -88,7 +88,7 @@ public class APTPredefinedMacroMap implements APTMacroMap {
         APTUtils.LOG.log(Level.SEVERE, "undef is not supported", new IllegalAccessException()); // NOI18N
     }
    
-    protected APTMacro createMacro(Token name, Collection params, List/*<Token>*/ value) {
+    protected APTMacro createMacro(Token name, Collection<Token> params, List<Token> value) {
         return new APTMacroImpl(name, params, value, true);
     }
     
@@ -130,8 +130,8 @@ public class APTPredefinedMacroMap implements APTMacroMap {
             return macro;
         }
 
-        public Collection getParams() {
-            return Collections.EMPTY_LIST;
+        public Collection<Token> getParams() {
+            return Collections.<Token>emptyList();
         }
 
         public TokenStream getBody() {

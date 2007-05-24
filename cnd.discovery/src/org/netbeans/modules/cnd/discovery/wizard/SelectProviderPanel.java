@@ -242,7 +242,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
                 list.add(new ProviderItem(provider));
             }
         }
-        Collections.sort(list);
+        Collections.<ProviderItem>sort(list);
         for(ProviderItem item:list){
             model.addElement(item);
         }
@@ -335,7 +335,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
     public void parserIdle() {
     }
     
-    private static class ProviderItem implements Comparable {
+    private static class ProviderItem implements Comparable<ProviderItem> {
         private DiscoveryProvider provider;
         private ProviderItem(DiscoveryProvider provider){
             this.provider = provider;
@@ -353,8 +353,8 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
             return provider;
         }
         
-        public int compareTo(Object o) {
-            return toString().compareTo( ((ProviderItem)o).toString() );
+        public int compareTo(ProviderItem o) {
+            return toString().compareTo( o.toString() );
         }
     }
 }

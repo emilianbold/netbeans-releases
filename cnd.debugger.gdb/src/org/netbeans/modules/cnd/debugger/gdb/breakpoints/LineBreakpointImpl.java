@@ -56,12 +56,15 @@ public class LineBreakpointImpl extends BreakpointImpl {
     }
     
     protected void setRequests() {
+        int token;
+        
         //Performance measurements: 93-114 mls (2006/08/29)
         //getDebugger().getGdbProxy().globalStartTimeSetBreakpoint = System.currentTimeMillis(); // DEBUG
 	if (breakpoint.getState() == GdbBreakpoint.UNVALIDATED) {
 	    lineNumber = breakpoint.getLineNumber();
 	    String path = getDebugger().getProjectRelativePath(breakpoint.getPath());
-	    getDebugger().getGdbProxy().break_insert(breakpoint.getID(), path + ':' + lineNumber);
+	    token = getDebugger().getGdbProxy().break_insert(path + ':' + lineNumber);
+            breakpoint.setID(token);
 	    breakpoint.setPending();
 	} else {
 	    if (breakpoint.getState() == GdbBreakpoint.DELETION_PENDING) {
@@ -73,38 +76,5 @@ public class LineBreakpointImpl extends BreakpointImpl {
 	    }
 	}
     }
-
-
-    /**
-     * Normalizes the given path by removing unnecessary "." and ".." sequences.
-     * This normalization is needed because the compiler stores source paths like
-     * N"foo/../inc.jsp" into .class files. 
-     * Such paths are not supported by our ClassPath API.
-     * TODO: compiler bug? report to JDK?
-     * 
-     * @param path path to normalize
-     * @return normalized path without "." and ".." elements
-     */
-    /* This algorithm is not correct in general case, because it
-     * does not handle symbolic links properly. I commented out
-     * this method (it is not used anywhere), and I suggest to
-     * remove it. 
-    private static String normalize(String path) {
-	Pattern thisDirectoryPattern = Pattern.compile("(/|\\A)\\./"); // NOI18N
-	Pattern parentDirectoryPattern = Pattern.compile("(/|\\A)([^/]+?)/\\.\\./"); // NOI18N
-
-	for (Matcher m = thisDirectoryPattern.matcher(path); m.find(); ) {
-	    path = m.replaceAll("$1"); // NOI18N
-	    m = thisDirectoryPattern.matcher(path);
-	}
-	for (Matcher m = parentDirectoryPattern.matcher(path); m.find(); ) {
-	    if (!m.group(2).equals("..")) { // NOI18N
-		path = path.substring(0, m.start()) + m.group(1) + path.substring(m.end());
-		m = parentDirectoryPattern.matcher(path);        
-	    }
-	}
-	return path;
-    }
-     **/
 }
 

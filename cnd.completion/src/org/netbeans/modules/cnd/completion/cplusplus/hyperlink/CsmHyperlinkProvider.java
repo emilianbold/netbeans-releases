@@ -37,6 +37,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
+import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionProvider;
 import org.netbeans.modules.cnd.completion.csm.CompletionUtilities;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 
@@ -71,6 +72,11 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             return false;
         }
         Token jumpToken = getJumpToken();
+        CsmOffsetable item = findTargetObject(target, doc, jumpToken, offset);
+        return postJump(item, "goto_source_source_not_found", "cannot-open-csm-element"); //NOI18N
+    }    
+
+    /*package*/ CsmOffsetable findTargetObject(final JTextComponent target, final BaseDocument doc, final Token jumpToken, final int offset) {
         CsmOffsetable item = null;
         CsmDeclaration declItem = null;
         assert jumpToken != null;
@@ -92,7 +98,7 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         }
         if (csmObject == null) {
             // try with code completion engine
-            csmObject = CompletionUtilities.findItemAtCaretPos(target, offset);
+            csmObject = CompletionUtilities.findItemAtCaretPos(target, doc, CsmCompletionProvider.getCompletionQuery(), offset);
         }
         if (CsmKindUtilities.isOffsetable(csmObject)) {
             item = (CsmOffsetable)csmObject;
@@ -145,6 +151,6 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             }
             item = bestDef;
         }
-        return postJump(item, "goto_source_source_not_found", "cannot-open-csm-element"); //NOI18N
-    }    
+        return item;
+    }
 }

@@ -47,7 +47,7 @@ public interface CsmFunction<T> extends CsmOffsetableDeclaration<T> {
 
     CsmType getReturnType();
     
-    List/*<CsmParameter>*/  getParameters();
+    List<CsmParameter>  getParameters();
 
     /** 
      * Gets this function signature string representation.

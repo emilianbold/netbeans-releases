@@ -20,6 +20,7 @@
 package org.netbeans.modules.cnd.apt.utils;
 
 import java.io.File;
+import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.Collection;
 import java.util.HashMap;
@@ -82,12 +83,12 @@ public class APTIncludeUtils {
      * caller must check that resolved path is not the same as base file
      * to prevent recursive inclusions 
      */
-    public static String resolveFilePath(String file, Collection paths, String baseFile, boolean next) {
-        Iterator it = paths.iterator();
+    public static String resolveFilePath(String file, Collection<String> paths, String baseFile, boolean next) {
+        Iterator<String> it = paths.iterator();
         if( next ) {
             String baseFilePath = new File(baseFile).getParent();
             while( it.hasNext() ) {
-                String sysPrefix = (String) it.next();
+                String sysPrefix = it.next();
                 if( sysPrefix.equals(baseFilePath) ) {
                     break;
                 }
@@ -101,7 +102,7 @@ public class APTIncludeUtils {
         mapFoldersRef.clear();
     }
     
-    private static String resolveFilePath(Iterator it, String file) {
+    private static String resolveFilePath(Iterator<String> it, String file) {
         if (APTTraceFlags.APT_ABSOLUTE_INCLUDES) {
             File absFile = new File(file);
             if (absFile.isAbsolute() && !isDirectory(absFile) && exists(absFile)) {
@@ -109,7 +110,7 @@ public class APTIncludeUtils {
             }
         }
         while( it.hasNext() ) {
-            String sysPrefix = (String) it.next();
+            String sysPrefix = it.next();
             File fileFromPath = new File(new File(sysPrefix), file);
             if (!isDirectory(fileFromPath) && exists(fileFromPath)) {
                 return fileFromPath.getAbsolutePath();
@@ -124,8 +125,8 @@ public class APTIncludeUtils {
             String path = file.getAbsolutePath();
             Boolean exists;
             synchronized (mapRef) {
-                Map/*<File, Boolean>*/ files = getFilesMap();
-                exists = (Boolean) files.get(path);
+                Map<String, Boolean> files = getFilesMap();
+                exists = files.get(path);
                 if( exists == null ) {
                     exists = Boolean.valueOf(file.exists());
                     files.put(FilePathCache.getString(path), exists);
@@ -145,8 +146,8 @@ public class APTIncludeUtils {
             String path = file.getAbsolutePath();
             Boolean exists;
             synchronized (mapFoldersRef) {
-                Map/*<File, Boolean>*/ dirs = getFoldersMap();                
-                exists = (Boolean) dirs.get(path);
+                Map<String, Boolean> dirs = getFoldersMap();                
+                exists = dirs.get(path);
                 if( exists == null ) {
                     exists = Boolean.valueOf(file.isDirectory());
                     dirs.put(FilePathCache.getString(path), exists);
@@ -166,25 +167,24 @@ public class APTIncludeUtils {
 //    private static int calls = 0;
 //    private static int hits = 0;
 
-    private static Map/*<File, Boolean>*/ getFilesMap() {
-        Map/*<File, Boolean>*/ map = (Map/*<File, Boolean>*/) mapRef.get();
+    private static Map<String, Boolean> getFilesMap() {
+        Map<String, Boolean> map = mapRef.get();
         if( map == null ) {
-            map = new HashMap/*<File, Boolean>*/();
-            mapRef = new SoftReference(map);
+            map = new HashMap<String, Boolean>();
+            mapRef = new SoftReference<Map<String, Boolean>>(map);
         }
         return map;
     }
     
-    private static Map/*<File, Boolean>*/ getFoldersMap() {
-        Map/*<File, Boolean>*/ map = (Map/*<File, Boolean>*/) mapFoldersRef.get();
+    private static Map<String, Boolean> getFoldersMap() {
+        Map<String, Boolean> map = mapFoldersRef.get();
         if( map == null ) {
-            map = new HashMap/*<File, Boolean>*/();
-            mapFoldersRef = new SoftReference(map);
+            map = new HashMap<String, Boolean>();
+            mapFoldersRef = new SoftReference<Map<String, Boolean>>(map);
         }
         return map;
     }  
     
-    private static SoftReference mapRef = new SoftReference(new HashMap/*<File, Boolean>*/());
-    //private static Map/*<File, Boolean>*/ files = new HashMap/*<File, Boolean>*/();
-    private static SoftReference mapFoldersRef = new SoftReference(new HashMap/*<File, Boolean>*/());
+    private static Reference<Map<String,Boolean>> mapRef = new SoftReference<Map<String,Boolean>>(new HashMap<String, Boolean>());
+    private static Reference<Map<String,Boolean>> mapFoldersRef = new SoftReference<Map<String,Boolean>>(new HashMap<String, Boolean>());
 }

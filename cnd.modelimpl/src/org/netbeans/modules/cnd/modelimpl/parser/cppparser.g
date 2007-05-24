@@ -401,6 +401,10 @@ tokens {
 	}
 
 	public void reportError(RecognitionException e) {
+            // Do not report errors that we had reported already
+            if (lastRecoveryPosition == inputState.input.index()) {
+                return;
+            }
             
             if (Diagnostic.needStatistics()) Diagnostic.onParserError(e);
 
@@ -419,6 +423,35 @@ tokens {
 		super.reportError(s);
 	    }
 	    errorCount++;
+	}
+
+        // Set of tokens stopping recovery
+        private static final BitSet stopSet = new BitSet();
+        static {
+            stopSet.add(LCURLY);
+            stopSet.add(RCURLY);
+            stopSet.add(RPAREN);
+            stopSet.add(LPAREN);
+        }
+        
+        private static final int RECOVERY_LIMIT = 20;
+        private int recoveryCounter = 0;
+        private int lastRecoveryPosition = -1;
+        
+        public void recover(RecognitionException ex, BitSet tokenSet) {
+            if (lastRecoveryPosition == inputState.input.index()) {
+                if (recoveryCounter > RECOVERY_LIMIT) {
+                    consume();
+                    recoveryCounter = 0;
+                } else {
+                    recoveryCounter++;
+                }
+            } else {
+                recoveryCounter = 0;
+                lastRecoveryPosition = inputState.input.index();
+            }
+            tokenSet.orInPlace(stopSet);
+            consumeUntil(tokenSet);
 	}
 	
 	protected boolean isCtor() { /*TODO: implement*/ throw new NotImplementedException(); }
@@ -2887,7 +2920,7 @@ postfix_expression
 	|
 		(LITERAL_dynamic_cast|LITERAL_static_cast|LITERAL_reinterpret_cast|LITERAL_const_cast)
 		    // Note const_cast in elsewhere
-		LESSTHAN declaration_specifiers (ptr_operator)? GREATERTHAN
+		LESSTHAN declaration_specifiers (ptr_operator)* GREATERTHAN
 		LPAREN expression RPAREN
 	) 
         // add possibility to have a().b().c()->d() etc.
@@ -3187,9 +3220,7 @@ protected
 post_cast_unambig_unary_optor : (TILDE | NOT);
 */
 
-// =======================================================================================
 
-// ==================== Literals with different alternatives =============================
 // it's better to have them alphabetically ordered...
 
 protected

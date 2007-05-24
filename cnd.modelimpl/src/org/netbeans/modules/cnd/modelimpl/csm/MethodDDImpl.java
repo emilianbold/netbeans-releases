@@ -62,8 +62,8 @@ public class MethodDDImpl extends MethodImpl<CsmFunctionDefinition> implements C
         return CsmDeclaration.Kind.FUNCTION_DEFINITION;
     }
     
-    public List getScopeElements() {
-        java.util.List l = new ArrayList();
+    public List<CsmScopeElement> getScopeElements() {
+        java.util.List<CsmScopeElement> l = new ArrayList<CsmScopeElement>();
         l.addAll(getParameters());
         l.add(getBody());
         return l;

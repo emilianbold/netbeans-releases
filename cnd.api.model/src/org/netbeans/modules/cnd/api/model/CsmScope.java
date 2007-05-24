@@ -27,6 +27,6 @@ import java.util.List;
  */
 public interface CsmScope extends CsmObject {
 
-        List/*<CsmScopeElement>*/ getScopeElements();
+        List<CsmScopeElement> getScopeElements();
 
 }

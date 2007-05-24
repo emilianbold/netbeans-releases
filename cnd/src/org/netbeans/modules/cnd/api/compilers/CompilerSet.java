@@ -156,16 +156,29 @@ public class CompilerSet {
         }
         name = flavor.toString();
         displayName = mapNameToDisplayName(flavor, directory.length() == 0);
-        librarySearchOption = ""; // NOI18N
-        dynamicLibrarySearchOption = ""; // NOI18N
-        libraryOption = ""; // NOI18N
+        if (flavor.isSunCompiler()) {
+            librarySearchOption = "-L"; // NOI18N
+            dynamicLibrarySearchOption = "-R"; // NOI18N
+            libraryOption = "-l"; // NOI18N
+        }
+        else if (flavor.isGnuCompiler() && Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+            librarySearchOption = "-L"; // NOI18N
+            dynamicLibrarySearchOption = "-R"; // NOI18N
+            libraryOption = "-l"; // NOI18N
+        }
+        else if (flavor.isGnuCompiler()) {
+            librarySearchOption = "-L"; // NOI18N
+            dynamicLibrarySearchOption = "-Wl,-rpath "; // NOI18N
+            libraryOption = "-l"; // NOI18N
+        }
         this.flavor = flavor;
         csmap.put(directory, this);
     }
     
     protected CompilerSet() {
-        name = None;
-        displayName = NbBundle.getMessage(CompilerSet.class, "LBL_EmptyCompilerSetDisplayName"); // NOI18N
+        this.name = None;
+        this.flavor = CompilerFlavor.Unknown;
+        this.displayName = NbBundle.getMessage(CompilerSet.class, "LBL_EmptyCompilerSetDisplayName"); // NOI18N
     }
     
     /**
@@ -212,7 +225,9 @@ public class CompilerSet {
                 }
             }
             if (cs == null) {
-                cs = new CompilerSet(CompilerFlavor.toFlavor(name), ""); // NOI18N
+                CompilerFlavor flavor = CompilerFlavor.toFlavor(name);
+                flavor = flavor == null ? CompilerFlavor.Unknown : flavor;
+                cs = new CompilerSet(flavor, ""); // NOI18N
             }
         }
         return cs;

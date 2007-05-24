@@ -820,8 +820,8 @@ public class AstRenderer {
         return var;
     }
     
-    public static List/*<CsmParameter>*/  renderParameters(AST ast, final CsmFile file) {
-        List parameters = new ArrayList();
+    public static List<CsmParameter>  renderParameters(AST ast, final CsmFile file) {
+        List<CsmParameter> parameters = new ArrayList<CsmParameter>();
         if( ast != null && ast.getType() ==  CPPTokenTypes.CSM_PARMLIST ) {
             for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
                 if( token.getType() == CPPTokenTypes.CSM_PARAMETER_DECLARATION ) {

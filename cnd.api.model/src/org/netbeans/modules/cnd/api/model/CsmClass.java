@@ -62,10 +62,10 @@ public interface CsmClass extends CsmCompoundClassifier<CsmClass> {
      *
      * TODO: collection of WHAT?
      */
-    List/*<CsmMember>*/ getMembers();
+    List<CsmMember> getMembers();
     
     /** Returns the list of base classes */
-    List/*<CsmInheritance>*/ getBaseClasses();
+    List<CsmInheritance> getBaseClasses();
     
     /** 
      * Returns true if this class is template, otherwise false.

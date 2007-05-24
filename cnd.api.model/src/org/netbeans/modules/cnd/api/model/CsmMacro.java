@@ -27,7 +27,7 @@ import java.util.List;
  */
 public interface CsmMacro extends CsmNamedElement, CsmOffsetable, CsmObject, CsmIdentifiable<CsmMacro> {
 
-    List/*<String>*/ getParameters();
+    List<String> getParameters();
     
     String getBody();
     

@@ -33,7 +33,7 @@ import org.openide.util.Utilities;
  * @author jec
  */
 public class CsmImageLoader implements CsmImageName {
-    private static Map map = new HashMap();
+    private static Map<String,Icon> map = new HashMap<String,Icon>();
     
     /** Creates a new instance of CsmImageLoader */
     private CsmImageLoader() {
@@ -46,7 +46,7 @@ public class CsmImageLoader implements CsmImageName {
     
     public static Icon getIcon(CsmDeclaration.Kind kind, int modifiers) {
         String iconPath = getImagePath(kind, modifiers);
-        Icon icon = (Icon)map.get(iconPath);
+        Icon icon = map.get(iconPath);
         if (icon == null) {
             icon = new ImageIcon(Utilities.loadImage(iconPath));
             map.put(iconPath, icon);

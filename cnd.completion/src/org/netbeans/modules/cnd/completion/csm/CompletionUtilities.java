@@ -20,25 +20,20 @@
 package org.netbeans.modules.cnd.completion.csm;
 
 import java.util.List;
-import org.netbeans.modules.cnd.completion.cplusplus.NbCsmCompletionQuery;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
-import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.SyntaxSupport;
-import org.netbeans.editor.ext.Completion;
 import org.netbeans.editor.ext.CompletionQuery;
-import org.netbeans.editor.ext.ExtEditorUI;
-import org.netbeans.editor.ext.ExtUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.completion.cplusplus.NbCsmCompletion;
+import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 
@@ -96,58 +91,41 @@ public class CompletionUtilities {
         }
         return out;
     }
-
     
-    public static Completion getCompletion(JTextComponent target) {
-        ExtEditorUI extEditorUI = ExtUtilities.getExtEditorUI(target);
-        return (extEditorUI != null) ? new NbCsmCompletion(extEditorUI) : null;
-    }  
-    
-    public static CsmObject findItemAtCaretPos(JTextComponent target, int dotPos){
-        Completion completion = getCompletion(target);
-        if (completion != null) {
-            if (completion.isPaneVisible()) { // completion pane visible
-                CsmObject item = getAssociatedObject(completion.getSelectedValue());
-                if (item != null) {
-                    return item;
-                }
-            } else { // pane not visible
-                try {
-                    SyntaxSupport sup = Utilities.getSyntaxSupport(target);
-                    NbCsmCompletionQuery query = (NbCsmCompletionQuery)completion.getQuery();
-
-//                    int dotPos = target.getCaret().getDot();
-                    BaseDocument doc = (BaseDocument)target.getDocument();
-                    int[] idFunBlk = NbEditorUtilities.getIdentifierAndMethodBlock(doc, dotPos);
-
-                    if (idFunBlk == null) {
-                        idFunBlk = new int[] { dotPos, dotPos };
-                    }
-
-                    for (int ind = idFunBlk.length - 1; ind >= 1; ind--) {
-                        CompletionQuery.Result result = query.query(target, idFunBlk[ind], sup, true, false);
-                        if (result != null && result.getData().size() > 0) {
-                            CsmObject itm = getAssociatedObject(result.getData().get(0));
-                            if (result.getData().size() > 1 && (CsmKindUtilities.isFunction(itm))) {
-                                // It is overloaded method, lets check for the right one
-                                int endOfMethod = findEndOfMethod(target, idFunBlk[ind]-1);
-                                if (endOfMethod > -1){
-                                    CompletionQuery.Result resultx = query.query(target, endOfMethod, sup, true, false);
-                                    if (resultx != null && resultx.getData().size() > 0) {
-                                        return getAssociatedObject(resultx.getData().get(0));
-                                    }
-                                }
+    public static CsmObject findItemAtCaretPos(JTextComponent target, BaseDocument doc, CsmCompletionQuery query, int dotPos){
+        try {
+            doc = doc != null ? doc : (BaseDocument)target.getDocument();
+            SyntaxSupport sup = doc.getSyntaxSupport();
+            int[] idFunBlk = NbEditorUtilities.getIdentifierAndMethodBlock(doc, dotPos);
+            
+            if (idFunBlk == null) {
+                idFunBlk = new int[] { dotPos, dotPos };
+            }
+            
+            for (int ind = idFunBlk.length - 1; ind >= 1; ind--) {
+                CompletionQuery.Result result = query.query(target, doc, idFunBlk[ind], sup, true, false);
+                if (result != null && result.getData().size() > 0) {
+                    CsmObject itm = getAssociatedObject(result.getData().get(0));
+                    if (result.getData().size() > 1 && (CsmKindUtilities.isFunction(itm))) {
+                        // It is overloaded method, lets check for the right one
+                        int endOfMethod = findEndOfMethod(doc, idFunBlk[ind]-1);
+                        if (endOfMethod > -1){
+                            CompletionQuery.Result resultx = query.query(target, doc, endOfMethod, sup, true, false);
+                            if (resultx != null && resultx.getData().size() > 0) {
+                                return getAssociatedObject(resultx.getData().get(0));
                             }
-                            return itm;
                         }
                     }
-                } catch (BadLocationException e) {
+                    return itm;
                 }
             }
+        } catch (BadLocationException e) {
         }
-        // Complete the messages
         return null;
-
+    }
+    
+    public static CsmObject findItemAtCaretPos(JTextComponent target, int dotPos){
+        return findItemAtCaretPos(target, null, CsmCompletionProvider.getCompletionQuery(), dotPos);
     }
 
     private static CsmObject getAssociatedObject(Object item) {
@@ -164,11 +142,10 @@ public class CompletionUtilities {
         return null;
     }
 
-    static int findEndOfMethod(JTextComponent textComp, int startPos){
+    static int findEndOfMethod(BaseDocument doc, int startPos){
         try{
             int level = 0;
-            BaseDocument doc = (BaseDocument)textComp.getDocument();
-            for(int i = startPos;  i<textComp.getDocument().getLength(); i++){
+            for(int i = startPos;  i<doc.getLength(); i++){
                 char ch = doc.getChars(i, 1)[0];
                 if (ch == ';') return -1;
                 if (ch == '(') level++;

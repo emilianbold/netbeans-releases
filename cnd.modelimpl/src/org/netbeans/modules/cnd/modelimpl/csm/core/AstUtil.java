@@ -101,6 +101,7 @@ public class AstUtil {
      * @param limitingTokenType type of token that, if being found, stops search
      *        -1 means that there is no such token.
      *        This parameter allows, for example, searching until "}" is encountered
+     * @return found id
      */
     public static String findId(AST ast, int limitingTokenType) {
 	return findId(ast, limitingTokenType, false);
@@ -115,6 +116,8 @@ public class AstUtil {
      * @param limitingTokenType type of token that, if being found, stops search
      *        -1 means that there is no such token.
      *        This parameter allows, for example, searching until "}" is encountered
+     * @param qualified flag indicating if full qualified id is needed
+     * @return id
      */
     public static String findId(AST ast, int limitingTokenType, boolean qualified) {
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {

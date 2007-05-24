@@ -122,6 +122,7 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel {
         return new String((String) o);
     }
     
+    @SuppressWarnings("unchecked")
     public void editAction(Object o) {
         String s = (String)o;
         

@@ -26,8 +26,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
 import org.netbeans.modules.cnd.apt.support.APTBuilder;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
-import org.netbeans.modules.cnd.modelimpl.parser.apt.APTPreprocStateImpl;
-import org.netbeans.modules.cnd.modelimpl.parser.apt.APTSystemStorage;
+import org.netbeans.modules.cnd.apt.support.APTSystemStorage;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTTraceUtils;
@@ -44,20 +43,24 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.*;
 import org.netbeans.modules.cnd.apt.debug.DebugUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
-import org.netbeans.modules.cnd.apt.impl.support.APTFileMacroMap;
-import org.netbeans.modules.cnd.apt.impl.support.APTIncludeHandlerImpl;
-import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParserMacroExpandedStream;
+import org.netbeans.modules.cnd.apt.support.APTMacroExpandedStream;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
-import org.netbeans.modules.cnd.apt.support.APTPreprocState;
-import org.netbeans.modules.cnd.apt.utils.APTMacroUtils;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.utils.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.editor.parser.FoldingParser;
+import org.netbeans.modules.cnd.loaders.CCDataLoader;
+import org.netbeans.modules.cnd.loaders.CDataLoader;
+import org.netbeans.modules.cnd.loaders.HDataLoader;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
@@ -150,7 +153,7 @@ public class TraceModel {
 	private Cache cache;
 	
 	private static CsmTracer tracer = new CsmTracer(false);
-	
+
 	private boolean showAstWindow = false;
 	private boolean dumpAst = false;
 	private boolean dumpModel = false;
@@ -203,6 +206,15 @@ public class TraceModel {
 	
 	// Callback options
 	private boolean dumpPPState = false;
+
+        public void setDumpModel(boolean dumpModel) {
+            this.dumpModel = dumpModel;
+        }
+
+        public void setDumpPPState(boolean dumpPPState) {
+            this.dumpPPState = dumpPPState;
+            this.LEAVE_PP_STATE_UNCLEANED = true;
+        }
 	
 	// if true, then relative include paths oin -I option are considered
 	// to be based on the file that we currently compile rather then current dir
@@ -222,15 +234,19 @@ public class TraceModel {
 	private int lap = 0;
 	
 	public TraceModel() {
-		model =  (ModelImpl) CsmModelAccessor.getModel(); // new ModelImpl(true);
-		if( model == null ) {
-			model = new ModelImpl();
-		}
-		model.startup();
-		initProject();
-		currentIncludePaths = quoteIncludePaths;
-	}
-	
+            model =  (ModelImpl) CsmModelAccessor.getModel(); // new ModelImpl(true);
+            if( model == null ) {
+                model = new ModelImpl();
+            }
+            model.startup();
+            initProject();
+            currentIncludePaths = quoteIncludePaths;
+        }	
+        
+        /*package*/ final void shutdown() {
+            model.shutdown();
+        }
+        
 	private void initProject() {
 		if( getProject() != null ) {
 			Object platformProject = getProject().getPlatformProject();
@@ -384,29 +400,16 @@ public class TraceModel {
 	
 	private void test(String[] args) {
 	    try {
-		test1(args);
+                processArguments(args);
+		doTest();
 	    }
 	    finally {
 		model.shutdown();
 	    }
 	}
 	
-	private void test1(String[] args) {
+	/*package*/ void doTest() {
 		long time = 0;
-		for( int i = 0; i < args.length; i++ ) {
-			if( args[i].startsWith("--") ) { // NOI18N
-				processFlag(args[i].substring(2));
-			} else
-				if( args[i].startsWith("-") ) { // NOI18N
-					for( int charIdx = 1; charIdx < args[i].length(); charIdx++ ) {
-						boolean argHasBeenEaten = processFlag(args[i].charAt(charIdx), args[i].substring(charIdx+1));
-						if (argHasBeenEaten)
-							break;
-					}
-				} else {
-				addFile(fileList, new File(args[i]));
-				}
-		}
 		if( ! pathsRelCurFile ) {
 			List[] paths = { quoteIncludePaths, systemIncludePaths };
 			for (int listIdx = 0; listIdx < paths.length; listIdx++) {
@@ -652,6 +655,23 @@ public class TraceModel {
 			anyKey("Press any key to finish:"); // NOI18N
 		}
 	}
+
+        private void processArguments(final String[] args) {
+            for( int i = 0; i < args.length; i++ ) {
+                    if( args[i].startsWith("--") ) { // NOI18N
+                            processFlag(args[i].substring(2));
+                    } else
+                            if( args[i].startsWith("-") ) { // NOI18N
+                                    for( int charIdx = 1; charIdx < args[i].length(); charIdx++ ) {
+                                            boolean argHasBeenEaten = processFlag(args[i].charAt(charIdx), args[i].substring(charIdx+1));
+                                            if (argHasBeenEaten)
+                                                    break;
+                                    }
+                            } else {
+                            addFile(fileList, new File(args[i]));
+                            }
+            }
+        }
 	
         private void anyKey(String message) {
             System.err.println(message);
@@ -767,9 +787,9 @@ public class TraceModel {
 	private static final boolean C_DEFINE = Boolean.getBoolean("cnd.modelimpl.c.define");
 	private static final boolean CPP_SYS_INCLUDE = Boolean.getBoolean("cnd.modelimpl.cpp.include");
 	private static final boolean CPP_DEFINE = Boolean.getBoolean("cnd.modelimpl.cpp.define");
-        private static final boolean DISABLE_PREDEFINED = DebugUtils.getBoolean("cnd.modelimpl.disable.predefined", false);
+        private static final boolean DISABLE_PREDEFINED = DebugUtils.getBoolean("cnd.modelimpl.disable.predefined", true);
 	
-	private APTSystemStorage sysAPTData = new APTSystemStorage();
+	private APTSystemStorage sysAPTData = APTSystemStorage.getDefault();
 	
 	private APTIncludeHandler getIncludeHandler(File file) {
 		List sysIncludes = sysAPTData.getIncludes("TraceModelSysIncludes", getSystemIncludes()); // NOI18N
@@ -786,21 +806,19 @@ public class TraceModel {
 				qInc.add(path);
 			}
 		}
-		return new APTIncludeHandlerImpl(file.getAbsolutePath(), sysIncludes, qInc);
+		return APTHandlersSupport.createIncludeHandler(file.getAbsolutePath(), sysIncludes, qInc);
 	}
 	
 	private APTMacroMap getMacroMap(File file) {
 		//print("SystemIncludePaths: " + systemIncludePaths.toString() + "\n");
 		//print("QuoteIncludePaths: " + quoteIncludePaths.toString() + "\n");
-		APTMacroMap sysMap = getSysMap(file);
-		APTFileMacroMap map = new APTFileMacroMap(sysMap);
-		APTMacroUtils.fillMacroMap(map, this.macros);
+		APTMacroMap map = APTHandlersSupport.createMacroMap(getSysMap(file), this.macros);
 		return map;
 	}
 	
-	private APTPreprocState getPreprocState(File file) {
-		APTPreprocState preprocState = new APTPreprocStateImpl(getMacroMap(file), getIncludeHandler(file), !file.getPath().endsWith(".h")); // NOI18N
-		return preprocState;
+	private APTPreprocHandler getPreprocHandler(File file) {
+		APTPreprocHandler preprocHandler = APTHandlersSupport.createPreprocHandler(getMacroMap(file), getIncludeHandler(file), !file.getPath().endsWith(".h")); // NOI18N
+		return preprocHandler;
 	}
 	
 	
@@ -1179,7 +1197,8 @@ public class TraceModel {
 			time = System.currentTimeMillis();
 			apt = APTDriver.getInstance().findAPTLight(buffer);
 		}
-		APTWalkerTest walker = new APTWalkerTest(apt, getMacroMap(file), getIncludeHandler(file));
+                APTPreprocHandler ppHandler = APTHandlersSupport.createPreprocHandler(getMacroMap(file), getIncludeHandler(file), true);
+		APTWalkerTest walker = new APTWalkerTest(apt, ppHandler);
 		walker.visit();
 		time = System.currentTimeMillis() - time;
 		
@@ -1215,10 +1234,11 @@ public class TraceModel {
 			apt = APTDriver.getInstance().findAPT(buffer);
 		}
 		APTMacroMap macroMap = getMacroMap(file);
-		APTWalkerTest walker = new APTWalkerTest(apt, macroMap, getIncludeHandler(file));
+                APTPreprocHandler ppHandler = APTHandlersSupport.createPreprocHandler(macroMap, getIncludeHandler(file), true);
+		APTWalkerTest walker = new APTWalkerTest(apt, ppHandler);
 		TokenStream ts = walker.getTokenStream();
 		if (expand) {
-			ts = new APTParserMacroExpandedStream(ts, macroMap);
+			ts = new APTMacroExpandedStream(ts, macroMap);
 		}
 		if (filter) {
 			ts = APTLanguageSupport.getInstance().getFilter(APTLanguageSupport.GNU_CPP).getFilteredStream(new APTCommentsFilter(ts));
@@ -1249,9 +1269,9 @@ public class TraceModel {
 			time = System.currentTimeMillis();
 		}
 		FileImpl fileImpl = null;
-		APTPreprocState preprocState = getPreprocState(file);
-                APTPreprocState.State state = preprocState.getState();
-		fileImpl = (FileImpl) getProject().testAPTParseFile(file.getAbsolutePath(), preprocState);
+		APTPreprocHandler preprocHandler = getPreprocHandler(file);
+                APTPreprocHandler.State state = preprocHandler.getState();
+		fileImpl = (FileImpl) getProject().testAPTParseFile(file.getAbsolutePath(), preprocHandler);
 		try {
 			fileImpl.scheduleParsing(true, state);
 		} catch( InterruptedException e ) {
@@ -1431,6 +1451,12 @@ public class TraceModel {
 		return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 	}
 	
+        /*package*/ void test(File file, PrintStream out, PrintStream err) throws Exception {
+            tracer.setPrintStream(out);
+            addFile(fileList, file);
+            doTest();
+        }
+        
 	private TestResult test(File file)
 			throws FileNotFoundException, RecognitionException, TokenStreamException, IOException, ClassNotFoundException {
 		
@@ -1462,25 +1488,25 @@ public class TraceModel {
 		FileImpl fileImpl = null;
 		int errCount = 0;
 		
-		APTPreprocState preprocState = getPreprocState(file);
-                APTPreprocState.State state = preprocState.getState();
-		fileImpl = (FileImpl) getProject().testAPTParseFile(file.getAbsolutePath(), preprocState);
+		APTPreprocHandler preprocHandler = getPreprocHandler(file);
+                APTPreprocHandler.State state = preprocHandler.getState();
+		fileImpl = (FileImpl) getProject().testAPTParseFile(file.getAbsolutePath(), preprocHandler);
 		try {
 			fileImpl.scheduleParsing(true, state);
-			if( preprocState != null ) { // i.e. if TraceFlags.USE_APT
-				preprocState.setState(fileImpl.testGetPreprocStateState());
+			if( preprocHandler != null ) { // i.e. if TraceFlags.USE_APT
+				preprocHandler.setState(fileImpl.testGetPreprocState());
 			}
-			fileImpl.setPreprocState(null);
+			fileImpl.setPreprocHandler(null);
 			waitProjectParsed(false);
 			if( dumpAst || writeAst || showAstWindow ) {
-			    tree = fileImpl.parse(getPreprocState(file));
+			    tree = fileImpl.parse(getPreprocHandler(file));
 			}
 		} catch( InterruptedException e ) {
 			// nothing to do
 		}
 		errCount = fileImpl.getErrorCount();
 		if ( dumpPPState ) {
-			dumpMacroMap(preprocState.getMacroMap());
+			dumpMacroMap(preprocHandler.getMacroMap());
 		}
 		time = System.currentTimeMillis() - time;
 		if( showTime ) {
@@ -1531,7 +1557,7 @@ public class TraceModel {
                 
 		if( dumpModel ) {
 			if( fileImpl != null ) {
-				tracer.setDeep(deep);
+                                tracer.setDeep(deep);
 				tracer.setTestUniqueName(testUniqueName);
 				tracer.dumpModel(fileImpl);
 				if (!dumpFileOnly) {
@@ -1730,7 +1756,7 @@ public class TraceModel {
 		}
 	};
 
-    private ProjectBase getProject() {
+    /*package*/ ProjectBase getProject() {
         ProjectBase project;
         if (TraceFlags.USE_REPOSITORY) {
             project = projectUID == null ? null : (ProjectBase)projectUID.getObject();
@@ -1747,4 +1773,9 @@ public class TraceModel {
             this.project = project;
         }
     }
+    
+    /*package*/final CsmModel getModel() {
+        return model;
+    }
+
 }

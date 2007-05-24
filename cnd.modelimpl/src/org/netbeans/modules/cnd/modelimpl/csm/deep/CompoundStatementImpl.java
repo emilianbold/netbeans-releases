@@ -41,7 +41,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
  */
 public class CompoundStatementImpl extends StatementBase implements CsmCompoundStatement {
     
-    private List/*<CsmStatement>*/ statements;
+    private List<CsmStatement> statements;
     
     public CompoundStatementImpl(AST ast, CsmFile file) {
         super(ast, file);
@@ -51,9 +51,9 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
         return CsmStatement.Kind.COMPOUND;
     }
     
-    public List/*<CsmStatement>*/ getStatements() {
+    public List<CsmStatement> getStatements() {
         if( statements == null ) {
-            statements = new ArrayList();
+            statements = new ArrayList<CsmStatement>();
             renderStatements(getAst());
         }
         return statements;
@@ -68,8 +68,8 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
         }
     }
 
-    public List getScopeElements() {
-        return getStatements();
+    public List<CsmScopeElement> getScopeElements() {
+        return (List)getStatements();
     }
 
 }

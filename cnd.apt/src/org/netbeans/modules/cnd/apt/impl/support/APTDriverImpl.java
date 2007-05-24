@@ -23,6 +23,7 @@ import antlr.TokenStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.Collections;
 import java.util.HashMap;
@@ -45,9 +46,10 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  */
 public class APTDriverImpl {
     /** map of active creators */
-    private static Map/*<String, APTSyncCreator>*/ file2creator = new HashMap();
+    private static Map<String, APTSyncCreator> file2creator = new HashMap<String, APTSyncCreator>();
     /** static shared sync map */
-    private static Map/*<String, SoftReference<APTFile>>*/ file2apt = Collections.synchronizedMap(new HashMap());
+    private static Map<String, Reference<APTFile>> file2ref2apt = Collections.synchronizedMap(new HashMap<String, Reference<APTFile>>());
+    private static Map<String, APTFile> file2apt = Collections.synchronizedMap(new HashMap<String, APTFile>());
     
     /** instance fields */
     
@@ -62,7 +64,7 @@ public class APTDriverImpl {
         if (apt == null) {
             APTSyncCreator creator = null;
             synchronized (file2creator) {
-                creator = (APTSyncCreator) file2creator.get(path);
+                creator = file2creator.get(path);
                 if (creator == null) {
                     creator = new APTSyncCreator();
                     file2creator.put(path, creator);
@@ -82,11 +84,19 @@ public class APTDriverImpl {
     public static void invalidateAPT(APTFileBuffer buffer) {
         File file = buffer.getFile();
         String path = file.getAbsolutePath();
-        file2apt.remove(path);
+        if (APTTraceFlags.APT_USE_SOFT_REFERENCE) {
+            file2ref2apt.remove(path);
+        } else {
+            file2apt.remove(path);
+        }
     }
     
     public static void invalidateAll() {
-        file2apt.clear();
+        if (APTTraceFlags.APT_USE_SOFT_REFERENCE) {
+            file2ref2apt.clear();
+        } else {
+            file2apt.clear();
+        }
     }
     
     private static class APTSyncCreator {               
@@ -148,10 +158,10 @@ public class APTDriverImpl {
         }
         APTFile apt;
         if (APTTraceFlags.APT_USE_SOFT_REFERENCE) {
-            SoftReference<APTFile> aptRef = (SoftReference)file2apt.get(path);
+            Reference<APTFile> aptRef = file2ref2apt.get(path);
             apt = aptRef == null ? null : aptRef.get();
         } else {
-            apt = (APTFile)file2apt.get(path);
+            apt = file2apt.get(path);
         }        
         return apt;
     }
@@ -162,7 +172,7 @@ public class APTDriverImpl {
             return;
         }
         if (APTTraceFlags.APT_USE_SOFT_REFERENCE) {
-            file2apt.put(path, new SoftReference(apt));
+            file2ref2apt.put(path, new SoftReference<APTFile>(apt));
         } else {
             file2apt.put(path, apt);
         }        

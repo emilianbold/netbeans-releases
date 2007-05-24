@@ -218,8 +218,12 @@ public class LinkerConfiguration implements AllOptionsProvider {
 	if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB ) {
             if (cs.isSunCompiler())
                 options += "-G "; // NOI18N
-            else if (cs.isGnuCompiler())
+            else if (cs.isGnuCompiler() && (getMakeConfiguration().getPlatform().getValue() == Platform.PLATFORM_SOLARIS_INTEL || getMakeConfiguration().getPlatform().getValue() == Platform.PLATFORM_SOLARIS_SPARC)) {
+                options += "-G "; // NOI18N
+            }
+            else if (cs.isGnuCompiler()) {
                 options += "-shared "; // NOI18N
+            }
             else
                 assert false;
         }
@@ -238,12 +242,13 @@ public class LinkerConfiguration implements AllOptionsProvider {
         String libPrefix = "-L"; // NOI18N
         String dynSearchPrefix = ""; // NOI18N
         CompilerSet cs = CompilerSetManager.getDefault().getCompilerSet(getMakeConfiguration().getCompilerSet().getValue());
-        if (cs.isSunCompiler())
+        if (cs.isSunCompiler()) {
             dynSearchPrefix = "-R"; // NOI18N
-        else if (cs.isGnuCompiler())
+        } else if (cs.isGnuCompiler()) {
             dynSearchPrefix = "-Wl,-rpath "; // NOI18N
-        else
-            assert false;
+        } else {
+            return "";
+        }
 	String options = ""; // NOI18N
 	options += getAdditionalLibs().getOption(libPrefix) + " "; // NOI18N
 	options += getDynamicSearch().getOption(dynSearchPrefix) + " "; // NOI18N
@@ -369,7 +374,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
             Platform platform = Platforms.getPlatform(getMakeConfiguration().getPlatform().getValue());
             outputName = platform.getLibraryName(outputName);
         }
-        
+        outputName = ConfigurationSupport.makeNameLegal(outputName);
 	return MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + getMakeConfiguration().getVariant() + "/" + outputName; // NOI18N 
     }
     

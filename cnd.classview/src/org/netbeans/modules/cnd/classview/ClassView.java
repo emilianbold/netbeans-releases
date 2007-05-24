@@ -241,7 +241,13 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
         if( Diagnostic.DEBUG ) Diagnostic.trace("\n@@@ PROJECT CLOSEED " + project); // NOI18N
         if (model != null) {
             model.closeProject(project);
-            setupRootContext(model.getRoot());
+            RootNode root = model.getRoot();
+            Children children = root.getChildren();
+            if ((children instanceof ProjectsKeyArray) && ((ProjectsKeyArray) children).isEmpty()){
+                setupRootContext(createEmptyRoot());
+            } else {
+                setupRootContext(root);
+            }
         }
     }
     
