@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Vector;
+import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
 
 /**
@@ -154,12 +155,26 @@ public class TableRowGroupDesignState {
      * Force the selected columns names with all columns from the Data model
      */
     public void setDataProviderBean(DesignBean modelBean, boolean resetColumns){
-           
+        
         if(modelBean != dataProviderBean){
             if(modelBean.getInstance()  instanceof TableDataProvider){
                 tableDataProvider =  (TableDataProvider) modelBean.getInstance();
-            }else if(List.class.isAssignableFrom(modelBean.getBeanInfo().getBeanDescriptor().getBeanClass())){
-                tableDataProvider = new ObjectListDataProvider((List)modelBean.getInstance());
+            }else if(List.class.isAssignableFrom(modelBean.getBeanInfo().getBeanDescriptor().getBeanClass())){       
+                List listObject = (List)modelBean.getInstance();
+                if(listObject == null){
+                    listObject = new ArrayList();
+                }
+                tableDataProvider =  new ObjectListDataProvider(listObject);
+                if(modelBean instanceof DesignBeanExt){
+                    try {
+                        java.lang.reflect.Type[] parameterTypes = ((com.sun.rave.designtime.ext.DesignBeanExt) modelBean).getTypeParameters();
+                        if (parameterTypes != null && (parameterTypes.length > 0)) {
+                            ((com.sun.data.provider.impl.ObjectListDataProvider) tableDataProvider).setObjectType((java.lang.Class) parameterTypes[0]);
+                        }
+                    } catch (ClassNotFoundException exc) {
+                        ErrorManager.getDefault().notify(exc);
+                    }
+                }
             }else if(modelBean.getInstance()  instanceof Object[]){
                 tableDataProvider = new ObjectArrayDataProvider((Object[])modelBean.getInstance());
             }else{
