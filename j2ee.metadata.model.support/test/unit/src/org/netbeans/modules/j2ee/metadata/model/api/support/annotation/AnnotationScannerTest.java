@@ -21,6 +21,7 @@ package org.netbeans.modules.j2ee.metadata.model.api.support.annotation;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -28,6 +29,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -120,5 +123,138 @@ public class AnnotationScannerTest extends PersistenceTestCase {
         assertEquals(ENTITY_COUNT, entityCount[0]);
         System.out.println("Compilation time (ms): " + (compilationDoneTime - startTime) / 1e6);
         System.out.println("Initial annotation scan time (ms): " + (initialScanDoneTime[0] - compilationDoneTime) / 1e6);
+    }
+    
+    private ClasspathInfo createClasspathInfoForScanningAnnotations() throws Exception {
+        TestUtilities.copyStringToFileObject(srcFO, "foo/MyClass.java",
+                "package foo;" +
+                "" +
+                "import javax.annotation.Resource;" +
+                "import javax.sql.DataSource;" +
+                "" +
+                "@Resource(name=\"myClass\")" +
+                "public class MyClass {" +
+                "   @Resource" +
+                "   private DataSource myDS;" +
+                "}");
+        TestUtilities.copyStringToFileObject(srcFO, "foo/YourClass.java",
+                "package foo;" +
+                "" +
+                "import javax.annotation.Resource;" +
+                "import javax.sql.DataSource;" +
+                "" +
+                "public class YourClass {" +
+                "   @Resource" +
+                "   private void setYourDataSource(DataSource ds) {" +
+                "   }" +
+                "}");
+        RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
+        return ClasspathInfo.create(srcFO);
+    }
+    
+    public void testScanAnnotationsOnClassesMethodsFields() throws Exception {
+        final AnnotationModelHelper helper = AnnotationModelHelper.create(createClasspathInfoForScanningAnnotations());
+        final Set<String> elements = new HashSet<String>();
+        
+        helper.runJavaSourceTask(new Runnable() {
+            public void run() {
+                helper.getAnnotationScanner().findAnnotations(
+                        "javax.annotation.Resource",
+                        EnumSet.of(ElementKind.CLASS, ElementKind.METHOD, ElementKind.FIELD),
+                        new AnnotationHandler() {
+                            public void handleAnnotation(TypeElement typeElement, Element element, AnnotationMirror annotationMirror) {
+                                elements.add(element.getSimpleName().toString());
+                            }
+                        });
+            }
+        });
+        assertEquals(3, elements.size());
+        assertTrue(elements.contains("MyClass"));
+        assertTrue(elements.contains("myDS"));
+        assertTrue(elements.contains("setYourDataSource"));
+    }
+    
+    public void testScanAnnotationsOnMethodsFields() throws Exception {
+        final AnnotationModelHelper helper = AnnotationModelHelper.create(createClasspathInfoForScanningAnnotations());
+        final Set<String> elements = new HashSet<String>();
+        
+        helper.runJavaSourceTask(new Runnable() {
+            public void run() {
+                helper.getAnnotationScanner().findAnnotations(
+                        "javax.annotation.Resource",
+                        EnumSet.of(ElementKind.METHOD, ElementKind.FIELD),
+                        new AnnotationHandler() {
+                            public void handleAnnotation(TypeElement typeElement, Element element, AnnotationMirror annotationMirror) {
+                                elements.add(element.getSimpleName().toString());
+                            }
+                        });
+            }
+        });
+        assertEquals(2, elements.size());
+        assertTrue(elements.contains("myDS"));
+        assertTrue(elements.contains("setYourDataSource"));
+    }
+    
+    public void testScanAnnotationsOnClasses() throws Exception {
+        final AnnotationModelHelper helper = AnnotationModelHelper.create(createClasspathInfoForScanningAnnotations());
+        final Set<String> elements = new HashSet<String>();
+        
+        helper.runJavaSourceTask(new Runnable() {
+            public void run() {
+                helper.getAnnotationScanner().findAnnotations(
+                        "javax.annotation.Resource",
+                        EnumSet.of(ElementKind.CLASS),
+                        new AnnotationHandler() {
+                            public void handleAnnotation(TypeElement typeElement, Element element, AnnotationMirror annotationMirror) {
+                                assertSame(typeElement, element);
+                                elements.add(element.getSimpleName().toString());
+                            }
+                        });
+            }
+        });
+        assertEquals(1, elements.size());
+        assertTrue(elements.contains("MyClass"));
+    }
+    
+    public void testScanAnnotationsOnMethods() throws Exception {
+        final AnnotationModelHelper helper = AnnotationModelHelper.create(createClasspathInfoForScanningAnnotations());
+        final Set<String> elements = new HashSet<String>();
+        
+        helper.runJavaSourceTask(new Runnable() {
+            public void run() {
+                helper.getAnnotationScanner().findAnnotations(
+                        "javax.annotation.Resource",
+                        EnumSet.of(ElementKind.METHOD),
+                        new AnnotationHandler() {
+                            public void handleAnnotation(TypeElement typeElement, Element element, AnnotationMirror annotationMirror) {
+                                assertEquals("foo.YourClass", typeElement.getQualifiedName().toString());
+                                elements.add(element.getSimpleName().toString());
+                            }
+                        });
+            }
+        });
+        assertEquals(1, elements.size());
+        assertTrue(elements.contains("setYourDataSource"));
+    }
+    
+    public void testScanAnnotationsOnFields() throws Exception {
+        final AnnotationModelHelper helper = AnnotationModelHelper.create(createClasspathInfoForScanningAnnotations());
+        final Set<String> elements = new HashSet<String>();
+        
+        helper.runJavaSourceTask(new Runnable() {
+            public void run() {
+                helper.getAnnotationScanner().findAnnotations(
+                        "javax.annotation.Resource",
+                        EnumSet.of(ElementKind.FIELD),
+                        new AnnotationHandler() {
+                            public void handleAnnotation(TypeElement typeElement, Element element, AnnotationMirror annotationMirror) {
+                                assertEquals("foo.MyClass", typeElement.getQualifiedName().toString());
+                                elements.add(element.getSimpleName().toString());
+                            }
+                        });
+            }
+        });
+        assertEquals(1, elements.size());
+        assertTrue(elements.contains("myDS"));
     }
 }
