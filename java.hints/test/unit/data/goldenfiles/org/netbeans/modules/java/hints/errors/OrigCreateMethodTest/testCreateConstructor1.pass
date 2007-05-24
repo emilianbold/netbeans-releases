@@ -1,0 +1,16 @@
+package org.netbeans.test.java.hints;
+
+public class CreateConstructor1 {
+    
+    public CreateConstructor1() {
+    }
+
+    private CreateConstructor1(int i) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+    
+    public final void main(String[] args) {
+        new CreateConstructor1(1);
+    }
+
+}

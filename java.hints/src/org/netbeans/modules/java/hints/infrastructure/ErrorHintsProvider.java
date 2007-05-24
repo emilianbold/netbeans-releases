@@ -183,6 +183,19 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
                 if (t.id() == JavaTokenId.LT) {
                     ts.moveNext();
                     t = ts.token();
+                } else {
+                    if (t.id() == JavaTokenId.NEW) {
+                        boolean cont = ts.moveNext();
+                        
+                        while (cont && ts.token().id() == JavaTokenId.WHITESPACE) {
+                            cont = ts.moveNext();
+                        }
+                        
+                        if (!cont)
+                            return null;
+                        
+                        t = ts.token();
+                    }
                 }
             }
 
@@ -362,6 +375,15 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
     private long getPrefferedPosition(CompilationInfo info, Diagnostic d) {
         if ("compiler.err.doesnt.exist".equals(d.getCode())) {
             return d.getStartPosition();
+        }
+        if ("compiler.err.cant.resolve.location".equals(d.getCode())) {
+            int[] span = findUnresolvedElementSpan(info, (int) d.getPosition());
+            
+            if (span != null) {
+                return span[0];
+            } else {
+                return d.getPosition();
+            }
         }
         if ("compiler.err.not.stmt".equals(d.getCode())) {
             //check for "Collections.":

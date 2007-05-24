@@ -22,29 +22,39 @@ import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -69,13 +79,14 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.modules.java.editor.semantic.Utilities;
+import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
 
 /**
  *
@@ -88,7 +99,7 @@ public final class CreateElement implements ErrorRule<Void> {
     }
     
     public Set<String> getCodes() {
-        return Collections.singleton("compiler.err.cant.resolve.location");
+        return new HashSet<String>(Arrays.asList("compiler.err.cant.resolve.location", "compiler.err.cant.apply.symbol", "compiler.err.cant.resolve.location"));
     }
     
     public List<Fix> run(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
@@ -106,21 +117,44 @@ public final class CreateElement implements ErrorRule<Void> {
         TreePath firstClass = null;
         TreePath firstMethod = null;
         TreePath firstInitializer = null;
+        TreePath methodInvocation = null;
+        TreePath newClass = null;
+        boolean lookupMethodInvocation = true;
         
         TreePath path = info.getTreeUtilities().pathFor(offset + 1);
+        
         while(path != null) {
+            Tree leaf = path.getLeaf();
+            Kind leafKind = leaf.getKind();
+            
             if (parent != null && parent.getLeaf() == errorPath.getLeaf())
                 parent = path;
-            if (path.getLeaf() == errorPath.getLeaf() && parent == null)
+            if (leaf == errorPath.getLeaf() && parent == null)
                 parent = path;
-            if (path.getLeaf().getKind() == Kind.CLASS && firstClass == null)
+            if (leafKind == Kind.CLASS && firstClass == null)
                 firstClass = path;
-            if (path.getLeaf().getKind() == Kind.METHOD && firstMethod == null && firstClass == null)
+            if (leafKind == Kind.METHOD && firstMethod == null && firstClass == null)
                 firstMethod = path;
             //static/dynamic initializer:
-            if (   path.getLeaf().getKind() == Kind.BLOCK && path.getParentPath().getLeaf().getKind() == Kind.CLASS
+            if (   leafKind == Kind.BLOCK && path.getParentPath().getLeaf().getKind() == Kind.CLASS
                 && firstMethod == null && firstClass == null)
                 firstInitializer = path;
+            
+            if (lookupMethodInvocation && leafKind == Kind.METHOD_INVOCATION) {
+                methodInvocation = path;
+            }
+            
+            if (lookupMethodInvocation && leafKind == Kind.NEW_CLASS) {
+                newClass = path;
+            }
+            
+            if (leafKind == Kind.MEMBER_SELECT) {
+                lookupMethodInvocation = leaf == errorPath.getLeaf();
+            }
+            
+            if (leafKind != Kind.MEMBER_SELECT && leafKind != Kind.IDENTIFIER) {
+                lookupMethodInvocation = false;
+            }
             path = path.getParentPath();
         }
         
@@ -199,8 +233,8 @@ public final class CreateElement implements ErrorRule<Void> {
         
         if (target == null) {
             if (ErrorHintsProvider.ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                ErrorHintsProvider.ERR.log(org.openide.ErrorManager.INFORMATIONAL,"target=null");
-                ErrorHintsProvider.ERR.log(org.openide.ErrorManager.INFORMATIONAL,"offset=" + offset);
+                ErrorHintsProvider.ERR.log(ErrorManager.INFORMATIONAL, "target=null");
+                ErrorHintsProvider.ERR.log(ErrorManager.INFORMATIONAL, "offset=" + offset);
                 ErrorHintsProvider.ERR.log(ErrorManager.INFORMATIONAL, "errorTree=" + errorPath.getLeaf());
             }
             
@@ -209,38 +243,69 @@ public final class CreateElement implements ErrorRule<Void> {
         
         modifiers.addAll(getAccessModifiers(source, target));
         
-        List<Fix> result = new ArrayList<Fix>();
+        if (methodInvocation != null) {
+            //create method:
+            MethodInvocationTree mit = (MethodInvocationTree) methodInvocation.getLeaf();
+            //return type:
+            Set<FixTypes> fixTypes = EnumSet.noneOf(FixTypes.class);
+            List<? extends TypeMirror> types = resolveType(fixTypes, info, methodInvocation.getParentPath(), methodInvocation.getLeaf(), offset);
+            
+            if (types == null || types.isEmpty()) {
+                return Collections.<Fix>emptyList();
+            }
+            return prepareCreateMethodFix(info, methodInvocation, modifiers, target, simpleName, mit.getArguments(), types);
+        }
         
+        if (newClass != null) {
+            //create method:
+            NewClassTree nct = (NewClassTree) newClass.getLeaf();
+            Element clazz = info.getTrees().getElement(new TreePath(newClass, nct.getIdentifier()));
+            
+            if (clazz == null || clazz.asType().getKind() == TypeKind.ERROR) {
+                //the class does not exist...
+                return Collections.<Fix>emptyList();
+            }
+            
+            if (nct.getClassBody() != null) {
+                return Collections.<Fix>emptyList();
+            }
+            
+            return prepareCreateMethodFix(info, newClass, modifiers, target, "<init>", nct.getArguments(), null);
+        }
+        
+        //field like:
+        List<Fix> result = new ArrayList<Fix>();
+
         Set<FixTypes> fixTypes = EnumSet.noneOf(FixTypes.class);
         List<? extends TypeMirror> types = resolveType(fixTypes, info, parent, errorPath.getLeaf(), offset);
-        
+
         if (types == null || types.isEmpty()) {
             return Collections.<Fix>emptyList();
         }
-        
+
         //XXX: should reasonably consider all the found type candidates, not only the one:
         TypeMirror type = types.get(0);
-        
+
         if (type == null || type.getKind() == TypeKind.VOID) {
             return Collections.<Fix>emptyList();
         }
-        
+
         //currently, we cannot handle error types, TYPEVARs and WILDCARDs:
         if (containsErrorsOrTypevarsRecursively(type)) {
             return Collections.<Fix>emptyList();
         }
-        
+
         if (fixTypes.contains(FixTypes.FIELD)) {
             result.add(new CreateFieldFix(info, simpleName, modifiers, target, type));
         }
-        
+
         if (allowLocalVariables && (fixTypes.contains(FixTypes.LOCAL) || types.contains(FixTypes.PARAM))) {
             ExecutableElement ee = null;
-            
+
             if (firstMethod != null) {
                 ee = (ExecutableElement) info.getTrees().getElement(firstMethod);
             }
-            
+
             if ((ee != null) && type != null) {
                 int identifierPos = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), errorPath.getLeaf());
                 if (ee != null && fixTypes.contains(FixTypes.PARAM))
@@ -251,6 +316,58 @@ public final class CreateElement implements ErrorRule<Void> {
         }
         
         return result;
+    }
+    
+    private static List<Fix> prepareCreateMethodFix(CompilationInfo info, TreePath invocation, Set<Modifier> modifiers, TypeElement target, String simpleName, List<? extends ExpressionTree> arguments, List<? extends TypeMirror> returnTypes) {
+        //create method:
+        List<TypeMirror> argumentTypes = new LinkedList<TypeMirror>();
+        List<String>     argumentNames = new LinkedList<String>();
+        Set<String>      usedArgumentNames = new HashSet<String>();
+        
+        for (ExpressionTree arg : arguments) {
+            TypeMirror tm = info.getTrees().getTypeMirror(new TreePath(invocation, arg));
+            
+            if (tm == null || containsErrorsOrTypevarsRecursively(tm)) {
+                return Collections.<Fix>emptyList();
+            }
+            
+            argumentTypes.add(tm);
+            
+            String proposedName = org.netbeans.modules.java.hints.errors.Utilities.getName(arg);
+            
+            if (proposedName == null) {
+                proposedName = org.netbeans.modules.java.hints.errors.Utilities.getName(tm);
+            }
+            
+            if (proposedName == null) {
+                proposedName = "arg";
+            }
+            
+            if (usedArgumentNames.contains(proposedName)) {
+                int num = 0;
+                
+                while (usedArgumentNames.contains(proposedName + num)) {
+                    num++;
+                }
+                
+                proposedName = proposedName + num;
+            }
+            
+            usedArgumentNames.add(proposedName);
+            
+            argumentNames.add(proposedName);
+        }
+        
+        //return type:
+        //XXX: should reasonably consider all the found type candidates, not only the one:
+        TypeMirror returnType = returnTypes != null ? returnTypes.get(0) : null;
+        
+        //currently, we cannot handle error types, TYPEVARs and WILDCARDs:
+        if (returnType != null && containsErrorsOrTypevarsRecursively(returnType)) {
+            return Collections.<Fix>emptyList();
+        }
+        
+        return Collections.<Fix>singletonList(new CreateMethodFix(info, simpleName, modifiers, target, returnType, argumentTypes, argumentNames));
     }
     
     public void cancel() {
@@ -354,6 +471,9 @@ public final class CreateElement implements ErrorRule<Void> {
             case SWITCH:
                 //TODO: should consider also values in the cases?:
                 return computePrimitiveType(types, info, ((SwitchTree) currentPath.getLeaf()).getExpression(), unresolved, TypeKind.INT);
+            case EXPRESSION_STATEMENT:
+                return Collections.singletonList(info.getTypes().getNoType(TypeKind.VOID));
+
             case RETURN:
                 return computeReturn(types, info, currentPath, unresolved, offset);
                 
@@ -409,7 +529,6 @@ public final class CreateElement implements ErrorRule<Void> {
             case CLASS:
             case COMPILATION_UNIT:
             case CONTINUE:
-            case EXPRESSION_STATEMENT:
             case IMPORT:
             case IDENTIFIER:
             case TYPE_CAST:
@@ -530,8 +649,8 @@ public final class CreateElement implements ErrorRule<Void> {
         //class or field:
         if (type == null) {
             if (ErrorHintsProvider.ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                ErrorHintsProvider.ERR.log(org.openide.ErrorManager.INFORMATIONAL,"offset=" + offset);
-                ErrorHintsProvider.ERR.log(org.openide.ErrorManager.INFORMATIONAL,"errorTree=" + error);
+                ErrorHintsProvider.ERR.log(ErrorManager.INFORMATIONAL, "offset=" + offset);
+                ErrorHintsProvider.ERR.log(ErrorManager.INFORMATIONAL, "errorTree=" + error);
                 ErrorHintsProvider.ERR.log(ErrorManager.INFORMATIONAL, "type=null");
             }
             
@@ -817,6 +936,183 @@ public final class CreateElement implements ErrorRule<Void> {
         String toDebugString(CompilationInfo info) {
             return "CreateFieldFix:" + name + ":" + target.getQualifiedName() + ":" + proposedType.resolve(info).toString() + ":" + modifiers;
         }
+    }
+    
+    static final class CreateMethodFix implements Fix {
+        
+        private FileObject targetFile;
+        private ElementHandle<TypeElement> target;
+        private TypeMirrorHandle returnType;
+        private List<TypeMirrorHandle> argumentTypes;
+        private List<String> argumentNames;
+        private ClasspathInfo cpInfo;
+        private Set<Modifier> modifiers;
+        
+        private String name;
+        private String inFQN;
+        private String methodDisplayName;
+        
+        public CreateMethodFix(CompilationInfo info, String name, Set<Modifier> modifiers, TypeElement target, TypeMirror returnType, List<TypeMirror> argumentTypes, List<String> argumentNames) {
+            this.name = name;
+            this.inFQN = target.getQualifiedName().toString();
+            this.cpInfo = info.getClasspathInfo();
+            this.modifiers = modifiers;
+            this.targetFile = SourceUtils.getFile(target, cpInfo);
+            this.target = ElementHandle.create(target);
+            if (returnType != null && returnType.getKind() == TypeKind.NULL) {
+                returnType = info.getElements().getTypeElement("java.lang.Object").asType();
+            }
+            this.returnType = returnType != null ? TypeMirrorHandle.create(returnType) : null;
+            this.argumentTypes = new ArrayList<TypeMirrorHandle>();
+            
+            for (TypeMirror tm : argumentTypes) {
+                this.argumentTypes.add(TypeMirrorHandle.create(tm));
+            }
+            
+            this.argumentNames = argumentNames;
+            
+            StringBuilder methodDisplayName = new StringBuilder();
+            
+            if (returnType != null) {
+                methodDisplayName.append(name);
+            } else {
+                methodDisplayName.append(target.getSimpleName().toString());
+            }
+            
+            methodDisplayName.append('(');
+            
+            boolean first = true;
+            
+            for (TypeMirror tm : argumentTypes) {
+                if (!first)
+                    methodDisplayName.append(',');
+                first = false;
+                methodDisplayName.append(org.netbeans.modules.editor.java.Utilities.getTypeName(tm, true));
+            }
+            
+            methodDisplayName.append(')');
+            
+            this.methodDisplayName = methodDisplayName.toString();
+        }
+        
+        public String getText() {
+            if (returnType != null) {
+                return "Create method " + methodDisplayName + " in " + inFQN;
+            } else {
+                return "Create constructor " + methodDisplayName + " in " + inFQN;
+            }
+        }
+        
+        public ChangeInfo implement() {
+            try {
+                //use the original cp-info so it is "sure" that the proposedType can be resolved:
+                JavaSource js = JavaSource.create(cpInfo, targetFile);
+                
+                js.runModificationTask(new CancellableTask<WorkingCopy>() {
+                    public void cancel() {
+                    }
+                    public void run(final WorkingCopy working) throws IOException {
+                        working.toPhase(Phase.RESOLVED);
+                        TypeElement targetType = target.resolve(working);
+                        
+                        if (targetType == null) {
+                            ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve target.");
+                            return;
+                        }
+                        
+                        ClassTree targetTree = working.getTrees().getTree(targetType);
+                        
+                        if (targetTree == null) {
+                            ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve target tree: " + targetType.getQualifiedName() + ".");
+                            return;
+                        }
+                        
+                        TypeMirrorHandle returnTypeHandle = CreateMethodFix.this.returnType;
+                        TypeMirror returnType = returnTypeHandle != null ? returnTypeHandle.resolve(working) : null;
+                        
+                        if (returnTypeHandle != null && returnType == null) {
+                            ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve proposed type.");
+                            return;
+                        }
+                        
+                        TreeMaker make = working.getTreeMaker();
+                        
+                        List<VariableTree>         argTypes = new ArrayList<VariableTree>();
+                        Iterator<TypeMirrorHandle> typeIt   = CreateMethodFix.this.argumentTypes.iterator();
+                        Iterator<String>           nameIt   = CreateMethodFix.this.argumentNames.iterator();
+                        
+                        while (typeIt.hasNext() && nameIt.hasNext()) {
+                            TypeMirrorHandle tmh = typeIt.next();
+                            String           argName = nameIt.next();
+                            
+                            argTypes.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), argName, make.Type(tmh.resolve(working)), null));
+                        }
+                        
+                        BlockTree body = createDefaultMethodBody(working, returnType);
+                        MethodTree mt = make.Method(make.Modifiers(modifiers), name, returnType != null ? make.Type(returnType) : null, Collections.<TypeParameterTree>emptyList(), argTypes, Collections.<ExpressionTree>emptyList(), body, null);
+                        ClassTree decl = GeneratorUtils.insertClassMember(working, targetTree, mt);
+                        
+                        working.rewrite(targetTree, decl);
+                    }
+                }).commit();
+            } catch (IOException e) {
+                throw (IllegalStateException) new IllegalStateException().initCause(e);
+            }
+            
+            return null;
+        }
+        
+        private void addArguments(CompilationInfo info, StringBuilder value) {
+            value.append("(");
+            
+            Iterator<TypeMirrorHandle> typeIt = CreateMethodFix.this.argumentTypes.iterator();
+            Iterator<String>           nameIt = CreateMethodFix.this.argumentNames.iterator();
+            boolean                    first  = true;
+            
+            while (typeIt.hasNext() && nameIt.hasNext()) {
+                if (!first) {
+                    value.append(",");
+                }
+                first = false;
+                
+                TypeMirrorHandle tmh = typeIt.next();
+                String           argName = nameIt.next();
+                
+                value.append(org.netbeans.modules.editor.java.Utilities.getTypeName(tmh.resolve(info), true));
+                value.append(' ');
+                value.append(argName);
+            }
+            
+            value.append(")");
+        }
+        
+        public String toDebugString(CompilationInfo info) {
+            StringBuilder value = new StringBuilder();
+            
+            if (returnType != null) {
+                value.append("CreateMethodFix:");
+                value.append(name);
+                addArguments(info, value);
+                value.append(org.netbeans.modules.editor.java.Utilities.getTypeName(returnType.resolve(info), true));
+            } else {
+                value.append("CreateConstructorFix:");
+                addArguments(info, value);
+            }
+            
+            return value.toString();
+        }
+    }
+    
+    //XXX should be moved into the GeneratorUtils:
+    private static BlockTree createDefaultMethodBody(WorkingCopy wc, TypeMirror returnType) {
+        TreeMaker make = wc.getTreeMaker();
+        List<StatementTree> blockStatements = new ArrayList<StatementTree>();
+        TypeElement uoe = wc.getElements().getTypeElement("java.lang.UnsupportedOperationException");
+        if (uoe != null) {
+            NewClassTree nue = make.NewClass(null, Collections.<ExpressionTree>emptyList(), make.QualIdent(uoe), Collections.singletonList(make.Literal("Not yet implemented")), null);
+            blockStatements.add(make.Throw(nue));
+        }
+        return make.Block(blockStatements, false);
     }
     
 }
