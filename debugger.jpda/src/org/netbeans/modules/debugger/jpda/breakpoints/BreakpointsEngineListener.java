@@ -120,19 +120,47 @@ implements PropertyChangeListener, DebuggerManagerListener {
     }
 
     public void breakpointAdded (final Breakpoint breakpoint) {
+        final boolean[] started = new boolean[] { false };
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                createBreakpointImpl (breakpoint);
+                synchronized (debugger.LOCK) {
+                    synchronized (started) {
+                        started[0] = true;
+                        started.notify();
+                    }
+                    createBreakpointImpl (breakpoint);
+                }
             }
         });
+        synchronized (started) {
+            if (!started[0]) {
+                try {
+                    started.wait();
+                } catch (InterruptedException iex) {}
+            }
+        }
     }    
 
     public void breakpointRemoved (final Breakpoint breakpoint) {
+        final boolean[] started = new boolean[] { false };
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                removeBreakpointImpl (breakpoint);
+                synchronized (debugger.LOCK) {
+                    synchronized (started) {
+                        started[0] = true;
+                        started.notify();
+                    }
+                    removeBreakpointImpl (breakpoint);
+                }
             }
         });
+        synchronized (started) {
+            if (!started[0]) {
+                try {
+                    started.wait();
+                } catch (InterruptedException iex) {}
+            }
+        }
     }
     
 
