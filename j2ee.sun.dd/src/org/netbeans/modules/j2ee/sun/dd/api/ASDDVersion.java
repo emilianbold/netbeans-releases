@@ -433,6 +433,27 @@ public final class ASDDVersion {
         return result;
     }
     
+    /** Retrieve the proper ASDDVersion object for the specified version (BigDecimal format).
+     */
+    public static final ASDDVersion getASDDVersionFromCmpMappingsVersion(BigDecimal version) {
+        ASDDVersion result = null;
+        
+        if(SUN_APPSERVER_7_0.getNumericCmpMappingsVersion().compareTo(version) == 0) {
+            result = SUN_APPSERVER_7_0;
+//        } else if(SUN_APPSERVER_7_1.getNumericCmpMappingsVersion().compareTo(version) == 0) {
+//            result = SUN_APPSERVER_7_1;
+        } else if(SUN_APPSERVER_8_0.getNumericCmpMappingsVersion().compareTo(version) == 0) {
+            result = SUN_APPSERVER_8_0;
+        } else if(SUN_APPSERVER_8_1.getNumericCmpMappingsVersion().compareTo(version) == 0) {
+            result = SUN_APPSERVER_8_1;
+        } else if(SUN_APPSERVER_9_0.getNumericCmpMappingsVersion().compareTo(version) == 0) {
+            result = SUN_APPSERVER_9_0;
+        }
+        
+        return result;
+    }
+    
+    
     /** Sun web app version as string, from DD API
      */
     public final String getWebAppVersionAsString() {

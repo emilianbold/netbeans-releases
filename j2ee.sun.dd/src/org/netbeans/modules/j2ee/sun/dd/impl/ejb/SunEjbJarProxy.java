@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.DDException;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
@@ -431,4 +432,9 @@ public class SunEjbJarProxy implements SunEjbJar, RootInterfaceImpl {
     public boolean hasOriginal() {
         return getOriginal() != null;
     }
+    
+    public ASDDVersion getASDDVersion() {
+        return ASDDVersion.getASDDVersionFromEjbVersion(getVersion());
+    }
+    
 }

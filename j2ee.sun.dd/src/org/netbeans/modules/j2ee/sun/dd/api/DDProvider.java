@@ -26,6 +26,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -549,8 +550,6 @@ public final class DDProvider {
     }
     
     // TODO this method will get refactored as I find new requirements...
-    
-    // TODO this method will get refactored as I find new requirements...
     // TODO RootInterfaceImpl not being related to RootInterface makes this code
     // rather messy.  Maybe we can fix that somehow?
     public void merge(RootInterface rootProxy, Reader reader) {
@@ -602,7 +601,21 @@ public final class DDProvider {
 //            rootProxyImpl.setError(new SAXParseException(null, null, ex));
         }
     }
-    
+
+    /**
+     * @param rootDD Graph to obtain the version for.
+     * @return ASDDVersion for the current graph or null if it cannot be determined.
+     */
+    public static ASDDVersion getASDDVersion(RootInterface rootDD) {
+        ASDDVersion version = null;
+        
+        if(rootDD instanceof RootInterfaceImpl) {
+            RootInterfaceImpl rootDDImpl = (RootInterfaceImpl) rootDD;
+            version = rootDDImpl.getASDDVersion();
+        }
+        
+        return version;
+    }
     
     private static class SunDDResolver implements EntityResolver {
         

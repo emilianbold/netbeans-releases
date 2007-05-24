@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.j2ee.sun.dd.impl;
 
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
 import org.xml.sax.SAXParseException;
 
@@ -79,5 +80,12 @@ public interface RootInterfaceImpl
      * @param pcl property change listener
      */
     public void removePropertyChangeListener(java.beans.PropertyChangeListener pcl);
+    
+    /** Get ASDDVersion object for the current graph, if any
+     * 
+     * @return ASDDVersion object for the dtd used by this graph or null if it
+     * cannot be determined.
+     */
+    public ASDDVersion getASDDVersion();
     
 }
