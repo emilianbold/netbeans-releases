@@ -112,7 +112,6 @@ public final class PropertiesNodesManager implements ActiveDocumentSupport.Liste
                 PropertiesNode node = new PropertiesNode(context.get(), component, context.get().getDataObject().getLookup());
                 ic.add(node);
                 nodesToRemove.add(node);
-                //node.updateNode();
             }
         }
     }
@@ -198,13 +197,25 @@ public final class PropertiesNodesManager implements ActiveDocumentSupport.Liste
         propertySupports.add(propertySupport);
     }
     
-    public void updatePropertyEditorsValues(Collection<DesignComponent> components) {
+    public void updatePropertyEditorsValues(DataEditorView view, Collection<DesignComponent> components) {
+         if (components == null)
+            return;
         for (DesignComponent component : components) {
             Set<DefaultPropertySupport> propertySupports = propertySupportMap.get(component);
             if (propertySupports == null)
                 return;
             for (DefaultPropertySupport ps : propertySupports) {
                 ps.update();
+            }
+        }
+        Collection<InstanceContent> tempIcs = new HashSet<InstanceContent>();
+        tempIcs.addAll(ics);
+        if (icMap.get(view) != null)
+            tempIcs.add(icMap.get(view));
+        for (InstanceContent ic : tempIcs) {
+            WeakSet<Node> nodesToRemove = nodesToRemoveMap.get(ic);
+            for (Node node : nodesToRemove) {
+                ((PropertiesNode)node).updateNode();
             }
         }
     }
