@@ -20,6 +20,7 @@
 package org.netbeans.modules.autoupdate.services;
 
 import org.netbeans.spi.autoupdate.CustomInstaller;
+import org.netbeans.spi.autoupdate.CustomUninstaller;
 
 /**
  *
@@ -30,13 +31,15 @@ public class UpdateItemDeploymentImpl {
     private Boolean isGlobal;
     private String targetCluster;
     private CustomInstaller installer;
+    private CustomUninstaller uninstaller;
     
     /** Creates a new instance of UpdateDeploymentImpl */
-    public UpdateItemDeploymentImpl (Boolean needsRestart, Boolean isGlobal, String targetCluster, CustomInstaller installer) {
+    public UpdateItemDeploymentImpl (Boolean needsRestart, Boolean isGlobal, String targetCluster, CustomInstaller installer, CustomUninstaller uninstaller) {
         this.needsRestart = needsRestart;
         this.isGlobal = isGlobal;
         this.targetCluster = targetCluster;
         this.installer = installer;
+        this.uninstaller = uninstaller;
     }
     
     public String getTargetCluster () {
@@ -53,5 +56,9 @@ public class UpdateItemDeploymentImpl {
     
     public CustomInstaller getCustomInstaller () {
         return installer;
+    }
+    
+    public CustomUninstaller getCustomUninstaller () {
+        return uninstaller;
     }
 }

@@ -13,207 +13,79 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.autoupdate.services;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.netbeans.modules.autoupdate.updateprovider.InstallInfo;
+import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
+import java.util.List;
+import org.netbeans.api.autoupdate.UpdateElement;
+import org.netbeans.api.autoupdate.UpdateManager;
+import org.netbeans.api.autoupdate.UpdateUnit;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Union2;
+
 /**
  *
  * @author Jiri Rechtacek
  */
-public class UpdateElementImpl extends Object {
-    private String codeName;
-    private String displayName;
-    private SpecificationVersion specVersion;
-    private String description;
-    private String source;
-    private String author;
-    private String homepage;
-    private int downloadSize;
-    private String category;
-    private InstallInfo installInfo;
-    private final Union2<? extends UpdateItemImpl,ModuleInfo> itemOrInfo;
-    private Boolean isModule;
-    private Logger log = null;
+public abstract class UpdateElementImpl extends Object {
+    private UpdateUnit unit;
+    private UpdateElement element;
     
-    /** Creates a new instance of ElementImpl */
-    public UpdateElementImpl (ModuleInfo info) {
-        codeName = info.getCodeNameBase();
-        displayName = info.getDisplayName ();
-        specVersion = info.getSpecificationVersion ();
-        description = (String) info.getLocalizedAttribute("OpenIDE-Module-Long-Description");
-        source = Utilities.readSourceFromUpdateTracking (info);
-        if (source == null) {
-            source = Utilities.getProductVersion ();
-        }
-        category = (String) info.getLocalizedAttribute ("OpenIDE-Module-Display-Category");
-        isModule = true;
-        itemOrInfo = Union2.createSecond(info);
-    }
-        
-    public UpdateElementImpl (ModuleItem impl, String providerName) {
-        codeName = impl.getCodeName ();
-        specVersion = new SpecificationVersion (impl.getSpecificationVersion ());
-        source = providerName;
-        installInfo = new InstallInfo (impl);
-        String dn = impl.getManifest ().getMainAttributes ().getValue ("OpenIDE-Module-Name");
-        if (dn == null) {
-            getLogger ().log (Level.WARNING, "Module " + codeName + " doesn't provider display name. Value of \"OpenIDE-Module-Name\" cannot be null.");
-        }
-        displayName = dn == null ? codeName : dn;
-        description = impl.getManifest ().getMainAttributes ().getValue ("OpenIDE-Module-Long-Description");
-        category = impl.getManifest ().getMainAttributes ().getValue ("OpenIDE-Module-Display-Category");
-        author = impl.getAuthor ();
-        downloadSize = impl.getDownloadSize ();
-        homepage = impl.getHomepage ();
-        this.isModule = true;
-        itemOrInfo = Union2.createFirst(impl);
+    public UpdateElementImpl (UpdateItemImpl item, String providerName) {}
+    
+    public UpdateUnit getUpdateUnit () {
+        return unit;
     }
     
-    public UpdateElementImpl (LocalizationItem impl, String providerName) {
-        codeName = impl.getCodeName ();
-        specVersion = new SpecificationVersion (impl.getSpecificationVersion ());
-        source = providerName;
-        installInfo = new InstallInfo (impl);
-        displayName = impl.getLocalizedModuleName ();
-        description = impl.getLocalizedModuleDescription ();
-        itemOrInfo = Union2.createFirst(impl);
+    public void setUpdateUnit (UpdateUnit unit) {
+        assert unit != null : "UpdateUnit cannot for " + this + " cannot be null.";
+        this.unit = unit;
     }
     
-    public UpdateElementImpl (FeatureItem impl, String providerName) {
-        codeName = impl.getCodeName ();
-        specVersion = new SpecificationVersion (impl.getSpecificationVersion ());
-        source = providerName;
-        installInfo = new InstallInfo (impl);
-        displayName = impl.getDisplayName ();
-        description = impl.getDescription ();
-        isModule = false;
-        itemOrInfo = Union2.createFirst(impl);
+    public UpdateElement getUpdateElement () {
+        return element;
     }
     
-    public UpdateElementImpl (NativeComponentItem impl, String providerName) {
-        codeName = impl.getCodeName ();
-        specVersion = new SpecificationVersion (impl.getSpecificationVersion ());
-        source = providerName;
-        installInfo = new InstallInfo (impl);
-        displayName = impl.getDisplayName ();
-        description = impl.getDescription ();
-        isModule = false;
-        itemOrInfo = Union2.createFirst(impl);
+    public void setUpdateElement (UpdateElement element) {
+        assert element != null : "UpdateElement cannot for " + this + " cannot be null.";
+        this.element = element;
     }
     
-    public String getCodeName () {
-        return codeName;
-    }
+    public abstract String getCodeName ();
     
-    public String getDisplayName () {
-        return displayName;
-    }
+    public abstract String getDisplayName ();
     
-    public SpecificationVersion getSpecificationVersion () {
-        return specVersion;
-    }
+    public abstract SpecificationVersion getSpecificationVersion ();
     
-    public String getDescription () {
-        return description;
-    }
+    public abstract String getDescription ();
     
-    public String getAuthor () {
-        return author;
-    }
+    public abstract String getAuthor ();
     
-    public String getHomepage () {
-        return homepage;
-    }
+    public abstract String getHomepage ();
     
-    public int getDownloadSize () {
-        return downloadSize;
-    }
+    public abstract int getDownloadSize ();
     
-    public String getSource () {
-        return source;
-    }
+    public abstract String getSource ();
     
-    public String getCategory () {
-        return category;
-    }
+    public abstract String getDate ();
     
-    public InstallInfo getInstallInfo () {
-        return installInfo;
-    }
+    public abstract String getCategory ();
     
-    public UpdateItemImpl getUpdateItemImpl () {
-        return itemOrInfo.hasFirst() ? itemOrInfo.first() : null;
-    }
+    public abstract boolean isEnabled ();
     
-    public ModuleInfo getModuleInfo () {
-        if (itemOrInfo.hasFirst()) {
-            UpdateItemImpl uImpl = itemOrInfo.first();
-            if (uImpl instanceof ModuleItem) {
-                return ((ModuleItem)uImpl).getModuleInfo();
-            }
-        } else if (itemOrInfo.hasSecond()) {
-            return itemOrInfo.second();
-        }
-        return null;
-    }
+    public abstract String getLicence ();
     
+    public abstract UpdateManager.TYPE getType ();
     
-    public boolean isModule () {
-        assert isModule != null;
-        return isModule;
-    }
-
-    public boolean isEnabled() {
-        ModuleInfo mInfo = getModuleInfo ();
-        return mInfo != null ? mInfo.isEnabled() : false;
-    }            
+    // XXX: try to rid of this
+    public abstract List<ModuleInfo> getModuleInfos ();
     
-    public boolean equals(Object obj) {
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        final UpdateElementImpl other = (UpdateElementImpl) obj;
-
-        if (this.specVersion != other.specVersion &&
-            (this.specVersion == null ||
-             !this.specVersion.equals(other.specVersion)))
-            return false;
-        if (this.codeName != other.codeName &&
-            (this.codeName == null || !this.codeName.equals(other.codeName)))
-            return false;
-        return true;
-    }
-
-    public int hashCode() {
-        int hash = 5;
-
-        hash = 61 * hash + (this.codeName != null ? this.codeName.hashCode()
-                                                  : 0);
-        hash = 61 * hash +
-               (this.specVersion != null ? this.specVersion.hashCode()
-                                         : 0);
-        return hash;
-    }
+    // XXX: try to rid of this
+    public abstract InstallInfo getInstallInfo ();
     
-    private Logger getLogger () {
-        if (log == null) {
-            log = Logger.getLogger (UpdateElementImpl.class.getName ());
-        }
-        return log;
-    }
-
-
-    
-    /*public boolean isAutomaticallyEnabled() {
-        return Utilities.isAutomaticallyEnabled(codeName);
-    }*/
 }

@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.autoupdate.services;
 
+import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.OperationContainer;
@@ -39,6 +40,11 @@ public abstract class Trampoline<Support> extends Object {
         try {
             java.lang.Class.forName(
                 UpdateUnit.class.getName(),
+                true,
+                Trampoline.class.getClassLoader()
+            );
+            java.lang.Class.forName(
+                UpdateItem.class.getName(),
                 true,
                 Trampoline.class.getClassLoader()
             );
@@ -69,4 +75,5 @@ public abstract class Trampoline<Support> extends Object {
 
     // spi.UpdateItem
     protected abstract UpdateItemImpl impl (UpdateItem item);
+    protected abstract UpdateItem createUpdateItem (UpdateItemImpl impl);
 }

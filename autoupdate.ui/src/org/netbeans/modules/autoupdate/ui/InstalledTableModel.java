@@ -22,6 +22,7 @@ package org.netbeans.modules.autoupdate.ui;
 import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.swing.table.JTableHeader;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.UpdateUnit;
@@ -31,9 +32,12 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Jiri Rechtacek
+ * @author Jiri Rechtacek, Radek Matous
  */
 public class InstalledTableModel extends UnitCategoryTableModel {
+    static final String STATE_ENABLED = NbBundle.getMessage(UpdateTableModel.class,"InstalledTableModel_State_Enabled");
+    static final String STATE_DISABLED = NbBundle.getMessage(UpdateTableModel.class,"InstalledTableModel_State_Disabled");
+            
     //just prevents from gc, do not delete
     private OperationContainer<OperationSupport> enableContainer = Containers.forEnable();
     private OperationContainer<OperationSupport> disableContainer = Containers.forDisable();
@@ -45,11 +49,20 @@ public class InstalledTableModel extends UnitCategoryTableModel {
     public InstalledTableModel(List<UpdateUnit> units) {
         setUnits(units);
     }
-    
+
     public final void setUnits (List<UpdateUnit> units) {    
         setData(Utilities.makeInstalledCategories (units));
     }
-                       
+
+    public String getToolTipText(int row, int col) { 
+        Unit.Installed u = (Unit.Installed)getUnitAtRow(row);
+        boolean isEnabled = u.getRelevantElement ().isEnabled ();
+        OperationContainer<OperationSupport> container = isEnabled ? Containers.forDisable() : Containers.forEnable();
+        return (col > 0 && u != null && u.isOperationAllowed(u.updateUnit, u.getRelevantElement(), container)) ? 
+            NbBundle.getMessage(UnitCategoryTableModel.class, "UnitTab_TooltipOthers_Text_INSTALLED", (String)getValueAt(row, 1)) //NOI18N
+                : super.getToolTipText(row, col);
+    }
+    
     @Override
     public void setValueAt (Object anValue, int row, int col) {
         super.setValueAt(anValue, row, col);
@@ -93,17 +106,25 @@ public class InstalledTableModel extends UnitCategoryTableModel {
                 res = u.getDisplayName();
                 break;
             case 2 :
-                res = u.getInstalledVersion();
-                break;
+                if (Utilities.modulesOnly ()) {
+                    res = u.getCategoryName ();
+                } else {
+                    res = u.getDisplayDate ();
+                }
+                break;                
             case 3 :
-                res = u.getBackupVersion();
-                break;
+                res = u.getRelevantElement ().isEnabled ();
+                break;                                
             case 4 :
-                res = u.getMyRating();
+                res = u.getInstalledVersion();
                 break;
             }
         }
         return res;
+    }
+
+    public int getColumnCount() {
+        return 4;
     }
     
     public Class getColumnClass(int c) {
@@ -115,15 +136,15 @@ public class InstalledTableModel extends UnitCategoryTableModel {
             break;
         case 1 :
             res = String.class;
-            break;
+            break;            
         case 2 :
             res = String.class;
             break;
         case 3 :
-            res = String.class;
+            res = Boolean.class;
             break;
         case 4 :
-            res = Integer.class;
+            res = String.class;
             break;
         }
         
@@ -137,31 +158,38 @@ public class InstalledTableModel extends UnitCategoryTableModel {
             return getBundle ("InstalledTableModel_Columns_Uninstall");
         case 1 :
             return getBundle ("InstalledTableModel_Columns_Name");
-        case 2 :
-            return getBundle ("InstalledTableModel_Columns_Installed");
+        case 2:
+            if (Utilities.modulesOnly ()) {
+                return getBundle ("InstalledTableModel_Columns_Category");            
+            } else {
+                return getBundle ("InstalledTableModel_Columns_InstallDate");
+            }
         case 3 :
-            return getBundle ("InstalledTableModel_Columns_Previous");
+            return getBundle ("InstalledTableModel_Columns_Enabled");                        
         case 4 :
-            return getBundle ("InstalledTableModel_Columns_MyRating");
+            return getBundle ("InstalledTableModel_Columns_Installed");
         }
         
         assert false;
         return super.getColumnName( column );
     }
-    
+
     @Override
-    public boolean isCellEditable (int row, int col) {
-        if (! isCategoryAtRow (row)) {
-            if (col == 1) { // XXX
-                Unit.Installed u = (Unit.Installed) getUnitAtRow (row);
-                return u.isUninstallAllowed ();
-            } else if (col == 0) {
-                Unit.Installed u = (Unit.Installed) getUnitAtRow (row);
-                return u.isUninstallAllowed ();
-            }
-        }
-        return super.isCellEditable (row, col);
+    public int getMinWidth(JTableHeader header, int col) {
+        return super.getMinWidth(header, col);
     }
+    
+    
+    public int getPreferredWidth(JTableHeader header, int col) {
+        switch (col) {
+        case 1:
+            return super.getMinWidth(header, col)*4;
+        case 2:
+            return super.getMinWidth(header, col)*2;
+        }
+        return super.getMinWidth(header, col);
+    }
+    
     
     public Type getType() {
         return UnitCategoryTableModel.Type.INSTALLED;
@@ -169,9 +197,7 @@ public class InstalledTableModel extends UnitCategoryTableModel {
 
     public boolean isSortAllowed(Object columnIdentifier) {
         boolean isUninstall = getColumnName(0).equals(columnIdentifier);
-        boolean isPrevious = getColumnName(3).equals(columnIdentifier);                        
-        boolean isRating = getColumnName(4).equals(columnIdentifier);                
-        return isUninstall || isPrevious || isRating ? false : true;
+        return isUninstall ? false : true;
     }
 
     protected Comparator<Unit> getComparator(final Object columnIdentifier, final boolean sortAscending) {
@@ -184,16 +210,21 @@ public class InstalledTableModel extends UnitCategoryTableModel {
                 } else if (getColumnName(1).equals(columnIdentifier)) {
                     return Unit.compareDisplayNames(unit1, unit2);
                 } else if (getColumnName(2).equals(columnIdentifier)) {
-                    return Unit.Installed.compareInstalledVersions(unit1, unit2);
+                    if (Utilities.modulesOnly ()) {
+                        return Unit.compareCategories(unit1, unit2);
+                    } else {
+                        return Unit.compareSimpleFormatDates (unit1, unit2);
+                    }
                 } else if (getColumnName(3).equals(columnIdentifier)) {
-                    assert false : columnIdentifier.toString();
+                    return Unit.Installed.compareEnabledState(unit1, unit2);
                 } else if (getColumnName(4).equals(columnIdentifier)) {
-                    assert false : columnIdentifier.toString();
-                }                
+                    return Unit.Installed.compareInstalledVersions(unit1, unit2);
+                }                 
                 return 0;
             }
         };
     }
+
 
     public OperationContainer getContainer() {
         return uninstallContainer;
@@ -202,4 +233,11 @@ public class InstalledTableModel extends UnitCategoryTableModel {
     private String getBundle (String key) {
         return NbBundle.getMessage (this.getClass (), key);
     }
+
+    @Override
+    public boolean isCellEditable(int row, int col) {
+        Unit.Installed u = (Unit.Installed)getUnitAtRow(row);
+        return (col == 0) ? u != null && u.isDefaultOperationAllowed() : super.isCellEditable(row, col);
+    }
+
 }

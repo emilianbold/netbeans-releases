@@ -13,31 +13,29 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.autoupdate.services;
 
+import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleProvider;
 import java.util.logging.Logger;
-import org.netbeans.Module;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.RequestProcessor;
 import org.openide.xml.XMLUtil;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.updater.UpdateTracking;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
-import org.openide.util.Exceptions;
+import org.openide.modules.ModuleInfo;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -63,64 +61,65 @@ public final class ModuleDeleterImpl  {
     private static final String ATTR_LAST = "last"; // NOI18N
     private static final String ATTR_FILE_NAME = "name"; // NOI18N
     private static final boolean ONLY_FROM_AUTOUPDATE = false;
-    private static final int TIME_TO_CHECK = 2000;
-    private static final int MAX_CHECKS_OF_STATE = 50;
-    private static final int HOLD_ON_PROPAGATE_DISABLE = 1000;
     
-    private Logger err = Logger.getLogger("org.netbeans.modules.autoupdate.catalog.ModuleDeleterImpl"); // NOI18N
+    private Logger err = Logger.getLogger ("org.netbeans.modules.autoupdate.services"); // NOI18N
     
     public static ModuleDeleterImpl getInstance() {
         return INSTANCE;
     }
     
-    public boolean canDelete (Module module) {
-        if (module.isFixed ()) {
+    public boolean canDelete (ModuleInfo moduleInfo) {
+        if (moduleInfo == null) { // XXX: how null moduleInfo?
+            return false;
+        }
+        if (Utilities.isFixed (moduleInfo)) {
             err.log(Level.FINE,
                     "Cannot delete module because module " +
-                    module.getCodeName() + " isFixed.");
+                    moduleInfo.getCodeName() + " isFixed.");
         }
-        return isUninstallAllowed (module) && findUpdateTracking (module, ONLY_FROM_AUTOUPDATE);
+        return isUninstallAllowed (moduleInfo) && findUpdateTracking (moduleInfo, ONLY_FROM_AUTOUPDATE);
     }
     
-    private static boolean isUninstallAllowed(final Module m) {
-        return ! (m.isFixed ());
+    private static boolean isUninstallAllowed(final ModuleInfo m) {
+        return ! (Utilities.isFixed (m));
     }
     
-    public void delete (final Module[] modules) throws IOException {
+    public void delete (final ModuleInfo[] modules) throws IOException {
         if (modules == null) {
-            throw new IllegalArgumentException ("Module argument cannot be null.");
+            throw new IllegalArgumentException ("ModuleInfo argument cannot be null.");
         }
         
-        for (Module module : modules) {
-            err.log(Level.FINE,"Locate and remove config file of " + module.getCodeNameBase ());           
-            removeControlModuleFile(module);
+        for (ModuleInfo moduleInfo : modules) {
+            err.log(Level.FINE,"Locate and remove config file of " + moduleInfo.getCodeNameBase ());           
+            removeControlModuleFile(moduleInfo);
         }
 
         new HackModuleListRefresher().run();
         int rerunWaitCount = 0;
-        for (Module module : modules) {
-            err.log(Level.FINE,"Locate and remove config file of " + module.getCodeNameBase ());                       
-            for (; rerunWaitCount < 100 && !isModuleUninstalled(module) ;rerunWaitCount++) {
+        for (ModuleInfo moduleInfo : modules) {
+            err.log(Level.FINE,"Locate and remove config file of " + moduleInfo.getCodeNameBase ());                       
+            for (; rerunWaitCount < 100 && !isModuleUninstalled(moduleInfo) ;rerunWaitCount++) {
                 try {
                     Thread.currentThread().sleep(100);
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
                 }
             }
-            removeModuleFiles(module); 
+            removeModuleFiles(moduleInfo); 
         }
     }
     
-    private boolean isModuleUninstalled(Module module) {
-        return (!module.isEnabled() && !module.isValid () && (ModuleProvider.getInstalledModules().get(module.getCodeNameBase()) == null));
+    private boolean isModuleUninstalled(ModuleInfo moduleInfo) {
+        return (!moduleInfo.isEnabled() && Utilities.isValid(moduleInfo) &&
+                (InstalledModuleProvider.getInstalledModules().get(moduleInfo.getCodeNameBase()) == null));
     }
 
-    private File locateControlFile (Module m) {
+    private File locateControlFile (ModuleInfo m) {
         String configFile = "config" + '/' + "Modules" + '/' + m.getCodeNameBase ().replace ('.', '-') + ".xml"; // NOI18N
         return InstalledFileLocator.getDefault ().locate (configFile, m.getCodeNameBase (), false);
     }
     
-    private void removeControlModuleFile (Module m) throws IOException {
+    private void removeControlModuleFile (ModuleInfo m) throws IOException {
         File configFile = null;
         while ((configFile = locateControlFile (m)) != null) {
             if (configFile != null && configFile.exists ()) {
@@ -134,14 +133,14 @@ public final class ModuleDeleterImpl  {
         }
     }
     
-    private boolean findUpdateTracking (Module module, boolean checkIfFromAutoupdate) {
-        File updateTracking = Utilities.locateUpdateTracking (module);
+    private boolean findUpdateTracking (ModuleInfo moduleInfo, boolean checkIfFromAutoupdate) {
+        File updateTracking = Utilities.locateUpdateTracking (moduleInfo);
         if (updateTracking != null && updateTracking.exists ()) {
             //err.log ("Find UPDATE_TRACKING: " + updateTracking + " found.");
             // check the write permission
             if (! updateTracking.getParentFile ().canWrite ()) {
                 err.log(Level.FINE,
-                        "Cannot delete module " + module.getCodeName() +
+                        "Cannot delete module " + moduleInfo.getCodeName() +
                         " because no write permission to directory " +
                         updateTracking.getParent());
                 return false;
@@ -149,7 +148,7 @@ public final class ModuleDeleterImpl  {
             if (checkIfFromAutoupdate) {
                 boolean isFromAutoupdate = fromAutoupdate (getModuleConfiguration (updateTracking));
                 err.log(Level.FINE,
-                        "Is Module " + module.getCodeName() +
+                        "Is ModuleInfo " + moduleInfo.getCodeName() +
                         " installed by AutoUpdate? " + isFromAutoupdate);
                 return isFromAutoupdate;
             } else {
@@ -157,7 +156,7 @@ public final class ModuleDeleterImpl  {
             }
         } else {
             err.log(Level.FINE,
-                    "Cannot delete module " + module.getCodeName() +
+                    "Cannot delete module " + moduleInfo.getCodeName() +
                     " because no update_tracking file found.");
             return false;
         }
@@ -170,7 +169,7 @@ public final class ModuleDeleterImpl  {
         return UpdateTracking.UPDATER_ORIGIN.equals (origin);
     }
     
-    private void removeModuleFiles (Module m) throws IOException {
+    private void removeModuleFiles (ModuleInfo m) throws IOException {
         err.log (Level.FINE, "Entry removing files of module " + m);
         File updateTracking = null;
         while ((updateTracking = Utilities.locateUpdateTracking (m)) != null) {
@@ -179,21 +178,19 @@ public final class ModuleDeleterImpl  {
         err.log (Level.FINE, "Exit removing files of module " + m);
     }
     
-    private void removeModuleFilesInCluster (Module module, File updateTracking) throws IOException {
+    private void removeModuleFilesInCluster (ModuleInfo moduleInfo, File updateTracking) throws IOException {
         err.log(Level.FINE, "Read update_tracking " + updateTracking + " file.");
-        Set/*<String>*/ moduleFiles = readModuleFiles (getModuleConfiguration (updateTracking));
-        String configFile = "config" + '/' + "Modules" + '/' + module.getCodeNameBase ().replace ('.', '-') + ".xml"; // NOI18N
+        Set<String> moduleFiles = readModuleFiles (getModuleConfiguration (updateTracking));
+        String configFile = "config" + '/' + "Modules" + '/' + moduleInfo.getCodeNameBase ().replace ('.', '-') + ".xml"; // NOI18N
         if (moduleFiles.contains (configFile)) {
-            File file = InstalledFileLocator.getDefault ().locate (configFile, module.getCodeNameBase (), false);
+            File file = InstalledFileLocator.getDefault ().locate (configFile, moduleInfo.getCodeNameBase (), false);
             assert file == null || ! file.exists () : "Config file " + configFile + " must be already removed.";
         }
-        Iterator it = moduleFiles.iterator ();
-        while (it.hasNext ()) {
-            String fileName = (String) it.next ();
+        for (String fileName : moduleFiles) {
             if (fileName.equals (configFile)) {
                 continue;
             }
-            File file = InstalledFileLocator.getDefault ().locate (fileName, module.getCodeNameBase (), false);
+            File file = InstalledFileLocator.getDefault ().locate (fileName, moduleInfo.getCodeNameBase (), false);
             if (file.equals (updateTracking)) {
                 continue;
             }
@@ -293,38 +290,6 @@ public final class ModuleDeleterImpl  {
         return files;
     }
 
-    private class ModuleStateChecker implements Runnable {
-        RequestProcessor.Task cleaner;
-        Module m;
-        int checks;
-        public ModuleStateChecker (Module module, RequestProcessor.Task filesCleaner) {
-            cleaner = filesCleaner;
-            m = module;
-            checks = 0;
-        }
-        
-        public void run () {
-            checks ++;
-            if (m.isEnabled () && m.isValid ()) {
-                if (checks < MAX_CHECKS_OF_STATE) {
-                    err.log(Level.FINE,
-                            "Module " + m.getCodeNameBase() +
-                            " is still valid, repost later.");
-                    RequestProcessor.getDefault ().post (this, TIME_TO_CHECK);
-                } else {
-                    err.log(Level.FINE,
-                            "Warning: Module " + m.getCodeNameBase() +
-                            " is still valid but time-out. Task is terminated.");
-                }
-                return ;
-            }
-            
-            // post clean task
-            cleaner.schedule (HOLD_ON_PROPAGATE_DISABLE);
-        }
-        
-    }
-    
     private class HackModuleListRefresher implements Runnable {
         public void run () {
             // XXX: the modules list should be delete automatically when config/Modules/module.xml is removed

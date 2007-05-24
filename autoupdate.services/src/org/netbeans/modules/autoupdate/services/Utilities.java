@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.autoupdate.services;
 
+import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
+import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleProvider;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -28,10 +30,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.KeyStore;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -42,10 +46,12 @@ import java.util.logging.Logger;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.api.autoupdate.UpdateElement;
+import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.core.startup.Main;
 import org.netbeans.core.startup.TopLogging;
 import org.netbeans.spi.autoupdate.KeyStoreProvider;
+import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.updater.ModuleUpdater;
 import org.netbeans.updater.UpdateTracking;
 import org.openide.filesystems.FileUtil;
@@ -76,6 +82,7 @@ public class Utilities {
     public static final String FILE_SEPARATOR = System.getProperty("file.separator");
     public static final String DOWNLOAD_DIR = UPDATE_DIR + FILE_SEPARATOR + "download"; // NOI18N
     public static final String NBM_EXTENTSION = ".nbm";
+    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat ("yyyy/MM/dd"); // NOI18N
     
     private static Lookup.Result<KeyStoreProvider> result;
     private static Logger err = null;
@@ -235,12 +242,51 @@ public class Utilities {
         return res;
     }
     
+    public static Date readInstallTimeFromUpdateTracking (ModuleInfo m) {
+        Date res = null;
+        String time = null;
+        File ut = locateUpdateTracking (m);
+        if (ut != null) {
+            Node n = getModuleConfiguration (ut);
+            if (n != null) {
+                Node attrInstallTime = n.getAttributes ().getNamedItem (UpdateTracking.ATTR_INSTALL);
+                assert attrInstallTime != null : "ELEMENT_VERSION must contain ATTR_INSTALL attribute.";
+                time = attrInstallTime.getNodeValue ();
+            }
+        }
+        if (time != null) {
+            try {
+                long lTime = Long.parseLong (time);
+                res = new Date (lTime);
+            } catch (NumberFormatException nfe) {
+                getLogger ().log (Level.INFO, nfe.getMessage (), nfe);
+            }
+        }
+        return res;
+    }
+    
     static Module toModule(UpdateUnit uUnit) {
         return getModuleInstance(uUnit.getCodeName(), null); // XXX
     }
     
     public static Module toModule(String codeNameBase, String specificationVersion) {
         return getModuleInstance(codeNameBase, specificationVersion);
+    }
+    
+    public static Module toModule (ModuleInfo info) {
+        return getModuleInstance (info.getCodeNameBase(), info.getSpecificationVersion ().toString ());
+    }
+    
+    public static boolean isFixed (ModuleInfo info) {
+        Module m = toModule (info);
+        assert ! info.isEnabled () || m != null : "Module found for enabled " + info;
+        return m == null ? false : m.isFixed ();
+    }
+    
+    public static boolean isValid (ModuleInfo info) {
+        Module m = toModule (info);
+        assert ! info.isEnabled () || m != null : "Module found for enabled " + info;
+        return m == null ? false : m.isValid ();
     }
     
     static UpdateUnit toUpdateUnit(Module m) {
@@ -253,7 +299,7 @@ public class Utilities {
     
     private static Set<Dependency> takeDependencies(UpdateElement el) {
         UpdateElementImpl i = Trampoline.API.impl(el);
-        assert i.isModule() : "Only for UpdateElement for modules.";
+        assert UpdateManager.TYPE.MODULE == i.getType () : "Only for UpdateElement for modules.";
         return takeModuleInfo (el).getDependencies();
     }
     
@@ -267,16 +313,18 @@ public class Utilities {
                     // it's Ok, no module is required
                 } else {
                     // find corresponding UpdateUnit
-                    for (UpdateUnit unit : UpdateManagerImpl.getInstance ().getUpdateUnits ()) {
+                    for (UpdateUnit unit : UpdateManagerImpl.getInstance ().getUpdateUnits (UpdateManager.TYPE.MODULE)) {
                         assert unit != null : "UpdateUnit for " + info.getCodeName() + " found.";
                         // find correct UpdateElement
                         // installed module can ignore here
                         if (unit.getAvailableUpdates ().size () > 0) {
                             for (UpdateElement el : unit.getAvailableUpdates ()) {
                                 UpdateElementImpl impl = Trampoline.API.impl (el);
-                                ModuleInfo moduleInfo = impl.getModuleInfo ();
-                                if (Arrays.asList (moduleInfo.getProvides ()).contains (dep.getName ())) {
-                                    return el;
+                                List<ModuleInfo> moduleInfos = impl.getModuleInfos ();
+                                for (ModuleInfo moduleInfo : moduleInfos) {
+                                    if (Arrays.asList (moduleInfo.getProvides ()).contains (dep.getName ())) {
+                                        return el;
+                                    }
                                 }
                                 break;
                             }
@@ -297,26 +345,29 @@ public class Utilities {
                     // check if version match
                     UpdateElement installedEl = unit.getInstalled ();
                     UpdateElementImpl installedElImpl = Trampoline.API.impl(installedEl);
-                    ModuleInfo installedModuleInfo = installedElImpl.getModuleInfo ();
-
-                    if (DependencyChecker.checkDependencyModule (dep, installedModuleInfo)) {
-                        return null;
+                    List<ModuleInfo> installedModuleInfos = installedElImpl.getModuleInfos ();
+                    for (ModuleInfo installedModuleInfo : installedModuleInfos) {
+                        if (DependencyChecker.checkDependencyModule (dep, installedModuleInfo)) {
+                            return null;
+                        }
                     }
+
                 }
 
                 // find available modules
                 List<UpdateElement> elements = unit.getAvailableUpdates();
                 for (UpdateElement el : elements) {
                     UpdateElementImpl impl = Trampoline.API.impl(el);
-                    if (impl.isModule()) {
-                        ModuleItem m = (ModuleItem) impl.getUpdateItemImpl ();
-                        if (DependencyChecker.checkDependencyModule(dep, m.getModuleInfo())) {
+                    if (UpdateManager.TYPE.MODULE == impl.getType ()) {
+                        ModuleInfo moduleInfo = impl.getModuleInfos ().get (0);
+                        if (DependencyChecker.checkDependencyModule (dep, moduleInfo)) {
                             return el;
                         }
                     } else {
                         // XXX: maybe useful later, now I don't need it
-                        FeatureItem i = (FeatureItem) impl.getUpdateItemImpl();
-                        i.getDependenciesToModules();
+                        assert false : "Not implemented yet.";
+                        //FeatureItem i = (FeatureItem) impl.getUpdateItemImpl();
+                        //i.getDependenciesToModules();
                     }
                 }
 
@@ -335,15 +386,15 @@ public class Utilities {
         return null;
     }
     
-    private static List<UpdateElement> findRequiredModules(Set<Dependency> deps, List<ModuleInfo> installedModules) {
-        List<UpdateElement> requiredElements = new ArrayList<UpdateElement> ();
+    private static Set<UpdateElement> findRequiredModules(Set<Dependency> deps, List<ModuleInfo> installedModules) {
+        Set<UpdateElement> requiredElements = new HashSet<UpdateElement> ();
         for (Dependency dep : deps) {
             UpdateElement el = findRequiredModule (dep, installedModules);
             if (el != null) {
                 UpdateElementImpl elImpl = Trampoline.API.impl(el);
-                ModuleInfo mInfo = elImpl.getModuleInfo();
-                assert mInfo != null;
-                if (!installedModules.contains(mInfo)) {
+                List<ModuleInfo> mInfos = elImpl.getModuleInfos ();
+                assert mInfos != null;
+                if (!installedModules.containsAll (mInfos)) {
                     requiredElements.add(el);
                     installedModules.add(takeModuleInfo(el));
         }
@@ -358,23 +409,29 @@ public class Utilities {
     }
     
     private static List<ModuleInfo> getInstalledModules() {
-        return new ArrayList<ModuleInfo> (ModuleProvider.getInstalledModules().values());
+        return new ArrayList<ModuleInfo> (InstalledModuleProvider.getInstalledModules().values());
     }
     
-    public static List<UpdateElement> findRequiredModules(UpdateElement element, List<ModuleInfo> infos) {
+    public static Set<UpdateElement> findRequiredUpdateElements (UpdateElement element, List<ModuleInfo> infos) {
         UpdateElementImpl el = Trampoline.API.impl(element);
-        List<UpdateElement> retval = new ArrayList<UpdateElement> ();
-        if (el.getUpdateItemImpl() instanceof ModuleItem) {
-            ModuleItem moduleEl = (ModuleItem) el.getUpdateItemImpl();
-            final Set<Dependency> deps = moduleEl.getModuleInfo().getDependencies();
-            final List<ModuleInfo> extendedModules = getInstalledModules();
-            extendedModules.addAll(infos);
-            final Set<Dependency> brokenDeps = DependencyChecker.findBrokenDependencies(deps, extendedModules);
-            retval = findRequiredModules(brokenDeps, extendedModules);
-        }  else {
-            assert false : "Not implement for item " + el.getUpdateItemImpl().getClass();
+        Set<UpdateElement> retval = new HashSet<UpdateElement> ();
+        switch (el.getType ()) {
+        case MODULE :
+            final Set<Dependency> deps = el.getModuleInfos ().get (0).getDependencies ();
+            final List<ModuleInfo> extendedModules = getInstalledModules ();
+            extendedModules.addAll (infos);
+            final Set<Dependency> brokenDeps = DependencyChecker.findBrokenDependencies (deps, extendedModules);
+            retval = findRequiredModules (brokenDeps, extendedModules);
+            break;
+        case FEATURE :
+            FeatureUpdateElementImpl feature = (FeatureUpdateElementImpl) el;
+            for (ModuleUpdateElementImpl module : feature.getContainedModuleElements ()) {
+                retval.addAll (findRequiredUpdateElements (module.getUpdateElement (), infos));
+            }
+            break;
+        default:
+            assert false : "Not implement for type " + el.getType () + " of UpdateElement " + el;
         }
-        Collections.reverse(retval);
         return retval;
     }
     
@@ -382,20 +439,25 @@ public class Utilities {
         UpdateElementImpl el = Trampoline.API.impl (element);
         assert el != null : "UpdateElementImpl found for UpdateElement " + element;
         Set<Dependency> retval = Collections.emptySet ();
-        ModuleInfo info = null;
-        // build of installed Module
-        if (el.getUpdateItemImpl () == null) {
-            info = el.getModuleInfo ();
-        } else if (el.getUpdateItemImpl () instanceof ModuleItem) {
-            info = el.getModuleInfo ();
-        }  else {
-            assert false : "Not implement for item " + el.getUpdateItemImpl().getClass();
+        List<ModuleInfo> mInfos = null;
+        switch (el.getType ()) {
+        case MODULE :
+            mInfos = el.getModuleInfos ();
+            break;
+        case FEATURE :
+            mInfos = el.getModuleInfos ();
+            break;
+        default:
+            assert false : "Upsupported for " + element + "[impl: " + el.getClass() + "]";
         }
-        final Set<Dependency> deps = info.getDependencies();
+        final Set<Dependency> deps = new HashSet<Dependency> ();
+        for (ModuleInfo info : mInfos) {
+            deps.addAll (info.getDependencies ());
+        }
         List<ModuleInfo> extendedModules = getInstalledModules();
         extendedModules.addAll(infos);
         final Set<Dependency> brokenDeps = DependencyChecker.findBrokenDependencies(deps, extendedModules);
-        List<UpdateElement> reqs = findRequiredModules(brokenDeps, extendedModules);
+        Set<UpdateElement> reqs = findRequiredModules(brokenDeps, extendedModules);
         extendedModules.addAll (getModuleInfos (reqs));
         retval = DependencyChecker.findBrokenDependencies(deps, extendedModules);
         return retval;
@@ -414,7 +476,7 @@ public class Utilities {
         List<ModuleInfo> infos = new ArrayList<ModuleInfo> (elements.size ());
         for (UpdateElement el : elements) {
             UpdateElementImpl impl = Trampoline.API.impl (el);
-            infos.add (impl.getModuleInfo ());
+            infos.addAll (impl.getModuleInfos ());
         }
         return infos;
     }
@@ -441,14 +503,10 @@ public class Utilities {
         return m != null ? (m.isAutoload() || m.isEager() || m.isFixed()) : false;
     }
     
-    private static ModuleInfo takeModuleInfo(UpdateElement el) {
-        UpdateElementImpl i = Trampoline.API.impl(el);
-        assert i.isModule() : "Only for UpdateElement for modules.";
-        if ((ModuleItem) i.getUpdateItemImpl () == null) {
-            return i.getModuleInfo ();
-        } else {
-            return ((ModuleItem) i.getUpdateItemImpl ()).getModuleInfo();
-        }
+    public static ModuleInfo takeModuleInfo (UpdateElement el) {
+        UpdateElementImpl impl = Trampoline.API.impl (el);
+        assert impl instanceof ModuleUpdateElementImpl;
+        return ((ModuleUpdateElementImpl) impl).getModuleInfo ();
     }
     
     public static String getProductVersion () {
@@ -558,10 +616,37 @@ public class Utilities {
 
     }
     
+    public static UpdateItem createUpdateItem (UpdateItemImpl impl) {
+        assert Trampoline.SPI != null;
+        return Trampoline.SPI.createUpdateItem (impl);
+    }
+    
+    public static UpdateItemImpl getUpdateItemImpl (UpdateItem item) {
+        assert Trampoline.SPI != null;
+        return Trampoline.SPI.impl (item);
+    }
+    
+    public static boolean canDisable (Module m) {
+            return m != null && m.isEnabled () && !m.isFixed () && !m.isAutoload () && !m.isEager ();
+    }
+    
+    public static boolean canEnable (Module m) {
+            return m != null && !m.isEnabled () && !m.isFixed () && !m.isAutoload () && !m.isEager ();
+    }
+    
+    public static boolean isElementInstalled (UpdateElement el) {
+        assert el != null : "Invalid call isElementInstalled with null parameter.";
+        if (el == null) {
+            return false;
+        }
+        return el.equals (el.getUpdateUnit ().getInstalled ());
+    }
+    
     private static Logger getLogger () {
         if (err == null) {
             err = Logger.getLogger (Utilities.class.getName ());
         }
         return err;
     }
+
 }

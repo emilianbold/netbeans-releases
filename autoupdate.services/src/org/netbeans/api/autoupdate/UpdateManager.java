@@ -29,6 +29,13 @@ import org.netbeans.modules.autoupdate.services.UpdateManagerImpl;
  * @author Jiri Rechtacek(jrechtacek@netbeans.org), Radek Matous 
  */
 public final class UpdateManager {
+    
+    public static enum TYPE {
+        MODULE,
+        FEATURE,
+        NATIVE_COMPONENT,
+        LOCALIZATION
+    }
         
     /**
      * Creates a new instance of UpdateManager
@@ -48,7 +55,7 @@ public final class UpdateManager {
         return mgr;
     }
     
-
+        
     /** Returns <code>java.util.List</code> of <code>UpdateUnit</code> build on the top of 
      * <code>UpdateUnitProvider</code>. Only enabled providers are taken in the result.
      * 
@@ -56,6 +63,17 @@ public final class UpdateManager {
      */
     public List<UpdateUnit> getUpdateUnits () {
         return getImpl().getUpdateUnits ();
+    }
+                
+    /** Returns <code>java.util.List</code> of <code>UpdateUnit</code> build on the top of 
+     * <code>UpdateUnitProvider</code>. Only enabled providers are taken in the result.
+     * 
+     * @param types returns <code>UpdateUnit</code>s contain only given types, e.g. modules for <code>MODULE</code> type.
+     * If types is <code>null</code> or null then returns default types
+     * @return list of UpdateUnit
+     */
+    public List<UpdateUnit> getUpdateUnits (TYPE... types) {
+        return getImpl().getUpdateUnits (types);
     }
                 
     private static UpdateManagerImpl getImpl() {

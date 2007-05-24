@@ -13,12 +13,13 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.autoupdate.services;
 
+import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleProvider;
 import java.util.Map;
 
 import org.netbeans.junit.NbTestCase;
@@ -35,8 +36,9 @@ public class ModuleProviderTest extends NbTestCase {
     }
     
     public void testGetModules () {
-        Map<String, ModuleInfo> map = ModuleProvider.getInstalledModules ();
+        Map<String, ModuleInfo> map = InstalledModuleProvider.getInstalledModules ();
         assertNotNull ("Some modules found.", map);
+        assertFalse ("Some modules, not empty", map.isEmpty ());
     }
     
 }

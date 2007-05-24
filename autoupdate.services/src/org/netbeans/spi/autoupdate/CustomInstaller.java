@@ -19,8 +19,8 @@
 
 package org.netbeans.spi.autoupdate;
 
-import java.io.File;
 import org.netbeans.api.autoupdate.OperationException;
+import org.netbeans.api.progress.ProgressHandle;
 
 /** The call-back interface which is called from Autoupdate infrastructure when
  * the native component is installed.
@@ -31,12 +31,12 @@ public interface CustomInstaller {
 
     /**
      * 
-     * @param item <code>UpdateItem</code> being installed
-     * @param download <code>java.io.File</code> what was downloaded before
+     * @param codeName code name of the native component
+     * @param specificationVersion specification version of component
      * @param handle ProgressHandle
      * @return true if the installation succeed
      * @throws org.netbeans.api.autoupdate.OperationException 
      */
-    public boolean install (UpdateItem item, File download) throws OperationException;
+    public boolean install (String codeName, String specificationVersion, ProgressHandle handle) throws OperationException;
     
 }

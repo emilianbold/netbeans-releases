@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,6 +24,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
@@ -31,9 +32,13 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleItem;
+import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
+import org.netbeans.modules.autoupdate.services.Utilities;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateLicense;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.ModuleInfo;
 import org.openide.util.Exceptions;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
@@ -55,14 +60,14 @@ public abstract class SimpleItem {
         declaratingNode = node;
     }
     
-    public abstract UpdateItem toUpdateItem (Map<String, String> licenses);
+    public abstract UpdateItem toUpdateItem (Map<String, String> licenses, String catalogDate);
     public UpdateItem toUpdateItem (Map<String, String> licenses, File nbm) {
         throw new UnsupportedOperationException();
     }
     public abstract String getId ();
         
     public static class Feature extends SimpleItem {
-        public static final String CODE_NAME_BASE = "name";
+        public static final String CODE_NAME_BASE = "codename";
         public static final String SPECIFICATION_VERSION = "version";
         public static final String MODULE_DEPENDENCIES = "module-dependencies";
         public static final String DISPLAY_NAME = "displayname";
@@ -70,14 +75,16 @@ public abstract class SimpleItem {
         
         private String codeName;
         private String version;
+        private String category;
         
-        public Feature (Node n) {
+        public Feature (Node n, String category) {
             super (n);
             codeName = getAttribute (declaratingNode, CODE_NAME_BASE);
             version = getAttribute (declaratingNode, SPECIFICATION_VERSION);
+            this.category = category;
         }
         
-        public UpdateItem toUpdateItem(Map<String, String> licenses) {
+        public UpdateItem toUpdateItem(Map<String, String> licenses, String catalogDate) {
             assert declaratingNode != null : "declaratingNode must be declared";
             String dependencies = getAttribute (declaratingNode, MODULE_DEPENDENCIES);
             UpdateItem res = UpdateItem.createFeature (
@@ -85,7 +92,8 @@ public abstract class SimpleItem {
                     getAttribute (declaratingNode, SPECIFICATION_VERSION),
                     readDependencies (dependencies),
                     getAttribute (declaratingNode, DESCRIPTION),
-                    getAttribute (declaratingNode, DISPLAY_NAME));
+                    getAttribute (declaratingNode, DISPLAY_NAME),
+                    category);
             
             // clean up declaratingNode
             declaratingNode = null;
@@ -114,9 +122,11 @@ public abstract class SimpleItem {
         
         private String moduleCodeName;
         private String specVersion;
+        private String category;
         
-        public Module (Node n) {
+        public Module (Node n, String category) {
             super (n);
+            this.category = category;
         }
         
         private static String getSpecificationVersion (Node n) {
@@ -159,11 +169,17 @@ public abstract class SimpleItem {
             return getAttribute (n, CODE_NAME_BASE);
         }
         
-        public UpdateItem toUpdateItem (Map<String, String> licenses) {
-            return toUpdateItem(licenses, null);
+        public UpdateItem toUpdateItem (Map<String, String> licenses, String catalogDate) {
+            return toUpdateItem(licenses, null, catalogDate);
         }
         
+        @Override
         public UpdateItem toUpdateItem(Map<String, String> licenses, File nbm) {
+            String fileLastModified = Utilities.DATE_FORMAT.format (new Date (nbm.lastModified ()));
+            return toUpdateItem(licenses, nbm, fileLastModified);
+        }
+        
+        private UpdateItem toUpdateItem(Map<String, String> licenses, File nbm, String catalogDate) {
             assert declaratingNode != null : "declaratingNode must be declared";
             
             moduleCodeName = getModuleCodeName (declaratingNode);
@@ -204,6 +220,10 @@ public abstract class SimpleItem {
             String homepage = getAttribute (declaratingNode, HOMEPAGE);
             String downloadSize = (nbm != null && nbm.exists()) ? String.valueOf(nbm.length()) :  getAttribute (declaratingNode, DOWNLOAD_SIZE);
             String author = getAttribute (declaratingNode, MODULE_AUTHOR);
+            String publishDate = getAttribute (declaratingNode, RELEASE_DATE);
+            if (publishDate == null || publishDate.length () == 0) {
+                publishDate = catalogDate;
+            }
             
             URL distributionURL = null;
             if (distribution != null && distribution.length() > 0) {
@@ -231,6 +251,8 @@ public abstract class SimpleItem {
                     author,
                     downloadSize,
                     homepage,
+                    publishDate,
+                    category,
                     mf,
                     needsRestart,
                     isGlobal,
@@ -245,6 +267,42 @@ public abstract class SimpleItem {
         
         public String getId() {
             return moduleCodeName + '_' + specVersion;
+        }
+
+    }
+    
+    public static class InstalledModule extends SimpleItem {
+        private ModuleInfo info;
+        
+        public InstalledModule (ModuleInfo moduleInfo) {
+            super (null);
+            if (moduleInfo == null) {
+                throw new IllegalArgumentException ("ModuleInfo must found while constructing InstalledModule.");
+            }
+            this.info = moduleInfo;
+        }
+
+        public UpdateItem toUpdateItem (Map<String, String> licenses, String installTime) {
+            String source = Utilities.readSourceFromUpdateTracking (info);
+            if (source == null) {
+                source = Utilities.getProductVersion ();
+            }
+            
+            UpdateItemImpl impl = new InstalledModuleItem (
+                    info.getCodeNameBase (),
+                    info.getSpecificationVersion ().toString (),
+                    info,
+                    source,
+                    null, // XXX author
+                    null, // installed cluster
+                    installTime
+                    );
+            
+            return Utilities.createUpdateItem (impl);
+        }
+
+        public String getId () {
+            return info.getCodeName () + '_' + info.getSpecificationVersion ();
         }
 
     }
@@ -271,12 +329,14 @@ public abstract class SimpleItem {
         private String moduleCodeName;
         private String locale;
         private String branding;
+        private String category;
 
-        public Localization (Node n) {
+        public Localization (Node n, String category) {
             super (n);
+            this.category = category;
         }
         
-        public UpdateItem toUpdateItem(Map<String, String> licenses) {
+        public UpdateItem toUpdateItem(Map<String, String> licenses, String catalogDate) {
             assert declaratingNode != null : "declaratingNode must be declared";
             
             moduleCodeName = getAttribute (declaratingNode, CODE_NAME_BASE);
@@ -319,6 +379,7 @@ public abstract class SimpleItem {
                     branding != null && branding.length() > 0 ? branding : null,
                     getAttribute (declaratingNode, LOCALIZED_MODULE_NAME),
                     getAttribute (declaratingNode, LOCALIZED_MODULE_DESCRIPTION),
+                    category,
                     distributionURL,
                     needsRestart,
                     isGlobal,
@@ -375,7 +436,7 @@ public abstract class SimpleItem {
             return licenseContent;
         }
     
-        public UpdateItem toUpdateItem(Map<String, String> licenses) {
+        public UpdateItem toUpdateItem(Map<String, String> licenses, String catalogDate) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 

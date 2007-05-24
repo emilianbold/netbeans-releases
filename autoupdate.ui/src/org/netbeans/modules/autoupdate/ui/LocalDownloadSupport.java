@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.openide.util.NbBundle;
@@ -104,7 +105,8 @@ public class LocalDownloadSupport {
             files.toArray(nbms);
             for (File file : nbms) {
                 String fileName = file.getName ();
-                List<UpdateUnit> temp = UpdateUnitProviderFactory.getDefault ().create (fileName, new File[] {file}).getUpdateUnits ();
+                List<UpdateUnit> temp = UpdateUnitProviderFactory.getDefault ().
+                        create (fileName, new File[] {file}).getUpdateUnits (UpdateManager.TYPE.MODULE);
                 retval.addAll(temp);
                 for (UpdateUnit updateUnit : temp) {
                     units2file.put(updateUnit, file);

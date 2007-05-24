@@ -23,7 +23,7 @@ import org.netbeans.modules.autoupdate.services.UpdateProblemHandler;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalog;
+import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
 import org.openide.modules.Dependency;
 
 /**
@@ -38,7 +38,6 @@ public class UpdateManagerTest extends DefaultTestCase {
     
     private UpdateUnit independent = null;
     private UpdateUnit depending = null;
-    private static UpdateProblemHandler handler = new MyProblemHandler ();
     
     public void testGetDefault() {
         UpdateManager result = UpdateManager.getDefault ();
@@ -47,7 +46,7 @@ public class UpdateManagerTest extends DefaultTestCase {
     }
 
     public void testGetUpdateUnits() {
-        List<UpdateUnit> result = UpdateManager.getDefault ().getUpdateUnits ();
+        List<UpdateUnit> result = UpdateManager.getDefault ().getUpdateUnits (UpdateManager.TYPE.MODULE);
         
         assertNotNull ("List of UpdateUnit found.", result);
         
@@ -73,7 +72,7 @@ public class UpdateManagerTest extends DefaultTestCase {
     }
     
     public void testGetDependingUpdateUnits () {
-        List<UpdateUnit> result = UpdateManager.getDefault ().getUpdateUnits ();
+        List<UpdateUnit> result = UpdateManager.getDefault ().getUpdateUnits (UpdateManager.TYPE.MODULE);
         
         assertNotNull ("List of UpdateUnit found.", result);
         
@@ -116,7 +115,7 @@ public class UpdateManagerTest extends DefaultTestCase {
         assertNotNull ("I have UpdateElement to install.", el);
     }
     
-    public static class MyProvider extends AutoupdateCatalog {
+    public static class MyProvider extends AutoupdateCatalogProvider {
         public MyProvider () {
             super ("test-updates-provider", "test-updates-provider", UpdateManagerTest.class.getResource ("data/updates.xml"));
         }

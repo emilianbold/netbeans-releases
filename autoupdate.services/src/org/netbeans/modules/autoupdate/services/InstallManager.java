@@ -28,6 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.Module;
 import org.netbeans.api.autoupdate.UpdateElement;
+import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.updater.UpdateTracking;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -88,14 +89,14 @@ public class InstallManager {
     private static File getInstallDir (UpdateElement installed) {
         File res = null;
         UpdateElementImpl i = Trampoline.API.impl (installed);
-        if (i.isModule ()) {
+        if (UpdateManager.TYPE.MODULE == i.getType ()) {
             String configFile = "config" + '/' + "Modules" + '/' + installed.getCodeName ().replace ('.', '-') + ".xml"; // NOI18N
             res = InstalledFileLocator.getDefault ().locate (configFile, installed.getCodeName (), false);
             // only fixed module cannot be located
             assert res != null || 
                     Utilities.toModule (installed.getCodeName (), installed.getSpecificationVersion ()).isFixed () : "Install cluster exists for UpdateElementImpl " + installed;
         } else {
-            assert false : "Unkown for Features now."; // XXX
+            assert false : "Unsupported for type: " + i.getType (); // XXX
         }
         return res;
     }

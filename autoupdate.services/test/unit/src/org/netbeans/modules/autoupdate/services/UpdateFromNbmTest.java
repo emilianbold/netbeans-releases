@@ -27,6 +27,7 @@ import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.TestUtils;
 import org.netbeans.api.autoupdate.TestUtils.CustomItemsProvider;
 import org.netbeans.api.autoupdate.UpdateElement;
+import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.netbeans.junit.MockServices;
@@ -68,7 +69,8 @@ public class UpdateFromNbmTest extends OperationsTestImpl {
         assertTrue(independentFile.exists());
         
         String source = "local-downloaded";
-        List<UpdateUnit> units =  UpdateUnitProviderFactory.getDefault ().create (source, new File[] {engineFile, independentFile}).getUpdateUnits ();
+        List<UpdateUnit> units =  UpdateUnitProviderFactory.getDefault ().create (source, new File[] {engineFile, independentFile}).
+                getUpdateUnits (UpdateManager.TYPE.MODULE);
         assertEquals(2, units.size());
         UpdateUnit nbmsEngine =  null;
         if (units.get(0).getCodeName().indexOf("engine") != -1) {

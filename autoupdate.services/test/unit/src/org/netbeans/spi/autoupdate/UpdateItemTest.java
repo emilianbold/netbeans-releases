@@ -23,14 +23,19 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.autoupdate.services.Utilities;
+import org.netbeans.modules.autoupdate.updateprovider.ModuleItem;
+import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
 
 /**
  *
@@ -70,6 +75,7 @@ public class UpdateItemTest extends NbTestCase {
                                                           locale, branding,
                                                           localizedName,
                                                           localizedDescription,
+                                                          "test-category",
                                                           distribution,
                                                           false, false, null,
                                                           license);
@@ -101,8 +107,8 @@ public class UpdateItemTest extends NbTestCase {
         UpdateLicense license = UpdateLicense.createUpdateLicense ("none-license", "no-license");
         UpdateItem result = UpdateItem.createModule(codeName,
                                                     specificationVersion,
-                                                    distribution, author,
-                                                    downloadSize, homepage,
+                                                    distribution, author, downloadSize,
+                                                    homepage, null, "test-category",
                                                     manifest, true, true, "my-cluster",
                                                     license);
 
@@ -143,12 +149,23 @@ public class UpdateItemTest extends NbTestCase {
         UpdateLicense license = UpdateLicense.createUpdateLicense ("none-license", "no-license");
         UpdateItem result = UpdateItem.createModule(codeName,
                                                     specificationVersion,
-                                                    distribution, author,
-                                                    downloadSize, homepage,
+                                                    distribution, author, downloadSize,
+                                                    homepage, "2007/05/22", "test-category",
                                                     manifest, true, true, "my-cluster",
                                                     license);
 
         assertNotNull ("Module UpdateItem with releative path was created.", result);
+        UpdateItemImpl impl = result.impl;
+        assertNotNull ("UpdateItemImpl found for " + result, impl);
+        assertTrue (impl + "is instanceof ModuleItem.", impl instanceof ModuleItem);
+        ModuleItem mimpl = (ModuleItem) impl;
+        assertNotNull ("Release date is not null.", mimpl.getDate());
+        try {
+            Date d = Utilities.DATE_FORMAT.parse (mimpl.getDate ());
+            assertEquals ("2007/05/22", mimpl.getDate ());
+        } catch (ParseException pe) {
+            fail (pe.getMessage ());
+        }
     }
 
     public void testCreateFeature() {
@@ -160,7 +177,8 @@ public class UpdateItemTest extends NbTestCase {
         UpdateItem result = UpdateItem.createFeature(codeName,
                                                      specificationVersion,
                                                      dependencies, displayName,
-                                                     description);
+                                                     description,
+                                                     "test-category");
 
         assertNotNull ("Feature UpdateItem was created.", result);
     }

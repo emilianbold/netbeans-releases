@@ -19,9 +19,6 @@
 
 package org.netbeans.modules.autoupdate.services;
 
-import org.netbeans.api.autoupdate.UpdateElement;
-import org.netbeans.api.autoupdate.UpdateUnit;
-
 /**
  *
  * @author Radek Matous
@@ -34,11 +31,6 @@ public class InstallDependentTest extends InstallTest {
     protected String moduleCodeNameBaseForTest() {
         return "org.yourorghere.depending";//NOI18N
     }     
-
-    public UpdateElement installModule(UpdateUnit toInstall) throws Exception {
-        return super.installModule(toInstall, null);
-    }
-
     
 }
 

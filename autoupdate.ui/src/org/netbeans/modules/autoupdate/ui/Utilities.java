@@ -22,6 +22,7 @@ package org.netbeans.modules.autoupdate.ui;
 import java.io.IOException;
 import java.net.URL;
 import java.text.Collator;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,6 +31,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
@@ -39,6 +41,7 @@ import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.UpdateElement;
+import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
@@ -47,6 +50,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -54,7 +58,11 @@ import org.openide.util.RequestProcessor;
  * @author Jiri Rechtacek
  */
 public class Utilities {
-    private static Logger logger = Logger.getLogger(Utilities.class.getName());     
+    private static Logger logger = Logger.getLogger(Utilities.class.getName());
+    private static Boolean isModulesOnly;
+    private static String PLUGIN_MANAGER_MODULES_ONLY = "plugin_manager_modules_only";
+    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat ("yyyy/MM/dd"); // NOI18N
+    
     static final String UNSORTED_CATEGORY = NbBundle.getMessage (Utilities.class, "Utilities_Unsorted_Category");
     static final String LIBRARIES_CATEGORY = NbBundle.getMessage (Utilities.class, "Utilities_Libraries_Category");
     static final String BRIDGES_CATEGORY = NbBundle.getMessage (Utilities.class, "Utilities_Bridges_Category");
@@ -75,7 +83,7 @@ public class Utilities {
                     } else if (catName == null || catName.length () == 0) {
                         catName = UNSORTED_CATEGORY;
                     }
-                    Unit.Installed i = new Unit.Installed (u);
+                    Unit.Installed i = new Unit.Installed (u, catName);
                     if (names.contains(catName)) {
                         UnitCategory cat = res.get(names.indexOf(catName));
                         cat.addUnit (i);
@@ -114,10 +122,10 @@ public class Utilities {
                 }
                 if (names.contains (catName)) {
                     UnitCategory cat = res.get (names.indexOf (catName));
-                    cat.addUnit (new Unit.Update (u, isNbms));
+                    cat.addUnit (new Unit.Update (u, isNbms, catName));
                 } else {
                     UnitCategory cat = new UnitCategory (catName);
-                    cat.addUnit (new Unit.Update (u, isNbms));
+                    cat.addUnit (new Unit.Update (u, isNbms, catName));
                     res.add (cat);
                     names.add (catName);
                 }
@@ -151,10 +159,10 @@ public class Utilities {
                 }
                 if (names.contains (catName)) {
                     UnitCategory cat = res.get (names.indexOf (catName));
-                    cat.addUnit (new Unit.Available (u, isNbms));
+                    cat.addUnit (new Unit.Available (u, isNbms, catName));
                 } else {
                     UnitCategory cat = new UnitCategory (catName);
-                    cat.addUnit (new Unit.Available (u, isNbms));
+                    cat.addUnit (new Unit.Available (u, isNbms, catName));
                     res.add (cat);
                     names.add (catName);
                 }
@@ -254,8 +262,7 @@ public class Utilities {
             manager.unsetProgressComponent (detailLabel, progressComp);
         }
     }
-    
-    
+
     public static void startAsWorkerThread(final PluginManagerUI manager, final Runnable runnableCode, final String progressDisplayName) {
         startAsWorkerThread(new Runnable() {
             public void run() {
@@ -300,4 +307,74 @@ public class Utilities {
         }
         return retval;
     }    
+
+    public static UpdateManager.TYPE[] getUnitTypes () {
+        if (modulesOnly ()) {
+            return new UpdateManager.TYPE [] {UpdateManager.TYPE.MODULE};
+        } else {
+            return new UpdateManager.TYPE[0];
+        }
+    }
+    
+    public static boolean modulesOnly () {
+        return isModulesOnly == null ? modulesOnlyDefault () : isModulesOnly;
+    }
+    
+    public static void setModulesOnly (boolean modulesOnly) {
+        isModulesOnly = modulesOnly ? Boolean.TRUE : Boolean.FALSE;
+        getPreferences ().putBoolean (PLUGIN_MANAGER_MODULES_ONLY, isModulesOnly);
+    }
+    
+    private static boolean modulesOnlyDefault () {
+        return getPreferences ().getBoolean (PLUGIN_MANAGER_MODULES_ONLY, Boolean.valueOf (System.getProperty ("plugin.manager.modules.only")));
+    }
+
+    public static Comparator<String> getCategoryComparator () {
+        return new Comparator<String> () {
+            public int compare (String o1, String o2) {
+                // Libraries always put in the last place.
+                if (LIBRARIES_CATEGORY.equals (o1)) {
+                    if (LIBRARIES_CATEGORY.equals (o2)) {
+                        return 0;
+                    } else {
+                        return 1;
+                    }
+                } else {
+                    if (LIBRARIES_CATEGORY.equals (o2)) {
+                        return -1;
+                    }
+                    // Eager modules come between categories and libraries.
+                    if (BRIDGES_CATEGORY.equals (o1)) {
+                        if (BRIDGES_CATEGORY.equals (o2)) {
+                            return 0;
+                        } else {
+                            return 1;
+                        }
+                    } else {
+                        if (BRIDGES_CATEGORY.equals (o2)) {
+                            return -1;
+                        }
+                        // Eager modules come between categories and libraries.
+                        if (UNSORTED_CATEGORY.equals (o1)) {
+                            if (UNSORTED_CATEGORY.equals (o2)) {
+                                return 0;
+                            } else {
+                                return 1;
+                            }
+                        } else {
+                            if (UNSORTED_CATEGORY.equals (o2)) {
+                                return -1;
+                            }
+                        }
+
+                        return Collator.getInstance ().compare (o1, o2);
+                    }
+                }
+            }
+        };
+    }
+    
+    private static Preferences getPreferences () {
+        return NbPreferences.forModule (Utilities.class);
+    }
 }

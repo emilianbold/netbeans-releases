@@ -37,7 +37,7 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalog;
+import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory;
 import org.netbeans.modules.autoupdate.updateprovider.LocalNBMsProvider;
 import org.openide.filesystems.FileObject;
@@ -93,8 +93,8 @@ public final class UpdateUnitProviderImpl {
         storeUrl (getUpdateProvider (), url);
     }
     
-    public List<UpdateUnit> getUpdateUnits () {
-        return UpdateManagerImpl.getInstance().getUpdateUnits (getUpdateProvider ());
+    public List<UpdateUnit> getUpdateUnits (UpdateManager.TYPE... types) {
+        return UpdateManagerImpl.getInstance().getUpdateUnits (getUpdateProvider (), types);
     }
     
     /** Make refresh of content of the provider. The content can by read from
@@ -171,7 +171,7 @@ public final class UpdateUnitProviderImpl {
         // store to Preferences
         storeProvider(codeName, displayName, url);
         
-        AutoupdateCatalog catalog = new AutoupdateCatalog (codeName, displayName, url);
+        AutoupdateCatalogProvider catalog = new AutoupdateCatalogProvider (codeName, displayName, url);
         
         return Trampoline.API.createUpdateUnitProvider (new UpdateUnitProviderImpl (catalog));
     }
@@ -315,7 +315,7 @@ public final class UpdateUnitProviderImpl {
             assert false : mue;
         }
         
-        return new AutoupdateCatalog (codeName, displayName, url);
+        return new AutoupdateCatalogProvider (codeName, displayName, url);
     }
     
     private static boolean loadState (String codename) {
@@ -358,8 +358,8 @@ public final class UpdateUnitProviderImpl {
         assert providerPreferences != null : "Preferences node " + p.getName () + " found.";
         
         String urlSpec = null;
-        if (p instanceof AutoupdateCatalog) {
-            urlSpec = ((AutoupdateCatalog) p).getUpdateCenterURL ().toExternalForm ();
+        if (p instanceof AutoupdateCatalogProvider) {
+            urlSpec = ((AutoupdateCatalogProvider) p).getUpdateCenterURL ().toExternalForm ();
         }
         urlSpec = providerPreferences.get ("url", urlSpec);
         if (urlSpec == null || urlSpec.length () == 0) {
@@ -389,13 +389,13 @@ public final class UpdateUnitProviderImpl {
             providerPreferences.remove ("url"); // NOI18N
         } else {
             URL orig = null;
-            if (p instanceof AutoupdateCatalog) {
-                orig = ((AutoupdateCatalog) p).getUpdateCenterURL ();
+            if (p instanceof AutoupdateCatalogProvider) {
+                orig = ((AutoupdateCatalogProvider) p).getUpdateCenterURL ();
             }
             if (! url.equals (orig)) {
                 providerPreferences.put ("url", url.toExternalForm ()); // NOI18N
-                if (p instanceof AutoupdateCatalog) {
-                    ((AutoupdateCatalog) p).setUpdateCenterURL (url);
+                if (p instanceof AutoupdateCatalogProvider) {
+                    ((AutoupdateCatalogProvider) p).setUpdateCenterURL (url);
                 }
             }
         }

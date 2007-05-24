@@ -30,7 +30,7 @@ import org.netbeans.api.autoupdate.TestUtils.CustomItemsProvider;
 import org.netbeans.junit.MockServices;
 import org.netbeans.modules.autoupdate.services.*;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalog;
+import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
@@ -41,12 +41,13 @@ import org.openide.util.Lookup;
 public class DefaultTestCase extends NbTestCase {
     private static File catalogFile;
     private static URL catalogURL;
+    protected boolean modulesOnly = true;
     List<UpdateUnit> keepItNotToGC;
     public DefaultTestCase(String testName) {
         super(testName);
     }
         
-    public static class MyProvider extends AutoupdateCatalog {
+    public static class MyProvider extends AutoupdateCatalogProvider {
         public MyProvider () {
             super ("test-updates-provider", "test-updates-provider", catalogURL);
         }
@@ -83,7 +84,12 @@ public class DefaultTestCase extends NbTestCase {
         pf.mkdirs ();
         new File (pf, "config").mkdir();
         TestUtils.setPlatformDir (pf.toString ());
-        keepItNotToGC = UpdateManager.getDefault().getUpdateUnits();
+        if (modulesOnly) {
+            keepItNotToGC = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE);
+        } else {
+            keepItNotToGC = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.FEATURE);
+        }
+            
     }
 
     protected void tearDown() throws Exception {

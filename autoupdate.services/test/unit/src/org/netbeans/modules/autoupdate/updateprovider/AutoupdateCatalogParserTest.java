@@ -83,7 +83,7 @@ public class AutoupdateCatalogParserTest extends NbTestCase {
         SimpleItem item = items.get (0);
         assertTrue ("Item " + item + " instanceof SimpleItem.Feature", item instanceof SimpleItem.Feature);
         SimpleItem.Feature f = (SimpleItem.Feature) item;
-        assertEquals ("Correct mapping to Collaboration", "Collaboration_1.0", f.getId());
+        assertEquals ("Correct mapping to Collaboration", "collaboration-feature_1.0", f.getId());
     }
     
     public void testRelativeUrlPath () {

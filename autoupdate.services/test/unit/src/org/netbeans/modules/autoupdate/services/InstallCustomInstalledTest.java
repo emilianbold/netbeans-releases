@@ -19,11 +19,13 @@
 
 package org.netbeans.modules.autoupdate.services;
 
-import java.io.File;
 import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.TestUtils;
-import org.netbeans.api.autoupdate.UpdateManager;
+import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.autoupdate.updateprovider.NativeComponentItem;
+import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
 import org.netbeans.spi.autoupdate.CustomInstaller;
 import org.netbeans.spi.autoupdate.UpdateItem;
 
@@ -47,24 +49,28 @@ public class InstallCustomInstalledTest extends OperationsTestImpl {
     }
     
     public void testSelf () throws Exception {
-        UpdateManager.getDefault().getUpdateUnits();
         UpdateUnit toInstall = UpdateManagerImpl.getInstance ().getUpdateUnit (moduleCodeNameBaseForTest ());
-        installModule(toInstall, null, true);
+        assertFalse (toInstall + " has available elements.", toInstall.getAvailableUpdates ().isEmpty ());
+        UpdateElement toInstallElement = toInstall.getAvailableUpdates ().get (0);
+        installNativeComponent (toInstall, toInstallElement);
         assertTrue ("Custom installer was called.", installerCalled);
     }
     
     private boolean installerCalled = false;
+    
     private CustomInstaller installer = new CustomInstaller () {
-
-        public boolean install(UpdateItem item, File f) throws OperationException {
+        public boolean install (String codeName, String specificationVersion, ProgressHandle handle) throws OperationException {
             UpdateItem exp = TestUtils.getUpdateItemWithCustomInstaller ();
-            assertNotNull ("UpdateItem not null.", item);
-            assertEquals ("Was called with as same UpdateItem as excepted.", exp, item);
+            UpdateItemImpl impl = Trampoline.SPI.impl (exp);
+            assertTrue ("Get instanceOf NativeComponentItem", impl instanceof NativeComponentItem);
+            NativeComponentItem nativeImpl = (NativeComponentItem) impl;
+            assertNotNull ("Code name is not null.", codeName);
+            assertNotNull ("SpecificationVersion is not null.", specificationVersion);
+            assertEquals ("Was called with as same codeName as excepted.", impl.getCodeName (), codeName);
+            assertEquals ("Was called with as same specificationVersion as excepted.", nativeImpl.getSpecificationVersion (), specificationVersion);
             installerCalled = true;
             return true;
         }
-        
     };
     
 }
-

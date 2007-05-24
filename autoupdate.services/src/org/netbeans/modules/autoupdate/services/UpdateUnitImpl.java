@@ -26,10 +26,11 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.UpdateElement;
+import org.netbeans.api.autoupdate.UpdateManager;
 import org.openide.modules.SpecificationVersion;
 
 
-public class UpdateUnitImpl extends Object {
+public abstract class UpdateUnitImpl extends Object {
     private String codeName;
     private UpdateElement installed;
     private List<UpdateElement> updates;
@@ -52,7 +53,7 @@ public class UpdateUnitImpl extends Object {
     }
 
     public List<UpdateElement> getAvailableUpdates () {
-        return identifyUpdates (installed, updates);
+        return identifyUpdates (getInstalled (), updates);
     }
 
     public UpdateElement getInstalledLocalization () {
@@ -91,7 +92,6 @@ public class UpdateUnitImpl extends Object {
         this.installed = null;
     }
     
-    
     public void updateInstalled (UpdateElement installed) {
         //assert this.installed != null;
         this.installed = null;
@@ -116,6 +116,12 @@ public class UpdateUnitImpl extends Object {
         this.backup = backup;
     }
     
+    public abstract UpdateManager.TYPE getType ();
+    
+    protected List<UpdateElement> getUpdates () {
+        return updates;
+    }
+    
     private List<UpdateElement> identifyUpdates (UpdateElement installed, List<UpdateElement> updates) {
         List<UpdateElement> res = null;
 
@@ -133,7 +139,7 @@ public class UpdateUnitImpl extends Object {
                 List<UpdateElement> realUpdates = new ArrayList<UpdateElement> ();
                 for (UpdateElement update : updates) {
                     if (new SpecificationVersion(update.getSpecificationVersion ()).compareTo (new SpecificationVersion(installed.getSpecificationVersion ())) > 0) {
-                        err.log (Level.FINE, "Module " + moduleId + "[" + installed.getSpecificationVersion () + "] has update " + moduleId + "[" + update.getSpecificationVersion () + "]");
+                        err.log (Level.FINE, "UpdateElement " + moduleId + "[" + installed.getSpecificationVersion () + "] has update " + moduleId + "[" + update.getSpecificationVersion () + "]");
                         realUpdates.add (update);
                     }
                 }
@@ -144,7 +150,7 @@ public class UpdateUnitImpl extends Object {
         }
 
         if (res == null) {
-            res = java.util.Collections.emptyList();
+            res = Collections.emptyList();
         }
         Collections.sort(res,new Comparator<UpdateElement>(){
             public int compare(UpdateElement o1, UpdateElement o2) {

@@ -22,6 +22,7 @@ package org.netbeans.modules.autoupdate.ui;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import javax.swing.table.JTableHeader;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.UpdateUnit;
@@ -29,7 +30,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Jiri Rechtacek
+ * @author Jiri Rechtacek, Radek Matous
  */
 public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
     private OperationContainer<InstallSupport> availableNbmsContainer = Containers.forAvailableNbms();
@@ -105,30 +106,29 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
                 res = u.getDisplayName ();
                 break;
             case 2 :
+                res = u.getCategoryName();
+                break;                                
+            case 3 :
                 if (isAvailable) {
                     res = ((Unit.Available)u).getAvailableVersion ();
                 } else {
                     res = ((Unit.Update)u).getAvailableVersion ();
                 }
                 break;
-            case 3 :
+            case 4 :
                 if (isAvailable) {
                     res = ((Unit.Available)u).getSize();
                 } else {
                     res = ((Unit.Update)u).getSize();
                 }                
                 break;
-            case 4 :
-                if (isAvailable) {
-                    res = ((Unit.Available)u).getMyRating ();
-                } else {
-                    res = 0;
-                }
-                    
-                break;
             }
         }
         return res;
+    }
+    
+    public int getColumnCount() {
+        return 3;
     }
 
     public Class getColumnClass(int c) {
@@ -148,13 +148,14 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
             res = String.class;
             break;
         case 4 :
-            res = Integer.class;
+            res = String.class;
             break;
         }
         
         return res;
     }
 
+    @Override
     public String getColumnName(int column) {
         switch (column) {
             case 0 :
@@ -162,15 +163,25 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
             case 1 :
                 return getBundle ("LocallyDownloadedTableModel_Columns_Name");
             case 2 :
-                return getBundle ("LocallyDownloadedTableModel_Columns_Version");
+                return getBundle ("InstalledTableModel_Columns_Category");                                
             case 3 :
-                return getBundle ("LocallyDownloadedTableModel_Columns_Size");
+                return getBundle ("LocallyDownloadedTableModel_Columns_Version");
             case 4 :
-                return getBundle ("LocallyDownloadedTableModel_Columns_Rating");
+                return getBundle ("LocallyDownloadedTableModel_Columns_Size");
         }
         
         assert false;
         return super.getColumnName( column );
+    }
+
+    public int getPreferredWidth(JTableHeader header, int col) {
+        switch (col) {
+                case 1:
+            return super.getMinWidth(header, col)*4;
+        case 2:
+            return super.getMinWidth(header, col)*2;
+        }
+        return super.getMinWidth(header, col);
     }
     
     public Type getType () {
@@ -184,9 +195,8 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
     }
     public boolean isSortAllowed(Object columnIdentifier) {
         boolean isInstall = getColumnName(0).equals(columnIdentifier);
-        boolean isRating = getColumnName(4).equals(columnIdentifier);                
-        boolean isSize = getColumnName(3).equals(columnIdentifier);                        
-        return isInstall ||  isRating || isSize ? false : true;
+        boolean isSize = getColumnName(4).equals(columnIdentifier);                        
+        return isInstall || isSize ? false : true;
     }
 
     protected Comparator<Unit> getComparator(final Object columnIdentifier, final boolean sortAscending) {
@@ -199,9 +209,9 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
                 } else if (getColumnName(1).equals(columnIdentifier)) {
                     return Unit.compareDisplayNames(unit1, unit2);
                 } else if (getColumnName(2).equals(columnIdentifier)) {
-                    return Unit.compareDisplayVersions(unit1, unit2);
+                    return Unit.compareCategories(unit1, unit2);
                 } else if (getColumnName(3).equals(columnIdentifier)) {
-                    assert false : columnIdentifier.toString();
+                    return Unit.compareDisplayVersions(unit1, unit2);
                 } else if (getColumnName(4).equals(columnIdentifier)) {
                     assert false : columnIdentifier.toString();
                 }                

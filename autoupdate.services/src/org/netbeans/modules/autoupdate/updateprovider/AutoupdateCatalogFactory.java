@@ -89,7 +89,7 @@ public class AutoupdateCatalogFactory {
         url = modifyURL (url);
         
         Boolean en = (Boolean) fo.getAttribute("enabled"); // NOI18N
-        AutoupdateCatalog au_catalog = new AutoupdateCatalog (sKey, displayName (fo), url);
+        AutoupdateCatalogProvider au_catalog = new AutoupdateCatalogProvider (sKey, displayName (fo), url);
         
         // XXX: store Url to Preferences if doesn't exist yet
         try {

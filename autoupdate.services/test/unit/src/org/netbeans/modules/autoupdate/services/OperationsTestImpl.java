@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.autoupdate.services;
 
+import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleProvider;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
@@ -52,63 +53,83 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
     private FileChangeListener fca;
     private FileObject modulesRoot;
     
-    private Map<String, ModuleInfo> getModuleInfos() {
-        return ModuleProvider.getInstalledModules();
+    private Map<String, ModuleInfo> getModuleInfos () {
+        return InstalledModuleProvider.getInstalledModules ();
     }
     
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        getModuleInfos();
-        Repository.getDefault().getDefaultFileSystem().refresh(false);
-        modulesRoot = Repository.getDefault().getDefaultFileSystem().findResource("Modules"); // NOI18N
-        fca = new FileChangeAdapter(){
+    protected void setUp () throws Exception {
+        super.setUp ();
+        getModuleInfos ();
+        Repository.getDefault ().getDefaultFileSystem ().refresh (false);
+        modulesRoot = Repository.getDefault ().getDefaultFileSystem ().findResource ("Modules"); // NOI18N
+        fca = new FileChangeAdapter (){
             @Override
-            public void fileDataCreated(FileEvent fe) {
+            public void fileDataCreated (FileEvent fe) {
                 fileChanges[0] = true;
-                fileChangeThreads[0] = Thread.currentThread();
-                exceptions[0] = new Exception();
+                fileChangeThreads[0] = Thread.currentThread ();
+                exceptions[0] = new Exception ();
             }
             
             @Override
-            public void fileDeleted(FileEvent fe) {
+            public void fileDeleted (FileEvent fe) {
                 fileChanges[1] = true;
-                fileChangeThreads[1] = Thread.currentThread();
-                exceptions[1] = new Exception();
+                fileChangeThreads[1] = Thread.currentThread ();
+                exceptions[1] = new Exception ();
             }
         };
-        modulesRoot.addFileChangeListener(fca);
+        modulesRoot.addFileChangeListener (fca);
     }
     
     @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    protected void tearDown () throws Exception {
+        super.tearDown ();
         if (modulesRoot != null && fca != null) {
-            modulesRoot.removeFileChangeListener(fca);
+            modulesRoot.removeFileChangeListener (fca);
         }
     }
     
-    public OperationsTestImpl(String testName) {
-        super(testName);
+    public OperationsTestImpl (String testName) {
+        super (testName);
     }
     
-    public abstract void testSelf() throws Exception;
+    public abstract void testSelf () throws Exception;
     
-//    static List<UpdateUnit> getUpdateUnits() {
-//        UpdateManager mgr = UpdateManager.getDefault();
-//        assertNotNull(mgr);
-//        List<UpdateUnit> retval =  mgr.getUpdateUnits();
-//        assertNotNull(retval);
-//        assertTrue(retval.size() > 0);
-//        return retval;
-//    }
-//    
-    public UpdateElement installModule(UpdateUnit toInstall, UpdateElement installElement) throws Exception {
-        return installModuleImpl(toInstall, installElement, true, false);
+    //    static List<UpdateUnit> getUpdateUnits() {
+    //        UpdateManager mgr = UpdateManager.getDefault();
+    //        assertNotNull(mgr);
+    //        List<UpdateUnit> retval =  mgr.getUpdateUnits();
+    //        assertNotNull(retval);
+    //        assertTrue(retval.size() > 0);
+    //        return retval;
+    //    }
+    //
+    public UpdateElement installModule (UpdateUnit toInstall, UpdateElement installElement) throws Exception {
+        return installModuleImpl (toInstall, installElement, true);
     }
     
-    public UpdateElement installModule(UpdateUnit toInstall, UpdateElement installElement, boolean customInstaller) throws Exception {
-        return installModuleImpl(toInstall, installElement, true, customInstaller);
+    public UpdateElement installNativeComponent (UpdateUnit toInstall, UpdateElement installElement) throws Exception {
+        installElement = (installElement != null) ? installElement : toInstall.getAvailableUpdates ().get (0);
+        
+        assertNotNull (toInstall);
+        
+        // XXX: assert same could be broken later
+        assertSame (toInstall, Utilities.toUpdateUnit (toInstall.getCodeName ()));
+        
+        InstallSupport.Restarter r = null;
+        
+        OperationContainer<OperationSupport> container = OperationContainer.createForInstallNativeComponent ();
+        OperationContainer.OperationInfo<OperationSupport> info = container.add (installElement);
+        assertNotNull (info);
+        container.add (info.getRequiredElements ());
+        assertEquals (0,container.listInvalid ().size ());
+        List<OperationContainer.OperationInfo<OperationSupport>> all =  container.listAll ();
+        
+        OperationSupport support = container.getSupport ();
+        assertNotNull (support);
+        support.doOperation (null);
+        
+        return installElement;
     }
     
     /*public void installModuleDirect(UpdateUnit toInstall) throws Exception {
@@ -116,31 +137,31 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
     }*/
     
     
-    private UpdateElement installModuleImpl(UpdateUnit toInstall, UpdateElement installElement,final boolean installSupport, boolean customInstaller) throws Exception {
-        installElement = (installElement != null) ? installElement : toInstall.getAvailableUpdates().get(0);
+    private UpdateElement installModuleImpl (UpdateUnit toInstall, UpdateElement installElement, final boolean installSupport) throws Exception {
+        installElement = (installElement != null) ? installElement : toInstall.getAvailableUpdates ().get (0);
         
-        File configModules = new File(getWorkDir(), "config/Modules");
-        File modules = new File(getWorkDir(), "modules");
-        int configModulesSize = (configModules.listFiles() != null) ? configModules.listFiles().length : 0;
-        int modulesSize = (modules.listFiles() != null) ? modules.listFiles().length : 0;
-        assertFalse(fileChanges[0]);
-        FileObject foConfigModules = Repository.getDefault().getDefaultFileSystem().findResource("Modules");
-        assertNotNull(foConfigModules);
-        int foConfigModulesSize = foConfigModules.getChildren().length;
-        assertNull(getModuleInfos().get(toInstall.getCodeName()));
+        File configModules = new File (getWorkDir (), "config/Modules");
+        File modules = new File (getWorkDir (), "modules");
+        int configModulesSize = (configModules.listFiles () != null) ? configModules.listFiles ().length : 0;
+        int modulesSize = (modules.listFiles () != null) ? modules.listFiles ().length : 0;
+        assertFalse (fileChanges[0]);
+        FileObject foConfigModules = Repository.getDefault ().getDefaultFileSystem ().findResource ("Modules");
+        assertNotNull (foConfigModules);
+        int foConfigModulesSize = foConfigModules.getChildren ().length;
+        assertNull (getModuleInfos ().get (toInstall.getCodeName ()));
         
-        assertNotNull(toInstall);
+        assertNotNull (toInstall);
         
-        assertSame(toInstall, Utilities.toUpdateUnit(toInstall.getCodeName()));
+        assertSame (toInstall, Utilities.toUpdateUnit (toInstall.getCodeName ()));
         
         OperationContainer container2 = null;
         InstallSupport.Restarter r = null;
         if (installSupport) {
-            OperationContainer<InstallSupport> container = OperationContainer.createForInstall();
+            OperationContainer<InstallSupport> container = OperationContainer.createForInstall ();
             container2 = container;
-            OperationContainer.OperationInfo<InstallSupport> info = container.add(installElement);
-            assertNotNull(info);
-            container.add(info.getRequiredElements());
+            OperationContainer.OperationInfo<InstallSupport> info = container.add (installElement);
+            assertNotNull (info);
+            container.add (info.getRequiredElements ());
             boolean hiddenUpdate = false;
             for (OperationInfo<InstallSupport> i : container.listAll ()) {
                 if (i.getUpdateUnit ().getInstalled () != null) {
@@ -148,51 +169,48 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
                     break;
                 }
             }
-            InstallSupport support = container.getSupport();
-            assertNotNull(support);
+            InstallSupport support = container.getSupport ();
+            assertNotNull (support);
             
-            InstallSupport.Validator v = support.doDownload(null);
-            assertNotNull(v);
-            InstallSupport.Installer i = support.doValidate(v, null);
-            assertNotNull(i);
-            assertNull(support.getCertificate(i, installElement)); // Test NBM is not signed nor certificate
-            assertFalse(support.isTrusted(i, installElement));
-            assertFalse(support.isSigned(i, installElement));
+            InstallSupport.Validator v = support.doDownload (null);
+            assertNotNull (v);
+            InstallSupport.Installer i = support.doValidate (v, null);
+            assertNotNull (i);
+            assertNull (support.getCertificate (i, installElement)); // Test NBM is not signed nor certificate
+            assertFalse (support.isTrusted (i, installElement));
+            assertFalse (support.isSigned (i, installElement));
             if (hiddenUpdate) {
-                r = support.doInstall(i, null);
-                assertNotNull("If there is hiddenUpdate then returns Restarer.", r);
+                r = support.doInstall (i, null);
+                assertNotNull ("If there is hiddenUpdate then returns Restarer.", r);
             } else {
-                assertNull("No Restarer when no hidden update.", support.doInstall(i, null));
+                assertNull ("No Restarer when no hidden update.", support.doInstall (i, null));
             }
         } else {
-            OperationContainer<OperationSupport> container = OperationContainer.createForDirectInstall();
+            OperationContainer<OperationSupport> container = OperationContainer.createForDirectInstall ();
             container2 = container;
-            OperationContainer.OperationInfo<OperationSupport> info = container.add(installElement);
-            assertNotNull(info);
-            container.add(info.getRequiredElements());
-            assertEquals(0,container.listInvalid().size());
-            List all =  container.listAll();
+            OperationContainer.OperationInfo<OperationSupport> info = container.add (installElement);
+            assertNotNull (info);
+            container.add (info.getRequiredElements ());
+            assertEquals (0,container.listInvalid ().size ());
+            List all =  container.listAll ();
             
-            OperationSupport support = container.getSupport();
-            assertNotNull(support);
-            support.doOperation(null);
+            OperationSupport support = container.getSupport ();
+            assertNotNull (support);
+            support.doOperation (null);
         }
         
-        if (! customInstaller) {
+        assertNotNull (toInstall.getInstalled ());
         
-            assertNotNull(toInstall.getInstalled());
-
-            if (r == null) {
-                assertTrue("Config module files are more than before Install test, " + Arrays.asList (configModules.listFiles()), configModules.listFiles().length > configModulesSize);
-                assertTrue("Installed modules are more than before Install test, " + Arrays.asList (modules.listFiles()), modules.listFiles().length > modulesSize);
-                assertTrue(foConfigModules.getPath(), foConfigModules.getChildren().length > foConfigModulesSize);
-                assertEquals(configModules.listFiles()[0], FileUtil.toFile(foConfigModules.getChildren()[0]));
-                
-                assertTrue(fileChanges[0]);
-                fileChanges[0]=false;
-            }
-
+        if (r == null) {
+            assertTrue ("Config module files are more than before Install test, " + Arrays.asList (configModules.listFiles ()), configModules.listFiles ().length > configModulesSize);
+            assertTrue ("Installed modules are more than before Install test, " + Arrays.asList (modules.listFiles ()), modules.listFiles ().length > modulesSize);
+            assertTrue (foConfigModules.getPath (), foConfigModules.getChildren ().length > foConfigModulesSize);
+            assertEquals (configModules.listFiles ()[0], FileUtil.toFile (foConfigModules.getChildren ()[0]));
+            
+            assertTrue (fileChanges[0]);
+            fileChanges[0]=false;
         }
+        
         //TODO: to know why Thread.sleep(3000) must be present in these tests
         /*if (!Thread.currentThread().equals(fileChangeThreads[0])) {
             exceptions[0].printStackTrace();
@@ -202,199 +220,209 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
         
         fileChangeThreads[0]=null;
         //if (! customInstaller) Thread.sleep(3000);
-        List<OperationContainer.OperationInfo> all = container2.listAll();
+        List<OperationContainer.OperationInfo> all = container2.listAll ();
         for (OperationContainer.OperationInfo oi : all) {
-            UpdateUnit toInstallUnit = oi.getUpdateUnit();
-            if (customInstaller || r != null) {
-                break;
+            UpdateUnit toInstallUnit = oi.getUpdateUnit ();
+            if (Trampoline.API.impl (toInstallUnit) instanceof ModuleUpdateUnitImpl) {
+                assertInstalledModule (toInstallUnit);
+            } else if (Trampoline.API.impl (toInstallUnit) instanceof FeatureUpdateUnitImpl) {
+                FeatureUpdateUnitImpl fi = (FeatureUpdateUnitImpl) Trampoline.API.impl (toInstallUnit);
+                assertNotNull ("Feature " + toInstallUnit + " is installed now.", fi.getInstalled ());
+                FeatureUpdateElementImpl fe = (FeatureUpdateElementImpl) Trampoline.API.impl (fi.getInstalled ());
+                for (ModuleUpdateElementImpl m : fe.getContainedModuleElements ()) {
+                    assertInstalledModule (m.getUpdateUnit ());
+                }
             }
-            ModuleInfo info = getModuleInfos().get(toInstallUnit.getCodeName());
-            assertNotNull(info);
-            assertTrue(info.getCodeNameBase(), info.isEnabled());
-            assertNotNull(Utilities.toModule(toInstallUnit.getCodeName(), null));
-            assertTrue(Utilities.toModule(toInstallUnit.getCodeName(), null).isEnabled());
         }
         return installElement;
     }
     
-    final UpdateElement updateModule(UpdateUnit toUpdate) throws Exception {
-        return updateModule(toUpdate, true);
+    private void assertInstalledModule (UpdateUnit toInstallUnit) {
+        ModuleInfo info = getModuleInfos ().get (toInstallUnit.getCodeName ());
+        assertNotNull (info);
+        assertTrue (info.getCodeNameBase (), info.isEnabled ());
+        assertNotNull (Utilities.toModule (toInstallUnit.getCodeName (), null));
+        assertTrue (Utilities.toModule (toInstallUnit.getCodeName (), null).isEnabled ());
     }
     
-    final void updateModuleDirect(UpdateUnit toUpdate) throws Exception {
-        updateModule(toUpdate, false);
+    final UpdateElement updateModule (UpdateUnit toUpdate) throws Exception {
+        return updateModule (toUpdate, true);
     }
     
-    private UpdateElement updateModule(UpdateUnit toUpdate, final boolean installlSupport) throws Exception {
-        File configModules = new File(getWorkDir(), "config/Modules");
-        File modules = new File(getWorkDir(), "modules");
-        assertFalse(fileChanges[0]);
-        FileObject foConfigModules = Repository.getDefault().getDefaultFileSystem().findResource("Modules");
-        assertNotNull(foConfigModules);
-        assertTrue(configModules.listFiles() != null && configModules.listFiles().length != 0);
-        assertTrue(modules.listFiles() != null && modules.listFiles().length != 0);
-        assertFalse(fileChanges[0]);
-        assertNotNull(getModuleInfos().get(toUpdate.getCodeName()));
+    final void updateModuleDirect (UpdateUnit toUpdate) throws Exception {
+        updateModule (toUpdate, false);
+    }
+    
+    private UpdateElement updateModule (UpdateUnit toUpdate, final boolean installlSupport) throws Exception {
+        File configModules = new File (getWorkDir (), "config/Modules");
+        File modules = new File (getWorkDir (), "modules");
+        assertFalse (fileChanges[0]);
+        FileObject foConfigModules = Repository.getDefault ().getDefaultFileSystem ().findResource ("Modules");
+        assertNotNull (foConfigModules);
+        assertTrue (configModules.listFiles () != null && configModules.listFiles ().length != 0);
+        assertTrue (modules.listFiles () != null && modules.listFiles ().length != 0);
+        assertFalse (fileChanges[0]);
+        assertNotNull (getModuleInfos ().get (toUpdate.getCodeName ()));
         
-        assertNotNull(toUpdate);
+        assertNotNull (toUpdate);
         
-        assertSame(toUpdate, Utilities.toUpdateUnit(toUpdate.getCodeName()));
+        assertSame (toUpdate, Utilities.toUpdateUnit (toUpdate.getCodeName ()));
         
-        UpdateElement upEl =  toUpdate.getAvailableUpdates().get(0);
-        assertNotSame(toUpdate.getInstalled(), upEl);
+        UpdateElement upEl =  toUpdate.getAvailableUpdates ().get (0);
+        assertNotSame (toUpdate.getInstalled (), upEl);
         
         OperationContainer container2 = null;
         if (installlSupport) {
-            OperationContainer<InstallSupport> container = OperationContainer.createForUpdate();
+            OperationContainer<InstallSupport> container = OperationContainer.createForUpdate ();
             container2 = container;
-            assertNotNull(container.add(upEl));
-            InstallSupport support = container.getSupport();
-            assertNotNull(support);
+            assertNotNull (container.add (upEl));
+            InstallSupport support = container.getSupport ();
+            assertNotNull (support);
             
-            InstallSupport.Validator v = support.doDownload(null);
-            assertNotNull(v);
-            InstallSupport.Installer i = support.doValidate(v, null);
-            assertNotNull(i);
+            InstallSupport.Validator v = support.doDownload (null);
+            assertNotNull (v);
+            InstallSupport.Installer i = support.doValidate (v, null);
+            assertNotNull (i);
             //assertNotNull(support.getCertificate(i, upEl));
-            assertFalse(support.isTrusted(i, upEl));
-            assertFalse(support.isSigned(i, upEl));
-            support.doInstall(i, null);
+            assertFalse (support.isTrusted (i, upEl));
+            assertFalse (support.isSigned (i, upEl));
+            support.doInstall (i, null);
         } else {
-            OperationContainer<OperationSupport> container = OperationContainer.createForDirectUpdate();
+            OperationContainer<OperationSupport> container = OperationContainer.createForDirectUpdate ();
             container2 = container;
-            assertNotNull(container.add(upEl));
-            OperationSupport support = container.getSupport();
-            support.doOperation(null);
+            assertNotNull (container.add (upEl));
+            OperationSupport support = container.getSupport ();
+            support.doOperation (null);
         }
-        //Thread.sleep(3000);        
-        assertNotNull(toUpdate.getInstalled());
-        assertSame(toUpdate.getInstalled(), upEl);
+        //Thread.sleep(3000);
+        assertNotNull (toUpdate.getInstalled ());
+        assertSame (toUpdate.getInstalled (), upEl);
         // XXX need a separated test, mixing two tests together
         //UpdateUnitProviderFactory.getDefault().refreshProviders();
-        UpdateManager.getDefault().getUpdateUnits();
-        assertSame(toUpdate.getInstalled(), upEl);
-        UpdateUnit uu = UpdateManagerImpl.getInstance().getUpdateUnit(toUpdate.getCodeName());
-        assertNotNull(uu);
-        assertEquals(toUpdate.toString(), uu.toString());
+        UpdateManager.getDefault ().getUpdateUnits (UpdateManager.TYPE.MODULE);
+        assertSame (toUpdate.getInstalled (), upEl);
+        UpdateUnit uu = UpdateManagerImpl.getInstance ().getUpdateUnit (toUpdate.getCodeName ());
+        assertNotNull (uu);
+        assertEquals (toUpdate.toString (), uu.toString ());
         assertTrue ("UpdateUnit before update and after update are equals.", toUpdate.equals (uu));
-        assertTrue(toUpdate.getAvailableUpdates().isEmpty());
+        assertTrue (toUpdate.getAvailableUpdates ().isEmpty ());
         
         
-        List<OperationContainer.OperationInfo> all = container2.listAll();
+        List<OperationContainer.OperationInfo> all = container2.listAll ();
         for (OperationContainer.OperationInfo oi : all) {
-            UpdateUnit toUpdateUnit = oi.getUpdateUnit();
-            assertNotNull(getModuleInfos().get(toUpdateUnit.getCodeName()));
-            ModuleInfo info = getModuleInfos().get(toUpdateUnit.getCodeName());
-            assertNotNull(info);
-            assertTrue(info.isEnabled());
-            assertNotNull(Utilities.toModule(toUpdateUnit.getCodeName(), null));
-            assertTrue(Utilities.toModule(toUpdateUnit.getCodeName(), null).isEnabled());
+            UpdateUnit toUpdateUnit = oi.getUpdateUnit ();
+            assertNotNull (getModuleInfos ().get (toUpdateUnit.getCodeName ()));
+            ModuleInfo info = getModuleInfos ().get (toUpdateUnit.getCodeName ());
+            assertNotNull (info);
+            assertTrue (info.isEnabled ());
+            assertNotNull (Utilities.toModule (toUpdateUnit.getCodeName (), null));
+            assertTrue (Utilities.toModule (toUpdateUnit.getCodeName (), null).isEnabled ());
         }
         
         return upEl;
     }
     
-    void disableModule(UpdateUnit toDisable) throws Exception {
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Modules");
-        File f = new File(getWorkDir(), "config/Modules");
-        File f2 = new File(getWorkDir(), "modules");
-        assertTrue(f.listFiles() != null && f.listFiles().length != 0);
-        assertTrue(f2.listFiles() != null && f2.listFiles().length != 0);
-        assertFalse(fileChanges[0]);
-        assertNotNull(getModuleInfos().get(toDisable.getCodeName()));
+    void disableModule (UpdateUnit toDisable) throws Exception {
+        FileObject fo = Repository.getDefault ().getDefaultFileSystem ().findResource ("Modules");
+        File f = new File (getWorkDir (), "config/Modules");
+        File f2 = new File (getWorkDir (), "modules");
+        assertTrue (f.listFiles () != null && f.listFiles ().length != 0);
+        assertTrue (f2.listFiles () != null && f2.listFiles ().length != 0);
+        assertFalse (fileChanges[0]);
+        assertNotNull (getModuleInfos ().get (toDisable.getCodeName ()));
         
-        assertNotNull(toDisable);
+        assertNotNull (toDisable);
         
-        assertSame(toDisable, Utilities.toUpdateUnit(toDisable.getCodeName()));
+        assertSame (toDisable, Utilities.toUpdateUnit (toDisable.getCodeName ()));
         
-        OperationContainer<OperationSupport> container = OperationContainer.createForDisable();
-        assertNotNull(container.add(toDisable.getInstalled()));
-        OperationSupport support = container.getSupport();
-        assertNotNull(support);
-        support.doOperation(null);
-        assertNotNull(toDisable.getInstalled());
+        OperationContainer<OperationSupport> container = OperationContainer.createForDisable ();
+        assertNotNull (container.add (toDisable.getInstalled ()));
+        OperationSupport support = container.getSupport ();
+        assertNotNull (support);
+        support.doOperation (null);
+        assertNotNull (toDisable.getInstalled ());
         
-        assertTrue(f.listFiles() != null && f.listFiles().length != 0);
-        assertTrue(f2.listFiles() != null && f2.listFiles().length != 0);
-        assertEquals(1, fo.getChildren().length);
-        assertEquals(f.listFiles()[0], FileUtil.toFile(fo.getChildren()[0]));
+        assertTrue (f.listFiles () != null && f.listFiles ().length != 0);
+        assertTrue (f2.listFiles () != null && f2.listFiles ().length != 0);
+        assertEquals (1, fo.getChildren ().length);
+        assertEquals (f.listFiles ()[0], FileUtil.toFile (fo.getChildren ()[0]));
         
-        assertNotNull(getModuleInfos().get(toDisable.getCodeName()));
-        ModuleInfo info = getModuleInfos().get(toDisable.getCodeName());
-        assertNotNull(info);
-        assertFalse(info.isEnabled());
-        assertNotNull(Utilities.toModule(toDisable.getCodeName(), null));
-        assertFalse(Utilities.toModule(toDisable.getCodeName(), null).isEnabled());
+        assertNotNull (getModuleInfos ().get (toDisable.getCodeName ()));
+        ModuleInfo info = getModuleInfos ().get (toDisable.getCodeName ());
+        assertNotNull (info);
+        assertFalse (info.isEnabled ());
+        assertNotNull (Utilities.toModule (toDisable.getCodeName (), null));
+        assertFalse (Utilities.toModule (toDisable.getCodeName (), null).isEnabled ());
     }
     
-    void enableModule(UpdateUnit toEnable) throws Exception {
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Modules");
-        File f = new File(getWorkDir(), "config/Modules");
-        File f2 = new File(getWorkDir(), "modules");
-        assertTrue(f.listFiles() != null && f.listFiles().length != 0);
-        assertTrue(f2.listFiles() != null && f2.listFiles().length != 0);
-        assertFalse(fileChanges[0]);
-        assertNotNull(getModuleInfos().get(toEnable.getCodeName()));
+    void enableModule (UpdateUnit toEnable) throws Exception {
+        FileObject fo = Repository.getDefault ().getDefaultFileSystem ().findResource ("Modules");
+        File f = new File (getWorkDir (), "config/Modules");
+        File f2 = new File (getWorkDir (), "modules");
+        assertTrue (f.listFiles () != null && f.listFiles ().length != 0);
+        assertTrue (f2.listFiles () != null && f2.listFiles ().length != 0);
+        assertFalse (fileChanges[0]);
+        assertNotNull (getModuleInfos ().get (toEnable.getCodeName ()));
         
-        assertNotNull(toEnable);
+        assertNotNull (toEnable);
         
-        assertSame(toEnable, Utilities.toUpdateUnit(toEnable.getCodeName()));
+        assertSame (toEnable, Utilities.toUpdateUnit (toEnable.getCodeName ()));
         
-        OperationContainer<OperationSupport> container = OperationContainer.createForEnable();
-        assertNotNull(container.add(toEnable.getInstalled()));
-        OperationSupport support = container.getSupport();
-        assertNotNull(support);
-        support.doOperation(null);
-        assertNotNull(toEnable.getInstalled());
+        OperationContainer<OperationSupport> container = OperationContainer.createForEnable ();
+        assertNotNull (container.add (toEnable.getInstalled ()));
+        OperationSupport support = container.getSupport ();
+        assertNotNull (support);
+        support.doOperation (null);
+        assertNotNull (toEnable.getInstalled ());
         
-        assertTrue(f.listFiles() != null && f.listFiles().length != 0);
-        assertTrue(f2.listFiles() != null && f2.listFiles().length != 0);
-        assertEquals(1, fo.getChildren().length);
-        assertEquals(f.listFiles()[0], FileUtil.toFile(fo.getChildren()[0]));
+        assertTrue (f.listFiles () != null && f.listFiles ().length != 0);
+        assertTrue (f2.listFiles () != null && f2.listFiles ().length != 0);
+        assertEquals (1, fo.getChildren ().length);
+        assertEquals (f.listFiles ()[0], FileUtil.toFile (fo.getChildren ()[0]));
         
         //Thread.sleep(3000);
-        assertNotNull(getModuleInfos().get(toEnable.getCodeName()));
-        ModuleInfo info = getModuleInfos().get(toEnable.getCodeName());
-        assertNotNull(info);
-        assertTrue(info.isEnabled());
-        assertNotNull(Utilities.toModule(toEnable.getCodeName(), null));
-        assertTrue(Utilities.toModule(toEnable.getCodeName(), null).isEnabled());
+        assertNotNull (getModuleInfos ().get (toEnable.getCodeName ()));
+        ModuleInfo info = getModuleInfos ().get (toEnable.getCodeName ());
+        assertNotNull (info);
+        assertTrue (info.isEnabled ());
+        assertNotNull (Utilities.toModule (toEnable.getCodeName (), null));
+        assertTrue (Utilities.toModule (toEnable.getCodeName (), null).isEnabled ());
     }
     
     
-    void unInstallModule(final UpdateUnit toUnInstall) throws Exception {
-        File configModules = new File(getWorkDir(), "config/Modules");
-        File modules = new File(getWorkDir(), "modules");
-        int configModulesSize = (configModules.listFiles() != null) ? configModules.listFiles().length : 0;
-        int modulesSize = (modules.listFiles() != null) ? modules.listFiles().length : 0;
-        FileObject foConfigModules = Repository.getDefault().getDefaultFileSystem().findResource("Modules");
-        assertNotNull(foConfigModules);
-        int foConfigModulesSize = foConfigModules.getChildren().length;
+    void unInstallModule (final UpdateUnit toUnInstall) throws Exception {
+        File configModules = new File (getWorkDir (), "config/Modules");
+        File modules = new File (getWorkDir (), "modules");
+        int configModulesSize = (configModules.listFiles () != null) ? configModules.listFiles ().length : 0;
+        int modulesSize = (modules.listFiles () != null) ? modules.listFiles ().length : 0;
+        FileObject foConfigModules = Repository.getDefault ().getDefaultFileSystem ().findResource ("Modules");
+        assertNotNull (foConfigModules);
+        int foConfigModulesSize = foConfigModules.getChildren ().length;
         
-        assertFalse(fileChanges[1]);
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Modules");
-        assertNotNull(fo);
-        assertTrue(fo.getChildren().length > 0);
-        assertNotNull(getModuleInfos().get(toUnInstall.getCodeName()));
+        assertFalse (fileChanges[1]);
+        FileObject fo = Repository.getDefault ().getDefaultFileSystem ().findResource ("Modules");
+        assertNotNull (fo);
+        assertTrue (fo.getChildren ().length > 0);
+        assertNotNull (getModuleInfos ().get (toUnInstall.getCodeName ()));
         
-        assertNotNull(toUnInstall);
+        assertNotNull (toUnInstall);
         
-        assertSame(toUnInstall, Utilities.toUpdateUnit(toUnInstall.getCodeName()));
+        assertSame (toUnInstall, Utilities.toUpdateUnit (toUnInstall.getCodeName ()));
         
-        OperationContainer<OperationSupport> container = OperationContainer.createForUninstall();
-        OperationContainer.OperationInfo operationInfo = container.add(toUnInstall.getInstalled());
-        assertNotNull(operationInfo);
-        operationInfo.getRequiredElements();
-        OperationSupport support = container.getSupport();
-        assertNotNull(support);
-        support.doOperation(null);
-        assertNull(toUnInstall.getInstalled());
-
-        assertTrue(configModules.listFiles().length < configModulesSize);
+        OperationContainer<OperationSupport> container = OperationContainer.createForUninstall ();
+        OperationContainer.OperationInfo operationInfo = container.add (toUnInstall.getInstalled ());
+        assertNotNull (operationInfo);
+        operationInfo.getRequiredElements ();
+        OperationSupport support = container.getSupport ();
+        assertNotNull (support);
+        support.doOperation (null);
+        assertNull (toUnInstall.getInstalled ());
+        
+        assertTrue (configModules.listFiles ().length < configModulesSize);
         //assertTrue(modules.listFiles().length < modulesSize);
-        assertTrue(foConfigModules.getPath(), foConfigModules.getChildren().length < foConfigModulesSize);
+        assertTrue (foConfigModules.getPath (), foConfigModules.getChildren ().length < foConfigModulesSize);
         
-        assertTrue(fileChanges[1]);
+        assertTrue (fileChanges[1]);
         fileChanges[1]=false;
         //TODO: to know why Thread.sleep(3000) must be present in these tests
         /*if (!Thread.currentThread().equals(fileChangeThreads[1])) {
@@ -406,8 +434,8 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
         
         
         //Thread.sleep(3000);
-        ModuleInfo info = getModuleInfos().get(toUnInstall.getCodeName());
-        assertNull(info);
-        assertNull(Utilities.toModule(toUnInstall.getCodeName(), null));
+        ModuleInfo info = getModuleInfos ().get (toUnInstall.getCodeName ());
+        assertNull (info);
+        assertNull (Utilities.toModule (toUnInstall.getCodeName (), null));
     }
 }

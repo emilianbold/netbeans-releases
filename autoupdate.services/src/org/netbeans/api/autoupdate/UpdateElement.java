@@ -31,7 +31,19 @@ public final class UpdateElement {
     final UpdateElementImpl impl;
     
     UpdateElement (UpdateElementImpl elementImpl) {
-        impl = elementImpl;
+        if (elementImpl == null) {
+            throw new IllegalArgumentException ("UpdateElementImpl cannot be null while creating UpdateElement.");
+        }
+        this.impl = elementImpl;
+    }
+    
+    /** Returns <code>UpdateUnit</code> where is this <code>UpdateElement</code> contained.
+     * 
+     * @return UpdateUnit in which belongs to
+     */
+    public UpdateUnit getUpdateUnit () {
+        assert impl.getUpdateUnit () != null : "UpdateUnit for UpdateElement " + this + " is not null.";
+        return impl.getUpdateUnit ();
     }
    
     /** Returns the code name of the update, sans release version.
@@ -56,6 +68,14 @@ public final class UpdateElement {
      */
     public String getSpecificationVersion () {
         return impl.getSpecificationVersion ().toString ();
+    }
+    
+    /** Returns if the <code>UpdateElement</code> is active in the system.
+     * 
+     * @return true of UpdateElement is active
+     */
+    public boolean isEnabled () {
+        return impl.isEnabled ();
     }
     
     /** Returns the description of update, displaying in UI to end users.
@@ -106,14 +126,25 @@ public final class UpdateElement {
         return impl.getCategory ();
     }
 
+    /** Returns date when <code>UpdateElement</code> was published or install time
+     * if the <code>UpdateElement</code> is installed already. Can return null
+     * if the date is unknown.
+     * 
+     * @return date in format "yyyy/MM/dd" or null
+     */
+    public String getDate () {
+        return impl.getDate ();
+    }
+
     /** Returns text of license agreement if the <code>UpdateElement</code> has a copyright.
      * 
      * @return String or null
      */
-    public String getLicence() {                
-        return impl.getUpdateItemImpl ().getAgreement();
+    public String getLicence () {                
+        return impl.getLicence ();
     }
     
+    @Override
     public boolean equals(Object obj) {
         if (obj == null)
             return false;
@@ -127,6 +158,7 @@ public final class UpdateElement {
         return true;
     }
 
+    @Override
     public int hashCode() {
         int hash = 3;
 
@@ -134,8 +166,6 @@ public final class UpdateElement {
                                               : 0);
         return hash;
     }
-
-
     
     @Override
     public String toString () {

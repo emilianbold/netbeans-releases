@@ -19,13 +19,14 @@
 
 package org.netbeans.spi.autoupdate;
 
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import org.netbeans.api.autoupdate.OperationException;
+import org.netbeans.api.progress.ProgressHandle;
 
 /**
  *
@@ -82,7 +83,7 @@ public class CustomProviderFactory {
         UpdateItem result = UpdateItem.createModule(codeName,
                                                     specificationVersion,
                                                     distribution, author,
-                                                    downloadSize, homepage,
+                                                    downloadSize, homepage, null, "test-category",
                                                     manifest, true, true, "my-cluster",
                                                     license);
         return result;
@@ -114,7 +115,7 @@ public class CustomProviderFactory {
         UpdateItem result = UpdateItem.createModule(codeName,
                                                     specificationVersion,
                                                     distribution, author,
-                                                    downloadSize, homepage,
+                                                    downloadSize, homepage, null, "test-category",
                                                     manifest, true, true, "my-cluster", /*ci,*/
                                                     license);
         return result;
@@ -122,8 +123,8 @@ public class CustomProviderFactory {
     
     private static CustomInstaller createCustomInstaller () {
         return new CustomInstaller () {
-            public boolean install (UpdateItem item, File f) {
-                assert item != null;
+            public boolean install (String codeName, String specificationVersion, ProgressHandle handle) throws OperationException {
+                assert codeName != null && specificationVersion != null;
                 return true;
             }
         };

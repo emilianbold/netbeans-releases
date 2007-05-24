@@ -22,9 +22,12 @@ package org.netbeans.modules.autoupdate.services;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
+import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.spi.autoupdate.UpdateProvider;
 
@@ -34,8 +37,12 @@ import org.netbeans.spi.autoupdate.UpdateProvider;
  */
 public class UpdateManagerImpl extends Object {
     private static final UpdateManagerImpl INSTANCE = new UpdateManagerImpl();
+    private static final UpdateManager.TYPE[] DEFAULT_TYPES = new UpdateManager.TYPE [] { UpdateManager.TYPE.FEATURE };
     
-    private Reference<Map<String, UpdateUnit>> updateUnits = null;
+    private Reference<Map<String, UpdateUnit>> updateUnitsRef = null;
+    private List<UpdateUnit> holderUnits; // XXX: temporary only
+    private  Map<String, UpdateUnit> holderMap; // XXX: temporary only
+    private Logger logger = null;
     
     // package-private for tests only
     
@@ -46,18 +53,44 @@ public class UpdateManagerImpl extends Object {
     /** Creates a new instance of UpdateManagerImpl */
     private UpdateManagerImpl () {}
     
-    public List<UpdateUnit> getUpdateUnits() {        
-        Reference<Map<String, UpdateUnit>> tmpUpdateUnits = null;
+    private List<UpdateUnit> getUpdateUnits () {
+        Reference<Map<String, UpdateUnit>> tmpUpdateUnitsRef = null;
         synchronized(UpdateManagerImpl.class) {
-            tmpUpdateUnits = updateUnits;
+            tmpUpdateUnitsRef = updateUnitsRef;
         }        
-        if (tmpUpdateUnits == null || tmpUpdateUnits.get() == null) {
-            tmpUpdateUnits = new WeakReference<Map<String, UpdateUnit>> (UpdateUnitFactory.getDefault().getUpdateUnits());
+        if (tmpUpdateUnitsRef == null || tmpUpdateUnitsRef.get() == null) {
+            tmpUpdateUnitsRef = new WeakReference<Map<String, UpdateUnit>> (UpdateUnitFactory.getDefault ().getUpdateUnits ());
             synchronized(UpdateManagerImpl.class) {
-                updateUnits = tmpUpdateUnits;
+                updateUnitsRef = tmpUpdateUnitsRef;
             }
         }
-        return unitsFromReference(tmpUpdateUnits);
+        return unitsFromReference (tmpUpdateUnitsRef);
+    }
+    
+    public List<UpdateUnit> getUpdateUnits (UpdateManager.TYPE... types) {
+        if (types == null || types.length == 0) {
+            types = DEFAULT_TYPES;
+        }
+        
+        if (updateUnitsRef == null) {
+            getUpdateUnits ();
+        }
+        assert updateUnitsRef != null : "updateUnits must be initialized.";
+        
+        List<UpdateUnit> askedUnits = new ArrayList<UpdateUnit> ();
+        List<UpdateManager.TYPE> typesL = Arrays.asList (types);
+        
+        for (UpdateUnit unit : unitsFromReference (updateUnitsRef)) {
+            UpdateUnitImpl impl = Trampoline.API.impl (unit);
+            if (typesL.contains (impl.getType ())) {
+                askedUnits.add (unit);
+            }
+        }
+
+        holderUnits = unitsFromReference (updateUnitsRef);
+        holderMap = mapFromReference (updateUnitsRef);
+        
+        return askedUnits;
     }
     
     private static List<UpdateUnit> unitsFromReference(Reference<Map<String, UpdateUnit>> reference) {
@@ -66,7 +99,6 @@ public class UpdateManagerImpl extends Object {
         if (m != null) {
             retval = new ArrayList<UpdateUnit> (m.values()) {
                 Map<String, UpdateUnit> keepIt = m;
-                //Collections.list(Collections.enumeration(m.values()));
             };
         } else {    
             retval = Collections.emptyList();
@@ -85,28 +117,53 @@ public class UpdateManagerImpl extends Object {
         return retval;        
     }
     
-            
+    // XXX: wrong usage; replace with something better
     public UpdateUnit getUpdateUnit (String moduleCodeName) {
         // trim release impl.
         if (moduleCodeName.indexOf('/') != -1) {
             int to = moduleCodeName.indexOf('/');
             moduleCodeName = moduleCodeName.substring(0, to);
         }
-        if (updateUnits == null) {getUpdateUnits ();}
-        assert updateUnits != null : "updateUnits must be initialized.";        
-        return mapFromReference(updateUnits).get(moduleCodeName);
+        if (updateUnitsRef == null) {
+            getUpdateUnits ();
+            holderUnits = unitsFromReference (updateUnitsRef);
+            holderMap = mapFromReference (updateUnitsRef);
+        }
+        assert updateUnitsRef != null : "updateUnits must be initialized.";
+        
+        return mapFromReference(updateUnitsRef).get(moduleCodeName);
     }
     
-    public List<UpdateUnit> getUpdateUnits (UpdateProvider provider) {
+    public List<UpdateUnit> getUpdateUnits (UpdateProvider provider, UpdateManager.TYPE... types) {
         Map<String, UpdateUnit> units = UpdateUnitFactory.getDefault().getUpdateUnits (provider);
-        return Collections.list (Collections.enumeration (units.values ()));
+        List<UpdateUnit> askedUnits = new ArrayList<UpdateUnit> ();
+        
+        if (types == null || types.length == 0) {
+            types = DEFAULT_TYPES;
+        }
+        List<UpdateManager.TYPE> typesL = Arrays.asList (types);
+        
+        for (UpdateUnit unit : units.values ()) {
+            UpdateUnitImpl impl = Trampoline.API.impl (unit);
+            if (typesL.contains (impl.getType ())) {
+                askedUnits.add (unit);
+            }
+        }
+        return askedUnits;
     }
     
     public void cleanupUpdateUnits () {
         synchronized(UpdateManagerImpl.class) {
-            if (updateUnits != null) {
-                updateUnits = null;
+            if (updateUnitsRef != null) {
+                updateUnitsRef = null;
             }
         }
+    }
+    
+    private Logger getLogger () {
+        if (logger == null) {
+            logger = Logger.getLogger (UpdateManagerImpl.class.getName ());
+        }
+        return logger;
     }
 }

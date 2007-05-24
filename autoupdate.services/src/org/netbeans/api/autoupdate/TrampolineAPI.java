@@ -19,6 +19,7 @@
 
 package org.netbeans.api.autoupdate;
 
+import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.modules.autoupdate.services.*;
 import org.netbeans.api.autoupdate.UpdateUnit;
@@ -41,7 +42,9 @@ final class TrampolineAPI extends Trampoline {
     }
     
     protected UpdateElement createUpdateElement(UpdateElementImpl impl) {
-        return new UpdateElement (impl);
+        UpdateElement element = new UpdateElement (impl);
+        impl.setUpdateElement (element);
+        return element;
     }
 
     protected UpdateElementImpl impl (UpdateElement element) {
@@ -50,6 +53,10 @@ final class TrampolineAPI extends Trampoline {
 
     protected UpdateItemImpl impl(UpdateItem item) {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    protected UpdateItem createUpdateItem (UpdateItemImpl impl) {
+        throw new UnsupportedOperationException ("Not supported yet.");
     }
 
     protected OperationContainerImpl impl(OperationContainer container) {

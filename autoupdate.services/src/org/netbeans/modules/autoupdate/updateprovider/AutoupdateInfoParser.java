@@ -22,6 +22,8 @@ package org.netbeans.modules.autoupdate.updateprovider;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -149,11 +151,11 @@ public class AutoupdateInfoParser {
                 NodeList licenseElements = ((Element) n).getElementsByTagName (AutoupdateCatalogParser.TAG_LICENSE);
                 if (l10nElements != null && l10nElements.getLength () == 1) {
                     if (! onlyLicense) {
-                        res = new SimpleItem.Localization (n);
+                        res = new SimpleItem.Localization (n, null);
                     }
                 } else if (manifestElements != null && manifestElements.getLength () == 1) {
                     if (! onlyLicense) {
-                        res = new SimpleItem.Module (n);
+                        res = new SimpleItem.Module (n, null);
                     }
                 }
                 if (licenseElements != null && licenseElements.getLength () == 1) {

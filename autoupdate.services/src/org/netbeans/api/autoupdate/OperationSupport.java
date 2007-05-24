@@ -47,6 +47,11 @@ public final class OperationSupport {
         case DISABLE:
             impl = OperationSupportImpl.forDisable();
             break;
+        case CUSTOM_INSTALL:
+            impl = OperationSupportImpl.forCustomInstall ();
+            break;
+        default:
+            assert false : "Unknown OperationSupport for type " + type;
         }
      
         assert impl != null;

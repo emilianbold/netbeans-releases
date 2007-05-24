@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import org.netbeans.ModuleManager;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.core.startup.Main;
 import org.netbeans.spi.autoupdate.CustomInstaller;
 import org.netbeans.spi.autoupdate.UpdateItem;
@@ -34,7 +35,7 @@ import org.netbeans.spi.autoupdate.UpdateLicense;
 import org.netbeans.spi.autoupdate.UpdateProvider;
 /**
  *
- * @author Radek Matous
+ * @author Radek Matous, Jirka Rechtacek
  */
 public class TestUtils {
     
@@ -80,7 +81,7 @@ public class TestUtils {
     }
     
     private static CustomInstaller customInstaller = new CustomInstaller () {
-        public boolean install (UpdateItem item, File f) throws OperationException {
+        public boolean install (String codeName, String specificationVersion, ProgressHandle handle) throws OperationException {
             assert false : "Don't call unset installer";
             return false;
         }
@@ -112,9 +113,9 @@ public class TestUtils {
         CustomInstaller ci = createCustomInstaller ();
         assert ci != null;
         UpdateLicense license = UpdateLicense.createUpdateLicense ("none-license", "no-license");
-        item = UpdateItem.createNativeComponent (codeName,
+        item = UpdateItem.createNativeComponent (
+                                                    codeName,
                                                     specificationVersion,
-                                                    distribution,
                                                     downloadSize,
                                                     null, // dependencies
                                                     displayName,
@@ -127,9 +128,9 @@ public class TestUtils {
     
     private static CustomInstaller createCustomInstaller () {
         return new CustomInstaller () {
-            public boolean install(UpdateItem item, File f) throws OperationException {
+            public boolean install (String codeName, String specificationVersion, ProgressHandle handle) throws OperationException {
                 assert item != null;
-                return customInstaller.install(item, f);
+                return customInstaller.install (codeName, specificationVersion, handle);
             }
         };
     }

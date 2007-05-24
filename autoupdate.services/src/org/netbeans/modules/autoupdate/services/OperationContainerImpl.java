@@ -20,12 +20,10 @@
 package org.netbeans.modules.autoupdate.services;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import org.netbeans.api.autoupdate.*;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
-import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 
 /**
@@ -34,66 +32,67 @@ import org.openide.modules.ModuleInfo;
  */
 public final class OperationContainerImpl<Support> {
     private OperationContainer<Support> container;
-    private OperationContainerImpl() {}    
+    private OperationContainerImpl () {}
     private List<OperationInfo<Support>> operations = new ArrayList<OperationInfo<Support>>();
-    private List<UpdateElement> scheduledForReboot = new ArrayList<UpdateElement> ();        
-    public static OperationContainerImpl<InstallSupport> createForInstall() {
+    private List<UpdateElement> scheduledForReboot = new ArrayList<UpdateElement> ();
+    public static OperationContainerImpl<InstallSupport> createForInstall () {
         return new OperationContainerImpl<InstallSupport> (OperationType.INSTALL);
     }
-    public static OperationContainerImpl<InstallSupport> createForUpdate() {
+    public static OperationContainerImpl<InstallSupport> createForUpdate () {
         return new OperationContainerImpl<InstallSupport> (OperationType.UPDATE);
     }
-    public static OperationContainerImpl<OperationSupport> createForDirectInstall() {
+    public static OperationContainerImpl<OperationSupport> createForDirectInstall () {
         return new OperationContainerImpl<OperationSupport> (OperationType.INSTALL);
     }
-    public static OperationContainerImpl<OperationSupport> createForDirectUpdate() {
+    public static OperationContainerImpl<OperationSupport> createForDirectUpdate () {
         return new OperationContainerImpl<OperationSupport> (OperationType.UPDATE);
     }
-    public static OperationContainerImpl<OperationSupport> createForUninstall() {
+    public static OperationContainerImpl<OperationSupport> createForUninstall () {
         return new OperationContainerImpl<OperationSupport> (OperationType.UNINSTALL);
     }
-    public static OperationContainerImpl<OperationSupport> createForEnable() {
+    public static OperationContainerImpl<OperationSupport> createForEnable () {
         return new OperationContainerImpl<OperationSupport> (OperationType.ENABLE);
     }
-    public static OperationContainerImpl<OperationSupport> createForDisable() {
+    public static OperationContainerImpl<OperationSupport> createForDisable () {
         return new OperationContainerImpl<OperationSupport> (OperationType.DISABLE);
     }
-    public OperationInfo<Support> add(UpdateUnit updateUnit, UpdateElement updateElement) throws IllegalArgumentException {
+    public static OperationContainerImpl<OperationSupport> createForInstallNativeComponent () {
+        return new OperationContainerImpl<OperationSupport> (OperationType.CUSTOM_INSTALL);
+    }
+    public OperationInfo<Support> add (UpdateUnit updateUnit, UpdateElement updateElement) throws IllegalArgumentException {
         OperationInfo<Support> retval = null;
-        boolean isValid = isValid(updateUnit, updateElement);
+        boolean isValid = isValid (updateUnit, updateElement);
         if (!isValid) {
-            throw new IllegalArgumentException(updateElement.getCodeName());
+            throw new IllegalArgumentException ("Invalid " + updateElement.getCodeName () + " for operation " + type);
         }
         if (type == OperationType.INSTALL || type == OperationType.UPDATE) {
-            if (scheduledForReboot.contains(updateElement)) {
+            if (scheduledForReboot.contains (updateElement)) {
                 return null;
             }
         }
         if (isValid) {
             if (type == OperationType.UNINSTALL || type == OperationType.ENABLE || type == OperationType.DISABLE) {
-                isValid = (updateUnit.getInstalled() == updateElement);
-                if (!isValid) {
-                    throw new IllegalArgumentException(updateElement.getCodeName());
-                }                
+                if (updateUnit.getInstalled () != updateElement) {
+                    throw new IllegalArgumentException (updateUnit.getInstalled () + " and " + updateElement + "must be same for operation " + type);
+                }
             } else {
-                isValid = (updateUnit.getInstalled() != updateElement);
-                if (!isValid) {
-                    throw new IllegalArgumentException(updateElement.getCodeName());
-                }                
+                if (updateUnit.getInstalled () == updateElement) {
+                    throw new IllegalArgumentException (updateUnit.getInstalled () + " and " + updateElement + "cannot be same for operation " + type);
+                }
             }
         }
         synchronized(this) {
-            if (!contains(updateUnit, updateElement)) {
+            if (!contains (updateUnit, updateElement)) {
                 retval = Trampoline.API.createOperationInfo (new OperationInfoImpl<Support> (updateUnit, updateElement));
                 operations.add (retval);
             }
         }
         return retval;
     }
-    public boolean remove(UpdateElement updateElement) {
-        OperationInfo toRemove = find(updateElement);
+    public boolean remove (UpdateElement updateElement) {
+        OperationInfo toRemove = find (updateElement);
         if (toRemove != null) {
-            remove(toRemove);
+            remove (toRemove);
         }
         return toRemove != null;
     }
@@ -102,18 +101,18 @@ public final class OperationContainerImpl<Support> {
         scheduledForReboot.add (el);
     }
     
-    public boolean contains(UpdateElement updateElement) {
-        return find(updateElement) != null;
+    public boolean contains (UpdateElement updateElement) {
+        return find (updateElement) != null;
     }
     
     public void setOperationContainer (OperationContainer<Support> container) {
         this.container = container;
     }
     
-    private OperationInfo<Support> find(UpdateElement updateElement) {
+    private OperationInfo<Support> find (UpdateElement updateElement) {
         OperationInfo<Support> toRemove = null;
         for (OperationInfo<Support> info : listAll ()) {
-            if (info.getUpdateElement().equals(updateElement)) {
+            if (info.getUpdateElement ().equals (updateElement)) {
                 toRemove = info;
                 break;
             }
@@ -121,11 +120,11 @@ public final class OperationContainerImpl<Support> {
         return toRemove;
     }
     
-    private boolean contains(UpdateUnit unit, UpdateElement element) {
-        List<OperationInfo<Support>> infos = listAll();
+    private boolean contains (UpdateUnit unit, UpdateElement element) {
+        List<OperationInfo<Support>> infos = listAll ();
         for (OperationInfo info : infos) {
-            if (info.getUpdateElement().equals(element) ||
-                    info.getUpdateUnit().equals(unit)) {
+            if (info.getUpdateElement ().equals (element) ||
+                    info.getUpdateUnit ().equals (unit)) {
                 return true;
             }
         }
@@ -143,14 +142,14 @@ public final class OperationContainerImpl<Support> {
             // find type of operation
             // differ primary element and required elements
             // primary use-case can be Install but could required update of other elements
-            if (!isValid(oii.getUpdateUnit(), oii.getUpdateElement())) {
-                retval.add(oii);
+            if (!isValid (oii.getUpdateUnit (), oii.getUpdateElement ())) {
+                retval.add (oii);
             }
         }
         return retval;
     }
     
-    public boolean isValid(UpdateUnit updateUnit, UpdateElement updateElement) {
+    public boolean isValid (UpdateUnit updateUnit, UpdateElement updateElement) {
         if (updateElement == null) {
             throw new IllegalArgumentException ("UpdateElement cannot be null.");
         } else if (updateUnit == null) {
@@ -158,37 +157,37 @@ public final class OperationContainerImpl<Support> {
         }
         boolean isValid = false;
         switch (type) {
-            case INSTALL : 
-                isValid = OperationValidator.isValidOperation(type, updateUnit, updateElement);
-                // at least first add must pass and respect type of operation
-                if (! isValid && operations.size() > 0) {
-                    // try Update
-                    isValid = OperationValidator.isValidOperation (OperationType.UPDATE, updateUnit, updateElement);
-                }
-                break;
-            case UPDATE :
-                isValid = OperationValidator.isValidOperation(type, updateUnit, updateElement);
-                // at least first add must pass and respect type of operation
-                if (! isValid && operations.size() > 0) {
-                    // try Update
-                    isValid = OperationValidator.isValidOperation (OperationType.INSTALL, updateUnit, updateElement);
-                }
-                break;
-            default:
-                isValid = OperationValidator.isValidOperation(type, updateUnit, updateElement);
+        case INSTALL :
+            isValid = OperationValidator.isValidOperation (type, updateUnit, updateElement);
+            // at least first add must pass and respect type of operation
+            if (! isValid && operations.size () > 0) {
+                // try Update
+                isValid = OperationValidator.isValidOperation (OperationType.UPDATE, updateUnit, updateElement);
+            }
+            break;
+        case UPDATE :
+            isValid = OperationValidator.isValidOperation (type, updateUnit, updateElement);
+            // at least first add must pass and respect type of operation
+            if (! isValid && operations.size () > 0) {
+                // try Update
+                isValid = OperationValidator.isValidOperation (OperationType.INSTALL, updateUnit, updateElement);
+            }
+            break;
+        default:
+            isValid = OperationValidator.isValidOperation (type, updateUnit, updateElement);
         }
-                    
+        
         return isValid;
     }
     
-    public synchronized void remove(OperationInfo op) {
+    public synchronized void remove (OperationInfo op) {
         synchronized(this) {
-            operations.remove(op);
+            operations.remove (op);
         }
     }
-    public synchronized void removeAll() {
+    public synchronized void removeAll () {
         synchronized(this) {
-            operations.clear();
+            operations.clear ();
         }
     }
     public class OperationInfoImpl<Support> {
@@ -198,21 +197,21 @@ public final class OperationContainerImpl<Support> {
             this.updateElement = updateElement;
             this.uUnit = uUnit;
         }
-        public UpdateElement/*or null*/ getUpdateElement() {
+        public UpdateElement/*or null*/ getUpdateElement () {
             return updateElement;
         }
-        public UpdateUnit/*or null*/ getUpdateUnit() {
+        public UpdateUnit/*or null*/ getUpdateUnit () {
             return uUnit;
         }
-        public List<UpdateElement> getRequiredElements(){
+        public List<UpdateElement> getRequiredElements (){
             List<ModuleInfo> moduleInfos = new ArrayList<ModuleInfo>();
             for (OperationContainer.OperationInfo oii : listAll ()) {
-                UpdateElementImpl impl = Trampoline.API.impl(oii.getUpdateElement());
-                ModuleInfo info = impl.getModuleInfo();
-                assert info != null : "ModuleInfo for UpdateElement " + oii.getUpdateElement () + " found.";
-                moduleInfos.add(info);
+                UpdateElementImpl impl = Trampoline.API.impl (oii.getUpdateElement ());
+                List<ModuleInfo> infos = impl.getModuleInfos ();
+                assert infos != null : "ModuleInfo for UpdateElement " + oii.getUpdateElement () + " found.";
+                moduleInfos.addAll (infos);
             }
-            return OperationValidator.getRequiredElements(type, getUpdateElement(), moduleInfos);
+            return OperationValidator.getRequiredElements (type, getUpdateElement (), moduleInfos);
         }
         /*
         public Set<Dependency> getBrokenDependencies(){
@@ -221,22 +220,22 @@ public final class OperationContainerImpl<Support> {
         public Set<String> getBrokenDependencies (){
             List<ModuleInfo> moduleInfos = new ArrayList<ModuleInfo>();
             for (OperationContainer.OperationInfo oii : listAll ()) {
-                UpdateElementImpl impl = Trampoline.API.impl(oii.getUpdateElement());
-                ModuleInfo info = impl.getModuleInfo();
-                assert info != null : "ModuleInfo for UpdateElement " + oii.getUpdateElement () + " found.";
-                moduleInfos.add(info);
+                UpdateElementImpl impl = Trampoline.API.impl (oii.getUpdateElement ());
+                List<ModuleInfo> infos = impl.getModuleInfos ();
+                assert infos != null : "ModuleInfo for UpdateElement " + oii.getUpdateElement () + " found.";
+                moduleInfos.addAll (infos);
             }
             
-            return Utilities.getBrokenDependencies (getUpdateElement(), moduleInfos);
+            return Utilities.getBrokenDependencies (getUpdateElement (), moduleInfos);
         }
     }
     
     /** Creates a new instance of OperationContainer */
-    private OperationContainerImpl(OperationType type) {
+    private OperationContainerImpl (OperationType type) {
         this.type = type;
     }
     
-    public OperationType getType() {
+    public OperationType getType () {
         return type;
     }
     
@@ -252,7 +251,9 @@ public final class OperationContainerImpl<Support> {
         /** Enable <code>UpdateElement</code> */
         ENABLE,
         /** Disable <code>UpdateElement</code> */
-        DISABLE
+        DISABLE,
+        /** Install <code>UpdateElement</code> with custom installer. */
+        CUSTOM_INSTALL
     }
     private OperationType type;
 }

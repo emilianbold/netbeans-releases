@@ -36,7 +36,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -56,7 +55,6 @@ import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.InstallSupport.Installer;
 import org.netbeans.api.autoupdate.InstallSupport.Restarter;
 import org.netbeans.api.autoupdate.InstallSupport.Validator;
-import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.UpdateElement;
@@ -96,8 +94,8 @@ public class InstallSupportImpl {
     private STEP currentStep = STEP.NOTSTARTED;
     
     // validation results
-    private Collection<UpdateElement> trusted = new ArrayList<UpdateElement> ();
-    private Collection<UpdateElement> signed = new ArrayList<UpdateElement> ();
+    private Collection<UpdateElementImpl> trusted = new ArrayList<UpdateElementImpl> ();
+    private Collection<UpdateElementImpl> signed = new ArrayList<UpdateElementImpl> ();
     private Map<UpdateElement, Collection<Certificate>> certs = new HashMap<UpdateElement, Collection<Certificate>> ();
     
     private ExecutorService es = Executors.newSingleThreadExecutor();
@@ -109,7 +107,7 @@ public class InstallSupportImpl {
     public boolean doDownload (final ProgressHandle progress/*or null*/) throws OperationException {
         Callable<Boolean> downloadCallable = new Callable<Boolean>() {
             public Boolean call() throws Exception {
-                assert support.getContainer().listInvalid().isEmpty();
+                assert support.getContainer().listInvalid().isEmpty() : "Container contains no invalid OperationInfo, but " + support.getContainer().listInvalid();
                 synchronized(this) {
                     currentStep = STEP.DOWNLOAD;
                 }
@@ -195,6 +193,8 @@ public class InstallSupportImpl {
                         UpdateElementImpl toUpdateImpl = Trampoline.API.impl(info.getUpdateElement());
                         boolean hasCustom = toUpdateImpl.getInstallInfo().getCustomInstaller() != null;
                         if (hasCustom) {
+                            // XXX: validation of custom installed
+                            assert false : "InstallSupportImpl cannot support CustomInstaller!";
                         } else {
                             doValidate(info, progress, aggregateDownload);
                         }
@@ -231,53 +231,50 @@ public class InstallSupportImpl {
                 }
                 assert support.getContainer().listInvalid().isEmpty();
                 List<OperationInfo<InstallSupport>> infos = support.getContainer().listAll();
-                if (progress != null) progress.start();
+                Set<ModuleUpdateElementImpl> moduleImpls = new HashSet<ModuleUpdateElementImpl> ();
+                Set<FeatureUpdateElementImpl> affectedFeatureImpls = new HashSet<FeatureUpdateElementImpl> ();
                 
-                boolean needsRestart = false;
-                List<OperationInfo> customs = new ArrayList<OperationInfo> ();
-                List<File> files4custom = new ArrayList<File> ();
                 for (OperationInfo info : infos) {
-                    synchronized(this) {
-                        if (currentStep == STEP.CANCEL) return false;
-                    }
-                    UpdateElementImpl toUpdateImpl = Trampoline.API.impl(info.getUpdateElement());
-                    OperationContainer c = support.getContainer();
-                    
-                    // find target dir
-                    UpdateElement installed = info.getUpdateUnit().getInstalled();
-                    File targetCluster = getTargetCluster(installed, toUpdateImpl);
-                    
-                    URL source = toUpdateImpl.getInstallInfo().getDistribution();
-                    err.log(Level.FINE, "Source URL for " + toUpdateImpl.getCodeName() + " is " + source);
-                    
-                    boolean isNbmFile = source.getFile().toLowerCase(Locale.US).endsWith(NBM_EXTENTSION.toLowerCase(Locale.US));
-                    
-                    File dest = getDestination(targetCluster, toUpdateImpl.getCodeName(), isNbmFile);
-                    
-                    needsRestart |= needsRestart(installed != null, toUpdateImpl, dest);
-                    
-                    // find if UpdateElement has own installer
-                    if (toUpdateImpl.getInstallInfo().getCustomInstaller() != null) {
-                        customs.add(info);
-                        files4custom.add(dest);
+                    UpdateElementImpl toUpdateImpl = Trampoline.API.impl (info.getUpdateElement ());
+                    switch (toUpdateImpl.getType ()) {
+                    case MODULE :
+                        moduleImpls.add ((ModuleUpdateElementImpl) toUpdateImpl);
+                        break;
+                    case FEATURE :
+                        affectedFeatureImpls.add ((FeatureUpdateElementImpl) toUpdateImpl);
+                        moduleImpls.addAll (((FeatureUpdateElementImpl) toUpdateImpl).getContainedModuleElements ());
+                        break;
+                    default:
+                        // XXX: what other types
+                        assert false : "Unsupported type " + toUpdateImpl;
                     }
                 }
                 
-                // XXX: solve custom installation first?
-                for (OperationInfo info : customs) {
+                if (progress != null) progress.start();
+                
+                boolean needsRestart = false;
+                for (ModuleUpdateElementImpl moduleImpl : moduleImpls) {
                     synchronized(this) {
                         if (currentStep == STEP.CANCEL) return false;
                     }
-                    UpdateElementImpl toUpdateImpl = Trampoline.API.impl(info.getUpdateElement());
-                    assert toUpdateImpl.getInstallInfo().getCustomInstaller() != null;
-                    err.log(Level.FINE, "Call CustomInstaller[" + toUpdateImpl.getInstallInfo().getCustomInstaller() + "] of UpdateElement "
-                            + info.getUpdateElement().getCodeName());
-                    boolean res = toUpdateImpl.getInstallInfo().getCustomInstaller().install(
-                            toUpdateImpl.getUpdateItemImpl().getUpdateItem(),
-                            files4custom.get(customs.indexOf(info)));
-                    if (! res) {
-                        throw new OperationException(OperationException.ERROR_TYPE.INSTALL, "Installation of " + info + " failed.");
+                    
+                    // skip installed element
+                    if (Utilities.isElementInstalled (moduleImpl.getUpdateElement ())) {
+                        continue;
                     }
+                    
+                    // find target dir
+                    UpdateElement installed = moduleImpl.getUpdateUnit ().getInstalled ();
+                    File targetCluster = getTargetCluster (installed, moduleImpl);
+                    
+                    URL source = moduleImpl.getInstallInfo ().getDistribution ();
+                    err.log (Level.FINE, "Source URL for " + moduleImpl.getCodeName () + " is " + source);
+                    
+                    boolean isNbmFile = source.getFile().toLowerCase(Locale.US).endsWith(NBM_EXTENTSION.toLowerCase(Locale.US));
+                    
+                    File dest = getDestination(targetCluster, moduleImpl.getCodeName(), isNbmFile);
+                    
+                    needsRestart |= needsRestart(installed != null, moduleImpl, dest);
                 }
                 
                 // store source of installed files
@@ -287,7 +284,7 @@ public class InstallSupportImpl {
                     synchronized(this) {
                         if (currentStep == STEP.CANCEL) return false;
                     }
-                    List<File> filesInstallNow = getFileForInstall(customs, infos);
+                    List<File> filesInstallNow = getFileForInstall(infos);
                     if (! filesInstallNow.isEmpty()) {
                         
                         // XXX: should run in single Thread
@@ -298,29 +295,40 @@ public class InstallSupportImpl {
                         
                         try {
                             th.join();
-                            int rerunWaitCount = 0;
-                            for (OperationInfo info : infos) {
-                                Module module = Utilities.toModule(info.getUpdateElement().getCodeName(),
-                                        null);
+                            for (ModuleUpdateElementImpl impl : moduleImpls) {
+                                int rerunWaitCount = 0;
+                                Module module = Utilities.toModule (impl.getCodeName(), impl.getSpecificationVersion ().toString ());
+                                // XXX: consider again this
                                 for (; rerunWaitCount < 100 && (module == null || !module.isEnabled()); rerunWaitCount++) {
                                     Thread.currentThread().sleep(100);
-                                    module = Utilities.toModule(info.getUpdateElement().getCodeName(), null);
+                                    module = Utilities.toModule (impl.getCodeName(), impl.getSpecificationVersion ().toString ());
+                                }
+                                if (rerunWaitCount == 100) {
+                                    err.log (Level.INFO, "Overflow checks of installed module " + module);
+                                    th.interrupt();
+                                    break;
                                 }
                             }
                         } catch(InterruptedException ie) {
+                            err.log (Level.INFO, ie.getMessage (), ie);
                             th.interrupt();
                         }
                     }
                 } else {
-                    for (OperationInfo<InstallSupport> info : infos) {
-                        Trampoline.API.impl(support.getContainer()).addScheduledForReboot(info.getUpdateElement());
+                    for (ModuleUpdateElementImpl impl : moduleImpls) {
+                        Trampoline.API.impl(support.getContainer()).addScheduledForReboot (impl.getUpdateElement ());
                     }
                 }
                 
                 try {
-                    for (OperationInfo info : infos) {
-                        UpdateUnit u = info.getUpdateUnit();
-                        UpdateElement el = info.getUpdateElement();
+                    for (ModuleUpdateElementImpl impl : moduleImpls) {
+                        UpdateUnit u = impl.getUpdateUnit ();
+                        UpdateElement el = impl.getUpdateElement ();
+                        Trampoline.API.impl(u).updateInstalled(el);
+                    }
+                    for (FeatureUpdateElementImpl impl : affectedFeatureImpls) {
+                        UpdateUnit u = impl.getUpdateUnit ();
+                        UpdateElement el = impl.getUpdateElement ();
                         Trampoline.API.impl(u).updateInstalled(el);
                     }
                 } finally {
@@ -380,19 +388,64 @@ public class InstallSupportImpl {
     }
 
     public boolean isTrusted(Installer validator, UpdateElement uElement) {
-        return trusted.contains (uElement);
+        UpdateElementImpl impl = Trampoline.API.impl (uElement);
+        boolean res = false;
+        switch (impl.getType ()) {
+        case MODULE :
+            res = trusted.contains (impl);
+            break;
+        case FEATURE :
+            FeatureUpdateElementImpl toUpdateFeatureImpl = (FeatureUpdateElementImpl) impl;
+            Set<ModuleUpdateElementImpl> moduleImpls = toUpdateFeatureImpl.getContainedModuleElements ();
+            res = ! moduleImpls.isEmpty ();
+            for (ModuleUpdateElementImpl moduleImpl : moduleImpls) {
+                // skip installed element
+                if (Utilities.isElementInstalled (moduleImpl.getUpdateElement ())) {
+                    continue;
+                }
+                
+                res &= trusted.contains (moduleImpl);
+            }
+            break;
+        default:
+            // XXX: what other types
+            assert false : "Unsupported type " + impl;
+        }
+        return res;
     }
 
     public boolean isSigned(Installer validator, UpdateElement uElement) {
-        return signed.contains (uElement);
+        UpdateElementImpl impl = Trampoline.API.impl (uElement);
+        boolean res = false;
+        switch (impl.getType ()) {
+        case MODULE :
+            res = signed.contains (impl);
+            break;
+        case FEATURE :
+            FeatureUpdateElementImpl toUpdateFeatureImpl = (FeatureUpdateElementImpl) impl;
+            Set<ModuleUpdateElementImpl> moduleImpls = toUpdateFeatureImpl.getContainedModuleElements ();
+            res = ! moduleImpls.isEmpty ();
+            for (ModuleUpdateElementImpl moduleImpl : moduleImpls) {
+                // skip installed element
+                if (Utilities.isElementInstalled (moduleImpl.getUpdateElement ())) {
+                    continue;
+                }
+                
+                res &= signed.contains (moduleImpl);
+            }
+            break;
+        default:
+            // XXX: what other types
+            assert false : "Unsupported type " + impl;
+        }
+        return res;
     }
 
     public void doCancel () throws OperationException {
         synchronized(this) {
             currentStep = STEP.CANCEL;
         }
-        List<OperationInfo> empty = Collections.emptyList ();
-        for (File f : getFileForInstall (empty, support.getContainer ().listAll ())) {
+        for (File f : getFileForInstall (support.getContainer ().listAll ())) {
             if (f != null && f.exists ()) {
                 f.delete ();
             }
@@ -400,12 +453,44 @@ public class InstallSupportImpl {
     }
     
     private int doDownload (OperationInfo info, ProgressHandle progress, final int aggregateDownload, final int totalSize) throws OperationException {
-        UpdateElement installed = info.getUpdateUnit ().getInstalled ();
-        UpdateElementImpl toUpdateImpl = Trampoline.API.impl (info.getUpdateElement ());
+        UpdateElement toUpdateElement = info.getUpdateElement();
+        UpdateElementImpl toUpdateImpl = Trampoline.API.impl (toUpdateElement);
+        int res = 0;
+        switch (toUpdateImpl.getType ()) {
+        case MODULE :
+            res += doDownload (toUpdateImpl, progress, aggregateDownload, totalSize);
+            break;
+        case FEATURE :
+            FeatureUpdateElementImpl toUpdateFeatureImpl = (FeatureUpdateElementImpl) toUpdateImpl;
+            Set<ModuleUpdateElementImpl> moduleImpls = toUpdateFeatureImpl.getContainedModuleElements ();
+            int nestedAggregateDownload = aggregateDownload;
+            for (ModuleUpdateElementImpl moduleImpl : moduleImpls) {
+                // skip installed element
+                if (Utilities.isElementInstalled (moduleImpl.getUpdateElement ())) {
+                    continue;
+                }
+                
+                int increment = doDownload (moduleImpl, progress, nestedAggregateDownload, totalSize);
+                if (increment == -1) {
+                    return -1;
+                }
+                nestedAggregateDownload += increment;
+                res += increment;
+            }
+            break;
+        default:
+            // XXX: what other types
+            assert false : "Unsupported type " + toUpdateImpl;
+        }
+        return res;
+    }
+    
+    private int doDownload (UpdateElementImpl toUpdateImpl, ProgressHandle progress, final int aggregateDownload, final int totalSize) throws OperationException {
+        UpdateElement installed = toUpdateImpl.getUpdateUnit ().getInstalled ();
         
         // find target dir
         File targetCluster = getTargetCluster (installed, toUpdateImpl);
-        assert targetCluster != null : "Target cluster for " + info.getUpdateElement () + " must exist.";
+        assert targetCluster != null : "Target cluster for " + toUpdateImpl + " must exist.";
         if (targetCluster == null) {
             targetCluster = InstallManager.getUserDir ();
         }
@@ -432,9 +517,32 @@ public class InstallSupportImpl {
         return c;
     }
 
-    private String doValidate (OperationInfo info, ProgressHandle progress, final int verified) throws OperationException {
-        UpdateElement installed = info.getUpdateUnit ().getInstalled ();
-        UpdateElementImpl toUpdateImpl = Trampoline.API.impl (info.getUpdateElement ());
+    private void doValidate (OperationInfo info, ProgressHandle progress, final int verified) throws OperationException {
+        UpdateElement toUpdateElement = info.getUpdateElement();
+        UpdateElementImpl toUpdateImpl = Trampoline.API.impl (toUpdateElement);
+        switch (toUpdateImpl.getType ()) {
+        case MODULE :
+            doValidate (toUpdateImpl, progress, verified);
+            break;
+        case FEATURE :
+            FeatureUpdateElementImpl toUpdateFeatureImpl = (FeatureUpdateElementImpl) toUpdateImpl;
+            Set<ModuleUpdateElementImpl> moduleImpls = toUpdateFeatureImpl.getContainedModuleElements ();
+            for (ModuleUpdateElementImpl moduleImpl : moduleImpls) {
+                // skip installed element
+                if (Utilities.isElementInstalled (moduleImpl.getUpdateElement ())) {
+                    continue;
+                }
+                doValidate (moduleImpl, progress, verified);
+            }
+            break;
+        default:
+            // XXX: what other types
+            assert false : "Unsupported type " + toUpdateImpl;
+        }
+    }
+    
+    private void doValidate (UpdateElementImpl toUpdateImpl, ProgressHandle progress, final int verified) throws OperationException {
+        UpdateElement installed = toUpdateImpl.getUpdateUnit ().getInstalled ();
         String status = null;
         
         // find target dir
@@ -443,17 +551,24 @@ public class InstallSupportImpl {
         File dest = getDestination (targetCluster, toUpdateImpl.getCodeName());
         assert dest.exists () : dest.getAbsolutePath();        
 
-        int c = 0;
-        
         // verify
         try {
             String label = toUpdateImpl.getDisplayName ();
-            verifyNbm (info.getUpdateElement (), dest, progress, verified, label);
+            verifyNbm (toUpdateImpl.getUpdateElement (), dest, progress, verified, label);
         } catch (Exception x) {
             err.log (Level.INFO, x.getMessage (), x);
         }
+    }
+    
+    private File getDestination (ModuleUpdateElementImpl impl) {
+        // find target dir
+        UpdateElement installed = impl.getUpdateElement ().getUpdateUnit ().getInstalled ();
+        File targetCluster = getTargetCluster (installed, impl);
 
-        return status;
+        URL source = impl.getInstallInfo().getDistribution();
+        err.log (Level.FINE, "Source URL for " + impl.getCodeName () + " is " + source);
+
+        return getDestination (targetCluster, impl.getCodeName());
     }
 
     static File getDestination (File targetCluster, String codeName, boolean isNbmFile) {
@@ -537,16 +652,17 @@ public class InstallSupportImpl {
                 res = "UNSIGNED";
             } else {
                 List<Certificate> trustedCerts = new ArrayList<Certificate> ();
+                UpdateElementImpl impl = Trampoline.API.impl(el);
                 for (KeyStore ks : Utilities.getKeyStore ()) {
                     trustedCerts.addAll (getCertificates (ks));
                 }
                 if (trustedCerts.containsAll (nbmCerts)) {
                     res = "TRUSTED";
-                    trusted.add (el);
-                    signed.add (el);
+                    trusted.add (impl);
+                    signed.add (impl);
                 } else {
                     res = "UNTRUSTED";
-                    signed.add (el);
+                    signed.add (impl);
                 }
             }
         } catch (IOException ioe) {
@@ -615,27 +731,30 @@ public class InstallSupportImpl {
         return InstallManager.needsRestart (isUpdate, toUpdateImpl, dest);
     }
     
-    private List<File> getFileForInstall (List<? extends OperationInfo> customs, List<? extends OperationInfo> infos) {
-        assert customs != null;
+    private List<File> getFileForInstall (List<? extends OperationInfo> infos) {
         List<File> res = new ArrayList<File> ();
         for (OperationInfo info : infos) {
-            if (customs.contains (info)) {
-                err.log (Level.FINE, "UpdateElement " + info.getUpdateElement().getCodeName()
-                        + " won't be installed by AU. It has own installer.");
-                break;
-            }
             UpdateElementImpl toUpdateImpl = Trampoline.API.impl (info.getUpdateElement ());
-            OperationContainer c = support.getContainer ();
             
-            // find target dir
-            UpdateElement installed = info.getUpdateUnit ().getInstalled ();
-            File targetCluster = getTargetCluster (installed, toUpdateImpl);
-
-            URL source = toUpdateImpl.getInstallInfo().getDistribution();
-            err.log (Level.FINE, "Source URL for " + toUpdateImpl.getCodeName () + " is " + source);
-
-            File dest = getDestination (targetCluster, toUpdateImpl.getCodeName());
-            res.add (dest);
+            switch (toUpdateImpl.getType ()) {
+            case MODULE :
+                res.add (getDestination ((ModuleUpdateElementImpl) toUpdateImpl));
+                break;
+            case FEATURE :
+                FeatureUpdateElementImpl toUpdateFeatureImpl = (FeatureUpdateElementImpl) toUpdateImpl;
+                Set<ModuleUpdateElementImpl> moduleImpls = toUpdateFeatureImpl.getContainedModuleElements ();
+                for (ModuleUpdateElementImpl moduleImpl : moduleImpls) {
+                    // skip installed element
+                    if (Utilities.isElementInstalled (moduleImpl.getUpdateElement ())) {
+                        continue;
+                    }
+                    res.add (getDestination (moduleImpl));
+                }
+                break;
+            default:
+                // XXX: what other types
+                assert false : "Unsupported type " + toUpdateImpl;
+            }
         }
         return res;
     }

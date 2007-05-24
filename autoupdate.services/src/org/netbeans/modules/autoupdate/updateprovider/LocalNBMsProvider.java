@@ -20,7 +20,6 @@
 package org.netbeans.modules.autoupdate.updateprovider;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.spi.autoupdate.UpdateItem;

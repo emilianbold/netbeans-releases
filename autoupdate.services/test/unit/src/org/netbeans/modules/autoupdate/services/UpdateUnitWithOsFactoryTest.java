@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalog;
+import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateProvider;
 import org.openide.modules.ModuleInfo;
@@ -127,7 +127,7 @@ public class UpdateUnitWithOsFactoryTest extends NbTestCase {
         return res.toURL ();
     }
     
-    public class MyProvider extends AutoupdateCatalog {
+    public class MyProvider extends AutoupdateCatalogProvider {
         public MyProvider (String s) throws IOException {
             super ("test-updates-with-os-provider", "test-updates-with-os-provider", generateFile (s));
         }

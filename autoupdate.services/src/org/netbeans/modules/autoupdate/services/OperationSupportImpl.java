@@ -30,6 +30,8 @@ import org.netbeans.ModuleManager;
 import org.netbeans.api.autoupdate.*;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.spi.autoupdate.CustomInstaller;
+import org.openide.modules.ModuleInfo;
 
 /**
  * @author Radek Matous
@@ -40,6 +42,7 @@ public abstract class OperationSupportImpl {
     private static final OperationSupportImpl FOR_ENABLE = new ForEnable();
     private static final OperationSupportImpl FOR_DISABLE = new ForDisable();
     private static final OperationSupportImpl FOR_UNINSTALL = new ForUninstall();
+    private static final OperationSupportImpl FOR_CUSTOM_INSTALL = new ForCustomInstall ();
     
     public static OperationSupportImpl forInstall() {
         return FOR_INSTALL;
@@ -56,6 +59,9 @@ public abstract class OperationSupportImpl {
     public static OperationSupportImpl forDisable() {
         return FOR_DISABLE;
     }
+    public static OperationSupportImpl forCustomInstall () {
+        return FOR_CUSTOM_INSTALL;
+    }
     
     public abstract void doOperation(ProgressHandle progress/*or null*/, OperationContainer<?> container) throws OperationException;
     
@@ -71,13 +77,19 @@ public abstract class OperationSupportImpl {
                     progress.start();
                 }
                 
-                Set<Module> modules = new HashSet<Module>();
                 ModuleManager mm = null;
                 List<? extends OperationInfo> elements = container.listAll();
+                Set<ModuleInfo> moduleInfos = new HashSet<ModuleInfo> ();
                 for (OperationInfo operationInfo : elements) {
-                    UpdateElement updateElement = operationInfo.getUpdateElement();
-                    Module m = Utilities.toModule(updateElement.getCodeName (), updateElement.getSpecificationVersion ());
-                    modules.add(m);
+                    UpdateElementImpl impl = Trampoline.API.impl (operationInfo.getUpdateElement ());
+                    moduleInfos.addAll (impl.getModuleInfos ());
+                }
+                Set<Module> modules = new HashSet<Module>();
+                for (ModuleInfo info : moduleInfos) {
+                    Module m = Utilities.toModule (info);
+                    if (Utilities.canEnable (m)) {
+                        modules.add(m);
+                    }
                     if (mm == null) {
                         mm = m.getManager();
                     }
@@ -112,14 +124,19 @@ public abstract class OperationSupportImpl {
                 if (progress != null) {
                     progress.start();
                 }
-                Set<Module> modules = new HashSet<Module>();
                 ModuleManager mm = null;
-                
                 List<? extends OperationInfo> elements = container.listAll();
+                Set<ModuleInfo> moduleInfos = new HashSet<ModuleInfo> ();
                 for (OperationInfo operationInfo : elements) {
-                    UpdateElement updateElement = operationInfo.getUpdateElement();
-                    Module m = Utilities.toModule(updateElement.getCodeName (), updateElement.getSpecificationVersion ());
-                    modules.add(m);
+                    UpdateElementImpl impl = Trampoline.API.impl (operationInfo.getUpdateElement ());
+                    moduleInfos.addAll (impl.getModuleInfos ());
+                }
+                Set<Module> modules = new HashSet<Module>();
+                for (ModuleInfo info : moduleInfos) {
+                    Module m = Utilities.toModule (info);
+                    if (Utilities.canDisable (m)) {
+                        modules.add(m);
+                    }
                     if (mm == null) {
                         mm = m.getManager();
                     }
@@ -142,27 +159,46 @@ public abstract class OperationSupportImpl {
                 }
                 ModuleDeleterImpl deleter = new ModuleDeleterImpl();
                 
-                List<? extends OperationInfo> elements = container.listAll();
-                List<Module> modules = new ArrayList<Module> ();
-                for (OperationInfo operationInfo : elements) {
-                    UpdateElement updateElement = operationInfo.getUpdateElement();
-                    UpdateUnit u = UpdateManagerImpl.getInstance().getUpdateUnit(updateElement.getCodeName());
-                    modules.add(Utilities.toModule(u));
+                List<? extends OperationInfo> infos = container.listAll ();
+                Set<ModuleInfo> moduleInfos = new HashSet<ModuleInfo> ();
+                Set<UpdateUnit> affectedModules = new HashSet<UpdateUnit> ();
+                Set<UpdateUnit> affectedFeatures = new HashSet<UpdateUnit> ();
+                for (OperationInfo operationInfo : infos) {
+                    UpdateElement updateElement = operationInfo.getUpdateElement ();
+                    UpdateElementImpl updateElementImpl = Trampoline.API.impl (updateElement);
+                    switch (updateElementImpl.getType ()) {
+                    case MODULE :
+                        moduleInfos.add (((ModuleUpdateElementImpl) updateElementImpl).getModuleInfo ());
+                        affectedModules.add (updateElementImpl.getUpdateUnit ());
+                        break;
+                    case FEATURE :
+                        for (ModuleUpdateElementImpl moduleImpl : ((FeatureUpdateElementImpl) updateElementImpl).getContainedModuleElements ()) {
+                            moduleInfos.add (moduleImpl.getModuleInfo ());
+                            affectedModules.add (moduleImpl.getUpdateUnit ());
+                        }
+                        affectedFeatures.add (updateElement.getUpdateUnit ());
+                        break;
+                    default:
+                        assert false : "Not supported for impl " + updateElementImpl;
+                    }
                 }
                 try {
-                    deleter.delete((Module[])modules.toArray(new Module[modules.size()]));
+                    deleter.delete (moduleInfos.toArray (new ModuleInfo[0]));
                 } catch(IOException iex) {
                     throw new OperationException(OperationException.ERROR_TYPE.UNINSTALL);
                 }
                 
 
-                for (OperationInfo operationInfo : elements) {
-                    UpdateElement updateElement = operationInfo.getUpdateElement();
-                    UpdateUnit u = UpdateManagerImpl.getInstance().getUpdateUnit(updateElement.getCodeName());
-                    assert u.getInstalled() != null;
-                        UpdateUnitImpl impl = Trampoline.API.impl(u);
-                        impl.setAsUninstalled();
-                    }
+                for (UpdateUnit unit : affectedModules) {
+                    assert unit.getInstalled () != null;
+                    UpdateUnitImpl impl = Trampoline.API.impl (unit);
+                    impl.setAsUninstalled();
+                }
+                for (UpdateUnit unit : affectedFeatures) {
+                    assert unit.getInstalled () != null;
+                    UpdateUnitImpl impl = Trampoline.API.impl (unit);
+                    impl.setAsUninstalled();
+                }
             } finally {
                 if (progress != null) {
                     progress.finish();
@@ -183,4 +219,33 @@ public abstract class OperationSupportImpl {
         }
     }
     
+    private static class ForCustomInstall extends OperationSupportImpl {
+        public void doOperation(ProgressHandle progress,
+                OperationContainer<?> container) throws OperationException {
+            try {
+                
+                // XXX: do you want to start ProgressHandle for custom install?
+                if (progress != null) {
+                    progress.start();
+                }
+                List<? extends OperationInfo> infos = container.listAll ();
+                List<NativeComponentUpdateElementImpl> customElements = new ArrayList<NativeComponentUpdateElementImpl> ();
+                for (OperationInfo operationInfo : infos) {
+                    UpdateElementImpl impl = Trampoline.API.impl (operationInfo.getUpdateElement ());
+                    assert impl instanceof NativeComponentUpdateElementImpl : "Impl of " + operationInfo.getUpdateElement () + " instanceof NativeComponentUpdateElementImpl.";
+                    customElements.add ((NativeComponentUpdateElementImpl) impl);
+                }
+                assert customElements != null : "Some elements with custom installer found.";
+                for (NativeComponentUpdateElementImpl impl : customElements) {
+                    CustomInstaller installer = impl.getInstallInfo ().getCustomInstaller ();
+                    assert installer != null : "CustomInstaller must found for " + impl.getUpdateElement ();
+                    installer.install (impl.getCodeName (), impl.getSpecificationVersion ().toString (), progress);
+                }
+            } finally {
+                if (progress != null) {
+                    progress.finish();
+                }
+            }
+        }
+    }
 }

@@ -94,7 +94,7 @@ class DependencyChecker extends Object {
 
         boolean ok = false;
         
-        if (dep.getName ().equals (module.getCodeName ())) {
+        if (dep.getName ().equals (module.getCodeNameBase ()) || dep.getName ().equals (module.getCodeName ())) {
             if (dep.getComparison () == Dependency.COMPARE_ANY) {
                 ok = true;
             } else if (dep.getComparison () == Dependency.COMPARE_SPEC) {

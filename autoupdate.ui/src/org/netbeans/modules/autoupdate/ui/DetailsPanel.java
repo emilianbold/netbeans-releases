@@ -36,7 +36,6 @@ public class DetailsPanel extends javax.swing.JPanel {
     /** Creates new form UnitDetails */
     public DetailsPanel() {
         initComponents();
-        
         HTMLEditorKit htmlkit = new HTMLEditorKit();
         // override the Swing default CSS to make the HTMLEditorKit use the
         // same font as the rest of the UI.

@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.autoupdate.services;
 
+import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleProvider;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -29,7 +30,7 @@ import java.util.Map;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalog;
+import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateInfoParserTest;
 import org.netbeans.modules.autoupdate.updateprovider.LocalNBMsProvider;
 import org.netbeans.spi.autoupdate.UpdateItem;
@@ -67,15 +68,15 @@ public class UpdateUnitFactoryTest extends NbTestCase {
     
     public void testAppendInstalledModule () {
         Map<String, UpdateUnit> unitImpls = new HashMap<String, UpdateUnit> ();
-        Map<String, ModuleInfo> modules = ModuleProvider.getInstalledModules ();
+        Map<String, ModuleInfo> modules = InstalledModuleProvider.getInstalledModules ();
         assertNotNull ("Some modules are installed.", modules);
         assertFalse ("Some modules are installed.", modules.isEmpty ());
         
-        Map<String, UpdateUnit> newImpls = UpdateUnitFactory.getDefault ().appendInstalldeModules (unitImpls);
+        Map<String, UpdateUnit> newImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (unitImpls,InstalledModuleProvider.getDefault ());
         assertNotNull ("Some units found.", newImpls);
         assertFalse ("Some units found.", newImpls.isEmpty ());
         
-        assertEquals ("Same size of installed modules and UpdateUnit.", modules.size (), newImpls.size ());
+        assertEquals ("Same size of installed modules and UpdateUnit (except FeatureElement).", modules.size (), newImpls.size ());
     }
     
     public void testAppendUpdateItems () throws IOException {
@@ -88,12 +89,12 @@ public class UpdateUnitFactoryTest extends NbTestCase {
         assertNotNull ("Some units found.", newImpls);
         assertFalse ("Some units found.", newImpls.isEmpty ());
         
-        assertEquals ("Same size of installed modules and UpdateUnit.", updates.size (), newImpls.size ());
+        assertEquals ("Same size of installed modules and UpdateUnit", updates.size (), newImpls.size ());
     }
     
     public void testGroupInstalledAndUpdates () {
         Map<String, UpdateUnit> unitImpls = new HashMap<String, UpdateUnit> ();
-        Map<String, UpdateUnit> installedImpls = UpdateUnitFactory.getDefault ().appendInstalldeModules (unitImpls);
+        Map<String, UpdateUnit> installedImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (unitImpls,InstalledModuleProvider.getDefault ());
         Map<String, UpdateUnit> updatedImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (installedImpls, p);
         boolean isInstalledAndHasUpdates = false;
         for (String id : updatedImpls.keySet ()) {
@@ -113,7 +114,7 @@ public class UpdateUnitFactoryTest extends NbTestCase {
         assertNotNull ("LocalNBMsProvider found for file " + NBM_FILE, localFilesProvider);
         Map<String, UpdateUnit> units = UpdateUnitFactory.getDefault().getUpdateUnits (localFilesProvider);
         assertNotNull ("UpdateUnit found in provider " + localFilesProvider.getDisplayName (), units);
-        assertEquals ("Provider providers only once unit in provider " + localFilesProvider.getName (), 1, units.size ());
+        assertEquals ("Provider providers only once unit in provider (XXX added a artificial feature!)" + localFilesProvider.getName (), 2, units.size ());
         String id = units.keySet ().iterator ().next ();
         assertNotNull (localFilesProvider.getName () + " gives UpdateUnit.", units.get (id));
         UpdateUnit u = units.get (id);
@@ -126,7 +127,7 @@ public class UpdateUnitFactoryTest extends NbTestCase {
         assertEquals (NBM_FILE.length(), el.getDownloadSize ());
     }
     
-    public static class MyProvider extends AutoupdateCatalog {
+    public static class MyProvider extends AutoupdateCatalogProvider {
         public MyProvider () {
             super ("test-updates-provider", "test-updates-provider", UpdateUnitFactoryTest.class.getResource ("data/catalog.xml"));
         }

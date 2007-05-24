@@ -13,21 +13,30 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.autoupdate.updateprovider;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.autoupdate.services.Utilities;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -47,6 +56,7 @@ public class AutoupdateCatalogParser {
     public static final String TAG_MODULE_UPDATES = "module_updates"; // NOI18N
     public static final String TAG_MODULE = "module"; // NOI18N
     public static final String TAG_MODULE_GROUP = "module_group"; // NOI18N
+    public static final String ATTR_MODULE_GROUP_NAME = "name"; // NOI18N
     public static final String TAG_FEATURE = "feature"; // NOI18N
     public static final String TAG_LICENSE = "license"; // NOI18N
     public static final String TAG_NOTIFICATION = "notification"; // NOI18N
@@ -57,12 +67,19 @@ public class AutoupdateCatalogParser {
     public static final String ATTR_MESSAGE_ERROR = "message"; // NOI18N
     public static final String TAG_ELEMENT_L10N = "l10n"; // NOI18N
     public static final String TAG_MANIFEST = "manifest"; // NOI18N
+    private static final String TIME_STAMP_ATTRIBUTE_NAME = "timestamp"; // NOI18N
+    private static final String TIME_STAMP_FORMAT = "ss/mm/hh/dd/MM/yyyy"; // NOI18N
     
     private static final Logger ERR = Logger.getLogger ("org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogParser");
     
     public static Map<String, UpdateItem> getUpdateItems (URL url, URL providerUrl) {
         Map<String, UpdateItem> items = new HashMap<String, UpdateItem> ();
         Map<String, String> licenses = getLicenses (url, providerUrl);
+        Date d = getAutoupdateCatalogDate (url);
+        String catalogDate = null;
+        if (d != null) {
+            catalogDate = Utilities.DATE_FORMAT.format (d);
+        }
         
         try {
             
@@ -71,7 +88,7 @@ public class AutoupdateCatalogParser {
                 if (simple instanceof SimpleItem.License) {
                     continue;
                 }
-                UpdateItem update = simple.toUpdateItem (licenses);
+                UpdateItem update = simple.toUpdateItem (licenses, catalogDate);
                 items.put (simple.getId (), update);
             }
             
@@ -116,15 +133,61 @@ public class AutoupdateCatalogParser {
         return doc;
     }
     
+    private static Date getAutoupdateCatalogDate (URL url) {
+        Date timeStamp = null;
+        InputStream is = null;
+        try {
+            ERR.log (Level.FINER, "Inspect Autoupdate Catalog " + url);
+            URLConnection conn = url.openConnection ();
+            is = conn.getInputStream ();
+            Reader r = new InputStreamReader (is);
+            StringBuffer sb = new StringBuffer (1024);
+
+            int c;
+            while ((c = is.read ()) != -1 && sb.length () < 1024) {
+                sb.append ((char) c);
+            }
+            ERR.log (Level.FINER, "Successfully checked " + url); // NOI18N
+
+            String content = sb.toString ();
+            String time = null;
+            int pos;
+            if ((pos = content.indexOf (TIME_STAMP_ATTRIBUTE_NAME)) != -1) {
+                content = content.substring (pos + TIME_STAMP_ATTRIBUTE_NAME.length () + 1 + 1);
+                if ((pos = content.indexOf ('>')) != -1) {
+                    time = content.substring (0, pos - 1);
+                }
+            }
+
+            DateFormat format = new SimpleDateFormat (TIME_STAMP_FORMAT);
+            timeStamp = format.parse (time);
+            ERR.log (Level.FINER, "Successfully read time " + timeStamp); // NOI18N
+
+        } catch (IOException ioe) {
+            ERR.log (Level.FINE, null, ioe);
+        } catch (ParseException ex) {
+            ERR.log (Level.FINE, null, ex);
+        } finally {
+            if (is != null) {
+                try {
+                    is.close ();
+                } catch (IOException ex) {
+                    ERR.log (Level.FINE, null, ex);
+                }
+            }
+        }
+        return timeStamp;
+    }
+    
     static List<SimpleItem> createSimpleItems (Document xmlDocument) {
         NodeList moduleUpdatesList = xmlDocument.getElementsByTagName (TAG_MODULE_UPDATES);
         assert moduleUpdatesList != null && moduleUpdatesList.getLength() == 1;
         NodeList moduleUpdatesChildren = moduleUpdatesList.item (0).getChildNodes ();
         
-        return parseUpdateItems (moduleUpdatesChildren);
+        return parseUpdateItems (moduleUpdatesChildren, null);
     }
     
-    private static List<SimpleItem> parseUpdateItems (NodeList children) {
+    private static List<SimpleItem> parseUpdateItems (NodeList children, String group) {
         List<SimpleItem> res = new ArrayList<SimpleItem> ();
         for (int i = 0; i < children.getLength (); i++) {
             Node n = children.item (i);
@@ -134,20 +197,21 @@ public class AutoupdateCatalogParser {
             assert n instanceof Element : n + " is instanceof Element";
             String tagName = ((Element) n).getTagName ();
             if (TAG_MODULE_GROUP.equals (tagName)) {
-                res.addAll (parseUpdateItems (n.getChildNodes ()));
+                group = SimpleItem.getAttribute (n, ATTR_MODULE_GROUP_NAME);
+                res.addAll (parseUpdateItems (n.getChildNodes (), group));
             } else if (TAG_MODULE.equals (tagName)) {
                 // split Module and Localization
                 NodeList l10nElements = ((Element) n).getElementsByTagName (TAG_ELEMENT_L10N);
                 NodeList manifestElements = ((Element) n).getElementsByTagName (TAG_MANIFEST);
                 if (l10nElements != null && l10nElements.getLength () > 0) {
-                    res.add (new SimpleItem.Localization (n));
+                    res.add (new SimpleItem.Localization (n, group));
                 } else if (manifestElements != null && manifestElements.getLength () > 0) {
-                    res.add (new SimpleItem.Module (n));
+                    res.add (new SimpleItem.Module (n, group));
                 } else {
                     assert false : "Unknown element " + n;
                 }
             } else if (TAG_FEATURE.equals (tagName)) {
-                res.add (new SimpleItem.Feature (n));
+                res.add (new SimpleItem.Feature (n, group));
             } else if (TAG_LICENSE.equals (tagName)) {
                 res.add (new SimpleItem.License (n));
             } else {

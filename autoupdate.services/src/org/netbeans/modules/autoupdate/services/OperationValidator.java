@@ -22,10 +22,11 @@ package org.netbeans.modules.autoupdate.services;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
@@ -34,9 +35,9 @@ import org.netbeans.api.autoupdate.UpdateUnit;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 
-/** XXX Only Modules are supposed here. Needs to impl. for Features or Localization types.
+/**
  *
- * @author Radek Matous
+ * @author Radek Matous, Jiri Rechtacek
  */
 abstract class OperationValidator {
     private final static OperationValidator FOR_INSTALL = new InstallValidator();
@@ -44,6 +45,7 @@ abstract class OperationValidator {
     private final static OperationValidator FOR_UPDATE = new UpdateValidator();
     private final static OperationValidator FOR_ENABLE = new EnableValidator();
     private final static OperationValidator FOR_DISABLE = new DisableValidator();
+    private final static OperationValidator FOR_CUSTOM_INSTALL = new CustomInstallValidator();
     private static final Logger LOGGER = Logger.getLogger ("org.netbeans.modules.autoupdate.services.OperationValidator");    
     /** Creates a new instance of OperationValidator */
     private OperationValidator() {}
@@ -65,11 +67,15 @@ abstract class OperationValidator {
         case DISABLE:
             isValid = FOR_DISABLE.isValidOperationImpl(updateUnit, updateElement);
             break;
+        case CUSTOM_INSTALL:
+            isValid = FOR_CUSTOM_INSTALL.isValidOperationImpl(updateUnit, updateElement);
+            break;
         default:
             assert false;
         }
         return isValid;
     }
+    
     static List<UpdateElement> getRequiredElements(OperationContainerImpl.OperationType type, UpdateElement updateElement, List<ModuleInfo> moduleInfos) {
         List<UpdateElement> retval = Collections.emptyList ();
         switch(type){
@@ -88,6 +94,9 @@ abstract class OperationValidator {
         case DISABLE:
             retval = FOR_DISABLE.getRequiredElementsImpl(updateElement, moduleInfos);
             break;
+        case CUSTOM_INSTALL:
+            retval = FOR_CUSTOM_INSTALL.getRequiredElementsImpl(updateElement, moduleInfos);
+            break;
         default:
             assert false;
         }
@@ -100,30 +109,48 @@ abstract class OperationValidator {
     
     private static class InstallValidator extends OperationValidator {
         boolean isValidOperationImpl(UpdateUnit unit, UpdateElement uElement) {
-            Module m =  Utilities.toModule (unit.getCodeName(), uElement.getSpecificationVersion ());
-            return m == null && unit.getInstalled() == null && containsElement (uElement, unit);
+            return unit.getInstalled() == null && containsElement (uElement, unit);
         }
         
         List<UpdateElement> getRequiredElementsImpl(UpdateElement uElement, List<ModuleInfo> moduleInfos) {
-            return Utilities.findRequiredModules(uElement, moduleInfos);
+            return new LinkedList<UpdateElement> (Utilities.findRequiredUpdateElements(uElement, moduleInfos));
         }
     }
     
     private static class UninstallValidator extends OperationValidator {
+        
         boolean isValidOperationImpl(UpdateUnit unit, UpdateElement uElement) {
-            Module m =  Utilities.toModule (unit.getCodeName (), uElement.getSpecificationVersion ());
-            return m != null && unit.getInstalled() != null &&
-                    ModuleDeleterImpl.getInstance().canDelete(Utilities.toModule(unit));
+            return unit.getInstalled() != null && isValidOperationImpl (Trampoline.API.impl (uElement));
         }
         
+        private boolean isValidOperationImpl (UpdateElementImpl impl) {
+            boolean res = false;
+            switch (impl.getType ()) {
+            case MODULE :
+                Module m =  Utilities.toModule (((ModuleUpdateElementImpl) impl).getModuleInfo ());
+                res = ModuleDeleterImpl.getInstance ().canDelete (m);
+                break;
+            case FEATURE :
+                for (ModuleInfo info : ((FeatureUpdateElementImpl) impl).getModuleInfos ()) {
+                    Module module = Utilities.toModule (info);
+                    res |= ModuleDeleterImpl.getInstance ().canDelete (module);
+                }
+                break;
+            default:
+                assert false : "Not supported for impl " + impl;
+            }
+            return res;
+        }
         
-        List<UpdateElement> getRequiredElementsImpl(UpdateElement uElement, List<ModuleInfo> moduleInfos) {
-            //TODO: copy/pasted from DisableValidator - should use rather method than simulateDisable later
+        List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos) {
             ModuleManager mm = null;
             final Set<Module> modules = new LinkedHashSet<Module>();
             for (ModuleInfo moduleInfo : moduleInfos) {
-                Module m = Utilities.toModule(moduleInfo.getCodeNameBase(), moduleInfo.getSpecificationVersion ().toString ());
-                if (m.isEnabled()) {
+                Module m = Utilities.toModule (moduleInfo);
+                if (m == null) {
+                    continue;
+                }
+                if (m.isEnabled ()) {
                     modules.add(m);
                 }
                 if (mm == null) {
@@ -132,13 +159,15 @@ abstract class OperationValidator {
             }
             List<UpdateElement> retval = new ArrayList<UpdateElement>();
             if (mm != null) {
-                List<Module> toUninstall = requiredForUninstall(new ArrayList<Module>(),modules,mm.getEnabledModules(), mm);
+                List<Module> toUninstall = requiredForUninstall (new ArrayList<Module> (), modules, mm.getEnabledModules (), mm);
                 for (Module module : toUninstall) {
-                    if (!modules.contains(module) &&  !module.isFixed()) {
-                        retval.add(Utilities.toUpdateUnit(module).getInstalled());
+                    if (!modules.contains (module) && ! module.isFixed ()) {
+                        // XXX: breaks detail level features/modules
+                        retval.add (Utilities.toUpdateUnit (module).getInstalled ());
                     }
                 }
-            }                        
+            }
+            // XXX: do transform to feature if possible
             return retval;
         }
         
@@ -146,59 +175,55 @@ abstract class OperationValidator {
             resultToUninstall.addAll(requestedToUninstall);            
             stillEnabled.removeAll(resultToUninstall);
             Set<Module> dependenciesToUninstall = new HashSet<Module>();
-            Iterator<Module> it = requestedToUninstall.iterator();
-                while (it.hasNext()) {
-                    Module m = it.next();
-                    for (Module other: stillEnabled) {
-                        Dependency[] dependencies = other.getDependenciesArray();
-                        boolean added = false;
-                        for (int i = 0; !added && i < dependencies.length; i++) {
-                            Dependency dep = dependencies[i];
-                            if (dep.getType() == Dependency.TYPE_MODULE) {
-                                if (dep.getName().equals(m.getCodeName())) {
+            for (Module m : requestedToUninstall) {
+                for (Module other: stillEnabled) {
+                    Dependency[] dependencies = other.getDependenciesArray();
+                    boolean added = false;
+                    for (int i = 0; !added && i < dependencies.length; i++) {
+                        Dependency dep = dependencies[i];
+                        if (dep.getType() == Dependency.TYPE_MODULE) {
+                            if (dep.getName().equals(m.getCodeName())) {
+                                added = true;
+                                dependenciesToUninstall.add(other);
+                                continue;
+                            }
+                        } else if (
+                                dep.getType() == Dependency.TYPE_REQUIRES ||
+                                dep.getType() == Dependency.TYPE_NEEDS ||
+                                dep.getType() == Dependency.TYPE_RECOMMENDS
+                                ) {
+                            if (m.provides(dep.getName())) {
+                                boolean foundOne = false;
+                                for (Module third: mm.getEnabledModules()) {
+                                    if (third.isEnabled() &&
+                                            !resultToUninstall.contains(third) && !dependenciesToUninstall.contains(third) &&
+                                            third.provides(dep.getName())) {
+                                        foundOne = true;
+                                        break;
+                                    }
+                                }
+                                if (!foundOne) {
+                                    // Nope, we were the only/last one to provide it.
                                     added = true;
                                     dependenciesToUninstall.add(other);
                                     continue;
-                                }
-                            } else if (
-                                    dep.getType() == Dependency.TYPE_REQUIRES ||
-                                    dep.getType() == Dependency.TYPE_NEEDS ||
-                                    dep.getType() == Dependency.TYPE_RECOMMENDS
-                                    ) {
-                                if (m.provides(dep.getName())) {
-                                    boolean foundOne = false;
-                                    for (Module third: mm.getEnabledModules()) {
-                                        if (third.isEnabled() &&
-                                                !resultToUninstall.contains(third) && !dependenciesToUninstall.contains(third) &&
-                                                third.provides(dep.getName())) {
-                                            foundOne = true;
-                                            break;
-                                        }
-                                    }
-                                    if (!foundOne) {
-                                        // Nope, we were the only/last one to provide it.
-                                        added = true;
-                                        dependenciesToUninstall.add(other);
-                                        continue;
-                                    }                                    
-                                }
+                                }                                    
                             }
                         }
                     }
                 }
+            }
                 
-                if (dependenciesToUninstall.size() > 0) {                    
-                    requiredForUninstall(resultToUninstall, dependenciesToUninstall, stillEnabled, mm);
-                }
+            if (dependenciesToUninstall.size() > 0) {                    
+                requiredForUninstall(resultToUninstall, dependenciesToUninstall, stillEnabled, mm);
+            }
             return resultToUninstall;
         }        
     }
     
     private static class UpdateValidator extends OperationValidator {
         boolean isValidOperationImpl(UpdateUnit unit, UpdateElement uElement) {
-            // module with UpdateElement specificationVersion cannot exist
-            Module m =  Utilities.toModule (unit.getCodeName(), uElement.getSpecificationVersion ());
-            return m == null && unit.getInstalled() != null && containsElement (uElement, unit);
+            return unit.getInstalled() != null && containsElement (uElement, unit);
         }
         
         List<UpdateElement> getRequiredElementsImpl(UpdateElement uElement, List<ModuleInfo> moduleInfos) {
@@ -212,27 +237,45 @@ abstract class OperationValidator {
     
     private static class EnableValidator extends OperationValidator {
         boolean isValidOperationImpl(UpdateUnit unit, UpdateElement uElement) {
-            Module m =  Utilities.toModule (unit.getCodeName (), uElement.getSpecificationVersion ());
-            return  (unit.getInstalled() != null) && m != null && !m.isEnabled() &&
-                    !m.isFixed() && !m.isAutoload() && !m.isEager();
+            return unit.getInstalled () != null && isValidOperationImpl (Trampoline.API.impl (uElement));
         }
         
+        private boolean isValidOperationImpl (UpdateElementImpl impl) {
+            boolean res = false;
+            switch (impl.getType ()) {
+            case MODULE :
+                Module module =  Utilities.toModule (((ModuleUpdateElementImpl) impl).getModuleInfo ());
+                res = Utilities.canEnable (module);
+                break;
+            case FEATURE :
+                for (ModuleInfo info : ((FeatureUpdateElementImpl) impl).getModuleInfos ()) {
+                    Module m =  Utilities.toModule (info);
+                    res |= Utilities.canEnable (m);
+                }
+                break;
+            default:
+                assert false : "Not supported for impl " + impl;
+            }
+            return res;
+        }
         
         List<UpdateElement> getRequiredElementsImpl(UpdateElement uElement, List<ModuleInfo> moduleInfos) {
             ModuleManager mm = null;
             final Set<Module> modules = new LinkedHashSet<Module>();
             for (ModuleInfo moduleInfo : moduleInfos) {
-                Module m = Utilities.toModule (moduleInfo.getCodeNameBase (), moduleInfo.getSpecificationVersion ().toString ());
-                modules.add(m);
+                Module m = Utilities.toModule (moduleInfo);
+                if (Utilities.canEnable (m)) {
+                    modules.add(m);
+                }
                 if (mm == null) {
                     mm = m.getManager();
                 }
             }
             List<UpdateElement> retval = new ArrayList<UpdateElement>();
             if (mm != null) {
-                List<Module> toDisable = mm.simulateEnable(modules);
-                for (Module module : toDisable) {
-                    if (!modules.contains(module) && !module.isAutoload() && !module.isEager() && !module.isFixed()) {
+                List<Module> toEnable = mm.simulateEnable(modules);
+                for (Module module : toEnable) {
+                    if (!modules.contains(module) && Utilities.canEnable (module)) {
                         retval.add(Utilities.toUpdateUnit(module).getInstalled());
                     }
                 }
@@ -243,17 +286,36 @@ abstract class OperationValidator {
     
     private static class DisableValidator extends OperationValidator {
         boolean isValidOperationImpl(UpdateUnit unit, UpdateElement uElement) {
-            Module m =  Utilities.toModule (unit.getCodeName (), uElement.getSpecificationVersion ());
-            return  (unit.getInstalled() != null) && m != null && m.isEnabled() &&
-                    !m.isFixed() && !m.isAutoload() && !m.isEager();
+            return unit.getInstalled () != null && isValidOperationImpl (Trampoline.API.impl (uElement));
+        }
+        
+        private boolean isValidOperationImpl (UpdateElementImpl impl) {
+            boolean res = false;
+            switch (impl.getType ()) {
+            case MODULE :
+                Module module =  Utilities.toModule (((ModuleUpdateElementImpl) impl).getModuleInfo ());
+                res = Utilities.canDisable (module);
+                break;
+            case FEATURE :
+                for (ModuleInfo info : ((FeatureUpdateElementImpl) impl).getModuleInfos ()) {
+                    Module m =  Utilities.toModule (info);
+                    res |= Utilities.canDisable (m);
+                }
+                break;
+            default:
+                assert false : "Not supported for impl " + impl;
+            }
+            return res;
         }
         
         List<UpdateElement> getRequiredElementsImpl(UpdateElement uElement, List<ModuleInfo> moduleInfos) {
             ModuleManager mm = null;
             final Set<Module> modules = new LinkedHashSet<Module>();
             for (ModuleInfo moduleInfo : moduleInfos) {
-                Module m = Utilities.toModule (moduleInfo.getCodeNameBase (), moduleInfo.getSpecificationVersion ().toString ());
-                modules.add(m);
+                Module m = Utilities.toModule (moduleInfo);
+                if (Utilities.canDisable (m)) {
+                    modules.add(m);
+                }
                 if (mm == null) {
                     mm = m.getManager();
                 }
@@ -262,7 +324,7 @@ abstract class OperationValidator {
             if (mm != null) {
                 List<Module> toDisable = mm.simulateDisable(modules);
                 for (Module module : toDisable) {
-                    if (!modules.contains(module) && !module.isAutoload() && !module.isEager() && !module.isFixed()) {
+                    if (!modules.contains(module) && Utilities.canDisable (module)) {
                         retval.add(Utilities.toUpdateUnit(module).getInstalled());
                     }
                 }
@@ -270,4 +332,26 @@ abstract class OperationValidator {
             return retval;
         }
     }
+    
+    private static class CustomInstallValidator extends OperationValidator {
+        boolean isValidOperationImpl (UpdateUnit unit, UpdateElement uElement) {
+            boolean res = false;
+            UpdateElementImpl impl = Trampoline.API.impl (uElement);
+            assert impl != null;
+            if (impl != null && impl instanceof NativeComponentUpdateElementImpl) {
+                NativeComponentUpdateElementImpl ni = (NativeComponentUpdateElementImpl) impl;
+                if (ni.getInstallInfo ().getCustomInstaller () != null) {
+                    res = unit.getInstalled() == null && containsElement (uElement, unit);
+                }
+            }
+            return res;
+        }
+        
+        List<UpdateElement> getRequiredElementsImpl(UpdateElement uElement, List<ModuleInfo> moduleInfos) {
+            LOGGER.log (Level.INFO, "CustomInstallValidator doesn't care about required elements."); // XXX
+            return Collections.emptyList ();
+            //return new LinkedList<UpdateElement> (Utilities.findRequiredUpdateElements (uElement, moduleInfos));
+        }
+    }
+    
 }

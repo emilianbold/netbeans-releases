@@ -43,5 +43,13 @@ public class UpdateManagerImplTest extends DefaultTestCase {
         units = null;
         assertGC("", ref);
     }
+    
+    public void testNoMemoryLeakModuleOnly () throws Exception {
+        List<UpdateUnit> units = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE);
+        assertTrue(units.size() != 0);
+        Reference ref = new WeakReference(units);
+        units = null;
+        assertGC("", ref);
+    }
 }
 

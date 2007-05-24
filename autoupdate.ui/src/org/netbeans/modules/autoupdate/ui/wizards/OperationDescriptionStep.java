@@ -31,6 +31,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.modules.autoupdate.ui.Utilities;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -147,7 +148,7 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
             }
             if (end != -1) {
                 codeName = codeName.substring (0, end);
-                for (UpdateUnit u : UpdateManager.getDefault ().getUpdateUnits ()) {
+                for (UpdateUnit u : UpdateManager.getDefault ().getUpdateUnits (Utilities.getUnitTypes ())) {
                     if (codeName.equals (u.getCodeName ())) {
                         if (u.getInstalled () != null) {
                             displayName = u.getInstalled ().getDisplayName ();

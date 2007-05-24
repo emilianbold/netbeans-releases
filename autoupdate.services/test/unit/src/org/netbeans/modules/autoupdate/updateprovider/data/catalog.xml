@@ -2,10 +2,10 @@
 <!DOCTYPE module_updates PUBLIC "-//NetBeans//DTD Autoupdate Catalog 3.0//EN" "http://www.netbeans.org/dtds/autoupdate-catalog-3_0.dtd">
 <module_updates timestamp="00/00/19/08/03/2006">
 
-<feature name="Collaboration"
+<feature codename="collaboration-feature"
+         displayname="Collaboration"
          homepage="http://rechtacek.org"
          moduleauthor="Sun Microsystems"
-         releasedate="2006/04/10"
          module-dependencies="  com.sun.collablet/1,
                                 com.sun.collablet.moxc/1,
                                 org.netbeans.libs.xmlbeans,

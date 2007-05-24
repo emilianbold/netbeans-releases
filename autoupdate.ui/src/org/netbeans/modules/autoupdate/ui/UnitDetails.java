@@ -56,15 +56,23 @@ public class UnitDetails extends DetailsPanel{
         } else {
             String text;
             try {
+                boolean showDetailsForDevelopers = u.updateUnit != null && u.updateUnit.getInstalled() != null;
+                //text = "<h3>" + u.annotateDisplayName(u.annotate(XMLUtil.toElementContent(u.getDisplayName()))) + "</h3>"; // NOI18N
                 text = "<h3>" + u.annotate(XMLUtil.toElementContent(u.getDisplayName())) + "</h3>"; // NOI18N
+                if (! showDetailsForDevelopers) {
+                    text += "<b>" + getBundle ("UnitDetails_Plugin_CodeName") + "</b>" + u.annotate(u.updateUnit.getCodeName() + "<br>"); // NOI18N
+                }
                 text += "<b>" + getBundle ("UnitDetails_Plugin_Version") + "</b>" + u.annotate(u.getDisplayVersion()) + "<br>"; // NOI18N
                 if (u.getAuthor () != null && u.getAuthor ().length () > 0) {
                     text += "<b>" + getBundle ("UnitDetails_Plugin_Author") + "</b>" + u.annotate(u.getAuthor ()) + "<br>"; // NOI18N
                 }
+                if (u.getDisplayDate () != null && u.getDisplayDate ().length () > 0) {
+                    text += "<b>" + getBundle ("UnitDetails_Plugin_Date") + "</b>" + u.annotate(u.getDisplayDate ()) + "<br>"; // NOI18N
+                }
                 text += "<b>" + getBundle ("UnitDetails_Plugin_Source") + "</b>" + u.annotate(u.getSource()) + "<br>"; // NOI18N
 
                 // XXX: Temporary only for development
-                if (u.updateUnit != null && u.updateUnit.getInstalled() != null) {
+                if (showDetailsForDevelopers) {
                     UpdateElement elem = u.updateUnit.getInstalled();
                     ModuleInfo m = ModuleProvider.getInstalledModules().get(elem.getCodeName());
                     boolean isEnabled = m != null && m.isEnabled();

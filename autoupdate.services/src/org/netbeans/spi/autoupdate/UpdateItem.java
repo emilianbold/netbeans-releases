@@ -23,12 +23,12 @@ import java.net.URL;
 import java.util.Locale;
 import java.util.Set;
 import java.util.jar.Manifest;
-import org.netbeans.modules.autoupdate.services.LocalizationItem;
-import org.netbeans.modules.autoupdate.services.FeatureItem;
-import org.netbeans.modules.autoupdate.services.ModuleItem;
-import org.netbeans.modules.autoupdate.services.NativeComponentItem;
+import org.netbeans.modules.autoupdate.updateprovider.LocalizationItem;
+import org.netbeans.modules.autoupdate.updateprovider.FeatureItem;
+import org.netbeans.modules.autoupdate.updateprovider.ModuleItem;
+import org.netbeans.modules.autoupdate.updateprovider.NativeComponentItem;
 import org.netbeans.modules.autoupdate.services.Trampoline;
-import org.netbeans.modules.autoupdate.services.UpdateItemImpl;
+import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
 
 /** Represents a item of content provider by <code>UpdateProvider</code>. These items are exposed to 
  * Autoupdate infrastructure what works on them.
@@ -58,6 +58,8 @@ public final class UpdateItem {
      * @param author name of module author or null
      * @param downloadSize size of NBM file in bytes
      * @param homepage homepage of module or null
+     * @param publishDate date of publish of item, in date format "yyyy/MM/dd"
+     * @param category name of category
      * @param manifest <code>java.util.jar.Manifest</code> describes the module in NetBeans module system
      * @param needsRestart if true then IDE must be restarted after module installation
      * @param isGlobal control if the module will be installed into the installation directory or into user's dir
@@ -72,13 +74,15 @@ public final class UpdateItem {
                                     String author,
                                     String downloadSize,
                                     String homepage,
+                                    String publishDate,
+                                    String category,
                                     Manifest manifest,
                                     Boolean needsRestart,
                                     Boolean isGlobal,
                                     String targetCluster,
                                     UpdateLicense license) {
         ModuleItem item = new ModuleItem (codeName, specificationVersion, distribution, 
-                author, downloadSize, homepage,
+                author, publishDate, downloadSize, homepage, category,
                 manifest, needsRestart, isGlobal, targetCluster, license.impl);
         return new UpdateItem (item);
     }
@@ -93,6 +97,7 @@ public final class UpdateItem {
      * @param dependencies dependencies to NetBeans modules on which is the feature based
      * @param displayName display name
      * @param description description
+     * @param category name of category
      * @return UpdateItem
      */
     public static final UpdateItem createFeature (
@@ -100,8 +105,9 @@ public final class UpdateItem {
                                     String specificationVersion,
                                     Set<String> dependencies,
                                     String displayName,
-                                    String description) {
-        FeatureItem item = new FeatureItem (codeName, specificationVersion, dependencies, displayName, description);
+                                    String description,
+                                    String category) {
+        FeatureItem item = new FeatureItem (codeName, specificationVersion, dependencies, displayName, description, category);
         return new UpdateItem (item);
     }
     
@@ -112,7 +118,6 @@ public final class UpdateItem {
      * @param codeName code name of the native component
      * @param specificationVersion specification version of component
      * @param dependencies dependencies to other <code>UpdateItem</code>
-     * @param distribution URL to file for installation
      * @param downloadSize size of installation file in bytes
      * @param displayName display name
      * @param description description
@@ -126,7 +131,6 @@ public final class UpdateItem {
     public static final UpdateItem createNativeComponent (
                                     String codeName,
                                     String specificationVersion,
-                                    URL distribution,
                                     String downloadSize,
                                     Set<String> dependencies,
                                     String displayName,
@@ -137,8 +141,33 @@ public final class UpdateItem {
                                     CustomInstaller installer,
                                     UpdateLicense license
                                     ) {
-        NativeComponentItem item = new NativeComponentItem (codeName, specificationVersion, distribution, downloadSize, dependencies,
-                displayName, description, needsRestart, isGlobal, targetCluster, installer, license.impl);
+        NativeComponentItem item = new NativeComponentItem (false, codeName, specificationVersion, downloadSize, dependencies,
+                displayName, description, needsRestart, isGlobal, targetCluster, installer, null, license.impl);
+        return new UpdateItem (item);
+    }
+    
+    /** Creates <code>UpdateItem</code> which represents Native Component with own installer. This component
+     * can be visualized in UI as common item, when an user wants to install this component then
+     * own <code>CustomInstaller</code> is call back.
+     * 
+     * @param codeName code name of the native component
+     * @param specificationVersion specification version of component
+     * @param dependencies dependencies to other <code>UpdateItem</code>
+     * @param displayName display name
+     * @param description description
+     * @param uninstaller <code>CustomUninstaller</code> call-back interface
+     * @return <code>UpdateItem</code>
+     */
+    public static final UpdateItem createInstalledNativeComponent (
+                                    String codeName,
+                                    String specificationVersion,
+                                    Set<String> dependencies,
+                                    String displayName,
+                                    String description,
+                                    CustomUninstaller uninstaller
+                                    ) {
+        NativeComponentItem item = new NativeComponentItem (true, codeName, specificationVersion, null, dependencies,
+                displayName, description, null, null, null, null, uninstaller, null);
         return new UpdateItem (item);
     }
     
@@ -151,6 +180,7 @@ public final class UpdateItem {
      * @param branding branding
      * @param localizedName localized name of module
      * @param localizedDescription localized descripton of module
+     * @param category name of category
      * @param distribution URL to NBM file
      * @param needsRestart if true then IDE must be restarted after module installation
      * @param isGlobal control if the module will be installed into the installation directory or into user's dir
@@ -166,13 +196,14 @@ public final class UpdateItem {
                                     String branding,
                                     String localizedName,
                                     String localizedDescription,
+                                    String category,
                                     URL distribution,
                                     Boolean needsRestart,
                                     Boolean isGlobal,
                                     String targetCluster,
                                     UpdateLicense license) {
         LocalizationItem item = new LocalizationItem (codeName, specificationVersion, distribution,
-                locale, branding, moduleSpecificationVersion, localizedName, localizedDescription,
+                locale, branding, moduleSpecificationVersion, localizedName, localizedDescription, category,
                 needsRestart, isGlobal, targetCluster, license.impl);
         return new UpdateItem (item);
     }

@@ -36,7 +36,7 @@ public class RefreshItemsTest extends DefaultTestCase {
     public void testRefreshItems () throws IOException {
         List<UpdateUnitProvider> result = UpdateUnitProviderFactory.getDefault ().getUpdateUnitProviders (false);
         assertEquals(result.toString(), 2, result.size());
-        int updateUnitsCount = UpdateManager.getDefault().getUpdateUnits().size();
+        int updateUnitsCount = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE).size();
         
         UpdateUnit toTest = UpdateManagerImpl.getInstance ().getUpdateUnit ("org.yourorghere.refresh-providers-test");
         assertNotNull ("UpdateUnit for org.yourorghere.refresh-providers-test found.", toTest);
@@ -46,8 +46,8 @@ public class RefreshItemsTest extends DefaultTestCase {
         
         populateCatalog(TestUtils.class.getResourceAsStream("data/updates-subset.xml"));
         UpdateUnitProviderFactory.getDefault ().refreshProviders(null, true);
-        assertEquals(UpdateManager.getDefault().getUpdateUnits().toString(), 
-                updateUnitsCount-1, UpdateManager.getDefault().getUpdateUnits().size());
+        assertEquals(UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE).toString(), 
+                updateUnitsCount-1, UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE).size());
         
         UpdateUnit toTestAgain = UpdateManagerImpl.getInstance ().getUpdateUnit ("org.yourorghere.refresh-providers-test");
         assertNotNull ("Unit for org.yourorghere.refresh-providers-test found.", toTestAgain);

@@ -19,6 +19,7 @@
 
 package org.netbeans.spi.autoupdate;
 
+import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
 import org.netbeans.api.autoupdate.*;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.modules.autoupdate.services.*;
@@ -51,6 +52,10 @@ final class TrampolineSPI extends Trampoline {
 
     protected UpdateItemImpl impl(UpdateItem item) {
         return item.impl;
+    }
+
+    protected UpdateItem createUpdateItem (UpdateItemImpl impl) {
+        return new UpdateItem (impl);
     }
 
     protected OperationContainerImpl impl(OperationContainer container) {

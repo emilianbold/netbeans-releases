@@ -21,19 +21,20 @@ package org.netbeans.modules.autoupdate.ui;
 
 import java.util.Comparator;
 import java.util.List;
+import javax.swing.table.JTableHeader;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.openide.util.NbBundle;
 
 /**
  *
- * @author Jiri Rechtacek
+ * @author Jiri Rechtacek, Radek Matous
  */
 public class AvailableTableModel extends UnitCategoryTableModel {
     //just prevents from gc, do not delete
     private OperationContainer container = Containers.forAvailable();
     
-    /** Creates a new instance of InstalledTableModel */
+    /** Creates a new instance of AvailableTableModel */
     public AvailableTableModel (List<UpdateUnit> units) {
         setUnits(units);
     }
@@ -80,19 +81,27 @@ public class AvailableTableModel extends UnitCategoryTableModel {
                 res = u.getDisplayName ();
                 break;
             case 2 :
+                if (Utilities.modulesOnly ()) {
+                    res = u.getCategoryName ();
+                } else {
+                    res = u.getDisplayDate ();
+                }
+                break;                
+            case 3 :
                 res = u.getAvailableVersion ();
                 break;
-            case 3 :
-                res = Utilities.getDownloadSizeAsString (u.getCompleteSize ());
-                break;
             case 4 :
-                res = u.getMyRating ();
+                res = Utilities.getDownloadSizeAsString (u.getCompleteSize ());
                 break;
             }
         }
         return res;
     }
 
+    public int getColumnCount() {
+        return 3;
+    }
+    
     public Class getColumnClass(int c) {
         Class res = null;
         
@@ -110,13 +119,14 @@ public class AvailableTableModel extends UnitCategoryTableModel {
             res = String.class;
             break;
         case 4 :
-            res = Integer.class;
+            res = String.class;
             break;
         }
         
         return res;
     }
 
+    @Override
     public String getColumnName(int column) {
         switch (column) {
             case 0 :
@@ -124,15 +134,29 @@ public class AvailableTableModel extends UnitCategoryTableModel {
             case 1 :
                 return getBundle ("AvailableTableModel_Columns_Name");
             case 2 :
-                return getBundle ("AvailableTableModel_Columns_Version");
+                if (Utilities.modulesOnly ()) {
+                    return getBundle ("AvailableTableModel_Columns_Category");            
+                } else {
+                    return getBundle ("AvailableTableModel_Columns_UpdateDate");
+                }
             case 3 :
-                return getBundle ("AvailableTableModel_Columns_Size");
+                return getBundle ("AvailableTableModel_Columns_Version");
             case 4 :
-                return getBundle ("AvailableTableModel_Columns_Rating");
+                return getBundle ("AvailableTableModel_Columns_Size");
         }
         
         assert false;
         return super.getColumnName( column );
+    }
+
+    public int getPreferredWidth(JTableHeader header, int col) {
+        switch (col) {
+        case 1:
+            return super.getMinWidth(header, col)*4;
+        case 2:
+            return super.getMinWidth(header, col)*2;
+        }
+        return super.getMinWidth(header, col);
     }
     
     public Type getType () {
@@ -141,8 +165,7 @@ public class AvailableTableModel extends UnitCategoryTableModel {
     
     public boolean isSortAllowed(Object columnIdentifier) {
         boolean isInstall = getColumnName(0).equals(columnIdentifier);
-        boolean isRating = getColumnName(4).equals(columnIdentifier);                
-        return isInstall || isRating ? false : true;
+        return isInstall  ? false : true;
     }
 
     protected Comparator<Unit> getComparator(final Object columnIdentifier, final boolean sortAscending) {
@@ -155,11 +178,15 @@ public class AvailableTableModel extends UnitCategoryTableModel {
                 } else if (getColumnName(1).equals(columnIdentifier)) {
                     return Unit.compareDisplayNames(unit1, unit2);
                 } else if (getColumnName(2).equals(columnIdentifier)) {
-                    return Unit.Available.compareAvailableVersion(unit1, unit2);
+                    if (Utilities.modulesOnly ()) {
+                        return Unit.compareCategories(unit1, unit2);
+                    } else {
+                        return Unit.compareSimpleFormatDates (unit1, unit2);
+                    }
                 } else if (getColumnName(3).equals(columnIdentifier)) {
-                    return Unit.compareCompleteSizes(unit1, unit2);
+                    return Unit.Available.compareAvailableVersion(unit1, unit2);
                 } else if (getColumnName(4).equals(columnIdentifier)) {
-                    assert false : columnIdentifier.toString();
+                    return Unit.compareCompleteSizes(unit1, unit2);
                 }                
                 return 0;
             }
@@ -173,4 +200,5 @@ public class AvailableTableModel extends UnitCategoryTableModel {
     private String getBundle (String key) {
         return NbBundle.getMessage (this.getClass (), key);
     }
+     
 }

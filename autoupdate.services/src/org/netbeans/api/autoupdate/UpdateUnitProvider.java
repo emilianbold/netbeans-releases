@@ -23,6 +23,7 @@ import org.netbeans.spi.autoupdate.*;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+import org.netbeans.api.autoupdate.UpdateManager.TYPE;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.autoupdate.services.UpdateUnitProviderImpl;
 
@@ -90,6 +91,17 @@ public final class UpdateUnitProvider {
      */
     public List<UpdateUnit> getUpdateUnits () {
         return impl.getUpdateUnits ();
+    }
+    
+    /** Returns <code>java.util.List</code> of <code>UpdateUnit</code> build of the content of the
+     * provider.
+     * 
+     * @param types returns <code>UpdateUnit</code>s contain only given types, e.g. modules for <code>MODULE</code> type.
+     * If types is <code>null</code> or null then returns default types
+     * @return list of UpdateUnit
+     */
+    public List<UpdateUnit> getUpdateUnits (TYPE... types) {
+        return impl.getUpdateUnits (types);
     }
     
     /** Make refresh of content of the provider. The content can be read from

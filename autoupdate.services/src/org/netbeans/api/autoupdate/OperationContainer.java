@@ -25,10 +25,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.autoupdate.services.OperationContainerImpl;
-import org.netbeans.modules.autoupdate.services.UpdateManagerImpl;
 
 /**
  *
+ * @param Support 
  * @author Radek Matous, Jiri Rechtacek
  */
 public final class OperationContainer<Support> {
@@ -75,6 +75,13 @@ public final class OperationContainer<Support> {
         return retval;
     }
     
+    public static OperationContainer<OperationSupport> createForInstallNativeComponent () {
+        OperationContainer<OperationSupport> retval =
+                new OperationContainer<OperationSupport> (OperationContainerImpl.createForInstallNativeComponent (), new OperationSupport());
+        retval.getSupport ().setContainer (retval);
+        return retval;
+    }
+    
     public Support getSupport() {
         if (!init) {
             init = true;
@@ -110,7 +117,7 @@ public final class OperationContainer<Support> {
     }
     
     public OperationInfo<Support> add(UpdateElement updateElement) {
-        UpdateUnit updateUnit = UpdateManagerImpl.getInstance().getUpdateUnit(updateElement.getCodeName());
+        UpdateUnit updateUnit = updateElement.getUpdateUnit ();
         return impl.add (updateUnit, updateElement);
     }
     
