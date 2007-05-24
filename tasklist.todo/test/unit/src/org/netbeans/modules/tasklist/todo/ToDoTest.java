@@ -35,17 +35,18 @@ import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.tasklist.impl.CurrentEditorScanningScope;
+import org.netbeans.modules.tasklist.impl.TaskList;
+import org.netbeans.modules.tasklist.impl.TaskManagerImpl;
+import org.netbeans.modules.tasklist.impl.TaskManagerImplTest;
 import org.netbeans.modules.tasklist.projectint.MainProjectScanningScope;
 import org.netbeans.modules.tasklist.projectint.OpenedProjectsScanningScope;
 import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.DialogDescriptor;
-import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -164,6 +165,8 @@ public class ToDoTest extends TestBase {
     
     public void testCurrentEditorScanningScope() throws IOException, InterruptedException {
         MockServices.setServices(TopComponentRegistryMock.class,WindowManagerMock.class);
+        assertTrue("TopComponentRegistryMock ",Lookup.getDefault().lookup(TopComponent.Registry.class) instanceof TopComponentRegistryMock);
+        assertTrue("WindowManagerMock ",Lookup.getDefault().lookup(WindowManager.class) instanceof WindowManagerMock);
         NbModuleProject prj1 = generateStandaloneModule(getWorkDir(), "prj1");
         FileObject fo = createSrcFile(prj1,"Main.java",javaFile);
         FileObject fo2 = createSrcFile(prj1,"NoTo.java",noToDoFile);
@@ -176,6 +179,8 @@ public class ToDoTest extends TestBase {
         registry.setActivated(tc);
         
         registry.setOpened(Collections.singleton(tc));
+        WindowManagerMock wm = (WindowManagerMock) Lookup.getDefault().lookup(WindowManager.class);
+        wm.setOpenedEditorTopComponent(tc);
         tasks = scanCurrentEditorTasks();
         assertEquals("Document with todo",2,tasks.size());
         
@@ -183,9 +188,28 @@ public class ToDoTest extends TestBase {
         registry.setActivated(tc);
         
         registry.setOpened(Collections.singleton(tc));
+        wm.setOpenedEditorTopComponent(tc);
         tasks = scanCurrentEditorTasks();
+        
         assertEquals("Document with no todo",0,tasks.size());
     }
+    
+//    public void testTodoAndTaskManager() throws IOException, InterruptedException {
+//        NbModuleProject prj1 = generateStandaloneModule(getWorkDir(), "prj1");
+//        NbModuleProject prj2 = generateStandaloneModule(getWorkDir(), "prj2");
+//        FileObject fo = createSrcFile(prj1,"Main.java",javaFile);
+//        FileObject fo2 = createSrcFile(prj1,"Main2.java",javaFile);
+//        FileObject fo3 = createSrcFile(prj2,"Main.java",javaFile);
+//        OpenProjects.getDefault().open(new Project[]{prj1,prj2}, false);
+//
+//        TaskManagerImpl manager = TaskManagerImpl.getInstance();
+//        manager.observe(OpenedProjectsScanningScope.create(), null);
+//        TaskManagerImplTest.waitFinished(manager);
+//        TaskList tasks =  manager.getTasks();
+//        Thread.sleep(2000);
+//        assertEquals("Number of tasks",2,tasks.size());
+//        
+//    }
     private void logTasks(List<Task> tasks) {
         for (Task t : tasks) {
             System.out.println( t );

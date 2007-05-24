@@ -36,15 +36,22 @@ import org.openide.windows.Workspace;
  */
 public class WindowManagerMock extends WindowManager {
 
-    
+    TopComponent otc;
     public WindowManagerMock() {
     }
 
+    public void setOpenedEditorTopComponent(TopComponent tc) {
+        otc = tc;
+    }
     @Override
     public boolean isEditorTopComponent(TopComponent tc) {
         return true;
     }
 
+    @Override
+    public boolean isOpenedEditorTopComponent(TopComponent tc) {
+        return  (tc != null && tc == otc);
+    }
     
     public Mode findMode(String name) {
         throw new UnsupportedOperationException("Not supported yet.");
