@@ -18,19 +18,10 @@
  */
 package org.netbeans.modules.websvc.rest;
 
-import java.io.File;
 import java.io.IOException;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.openide.filesystems.FileObject;
 
 /**
