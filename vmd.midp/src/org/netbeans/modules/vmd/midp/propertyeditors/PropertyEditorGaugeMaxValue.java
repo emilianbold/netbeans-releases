@@ -22,6 +22,8 @@ package org.netbeans.modules.vmd.midp.propertyeditors;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.regex.Pattern;
@@ -176,11 +178,12 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
         return false;
     }
     
-    private class CustomEditor extends JPanel implements ActionListener, DocumentListener {
+    private class CustomEditor extends JPanel implements ActionListener, DocumentListener, FocusListener {
         private JTextField textField;
         private JCheckBox foreverCheckBox;
         
         public CustomEditor() {
+            radioButton.addFocusListener(this);
             initComponents();
         }
         
@@ -188,12 +191,14 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
             setLayout(new BorderLayout());
             
             foreverCheckBox = new JCheckBox();
-            foreverCheckBox.addActionListener(this);
             Mnemonics.setLocalizedText(foreverCheckBox, NbBundle.getMessage(PropertyEditorGaugeMaxValue.class, "LBL_MAX_VALUE_INDEFINITE")); // NOI18N
+            foreverCheckBox.addActionListener(this);
+            foreverCheckBox.addFocusListener(this);
             add(foreverCheckBox, BorderLayout.NORTH);
             
             textField = new JTextField();
             textField.getDocument().addDocumentListener(this);
+            textField.addFocusListener(this);
             add(textField, BorderLayout.SOUTH);
         }
         
@@ -214,7 +219,7 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
         }
         
         public void unsetForever(boolean changeCheckBox) {
-            setText("");
+            setText(null);
             textField.setEditable(true);
             if (changeCheckBox) {
                 foreverCheckBox.setSelected(false);
@@ -231,28 +236,33 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
         
         public void insertUpdate(DocumentEvent evt) {
             radioButton.setSelected(true);
-            checkText();
+            checkNumberStatus();
         }
         
         public void removeUpdate(DocumentEvent evt) {
             radioButton.setSelected(true);
-            checkText();
+            checkNumberStatus();
         }
         
         public void changedUpdate(DocumentEvent evt) {
         }
         
-        private void checkText() {
-            String text = textField.getText();
-            if (text.length() > 0) {
-                boolean isTextCorrect = Pattern.matches("[\\d\\-]+", text); // NOI18N
-                if (!isTextCorrect) {
-                    displayWarning(PropertyEditorNumber.NON_DIGITS_TEXT);
-                } else {
-                    clearErrorStatus();
-                }
+        private void checkNumberStatus() {
+            if (!Pattern.matches("[\\d\\-]+", textField.getText())) { // NOI18N
+                displayWarning(PropertyEditorNumber.NON_DIGITS_TEXT);
+            } else {
+                clearErrorStatus();
             }
         }
         
+        public void focusGained(FocusEvent e) {
+            if (e.getSource() == radioButton || e.getSource() == textField || e.getSource() == foreverCheckBox) {
+                checkNumberStatus();
+            }
+        }
+        
+        public void focusLost(FocusEvent e) {
+            clearErrorStatus();
+        }
     }
 }

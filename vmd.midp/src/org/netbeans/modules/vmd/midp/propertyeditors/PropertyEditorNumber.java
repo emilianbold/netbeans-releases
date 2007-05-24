@@ -20,6 +20,8 @@
 package org.netbeans.modules.vmd.midp.propertyeditors;
 
 import java.awt.BorderLayout;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.regex.Pattern;
@@ -384,7 +386,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
      */
     public void setPropertyValue(PropertyValue value) {
         if (isCurrentValueANull() || value == null) {
-            customEditor.setText(""); // NOI18N
+            customEditor.setText(null);
         } else {
             customEditor.setText(String.valueOf(value.getPrimitiveValue()));
         }
@@ -397,10 +399,11 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
         }
     }
     
-    private class CustomEditor extends JPanel implements DocumentListener {
+    private class CustomEditor extends JPanel implements DocumentListener, FocusListener {
         private JTextField textField;
         
         public CustomEditor() {
+            radioButton.addFocusListener(this);
             initComponents();
         }
         
@@ -408,6 +411,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
             setLayout(new BorderLayout());
             textField = new JTextField();
             textField.getDocument().addDocumentListener(this);
+            textField.addFocusListener(this);
             add(textField, BorderLayout.CENTER);
         }
         
@@ -419,29 +423,35 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
             return textField.getText();
         }
         
-        private void checkText() {
-            String text = textField.getText();
-            if (text.length() > 0 && !text.equals("0")) { // NOI18N
-                boolean isTextCorrect = isTextCorrect(text);
-                if (!isTextCorrect) {
-                    displayWarning(NON_DIGITS_TEXT);
-                } else {
-                    clearErrorStatus();
-                }
+        private void checkNumberStatus() {
+            if (!isTextCorrect(textField.getText())) {
+                displayWarning(NON_DIGITS_TEXT);
+            } else {
+                clearErrorStatus();
             }
         }
         
         public void insertUpdate(DocumentEvent evt) {
             radioButton.setSelected(true);
-            checkText();
+            checkNumberStatus();
         }
         
         public void removeUpdate(DocumentEvent evt) {
             radioButton.setSelected(true);
-            checkText();
+            checkNumberStatus();
         }
         
         public void changedUpdate(DocumentEvent evt) {
+        }
+        
+        public void focusGained(FocusEvent e) {
+            if (e.getSource() == radioButton || e.getSource() == textField) {
+                checkNumberStatus();
+            }
+        }
+        
+        public void focusLost(FocusEvent e) {
+            clearErrorStatus();
         }
     }
 }

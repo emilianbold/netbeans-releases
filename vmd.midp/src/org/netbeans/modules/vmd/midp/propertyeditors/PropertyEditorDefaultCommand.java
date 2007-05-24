@@ -102,7 +102,7 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
     public boolean isVerticallyResizable() {
         return false;
     }
-
+    
     public String getAsText() {
         if (isCurrentValueAUserCodeType()) {
             return USER_CODE_TEXT;
@@ -121,7 +121,7 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
     public String getText() {
         return null;
     }
-
+    
     public void setPropertyValue(PropertyValue value) {
         customEditor.updateModel();
         if (isCurrentValueANull() || value == null) {
@@ -158,37 +158,39 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
         values.clear();
         values.put(NONE_ITEM, null);
         
-        document.getTransactionManager().readAccess( new Runnable() {
-            public void run() {
-                List<PropertyValue> formCmdESValues = item.getParentComponent().readProperty(DisplayableCD.PROP_COMMANDS).getArray();
-                List<DesignComponent> formCommands = new ArrayList<DesignComponent>(formCmdESValues.size());
-                for (PropertyValue esValue : formCmdESValues) {
-                    DesignComponent command = esValue.getComponent().readProperty(CommandEventSourceCD.PROP_COMMAND).getComponent();
-                    if (command != null) {
-                        PropertyValue ordinaryValue = command.readProperty(CommandCD.PROP_ORDINARY);
-                        if (MidpTypes.getBoolean(ordinaryValue)) {
-                            formCommands.add(command);
+        if (item != null) {
+            document.getTransactionManager().readAccess( new Runnable() {
+                public void run() {
+                    List<PropertyValue> formCmdESValues = item.getParentComponent().readProperty(DisplayableCD.PROP_COMMANDS).getArray();
+                    List<DesignComponent> formCommands = new ArrayList<DesignComponent>(formCmdESValues.size());
+                    for (PropertyValue esValue : formCmdESValues) {
+                        DesignComponent command = esValue.getComponent().readProperty(CommandEventSourceCD.PROP_COMMAND).getComponent();
+                        if (command != null) {
+                            PropertyValue ordinaryValue = command.readProperty(CommandCD.PROP_ORDINARY);
+                            if (MidpTypes.getBoolean(ordinaryValue)) {
+                                formCommands.add(command);
+                            }
                         }
                     }
-                }
-                
-                Collection<DesignComponent> components = MidpDocumentSupport.getCategoryComponent(document, CommandsCategoryCD.TYPEID).getComponents();
-                Collection<DesignComponent> commands = new ArrayList<DesignComponent>(components.size());
-                for (DesignComponent command : components) {
-                    PropertyValue ordinaryValue = command.readProperty(CommandCD.PROP_ORDINARY);
-                    if (MidpTypes.getBoolean(ordinaryValue)) {
-                        commands.add(command);
+                    
+                    Collection<DesignComponent> components = MidpDocumentSupport.getCategoryComponent(document, CommandsCategoryCD.TYPEID).getComponents();
+                    Collection<DesignComponent> commands = new ArrayList<DesignComponent>(components.size());
+                    for (DesignComponent command : components) {
+                        PropertyValue ordinaryValue = command.readProperty(CommandCD.PROP_ORDINARY);
+                        if (MidpTypes.getBoolean(ordinaryValue)) {
+                            commands.add(command);
+                        }
+                    }
+                    commands.removeAll(formCommands);
+                    
+                    for (DesignComponent command : commands) {
+                        String displayName = getComponentDisplayName(command);
+                        tags.add(displayName);
+                        values.put(displayName, command);
                     }
                 }
-                commands.removeAll(formCommands);
-                
-                for (DesignComponent command : commands) {
-                    String displayName = getComponentDisplayName(command);
-                    tags.add(displayName);
-                    values.put(displayName, command);
-                }
-            }
-        });
+            });
+        }
         
         return tags.toArray(new String[tags.size()]);
     }
