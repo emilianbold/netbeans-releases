@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -45,6 +44,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.NbCollections;
 import org.openide.util.NbCollections;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -71,24 +71,24 @@ public final class ModuleList {
     /**
      * Cache of source-derived lists, by source root.
      */
-    private static final Map<File,ModuleList> sourceLists = new HashMap();
+    private static final Map<File,ModuleList> sourceLists = new HashMap<File,ModuleList>();
     /**
      * Cache of binary-derived lists, by binary root (~ dest dir).
      */
-    private static final Map<File,ModuleList> binaryLists = new HashMap();
+    private static final Map<File,ModuleList> binaryLists = new HashMap<File,ModuleList>();
     /**
      * Map from netbeans.org source roots to cluster.properties loads.
      */
-    private static final Map<File,Map<String,String>> clusterPropertiesFiles = new HashMap();
+    private static final Map<File,Map<String,String>> clusterPropertiesFiles = new HashMap<File,Map<String,String>>();
     /**
      * Map from netbeans.org source roots, to cluster definitions,
      * where a cluster definition is from netbeans.org relative source path
      * to physical cluster directory.
      */
-    private static final Map<File,Map<String,String>> clusterLocations = new HashMap();
+    private static final Map<File,Map<String,String>> clusterLocations = new HashMap<File,Map<String,String>>();
     
     /** All entries known to exist for a given included file path. */
-    private static final Map<File,Set<ModuleEntry>> knownEntries = new HashMap();
+    private static final Map<File,Set<ModuleEntry>> knownEntries = new HashMap<File,Set<ModuleEntry>>();
 
     /**
      * Find the list of modules associated with a project (itself, others in
@@ -118,8 +118,8 @@ public final class ModuleList {
      */
     public static ModuleList getModuleList(final File basedir, final File customNbDestDir) throws IOException {
         try {
-            return (ModuleList) ProjectManager.mutex().readAccess(new Mutex.ExceptionAction() { // #69971
-                public Object run() throws IOException {
+            return ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<ModuleList>() { // #69971
+                public ModuleList run() throws IOException {
                     synchronized (binaryLists) { // need to protect caches from race conditions, so this seems OK
         timeSpentInXmlParsing = 0L;
         xmlFilesParsed = 0;
@@ -176,23 +176,21 @@ public final class ModuleList {
      */
     public static Set<ModuleEntry> getKnownEntries(File file) {
         synchronized (knownEntries) {
-            Set<ModuleEntry> entries = (Set) knownEntries.get(file);
+            Set<ModuleEntry> entries = knownEntries.get(file);
             if (entries != null) {
-                return new HashSet(entries);
+                return new HashSet<ModuleEntry>(entries);
             } else {
-                return Collections.EMPTY_SET;
+                return Collections.emptySet();
             }
         }
     }
     
     private static void registerEntry(ModuleEntry entry, Set<File> files) {
         synchronized (knownEntries) {
-            Iterator it = files.iterator();
-            while (it.hasNext()) {
-                File f = (File) it.next();
-                Set<ModuleEntry> entries = (Set) knownEntries.get(f);
+            for (File f : files) {
+                Set<ModuleEntry> entries = knownEntries.get(f);
                 if (entries == null) {
-                    entries = new HashSet();
+                    entries = new HashSet<ModuleEntry>();
                     knownEntries.put(f, entries);
                 }
                 entries.add(entry);
@@ -201,7 +199,7 @@ public final class ModuleList {
     }
     
     static ModuleList findOrCreateModuleListFromNetBeansOrgSources(File root) throws IOException {
-        ModuleList list = (ModuleList) sourceLists.get(root);
+        ModuleList list = sourceLists.get(root);
         if (list == null) {
             list = createModuleListFromNetBeansOrgSources(root);
             sourceLists.put(root, list);
@@ -212,7 +210,7 @@ public final class ModuleList {
     private static ModuleList createModuleListFromNetBeansOrgSources(File root) throws IOException {
         Util.err.log("ModuleList.createModuleListFromSources: " + root);
         File nbdestdir = new File(root, DEST_DIR_IN_NETBEANS_ORG);
-        Map<String,ModuleEntry> entries = new HashMap();
+        Map<String,ModuleEntry> entries = new HashMap<String,ModuleEntry>();
         scanNetBeansOrgStableSources(entries, root, nbdestdir);
         return new ModuleList(entries, root, true);
     }
@@ -225,14 +223,14 @@ public final class ModuleList {
         Map<String,String> clusterProps = getClusterProperties(root);
         // Use ${clusters.list}, *not* ${nb.clusters.list}: we do want to include testtools,
         // since those modules contribute sources for JARs which are used in unit test classpaths for stable modules.
-        String clusterList = (String) clusterProps.get("clusters.list"); // NOI18N
+        String clusterList = clusterProps.get("clusters.list"); // NOI18N
         if (clusterList == null) {
             throw new IOException("No ${nb.clusters.list} found in " + root); // NOI18N
         }
         StringTokenizer tok = new StringTokenizer(clusterList, ", "); // NOI18N
         while (tok.hasMoreTokens()) {
             String clusterName = tok.nextToken();
-            String moduleList = (String) clusterProps.get(clusterName);
+            String moduleList = clusterProps.get(clusterName);
             if (moduleList == null) {
                 throw new IOException("No ${" + clusterName + "} found in " + root); // NOI18N
             }
@@ -244,7 +242,7 @@ public final class ModuleList {
         }
     }
     
-    public static final Set<String> EXCLUDED_DIR_NAMES = new HashSet();
+    public static final Set<String> EXCLUDED_DIR_NAMES = new HashSet<String>();
     static {
         EXCLUDED_DIR_NAMES.add("CVS"); // NOI18N
         EXCLUDED_DIR_NAMES.add("nbproject"); // NOI18N
@@ -260,25 +258,25 @@ public final class ModuleList {
         if (kids == null) {
             return;
         }
-        for (int i = 0; i < kids.length; i++) {
-            if (!kids[i].isDirectory()) {
+        for (File kid : kids) {
+            if (!kid.isDirectory()) {
                 continue;
             }
-            String name = kids[i].getName();
+            String name = kid.getName();
             if (EXCLUDED_DIR_NAMES.contains(name)) {
                 // #61579: known to not be project dirs, so skip to save time.
                 continue;
             }
             String newPathPrefix = (pathPrefix != null) ? pathPrefix + "/" + name : name; // NOI18N
             try {
-                scanPossibleProject(kids[i], entries, false, false, root, nbdestdir, newPathPrefix, warnReDuplicates);
+                scanPossibleProject(kid, entries, false, false, root, nbdestdir, newPathPrefix, warnReDuplicates);
             } catch (IOException e) {
                 // #60295: make it nonfatal.
-                Util.err.annotate(e, ErrorManager.UNKNOWN, "Malformed project metadata in " + kids[i] + ", skipping...", null, null, null); // NOI18N
+                Util.err.annotate(e, ErrorManager.UNKNOWN, "Malformed project metadata in " + kid + ", skipping...", null, null, null); // NOI18N
                 Util.err.notify(ErrorManager.INFORMATIONAL, e);
             }
             if (depth > 1) {
-                doScanNetBeansOrgSources(entries, kids[i], depth - 1, root, nbdestdir, newPathPrefix, warnReDuplicates);
+                doScanNetBeansOrgSources(entries, kid, depth - 1, root, nbdestdir, newPathPrefix, warnReDuplicates);
             }
         }
     }
@@ -297,9 +295,7 @@ public final class ModuleList {
         String module = eval.getProperty("module.jar"); // NOI18N
         // Cf. ParseProjectXml.computeClasspath:
         StringBuffer cpextra = new StringBuffer();
-        Iterator<Element> exts = Util.findSubElements(data).iterator();
-        while (exts.hasNext()) {
-            Element ext = (Element) exts.next();
+        for (Element ext : Util.findSubElements(data)) {
             if (!ext.getLocalName().equals("class-path-extension")) { // NOI18N
                 continue;
             }
@@ -357,7 +353,7 @@ public final class ModuleList {
      * And anything in the release/ directory is added.
      */
     private static Set<File> findSourceNBMFiles(ModuleEntry entry, PropertyEvaluator eval) throws IOException {
-        Set<File> files = new HashSet();
+        Set<File> files = new HashSet<File>();
         files.add(entry.getJarLocation());
         File cluster = entry.getClusterDirectory();
         String cnbd = entry.getCodeNameBase().replace('.', '-');
@@ -368,15 +364,13 @@ public final class ModuleList {
             "ant/nblib/*.jar", // NOI18N
             "modules/docs/*.jar", // NOI18N
         };
-        for (int i = 0; i < STANDARD_FILES.length; i++) {
-            int x = STANDARD_FILES[i].indexOf('*');
-            findSourceNBMFilesMaybeAdd(files, cluster, STANDARD_FILES[i].substring(0, x) + cnbd + STANDARD_FILES[i].substring(x + 1));
+        for (String f : STANDARD_FILES) {
+            int x = f.indexOf('*');
+            findSourceNBMFilesMaybeAdd(files, cluster, f.substring(0, x) + cnbd + f.substring(x + 1));
         }
         String emf = eval.getProperty("extra.module.files"); // NOI18N
         if (emf != null) {
-            String[] entries = emf.split(" *, *"); // NOI18N
-            for (int i = 0; i < entries.length; i++) {
-                String pattern = entries[i];
+            for (String pattern : emf.split(" *, *")) { // NOI18N
                 if (pattern.endsWith("/")) { // NOI18N
                     // Shorthand for /**
                     pattern += "**"; // NOI18N
@@ -391,10 +385,9 @@ public final class ModuleList {
                                                    replaceAll("\\*", "\\\\E[^/]*\\\\Q"). // NOI18N
                                                    replaceAll("__DBLASTERISK__", "\\\\E.*\\\\Q") + "\\E"; // NOI18N
                     Pattern regexp = Pattern.compile(regex);
-                    String[] clusterFiles = scanDirForFiles(cluster);
-                    for (int j = 0; j < clusterFiles.length; j++) {
-                        if (regexp.matcher(clusterFiles[j]).matches()) {
-                            findSourceNBMFilesMaybeAdd(files, cluster, clusterFiles[j]);
+                    for (String clusterFile : scanDirForFiles(cluster)) {
+                        if (regexp.matcher(clusterFile).matches()) {
+                            findSourceNBMFilesMaybeAdd(files, cluster, clusterFile);
                         }
                     }
                 }
@@ -405,9 +398,8 @@ public final class ModuleList {
         // XXX handle overrides of release.dir
         File releaseDir = new File(src, "release"); // NOI18N
         if (releaseDir.isDirectory()) {
-            String[] releaseFiles = scanDirForFiles(releaseDir);
-            for (int i = 0; i < releaseFiles.length; i++) {
-                findSourceNBMFilesMaybeAdd(files, cluster, releaseFiles[i]);
+            for (String releaseFile : scanDirForFiles(releaseDir)) {
+                findSourceNBMFilesMaybeAdd(files, cluster, releaseFile);
             }
         }
         return files;
@@ -416,11 +408,11 @@ public final class ModuleList {
         File f = new File(cluster, path.replace('/', File.separatorChar));
         files.add(f);
     }
-    private static final Map<File,String[]> DIR_SCAN_CACHE = new HashMap();
+    private static final Map<File,String[]> DIR_SCAN_CACHE = new HashMap<File,String[]>();
     private static String[] scanDirForFiles(File dir) {
         String[] files = DIR_SCAN_CACHE.get(dir);
         if (files == null) {
-            List<String> l = new ArrayList(250);
+            List<String> l = new ArrayList<String>(250);
             doScanDirForFiles(dir, l, "");
             files = l.toArray(new String[l.size()]);
         }
@@ -430,8 +422,7 @@ public final class ModuleList {
         directoriesChecked++;
         File[] kids = d.listFiles();
         if (kids != null) {
-            for (int i = 0; i < kids.length; i++) {
-                File f = kids[i];
+            for (File f : kids) {
                 if (f.isFile()) {
                     files.add(prefix + f.getName());
                 } else if (f.isDirectory()) {
@@ -461,15 +452,14 @@ public final class ModuleList {
     }
     
     private static ModuleList findOrCreateModuleListFromSuiteWithoutBinaries(File root, File nbdestdir, PropertyEvaluator eval) throws IOException {
-        ModuleList sources = (ModuleList) sourceLists.get(root);
+        ModuleList sources = sourceLists.get(root);
         if (sources == null) {
-            Map<String,ModuleEntry> entries = new HashMap();
-            File[] modules = findModulesInSuite(root, eval);
-            for (int i = 0; i < modules.length; i++) {
+            Map<String,ModuleEntry> entries = new HashMap<String,ModuleEntry>();
+            for (File module : findModulesInSuite(root, eval)) {
                 try {
-                    scanPossibleProject(modules[i], entries, true, false, null, nbdestdir, null, true);
+                    scanPossibleProject(module, entries, true, false, null, nbdestdir, null, true);
                 } catch (IOException e) {
-                    Util.err.annotate(e, ErrorManager.UNKNOWN, "Malformed project metadata in " + modules[i] + ", skipping...", null, null, null); // NOI18N
+                    Util.err.annotate(e, ErrorManager.UNKNOWN, "Malformed project metadata in " + module + ", skipping...", null, null, null); // NOI18N
                     Util.err.notify(ErrorManager.INFORMATIONAL, e);
                 }
             }
@@ -490,13 +480,13 @@ public final class ModuleList {
     }
     
     private static PropertyEvaluator parseSuiteProperties(File root) throws IOException {
-        Map<String,String> predefs = new HashMap(System.getProperties());
+        Map<String,String> predefs = NbCollections.checkedMapByCopy(System.getProperties(), String.class, String.class, false);
         predefs.put("basedir", root.getAbsolutePath()); // NOI18N
         PropertyProvider predefsProvider = PropertyUtils.fixedPropertyProvider(predefs);
-        List<PropertyProvider> providers = new ArrayList();
+        List<PropertyProvider> providers = new ArrayList<PropertyProvider>();
         providers.add(loadPropertiesFile(new File(root, "nbproject" + File.separatorChar + "private" + File.separatorChar + "platform-private.properties"))); // NOI18N
         providers.add(loadPropertiesFile(new File(root, "nbproject" + File.separatorChar + "platform.properties"))); // NOI18N
-        PropertyEvaluator eval = PropertyUtils.sequentialPropertyEvaluator(predefsProvider, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
+        PropertyEvaluator eval = PropertyUtils.sequentialPropertyEvaluator(predefsProvider, providers.toArray(new PropertyProvider[providers.size()]));
         String buildS = eval.getProperty("user.properties.file"); // NOI18N
         if (buildS != null) {
             providers.add(loadPropertiesFile(PropertyUtils.resolveFile(root, buildS)));
@@ -506,12 +496,12 @@ public final class ModuleList {
         }
         providers.add(loadPropertiesFile(new File(root, "nbproject" + File.separatorChar + "private" + File.separatorChar + "private.properties"))); // NOI18N
         providers.add(loadPropertiesFile(new File(root, "nbproject" + File.separatorChar + "project.properties"))); // NOI18N
-        eval = PropertyUtils.sequentialPropertyEvaluator(predefsProvider, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
+        eval = PropertyUtils.sequentialPropertyEvaluator(predefsProvider, providers.toArray(new PropertyProvider[providers.size()]));
         String platformS = eval.getProperty("nbplatform.active"); // NOI18N
         if (platformS != null) {
             providers.add(PropertyUtils.fixedPropertyProvider(Collections.singletonMap("netbeans.dest.dir", "${nbplatform." + platformS + ".netbeans.dest.dir}"))); // NOI18N
         }
-        return PropertyUtils.sequentialPropertyEvaluator(predefsProvider, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
+        return PropertyUtils.sequentialPropertyEvaluator(predefsProvider, providers.toArray(new PropertyProvider[providers.size()]));
     }
     
     static File[] findModulesInSuite(File root) throws IOException {
@@ -548,9 +538,9 @@ public final class ModuleList {
             nbdestdir = customNbDestDir;
         }
         ModuleList binaries = findOrCreateModuleListFromBinaries(nbdestdir);
-        ModuleList sources = (ModuleList) sourceLists.get(basedir);
+        ModuleList sources = sourceLists.get(basedir);
         if (sources == null) {
-            Map<String,ModuleEntry> entries = new HashMap();
+            Map<String,ModuleEntry> entries = new HashMap<String,ModuleEntry>();
             scanPossibleProject(basedir, entries, false, true, null, nbdestdir, null, true);
             if (entries.isEmpty()) {
                 throw new IOException("No module in " + basedir); // NOI18N
@@ -562,7 +552,7 @@ public final class ModuleList {
     }
     
     static ModuleList findOrCreateModuleListFromBinaries(File root) throws IOException {
-        ModuleList list = (ModuleList) binaryLists.get(root);
+        ModuleList list = binaryLists.get(root);
         if (list == null) {
             list = createModuleListFromBinaries(root);
             binaryLists.put(root, list);
@@ -580,14 +570,14 @@ public final class ModuleList {
     private static ModuleList createModuleListFromBinaries(File root) throws IOException {
         Util.err.log("ModuleList.createModuleListFromBinaries: " + root);
         // Loosely copied from o.n.nbbuild.ModuleListParser
-        Map<String,ModuleEntry> entries = new HashMap();
+        Map<String,ModuleEntry> entries = new HashMap<String,ModuleEntry>();
         File[] clusters = root.listFiles();
         if (clusters == null) {
             throw new IOException("Cannot examine dir " + root); // NOI18N
         }
-        for (int i = 0; i < clusters.length; i++) {
-            for (int j = 0; j < MODULE_DIRS.length; j++) {
-                File dir = new File(clusters[i], MODULE_DIRS[j].replace('/', File.separatorChar));
+        for (File cluster : clusters) {
+            for (String moduleDir : MODULE_DIRS) {
+                File dir = new File(cluster, moduleDir.replace('/', File.separatorChar));
                 if (!dir.isDirectory()) {
                     continue;
                 }
@@ -595,8 +585,7 @@ public final class ModuleList {
                 if (jars == null) {
                     throw new IOException("Cannot examine dir " + dir); // NOI18N
                 }
-                for (int k = 0; k < jars.length; k++) {
-                    File m = jars[k];
+                for (File m : jars) {
                     if (!m.getName().endsWith(".jar")) { // NOI18N
                         continue;
                     }
@@ -617,7 +606,7 @@ public final class ModuleList {
                             exts[l] = new File(dir, pieces[l].replace('/', File.separatorChar));
                         }
                     }
-                    ModuleEntry entry = new BinaryEntry(codenamebase, m, exts, root, clusters[i], 
+                    ModuleEntry entry = new BinaryEntry(codenamebase, m, exts, root, cluster,
                             mm.getReleaseVersion(), mm.getSpecificationVersion(), mm.getProvidedTokens(),
                             mm.getPublicPackages(), mm.getFriends(), mm.isDeprecated(), mm.getModuleDependencies());
                     if (entries.containsKey(codenamebase)) {
@@ -625,7 +614,7 @@ public final class ModuleList {
                     } else {
                         entries.put(codenamebase, entry);
                     }
-                    registerEntry(entry, findBinaryNBMFiles(clusters[i], codenamebase, m));
+                    registerEntry(entry, findBinaryNBMFiles(cluster, codenamebase, m));
                 }
             }
         }
@@ -639,7 +628,7 @@ public final class ModuleList {
      * Note that update_tracking/*.xml is added as well as files it lists.
      */
     private static Set<File> findBinaryNBMFiles(File cluster, String cnb, File jar) throws IOException {
-        Set<File> files = new HashSet();
+        Set<File> files = new HashSet<File>();
         files.add(jar);
         File tracking = new File(new File(cluster, "update_tracking"), cnb.replace('.', '-') + ".xml"); // NOI18N
         if (tracking.isFile()) {
@@ -653,13 +642,9 @@ public final class ModuleList {
             } catch (SAXException e) {
                 throw (IOException) new IOException(e.toString()).initCause(e);
             }
-            Iterator it = Util.findSubElements(doc.getDocumentElement()).iterator();
-            while (it.hasNext()) {
-                Element moduleVersion = (Element) it.next();
+            for (Element moduleVersion : Util.findSubElements(doc.getDocumentElement())) {
                 if (moduleVersion.getTagName().equals("module_version") && moduleVersion.getAttribute("last").equals("true")) { // NOI18N
-                    Iterator it2 = Util.findSubElements(moduleVersion).iterator();
-                    while (it2.hasNext()) {
-                        Element fileEl = (Element) it2.next();
+                    for (Element fileEl : Util.findSubElements(moduleVersion)) {
                         if (fileEl.getTagName().equals("file")) { // NOI18N
                             String name = fileEl.getAttribute("name"); // NOI18N
                             File f = new File(cluster, name.replace('/', File.separatorChar));
@@ -731,14 +716,14 @@ public final class ModuleList {
      */
     static PropertyEvaluator parseProperties(File basedir, File root, boolean suiteComponent, boolean standalone, String cnb) throws IOException {
         assert !(suiteComponent && standalone) : basedir;
-        Map<String,String> predefs = new HashMap(System.getProperties());
+        Map<String,String> predefs = NbCollections.checkedMapByCopy(System.getProperties(), String.class, String.class, false);
         predefs.put("basedir", basedir.getAbsolutePath()); // NOI18N
         PropertyProvider predefsProvider = PropertyUtils.fixedPropertyProvider(predefs);
-        List<PropertyProvider> providers = new ArrayList();
+        List<PropertyProvider> providers = new ArrayList<PropertyProvider>();
         if (suiteComponent) {
             providers.add(loadPropertiesFile(new File(basedir, "nbproject" + File.separatorChar + "private" + File.separatorChar + "suite-private.properties"))); // NOI18N
             providers.add(loadPropertiesFile(new File(basedir, "nbproject" + File.separatorChar + "suite.properties"))); // NOI18N
-            PropertyEvaluator eval = PropertyUtils.sequentialPropertyEvaluator(predefsProvider, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
+            PropertyEvaluator eval = PropertyUtils.sequentialPropertyEvaluator(predefsProvider, providers.toArray(new PropertyProvider[providers.size()]));
             String suiteS = eval.getProperty("suite.dir"); // NOI18N
             if (suiteS != null) {
                 File suite = PropertyUtils.resolveFile(basedir, suiteS);
@@ -750,14 +735,14 @@ public final class ModuleList {
             providers.add(loadPropertiesFile(new File(basedir, "nbproject" + File.separatorChar + "platform.properties"))); // NOI18N
         }
         if (suiteComponent || standalone) {
-            PropertyEvaluator eval = PropertyUtils.sequentialPropertyEvaluator(predefsProvider, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
+            PropertyEvaluator eval = PropertyUtils.sequentialPropertyEvaluator(predefsProvider, providers.toArray(new PropertyProvider[providers.size()]));
             String buildS = eval.getProperty("user.properties.file"); // NOI18N
             if (buildS != null) {
                 providers.add(loadPropertiesFile(PropertyUtils.resolveFile(basedir, buildS)));
             } else {
                 providers.add(PropertyUtils.globalPropertyProvider());
             }
-            eval = PropertyUtils.sequentialPropertyEvaluator(predefsProvider, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
+            eval = PropertyUtils.sequentialPropertyEvaluator(predefsProvider, providers.toArray(new PropertyProvider[providers.size()]));
             String platformS = eval.getProperty("nbplatform.active"); // NOI18N
             if (platformS != null) {
                 providers.add(PropertyUtils.fixedPropertyProvider(Collections.singletonMap("netbeans.dest.dir", "${nbplatform." + platformS + ".netbeans.dest.dir}"))); // NOI18N
@@ -767,7 +752,7 @@ public final class ModuleList {
         providers.add(loadPropertiesFile(new File(basedir, "nbproject" + File.separatorChar + "private" + File.separatorChar + "private.properties"))); // NOI18N
         providers.add(loadPropertiesFile(new File(basedir, "nbproject" + File.separatorChar + "project.properties"))); // NOI18N
         // Implicit stuff.
-        Map<String,String> defaults = new HashMap();
+        Map<String,String> defaults = new HashMap<String,String>();
         boolean isNetBeansOrg = !suiteComponent && !standalone;
         if (isNetBeansOrg) {
             defaults.put("nb_all", root.getAbsolutePath()); // NOI18N
@@ -790,12 +775,12 @@ public final class ModuleList {
             }
             defaults.put("cluster", "${netbeans.dest.dir}/" + cluster); // NOI18N
         }
-        return PropertyUtils.sequentialPropertyEvaluator(predefsProvider, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
+        return PropertyUtils.sequentialPropertyEvaluator(predefsProvider, providers.toArray(new PropertyProvider[providers.size()]));
     }
     
     private static PropertyProvider loadPropertiesFile(File f) throws IOException {
         if (!f.isFile()) {
-            return PropertyUtils.fixedPropertyProvider(Collections.EMPTY_MAP);
+            return PropertyUtils.fixedPropertyProvider(Collections.<String,String>emptyMap());
         }
         Properties p = new Properties();
         InputStream is = new FileInputStream(f);
@@ -851,18 +836,15 @@ public final class ModuleList {
     }
     
     private static Map<String,String> getClusterProperties(File nbroot) throws IOException {
-        Map<String,String> clusterDefs = (Map) clusterPropertiesFiles.get(nbroot);
+        Map<String,String> clusterDefs = clusterPropertiesFiles.get(nbroot);
         if (clusterDefs == null) {
             PropertyProvider pp = loadPropertiesFile(new File(nbroot, "nbbuild" + File.separatorChar + "cluster.properties")); // NOI18N
             PropertyEvaluator clusterEval = PropertyUtils.sequentialPropertyEvaluator(
-                    PropertyUtils.fixedPropertyProvider(Collections.EMPTY_MAP),
-                    new PropertyProvider[] {
-                pp,
-            });
+                    PropertyUtils.fixedPropertyProvider(Collections.<String,String>emptyMap()), pp);
             clusterDefs = clusterEval.getProperties();
             if (clusterDefs == null) {
                 // Definition failure of some sort.
-                clusterDefs = Collections.EMPTY_MAP;
+                clusterDefs = Collections.emptyMap();
             }
         }
         return clusterDefs;
@@ -876,21 +858,19 @@ public final class ModuleList {
     private static String findClusterLocation(File basedir, File nbroot) throws IOException {
         String path = PropertyUtils.relativizeFile(nbroot, basedir);
         assert path.indexOf("..") == -1 : path;
-        Map<String,String> clusterLocationsHere = (Map) clusterLocations.get(nbroot);
+        Map<String,String> clusterLocationsHere = clusterLocations.get(nbroot);
         if (clusterLocationsHere == null) {
-            clusterLocationsHere = new HashMap();
+            clusterLocationsHere = new HashMap<String,String>();
             Map<String,String> clusterDefs = getClusterProperties(nbroot);
-            Iterator it = clusterDefs.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry entry = (Map.Entry)it.next();
-                String key = (String)entry.getKey();
-                String clusterDir = (String) clusterDefs.get(key + ".dir"); // NOI18N
+            for (Map.Entry<String,String> entry : clusterDefs.entrySet()) {
+                String key = entry.getKey();
+                String clusterDir = clusterDefs.get(key + ".dir"); // NOI18N
                 if (clusterDir == null) {
                     // Not a list of modules.
                     // XXX could also just read clusters.list
                     continue;
                 }
-                String val = (String) entry.getValue();
+                String val = entry.getValue();
                 StringTokenizer tok = new StringTokenizer(val, ", "); // NOI18N
                 while (tok.hasMoreTokens()) {
                     String p = tok.nextToken();
@@ -899,7 +879,7 @@ public final class ModuleList {
             }
             clusterLocations.put(nbroot, clusterLocationsHere);
         }
-        return (String) clusterLocationsHere.get(path);
+        return clusterLocationsHere.get(path);
     }
     
     // NONSTATIC PART
@@ -919,7 +899,7 @@ public final class ModuleList {
         this.lazyNetBeansOrgList = lazyNetBeansOrgList;
     }
     
-    public String toString() {
+    public @Override String toString() {
         return "ModuleList[" + home + "]" + (lazyNetBeansOrgList ? "[lazy]" : "") + entries.values(); // NOI18N
     }
     
@@ -928,15 +908,13 @@ public final class ModuleList {
      * In case of conflict (by CNB), earlier entries take precedence.
      */
     private static ModuleList merge(ModuleList[] lists, File home) {
-        Map<String,ModuleEntry> entries = new HashMap();
-        for (int i = 0; i < lists.length; i++) {
-            lists[i].maybeRescanNetBeansOrgSources();
-            Iterator it = lists[i].entries.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry entry = (Map.Entry) it.next();
-                String cnb = (String) entry.getKey();
+        Map<String,ModuleEntry> entries = new HashMap<String,ModuleEntry>();
+        for (ModuleList list : lists) {
+            list.maybeRescanNetBeansOrgSources();
+            for (Map.Entry<String,ModuleEntry> entry : list.entries.entrySet()) {
+                String cnb = entry.getKey();
                 if (!entries.containsKey(cnb)) {
-                    entries.put(cnb, (ModuleEntry) entry.getValue());
+                    entries.put(cnb, entry.getValue());
                 }
             }
         }
@@ -947,7 +925,7 @@ public final class ModuleList {
         if (lazyNetBeansOrgList) {
             lazyNetBeansOrgList = false;
             File nbdestdir = new File(home, DEST_DIR_IN_NETBEANS_ORG);
-            Map<String,ModuleEntry> _entries = new HashMap(entries); // #68513: possible race condition
+            Map<String,ModuleEntry> _entries = new HashMap<String,ModuleEntry>(entries); // #68513: possible race condition
             doScanNetBeansOrgSources(_entries, home, DEPTH_NB_ALL, home, nbdestdir, null, false);
             entries = _entries;
         }
@@ -959,12 +937,12 @@ public final class ModuleList {
      * @return the matching module, or null if there is none such
      */
     public ModuleEntry getEntry(String codeNameBase) {
-        ModuleEntry e = (ModuleEntry) entries.get(codeNameBase);
+        ModuleEntry e = entries.get(codeNameBase);
         if (e != null) {
             return e;
         } else {
             maybeRescanNetBeansOrgSources();
-            return (ModuleEntry) entries.get(codeNameBase);
+            return entries.get(codeNameBase);
         }
     }
     
@@ -974,7 +952,7 @@ public final class ModuleList {
      */
     public Set<ModuleEntry> getAllEntries() {
         maybeRescanNetBeansOrgSources();
-        return new HashSet(entries.values());
+        return new HashSet<ModuleEntry>(entries.values());
     }
     
     /**
@@ -987,7 +965,7 @@ public final class ModuleList {
      * @return all known module entries
      */
     public Set<ModuleEntry> getAllEntriesSoft() {
-        return new HashSet(entries.values());
+        return new HashSet<ModuleEntry>(entries.values());
     }
     
     public static LocalizedBundleInfo loadBundleInfo(File projectDir) {
