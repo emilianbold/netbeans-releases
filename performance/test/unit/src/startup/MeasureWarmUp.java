@@ -67,8 +67,6 @@ public class MeasureWarmUp extends  org.netbeans.performance.test.utilities.Meas
         runIDEWarmUp(getIdeHome(),userdir,measureFile,timeout);
         Hashtable measuredValues = parseMeasuredValues(measureFile);
         
-        long warmupAll = 0;
-        
         if(measuredValues==null)
             fail("It isn't possible measure Warm Up.");
         
@@ -78,14 +76,9 @@ public class MeasureWarmUp extends  org.netbeans.performance.test.utilities.Meas
         while(iter.hasNext()){
             name = (String)iter.next();
             value = ((Long)measuredValues.get(name)).longValue();
-            
-            warmupAll = warmupAll + value;
-            
             System.out.println(name+"="+value);
             reportPerformance(name,value,"ms",1);
         }
-        
-        reportPerformance("Warmup all",warmupAll,"ms",1);
     }
     
     
