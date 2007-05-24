@@ -53,10 +53,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -426,6 +428,7 @@ public final class JavaSource {
         this.classpathInfo.addChangeListener(WeakListeners.change(this.listener, this.classpathInfo));
     }
        
+    private static final Set<StackTraceElement> warnedAboutRunInEQ = new HashSet<StackTraceElement>();
     /** Runs a task which permits for controlling phases of the parsing process.
      * You probably do not want to call this method unless you are reacting to
      * some user's GUI input which requires immediate action (e.g. code completion popup). 
@@ -455,8 +458,10 @@ public final class JavaSource {
         boolean a = false;
         assert a = true;        
         if (a && javax.swing.SwingUtilities.isEventDispatchThread()) {
-            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-            LOGGER.warning("JavaSource.runUserActionTask called in AWT event thread by: " + stackTrace[2]);       //NOI18N
+            StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[2];
+            if (warnedAboutRunInEQ.add(stackTraceElement)) {
+                LOGGER.warning("JavaSource.runUserActionTask called in AWT event thread by: " + stackTraceElement); // NOI18N
+            }
         }
         
         if (this.files.size()<=1) {                        
