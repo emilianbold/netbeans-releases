@@ -61,6 +61,10 @@ public class CreateCopyAction extends ContextAction {
                & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
     
+    protected boolean enable(Node[] nodes) {
+        return nodes != null && nodes.length == 1 &&  getContext(nodes).getRoots().size() > 0;
+    }   
+    
     protected void performContextAction(final Node[] nodes) {
         
         if(!Subversion.getInstance().checkClientAvailable()) {            
