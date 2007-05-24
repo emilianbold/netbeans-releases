@@ -59,11 +59,7 @@ public class MPScanClasspath extends gui.scanclasspath.ScanClasspath {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         
-        suite.addTest(new MobilitySetupTest("closeMemoryToolbar"));
-        suite.addTest(new MobilitySetupTest("closeAllDocuments"));
-        
         suite.addTest(new MobilitySetupTest("openMobilityMIDletProject"));
-
         suite.addTest(new MPScanClasspath("measureClassPathScan"));
         
         return suite;
@@ -71,5 +67,6 @@ public class MPScanClasspath extends gui.scanclasspath.ScanClasspath {
     
     public void measureClassPathScan() {
         super.measureClassPathScan();
+        reportPerformance("Scanning Mobility Project Classpath", wholeClasspathScan, "ms", 1);
     }
 }

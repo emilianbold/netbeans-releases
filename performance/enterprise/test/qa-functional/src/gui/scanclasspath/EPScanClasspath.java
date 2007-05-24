@@ -60,9 +60,6 @@ public class EPScanClasspath extends gui.scanclasspath.ScanClasspath {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         
-        suite.addTest(new EnterpriseSetupTest("closeMemoryToolbar"));
-        suite.addTest(new EnterpriseSetupTest("closeAllDocuments"));
-        
         suite.addTest(new EnterpriseSetupTest("openReservationPartnerServicesProject"));
         suite.addTest(new EnterpriseSetupTest("openTravelReservationServiceProject"));
         suite.addTest(new EnterpriseSetupTest("openTravelReservationServiceApplicationProject"));
@@ -74,5 +71,6 @@ public class EPScanClasspath extends gui.scanclasspath.ScanClasspath {
     
     public void measureClassPathScan() {
         super.measureClassPathScan();
+        reportPerformance("Scanning Enteprise Project Classpath", wholeClasspathScan, "ms", 1);
     }
 }

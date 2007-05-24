@@ -37,6 +37,9 @@ public class ScanClasspath extends org.netbeans.performance.test.utilities.Perfo
     // list of classpath roots we are interesting to measure
     protected static ArrayList<String> reportCPR = new ArrayList<String> ();
     
+    // measure whole classpath scan time together
+    protected static long wholeClasspathScan = 0;
+        
     static {
         reportCPR.add("rt.jar");        // JDK/jre/lib/rt.jar
         reportCPR.add("jEdit41/src");   // jEdit41/src
@@ -76,6 +79,7 @@ public class ScanClasspath extends org.netbeans.performance.test.utilities.Perfo
     public void openJEditProject() {
         gui.Utilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+"/jEdit41");
         measureClassPathScan();
+        reportPerformance("Scanning Java Project Classpath", wholeClasspathScan, "ms", 1);
     }
     
     protected void measureClassPathScan() {
@@ -90,6 +94,9 @@ public class ScanClasspath extends org.netbeans.performance.test.utilities.Perfo
                 else
                     fail("Measured value ["+data.getValue()+"] is not > 0 !");
             }
+            
+            // measure whole classpath scan
+            wholeClasspathScan = wholeClasspathScan + data.getValue();
         }
     }
     

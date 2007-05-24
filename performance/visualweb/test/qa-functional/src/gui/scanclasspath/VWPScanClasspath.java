@@ -60,8 +60,6 @@ public class VWPScanClasspath extends gui.scanclasspath.ScanClasspath {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         
-        suite.addTest(new gui.setup.WebSetupTest("closeMemoryToolbar"));
-        suite.addTest(new gui.setup.WebSetupTest("closeAllDocuments"));
         suite.addTest(new VWPScanClasspath("openHugeAppProject"));
 
         return suite;
@@ -70,6 +68,7 @@ public class VWPScanClasspath extends gui.scanclasspath.ScanClasspath {
     public void openHugeAppProject() {
         VWPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + java.io.File.separator + "HugeApp");
         measureClassPathScan();
+        reportPerformance("Scanning Visual Web Project Classpath", wholeClasspathScan, "ms", 1);
     }
     
 }
