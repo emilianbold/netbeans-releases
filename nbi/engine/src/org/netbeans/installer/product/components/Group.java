@@ -38,7 +38,6 @@ public class Group extends RegistryNode {
         uid = "";
         displayNames.put(Locale.getDefault(), "Product Tree Root");
         descriptions.put(Locale.getDefault(), "");
-        icon = UIManager.getDefaults().getIcon("Tree.expandedIcon");
     }
     
     public boolean isEmpty() {
