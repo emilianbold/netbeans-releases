@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Templates">
+        <folder name="Licenses">
+            <attr name="templateCategory" stringvalue="invisible"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.codegen.Bundle"/>
+            <file name="license-default.txt" url="license-default.txt">
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.codegen.Bundle"/>
+            </file>
+        </folder>
+    </folder>
+</filesystem>
