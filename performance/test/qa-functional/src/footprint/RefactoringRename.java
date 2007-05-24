@@ -71,6 +71,11 @@ public class RefactoringRename extends org.netbeans.performance.test.utilities.M
         FootprintUtilities.closeMemoryToolbar();
     }
     
+    @Override
+    public void setUp() {
+        //do nothing
+    }
+    
     public void prepare() {
     }
     

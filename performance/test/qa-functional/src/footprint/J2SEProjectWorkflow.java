@@ -49,6 +49,11 @@ public class J2SEProjectWorkflow extends org.netbeans.performance.test.utilities
         prefix = "J2SE Project Workflow |";
     }
     
+    @Override
+    public void setUp() {
+        //do nothing
+    }
+    
     public void prepare() {
     }
     
