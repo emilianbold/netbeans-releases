@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.vmd.properties;
 
-import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
@@ -27,11 +26,9 @@ import org.netbeans.modules.vmd.properties.*;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.WeakHashMap;
 import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
@@ -57,20 +54,10 @@ public final class PropertiesNodesManager implements ActiveDocumentSupport.Liste
     private WeakHashMap<DataEditorView, InstanceContent> icMap;
     private Collection<InstanceContent> ics;
     private WeakHashMap<InstanceContent, WeakSet<Node>> nodesToRemoveMap;
-    private WeakHashMap<DesignComponent, PropertiesNode> nodesMap;
     private WeakHashMap<DesignComponent, Sheet> sheetMap;
     private WeakReference<DataObjectContext> context;
     private WeakHashMap<DesignComponent, WeakSet<DefaultPropertySupport>> propertySupportMap;
-    /*
-    private HashMap<DataEditorView, InstanceContent> icMap;
-    private Collection<InstanceContent> ics;
-    private HashMap<InstanceContent, Set<Node>> nodesToRemoveMap;
-    private HashMap<DesignComponent, PropertiesNode> nodesMap;
-    private HashMap<DesignComponent, Sheet> sheetMap;
-    private WeakReference<DataObjectContext> context;
-    private HashMap<DesignComponent, Set<DefaultPropertySupport>> propertySupportMap;
-     */
-    
+
     public synchronized static PropertiesNodesManager getDefault(DataObjectContext context) {
         if (INSTANCES.get(context) == null) {
             PropertiesNodesManager manager = new PropertiesNodesManager(context);
@@ -83,7 +70,6 @@ public final class PropertiesNodesManager implements ActiveDocumentSupport.Liste
     
     private PropertiesNodesManager(DataObjectContext context) {
         nodesToRemoveMap = new WeakHashMap<InstanceContent, WeakSet<Node>>();
-        nodesMap = new WeakHashMap<DesignComponent, PropertiesNode>();
         sheetMap = new WeakHashMap<DesignComponent, Sheet>();
         this.context = new WeakReference<DataObjectContext>(context);
         icMap = new WeakHashMap<DataEditorView, InstanceContent>();
@@ -99,7 +85,6 @@ public final class PropertiesNodesManager implements ActiveDocumentSupport.Liste
     public void add(DataEditorView view, InstanceContent ic) {
         assert(ic != null);
         icMap.put(view, ic);
-        
     }
     
     synchronized void changeLookup(DataEditorView view, Collection<DesignComponent> components) {
@@ -127,7 +112,7 @@ public final class PropertiesNodesManager implements ActiveDocumentSupport.Liste
                 PropertiesNode node = new PropertiesNode(context.get(), component, context.get().getDataObject().getLookup());
                 ic.add(node);
                 nodesToRemove.add(node);
-                node.updateNode();
+                //node.updateNode();
             }
         }
     }

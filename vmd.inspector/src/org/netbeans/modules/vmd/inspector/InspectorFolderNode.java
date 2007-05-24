@@ -42,11 +42,9 @@ final class InspectorFolderNode extends AbstractNode {
     private Long componentID;
     private WeakReference<DesignComponent> component;
     private InspectorFolder folder;
-    private WeakReference<DataObjectContext> context;
     
     InspectorFolderNode(DataObjectContext context) {
         super(new InspectorChildren(), context.getDataObject().getLookup());
-        this.context = new WeakReference<DataObjectContext>(context);
     }
     
     InspectorFolderNode() {

@@ -48,7 +48,6 @@ public final class PropertiesSupport {
     private PropertiesSupport() {
     }
     
-   
     public static void addInstanceContent(DataObjectContext context, DataEditorView view, InstanceContent ic) {
         PropertiesNodesManager.getDefault(context).add(view, ic);
     }

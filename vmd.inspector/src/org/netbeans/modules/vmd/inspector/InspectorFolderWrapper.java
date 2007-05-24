@@ -41,7 +41,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.openide.nodes.AbstractNode;
-import org.openide.util.Lookup;
+
 
 /**
  *

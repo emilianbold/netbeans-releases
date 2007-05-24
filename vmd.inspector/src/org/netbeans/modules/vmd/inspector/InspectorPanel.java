@@ -26,9 +26,7 @@ import javax.swing.*;
 import org.netbeans.modules.vmd.api.io.IOUtils;
 import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.spi.navigator.NavigatorPanel;
-import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.openide.util.WeakSet;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -41,7 +39,6 @@ public final class InspectorPanel implements NavigatorPanel, ActiveDocumentSuppo
     private static final JLabel emptyPanel = new JLabel(NbBundle.getMessage(InspectorPanel.class, "LBL_emptyPanel"), JLabel.CENTER); //NOI18N
     
     private static InspectorPanel INSTANCE;
-    private WeakSet<Node> nodesToRemove;
     private JPanel panel;
     private WeakHashMap<DesignDocument, InspectorUI> uiMap;
     
@@ -100,28 +97,7 @@ public final class InspectorPanel implements NavigatorPanel, ActiveDocumentSuppo
     public InstanceContent getInstanceContent() {
         return ic;
     }
-    //TODO Very dangerous may shown different properties while fast switiching !!!!!
-    /*
-    synchronized void selectionChanged(final Node[] nodes) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                if(nodesToRemove != null) {
-                    for (Node node : nodesToRemove) {
-                        ic.remove(node);
-                    }
-                }
-                if (nodesToRemove != null)
-                    nodesToRemove.clear();
-                for (Node node : nodes) {
-                    ic.add(node);
-                    if (node instanceof InspectorFolderNode)
-                        ((InspectorFolderNode) node).updateNode();
-                }
-                nodesToRemove = new WeakSet(Arrays.asList(nodes));
-            }
-        });
-    }
-    */
+   
     public synchronized void activeDocumentChanged(DesignDocument deactivatedDocument,final DesignDocument activatedDocument) {
         if (activatedDocument == null) {
             IOUtils.runInAWTNoBlocking(new Runnable() {
