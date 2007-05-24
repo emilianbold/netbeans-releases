@@ -613,7 +613,7 @@ Microsystems, Inc. All Rights Reserved.
         <code>getPageFormat</code> method now requires a <code>PrinterJob</code>
         argument.
       </description>
-      <class package="org.openide.text" name="PrintSettings"/>
+      <class package="org.openide.text" name="PrintSettings" link="no"/>
     </change>
 <change id="Annotations-API">
       <api name="text"/>
