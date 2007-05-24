@@ -35,13 +35,13 @@ import org.openide.util.Utilities;
  */
 class IconWithArrow implements Icon {
     
-    public static final String ARROW_IMAGE_NAME = "org/openide/awt/resources/arrow.png"; //NOI18N
+    private static final String ARROW_IMAGE_NAME = "org/openide/awt/resources/arrow.png"; //NOI18N
     
     private Icon orig;
     private Icon arrow = new ImageIcon( Utilities.loadImage( ARROW_IMAGE_NAME ) );
     private boolean paintRollOver;
     
-    public static final int GAP = 6;
+    private static final int GAP = 6;
     
     /** Creates a new instance of IconWithArrow */
     public IconWithArrow(  Icon orig, boolean paintRollOver ) {

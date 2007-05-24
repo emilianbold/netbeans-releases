@@ -19,7 +19,6 @@
 
 package org.openide.awt;
 
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -267,17 +266,7 @@ class DropDownButton extends JButton {
             arrowIcons.remove( iconType );
         } else {
             regIcons.put( iconType, orig );
-            if ( orig instanceof ImageIcon ) {
-                Image arrowImage = Utilities.loadImage( IconWithArrow.ARROW_IMAGE_NAME );
-                arrow = new ImageIcon( Utilities.mergeImages(
-                    ((ImageIcon) orig).getImage(), 
-                    arrowImage, 
-                    orig.getIconWidth() + IconWithArrow.GAP, 
-                    (orig.getIconHeight() - arrowImage.getHeight(null)) / 2
-                ) );
-            } else {
-                arrow = new IconWithArrow( orig, false );
-            }
+            arrow = new ImageIcon(Utilities.icon2Image(new IconWithArrow( orig, false )));
             arrowIcons.put( iconType, arrow );
         }
         return arrow;

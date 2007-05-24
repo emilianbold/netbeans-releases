@@ -28,10 +28,12 @@ import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JPopupMenu;
 import javax.swing.JToggleButton;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import org.openide.util.Utilities;
 
 /**
  * JToggleButton with a small arrow that displays popup menu when clicked.
@@ -44,7 +46,7 @@ class DropDownToggleButton extends JToggleButton {
     private boolean mouseInArrowArea = false;
     
     private Map<String,Icon> regIcons = new HashMap<String,Icon>( 5 );
-    private Map<String,IconWithArrow> arrowIcons = new HashMap<String,IconWithArrow>( 5 );
+    private Map<String,Icon> arrowIcons = new HashMap<String,Icon>( 5 );
     
     private static final String ICON_NORMAL = "normal"; //NOI18N
     private static final String ICON_PRESSED = "pressed"; //NOI18N
@@ -176,7 +178,7 @@ class DropDownToggleButton extends JToggleButton {
     }
     
     private Icon _getRolloverIcon() {
-        IconWithArrow icon = null;
+        Icon icon = null;
         icon = arrowIcons.get( mouseInArrowArea ? ICON_ROLLOVER : ICON_ROLLOVER_LINE );
         if( null == icon ) {
             Icon orig = regIcons.get( ICON_ROLLOVER );
@@ -189,7 +191,7 @@ class DropDownToggleButton extends JToggleButton {
     }
     
     private Icon _getRolloverSelectedIcon() {
-        IconWithArrow icon = null;
+        Icon icon = null;
         icon = arrowIcons.get( mouseInArrowArea ? ICON_ROLLOVER_SELECTED : ICON_ROLLOVER_SELECTED_LINE );
         if( null == icon ) {
             Icon orig = regIcons.get( ICON_ROLLOVER_SELECTED );
@@ -222,9 +224,7 @@ class DropDownToggleButton extends JToggleButton {
     @Override
     public void setIcon(Icon icon) {
         assert null != icon;
-        regIcons.put( ICON_NORMAL, icon );
-        IconWithArrow arrow = new IconWithArrow( icon, false );
-        arrowIcons.put( ICON_NORMAL, arrow );
+        Icon arrow = updateIcons( icon, ICON_NORMAL );
         arrowIcons.remove( ICON_ROLLOVER_LINE );
         arrowIcons.remove( ICON_ROLLOVER_SELECTED_LINE );
         arrowIcons.remove( ICON_ROLLOVER );
@@ -232,14 +232,14 @@ class DropDownToggleButton extends JToggleButton {
         super.setIcon( hasPopupMenu() ? arrow : icon );
     }
 
-    private IconWithArrow updateIcons( Icon orig, String iconType ) {
-        IconWithArrow arrow = null;
+    private Icon updateIcons( Icon orig, String iconType ) {
+        Icon arrow = null;
         if( null == orig ) {
             regIcons.remove( iconType );
             arrowIcons.remove( iconType );
         } else {
             regIcons.put( iconType, orig );
-            arrow = new IconWithArrow( orig, false );
+            arrow = new ImageIcon(Utilities.icon2Image(new IconWithArrow( orig, false )));
             arrowIcons.put( iconType, arrow );
         }
         return arrow;
@@ -247,19 +247,19 @@ class DropDownToggleButton extends JToggleButton {
     
     @Override
     public void setPressedIcon(Icon icon) {
-        IconWithArrow arrow = updateIcons( icon, ICON_PRESSED );
+        Icon arrow = updateIcons( icon, ICON_PRESSED );
         super.setPressedIcon( hasPopupMenu() ? arrow : icon );
     }
 
     @Override
     public void setSelectedIcon(Icon icon) {
-        IconWithArrow arrow = updateIcons( icon, ICON_SELECTED );
+        Icon arrow = updateIcons( icon, ICON_SELECTED );
         super.setSelectedIcon( hasPopupMenu() ? arrow : icon );
     }
 
     @Override
     public void setRolloverIcon(Icon icon) {
-        IconWithArrow arrow = updateIcons( icon, ICON_ROLLOVER );
+        Icon arrow = updateIcons( icon, ICON_ROLLOVER );
         arrowIcons.remove( ICON_ROLLOVER_LINE );
         arrowIcons.remove( ICON_ROLLOVER_SELECTED_LINE );
         super.setRolloverIcon( hasPopupMenu() ? arrow : icon );
@@ -267,7 +267,7 @@ class DropDownToggleButton extends JToggleButton {
 
     @Override
     public void setRolloverSelectedIcon(Icon icon) {
-        IconWithArrow arrow = updateIcons( icon, ICON_ROLLOVER_SELECTED );
+        Icon arrow = updateIcons( icon, ICON_ROLLOVER_SELECTED );
         arrowIcons.remove( ICON_ROLLOVER_SELECTED_LINE );
         super.setRolloverSelectedIcon( hasPopupMenu() ? arrow : icon );
     }
@@ -275,14 +275,14 @@ class DropDownToggleButton extends JToggleButton {
     @Override
     public void setDisabledIcon(Icon icon) {
         //TODO use 'disabled' arrow icon
-        IconWithArrow arrow = updateIcons( icon, ICON_DISABLED );
+        Icon arrow = updateIcons( icon, ICON_DISABLED );
         super.setDisabledIcon( hasPopupMenu() ? arrow : icon );
     }
 
     @Override
     public void setDisabledSelectedIcon(Icon icon) {
         //TODO use 'disabled' arrow icon
-        IconWithArrow arrow = updateIcons( icon, ICON_DISABLED_SELECTED );
+        Icon arrow = updateIcons( icon, ICON_DISABLED_SELECTED );
         super.setDisabledSelectedIcon( hasPopupMenu() ? arrow : icon );
     }
     
