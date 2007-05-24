@@ -57,6 +57,10 @@ public class PropertiesNode extends AbstractNode{
     }
     
     public String getDisplayName() {
+        return createName();
+    }
+    
+    public String createName() {
         if (component.get() == null)
             return super.getDisplayName();
         component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
@@ -71,6 +75,7 @@ public class PropertiesNode extends AbstractNode{
     
     public void updateNode() {
         Object value = null;
+        setName(createName());
         for (PropertySet set : getSheet().toArray()) {
             for (Property property : set.getProperties()) {
                 value = null;
