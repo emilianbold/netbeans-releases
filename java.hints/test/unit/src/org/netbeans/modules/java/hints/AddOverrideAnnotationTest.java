@@ -20,140 +20,42 @@ package org.netbeans.modules.java.hints;
 
 import org.netbeans.modules.java.hints.AddOverrideAnnotation;
 import com.sun.source.util.TreePath;
-import java.beans.PropertyVetoException;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import javax.swing.text.Document;
-import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
-import org.netbeans.api.java.source.TestUtilities;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.LocalFileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataObject;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class AddOverrideAnnotationTest extends NbTestCase {
+public class AddOverrideAnnotationTest extends TreeRuleTestBase {
     
     public AddOverrideAnnotationTest(String testName) {
         super(testName);
     }
     
-    protected void setUp() throws Exception {
-        SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/java/editor/resources/layer.xml"}, new Object[0]);
-        super.setUp();
-    }
-
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
     public void testAddOverride1() throws Exception {
-        performAnalysisTest("test/Test.java", "package test; public class Test extends java.util.ArrayList {public int size() {return 0;}}", "1.5", 121-48, Arrays.asList("0:61-0:90:verifier:Add Override Annotation"));
+        performAnalysisTest("test/Test.java", "package test; public class Test extends java.util.ArrayList {public int size() {return 0;}}", 121-48, "0:72-0:76:verifier:Add Override Annotation");
     }
 
     public void testAddOverride2() throws Exception {
-        performAnalysisTest("test/Test.java", "package test; public class Test implements Runnable {public void run() {}}", "1.5", 115-48, Collections.<String>emptyList());
+        performAnalysisTest("test/Test.java", "package test; public class Test implements Runnable {public void run() {}}", 115-48);
     }
     
     public void testAddOverride3() throws Exception {
-        performAnalysisTest("test/Test.java", "package test; public class Test implements Runnable {public void run() {}}", "1.6", 115-48, Arrays.asList("0:53-0:73:verifier:Add Override Annotation"));
+        sourceLevel = "1.6";
+        performAnalysisTest("test/Test.java", "package test; public class Test implements Runnable {public void run() {}}", 115-48, "0:65-0:68:verifier:Add Override Annotation");
     }
     
-    protected void prepareTest(String fileName, String sourceLevel, String code) throws Exception {
-        FileObject workFO = makeScratchDir(this);
-        
-        assertNotNull(workFO);
-        
-        FileObject sourceRoot = workFO.createFolder("src");
-        FileObject buildRoot  = workFO.createFolder("build");
-        FileObject cache = workFO.createFolder("cache");
-        
-        FileObject data = FileUtil.createData(sourceRoot, fileName);
-        
-        TestUtilities.copyStringToFile(FileUtil.toFile(data), code);
-        
-        SourceUtilsTestUtil.prepareTest(sourceRoot, buildRoot, cache);
-        
-        SourceUtilsTestUtil.setSourceLevel(data, sourceLevel);
-        
-        DataObject od = DataObject.find(data);
-        EditorCookie ec = od.getCookie(EditorCookie.class);
-        
-        assertNotNull(ec);
-        
-        doc = ec.openDocument();
-        doc.putProperty(Language.class, JavaTokenId.language());
-        
-        JavaSource js = JavaSource.forFileObject(data);
-        
-        assertNotNull(js);
-        
-        info = SourceUtilsTestUtil.getCompilationInfo(js, Phase.RESOLVED);
-        
-        assertNotNull(info);
+    protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
+        SourceUtilsTestUtil.setSourceLevel(info.getFileObject(), sourceLevel);
+        return new AddOverrideAnnotation().run(info, path);
     }
     
-    private CompilationInfo info;
-    private Document doc;
+    private String sourceLevel = "1.5";
     
-    private void performAnalysisTest(String fileName, String code, String sourceLevel, int pos, List<String> golden) throws Exception {
-        prepareTest(fileName, sourceLevel, code);
-        
-        TreePath path = info.getTreeUtilities().pathFor(pos);
-        
-        List<ErrorDescription> errors = new AddOverrideAnnotation().run(info, path);
-        List<String> fixNames = new ArrayList<String>();
-        
-        if (errors == null) {
-            errors = Collections.<ErrorDescription>emptyList();
-        }
-        
-        for (ErrorDescription e : errors) {
-            fixNames.add(e.toString());
-        }
-        
-        assertEquals(golden, fixNames);
-    }
-    
-    /**Copied from org.netbeans.api.project.
-     * Create a scratch directory for tests.
-     * Will be in /tmp or whatever, and will be empty.
-     * If you just need a java.io.File use clearWorkDir + getWorkDir.
-     */
-    public static FileObject makeScratchDir(NbTestCase test) throws IOException {
-        test.clearWorkDir();
-        File root = test.getWorkDir();
-        assert root.isDirectory() && root.list().length == 0;
-        FileObject fo = FileUtil.toFileObject(root);
-        if (fo != null) {
-            // Presumably using masterfs.
-            return fo;
-        } else {
-            // For the benefit of those not using masterfs.
-            LocalFileSystem lfs = new LocalFileSystem();
-            try {
-                lfs.setRootDirectory(root);
-            } catch (PropertyVetoException e) {
-                assert false : e;
-            }
-            Repository.getDefault().addFileSystem(lfs);
-            return lfs.getRoot();
-        }
-    }
 }
