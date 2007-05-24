@@ -28,9 +28,8 @@ import org.openide.nodes.AbstractNode;
 import javax.swing.*;
 import java.awt.*;
 import java.lang.ref.WeakReference;
-import org.netbeans.modules.vmd.api.properties.common.PropertiesSupport;
-import org.openide.nodes.Sheet;
-import org.openide.util.Lookup;
+import org.netbeans.modules.vmd.api.io.DataObjectContext;
+
 
 /**
  *
@@ -43,9 +42,11 @@ final class InspectorFolderNode extends AbstractNode {
     private Long componentID;
     private WeakReference<DesignComponent> component;
     private InspectorFolder folder;
+    private WeakReference<DataObjectContext> context;
     
-    InspectorFolderNode(Lookup lookup) {
-        super(new InspectorChildren(), lookup);
+    InspectorFolderNode(DataObjectContext context) {
+        super(new InspectorChildren(), context.getDataObject().getLookup());
+        this.context = new WeakReference<DataObjectContext>(context);
     }
     
     InspectorFolderNode() {
@@ -120,9 +121,14 @@ final class InspectorFolderNode extends AbstractNode {
         folder = null;
     }
     
+    DesignComponent getComponent() {
+        return component.get();
+    }
+    /*
     public Sheet createSheet() {
         if(component != null && component.get() != null)
-            return PropertiesSupport.createSheet(component.get());
+            return PropertiesSupport.getSheet(context.get(), component.get());
         return super.createSheet();
     }
+    */
 }

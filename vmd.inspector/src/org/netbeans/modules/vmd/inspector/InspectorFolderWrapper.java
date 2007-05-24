@@ -137,8 +137,7 @@ final class InspectorFolderWrapper {
         if (node == null) {
             DataObjectContext dc = IOSupport.getDataObjectForDocument(document);
             if (dc != null) {
-                Lookup lookup = dc.getDataObject().getLookup();
-                node = new InspectorFolderNode(lookup);
+                node = new InspectorFolderNode(dc);
             } else  //TODO No Lookup for root node cause its creates inside of constructor
                 node = new InspectorFolderNode();
         }

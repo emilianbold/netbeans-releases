@@ -37,29 +37,8 @@ public final class AdvancedPropertySupport extends DefaultPropertySupport {
     public AdvancedPropertySupport(final DesignPropertyDescriptor designerPropertyDescriptor, Class type) {
         super(designerPropertyDescriptor, type);
         
-        this.value = new GroupValue(designerPropertyDescriptor.getPropertyNames());
-        if (designerPropertyDescriptor.getPropertyNames() !=null &&! designerPropertyDescriptor.getPropertyNames().isEmpty()) {
-            for (String propertyName : designerPropertyDescriptor.getPropertyNames()) {
-                value.putValue(propertyName, readPropertyValue(designerPropertyDescriptor.getComponent(), propertyName));
-            }
-        }
         this.designerPropertyDescriptor = designerPropertyDescriptor;
-        
-        if (getPropertyEditor() instanceof DesignPropertyEditor) {
-            ((DesignPropertyEditor)getPropertyEditor()).resolve(
-                    designerPropertyDescriptor.getComponent(),
-                    designerPropertyDescriptor.getPropertyNames(),
-                    this.value,
-                    this,
-                    ((DesignPropertyEditor) getPropertyEditor()).getInplaceEditor(),
-                    designerPropertyDescriptor.getPropertyDisplayName()
-                    );
-        }
-        if (getPropertyEditor() instanceof DesignPropertyEditor) {
-            String title = ((DesignPropertyEditor) getPropertyEditor()).getCustomEditorTitle();
-            if ( title != null)
-                setValue(PROPERTY_CUSTOM_EDITOR_TITLE, title);
-        }
+        update();
     }
     
     public Object getValue() throws IllegalAccessException, InvocationTargetException {
@@ -104,6 +83,32 @@ public final class AdvancedPropertySupport extends DefaultPropertySupport {
         });
         
         return displayName;
+    }
+
+    public void update() {
+        this.value = new GroupValue(designerPropertyDescriptor.getPropertyNames());
+        if (designerPropertyDescriptor.getPropertyNames() !=null &&! designerPropertyDescriptor.getPropertyNames().isEmpty()) {
+            for (String propertyName : designerPropertyDescriptor.getPropertyNames()) {
+                value.putValue(propertyName, readPropertyValue(designerPropertyDescriptor.getComponent(), propertyName));
+            }
+        }
+        
+        
+        if (getPropertyEditor() instanceof DesignPropertyEditor) {
+            ((DesignPropertyEditor)getPropertyEditor()).resolve(
+                    designerPropertyDescriptor.getComponent(),
+                    designerPropertyDescriptor.getPropertyNames(),
+                    this.value,
+                    this,
+                    ((DesignPropertyEditor) getPropertyEditor()).getInplaceEditor(),
+                    designerPropertyDescriptor.getPropertyDisplayName()
+                    );
+        }
+        if (getPropertyEditor() instanceof DesignPropertyEditor) {
+            String title = ((DesignPropertyEditor) getPropertyEditor()).getCustomEditorTitle();
+            if ( title != null)
+                setValue(PROPERTY_CUSTOM_EDITOR_TITLE, title);
+        }
     }
     
 }

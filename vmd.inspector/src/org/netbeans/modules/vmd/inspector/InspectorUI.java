@@ -26,6 +26,7 @@ import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.vmd.api.io.ActiveViewSupport;
 
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
@@ -34,6 +35,7 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
+import org.openide.util.WeakSet;
 import org.openide.windows.TopComponent;
 
 /**
@@ -60,7 +62,7 @@ final class InspectorUI  extends TopComponent implements ExplorerManager.Provide
         this.document = new WeakReference<DesignDocument>(document);
     }
     
-    private void initComponents(){
+    private void initComponents() {
         inspectorBeanTreeView = new InspectorBeanTreeView(explorerManager);
         inspectorBeanTreeView.setRootVisible(false);
         setLayout(new BorderLayout());
@@ -80,13 +82,12 @@ final class InspectorUI  extends TopComponent implements ExplorerManager.Provide
         }
     }
     
-    public void propertyChange(PropertyChangeEvent evt) {
+    public synchronized void propertyChange(PropertyChangeEvent evt) {
         if (! ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName()))
             return;
         
         if (explorerManager.getSelectedNodes().length < 1)
             return;
-        InspectorPanel.getInstance().selectionChanged(explorerManager.getSelectedNodes());
         if (document.get() == null || document.get().getTransactionManager().isAccess())
             return;
         document.get().getTransactionManager().writeAccess(new Runnable() {
@@ -96,7 +97,7 @@ final class InspectorUI  extends TopComponent implements ExplorerManager.Provide
                 try {
                     lockSelectionSetting = true;
                     Node[] selectedNodes = explorerManager.getSelectedNodes();
-                    ArrayList<DesignComponent> selectedComponents = new ArrayList<DesignComponent>();
+                    WeakSet<DesignComponent> selectedComponents = new WeakSet<DesignComponent>();
                     for (Node node : selectedNodes) {
                         if (node instanceof InspectorFolderNode) {
                             Long componentID = ((InspectorFolderNode) node).getComponentID();
@@ -106,6 +107,8 @@ final class InspectorUI  extends TopComponent implements ExplorerManager.Provide
                         }
                     }
                     document.get().setSelectedComponents(InspectorAccessController.INSPECTOR_ID, selectedComponents);
+                    //InspectorPanel.getInstance().selectionChanged(explorerManager.getSelectedNodes());
+                    //InspectorPanel.getInstance().selectionChanged(selectedComponents);
                 } finally {
                     lockSelectionSetting = false;
                 }

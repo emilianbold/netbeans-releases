@@ -25,14 +25,14 @@ import java.util.Collections;
 import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.DataEditorViewLookupFactory;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
-import org.netbeans.modules.vmd.properties.PropertiesNodesManager;
+import org.netbeans.modules.vmd.api.properties.common.PropertiesSupport;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
 /**
  *
- * @author Karol Harezlak
+ * @author Karol HarezlakPR
  */
 public class PropertiesEditorViewLookupFactory implements DataEditorViewLookupFactory {
     
@@ -44,7 +44,8 @@ public class PropertiesEditorViewLookupFactory implements DataEditorViewLookupFa
         if (view.getKind() == DataEditorView.Kind.MODEL) {
             PropertiesManager.register();
             InstanceContent ic = new InstanceContent();
-            PropertiesNodesManager.getDefault().add(view, ic);
+            ic.add(context.getDataObject().getLookup());
+            PropertiesSupport.addInstanceContent(context,view, ic);
             return Collections.singleton(new AbstractLookup(ic));
         }
         return null;

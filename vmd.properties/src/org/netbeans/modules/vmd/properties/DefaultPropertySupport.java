@@ -44,7 +44,7 @@ public abstract class DefaultPropertySupport extends PropertySupport {
     private PropertyEditor propertyEditor;
     private List<String> propertyNames;
     
-    public DefaultPropertySupport(final DesignPropertyDescriptor designerPropertyDescriptor, Class type) {
+    DefaultPropertySupport(final DesignPropertyDescriptor designerPropertyDescriptor, Class type) {
         super(designerPropertyDescriptor.getPropertyNames().iterator().next(),
             type,
             designerPropertyDescriptor.getPropertyDisplayName(),
@@ -106,5 +106,7 @@ public abstract class DefaultPropertySupport extends PropertySupport {
         
         return super.supportsDefaultValue();
     }
+    
+    public abstract void update();
     
 }

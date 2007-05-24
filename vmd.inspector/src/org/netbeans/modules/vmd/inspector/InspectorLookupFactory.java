@@ -29,12 +29,15 @@ import org.openide.util.Lookup;
 
 import java.util.Arrays;
 import java.util.Collection;
+import org.netbeans.modules.vmd.api.properties.common.PropertiesSupport;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  * @author Karol Harezlak
  */
 
 public class InspectorLookupFactory implements DataEditorViewLookupFactory {
+    private static InstanceContent ic;
     
     public Collection<?> getLookupObjects(DataObjectContext context, DataEditorView view) {
         if (view.canShowSideWindows()  &&  view.getKind() == DataEditorView.Kind.MODEL) {
@@ -42,17 +45,24 @@ public class InspectorLookupFactory implements DataEditorViewLookupFactory {
                 public String getContentType() {
                     return "vmd"; // NOI18N
                 }
-            }, new NavigatorLookupPanelsPolicy () {
-                public int getPanelsPolicy () {
+            }, new NavigatorLookupPanelsPolicy() {
+                public int getPanelsPolicy() {
                     return NavigatorLookupPanelsPolicy.LOOKUP_HINTS_ONLY;
                 }
             });
         }
         return null;
     }
-
+    
     public Collection<? extends Lookup> getLookups(DataObjectContext context, DataEditorView view) {
+        if (view.getKind() == DataEditorView.Kind.MODEL) {
+            if (ic == null) {
+                ic = InspectorPanel.getInstance().getInstanceContent();
+                ic.add(context.getDataObject().getLookup());
+            }
+            PropertiesSupport.addInstanceContent(context, ic);
+        }
         return null;
     }
-
+    
 }
