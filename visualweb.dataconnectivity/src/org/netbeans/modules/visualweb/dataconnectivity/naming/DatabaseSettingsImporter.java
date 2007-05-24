@@ -267,15 +267,7 @@ public class DatabaseSettingsImporter {
                         ConnectionManager.getDefault().addConnection(dbconn);
                     }
                 }
-            }
-            
-            // Cleanup
-            if (contextFile.exists()) {
-                contextFile.delete();
-                contextFile.getParentFile().delete();
-            }
-            
-            //            dataSources = null;
+            }                        
         } catch (DatabaseException de) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, de);
         }
@@ -432,15 +424,7 @@ public class DatabaseSettingsImporter {
                 }
             }
         });
-    }
-    
-    //     public void removeFromDSInfo(int index) {
-    //         dataSourcesInfo.remove(index);
-    //     }
-    //
-    //     public void clearDSInfo() {
-    //         dataSourcesInfo = null;
-    //     }
+    }      
     
     public ArrayList <DataSourceInfo> getDataSourcesInfo() {
         return dataSourcesInfo;
