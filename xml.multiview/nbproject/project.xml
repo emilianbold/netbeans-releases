@@ -147,7 +147,7 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.identity.profile.ui</friend>
                 <friend>org.netbeans.modules.j2ee.ddloaders</friend>
                 <friend>org.netbeans.modules.j2ee.persistence</friend>
-                <friend>org.netbeans.modules.j2ee.sun.ddloaders</friend>
+                <friend>org.netbeans.modules.j2ee.sun.ddui</friend>
                 <friend>org.netbeans.modules.visualweb.project.navigationloader</friend>
                 <friend>org.netbeans.modules.websvc.wsitconf</friend>
                 <package>org.netbeans.modules.xml.multiview</package>
