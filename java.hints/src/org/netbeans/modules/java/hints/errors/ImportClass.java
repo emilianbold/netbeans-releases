@@ -13,14 +13,12 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.java.hints.errors;
 
-import org.netbeans.modules.java.hints.infrastructure.Pair;
-import org.netbeans.modules.java.hints.*;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree.Kind;
@@ -44,11 +42,14 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.editor.imports.ComputeImports;
 import org.netbeans.modules.java.hints.errors.ImportClass.ImportCandidatesHolder;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
+import org.netbeans.modules.java.hints.infrastructure.Pair;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.spi.editor.hints.ChangeInfo;
+import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -121,14 +122,27 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
         List<Fix> fixes = new ArrayList<Fix>();
         
         if (unfiltered != null && filtered != null) {
-            //TODO: simplify when editor hints allow ordering:
-            for (String fqn : filtered) {
-                fixes.add(new FixImport(file, fqn, true));
-            }
-            
             for (String fqn : unfiltered) {
-                if (!filtered.contains(fqn))
-                    fixes.add(new FixImport(file, fqn, false));
+                StringBuilder sort = new StringBuilder();
+                
+                sort.append("0001#");
+                
+                boolean prefered = filtered.contains(fqn);
+                
+                if (prefered)
+                    sort.append("A#");
+                else
+                    sort.append("Z#");
+                
+                int order = Utilities.getImportanceLevel(fqn);
+                String orderString = Integer.toHexString(order);
+                
+                sort.append("00000000".substring(0, 8 - orderString.length()));
+                sort.append(orderString);
+                sort.append('#');
+                sort.append(fqn);
+                
+                fixes.add(new FixImport(file, fqn, sort.toString(), prefered));
             }
         }
         
@@ -247,15 +261,17 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
         }
     }
     
-    static final class FixImport implements Fix {
+    static final class FixImport implements EnhancedFix {
         
         private FileObject file;
         private String fqn;
+        private String sortText;
         private boolean isValid;
         
-        public FixImport(FileObject file, String fqn, boolean isValid) {
+        public FixImport(FileObject file, String fqn, String sortText, boolean isValid) {
             this.file = file;
             this.fqn = fqn;
+            this.sortText = sortText;
             this.isValid = isValid;
         }
         
@@ -314,6 +330,10 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
             }
             
             return false;
+        }
+
+        public CharSequence getSortText() {
+            return sortText;
         }
     }
 }

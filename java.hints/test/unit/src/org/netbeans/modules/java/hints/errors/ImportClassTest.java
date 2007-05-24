@@ -31,13 +31,13 @@ public class ImportClassTest extends HintsTestBase {
         super(name);
     }
     
-    //    public void testImportHint() throws Exception {
-    //        performTest("ImportTest", "java.util.List", 22, 13);
-    //    }
-    //
-    //    public void testImportHint2() throws Exception {
-    //        performTest("ImportTest2", "java.util.List", 18, 13);
-    //    }
+    public void testImportHint() throws Exception {
+        performTest("ImportTest", "java.util.List", 22, 13);
+    }
+
+    public void testImportHint2() throws Exception {
+        performTest("ImportTest2", "java.util.List", 18, 13);
+    }
     
     public void testImportHint3() throws Exception {
         performTest("ImportTest3", "java.util.ArrayList", 9, 13);
@@ -63,6 +63,10 @@ public class ImportClassTest extends HintsTestBase {
     @Override
     protected String testDataExtension() {
         return "org/netbeans/test/java/hints/ImportClassEnablerTest/";
+    }
+    
+    protected String layer() {
+        return "org/netbeans/modules/java/hints/errors/only-imports-layer.xml";
     }
     
 }

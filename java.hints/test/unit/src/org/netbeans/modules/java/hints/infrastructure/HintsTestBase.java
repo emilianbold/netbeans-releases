@@ -26,6 +26,11 @@ import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.Document;
@@ -59,6 +64,7 @@ import org.netbeans.modules.java.source.usages.BinaryAnalyser;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.IndexUtil;
+import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageProvider;
@@ -92,7 +98,7 @@ public class HintsTestBase extends NbTestCase {
     private CancellableTask<CompilationInfo> task;
     
     protected void setUp() throws Exception {
-        doSetUp("org/netbeans/modules/java/hints/resources/layer.xml");
+        doSetUp(layer());
     }
     
     protected void doSetUp(String resource) throws Exception {
@@ -160,6 +166,10 @@ public class HintsTestBase extends NbTestCase {
     
     protected String testDataExtension() {
         return "org/netbeans/test/java/hints/";
+    }
+    
+    protected String layer() {
+        return "org/netbeans/modules/java/hints/resources/layer.xml";
     }
     
     protected void prepareTest(String capitalizedName) throws Exception {
@@ -254,6 +264,51 @@ public class HintsTestBase extends NbTestCase {
         return f.getFixes();
     }
     
+    //XXX: copied from org.netbeans.modules.editor.hints.borrowed.ListCompletionView, would be nice to have this on one place only:
+        private List<Fix> sortFixes(Collection<Fix> fixes) {
+            fixes = new LinkedHashSet<Fix>(fixes);
+            
+            List<EnhancedFix> sortableFixes = new ArrayList<EnhancedFix>();
+            List<Fix> other = new LinkedList<Fix>();
+            
+            for (Fix f : fixes) {
+                if (f instanceof EnhancedFix) {
+                    sortableFixes.add((EnhancedFix) f);
+                } else {
+                    other.add(f);
+                }
+            }
+            
+            Collections.sort(sortableFixes, new FixComparator());
+            
+            List<Fix> result = new ArrayList<Fix>();
+            
+            result.addAll(sortableFixes);
+            result.addAll(other);
+            
+            return result;
+        }
+
+        private static final class FixComparator implements Comparator<EnhancedFix> {
+
+            public int compare(EnhancedFix o1, EnhancedFix o2) {
+                return compareText(o1.getSortText(), o2.getSortText());
+            }
+            
+        }
+        
+        private static int compareText(CharSequence text1, CharSequence text2) {
+            int len = Math.min(text1.length(), text2.length());
+            for (int i = 0; i < len; i++) {
+                char ch1 = text1.charAt(i);
+                char ch2 = text2.charAt(i);
+                if (ch1 != ch2) {
+                    return ch1 - ch2;
+                }
+            }
+            return text1.length() - text2.length();
+        }
+    
     private int getStartLine(ErrorDescription d) throws IOException {
         return d.getRange().getBegin().getLine();
     }
@@ -261,7 +316,7 @@ public class HintsTestBase extends NbTestCase {
     protected void performHintsPresentCheck(String className, int line, int column, boolean present) throws Exception {
         prepareTest(className);
         DataObject od = DataObject.find(testSource);
-        EditorCookie ec = (EditorCookie) od.getCookie(EditorCookie.class);
+        EditorCookie ec = od.getCookie(EditorCookie.class);
         
         Document doc = ec.openDocument();
         
@@ -283,7 +338,7 @@ public class HintsTestBase extends NbTestCase {
     protected void performTestDoNotPerform(String className, int line, int column) throws Exception {
         prepareTest(className);
         DataObject od = DataObject.find(testSource);
-        EditorCookie ec = (EditorCookie) od.getCookie(EditorCookie.class);
+        EditorCookie ec = od.getCookie(EditorCookie.class);
         
         Document doc = ec.openDocument();
         
@@ -294,6 +349,8 @@ public class HintsTestBase extends NbTestCase {
             if (getStartLine(d) + 1 == line)
                 fixes.addAll(getFixes(d));
         }
+        
+        fixes = sortFixes(fixes);
         
         File fixesDump = new File(getWorkDir(), getName() + "-hints.out");
         File diff   = new File(getWorkDir(), getName() + "-hints.diff");
@@ -320,7 +377,7 @@ public class HintsTestBase extends NbTestCase {
             String performHint, int line, int column, boolean checkHintList) throws Exception {
         prepareTest(className);
         DataObject od = DataObject.find(testSource);
-        EditorCookie ec = (EditorCookie) od.getCookie(EditorCookie.class);
+        EditorCookie ec = od.getCookie(EditorCookie.class);
         
         try {
             Document doc = ec.openDocument();
@@ -333,6 +390,8 @@ public class HintsTestBase extends NbTestCase {
                     fixes.addAll(getFixes(d));
             }
             
+            fixes = sortFixes(fixes);
+        
             Fix toPerform = null;
             
             if (checkHintList) {

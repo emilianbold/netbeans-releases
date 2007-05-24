@@ -1,3 +1,2 @@
-Add import for java.util.LinkedList
 Add import for java.util.Collections
-Create field Collections in org.netbeans.test.java.hints.ImportTest4
+Add import for java.util.LinkedList
