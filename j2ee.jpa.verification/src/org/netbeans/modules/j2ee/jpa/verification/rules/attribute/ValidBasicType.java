@@ -21,10 +21,8 @@ package org.netbeans.modules.j2ee.jpa.verification.rules.attribute;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.TreeSet;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.j2ee.jpa.model.AttributeWrapper;
 import org.netbeans.modules.j2ee.jpa.verification.JPAEntityAttributeCheck;
@@ -60,7 +58,7 @@ public class ValidBasicType extends JPAEntityAttributeCheck {
         }
         
         TreeUtilities treeUtils = ctx.getCompilationInfo().getTreeUtilities();
-        Types types = ctx.getCompilationInfo().getTypes(); 
+        Types types = ctx.getCompilationInfo().getTypes();
         TypeMirror attrType = attrib.getType();
         
         TypeMirror typeSerializable = treeUtils.parseType("java.io.Serializable", //NOI18N
@@ -69,8 +67,12 @@ public class ValidBasicType extends JPAEntityAttributeCheck {
         TypeMirror typeEnum = treeUtils.parseType("java.lang.Enum", //NOI18N
                 ctx.getJavaClass());
         
+        TypeMirror typeCollection = treeUtils.parseType("java.util.Collection", //NOI18N
+                ctx.getJavaClass());
+        
         if (types.isAssignable(attrType, typeSerializable)
-                || types.isAssignable(attrType, typeEnum)){
+                || types.isAssignable(attrType, typeEnum)
+                || types.isAssignable(attrType, typeCollection)){
             return null;
         }
         
@@ -84,7 +86,7 @@ public class ValidBasicType extends JPAEntityAttributeCheck {
         }
         
         return new ErrorDescription[]{Rule.createProblem(attrib.getJavaElement(),
-                ctx, NbBundle.getMessage(ValidColumnName.class,
+                ctx, NbBundle.getMessage(ValidBasicType.class,
                 "MSG_ValidBasicType"))};
     }
 }
