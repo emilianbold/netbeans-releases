@@ -28,10 +28,10 @@
                       urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/resources/RESTServiceIcon.png"/> 
             </file>
 -->            
-            <file name="UriResolver.java" url="nbres:/org/netbeans/modules/websvc/rest/codegen/resources/UriResolver.template"/>
-            <file name="PersistenceService.java" url="nbres:/org/netbeans/modules/websvc/rest/codegen/resources/PersistenceService.template"/>
-            <file name="GoogleMapResource.java" url="nbres:/org/netbeans/modules/websvc/rest/codegen/resources/GoogleMapResource.template"/>
-            <file name="GoogleMapRefConverter.java" url="nbres:/org/netbeans/modules/websvc/rest/codegen/resources/GoogleMapRefConverter.template"/>
+            <file name="UriResolver.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/UriResolver.template"/>
+            <file name="PersistenceService.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/PersistenceService.template"/>
+            <file name="GoogleMapResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/GoogleMapResource.template"/>
+            <file name="GoogleMapRefConverter.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/GoogleMapRefConverter.template"/>
         </folder>
     </folder>
     
