@@ -118,7 +118,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
     private boolean managerStartedByIde = false;
     private ServerTarget coTarget = null;
     private final InstancePropertiesImpl instanceProperties;
-    private HashMap/*<Target, ServerDebugInfo>*/ debugInfo = new HashMap();
+    private final HashMap/*<Target, ServerDebugInfo>*/ debugInfo = new HashMap();
     
     // last known server state, the initial value is stopped
     private int serverState = STATE_STOPPED;
@@ -130,7 +130,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
     private boolean isRunning = false;
     
     
-    private static ServerInstance   profiledServerInstance;
+    private volatile static ServerInstance profiledServerInstance;
     private ProfilerServerSettings  profilerSettings;
     
     private final DebuggerStateListener debuggerStateListener;
@@ -901,11 +901,12 @@ public class ServerInstance implements Node.Cookie, Comparable {
     throws ServerException {
         // check whether another server not already running in profile mode
         // and ask whether it is ok to stop it
-        if (profiledServerInstance != null && profiledServerInstance != this) {
+        ServerInstance tmpProfiledServerInstance = profiledServerInstance;
+        if (tmpProfiledServerInstance != null && tmpProfiledServerInstance != this) {
             String msg = NbBundle.getMessage(
                                     ServerInstance.class,
                                     "MSG_AnotherServerProfiling",
-                                    profiledServerInstance.getDisplayName());
+                                    tmpProfiledServerInstance.getDisplayName());
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.OK_CANCEL_OPTION);
             if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.CANCEL_OPTION) {
                 // start in profile mode has been cancelled
@@ -1224,7 +1225,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
     // state-transition atomic operations (always do-it w/o checking state)
     //------------------------------------------------------------
     // startDeploymentManager
-    private synchronized void _start(ProgressUI ui) throws ServerException {
+    private void _start(ProgressUI ui) throws ServerException {
         ProgressObject po = getStartServer().startDeploymentManager();
         try {
             boolean completedSuccessfully = ProgressObjectUtil.trackProgressObject(ui, po, getStartupTimeout());
@@ -1235,14 +1236,16 @@ public class ServerInstance implements Node.Cookie, Comparable {
             String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StartServerTimeout", getDisplayName());
             throw new ServerException(msg);
         }
-        managerStartedByIde = true;
-        coTarget = null;
-        targets = null;
-        initCoTarget();
+        synchronized (this) {
+            managerStartedByIde = true;
+            coTarget = null;
+            targets = null;
+            initCoTarget();
+        }
     }
     
     // startDebugging
-    private synchronized void _startDebug(Target target, ProgressUI ui) throws ServerException {
+    private void _startDebug(Target target, ProgressUI ui) throws ServerException {
         ProgressObject po = getStartServer().startDebugging(target);
         try {
             boolean completedSuccessfully = ProgressObjectUtil.trackProgressObject(ui, po, getStartupTimeout());
@@ -1253,24 +1256,31 @@ public class ServerInstance implements Node.Cookie, Comparable {
             String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StartDebugTimeout", getDisplayName());
             throw new ServerException(msg);
         }
-        managerStartedByIde = true;
-        coTarget = null;
-        targets = null;
-        initCoTarget();
+        synchronized (this) {
+            managerStartedByIde = true;
+            coTarget = null;
+            targets = null;
+            initCoTarget();
+        }
     }
     
     /** start server in the profile mode */
-    private synchronized void startProfileImpl(
+    private void startProfileImpl(
                                     Target target, 
                                     ProfilerServerSettings settings,
                                     boolean forceRestart,
                                     ProgressUI ui) throws ServerException {
-        if (profiledServerInstance == this && !forceRestart && settings.equals(profilerSettings)) {
+        ProfilerServerSettings  tmpProfilerSettings;
+        synchronized (this) {
+            tmpProfilerSettings = profilerSettings;
+        }
+        ServerInstance tmpProfiledServerInstance = profiledServerInstance;
+        if (tmpProfiledServerInstance == this && !forceRestart && settings.equals(tmpProfilerSettings)) {
             return; // server is already runnning in profile mode, no need to restart the server
         }
-        if (profiledServerInstance != null && profiledServerInstance != this) {
+        if (tmpProfiledServerInstance != null && tmpProfiledServerInstance != this) {
             // another server currently running in profiler mode
-            profiledServerInstance.stop(ui);
+            tmpProfiledServerInstance.stop(ui);
             profiledServerInstance = null;
         }
         if (profiledServerInstance == this || isReallyRunning() || isDebuggable(target)) {
@@ -1278,6 +1288,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
             debugInfo.clear();
             profiledServerInstance = null;
         }
+        
         Profiler profiler = ServerRegistry.getProfiler();
         if (profiler == null) {
             // this should not occur, but better make sure
@@ -1295,12 +1306,14 @@ public class ServerInstance implements Node.Cookie, Comparable {
             throw new ServerException(msg);
         }
         profiledServerInstance = this;
-        profilerSettings = settings;
-        managerStartedByIde = true;
+        synchronized (this) {
+            profilerSettings = settings;
+            managerStartedByIde = true;
+        }
     }
     
     /** Tell the profiler to shutdown */
-    private synchronized void shutdownProfiler(ProgressUI ui) throws ServerException {
+    private void shutdownProfiler(ProgressUI ui) throws ServerException {
         ui.progress(NbBundle.getMessage(ServerInstance.class, "MSG_StoppingProfiler"));
         Profiler profiler = ServerRegistry.getProfiler();
         if (profiler != null) {
@@ -1318,32 +1331,34 @@ public class ServerInstance implements Node.Cookie, Comparable {
     }
     
     // stopDeploymentManager
-    private synchronized void _stop(ProgressUI ui) throws ServerException {
+    private void _stop(ProgressUI ui) throws ServerException {
         // if the server is started in profile mode, deattach profiler first
         if (profiledServerInstance == this) {
             shutdownProfiler(ui);
             profiledServerInstance = null;
         }
-        // if the server is suspended, the debug session has to be terminated first
-        if (isSuspended()) {
-            Target target = _retrieveTarget(null);
-            ServerDebugInfo sdi = getServerDebugInfo(target);
-            Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
-            for (int i = 0; i < sessions.length; i++) {
-                Session s = sessions[i];
-                if (s != null) {
-                    AttachingDICookie attCookie = (AttachingDICookie)s.lookupFirst(null, AttachingDICookie.class);
-                    if (attCookie != null) {
-                        if (sdi.getTransport().equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
-                            String shmem = attCookie.getSharedMemoryName();
-                            if (shmem != null && shmem.equalsIgnoreCase(sdi.getShmemName())) {
-                                s.kill();
-                            }
-                        } else {
-                            String host = stripHostName(attCookie.getHostName());
-                            if (host != null && host.equalsIgnoreCase(stripHostName(sdi.getHost())) 
-                                && attCookie.getPortNumber() == sdi.getPort()) {
-                                s.kill();
+        synchronized (this) {
+            // if the server is suspended, the debug session has to be terminated first
+            if (isSuspended()) {
+                Target target = _retrieveTarget(null);
+                ServerDebugInfo sdi = getServerDebugInfo(target);
+                Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
+                for (int i = 0; i < sessions.length; i++) {
+                    Session s = sessions[i];
+                    if (s != null) {
+                        AttachingDICookie attCookie = (AttachingDICookie)s.lookupFirst(null, AttachingDICookie.class);
+                        if (attCookie != null) {
+                            if (sdi.getTransport().equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
+                                String shmem = attCookie.getSharedMemoryName();
+                                if (shmem != null && shmem.equalsIgnoreCase(sdi.getShmemName())) {
+                                    s.kill();
+                                }
+                            } else {
+                                String host = stripHostName(attCookie.getHostName());
+                                if (host != null && host.equalsIgnoreCase(stripHostName(sdi.getHost())) 
+                                    && attCookie.getPortNumber() == sdi.getPort()) {
+                                    s.kill();
+                                }
                             }
                         }
                     }
@@ -1360,7 +1375,9 @@ public class ServerInstance implements Node.Cookie, Comparable {
             String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StopServerTimeout", getDisplayName());
             throw new ServerException(msg);
         }
-        managerStartedByIde = false;
+        synchronized (this) {
+            managerStartedByIde = false;
+        }
         reset();
     }
     
