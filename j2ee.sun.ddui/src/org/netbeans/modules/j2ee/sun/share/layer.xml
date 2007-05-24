@@ -55,11 +55,13 @@
         </folder>
     </folder>
     
+<!--
     <folder name="Editors">
         <folder name="AnnotationTypes">
             <file name="org-netbeans-modules-j2ee-sun-dd-annotation_err" url="parser_annotation_err.xml"/>
         </folder>
     </folder>
+-->
     
     <folder name="Templates">
         <folder name="J2EE">
