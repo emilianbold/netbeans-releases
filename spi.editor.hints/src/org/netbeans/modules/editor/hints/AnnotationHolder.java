@@ -49,7 +49,9 @@ import javax.swing.text.Document;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.StyledDocument;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Coloring;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.highlights.spi.DefaultHighlight;
 import org.netbeans.modules.editor.highlights.spi.Highlight;
 import org.netbeans.modules.editor.highlights.spi.Highlighter;
@@ -448,6 +450,29 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener 
         }
     }
     
+    private static Highlight limitHighlight(Document doc, Integer line, Highlight h) throws BadLocationException {
+        if (doc instanceof BaseDocument) {
+            BaseDocument bdoc = (BaseDocument) doc;
+            int rowStart = Utilities.getRowStartFromLineOffset(bdoc, line);
+            int rowHighlightStart = Utilities.getRowFirstNonWhite(bdoc, rowStart);
+            int rowHighlightEnd = Utilities.getRowLastNonWhite(bdoc, rowStart) + 1;
+            int highlightStart = h.getStart();
+            int highlightEnd = h.getEnd();
+            
+            if (rowHighlightStart > highlightStart || rowHighlightEnd < highlightEnd) {
+                highlightStart = Math.max(rowHighlightStart, highlightStart);
+                highlightEnd   = Math.min(rowHighlightEnd, highlightEnd);
+                
+                return new DefaultHighlight(h.getColoring(), doc.createPosition(highlightStart), doc.createPosition(highlightEnd));
+            }
+            
+            return h;
+        } else {
+            //no attempt to 
+            return h;
+        }
+    }
+    
     static void computeHighlights(Document doc, Integer line, List<ErrorDescription> errorDescriptions, List<Highlight> highlights) throws IOException, BadLocationException {
         for (Severity s : Arrays.asList(Severity.ERROR, Severity.WARNING, Severity.VERIFIER)) {
             Coloring c = COLORINGS.get(s);
@@ -462,7 +487,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener 
             List<Highlight> currentHighlights = new ArrayList<Highlight>();
             
             for (ErrorDescription e : filteredDescriptions) {
-                Highlight h = new DefaultHighlight(c, e.getRange().getBegin().getPosition(), e.getRange().getEnd().getPosition());
+                Highlight h = limitHighlight(doc, line, new DefaultHighlight(c, e.getRange().getBegin().getPosition(), e.getRange().getEnd().getPosition()));
                 
                 OUT: for (Iterator<Highlight> it = currentHighlights.iterator(); it.hasNext() && h != null; ) {
                     Highlight hl = it.next();
