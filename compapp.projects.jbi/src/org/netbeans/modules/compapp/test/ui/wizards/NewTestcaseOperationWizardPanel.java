@@ -29,7 +29,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.wsdl.Binding;
+import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
@@ -102,7 +102,7 @@ public class NewTestcaseOperationWizardPanel implements WizardDescriptor.Validat
         }
         if (!isSupported) {
             String msg = NbBundle.getMessage(NewTestcaseOperationWizardPanel.class,
-                    "LBL_Binding_is_not_supported", binding.getQName().toString()); // NOI18N
+                    "LBL_Binding_is_not_supported", binding.getName()); // NOI18N 
             wiz.putProperty("WizardPanel_errorMessage", msg); // NOI18N
             return false;
         }        
@@ -156,8 +156,11 @@ public class NewTestcaseOperationWizardPanel implements WizardDescriptor.Validat
             for (int i = 0; i < mBindingSupportFactories.length; i++) {
                 if (mBindingSupportFactories[i].supports(binding)) {
                     try {
-                        bindingSupport = mBindingSupportFactories[i].createBindingSupport(binding,
-                                mWsdlSupport.getDefinition(), mWsdlSupport.getSchemaTypeLoader());
+                        bindingSupport = 
+                                mBindingSupportFactories[i].createBindingSupport(
+                                binding,
+                                mWsdlSupport.getWsdlModel().getDefinitions(), 
+                                mWsdlSupport.getSchemaTypeLoader());
                         break;
                     } catch (Exception e) {
                     }

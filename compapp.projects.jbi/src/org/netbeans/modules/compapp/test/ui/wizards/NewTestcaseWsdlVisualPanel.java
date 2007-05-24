@@ -21,15 +21,10 @@ package org.netbeans.modules.compapp.test.ui.wizards;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import javax.swing.JPanel;
 import javax.swing.JTree;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
 import org.netbeans.api.project.Project;
-import org.openide.WizardDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;

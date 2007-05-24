@@ -16,12 +16,9 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 package org.netbeans.modules.compapp.test.ui.actions;
 
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
 import java.util.List;
 import javax.wsdl.extensions.soap.SOAPOperation;
 import org.netbeans.modules.compapp.projects.jbi.JbiProject;
@@ -35,14 +32,11 @@ import org.netbeans.modules.compapp.test.wsdl.BindingSupport;
 
 import java.awt.Component;
 import java.awt.Dialog;
-import java.io.BufferedWriter;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileLock;
 
 import org.openide.nodes.Node;
 
@@ -51,11 +45,10 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 import org.openide.filesystems.FileObject;
 import java.util.logging.Level;
-import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
-import javax.wsdl.BindingOperation;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.xml.wsdl.model.BindingOperation;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -63,15 +56,13 @@ import org.openide.cookies.EditCookie;
 import org.openide.explorer.view.TreeView;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
-import org.w3c.dom.Element;
 
 /**
  * DOCUMENT ME!
  *
  * @author Bing Lu
+ * @author Jun Qian
  */
 public class AddTestcaseAction extends NodeAction implements NewTestcaseConstants {
     private static final java.util.logging.Logger mLog =
@@ -129,12 +120,12 @@ public class AddTestcaseAction extends NodeAction implements NewTestcaseConstant
         final String name = (String) wizardDescriptor.getProperty(TESTCASE_NAME);
         mLog.info("Got name in NewSchemaAction: " + name); // NOI18N
         BindingSupport bindingSupport = (BindingSupport)wizardDescriptor.getProperty(BINDING_SUPPORT);
-        BindingOperation operation = (BindingOperation)wizardDescriptor.getProperty(BINDING_OPERATION);
+        BindingOperation bindingOp = (BindingOperation)wizardDescriptor.getProperty(BINDING_OPERATION);
         Map param = new HashMap();
         param.put(BindingSupport.BUILD_OPTIONAL, Boolean.TRUE);
        
         try {            
-            String inputStr = bindingSupport.buildRequest(operation, param);
+            String inputStr = bindingSupport.buildRequest(bindingOp, param);
             
             FileObject testcaseDir = FileUtil.createFolder(testDir, name);
             String fileName = FileUtil.toFile(testcaseDir).getPath() + "/Input.xml"; // NOI18N
@@ -170,7 +161,7 @@ public class AddTestcaseAction extends NodeAction implements NewTestcaseConstant
             }
             
             String soapActionURI = ""; // NOI18N
-            List list = operation.getExtensibilityElements();
+            List list = bindingOp.getExtensibilityElements();
             for (Object elem : list) {
                 if (elem instanceof SOAPOperation) {
                     SOAPOperation soapOperation = (SOAPOperation) elem;

@@ -16,12 +16,10 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 package org.netbeans.modules.compapp.test.wsdl;
 
 import java.util.Map;
-import javax.wsdl.BindingOperation;
+import org.netbeans.modules.xml.wsdl.model.BindingOperation;
 
 /**
  * BindingSupport.java
@@ -29,6 +27,7 @@ import javax.wsdl.BindingOperation;
  * Created on February 2, 2006, 3:17 PM
  *
  * @author Bing Lu
+ * @author Jun Qian
  */
 public interface BindingSupport {
    public static final String BUILD_OPTIONAL = "buildOptional"; // NOI18N

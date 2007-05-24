@@ -16,17 +16,12 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 package org.netbeans.modules.compapp.test.ui.wizards;
 
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,10 +33,8 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -63,7 +56,6 @@ import org.openide.nodes.Node.Cookie;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 /**
  * Support for creating logical views.
@@ -391,15 +383,7 @@ public class WsdlViewNodes {
                 if (nodes.getLength() > 0) {
                     return true;
                 }
-            } catch (FileNotFoundException ex) {
-                ex.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (SAXException e) {
-                e.printStackTrace();
-            } catch (XPathExpressionException ex) {
-                ex.printStackTrace();
-            } catch (ParserConfigurationException ex) {
+            } catch (Exception ex) {
                 ex.printStackTrace();
             }
         }

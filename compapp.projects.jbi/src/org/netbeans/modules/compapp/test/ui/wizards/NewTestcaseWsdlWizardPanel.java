@@ -31,12 +31,8 @@ import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import javax.wsdl.Binding;
-import org.netbeans.modules.compapp.test.wsdl.Util;
-import java.util.List;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
@@ -139,7 +135,7 @@ public class NewTestcaseWsdlWizardPanel implements WizardDescriptor.ValidatingPa
             mWsdlFile = wsdlFile;
             WsdlSupport wsdlSupport = null;
             if (wsdlFile != null) {
-                wsdlSupport = new WsdlSupport("file:" + FileUtil.toFile(wsdlFile).getPath());  // NOI18N
+                wsdlSupport = new WsdlSupport(wsdlFile);  // NOI18N  
             }
             mWsdlSupport = wsdlSupport;
             wiz = (WizardDescriptor) settings;
@@ -177,11 +173,12 @@ public class NewTestcaseWsdlWizardPanel implements WizardDescriptor.ValidatingPa
             }
             
             try {
-                // 2. Check for missing binding
-                List bdList = Util.getSortedBindings(mWsdlSupport.getDefinition());
-                for (int i = 0; i < bdList.size(); i++) {
-                    List opList = Util.getSortedOperations((Binding)bdList.get(i));
-                }
+                // TODO: fixme
+//                // 2. Check for missing binding
+//                List<Binding> bindings = Util.getSortedBindings(mWsdlSupport.getWsdlModel().getDefinitions());
+//                for (Binding binding : bindings) {
+//                    List<Operation> opList = Util.getSortedOperations(binding);
+//                }
             } catch (Exception e) {
                 String msg = NbBundle.getMessage(NewTestcaseWsdlWizardPanel.class,
                         "LBL_No_Binding_Found");   // NOI18N

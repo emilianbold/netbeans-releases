@@ -21,11 +21,11 @@
 package org.netbeans.modules.compapp.test.wsdl;
 
 import java.util.List;
-import javax.wsdl.Binding;
-import javax.wsdl.Definition;
-import javax.wsdl.extensions.soap.SOAPBinding;
 import org.apache.xmlbeans.SchemaTypeLoader;
 import java.util.logging.Logger;
+import org.netbeans.modules.xml.wsdl.model.Binding;
+import org.netbeans.modules.xml.wsdl.model.Definitions;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding;
 
 /**
  * SoapBindingSupportFactory.java
@@ -37,18 +37,26 @@ import java.util.logging.Logger;
 public class SoapBindingSupportFactory implements BindingSupportFactory {
     private static final Logger mLog = Logger.getLogger("org.netbeans.modules.compapp.test.wsdl.SoapBindingSupportFactory"); // NOI18N
     
+    private static final String SOAP_TRANSPORT_URI = 
+            "http://schemas.xmlsoap.org/soap/http"; // NOI18N
+    
     /** Creates a new instance of SoapBindingSupportFactory */
     public SoapBindingSupportFactory() {
     }
     
    public boolean supports(Binding binding) {
-      List list = binding.getExtensibilityElements();
-      SOAPBinding soapBinding = (SOAPBinding) Util.getAssignableExtensiblityElement(list, SOAPBinding.class);
+      List eeList = binding.getExtensibilityElements();
+      SOAPBinding soapBinding = (SOAPBinding) 
+              Util.getAssignableExtensiblityElement(eeList, SOAPBinding.class);
       return soapBinding == null ? false : 
-         soapBinding.getTransportURI().startsWith( "http://schemas.xmlsoap.org/soap/http"); // NOI18N
+         soapBinding.getTransportURI().startsWith(SOAP_TRANSPORT_URI);         
    }
    
-   public BindingSupport createBindingSupport(Binding binding, Definition definition, SchemaTypeLoader schemaTypeLoader) throws Exception {
+   public BindingSupport createBindingSupport(
+           Binding binding, 
+           Definitions definition, 
+           SchemaTypeLoader schemaTypeLoader) 
+           throws Exception {
        return new SoapBindingSupport(binding, definition, schemaTypeLoader);
    }
 }

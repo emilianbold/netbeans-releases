@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -20,7 +20,6 @@
 package org.netbeans.modules.compapp.test.ui.wizards;
 
 import org.netbeans.modules.compapp.test.wsdl.WsdlSupport;
-import java.util.List;
 import javax.swing.JTree;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -28,17 +27,17 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeSelectionModel;
-import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
-import javax.wsdl.Binding;
-import javax.wsdl.BindingOperation;
-import org.netbeans.modules.compapp.test.wsdl.Util;
 import java.awt.Component;
 import javax.swing.JLabel;
 import javax.swing.tree.TreePath;
-import javax.wsdl.Input;
-import javax.wsdl.Operation;
-import javax.wsdl.Output;
+import org.netbeans.modules.compapp.test.wsdl.Util;
+import org.netbeans.modules.xml.wsdl.model.Binding;
+import org.netbeans.modules.xml.wsdl.model.BindingOperation;
+import org.netbeans.modules.xml.wsdl.model.Input;
+import org.netbeans.modules.xml.wsdl.model.Operation;
+import org.netbeans.modules.xml.wsdl.model.Output;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 
 public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
     
@@ -53,15 +52,15 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
         mScrollPanel = new javax.swing.JScrollPane();
         mTree = new javax.swing.JTree();
         mTree.getAccessibleContext().setAccessibleName(
-                NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, "ACS_OperationTree_A11YName"));  // NOI18N        
+                NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, "ACS_OperationTree_A11YName"));  // NOI18N
         mTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         mTree.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
             public void valueChanged(TreeSelectionEvent e) {
-                Operation op = getSelectedOperation();
-                if (op == null) {
+                BindingOperation bindingOp = getSelectedBindingOperation();
+                if (bindingOp == null) {
                     mOperationTf.setText("");  // NOI18N
                 } else {
-                    mOperationTf.setText(getOperationSignature(op));
+                    mOperationTf.setText(getOperationSignature(bindingOp));
                 }
                 mPanel.fireChangeEvent(); // Notify that the panel changed
             }
@@ -70,41 +69,36 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
         mTree.setEditable(false);
         mTree.setCellRenderer(new DefaultTreeCellRenderer() {
             public Component getTreeCellRendererComponent(JTree tree,
-                                              Object value,
-                                              boolean sel,
-                                              boolean expanded,
-                                              boolean leaf,
-                                              int row,
-                                              boolean hasFocus)               
-            {
-                JLabel lbl = (JLabel)super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-                DefaultMutableTreeNode node = (DefaultMutableTreeNode)value;
+                    Object value,
+                    boolean sel,
+                    boolean expanded,
+                    boolean leaf,
+                    int row,
+                    boolean hasFocus) {
+                JLabel label = (JLabel) super.getTreeCellRendererComponent(
+                        tree, value, sel, expanded, leaf, row, hasFocus);
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
                 Object usrObj = node.getUserObject();
                 if (usrObj instanceof Binding) {
-                    Binding bd = (Binding)usrObj;
-                    lbl.setText(bd.getQName().getLocalPart());
-                    return lbl;
+                    label.setText(((Binding)usrObj).getName());
+                } else if (usrObj instanceof BindingOperation) {
+                    label.setText(((BindingOperation)usrObj).getName());
                 }
-                if (usrObj instanceof Operation) {
-                    Operation op = (Operation)usrObj;
-                    lbl.setText(op.getName());
-                    return lbl;
-                }
-                return lbl;
-            } 
+                return label;
+            }
         });
         
         mScrollPanel.setViewportView(mTree);
         
         org.jdesktop.layout.GroupLayout jPanel1Layout = (org.jdesktop.layout.GroupLayout) jPanel1.getLayout();
         jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(mScrollPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-        );
+                jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(mScrollPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+                );
         jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(mScrollPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 275, Short.MAX_VALUE)
-        );  
+                jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(mScrollPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 275, Short.MAX_VALUE)
+                );
     }
     
     public String getName() {
@@ -116,17 +110,15 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
         if (wsdlSupport == null) {
             return;
         }
+        WSDLModel wsdlModel = wsdlSupport.getWsdlModel();
         DefaultMutableTreeNode root = new DefaultMutableTreeNode();
-        List bdList = Util.getSortedBindings(wsdlSupport.getDefinition());
-        for (int i = 0; i < bdList.size(); i++) {
-            DefaultMutableTreeNode bdNode = new DefaultMutableTreeNode(bdList.get(i));
-            root.add(bdNode);
-            List opList = Util.getSortedOperations((Binding)bdList.get(i));
-            for (int j = 0; j < opList.size(); j++) {
-                Operation op = (Operation)opList.get(j);
-                DefaultMutableTreeNode opNode = new DefaultMutableTreeNode(op);
-                bdNode.add(opNode);
-                opNode.setAllowsChildren(false);
+        for (Binding binding : Util.getSortedBindings(wsdlModel.getDefinitions())) {
+            DefaultMutableTreeNode bindingNode = new DefaultMutableTreeNode(binding);
+            root.add(bindingNode);
+            for (BindingOperation bindingOp : Util.getSortedBindingOperations(binding)) {
+                DefaultMutableTreeNode bindingOpNode = new DefaultMutableTreeNode(bindingOp);
+                bindingNode.add(bindingOpNode);
+                bindingOpNode.setAllowsChildren(false);
             }
         }
         DefaultTreeModel dtm = new DefaultTreeModel(root);
@@ -143,7 +135,7 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
             return null;
         }
         DefaultMutableTreeNode node = (DefaultMutableTreeNode)value;
-        if (node.getUserObject() instanceof Operation) {
+        if (node.getUserObject() instanceof BindingOperation) {
             DefaultMutableTreeNode parent = (DefaultMutableTreeNode)node.getParent();
             return (Binding)parent.getUserObject();
         }
@@ -151,22 +143,12 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
     }
     
     public BindingOperation getSelectedBindingOperation() {
-        Operation operation = getSelectedOperation();
-        if (operation == null) {
-            return null;
-        }
-        Binding binding = getSelectedBinding();
-        return Util.getBindingOperation(binding, operation);
-    }
-    
-    private Operation getSelectedOperation() {
         Object value = mTree.getLastSelectedPathComponent();
-        if (value == null) {
-            return null;
-        }
-        DefaultMutableTreeNode node = (DefaultMutableTreeNode)value;
-        if (node.getUserObject() instanceof Operation) {
-            return (Operation)node.getUserObject();
+        if (value != null) {
+            Object userObj = ((DefaultMutableTreeNode) value).getUserObject();
+            if (userObj instanceof BindingOperation) {
+                return (BindingOperation) userObj;
+            }
         }
         return null;
     }
@@ -230,7 +212,10 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
     private javax.swing.JLabel mOperationLbl;
     private javax.swing.JTextField mOperationTf;
     // End of variables declaration//GEN-END:variables
-    private static String getOperationSignature(Operation op) {
+    
+    private static String getOperationSignature(BindingOperation bindingOp) {
+        Operation op = bindingOp.getOperation().get();
+        
         Input input = op.getInput();
         Output output = op.getOutput();
         StringBuffer sb = new StringBuffer();
@@ -245,5 +230,5 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
             sb.append("void");  // NOI18N
         }
         return sb.toString();
-    }    
+    }
 }

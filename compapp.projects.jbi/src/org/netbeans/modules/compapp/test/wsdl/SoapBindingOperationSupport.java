@@ -21,18 +21,24 @@
 package org.netbeans.modules.compapp.test.wsdl;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collection;
 import java.util.List;
-import javax.wsdl.Binding;
-import javax.wsdl.BindingOperation;
-import javax.wsdl.Message;
-import javax.wsdl.OperationType;
-import javax.wsdl.Part;
-import javax.wsdl.extensions.soap.SOAPBinding;
-import javax.wsdl.extensions.soap.SOAPBody;
-import javax.wsdl.extensions.soap.SOAPOperation;
 import java.util.logging.Logger;
-import javax.wsdl.BindingInput;
+import org.netbeans.modules.xml.wsdl.model.Binding;
+import org.netbeans.modules.xml.wsdl.model.BindingInput;
+import org.netbeans.modules.xml.wsdl.model.BindingOperation;
+import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
+import org.netbeans.modules.xml.wsdl.model.Input;
+import org.netbeans.modules.xml.wsdl.model.Message;
+import org.netbeans.modules.xml.wsdl.model.Operation;
+import org.netbeans.modules.xml.wsdl.model.Output;
+import org.netbeans.modules.xml.wsdl.model.Part;
+import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding.Style;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBody;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPMessageBase.Use;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPOperation;
 import org.openide.util.NbBundle;
 
 /**
@@ -42,6 +48,7 @@ import org.openide.util.NbBundle;
  *
  *
  * @author Bing Lu
+ * @author Jun Qian
  */
 public class SoapBindingOperationSupport {
     private static final Logger mLog = Logger.getLogger("org.netbeans.modules.compapp.test.wsdl.SoapOperationSupport");  // NOI18N
@@ -52,25 +59,33 @@ public class SoapBindingOperationSupport {
     /**
      * Creates a new instance of SoapBindingOperationSupport
      */
-    public SoapBindingOperationSupport(Binding binding, BindingOperation bindingOperation) {
+    public SoapBindingOperationSupport(Binding binding, 
+            BindingOperation bindingOperation) {
         mBinding = binding;
         mBindingOperation = bindingOperation;
     }
     
     public boolean isInputSoapEncoded() {
-        OperationType operationType = mBindingOperation.getOperation().getStyle();
-        if (operationType.equals(OperationType.NOTIFICATION)) {
-            String msg = NbBundle.getMessage(SoapBindingOperationSupport.class, 
-                    "MSG_No_Support_for_Notification_Style"); // NOI18N
-            throw new RuntimeException(msg);            
-        } else if (operationType.equals(OperationType.SOLICIT_RESPONSE)) {
-            String msg = NbBundle.getMessage(SoapBindingOperationSupport.class, 
-                    "MSG_No_Support_for_Solicit_Response_Style"); // NOI18N
-            throw new RuntimeException(msg);            
-        } 
+        Operation operation = mBindingOperation.getOperation().get();
+        Input input = operation.getInput();
+        Output output = operation.getOutput();
+        if (output != null) {
+            if (input == null) {
+                String msg = NbBundle.getMessage(SoapBindingOperationSupport.class, 
+                        "MSG_No_Support_for_Notification_Style"); // NOI18N
+                throw new RuntimeException(msg);   
+            } else {
+                List<WSDLComponent> children = operation.getChildren();  
+                if (children.get(0) instanceof Output) {
+                    String msg = NbBundle.getMessage(SoapBindingOperationSupport.class, 
+                        "MSG_No_Support_for_Solicit_Response_Style"); // NOI18N
+                    throw new RuntimeException(msg);    
+                }
+            }
+        }
         
-        BindingInput input = mBindingOperation.getBindingInput();
-        if (input == null) {
+        BindingInput bindingInput = mBindingOperation.getBindingInput();
+        if (bindingInput == null) {
             // If the wsdl file has been validated, this should not happen 
             // because the error should have already been caught above.
             // Just to be safe...
@@ -79,13 +94,13 @@ public class SoapBindingOperationSupport {
             throw new RuntimeException(msg);    
         }
         
-        List list = input.getExtensibilityElements();
-        SOAPBody body = (SOAPBody) Util.getAssignableExtensiblityElement(list, SOAPBody.class);
+        List<ExtensibilityElement> eeList = 
+                bindingInput.getExtensibilityElements();
+        SOAPBody soapBody = 
+                (SOAPBody) Util.getAssignableExtensiblityElement(eeList, SOAPBody.class);
         
-        if (body != null &&
-                body.getUse() != null &&
-                body.getUse().equalsIgnoreCase("encoded")) { // NOI18N
-            List encodingStyles = body.getEncodingStyles();
+        if (soapBody != null && soapBody.getUse() == Use.ENCODED) { 
+            Collection<String> encodingStyles = soapBody.getEncodingStyles();
             if (encodingStyles == null) {
                 String msg = NbBundle.getMessage(SoapBindingOperationSupport.class, 
                     "MSG_Missing_EncodingStyle_for_Encoded_Use"); // NOI18N
@@ -99,35 +114,43 @@ public class SoapBindingOperationSupport {
     }
     
     public boolean isRpc() {
-        List list = mBindingOperation.getExtensibilityElements();
-        SOAPOperation soapOperation = (SOAPOperation) Util.getAssignableExtensiblityElement(list, SOAPOperation.class);
+        List eeList = mBindingOperation.getExtensibilityElements();
+        SOAPOperation soapOperation = 
+                (SOAPOperation) Util.getAssignableExtensiblityElement(
+                eeList, SOAPOperation.class);
         
         if(soapOperation != null && soapOperation.getStyle() != null) {
-            return soapOperation.getStyle().equalsIgnoreCase("rpc"); // NOI18N
+            return soapOperation.getStyle() == Style.RPC; 
         }
-        list = mBinding.getExtensibilityElements();
-        SOAPBinding soapBinding = (SOAPBinding) Util.getAssignableExtensiblityElement(list, SOAPBinding.class);
+        eeList = mBinding.getExtensibilityElements();
+        SOAPBinding soapBinding = 
+                (SOAPBinding) Util.getAssignableExtensiblityElement(
+                eeList, SOAPBinding.class);
         
-        return soapBinding != null &&
-               soapBinding.getStyle() != null &&
-               soapBinding.getStyle().equalsIgnoreCase("rpc"); // NOI18N
+        return soapBinding != null && soapBinding.getStyle() == Style.RPC; 
     }
     
     public Part[] getInputParts() {
         ArrayList result = new ArrayList();
-        Message msg = mBindingOperation.getOperation().getInput().getMessage();
-        List list = mBindingOperation.getBindingInput().getExtensibilityElements();
-        SOAPBody body = (SOAPBody) Util.getAssignableExtensiblityElement(list, SOAPBody.class);
+        Operation operation = mBindingOperation.getOperation().get();
+        Message msg = operation.getInput().getMessage().get();
+        List<ExtensibilityElement> eeList = 
+                mBindingOperation.getBindingInput().getExtensibilityElements();
+        SOAPBody body = 
+                (SOAPBody) Util.getAssignableExtensiblityElement(
+                eeList, SOAPBody.class);
         
         if (body == null || body.getParts() == null) {
-            result.addAll(msg.getOrderedParts(null));
+            result.addAll(msg.getParts());
         } else {
-            Iterator i = body.getParts().iterator();
-            while (i.hasNext()) {
-                String partName = (String) i.next();
-                Part part = msg.getPart(partName);
-                
-                result.add(part);
+            for (String partName : body.getParts()) {
+//            Iterator i = body.getParts().iterator();
+//            while (i.hasNext()) {
+//                String partName = (String) i.next();
+//                Part part = msg.getParts(partName);
+//                
+//                result.add(part);
+                result.addAll(msg.getParts());
             }
         }
         
