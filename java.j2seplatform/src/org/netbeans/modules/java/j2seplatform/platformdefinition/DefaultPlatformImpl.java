@@ -23,13 +23,16 @@ import java.io.*;
 import java.net.URL;
 import java.util.*;
 import java.net.MalformedURLException;
+import org.openide.util.Exceptions;
 
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.java.platform.*;
 import org.netbeans.api.java.classpath.*;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.URLMapper;
 
 /**
  * Implementation of the "Default" platform. The information here is extracted
@@ -53,7 +56,7 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
         try {
             installFolders.add (javaHome.toURI().toURL());
         } catch (MalformedURLException mue) {
-            ErrorManager.getDefault().notify (mue);
+            Exceptions.printStackTrace(mue);
         }
         if (sources == null) {
             sources = getSources (javaHome);
@@ -119,10 +122,25 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
                 }
                 if (f.exists() && f.canRead()) {
                     URL url = FileUtil.getArchiveRoot(f.toURI().toURL());
+                    
+                     //Test for src folder in the src.zip on Mac
+                    if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                         try {
+                             FileObject fo = URLMapper.findFileObject(url);
+                             if (fo != null) {
+                                 fo = fo.getFileObject("src");    //NOI18N
+                                 if (fo != null) {
+                                     url = fo.getURL();
+                                 }
+                             }                             
+                         } catch (FileStateInvalidException fileStateInvalidException) {
+                             Exceptions.printStackTrace(fileStateInvalidException);
+                         }
+                    }
                     return Collections.singletonList (url);
                 }
             } catch (MalformedURLException e) {
-                ErrorManager.getDefault().notify (e);
+                Exceptions.printStackTrace(e);
             }              
         }
         return null;
@@ -136,7 +154,7 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
                 try {
                     return Collections.singletonList(f.toURI().toURL());
                 } catch (MalformedURLException mue) {
-                    ErrorManager.getDefault().notify (mue);
+                    Exceptions.printStackTrace(mue);
                 }
             }                        
         }
