@@ -5,6 +5,7 @@ set -x
 DIRNAME=`dirname $0`
 cd ${DIRNAME}
 TRUNK_NIGHTLY_DIRNAME=`pwd`
+export BUILD_DESC=trunk-nightly
 source init.sh
 
 cd $TRUNK_NIGHTLY_DIRNAME

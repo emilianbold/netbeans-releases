@@ -17,7 +17,8 @@ if [ -z "${CVS_STAMP}" ]; then
     fi
 fi
 
-BUILDNUM=trunk-nightly-$DATESTAMP
+BUILDNUM=$BUILD_DESC-$DATESTAMP
+BUILDNUMBER=$DATESTAMP
 
 if [ -z $BASE_DIR ]; then
     echo BASE_DIR variable not defined, using the default one: /space/NB-IDE
