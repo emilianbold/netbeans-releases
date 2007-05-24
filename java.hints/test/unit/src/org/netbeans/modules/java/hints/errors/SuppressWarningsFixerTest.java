@@ -19,6 +19,7 @@
 package org.netbeans.modules.java.hints.errors;
 
 import org.netbeans.modules.java.hints.infrastructure.HintsTestBase;
+import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 
 /**
  *
@@ -33,7 +34,10 @@ public class SuppressWarningsFixerTest extends HintsTestBase {
     @Override
     protected void setUp() throws Exception {
         super.doSetUp("org/netbeans/modules/java/hints/resources/layer.xml");
-        System.setProperty("org.netbeans.api.java.source.JavaSource.USE_COMPILER_LINT", "true");
+        CompilerSettings.getNode().putBoolean(CompilerSettings.ENABLE_LINT, true);
+        CompilerSettings.getNode().putBoolean(CompilerSettings.ENABLE_LINT_DEPRECATION, true);
+        CompilerSettings.getNode().putBoolean(CompilerSettings.ENABLE_LINT_FALLTHROUGH, true);
+        CompilerSettings.getNode().putBoolean(CompilerSettings.ENABLE_LINT_UNCHECKED, true);
     }
     
     @Override
