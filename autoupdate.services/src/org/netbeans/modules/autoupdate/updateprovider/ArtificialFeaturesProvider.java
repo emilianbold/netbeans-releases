@@ -87,8 +87,10 @@ public class ArtificialFeaturesProvider implements UpdateProvider {
                 assert module != null : "Module found for " + installedModule.getModuleInfo ().getCodeNameBase () + ", " + installedModule.getModuleInfo ().getSpecificationVersion ();
                 if (module.isAutoload () || module.isFixed ()) {
                     category = LIBRARIES_CATEGORY;
+                    continue;
                 } else if (module.isEager ()) {
                     category = BRIDGES_CATEGORY;
+                    continue;
                 } else if (category == null || category.length () == 0) {
                     category = UNSORTED_CATEGORY;
                 }
@@ -99,8 +101,16 @@ public class ArtificialFeaturesProvider implements UpdateProvider {
             } else if (impl instanceof ModuleItem) {
                 ModuleItem updateModule = (ModuleItem) impl;
                 String category = (String) updateModule.getModuleInfo ().getLocalizedAttribute ("OpenIDE-Module-Display-Category");
+                if (LIBRARIES_CATEGORY.equals (category) || BRIDGES_CATEGORY.equals (category)) {
+                    continue;
+                }
                 if (category == null || category.length () == 0) {
-                    category = UNSORTED_CATEGORY;
+                    String dn = (String) updateModule.getModuleInfo ().getLocalizedAttribute ("OpenIDE-Module-Display-Category");
+                    if (dn == null || dn.length () == 0) {
+                        category = UNSORTED_CATEGORY;
+                    } else {
+                        category = dn;
+                    }
                 }
                 if (! categoryToModules.containsKey (category)) {
                     categoryToModules.put (category, new HashSet<ModuleInfo> ());
