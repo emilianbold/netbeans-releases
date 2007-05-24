@@ -88,6 +88,12 @@ public class RenameTransformer extends SearchVisitor {
         renameDeclIfMatch(getCurrentPath(), tree, p);
         return super.visitVariable(tree, p);
     }
+
+    @Override
+    public Tree visitTypeParameter(TypeParameterTree arg0, Element arg1) {
+        renameDeclIfMatch(getCurrentPath(), arg0, arg1);
+        return super.visitTypeParameter(arg0, arg1);
+    }
     
     private void renameDeclIfMatch(TreePath path, Tree tree, Element elementToFind) {
         if (workingCopy.getTreeUtilities().isSynthetic(path))
