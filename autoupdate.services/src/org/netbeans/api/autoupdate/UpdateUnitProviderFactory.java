@@ -43,7 +43,7 @@ public final class UpdateUnitProviderFactory {
     
     /** Returns singleton instance of <code>UpdateUnitProviderFactory</code>
      * 
-     * @return 
+     * @return UpdateUnitProviderFactory singleton instance of UpdateUnitProviderFactory
      */
     public static UpdateUnitProviderFactory getDefault () {
         return INSTANCE;

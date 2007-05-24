@@ -52,8 +52,8 @@ public interface UpdateProvider {
     /** Returns <code>UpdateItem</code>s which is mapped to its unique ID.
      * Unique ID depends on the type of <code>UpdateItem</code>.
      * 
-     * @see #UpdateItem
-     * @return Map of code name of UpdateItem and UpdateItem
+     * @see UpdateItem
+     * @return Map of code name of UpdateItem and instance of UpdateItem
      * @throws java.io.IOException when any network problem appreared
      */
     public Map<String, UpdateItem> getUpdateItems () throws IOException;

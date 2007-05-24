@@ -18,17 +18,17 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE api-answers PUBLIC "-//NetBeans//DTD Arch Answers//EN" "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd" [
-  <!ENTITY api-questions SYSTEM "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch-api-questions.xml">
+<!ENTITY api-questions SYSTEM "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch-api-questions.xml">
 ]>
 
 <api-answers
     question-version="1.29"
     author="jrechtacek@netbeans.org"
-    >
-
+>
+    
     &api-questions;
-
-
+    
+    
     <!--
     <question id="arch-overall" when="init">
     Describe the overall architecture. 
@@ -46,31 +46,30 @@ Microsystems, Inc. All Rights Reserved.
     </question>
     -->
     <answer id="arch-overall">
-        <a id="good-for"/>
         <p>
-        AutoUpdate feature provides several services to IDE: <b>download and install</b> available updates of installed modules,
-        <b>search and install</b> new features from subscribed Update Centers, <b>browsing and manipulating</b>
-        the modules in IDE installation and handling of module <b>localizations</b>.
-        To use the services have to AutoUpdate supply a GUI to easy manipulating. AutoUpdate feature has to care about
-        registration Update Centers as well.
+            AutoUpdate feature provides several services to IDE: <b>download and install</b> available updates of installed modules,
+            <b>search and install</b> new features from subscribed Update Centers, <b>browsing and manipulating</b>
+            the modules in IDE installation and handling of module <b>localizations</b>.
+            To use the services have to AutoUpdate supply a GUI to easy manipulating. AutoUpdate feature has to care about
+            registration Update Centers as well.
         </p>
         <p>Several several services means that Autoupdate feature contain several <b>parts of functionality</b>.
-        These part of AutoUpdate should communicate each other. Moreover, some interface <b>should be public</b>.
-        One of them is <b>SPI</b> for Update Center backend - allows to create and subscribe the Update Center in IDE.
-        Next there should be a <b>API</b> which communicate to rest of IDE and provide some services what is useful for
-        NB installers, a non-visual client of Auto Update which make possible to use Auto Update from command line
-        as standalone application in "admin" mode. All of them needs a APIs. This document describes proposed APIs,
-        supposed use-cases and design of interaction Auto Update parts each other.
-        <br />
-        <img class="inline" src="@TOP@/org/netbeans/api/autoupdate/doc-files/schema.png" alt="schema.png" />
+            These part of AutoUpdate should communicate each other. Moreover, some interface <b>should be public</b>.
+            One of them is <b>SPI</b> for Update Center backend - allows to create and subscribe the Update Center in IDE.
+            Next there should be a <b>API</b> which communicate to rest of IDE and provide some services what is useful for
+            NB installers, a non-visual client of Auto Update which make possible to use Auto Update from command line
+            as standalone application in "admin" mode. All of them needs a APIs. This document describes proposed APIs,
+            supposed use-cases and design of interaction Auto Update parts each other.
+            <br />
+            <img class="inline" src="@TOP@/org/netbeans/api/autoupdate/doc-files/schema.png" alt="schema.png" />
         </p>
         <b>Naming</b>: <i>What is feature?</i> Group of modules which are close connected together and cannot acts separately.
         I think that <b>feature</b> is common understand notation
         and fits its matter we will use it from now on.
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="arch-quality" when="init">
     How will the <a href="http://www.netbeans.org/community/guidelines/q-evangelism.html">quality</a>
@@ -90,9 +89,9 @@ Microsystems, Inc. All Rights Reserved.
             and CLI client of Autoupdate Services, which is projected as well.
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="arch-time" when="init">
     What are the time estimates of the work?
@@ -109,9 +108,9 @@ Microsystems, Inc. All Rights Reserved.
             NB6.0/M11.
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="arch-usecases" when="init">
     <hint>
@@ -172,7 +171,7 @@ Microsystems, Inc. All Rights Reserved.
                 which are applicable to active IDE. <code>UpdateManager</code> will 
                 search all available <code>UpdateUnit</code> given attribute.
             </usecase>
-            <a id="install-new-functionality"></a>
+            <a name="install-new-functionality"></a>
             <usecase id="install-new-functionality" name="Install new functionality">
                 An client needs to install new functionality into the IDE installation. 
                 She knows what unit and what version wants to install.
@@ -214,7 +213,7 @@ Microsystems, Inc. All Rights Reserved.
                     <li>If all okay, then uninstall the unit: <code>OperationContainer.doOperation()</code></li>
                 </ul>
             </usecase>
-            <a id="disable-unit"/>
+            <a name="disable-unit"/>
             <usecase id="disable-unit" name="Switch off functionality">
                 An client needs to switch off (disable) some functionality in IDE installation. Needs to resolve its dependencies,
                 identify possible problems and locate other unit what will be disabled together.
@@ -284,9 +283,9 @@ Microsystems, Inc. All Rights Reserved.
             <usecase id="get-installed-files" name="Get all installed files of given unit">TBD</usecase>
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="arch-what" when="init">
     What is this project good for?
@@ -298,12 +297,12 @@ Microsystems, Inc. All Rights Reserved.
     </question>
     -->
     <answer id="arch-what">
-        <code><api type="export" category="devel" group="java" name="org.netbeans.api.autoupdate" url="@TOP@/summary-overview.html"/></code>
-        <code><api type="export" category="devel" group="java" name="org.netbeans.spi.autoupdate" url="@TOP@/summary-overview.html"/></code>
+        <code><api type="export" category="devel" group="java" name="org.netbeans.api.autoupdate" url="@TOP@/overview-summary.html"/></code>
+        <code><api type="export" category="devel" group="java" name="org.netbeans.spi.autoupdate" url="@TOP@/overview-summary.html"/></code>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="arch-where" when="impl">
     Where one can find sources for your module?
@@ -317,9 +316,9 @@ Microsystems, Inc. All Rights Reserved.
     <answer id="arch-where">
         <defaultanswer generate='here' />
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="compat-deprecation" when="init">
     How the introduction of your project influences functionality
@@ -351,9 +350,9 @@ Microsystems, Inc. All Rights Reserved.
             <api name="last-check-of-provider" category="private" group="preferences" type="export"/>
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="compat-i18n" when="impl">
     Is your module correctly internationalized?
@@ -369,9 +368,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for compat-i18n
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="compat-standards" when="init">
     Does the module implement or define any standards? Is the 
@@ -383,9 +382,9 @@ Microsystems, Inc. All Rights Reserved.
             No.
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="compat-version" when="impl">
     Can your module coexist with earlier and future
@@ -405,9 +404,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for compat-version
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="dep-jre" when="final">
     Which version of JRE do you need (1.2, 1.3, 1.4, etc.)?
@@ -423,9 +422,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for dep-jre
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="dep-jrejdk" when="final">
     Do you require the JDK or is the JRE enough?
@@ -436,9 +435,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for dep-jrejdk
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="dep-nb" when="init">
     What other NetBeans projects and modules does this one depend on?
@@ -461,11 +460,83 @@ Microsystems, Inc. All Rights Reserved.
     </question>
     -->
     <answer id="dep-nb">
-        <defaultanswer generate='here' />
+        <defaultanswer generate="none" />
+        <ul>        
+            <li><api type='import' group='java' category='official' name='org.netbeans.api.progress' url='../org-netbeans-api-progress/overview-summary.html' >
+                    The module is needed for compilation. 
+                    
+                    The module is used during runtime. 
+                    
+                    Specification version 
+                    1.9
+                    is required.
+                </api>
+            </li>            
+            <li><api type='import' group='java' category='friend' name='org.netbeans.bootstrap'>
+                    The module is needed for compilation. 
+                    
+                    The module is used during runtime. 
+                    
+                    Specification version 
+                    2.6
+                    is required.
+                </api>
+            </li>            
+            <li><api type='import' group='java' category='friend' name='org.netbeans.core.startup' >
+                    The module is needed for compilation. 
+                    
+                    The module is used during runtime. 
+                    
+                    Specification version 
+                    1.9
+                    is required.
+                </api>
+            </li>            
+            <li><api type='import' group='java' category='official' name='org.openide.filesystems' url='../org-openide-filesystems/overview-summary.html' >
+                    The module is needed for compilation. 
+                    
+                    The module is used during runtime. 
+                    
+                    Specification version 
+                    7.0
+                    is required.
+                </api>
+            </li>            
+            <li><api type='import' group='java' category='official' name='org.openide.modules' url='../org-openide-modules/overview-summary.html' >
+                    The module is needed for compilation. 
+                    
+                    The module is used during runtime. 
+                    
+                    Specification version 
+                    7.2
+                    is required.
+                </api>
+            </li>            
+            <li><api type='import' group='java' category='official' name='org.openide.util' url='../org-openide-util/overview-summary.html' >
+                    The module is needed for compilation. 
+                    
+                    The module is used during runtime. 
+                    
+                    Specification version 
+                    7.5
+                    is required.
+                </api>
+            </li>            
+            <li><api type='import' group='java' category='official' name='org.openide.windows' url='../org-openide-windows/overview-summary.html' >
+                    The module is needed for compilation. 
+                    
+                    The module is used during runtime. 
+                    
+                    Specification version 
+                    6.15
+                    is required.
+                </api>
+            </li>
+        </ul>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="dep-non-nb" when="init">
     What other projects outside NetBeans does this one depend on?
@@ -489,9 +560,9 @@ Microsystems, Inc. All Rights Reserved.
             None.
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="dep-platform" when="init">
     On which platforms does your module run? Does it run in the same
@@ -517,9 +588,9 @@ Microsystems, Inc. All Rights Reserved.
             All platforms.
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="deploy-dependencies" when="final">
     What do other modules need to do to declare a dependency on this one,
@@ -537,13 +608,11 @@ Microsystems, Inc. All Rights Reserved.
     </question>
     -->
     <answer id="deploy-dependencies">
-        <p>
-            XXX no answer for deploy-dependencies
-        </p>
+        <defaultanswer generate="here"/>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="deploy-jar" when="impl">
     Do you deploy just module JAR file(s) or other files as well?
@@ -569,9 +638,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for deploy-jar
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="deploy-nbm" when="impl">
     Can you deploy an NBM via the Update Center?
@@ -585,9 +654,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for deploy-nbm
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="deploy-packages" when="init">
     Are packages of your module made inaccessible by not declaring them
@@ -609,9 +678,9 @@ Microsystems, Inc. All Rights Reserved.
             depends on Autoupdate SPI.
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="deploy-shared" when="final">
     Do you need to be installed in the shared location only, or in the user directory only,
@@ -627,9 +696,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for deploy-shared
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="exec-ant-tasks" when="impl">
     Do you define or register any ant tasks that other can use?
@@ -647,9 +716,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for exec-ant-tasks
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="exec-classloader" when="impl">
     Does your code create its own class loader(s)?
@@ -663,9 +732,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for exec-classloader
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="exec-component" when="impl">
     Is execution of your code influenced by any (string) property
@@ -686,9 +755,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for exec-component
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="exec-introspection" when="impl">
     Does your module use any kind of runtime type information (<code>instanceof</code>,
@@ -706,9 +775,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for exec-introspection
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="exec-privateaccess" when="final">
     Are you aware of any other parts of the system calling some of 
@@ -724,9 +793,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for exec-privateaccess
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="exec-process" when="impl">
     Do you execute an external process from your module? How do you ensure
@@ -742,9 +811,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for exec-process
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="exec-property" when="impl">
     Is execution of your code influenced by any environment or
@@ -770,9 +839,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for exec-property
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="exec-reflection" when="impl">
     Does your code use Java Reflection to execute other code?
@@ -788,9 +857,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for exec-reflection
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="exec-threading" when="init">
     What threading models, if any, does your module adhere to? How the
@@ -820,9 +889,9 @@ Microsystems, Inc. All Rights Reserved.
             The API is threadsafe. The objects are immutable.
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="format-clipboard" when="impl">
     Which data flavors (if any) does your code read from or insert to
@@ -839,9 +908,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for format-clipboard
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="format-dnd" when="impl">
     Which protocols (if any) does your code understand during Drag &amp; Drop?
@@ -857,9 +926,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for format-dnd
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="format-types" when="impl">
     Which protocols and file formats (if any) does your module read or write on disk,
@@ -888,9 +957,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for format-types
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="lookup-lookup" when="init">
     Does your module use <code>org.openide.util.Lookup</code>
@@ -921,9 +990,9 @@ Microsystems, Inc. All Rights Reserved.
             <li>Module loaded in running IDE are found in <code>org.openide.util.Lookup</code>.</li>
         </ul>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="lookup-register" when="final">
     Do you register anything into lookup for other code to find?
@@ -938,9 +1007,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for lookup-register
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="lookup-remove" when="final">
     Do you remove entries of other modules from lookup?
@@ -955,9 +1024,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for lookup-remove
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="perf-exit" when="final">
     Does your module run any code on exit?
@@ -968,9 +1037,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for perf-exit
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="perf-huge_dialogs" when="final">
     Does your module contain any dialogs or wizards with a large number of
@@ -982,9 +1051,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for perf-huge_dialogs
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="perf-limit" when="init">
     Are there any hard-coded or practical limits in the number or size of
@@ -1011,9 +1080,9 @@ Microsystems, Inc. All Rights Reserved.
             reach over the Autoupdate Services capability.
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="perf-mem" when="final">
     How much memory does your component consume? Estimate
@@ -1025,9 +1094,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for perf-mem
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="perf-menus" when="final">
     Does your module use dynamically updated context menus, or
@@ -1047,9 +1116,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for perf-menus
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="perf-progress" when="final">
     Does your module execute any long-running tasks?
@@ -1071,9 +1140,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for perf-progress
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="perf-scale" when="init">
     Which external criteria influence the performance of your
@@ -1090,9 +1159,9 @@ Microsystems, Inc. All Rights Reserved.
             None.
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="perf-spi" when="init">
     How the performance of the plugged in code will be enforced?
@@ -1112,9 +1181,9 @@ Microsystems, Inc. All Rights Reserved.
             to the users and won't affect API usage.
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="perf-startup" when="final">
     Does your module run any code on startup?
@@ -1125,9 +1194,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for perf-startup
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="perf-wakeup" when="final">
     Does any piece of your code wake up periodically and do something
@@ -1139,9 +1208,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for perf-wakeup
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="resources-file" when="final">
     Does your module use <code>java.io.File</code> directly?
@@ -1160,9 +1229,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for resources-file
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="resources-layer" when="final">
     Does your module provide own layer? Does it create any files or
@@ -1183,9 +1252,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for resources-layer
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="resources-mask" when="final">
     Does your module mask/hide/override any resources provided by other modules in
@@ -1204,9 +1273,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for resources-mask
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="resources-preferences" when="final">
     Does your module uses preferences via Preferences API? Does your module use NbPreferences or
@@ -1229,9 +1298,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for resources-preferences
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="resources-read" when="final">
     Does your module read any resources from layers? For what purpose?
@@ -1249,9 +1318,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for resources-read
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="security-grant" when="final">
     Does your code grant additional rights to some other code?
@@ -1267,9 +1336,9 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for security-grant
         </p>
     </answer>
-
-
-
+    
+    
+    
     <!--
     <question id="security-policy" when="final">
     Does your functionality require modifications to the standard policy file?
@@ -1284,5 +1353,5 @@ Microsystems, Inc. All Rights Reserved.
             XXX no answer for security-policy
         </p>
     </answer>
-
+    
 </api-answers>
