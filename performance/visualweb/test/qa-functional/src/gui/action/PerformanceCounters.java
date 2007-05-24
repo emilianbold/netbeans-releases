@@ -40,6 +40,7 @@ public class PerformanceCounters {
     
     public static void initPerformanceCounters(PerformanceTestCase test) {
         testName = test.getName();
+        test.log("Test name = "+test.getName());
         tr = ActionTracker.getInstance();
         countersList = new LinkedList<String>();
     }
@@ -47,11 +48,17 @@ public class PerformanceCounters {
     public static void addPerformanceCounter(String counterName) {
         
         countersList.add(counterName);
-        tr.add(COUNTER_START, counterName, System.currentTimeMillis());
+        long lastEventTime = tr.getCurrentEvents().getLast().getTimeMillis();
+        long ctm = System.currentTimeMillis();
+        testCase.log("last event = "+lastEventTime+" system Time = "+ctm);
+        tr.add(COUNTER_START, counterName, ctm);
     }
     
     public static void endPerformanceCounter(String counterName) {
-        tr.add(COUNTER_STOP, counterName, System.currentTimeMillis());  
+        long lastEventTime = tr.getCurrentEvents().getLast().getTimeMillis();
+        long ctm = System.currentTimeMillis();
+        testCase.log("last event = "+lastEventTime+" system Time = "+ctm);        
+        tr.add(COUNTER_STOP, counterName, ctm);  
     }
     private static void clearPerformanceCounters() {
         countersList = new LinkedList<String>();
