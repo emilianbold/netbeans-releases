@@ -19,6 +19,7 @@
 package org.netbeans.modules.java.hints.errors;
 
 import org.netbeans.modules.java.hints.infrastructure.HintsTestBase;
+import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 
 /**
  *
@@ -33,7 +34,8 @@ public class RemoveUselessCastTest extends HintsTestBase {
     @Override
     protected void setUp() throws Exception {
         super.doSetUp("org/netbeans/modules/java/hints/resources/layer.xml");
-        System.setProperty("org.netbeans.api.java.source.JavaSource.USE_COMPILER_LINT", "true");
+        CompilerSettings.getNode().putBoolean(CompilerSettings.ENABLE_LINT, true);
+        CompilerSettings.getNode().putBoolean(CompilerSettings.ENABLE_LINT_CAST, true);
     }
     
     @Override
@@ -43,7 +45,7 @@ public class RemoveUselessCastTest extends HintsTestBase {
     
     @Override
     protected String testDataExtension() {
-        return "org/netbeans/test/java/hints/RemoveUselessCastCreatorTest/";
+        return "org/netbeans/test/java/hints/RemoveUselessCastTest/";
     }
     
     public void testRedundantCast1() throws Exception {

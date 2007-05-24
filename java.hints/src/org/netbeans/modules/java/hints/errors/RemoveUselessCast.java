@@ -95,7 +95,7 @@ public final class RemoveUselessCast implements ErrorRule<Void> {
             try {
                 js.runModificationTask(new CancellableTask<WorkingCopy>() {
                     public void run(WorkingCopy copy) throws IOException {
-                        copy.toPhase(Phase.PARSED);
+                        copy.toPhase(Phase.RESOLVED);
                         TreePath path = handle.resolve(copy);
                         
                         if (path != null) {
