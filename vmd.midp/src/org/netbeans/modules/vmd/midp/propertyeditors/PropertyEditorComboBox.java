@@ -31,7 +31,6 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
@@ -48,7 +47,7 @@ import org.openide.util.NbBundle;
  */
 public final class PropertyEditorComboBox extends PropertyEditorUserCode implements PropertyEditorElement {
     
-    private DesignDocument document;
+    private DesignComponent component;
     private final Map<String, PropertyValue> values;
     private String[] tags;
     
@@ -176,7 +175,7 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
     
     public void init(DesignComponent component) {
         super.init(component);
-        document = component.getDocument();
+        this.component = component;
     }
     
     public Boolean canEditAsText() {
@@ -192,9 +191,8 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
             canWrite[0] = false;
         } else if (enableTypeID != null) {
             if (enableTypeID == FontCD.TYPEID) {
-                document.getTransactionManager().readAccess( new Runnable() {
+                component.getDocument().getTransactionManager().readAccess( new Runnable() {
                     public void run() {
-                        DesignComponent component = document.getSelectedComponents().iterator().next();
                         int kind = MidpTypes.getInteger(component.readProperty(FontCD.PROP_FONT_KIND));
                         canWrite[0] = kind == FontCD.VALUE_KIND_CUSTOM;
                     }
