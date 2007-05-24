@@ -76,6 +76,8 @@ Microsystems, Inc. All Rights Reserved.
         <antcall target="copy_released_ide_cfg_file"/>
         <executeTests pluginName="jvm">
             <classpath>
+                <pathelement location="${nb_all}/jellytools/builds/jelly2-nb.jar"/>
+                <pathelement location="${nb_all}/jemmy/builds/jemmy.jar"/>
                 <path location="${performance.testutilities.dist.jar}"/>
             </classpath>
             
