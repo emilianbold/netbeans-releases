@@ -21,14 +21,9 @@ package org.netbeans.modules.html.editor;
 
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.ext.html.HTMLSettingsInitializer;
-import org.netbeans.modules.editor.NbLocalizer;
 import org.netbeans.modules.editor.html.HTMLKit;
 import org.netbeans.modules.editor.html.NbHTMLSettingsInitializer;
-import org.netbeans.modules.html.editor.options.HTMLPrintOptions;
 import org.openide.modules.ModuleInstall;
-import org.openide.options.SystemOption;
-import org.openide.text.PrintSettings;
-import org.openide.util.SharedClassObject;
 
 /**
  * Module installation class for editor.
@@ -37,13 +32,8 @@ import org.openide.util.SharedClassObject;
  */
 public class HTMLEditorModule extends ModuleInstall {
 
-    private NbLocalizer optionsLocalizer;
-
     /** Module installed again. */
     public void restored () {
-        PrintSettings ps = (PrintSettings) SharedClassObject.findObject(PrintSettings.class, true);
-        ps.addOption((SystemOption)SharedClassObject.findObject(HTMLPrintOptions.class, true));
-
         Settings.addInitializer(new HTMLSettingsInitializer(HTMLKit.class));
         Settings.addInitializer(new NbHTMLSettingsInitializer());
         Settings.reset();
@@ -51,15 +41,8 @@ public class HTMLEditorModule extends ModuleInstall {
 
     /** Called when module is uninstalled. Overrides superclass method. */
     public void uninstalled() {
-        // Options
-        PrintSettings ps = (PrintSettings) SharedClassObject.findObject(PrintSettings.class, true);
-        ps.removeOption((SystemOption)SharedClassObject.findObject(HTMLPrintOptions.class, true));
-    
         Settings.removeInitializer(HTMLSettingsInitializer.NAME);
         Settings.removeInitializer(NbHTMLSettingsInitializer.NAME);
         Settings.reset();
-
     }
-
-    
 }

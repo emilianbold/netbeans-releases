@@ -25,9 +25,7 @@ import org.netbeans.editor.LocaleSupport;
 import org.netbeans.editor.Settings;
 
 import org.openide.modules.ModuleInstall;
-import org.openide.text.PrintSettings;
 import org.openide.util.NbBundle;
-import org.openide.util.SharedClassObject;
 
 /**
  * Instalation class of module properties syntax.
@@ -57,10 +55,6 @@ public class RestoreColoring extends ModuleInstall {
 
     /** Installs properties editor and print options. */
     public void installOptions() {
-        PrintSettings printSettings = (PrintSettings)SharedClassObject.findObject(PrintSettings.class, true);
-        printSettings.addOption((PropertiesPrintOptions)SharedClassObject.findObject(PropertiesPrintOptions.class, true));
-        
-        
         // Adds localizer.
         LocaleSupport.addLocalizer(localizer = new LocaleSupport.Localizer() {
             public String getString(String key) {
@@ -75,12 +69,6 @@ public class RestoreColoring extends ModuleInstall {
 
     /** Uninstalls properties editor and print options. */
     public void uninstallOptions() {
-        PropertiesPrintOptions propertiesPrintOptions = (PropertiesPrintOptions)SharedClassObject.findObject(PropertiesPrintOptions.class, false);
-        if(propertiesPrintOptions != null) {
-            PrintSettings printSettings = (PrintSettings)SharedClassObject.findObject(PrintSettings.class, true);
-            printSettings.removeOption(propertiesPrintOptions);
-        }
-        
         // remove localizer
         LocaleSupport.removeLocalizer(localizer);
     }

@@ -19,14 +19,8 @@
 package org.netbeans.modules.xml.text;
 
 import org.openide.modules.ModuleInstall;
-import org.openide.text.PrintSettings;
-import org.openide.options.SystemOption;
 import org.openide.util.*;
-
 import org.netbeans.editor.Settings;
-
-import org.netbeans.modules.xml.text.syntax.XMLPrintOptions;
-import org.netbeans.modules.xml.text.syntax.DTDPrintOptions;
 import org.netbeans.modules.xml.text.syntax.XMLSettingsInitializer;
 
 /**
@@ -57,27 +51,11 @@ public class TextEditModuleInstall extends ModuleInstall {
     public void restoredTextEditor () {
         //layer based defaults still need it
         Settings.addInitializer (new XMLSettingsInitializer());
-
-        // editor options
-        PrintSettings ps = (PrintSettings)PrintSettings.findObject (PrintSettings.class, true);
-        ps.addOption ((XMLPrintOptions)XMLPrintOptions.findObject(XMLPrintOptions.class, true));
-        ps.addOption ((DTDPrintOptions)DTDPrintOptions.findObject(DTDPrintOptions.class, true));
     }
     
     /**
      */
     public void uninstalledTextEditor () {
-        // remove options
-        PrintSettings ps = (PrintSettings) PrintSettings.findObject (PrintSettings.class, true);
-        
-        SystemOption opt = (SystemOption) SystemOption.findObject (XMLPrintOptions.class, false);
-        if (opt != null)
-	    ps.removeOption (opt);
-
-        opt = (SystemOption) SystemOption.findObject (DTDPrintOptions.class, false);
-        if (opt != null)
-	    ps.removeOption (opt);
-        
         //layer based defaults still need it
         Settings.removeInitializer (XMLSettingsInitializer.NAME);                
     }

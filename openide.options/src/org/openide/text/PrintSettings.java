@@ -24,6 +24,9 @@ import org.openide.util.NbBundle;
 import java.awt.Font;
 import java.awt.print.PageFormat;
 import java.awt.print.PrinterJob;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 /** Settings for output window.
 *
@@ -207,6 +210,15 @@ public final class PrintSettings extends ContextSystemOption {
         firePropertyChange(PROP_LINE_ASCENT_CORRECTION, null, new Float(correction));
     }
 
+    public void writeExternal(ObjectOutput obtos) throws IOException {
+        // no-op, nobody should be externalizing this option, but if they do
+        // just do not store anything
+    }
+    
+    public void readExternal(ObjectInput obtis) throws IOException, ClassNotFoundException {
+        // no-op, to ignore previously serialized options
+    }
+    
     /** Property editor for alignment properties */
     public static class AlignmentEditor extends java.beans.PropertyEditorSupport {
         private String sCENTER;

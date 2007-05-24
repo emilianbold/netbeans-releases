@@ -19,33 +19,15 @@
 
 package org.netbeans.modules.java.editor;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.LocaleSupport;
 import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsChangeListener;
-import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.ext.java.JavaSettingsInitializer;
 import org.netbeans.editor.ext.java.JavaSettingsNames;
-import org.netbeans.modules.editor.FormatterIndentEngine;
-import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.editor.java.JavaIndentEngine;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.java.NbJavaSettingsInitializer;
 import org.netbeans.modules.editor.NbLocalizer;
-import org.netbeans.modules.editor.options.BaseOptions;
-import org.netbeans.modules.java.editor.options.JavaPrintOptions;
 import org.netbeans.modules.java.editor.options.JavaOptions;
-//import org.netbeans.modules.javacore.IndentationSettingsProvider;
-//import org.netbeans.modules.javacore.JMManager;
 import org.openide.modules.ModuleInstall;
-import org.openide.options.SystemOption;
-import org.openide.text.IndentEngine;
-import org.openide.text.PrintSettings;
-import org.openide.util.SharedClassObject;
 
 /**
  * Module installation class for editor.
@@ -71,9 +53,6 @@ public class JavaEditorModule extends ModuleInstall {
     public void restored () {
         init();
 
-        PrintSettings ps = (PrintSettings) SharedClassObject.findObject(PrintSettings.class, true);
-        ps.addOption((SystemOption)SharedClassObject.findObject(JavaPrintOptions.class, true));
-
 //        JMManager.setDocumentLocksCounter(BaseDocument.THREAD_LOCAL_LOCK_DEPTH);
 
         settingsNamesLocalizer = new NbLocalizer(JavaSettingsNames.class);
@@ -96,10 +75,6 @@ public class JavaEditorModule extends ModuleInstall {
 //            jisProvider = null;
 //        }
         
-        // Options
-        PrintSettings ps = (PrintSettings) SharedClassObject.findObject(PrintSettings.class, true);
-        ps.removeOption((SystemOption)SharedClassObject.findObject(JavaPrintOptions.class, true));
-
 //        JMManager.setDocumentLocksCounter(null);
 
         Settings.removeInitializer(JavaSettingsInitializer.NAME);

@@ -38,7 +38,6 @@ import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.modules.editor.impl.KitsTracker;
 import org.netbeans.modules.editor.options.BaseOptions;
-import org.netbeans.modules.editor.options.BasePrintOptions;
 import org.openide.util.Utilities;
 
 /**
@@ -64,10 +63,6 @@ public class NbEditorSettingsInitializer extends Settings.AbstractInitializer {
             Settings.addInitializer(new NbEditorSettingsInitializer());
 
             Settings.reset();
-            
-            // Start listening on addition/removal of print options
-            BasePrintOptions bpo = (BasePrintOptions) BasePrintOptions.findObject(BasePrintOptions.class, true);
-            bpo.init();
         }
     }
 

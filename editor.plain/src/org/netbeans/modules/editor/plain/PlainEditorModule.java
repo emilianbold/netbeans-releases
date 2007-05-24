@@ -22,11 +22,7 @@ package org.netbeans.modules.editor.plain;
 import org.netbeans.editor.LocaleSupport;
 import org.netbeans.modules.editor.NbLocalizer;
 import org.netbeans.modules.editor.plain.options.PlainOptions;
-import org.netbeans.modules.editor.plain.options.PlainPrintOptions;
 import org.openide.modules.ModuleInstall;
-import org.openide.options.SystemOption;
-import org.openide.text.PrintSettings;
-import org.openide.util.SharedClassObject;
 
 /**
  * Module installation class for plain editor.
@@ -41,9 +37,6 @@ public class PlainEditorModule extends ModuleInstall {
 
     /** Module installed again. */
     public void restored () {
-        PrintSettings ps = (PrintSettings) SharedClassObject.findObject(PrintSettings.class, true);
-        ps.addOption((SystemOption)SharedClassObject.findObject(PlainPrintOptions.class, true));
-
         // TODO - remove localizers completely
         optionsLocalizer = new NbLocalizer(PlainOptions.class);
         LocaleSupport.addLocalizer(optionsLocalizer);
@@ -51,10 +44,6 @@ public class PlainEditorModule extends ModuleInstall {
 
     /** Called when module is uninstalled. Overrides superclass method. */
     public void uninstalled() {
-        // Options
-        PrintSettings ps = (PrintSettings) SharedClassObject.findObject(PrintSettings.class, true);
-        ps.removeOption((SystemOption)SharedClassObject.findObject(PlainPrintOptions.class, true));
-        
         LocaleSupport.removeLocalizer(optionsLocalizer);
         optionsLocalizer = null;
     }

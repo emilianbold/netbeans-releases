@@ -21,12 +21,8 @@ package org.netbeans.modules.web.core.syntax.settings;
 
 import org.netbeans.modules.web.core.syntax.settings.JspMultiSettingsInitializer;
 import org.netbeans.modules.web.core.syntax.*;
-import org.netbeans.modules.web.core.syntax.settings.JSPPrintOptions;
 import org.netbeans.editor.Settings;
-import org.netbeans.modules.web.core.xmlsyntax.RestoreIEColoring;
 import org.openide.modules.ModuleInstall;
-import org.openide.options.SystemOption;
-import org.openide.text.PrintSettings;
 
 /**
  * @author Petr Jiricka
@@ -34,31 +30,10 @@ import org.openide.text.PrintSettings;
 public class RestoreSettings extends ModuleInstall {
 
     public void restored () {
-        addInitializer ();
-        installOptions ();
+        Settings.addInitializer (new JspMultiSettingsInitializer());
     }
 
     public void uninstalled () {
-        uninstallOptions ();
+        Settings.removeInitializer (JspMultiSettingsInitializer.NAME);
     }
-
-    private void addInitializer () {
-        Settings.addInitializer (new JspMultiSettingsInitializer());
-
-        // do the same for XML syntax
-//        new RestoreIEColoring().addInitializer();
-    }
-
-
-    public void installOptions () {
-        PrintSettings ps = (PrintSettings)PrintSettings.findObject (PrintSettings.class, true);
-        ps.addOption ((JSPPrintOptions)SystemOption.findObject(JSPPrintOptions.class, true));
-    }
-
-    public void uninstallOptions () {
-        PrintSettings ps = (PrintSettings)PrintSettings.findObject (PrintSettings.class, true);
-        JSPPrintOptions jsppo = (JSPPrintOptions)SystemOption.findObject(JSPPrintOptions.class, false);
-        if (jsppo != null) ps.removeOption (jsppo);
-    }
-
 } // end of clas RestoreColoring
