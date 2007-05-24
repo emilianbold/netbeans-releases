@@ -35,7 +35,7 @@ public class MPOutOfTheBox extends org.netbeans.performance.test.utilities.Memor
      */
     public MPOutOfTheBox(String testName) {
         super(testName);
-        prefix = "Out Of The Box Startup |";
+        prefix = "Out Of The Box with WTK |";
     }
 
     /**
@@ -45,7 +45,7 @@ public class MPOutOfTheBox extends org.netbeans.performance.test.utilities.Memor
      */
     public MPOutOfTheBox(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        prefix = "Out Of The Box Startup |";
+        prefix = "Out Of The Box with WTK |";
     }
     
     public ComponentOperator open(){
