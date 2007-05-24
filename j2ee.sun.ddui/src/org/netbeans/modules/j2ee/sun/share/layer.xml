@@ -2,7 +2,8 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 
 <filesystem>
-<!--    <folder name="Loaders">
+    
+    <folder name="Loaders">
         <folder name="xml">
             <folder name="sun-dd">
                 <folder name="Actions">
@@ -30,25 +31,36 @@
                     <attr name="org-openide-actions-DeleteAction.instance/sep-3.instance" boolvalue="true"/>
                     <file name="sep-3.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                    </file>-->
- <!--    TODO Retoche Migration
-                    <attr name="sep-3.instance/org-netbeans-modules-xml-tools-actions-CheckAction.instance" boolvalue="true"/>
+                    </file>
+                    <attr name="sep-3.instance/org-openide-actions-SaveAsTemplateAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance"/>
+                    <attr name="org-openide-actions-SaveAsTemplateAction.instance/sep-4.instance" boolvalue="true"/>
+                    <file name="sep-4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-4.instance/org-netbeans-modules-xml-tools-actions-CheckAction.instance" boolvalue="true"/>
                     <file name="org-netbeans-modules-xml-tools-actions-CheckAction.instance"/>
                     <attr name="org-netbeans-modules-xml-tools-actions-CheckAction.instance/org-netbeans-modules-xml-tools-actions-ValidateAction.instance" boolvalue="true" />
                     <file name="org-netbeans-modules-xml-tools-actions-ValidateAction.instance"/>
                     <attr name="org-netbeans-modules-xml-tools-actions-ValidateAction.instance/sep-5.instance" boolvalue="true"/>
-                    -->
-<!--                    <file name="sep-4.instance">
+                    <file name="sep-5.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file> 
-                    <attr name="sep-4.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
+                    <attr name="sep-5.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
                     <file name="org-openide-actions-ToolsAction.instance"/>
                     <attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
                     <file name="org-openide-actions-PropertiesAction.instance"/>
                 </folder>
             </folder>
         </folder>
-    </folder>   -->
+    </folder>
+    
+    <folder name="Editors">
+        <folder name="AnnotationTypes">
+            <file name="org-netbeans-modules-j2ee-sun-dd-annotation_err" url="parser_annotation_err.xml"/>
+        </folder>
+    </folder>
+    
     <folder name="Templates">
         <folder name="J2EE">
             <file name="sunDD">
@@ -73,10 +85,12 @@
         </folder>
 -->        
     </folder>
+    
     <folder name="org-netbeans-modules-j2ee-sun-ddui">
         <file name="sun-web.xml" url="configbean/templates/sun-web.xml"/>
         <file name="sun-ejb-jar.xml" url="configbean/templates/sun-ejb-jar.xml"/>
         <file name="sun-application.xml" url="configbean/templates/sun-application.xml"/>
         <file name="sun-application-client.xml" url="configbean/templates/sun-application-client.xml"/>
     </folder>
+    
 </filesystem>
