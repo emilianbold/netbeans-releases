@@ -514,11 +514,11 @@ public class SvnClientExceptionHandler {
 
     public static boolean isReportOf200(String msg) {  
         msg = msg.toLowerCase();
-        int idx = msg.indexOf("svn: report of");
+        int idx = msg.indexOf("svn: report of");            // NOI18N
         if(idx < 0) {
             return false;
         }
-        return msg.indexOf("200", idx) > -1;               // NOI18N
+        return msg.indexOf("200", idx + 13) > -1;           // NOI18N
     }
     
     public static boolean isSecureConnTruncated(String msg) {
@@ -557,7 +557,20 @@ public class SvnClientExceptionHandler {
         msg = msg.toLowerCase();
         return msg.equals("command line client adapter is not available");
     }
-       
+
+    public static boolean isMissingOrLocked(String msg) {  
+        msg = msg.toLowerCase();       
+        int idx = msg.indexOf("svn: working copy");                                         // NOI18N
+        if(idx > -1) {            
+            return msg.indexOf("is missing or not locked", idx + 17) > -1;                  // NOI18N    
+        } 
+        idx = msg.indexOf("svn: directory");                                                // NOI18N
+        if(idx > -1) {            
+            return msg.indexOf("is missing", idx + 13) > -1;                                // NOI18N    
+        } 
+        return false;       
+    }
+    
     public static void notifyException(Exception ex, boolean annotate, boolean isUI) {
         if(isNoSvnClient(ex.getMessage())) {
             if(isUI) {
@@ -605,10 +618,9 @@ public class SvnClientExceptionHandler {
         String msg = null;
         if (isHTTP405(exception.getMessage())) {
             msg = exception.getMessage() + "\n\n" + NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error405");                                // NOI18N
-        } else if(isOutOfDate(exception.getMessage())) {
-            msg = exception.getMessage() + "\n\n" + org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_OutOfDate") + "\n"; // NOI18N
-            
-        }
+        } else if(isOutOfDate(exception.getMessage()) || isMissingOrLocked(exception.getMessage())) {
+            msg = exception.getMessage() + "\n\n" + org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_OutOfDate") + "\n"; // NOI18N            
+        } 
         return msg;
     }
 
