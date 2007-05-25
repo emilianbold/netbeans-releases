@@ -36,11 +36,12 @@ public class PerformanceCounters {
     private static String testName;
     private static ActionTracker tr;    
     private static LinkedList<String> countersList;
-    private static NbPerformanceTestCase testCase;
+    private static PerformanceTestCase testCase;
     
     public static void initPerformanceCounters(PerformanceTestCase test) {
+        testCase = test;
         testName = test.getName();
-        test.log("Test name = "+test.getName());
+        testCase.log("Test name = "+test.getName());
         tr = ActionTracker.getInstance();
         countersList = new LinkedList<String>();
     }
