@@ -133,6 +133,7 @@
               <!-- MASTER_SUBBINDING_TEMPLATE -->
               <Subbinding sourcePath="${_fieldName_}">
                 <BindingParameter name="javax.swing.binding.SwingBindingSupport.TableColumnParameter" value="_index_"/>
+                <BindingParameter name="javax.swing.binding.SwingBindingSupport.TableColumnClassParameter" value="_fieldType_"/>
               </Subbinding><!-- MASTER_SUBBINDING_TEMPLATE -->
             </BindingProperty>
           </BindingProperties>
@@ -198,6 +199,7 @@
               <!-- DETAIL_SUBBINDING_TEMPLATE -->
               <Subbinding sourcePath="${_fieldName_}">
                 <BindingParameter name="javax.swing.binding.SwingBindingSupport.TableColumnParameter" value="_index_"/>
+                <BindingParameter name="javax.swing.binding.SwingBindingSupport.TableColumnClassParameter" value="_fieldType_"/>
               </Subbinding><!-- DETAIL_SUBBINDING_TEMPLATE -->
             </BindingProperty>
           </BindingProperties>

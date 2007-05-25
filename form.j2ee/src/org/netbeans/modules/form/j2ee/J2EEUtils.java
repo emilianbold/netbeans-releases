@@ -27,20 +27,21 @@ import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import javax.swing.Action;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -746,6 +747,80 @@ public class J2EEUtils {
         } catch (IOException ioex) {
             ioex.printStackTrace();
         }
+    }
+
+    public static List<String> typesOfProperties(FileObject fileInProject, String entityClass, final List<String> propertyNames) {
+        ClassPath cp = ClassPath.getClassPath(fileInProject, ClassPath.SOURCE);
+        String resourceName = entityClass.replace('.', '/') + ".java"; // NOI18N
+        FileObject entity = cp.findResource(resourceName);
+        final List<String> types = new LinkedList<String>();
+        JavaSource source = JavaSource.forFileObject(entity);
+        try {
+            source.runUserActionTask(new CancellableTask<CompilationController>() {
+                public void run(CompilationController cc) throws Exception {
+                    cc.toPhase(JavaSource.Phase.RESOLVED);
+                    CompilationUnitTree cu = cc.getCompilationUnit();
+                    ClassTree clazz = null;
+                    for (Tree typeDecl : cu.getTypeDecls()) {
+                        if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                            clazz = (ClassTree) typeDecl;
+                            break;
+                        }
+                    }
+                    Map<String, String> variables = new HashMap<String, String>();
+                    Map<String, String> methods = new HashMap<String, String>();
+                    Element classElement = cc.getTrees().getElement(cc.getTrees().getPath(cu, clazz));
+                    for (VariableElement variable : ElementFilter.fieldsIn(classElement.getEnclosedElements())) {
+                        String name = variable.getSimpleName().toString();
+                        String type = variable.asType().toString();
+                        variables.put(name, type);
+                    }
+                    for (ExecutableElement method : ElementFilter.methodsIn(classElement.getEnclosedElements())) {
+                        String type = method.getReturnType().toString();
+                        String name = method.getSimpleName().toString();
+                        if (name.startsWith("get")) { // NOI18N
+                            name = name.substring(3);
+                        } else if (name.startsWith("is") && type.equals("boolean")) { // NOI18N
+                            name = name.substring(2);
+                        } else {
+                            name = null;
+                        }
+                        if ((name != null) && (name.length() > 0)) {
+                            name = Character.toLowerCase(name.charAt(0)) + name.substring(1);
+                            methods.put(name, type);
+                        }                        
+                    }
+                    for (String name : propertyNames) {
+                        String type = methods.get(name);
+                        if (type == null) {
+                            type = variables.get(name);
+                        }
+                        if (type != null) {
+                            if (type.startsWith("java.lang.")) { // NOI18N
+                                type = type.substring(10);
+                            }
+                            // Autoboxing
+                            if (type.equals("byte") || type.equals("short") || type.equals("long") // NOI18N
+                                    || type.equals("float") || type.equals("double") || type.equals("boolean")) { // NOI18N
+                                type = Character.toUpperCase(type.charAt(0)) + type.substring(1);
+                            } else if (type.equals("int")) { // NOI18N
+                                type = "Integer"; // NOI18N
+                            } else if (type.equals("char")) { // NOI18N
+                                type = "Character"; // NOI18N
+                            }
+                            type += ".class"; // NOI18N
+                        }
+                        types.add(type);
+                    }
+                }
+
+                public void cancel() {
+                }
+            }, true);
+        } catch (IOException ioex) {
+            ioex.printStackTrace();
+        }
+        return types;
     }
 
 }

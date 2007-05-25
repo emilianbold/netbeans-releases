@@ -23,15 +23,7 @@ import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTargetDragEvent;
 import java.io.IOException;
 import java.util.*;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.util.ElementFilter;
 import javax.swing.ImageIcon;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.db.api.explorer.DatabaseMetaDataTransfer;
 import org.netbeans.modules.form.*;
@@ -273,29 +265,14 @@ public class DBTableDrop extends DBConnectionDrop {
         int count = 0;
         List<String> propertyNames = propertiesForColumns(mappings, entityInfo[0]);
         FileObject formFile = FormEditor.getFormDataObject(model).getPrimaryFile();
-        ClassPath cp = ClassPath.getClassPath(formFile, ClassPath.SOURCE);
-        String resourceName = entityInfo[1].replace('.', '/') + ".java"; // NOI18N
-        FileObject entity = cp.findResource(resourceName);
-        List<String> propertyTypes = typesOfProperties(entity, propertyNames);
+        List<String> propertyTypes = J2EEUtils.typesOfProperties(formFile, entityInfo[1], propertyNames);
         Iterator<String> typeIter = propertyTypes.iterator();
         for (String column : propertyNames) {
             MetaBinding subBinding = binding.addSubBinding(BindingDesignSupport.elWrap(column), null);
             subBinding.setParameter(MetaBinding.TABLE_COLUMN_PARAMETER, ""+count++); // NOI18N
             String clazz = typeIter.next();
             if (clazz != null) {
-                if (clazz.startsWith("java.lang.")) { // NOI18N
-                    clazz = clazz.substring(10);
-                }
-                // Autoboxing
-                if (clazz.equals("byte") || clazz.equals("short") || clazz.equals("long") // NOI18N
-                        || clazz.equals("float") || clazz.equals("double") || clazz.equals("boolean")) { // NOI18N
-                    clazz = Character.toUpperCase(clazz.charAt(0)) + clazz.substring(1);
-                } else if (clazz.equals("int")) { // NOI18N
-                    clazz = "Integer"; // NOI18N
-                } else if (clazz.equals("char")) { // NOI18N
-                    clazz = "Character"; // NOI18N
-                }
-                subBinding.setParameter(MetaBinding.TABLE_COLUMN_CLASS_PARAMETER, clazz + ".class"); // NOI18N
+                subBinding.setParameter(MetaBinding.TABLE_COLUMN_CLASS_PARAMETER, clazz);
             }
         }
 
@@ -335,62 +312,6 @@ public class DBTableDrop extends DBConnectionDrop {
                 return props;
             }
         });
-    }
-
-    public static List<String> typesOfProperties(FileObject entity, final List<String> propertyNames) {
-        final List<String> types = new LinkedList<String>();
-        JavaSource source = JavaSource.forFileObject(entity);
-        try {
-            source.runUserActionTask(new CancellableTask<CompilationController>() {
-                public void run(CompilationController cc) throws Exception {
-                    cc.toPhase(JavaSource.Phase.RESOLVED);
-                    CompilationUnitTree cu = cc.getCompilationUnit();
-                    ClassTree clazz = null;
-                    for (Tree typeDecl : cu.getTypeDecls()) {
-                        if (Tree.Kind.CLASS == typeDecl.getKind()) {
-                            clazz = (ClassTree) typeDecl;
-                            break;
-                        }
-                    }
-                    Map<String, String> variables = new HashMap<String, String>();
-                    Map<String, String> methods = new HashMap<String, String>();
-                    Element classElement = cc.getTrees().getElement(cc.getTrees().getPath(cu, clazz));
-                    for (VariableElement variable : ElementFilter.fieldsIn(classElement.getEnclosedElements())) {
-                        String name = variable.getSimpleName().toString();
-                        String type = variable.asType().toString();
-                        variables.put(name, type);
-                    }
-                    for (ExecutableElement method : ElementFilter.methodsIn(classElement.getEnclosedElements())) {
-                        String type = method.getReturnType().toString();
-                        String name = method.getSimpleName().toString();
-                        if (name.startsWith("get")) { // NOI18N
-                            name = name.substring(3);
-                        } else if (name.startsWith("is") && type.equals("boolean")) { // NOI18N
-                            name = name.substring(2);
-                        } else {
-                            name = null;
-                        }
-                        if ((name != null) && (name.length() > 0)) {
-                            name = Character.toLowerCase(name.charAt(0)) + name.substring(1);
-                            methods.put(name, type);
-                        }                        
-                    }
-                    for (String name : propertyNames) {
-                        String type = methods.get(name);
-                        if (type == null) {
-                            type = variables.get(name);
-                        }
-                        types.add(type);
-                    }
-                }
-
-                public void cancel() {
-                }
-            }, true);
-        } catch (IOException ioex) {
-            ioex.printStackTrace();
-        }
-        return types;
     }
 
     /**

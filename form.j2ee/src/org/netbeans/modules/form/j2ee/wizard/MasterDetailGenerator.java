@@ -71,6 +71,10 @@ public class MasterDetailGenerator {
     private List<String> masterColumns;
     /** Columns of the detail table. */
     private List<String> detailColumns;
+    /** Types of columns in master table. */
+    private List<String> masterColumnTypes;
+    /** Types of columns in detail table. */
+    private List<String> detailColumnTypes;
 
     /**
      * Creates new <code>MasterDetailGenerator</code>.
@@ -105,6 +109,10 @@ public class MasterDetailGenerator {
         this.masterColumns = masterColumns;
     }
 
+    void setMasterColumnTypes(List<String> masterColumnTypes) {
+        this.masterColumnTypes = masterColumnTypes;
+    }
+
     /**
      * Sets columns of the detail table.
      *
@@ -112,6 +120,10 @@ public class MasterDetailGenerator {
      */
     void setDetailColumns(List<String> detailColumns) {
         this.detailColumns = detailColumns;
+    }
+
+    void setDetailColumnTypes(List<String> detailColumnTypes) {
+        this.detailColumnTypes = detailColumnTypes;
     }
 
     /**
@@ -164,9 +176,11 @@ public class MasterDetailGenerator {
 
         StringBuilder sb = new StringBuilder();
         int i = 0;
+        Iterator<String> iter = masterColumnTypes.iterator();
         for (String column : masterColumns) {
             String binding = template.replace("_index_", ""+i++); // NOI18N
             binding = binding.replace("_fieldName_", column); // NOI18N
+            binding = binding.replace("_fieldType_", iter.next()); // NOI18N
             sb.append(binding);
         }
         StringBuilder rsb = new StringBuilder(result);
@@ -188,9 +202,11 @@ public class MasterDetailGenerator {
 
         StringBuilder sb = new StringBuilder();
         int i = 0;
+        Iterator<String> iter = detailColumnTypes.iterator();
         for (String column : detailColumns) {
             String binding = template.replace("_index_", ""+i++); // NOI18N
             binding = binding.replace("_fieldName_", column); // NOI18N
+            binding = binding.replace("_fieldType_", iter.next()); // NOI18N
             sb.append(binding);
         }
         StringBuilder rsb = new StringBuilder(result);

@@ -334,12 +334,20 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
             }
             generator.setMasterColumns(masterColumns);
 
+            List<String> masterColumnTypes = J2EEUtils.typesOfProperties(javaFile, masterClass, masterColumns);
+            generator.setMasterColumnTypes(masterColumnTypes);
+
             List<String> detailColumnNames = (List<String>)wizard.getProperty("detailColumns"); // NOI18N
             List<String> detailColumns = new LinkedList();
             for (String columnName : detailColumnNames) {
                 detailColumns.add(J2EEUtils.columnToField(columnName));
             }
             generator.setDetailColumns(detailColumns);
+
+            if (detailClass != null) {
+                List<String> detailColumnTypes = J2EEUtils.typesOfProperties(javaFile, detailClass, detailColumns);
+                generator.setDetailColumnTypes(detailColumnTypes);
+            }
 
             generator.generate();
         } catch (Exception ex) {
