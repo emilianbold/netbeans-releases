@@ -19,14 +19,17 @@
 
 package org.netbeans.modules.autoupdate.ui;
 
+import java.awt.Component;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,6 +39,7 @@ import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -45,84 +49,76 @@ import org.openide.util.NbPreferences;
  */
 public class LocalDownloadSupport {
     private static final FileFilter NBM_FILE_FILTER = new NbmFileFilter();
-    private Set<File> selectedFiles = null;
-    private Map<UpdateUnit, File> units2file = new HashMap<UpdateUnit, File> ();
+    private Map<String, File> units2file = new HashMap<String, File> ();
     private static String LOCAL_DOWNLOAD_DIRECTORY_KEY = "local-download-directory"; // NOI18N
     private static String LOCAL_DOWNLOAD_FILES = "local-download-files"; // NOI18N    
-    
+    private FileList fileList = new FileList();
+    private List<UpdateUnit> updateUnits;
+
     public LocalDownloadSupport() { 
-        loadSelectedFiles();
     }
-    public File [] selectNbmFiles () {
-        JFileChooser chooser = new JFileChooser ();
-        chooser.setFileSelectionMode (JFileChooser.FILES_ONLY);
-        chooser.addChoosableFileFilter (NBM_FILE_FILTER);
-        chooser.setFileFilter (NBM_FILE_FILTER);
-        chooser.setMultiSelectionEnabled (true);
-        chooser.setFileHidingEnabled (false);
-        chooser.setDialogTitle (getBundle ("CTL_FileChooser_Title"));
+    
+
+    public boolean selectNbmFiles () {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        chooser.addChoosableFileFilter(NBM_FILE_FILTER);
+        chooser.setFileFilter(NBM_FILE_FILTER);
+        chooser.setMultiSelectionEnabled(true);
+        chooser.setFileHidingEnabled(false);
+        chooser.setDialogTitle(getBundle("CTL_FileChooser_Title"));
         
-        String filePath = getPreferences ().get (LOCAL_DOWNLOAD_DIRECTORY_KEY, null);
-        File dir = null;
-        if (filePath != null) {
-            dir = new File (filePath);
-            if (! dir.exists ()) {
-                dir = getDefaultDir ();
+        File dir = getDefaultDir();
+        if ( dir != null && dir.exists()) {
+            chooser.setCurrentDirectory(dir);
+        }
+        
+        Component parent = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
+        if (chooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
+            synchronized(LocalDownloadSupport.class) {
+                updateUnits = null;
             }
+            getPreferences ().put(LOCAL_DOWNLOAD_DIRECTORY_KEY, chooser.getCurrentDirectory ().getAbsolutePath ()); // NOI18N 
+            fileList.addFiles(chooser.getSelectedFiles());
+            return true;
         }
-
-        if ( dir != null) {
-            chooser.setCurrentDirectory (dir);
-        }
-
-        Window focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager ().getActiveWindow ();
-
-        if (chooser.showOpenDialog (KeyboardFocusManager.getCurrentKeyboardFocusManager ().getActiveWindow ()) 
-                == JFileChooser.APPROVE_OPTION) {
-            
-            File [] newFiles = chooser.getSelectedFiles ();
-            
-            getSelectedFiles ().addAll (Arrays.asList (newFiles));
-            storeSelectedFiles();
-        }
-            
-        getPreferences ().put(LOCAL_DOWNLOAD_DIRECTORY_KEY, chooser.getCurrentDirectory ().getAbsolutePath ()); // NOI18N
+        return false;
+    }
         
-        /*// #46353, recover focus after close the JFileChooser
-        if (focusOwner != null) {
-            focusOwner.toFront ();
-        }*/
-            
-            
-        return getSelectedFiles ().toArray (new File [0]);
+    public List<UpdateUnit> getUpdateUnits () {
+        boolean isNull = true;
+        synchronized(LocalDownloadSupport.class) {
+            isNull = (updateUnits == null);
         }
         
-    public List<UpdateUnit> getUpdateUnits () {                
-        List<UpdateUnit> retval = new ArrayList<UpdateUnit>();
-        Set<File> files = getSelectedFiles();
-        if (files != null && files.size() > 0) {
-            File [] nbms = new File[files.size()];        
-            files.toArray(nbms);
+        if (isNull) {
+            synchronized(LocalDownloadSupport.class) {
+                updateUnits = new ArrayList<UpdateUnit>();
+            }
+            Set<File> files = fileList.getSelectedFiles();
+            File [] nbms = files.toArray(new File[files.size()]);        
+            UpdateUnitProviderFactory factory = UpdateUnitProviderFactory.getDefault();
             for (File file : nbms) {
-                String fileName = file.getName ();
-                List<UpdateUnit> temp = UpdateUnitProviderFactory.getDefault ().
-                        create (fileName, new File[] {file}).getUpdateUnits (UpdateManager.TYPE.MODULE);
-                retval.addAll(temp);
-                for (UpdateUnit updateUnit : temp) {
-                    units2file.put(updateUnit, file);
+                UpdateUnitProvider provider = factory.create(file.getName(), new File[] {file});
+                List<UpdateUnit> units = provider.getUpdateUnits(UpdateManager.TYPE.MODULE);
+                synchronized(LocalDownloadSupport.class) {                
+                    updateUnits.addAll(units);
+                }
+                for (UpdateUnit updateUnit : units) {
+                    units2file.put(updateUnit.getCodeName(), file);
                 }
             }
-        } else {
-            retval = Collections.emptyList();
-        }        
-        return retval;
+        }
+        return updateUnits;
     }
     
     public List<UpdateUnit> remove(UpdateUnit unit) {
-        File f = units2file.remove(unit);
-        if (f != null && getSelectedFiles() != null) {
-            getSelectedFiles().remove(f);
-            storeSelectedFiles();
+        File f = units2file.remove(unit.getCodeName());
+        if (f != null) {
+            fileList.removeFile(f);
+            synchronized(LocalDownloadSupport.class) {
+                updateUnits = null;
+            }            
         }
         return getUpdateUnits ();
     }
@@ -138,54 +134,88 @@ public class LocalDownloadSupport {
     }
     
     private static File getDefaultDir () {
-        return new File (System.getProperty ("netbeans.user")); // NOI18N
+        File retval = new File(getPreferences ().get (LOCAL_DOWNLOAD_DIRECTORY_KEY, System.getProperty ("netbeans.user")));// NOI18N
+        return (retval.exists()) ? retval : new File(System.getProperty ("netbeans.user")); // NOI18N
     }
 
     public static String getBundle (String key) {
         return NbBundle.getMessage (LocalDownloadSupport.class, key);
     }
     
-    private Set<File> getSelectedFiles () {
-        if (selectedFiles == null) {
-            selectedFiles = new HashSet<File> ();            
-        }
-        return selectedFiles;
+    private static Preferences getPreferences() {
+        return NbPreferences.forModule(LocalDownloadSupport.class);
     }
     
-    private void storeSelectedFiles() {
-        StringBuffer sb = null;
-        for (File file : getSelectedFiles()) {
-            if (!file.exists()) continue;
-            if (sb == null) {
-                sb = new StringBuffer();
-            } else {
-                sb.append(",");//NOI18N
-            }
-            sb.append(file.getAbsolutePath());
+    private static class FileList {
+        private Set<File> selectedFiles = null;        
+        
+        Set<File> getSelectedFiles() {
+            if (selectedFiles == null) {
+                selectedFiles = new LinkedHashSet<File> ();
+                addFiles(loadPresistentState());
+            }            
+            return selectedFiles;
         }
-        if (sb != null) {
-            getPreferences().put(LOCAL_DOWNLOAD_FILES, sb.toString()); // NOI18N
+
+        void addFiles(File[] files) {
+            addFiles(Arrays.asList(files));
         }
-    }
-    
-    private void loadSelectedFiles() {
-        String files = getPreferences().get(LOCAL_DOWNLOAD_FILES, null); // NOI18N
-        if (files != null) {
-            String[] fileArray = files.split(",");
-            if (fileArray != null && fileArray.length > 0) {
+        
+        void addFiles(Collection<File> files) {
+            getSelectedFiles().addAll(files);
+            selectedFiles = stripNotExistingFiles(getSelectedFiles());
+            makePersistent(selectedFiles);
+        }
+
+        void removeFile(File file) {
+            removeFiles(Collections.singleton(file));
+        }
+        
+        void removeFiles(Collection<File> files) {
+            getSelectedFiles().removeAll(files);
+            selectedFiles = stripNotExistingFiles(getSelectedFiles());
+            makePersistent(selectedFiles);
+        }
+        
+        
+        private static Set<File> loadPresistentState() {
+            Set<File> retval = new HashSet<File>();
+            String files = getPreferences().get(LOCAL_DOWNLOAD_FILES, null); // NOI18N
+            if (files != null) {
+                String[] fileArray = files.split(",");                
                 for (String file : fileArray) {
-                    File tmp = new File(file);
-                    if (tmp.exists()) {
-                        getSelectedFiles().add(tmp);
+                    retval.add(new File(file));
+                }                
+            }
+            return retval;            
+        }
+        
+        private static void makePersistent(Set<File> files) {
+            StringBuilder sb = null;
+            if (!files.isEmpty()) {
+                for (File file : files) {
+                    if (sb == null) {
+                        sb = new StringBuilder(file.getAbsolutePath());
+                    } else {
+                        sb.append(',').append(file.getAbsolutePath());
                     }
                 }
+            } 
+            if (sb == null) {
+                getPreferences().remove(LOCAL_DOWNLOAD_FILES);
+            } else {
+                getPreferences().put(LOCAL_DOWNLOAD_FILES, sb.toString());
             }
         }
-        storeSelectedFiles();
-    }
-    
-    private Preferences getPreferences () {
-        return NbPreferences.forModule (LocalDownloadSupport.class);
-    }
-    
+        
+        private static Set<File> stripNotExistingFiles(Set<File> files) {
+            Set<File> retval = new HashSet<File>();
+            for (File file : files) {
+                if (file.exists()) {
+                    retval.add(file);
+                }
+            }
+            return retval;
+        }                
+    }        
 }

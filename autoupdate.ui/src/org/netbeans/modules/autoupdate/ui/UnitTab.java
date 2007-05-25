@@ -79,6 +79,7 @@ public class UnitTab extends javax.swing.JPanel {
     private RowTabAction enableAction;
     private RowTabAction disableAction;
     private TabAction refreshAction;
+    private LocalDownloadSupport localDownloadSupport;
     
     private RowTabAction removeLocallyDownloaded = new RemoveLocallyDownloadedAction ();
     
@@ -108,6 +109,10 @@ public class UnitTab extends javax.swing.JPanel {
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
         initTab ();
         listenOnSelection ();
+    }
+    
+    UnitCategoryTableModel getModel() {
+        return model;
     }
     
     void setWaitingState (boolean waitingState) {
@@ -449,7 +454,6 @@ public class UnitTab extends javax.swing.JPanel {
     
     
     private LocalDownloadSupport getLocalDownloadSupport () {
-        LocalDownloadSupport localDownloadSupport = null;
         if (model instanceof LocallyDownloadedTableModel) {
             localDownloadSupport = ((LocallyDownloadedTableModel)model).getLocalDownloadSupport ();
         }
@@ -644,6 +648,9 @@ public class UnitTab extends javax.swing.JPanel {
                     fireUpdataUnitChange ();
                 } else {
                     model.fireTableDataChanged ();
+                }
+                if (row < 0) {
+                    row = 0;
                 }
                 for(int temp = row; temp >= 0; temp--) {
                     if (temp < table.getRowCount () && temp > -1) {
@@ -1223,33 +1230,17 @@ public class UnitTab extends javax.swing.JPanel {
             putValue (NAME, "");//NOI18N
         }
         
-        public void performerImpl () {
-            final List<UnitCategory> categories = new ArrayList<UnitCategory>();
-            final LocalDownloadSupport lDSupport = getLocalDownloadSupport ();
-            lDSupport.selectNbmFiles ();
-            
-            final Runnable addUpdates = new Runnable (){
-                public void run () {
-                    List<UpdateUnit> units = lDSupport.getUpdateUnits ();
-                    categories.addAll (Utilities.makeAvailableCategories (units, true));
-                    categories.addAll (Utilities.makeUpdateCategories (units, true));
-                    for (UnitCategory c : categories) {
-                        for (Unit u : c.getUnits ()) {
-                            if (! u.isMarked ()  && u.isDefaultOperationAllowed ()) {
-                                u.setMarked (true);
-                            }
-                        }
+        public void performerImpl() {
+            if (getLocalDownloadSupport().selectNbmFiles()) {
+                setWaitingState(true);
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        model.fireUpdataUnitChange();
+                        setWaitingState(false);                        
+                        UnitTab.this.refreshState();
                     }
-                    
-                    SwingUtilities.invokeLater (new Runnable () {
-                        public void run () {
-                            model.setData (categories);
-                            model.fireUpdataUnitChange ();
-                        }
-                    });
-                }
-            };
-            RequestProcessor.getDefault ().post (addUpdates);
+                });
+            }
         }
         
         @Override
@@ -1280,34 +1271,24 @@ public class UnitTab extends javax.swing.JPanel {
             return table.getSelectedRow () > -1;
         }
         
-        public void performerImpl (final Unit unit) {
-            final List<UnitCategory> categories = new ArrayList<UnitCategory>();
+        public void performerImpl (final Unit unit) {            
             final Runnable removeUpdates = new Runnable (){
-                public void run () {
-                    if (model instanceof LocallyDownloadedTableModel) {
-                        LocalDownloadSupport lds = ((LocallyDownloadedTableModel)model).getLocalDownloadSupport ();
-                        if (lds != null) {
-                            List<UpdateUnit> units = lds.remove (unit.updateUnit);
-                            categories.addAll (Utilities.makeAvailableCategories (units, true));
-                            categories.addAll (Utilities.makeUpdateCategories (units, true));
-                            for (UnitCategory c : categories) {
-                                for (Unit u : c.getUnits ()) {
-                                    if (! u.isMarked ()  && u.isDefaultOperationAllowed ()) {
-                                        u.setMarked (true);
-                                    }
-                                }
+                public void run() {                                        
+                    try {
+                        getLocalDownloadSupport().remove(unit.updateUnit);
+                    } finally {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                model.fireUpdataUnitChange();
+                                UnitTab.this.refreshState();
+                                setWaitingState(false);
                             }
-                        }
+                        });
                     }
-                    SwingUtilities.invokeLater (new Runnable () {
-                        public void run () {
-                            model.setData (categories);
-                            model.fireUpdataUnitChange ();
-                        }
-                    });
                 }
             };
             RequestProcessor.getDefault ().post (removeUpdates);
+            setWaitingState(true);
         }
         
         protected String getContextName (Unit u) {

@@ -145,6 +145,7 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
     public void initialize () {
         try {
             units = UpdateManager.getDefault ().getUpdateUnits (Utilities.getUnitTypes ());
+            getLocalDownloadSupport().getUpdateUnits();
             SwingUtilities.invokeAndWait (new Runnable () {
                 public void run () {
                     refreshUnits ();
@@ -290,7 +291,7 @@ private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:
         installedTable = new UnitTable (new InstalledTableModel (units));
         updateTable = new UnitTable (new UpdateTableModel (units));
         availableTable = new UnitTable (new AvailableTableModel (units));
-        localTable = new UnitTable (new LocallyDownloadedTableModel (units));
+        localTable = new UnitTable (new LocallyDownloadedTableModel (units, new LocalDownloadSupport()));
         selectFirstRow (installedTable);
         selectFirstRow (updateTable);
         selectFirstRow (availableTable);
@@ -374,14 +375,20 @@ private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:
             updateTableModel.setUnits (units);
             installTableModel.setUnits (units);
             availableTableModel.setUnits (units);
+            localTableModel.setUnits(getLocalDownloadSupport().getUpdateUnits());
             selectFirstRow (installedTable);
             selectFirstRow (updateTable);
             selectFirstRow (availableTable);
+            selectFirstRow (localTable);
             decorateTitle (0, updateTable, NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Update_Title"));
-            decorateTitle (1, availableTable, NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Available_Title"));
+            decorateTitle (1, availableTable, NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Available_Title"));            
             decorateTitle (2, localTable, NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Local_Title"));
             decorateTitle (3, installedTable, NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Installed_Title"));
+            }
         }
+
+    private LocalDownloadSupport getLocalDownloadSupport() {
+            return  ((LocallyDownloadedTableModel)localTable.getModel()).getLocalDownloadSupport();
     }
     
     

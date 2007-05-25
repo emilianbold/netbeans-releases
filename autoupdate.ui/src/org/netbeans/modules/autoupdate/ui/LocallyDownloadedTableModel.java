@@ -21,7 +21,9 @@ package org.netbeans.modules.autoupdate.ui;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.table.JTableHeader;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
@@ -38,32 +40,45 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
     private LocalDownloadSupport localDownloadSupport = null;
         
     /** Creates a new instance of InstalledTableModel */
-    public LocallyDownloadedTableModel (List<UpdateUnit> units) {
+    public LocallyDownloadedTableModel (List<UpdateUnit> units, LocalDownloadSupport localDownloadSupport) {
         setUnits(units);
+        this.localDownloadSupport = localDownloadSupport;
     }
     
-    public final void setUnits (List<UpdateUnit> units) {
+    public final void setUnits(List<UpdateUnit> units) {
+        List<Unit> oldUnits = getUnitData();        
+        Map<String, Boolean> checked = codeName2CheckedState(oldUnits);
         setData(makeCategories(units));
+        List<Unit> newUnits = getUnitData();
+        
+        for (Unit unit : newUnits) {
+            Boolean isChecked = checked.get(unit.updateUnit.getCodeName());
+            if (isChecked != null) {
+                if (isChecked.booleanValue() && !unit.isMarked()) {
+                    unit.setMarked(true);
+                }
+            } else if (! unit.isMarked()) {
+                unit.setMarked(true);
+            }            
+        }        
+    }
+    
+    private static Map<String, Boolean> codeName2CheckedState(List<Unit> units) {
+        Map<String,Boolean> retval = new HashMap<String, Boolean>();
+        for (Unit unit : units) {
+            retval.put(unit.updateUnit.getCodeName(), unit.isMarked());
+        }        
+        return retval;
     }
 
     private List<UnitCategory> makeCategories(List<UpdateUnit> units) {
         final List<UnitCategory> categories = new ArrayList<UnitCategory>();        
         categories.addAll(Utilities.makeAvailableCategories(units, true));
         categories.addAll(Utilities.makeUpdateCategories(units, true));
-        for (UnitCategory c : categories) {
-            for (Unit u : c.getUnits()) {
-                if (! u.isMarked()) {
-                    u.setMarked(true);
-                }
-            }
-        }
         return categories;
     }
     
     LocalDownloadSupport getLocalDownloadSupport() {
-        if (localDownloadSupport == null) {
-            localDownloadSupport = new LocalDownloadSupport();
-        }
         return localDownloadSupport;
     }
         
@@ -84,6 +99,8 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
             u.setMarked(!beforeMarked);
             if (u.isMarked() != beforeMarked) {
                 fireButtonsChange ();
+            } else {
+                assert false : u.getDisplayName();
             }
         }
     }
