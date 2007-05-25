@@ -404,17 +404,14 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                         allMethods = new HashSet();
                         allMethods.add(ElementHandle.create((ExecutableElement)el));
                         for (ExecutableElement e:RetoucheUtils.getOverridingMethods((ExecutableElement)el, info)) {
-                            set.add(SourceUtils.getFile(e, info.getClasspathInfo()));
-                            ElementHandle<TypeElement> encl = ElementHandle.create(SourceUtils.getEnclosingTypeElement(e));
-                            set.addAll(idx.getResources(encl, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
-                            allMethods.add(ElementHandle.create(e));
+                            addMethods(e, set, info, idx);
                         }
                         //add all references of overriden methods
-                        for (ExecutableElement e:RetoucheUtils.getOverridenMethods((ExecutableElement)el, info)) {
-                            set.add(SourceUtils.getFile(e, info.getClasspathInfo()));
-                            ElementHandle<TypeElement> encl = ElementHandle.create(SourceUtils.getEnclosingTypeElement(e));
-                            set.addAll(idx.getResources(encl, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
-                            allMethods.add(ElementHandle.create(e));
+                        for (ExecutableElement ov: RetoucheUtils.getOverridenMethods((ExecutableElement)el, info)) {
+                            addMethods(ov, set, info, idx);
+                            for (ExecutableElement e:RetoucheUtils.getOverridingMethods((ExecutableElement)ov, info)) {
+                                addMethods(e, set, info, idx);
+                            }
                         }
                         set.addAll(idx.getResources(enclosingType, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE))); //?????
                     }
@@ -424,6 +421,13 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
             throw (RuntimeException) new RuntimeException().initCause(ioe);
         }
         return set;
+    }
+    
+    private void addMethods(ExecutableElement e, Set set, CompilationInfo info, ClassIndex idx) {
+        set.add(SourceUtils.getFile(e, info.getClasspathInfo()));
+        ElementHandle<TypeElement> encl = ElementHandle.create(SourceUtils.getEnclosingTypeElement(e));
+        set.addAll(idx.getResources(encl, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+        allMethods.add(ElementHandle.create(e));
     }
     
     
