@@ -32,6 +32,7 @@ import org.netbeans.lib.cvsclient.CVSRoot;
 import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.SSHConnection;
 import org.netbeans.modules.versioning.util.Utils;
+import org.netbeans.modules.proxy.ProxySocketFactory;
 
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
@@ -230,7 +231,7 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
                     } else {
                         invalid(null);
                         progress(NbBundle.getMessage(CheckoutWizard.class, "BK2011"));
-                        SocketFactory factory = SocketFactory.getDefault();
+                        ProxySocketFactory factory = ProxySocketFactory.getDefault();
 
                         // check raw network reachability
 

@@ -31,6 +31,7 @@ import org.netbeans.lib.cvsclient.command.importcmd.ImportCommand;
 import org.netbeans.lib.cvsclient.command.checkout.CheckoutCommand;
 import org.netbeans.lib.cvsclient.command.add.AddCommand;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
+import org.netbeans.modules.proxy.ProxySocketFactory;
 import org.openide.util.RequestProcessor;
 import org.openide.util.TaskListener;
 import org.openide.util.Task;
@@ -322,7 +323,7 @@ public class ClientRuntime {
             return con;
         }
 
-        SocketFactory factory = SocketFactory.getDefault();
+        ProxySocketFactory factory = ProxySocketFactory.getDefault();
 
         String method = cvsRoot.getMethod();
         if (CVSRoot.METHOD_PSERVER.equals(method)) {
