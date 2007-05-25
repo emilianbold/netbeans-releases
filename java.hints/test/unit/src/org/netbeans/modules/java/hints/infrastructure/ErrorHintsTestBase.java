@@ -21,6 +21,7 @@ package org.netbeans.modules.java.hints.infrastructure;
 import com.sun.source.util.TreePath;
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.text.Document;
@@ -109,13 +110,46 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         List<Fix> fixes = computeFixes(info, pos, path);
         List<String> fixesNames = new LinkedList<String>();
         
-        assertNotNull(fixes);
+        fixes = fixes != null ? fixes : Collections.<Fix>emptyList();
         
         for (Fix e : fixes) {
             fixesNames.add(toDebugString(info, e));
         }
         
         assertTrue(fixesNames.toString(), Arrays.equals(golden, fixesNames.toArray(new String[0])));
+    }
+    
+    protected void performFixTest(String fileName, String code, int pos, String fixCode, String golden) throws Exception {
+        prepareTest(fileName, code);
+        
+        TreePath path = info.getTreeUtilities().pathFor(pos);
+        
+        List<Fix> fixes = computeFixes(info, pos, path);
+        List<String> fixesNames = new LinkedList<String>();
+        
+        fixes = fixes != null ? fixes : Collections.<Fix>emptyList();
+        
+        Fix fix = null;
+        
+        for (Fix e : fixes) {
+            String debugString = toDebugString(info, e);
+            
+            fixesNames.add(debugString);
+            
+            if (fixCode.equals(debugString))
+                fix = e;
+        }
+        
+        assertNotNull(fixesNames.toString(), fix);
+        
+        fix.implement();
+        
+        String realCode = doc.getText(0, doc.getLength());
+        
+        //ignore whitespaces:
+        realCode = realCode.replaceAll("[ \t\n]+", " ");
+        
+        assertEquals(golden, realCode);
     }
     
 }
