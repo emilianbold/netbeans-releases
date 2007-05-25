@@ -424,6 +424,9 @@ public class HintsUI implements MouseListener, KeyListener, ChangeListener, AWTE
                 AnnotationDesc desc = annotations.getActiveAnnotation(line);
                 Point p = comp.modelToView(Utilities.getRowStartFromLineOffset((BaseDocument) doc, line)).getLocation();
                 p.y += carretRectangle.height;
+                if( comp.getParent() instanceof JViewport ) {
+                    p.x += ((JViewport)comp.getParent()).getViewPosition().x;
+                }
                 ParseErrorAnnotation annotation = findAnnotation(doc, desc, line);
                 
                 if (annotation == null)
