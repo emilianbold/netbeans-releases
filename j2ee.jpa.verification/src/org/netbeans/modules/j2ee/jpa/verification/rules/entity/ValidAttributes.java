@@ -28,6 +28,7 @@ import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule;
 import org.netbeans.modules.j2ee.jpa.verification.JPAEntityAttributeCheck;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
+import org.netbeans.modules.j2ee.jpa.verification.rules.attribute.MVRelationshipForEntityTypeAttrDefined;
 import org.netbeans.modules.j2ee.jpa.verification.rules.attribute.RelationshipForEntityTypeAttrDefined;
 import org.netbeans.modules.j2ee.jpa.verification.rules.attribute.ValidBasicType;
 import org.netbeans.modules.j2ee.jpa.verification.rules.attribute.ValidColumnName;
@@ -47,7 +48,8 @@ public class ValidAttributes extends JPAClassRule {
         new ValidColumnName(),
         new ValidModifiers(),
         new ValidBasicType(),
-        new RelationshipForEntityTypeAttrDefined()
+        new RelationshipForEntityTypeAttrDefined(),
+        new MVRelationshipForEntityTypeAttrDefined()
         //TODO: enable this check once #104484 is fixed
         // new TemporalFieldsAnnotated()
     };
