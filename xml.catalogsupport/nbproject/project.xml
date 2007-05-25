@@ -121,6 +121,7 @@
                 <friend>org.netbeans.modules.xslt.project</friend>
                 <friend>org.netbeans.modules.script.core</friend>
                 <friend>org.netbeans.modules.script.project</friend>
+		<friend>org.netbeans.modules.wlm.model</friend>
                 <package>org.netbeans.modules.xml.catalogsupport</package>
                 <package>org.netbeans.modules.xml.catalogsupport.ui.customizer</package>
             </friend-packages>

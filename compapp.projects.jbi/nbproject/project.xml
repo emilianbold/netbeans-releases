@@ -385,6 +385,7 @@
                 <friend>org.netbeans.modules.bpel.project</friend>
                 <friend>org.netbeans.modules.bpel.samples</friend>
                 <friend>org.netbeans.modules.compapp.casaeditor</friend>
+		<friend>org.netbeans.modules.wlm.model</friend>
                 <package>org.netbeans.modules.compapp.projects.jbi.api</package>
                 <package>org.netbeans.modules.compapp.projects.jbi.ui.actions</package>
             </friend-packages>
