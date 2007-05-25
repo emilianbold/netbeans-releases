@@ -161,10 +161,10 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                 public void run() {
                     elementView.setRootVisible(false);        
                     manager.setRootContext(new ElementNode( description ) );
-                    boolean scrollOnExpand = elementView.getScrollOnExpand();
-                    elementView.setScrollOnExpand( false );
+                    boolean scrollOnExpand = getScrollOnExpand();
+                    setScrollOnExpand( false );
                     elementView.expandAll();
-                    elementView.setScrollOnExpand( scrollOnExpand );
+                    setScrollOnExpand( scrollOnExpand );
                 }
             } );
             
@@ -201,6 +201,15 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         if ( root != null ) {
             root.refreshRecursively();
         }
+    }
+    
+    boolean getScrollOnExpand() {
+        return null == elementView ? true : elementView.getScrollOnExpand();
+    }
+    
+    void setScrollOnExpand( boolean scroll ) {
+        if( null != elementView )
+            elementView.setScrollOnExpand( scroll );
     }
     
     /** This method is called from within the constructor to

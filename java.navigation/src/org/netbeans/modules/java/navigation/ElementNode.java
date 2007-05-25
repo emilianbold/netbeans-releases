@@ -108,7 +108,7 @@ public class ElementNode extends AbstractNode {
     
     private synchronized Action getOpenAction() {
         if ( openAction == null ) {
-            FileObject fo = description.ui.getFileObject();
+            FileObject fo = null == description.sourceFile ? description.ui.getFileObject() : description.sourceFile;
             openAction = new OpenAction(description.elementHandle, fo);
         }
         return openAction;
@@ -124,11 +124,14 @@ public class ElementNode extends AbstractNode {
     public void refreshRecursively() {
         Children ch = getChildren();
         if ( ch instanceof ElementChilren ) {
+            boolean scrollOnExpand = description.ui.getScrollOnExpand();
+            description.ui.setScrollOnExpand( false );
            ((ElementChilren)ch).resetKeys(description.subs, description.ui.getFilters());
            for( Node sub : ch.getNodes() ) {
                description.ui.expandNode(sub);
                ((ElementNode)sub).refreshRecursively();
            }
+           description.ui.setScrollOnExpand( scrollOnExpand );
         }        
     }
     
@@ -239,22 +242,27 @@ public class ElementNode extends AbstractNode {
         List<Description> subs; 
         String htmlHeader;
         long pos;
+        boolean isInherited;
+        FileObject sourceFile;
         
         Description( ClassMemberPanelUI ui ) {
             this.ui = ui;
             this.name = null;
             this.elementHandle = null;
-            this.kind = null;            
+            this.kind = null;
+            this.isInherited = false;
         }
          
         Description(ClassMemberPanelUI ui,
                     String name,
                     ElementHandle<? extends Element> elementHandle,
-                    ElementKind kind ) {
+                    ElementKind kind,
+                    boolean inherited ) {
             this.ui = ui;
             this.name = name;
             this.elementHandle = elementHandle;
             this.kind = kind;
+            this.isInherited = inherited;
         }
 
         
@@ -320,15 +328,26 @@ public class ElementNode extends AbstractNode {
             public int compare(Description d1, Description d2) {
                 
                 if ( alpha ) {
-                    if ( k2i(d1.kind) != k2i(d2.kind) ) {
-                        return k2i(d1.kind) - k2i(d2.kind);
-                    } 
-                    
-                    return d1.name.compareTo(d2.name);
+                    return alphaCompare( d1, d2 );
                 }
                 else {
+                    if( d1.isInherited && !d2.isInherited )
+                        return 1;
+                    if( !d1.isInherited && d2.isInherited )
+                        return -1;
+                    if( d1.isInherited && d2.isInherited ) {
+                        return alphaCompare( d1, d2 );
+                    }
                     return d1.pos == d2.pos ? 0 : d1.pos < d2.pos ? -1 : 1;
                 }
+            }
+            
+            int alphaCompare( Description d1, Description d2 ) {
+                if ( k2i(d1.kind) != k2i(d2.kind) ) {
+                    return k2i(d1.kind) - k2i(d2.kind);
+                } 
+
+                return d1.name.compareTo(d2.name);
             }
             
             int k2i( ElementKind kind ) {

@@ -71,11 +71,14 @@ public final class ClassMemberFilters {
         boolean non_public = filters.isSelected(SHOW_NON_PUBLIC);
         boolean statik = filters.isSelected(SHOW_STATIC);
         boolean fields = filters.isSelected(SHOW_FIELDS);
-        // XXX Enable later boolean inherited = filters.isSelected(SHOW_INHERITED);
+        boolean inherited = filters.isSelected(SHOW_INHERITED);
         
         ArrayList<Description> result = new ArrayList<Description>(original.size());
         for (Description description : original) {
             
+            if ( !inherited && description.isInherited ) {
+                continue;
+            }
             if ( !non_public && 
                  !description.modifiers.contains(Modifier.PUBLIC)                 
                  /* Fix for #89777 && !description.modifiers.contains(Modifier.PROTECTED) */ ) {
@@ -120,14 +123,13 @@ public final class ClassMemberFilters {
     private static FiltersManager createFilters () {
         FiltersDescription desc = new FiltersDescription();
         
-        // XXX to be enabled later
-//        desc.addFilter(SHOW_INHERITED,
-//                NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowInherited"),     //NOI18N
-//                NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowInheritedTip"),     //NOI18N
-//                false,
-//                new ImageIcon (Utilities.loadImage("org/netbeans/modules/java/navigation/resources/filterHideInherited.png")), //NOI18N
-//                null
-//        );
+        desc.addFilter(SHOW_INHERITED,
+                NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowInherited"),     //NOI18N
+                NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowInheritedTip"),     //NOI18N
+                false,
+                new ImageIcon (Utilities.loadImage("org/netbeans/modules/java/navigation/resources/filterHideInherited.png")), //NOI18N
+                null
+        );
         desc.addFilter(SHOW_FIELDS,
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowFields"),     //NOI18N
                 NbBundle.getMessage(ClassMemberFilters.class, "LBL_ShowFieldsTip"),     //NOI18N
