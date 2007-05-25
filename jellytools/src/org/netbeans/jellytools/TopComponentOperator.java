@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools;
@@ -24,7 +24,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.io.IOException;
 import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TestOut;
 import org.netbeans.swing.tabcontrol.*;
@@ -253,9 +252,16 @@ public class TopComponentOperator extends JComponentOperator {
     /** Finds DataObject for the content of this TopComponent and set it
      * unmodified. Used in closeDiscard method.
      */
-    private void setUnmodified() {
+    public void setUnmodified() {
         // should be just one node
         org.openide.nodes.Node[] nodes = ((TopComponent)getSource()).getActivatedNodes();
+        if(nodes == null) {
+            // try to find possible enclosing MultiviewTopComponent
+            TopComponentOperator parentTco = findParentTopComponent();
+            if(parentTco != null) {
+                parentTco.setUnmodified();
+            }
+        }
         // TopComponent like Execution doesn't have any nodes associated
         if(nodes != null) {
             for(int i=0;i<nodes.length;i++) {
@@ -271,20 +277,25 @@ public class TopComponentOperator extends JComponentOperator {
     public boolean isModified() {
         // should be just one node
         org.openide.nodes.Node[] nodes = ((TopComponent)getSource()).getActivatedNodes();
+        if(nodes == null) {
+            // try to find possible enclosing MultiviewTopComponent
+            TopComponentOperator parentTco = findParentTopComponent();
+            if(parentTco != null) {
+                return parentTco.isModified();
+            }
+        }
         // TopComponent like Execution doesn't have any nodes associated
+        boolean modified = false;
         if(nodes != null) {
-            // cycle only covers cases when nodes.length=[0,1]
             for(int i=0;i<nodes.length;i++) {
                 DataObject dob = (DataObject)nodes[i].getCookie(DataObject.class);
                 if(dob != null) {
-                    return dob.isModified();
-                } else {
-                    return false;
+                    // any from data objects is modified
+                    modified = modified || dob.isModified();
                 }
             }
         }
-        // it cannot be modified at all
-        return false;
+        return modified;
     }
     
     /** Saves content of this TopComponent. If it is not applicable or content
@@ -293,6 +304,13 @@ public class TopComponentOperator extends JComponentOperator {
     public void save() {
         // should be just one node
         org.openide.nodes.Node[] nodes = ((TopComponent)getSource()).getActivatedNodes();
+        if(nodes == null) {
+            // try to find possible enclosing MultiviewTopComponent
+            TopComponentOperator parentTco = findParentTopComponent();
+            if(parentTco != null) {
+                parentTco.save();
+            }
+        }
         // TopComponent like Execution doesn't have any nodes associated
         if(nodes != null) {
             for(int i=0;i<nodes.length;i++) {
