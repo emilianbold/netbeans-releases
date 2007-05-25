@@ -137,8 +137,9 @@ public class UnitTable extends JTable {
             addMouseListener ( new MouseAdapter () {
                 @Override
                 public void mouseClicked (MouseEvent e) {
-                    if( e.getClickCount () != 1 )
+                    if( e.getClickCount() != 1 || !UnitTable.this.isEnabled()) {
                         return;
+                    }
                     int column = columnAtPoint ( e.getPoint () );
                     if( sortingRenderer != null) {
                         Unit u = null;

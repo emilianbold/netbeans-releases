@@ -25,8 +25,8 @@
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="tbActions" min="-2" pref="55" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="lTabActionDescription" min="-2" pref="409" max="-2" attributes="0"/>
-                      <EmptySpace pref="19" max="32767" attributes="0"/>
+                      <Component id="lTabActionDescription" pref="428" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="lSearch" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
                       <Component id="tfSearch" min="-2" pref="114" max="-2" attributes="0"/>
