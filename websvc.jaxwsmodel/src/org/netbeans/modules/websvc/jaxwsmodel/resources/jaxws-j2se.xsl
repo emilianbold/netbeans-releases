@@ -90,6 +90,7 @@ Microsystems, Inc. All Rights Reserved.
                             fork="true"
                             xendorsed="true"
                             sourcedestdir="${{build.generated.dir}}/wsimport/client"
+                            extension="true"
                             destdir="${{build.generated.dir}}/wsimport/binaries"
                             wsdl="${{basedir}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"
                             wsdlLocation="{$wsdl_url_actual}"
