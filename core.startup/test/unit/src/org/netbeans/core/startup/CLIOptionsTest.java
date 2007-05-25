@@ -31,6 +31,10 @@ public class CLIOptionsTest extends NbTestCase {
     }
 
     public void testNoSplash() {
+        boolean orig = CLIOptions.isNoSplash();
+        new CLIOptions().cli(new String[] { "-nosplash" });
+        assertTrue("-nosplash is not valid option", orig == CLIOptions.isNoSplash());
+
         new CLIOptions().cli(new String[] { "--branding", "noexiting" });
         assertFalse("Splash is on in default branding", CLIOptions.isNoSplash());
 
@@ -41,6 +45,19 @@ public class CLIOptionsTest extends NbTestCase {
 	CLIOptions.defaultsLoaded = false;
         new CLIOptions().cli(new String[] { "--branding", "noexiting", "--nosplash"});
         assertTrue("Splash is explicitly disabled", CLIOptions.isNoSplash());
+    }
+    
+    public void testUserdir() {
+        String orig = System.setProperty("netbeans.user", "before");
+        new CLIOptions().cli(new String[] { "-userdir", "wrong" });
+        assertFalse("-userdir is not supported", "wrong".equals(System.getProperty("netbeans.user")));
+        
+        new CLIOptions().cli(new String[] { "--userdir", "correct" });
+        assertTrue("--userdir is supported", "correct".equals(System.getProperty("netbeans.user")));
+        
+        if (orig != null) {
+            System.setProperty("netbeans.user", orig);
+        }
     }
     
 }

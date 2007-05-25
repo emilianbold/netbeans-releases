@@ -80,10 +80,10 @@ public class CLIOptions extends CLIHandler {
     private static boolean isOption (String value, String optionName) {
         if (value == null) return false;
         
-        if (value.startsWith ("--")) {
+        if (value.startsWith ("--") && optionName.length() > 1) {
             return value.substring (2).equals (optionName);
-        } else if (value.startsWith ("-")) {
-            return value.substring (1).equals (optionName);
+        } else if (value.startsWith ("-") && optionName.length() == 1) {
+            return value.substring (1).contains(optionName);
         }
         return false;
     }
