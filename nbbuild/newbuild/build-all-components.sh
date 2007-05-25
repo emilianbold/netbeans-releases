@@ -25,7 +25,7 @@ fi
 #Components doesn't depend on each other, so no more error checking
 
 #VisualWeb component
-ant -f ant -f nbbuild/build.xml -Ddo-not-rebuild-clusters=true -Dnb.clusters.list=nb.cluster.profiler,nb.cluster.harness,nb.cluster.ide,nb.cluster.java,nb.cluster.apisupport,nb.cluster.j2ee,nb.cluster.nb,nb.cluster.platform,nb.cluster.xml,nb.cluster.visualweb build-nozip > $VISUALWEB_BUILD_LOG 2>&1
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml -Ddo-not-rebuild-clusters=true -Dnb.clusters.list=nb.cluster.profiler,nb.cluster.harness,nb.cluster.ide,nb.cluster.java,nb.cluster.apisupport,nb.cluster.j2ee,nb.cluster.nb,nb.cluster.platform,nb.cluster.xml,nb.cluster.visualweb build-nozip > $VISUALWEB_BUILD_LOG 2>&1
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
@@ -35,7 +35,7 @@ fi
 
 
 #Mobility component
-ant -f mobility/build.xml build > $MOBILITY_BUILD_LOG 2>&1
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f mobility/build.xml build > $MOBILITY_BUILD_LOG 2>&1
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
@@ -44,7 +44,7 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 #UML component
-ant -f nbbuild/build.xml -Ddo-not-rebuild-clusters=true -Dnb.clusters.list=nb.cluster.profiler,nb.cluster.harness,nb.cluster.ide,nb.cluster.java,nb.cluster.apisupport,nb.cluster.j2ee,nb.cluster.nb,nb.cluster.platform,nb.cluster.xml,nb.cluster.uml build-nozip > $UML_BUILD_LOG 2>&1
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml -Ddo-not-rebuild-clusters=true -Dnb.clusters.list=nb.cluster.profiler,nb.cluster.harness,nb.cluster.ide,nb.cluster.java,nb.cluster.apisupport,nb.cluster.j2ee,nb.cluster.nb,nb.cluster.platform,nb.cluster.xml,nb.cluster.uml build-nozip > $UML_BUILD_LOG 2>&1
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
@@ -53,7 +53,7 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 #Ruby scripting
-ant -f scripting/ruby/build.xml build > $RUBY_BUILD_LOG 2>&1
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f scripting/ruby/build.xml build > $RUBY_BUILD_LOG 2>&1
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
@@ -62,7 +62,7 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 #SOA component
-ant -f nbbuild/build.xml -Ddo-not-rebuild-clusters=true -Dnb.clusters.list=nb.cluster.profiler,nb.cluster.harness,nb.cluster.ide,nb.cluster.java,nb.cluster.apisupport,nb.cluster.j2ee,nb.cluster.nb,nb.cluster.platform,nb.cluster.xml,nb.cluster.soa build-nozip > $SOA_BUILD_LOG 2>&1
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml -Ddo-not-rebuild-clusters=true -Dnb.clusters.list=nb.cluster.profiler,nb.cluster.harness,nb.cluster.ide,nb.cluster.java,nb.cluster.apisupport,nb.cluster.j2ee,nb.cluster.nb,nb.cluster.platform,nb.cluster.xml,nb.cluster.soa build-nozip > $SOA_BUILD_LOG 2>&1
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
@@ -71,7 +71,7 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 #Build all the NBMs
-ant -f nbbuild/build.xml build-nbms -Dmoduleconfig=all -Dbase.nbm.target.dir=${DIST}/nbms > ${NBMS_BUILD_LOC} 2>&1
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nbms -Dmoduleconfig=all -Dbase.nbm.target.dir=${DIST}/nbms > ${NBMS_BUILD_LOC} 2>&1
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
