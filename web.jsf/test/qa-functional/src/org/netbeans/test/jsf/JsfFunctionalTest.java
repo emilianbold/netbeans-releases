@@ -18,6 +18,7 @@
  */
 package org.netbeans.test.jsf;
 
+import java.awt.Container;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import org.netbeans.jellytools.JellyTestCase;
@@ -28,6 +29,7 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.EditAction;
@@ -40,9 +42,11 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
+import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbTestSuite;
@@ -143,7 +147,7 @@ public class JsfFunctionalTest extends JellyTestCase{
         Node facesconfig = new Node(webPages, "WEB-INF|faces-config.xml");
         new OpenAction().perform(facesconfig);
         // open faces-config.xml is used in next test cases
-        new EditorOperator("faces-config.xml");
+        getFacesConfig();
     }
     
     /** Test JSF Managed Bean Wizard. */
@@ -162,7 +166,7 @@ public class JsfFunctionalTest extends JellyTestCase{
         bean.finish();
         // verify
         new EditorOperator("MyManagedBean.java").close();
-        EditorOperator facesEditor = new EditorOperator("faces-config.xml");
+        EditorOperator facesEditor = getFacesConfig();
         String expected = "<managed-bean>";
         assertTrue("faces-config.xml should contain "+expected, facesEditor.contains(expected));
         expected = "<managed-bean-name>MyManagedBean</managed-bean-name>";
@@ -181,14 +185,14 @@ public class JsfFunctionalTest extends JellyTestCase{
         new JButtonOperator(safeDeleteDialog, "Refactor").push();
         node.waitNotPresent();
         // verify
-        EditorOperator facesEditor = new EditorOperator("faces-config.xml");
+        EditorOperator facesEditor = getFacesConfig();
         String expected = "<managed-bean>";
         assertTrue("faces-config.xml should not contain "+expected, facesEditor.contains(expected));
     }
     
     /** Test adding JSF Managed Bean from faces-config.xml. */
     public void testAddManagedBean(){
-        EditorOperator editor = new EditorOperator("faces-config.xml");
+        EditorOperator editor = getFacesConfig();
         Action addBeanAction = new ActionNoBlock(null, "JavaServer Faces|Add Managed Bean...");
         addBeanAction.perform(editor);
         AddManagedBeanOperator addBeanOper = new AddManagedBeanOperator();
@@ -198,7 +202,7 @@ public class JsfFunctionalTest extends JellyTestCase{
         addBeanOper.setBeanDescription(DESCRIPTION_BEAN);
         addBeanOper.add();
         // verify
-        EditorOperator facesEditor = new EditorOperator("faces-config.xml");
+        EditorOperator facesEditor = getFacesConfig();
         String expected = "<managed-bean>";
         assertTrue("faces-config.xml should contain "+expected, facesEditor.contains(expected));
         expected = "<managed-bean-name>SecondBean</managed-bean-name>";
@@ -211,7 +215,7 @@ public class JsfFunctionalTest extends JellyTestCase{
     
     /** Test adding navigation rule from faces-config.xml. */
     public void testAddNavigationRule() throws IOException {
-        EditorOperator editor = new EditorOperator("faces-config.xml");
+        EditorOperator editor = getFacesConfig();
         Action addRule = new ActionNoBlock(null, "JavaServer Faces|Add Navigation Rule...");
         addRule.perform(editor);
         AddNavigationRuleDialogOperator rule = new AddNavigationRuleDialogOperator();
@@ -233,7 +237,7 @@ public class JsfFunctionalTest extends JellyTestCase{
     
     /** Test adding navigation case from faces-config.xml. */
     public void testAddNavigationCase() throws IOException {
-        EditorOperator editor = new EditorOperator("faces-config.xml");
+        EditorOperator editor = getFacesConfig();
         Action addCase = new ActionNoBlock(null, "JavaServer Faces|Add Navigation Case...");
         addCase.perform(editor);
         AddNavigationCaseDialogOperator caseOper = new AddNavigationCaseDialogOperator();
@@ -262,7 +266,7 @@ public class JsfFunctionalTest extends JellyTestCase{
     
     /** Test adding navigation case with new rule from faces-config.xml. */
     public void testAddNavigationCaseWithNewRule() throws IOException {
-        EditorOperator editor = new EditorOperator("faces-config.xml");
+        EditorOperator editor = getFacesConfig();
         Action addCase = new ActionNoBlock(null, "JavaServer Faces|Add Navigation Case...");
         addCase.perform(editor);
         AddNavigationCaseDialogOperator caseOper = new AddNavigationCaseDialogOperator();
@@ -289,7 +293,7 @@ public class JsfFunctionalTest extends JellyTestCase{
         expected = DESCRIPTION_CASE2;
         assertTrue("faces-config.xml should contain "+expected, editor.contains(expected));
     }
-
+    
     /** Test adding JSF framework to existing web application. */
     public void testAddJSFToProject() throws IOException {
         // "Web"
@@ -319,7 +323,7 @@ public class JsfFunctionalTest extends JellyTestCase{
         } catch (TimeoutExpiredException e) {
             // ignore when progress dialog was closed before we started to wait for it
         }
-   
+        
         // add JSF framework using project properties
         // open project properties
         ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME+"2").properties();
@@ -330,15 +334,15 @@ public class JsfFunctionalTest extends JellyTestCase{
         new Node(new JTreeOperator(propertiesDialogOper), "Frameworks").select();
         new JButtonOperator(propertiesDialogOper, "Add").pushNoBlock();
         NbDialogOperator addFrameworkOper = new NbDialogOperator("Add a Framework");
-        // select "JavaServer Faces" but item is instance of JSFFrameworkProvider which we need to select
-        new JListOperator(addFrameworkOper).selectItem("JSF");
+        // select "JavaServer Faces" but item is instance of org.netbeans.modules.web.jsf.JSFFrameworkProvider which we need to select
+        new JListOperator(addFrameworkOper).selectItem("org.netbeans.modules.web.jsf.JSFFrameworkProvider");
         addFrameworkOper.ok();
         new JCheckBoxOperator(propertiesDialogOper, "Validate XML").setSelected(false);
         new JCheckBoxOperator(propertiesDialogOper, "Verify Objects").setSelected(true);
         // confirm properties dialog
         propertiesDialogOper.ok();
-
-        // Check project contains all needed files. 
+        
+        // Check project contains all needed files.
         WebPagesNode webPages = new WebPagesNode(PROJECT_NAME+"2");
         Node welcomeJSF = new Node(webPages, "welcomeJSF.jsp");
         Node facesconfig = new Node(webPages, "WEB-INF|faces-config.xml");
@@ -386,5 +390,19 @@ public class JsfFunctionalTest extends JellyTestCase{
         assertTrue("index.jsp should contain "+expected+".", editorOper.contains(expected));
         expected = "</h:dataTable>";
         assertTrue("index.jsp should contain "+expected+".", editorOper.contains(expected));
+    }
+    
+    /** If installed visualweb cluster in IDE, switch from PageFlow to XML view of faces-config.xml. 
+     * @return EditorOperator instance of faces-config.xml
+     */
+    public static EditorOperator getFacesConfig() {
+        TopComponentOperator tco = new TopComponentOperator("faces-config.xml");
+        if(JToggleButtonOperator.findJToggleButton((Container)tco.getSource(), ComponentSearcher.getTrueChooser("Toggle button")) != null) {
+            // "XML"
+            String xmlLabel = Bundle.getStringTrimmed("org.netbeans.modules.xml.multiview.Bundle", "LBL_XML_TAB");
+            JToggleButtonOperator tbo = new JToggleButtonOperator(tco, xmlLabel);
+            tbo.push();
+        }
+        return new EditorOperator("faces-config.xml");
     }
 }
