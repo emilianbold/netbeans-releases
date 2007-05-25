@@ -76,9 +76,9 @@ public abstract class WizardStepProgressSupport extends SvnProgressSupport imple
     }
 
     protected void finnishProgress() {        
+        WizardStepProgressSupport.super.finnishProgress();
         SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                WizardStepProgressSupport.super.finnishProgress();
+            public void run() {                
                 panel.remove(progressComponent);
                 panel.revalidate();
                 panel.repaint();
