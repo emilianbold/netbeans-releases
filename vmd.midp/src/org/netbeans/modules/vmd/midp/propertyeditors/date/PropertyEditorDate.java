@@ -35,7 +35,6 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
@@ -60,9 +59,7 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
     
     private CustomEditor customEditor;
     private JRadioButton radioButton;
-    private int inputMode;
     
-    private DesignDocument document;
     private DesignComponent component;
     
     private PropertyEditorDate() {
@@ -87,7 +84,6 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
     public void init(DesignComponent component) {
         super.init(component);
         this.component = component;
-        document = component.getDocument();
     }
     
     public JComponent getCustomEditorComponent() {
@@ -111,7 +107,6 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         if (superText != null) {
             return superText;
         }
-        System.out.println(inputMode);
         return getValueAsText((PropertyValue) super.getValue());
     }
     
@@ -130,22 +125,12 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
             customEditor.setText(getValueAsText(value));
         }
         radioButton.setSelected(!isCurrentValueAUserCodeType());
-        
-        if (component != null) {
-            document.getTransactionManager().readAccess(new Runnable() {
-                public void run() {
-                    PropertyValue pv = component.readProperty(DateFieldCD.PROP_INPUT_MODE);
-                    if (pv.getKind() == PropertyValue.Kind.VALUE)  {
-                        inputMode = MidpTypes.getInteger(pv);
-                    }
-                }
-            });
-        }
     }
     
     private void saveValue(String text) {
+        int inputMode = getInputMode();
         try {
-            Date date = getFormatter().parse(text);
+            Date date = getFormatter(inputMode).parse(text);
             super.setValue(MidpTypes.createLongValue(date.getTime()));
         } catch (ParseException ex) {
         }
@@ -161,16 +146,32 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         Date date = new Date();
         Object valueValue = value.getPrimitiveValue();
         date.setTime((Long) valueValue);
-        return getFormatter().format(date);
+        int inputMode = getInputMode();
+        return getFormatter(inputMode).format(date);
     }
     
-    private DateFormat getFormatter() {
+    private DateFormat getFormatter(int inputMode) {
         if (inputMode == DateFieldCD.VALUE_DATE) {
             return FORMAT_DATE;
         } else if (inputMode == DateFieldCD.VALUE_TIME) {
             return FORMAT_TIME;
         }
         return FORMAT_DATE_TIME;
+    }
+    
+    private int getInputMode() {
+        final int[] inputMode = new int[] { DateFieldCD.VALUE_DATE_TIME };
+        if (component != null) {
+            component.getDocument().getTransactionManager().readAccess(new Runnable() {
+                public void run() {
+                    PropertyValue pv = component.readProperty(DateFieldCD.PROP_INPUT_MODE);
+                    if (pv.getKind() == PropertyValue.Kind.VALUE)  {
+                        inputMode[0] = MidpTypes.getInteger(pv);
+                    }
+                }
+            });
+        }
+        return inputMode[0];
     }
     
     private class CustomEditor extends JPanel implements DocumentListener, FocusListener {
@@ -198,15 +199,16 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         }
         
         public void checkDateStatus() {
+            int inputMode = getInputMode();
             try {
-                getFormatter().parse(textField.getText());
+                getFormatter(inputMode).parse(textField.getText());
                 clearErrorStatus();
             } catch (ParseException e) {
-                displayWarning(getMessage());
+                displayWarning(getMessage(inputMode));
             }
         }
         
-        private String getMessage() {
+        private String getMessage(int inputMode) {
             if (inputMode == DateFieldCD.VALUE_DATE) {
                 return NON_DATE_TEXT;
             } else if (inputMode == DateFieldCD.VALUE_TIME) {
