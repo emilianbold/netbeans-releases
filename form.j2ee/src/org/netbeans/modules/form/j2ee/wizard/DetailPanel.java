@@ -443,13 +443,16 @@ public class DetailPanel implements WizardDescriptor.Panel {
                 model.addElement(columnName);
             }
             rs.close();
-            if (masterTable.equals(tableName)) {
-                preSelectMasterColumns();
-            } else {
-                ForeignKey key = getForeignKey();
-                if (key != null) {
-                    includeList.setSelectedValue(key.getFKColumn(), false);
-                    moveListItems(includeList, availableList, true);
+            if (defaultPreselect) {
+                if (masterTable.equals(tableName)) {
+                    // pre-select master columns
+                    preSelectColumns(masterColumns);
+                } else {
+                    ForeignKey key = getForeignKey();
+                    if (key != null) {
+                        includeList.setSelectedValue(key.getFKColumn(), false);
+                        moveListItems(includeList, availableList, true);
+                    }
                 }
             }
         } catch (Exception ex) {
@@ -458,17 +461,19 @@ public class DetailPanel implements WizardDescriptor.Panel {
     }
 
     /**
-     * Pre-selects columns that were selected for master table.
+     * Pre-selects specified columns.
+     * 
+     * @param columnNames names of columns to pre-select.
      */
-    private void preSelectMasterColumns() {
+    private void preSelectColumns(List columnNames) {
         DefaultListModel availableModel = (DefaultListModel)availableList.getModel();
         DefaultListModel includeModel = (DefaultListModel)includeList.getModel();
         for (int i=includeModel.getSize()-1; i>=0; i--) {
             String column = (String)includeModel.getElementAt(i);
-            if (!masterColumns.contains(column)) {
+            if (!columnNames.contains(column)) {
                 // The column is not selected
                 includeModel.removeElementAt(i);
-                availableModel.addElement(column);
+                availableModel.add(0, column);
             }
         }
     }
@@ -563,12 +568,39 @@ public class DetailPanel implements WizardDescriptor.Panel {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    private boolean defaultPreselect = true;
     public void readSettings(Object settings) {
         WizardDescriptor wizard = (WizardDescriptor) settings;
         connection = (DatabaseConnection)wizard.getProperty("connection"); // NOI18N
         masterTable = (String)wizard.getProperty("master"); // NOI18N
         masterColumns = (List)wizard.getProperty("masterColumns"); // NOI18N
+        
+        // restore detail settings if the rest remained the same
+        ForeignKey key = getForeignKey();
+        List detailColumns = (List)wizard.getProperty("detailColumns"); // NOI18N
+        if (key == null) {
+            String detailTable = (String)wizard.getProperty("detailTable"); // NOI18N
+            if ((masterTable.equals(detailTable)) && (detailColumns != null)) {
+                defaultPreselect = false;
+            }
+        } else {
+            String pkTable = (String)wizard.getProperty("detailPKTable"); // NOI18N
+            String pkColumn = (String)wizard.getProperty("detailPKColumn"); // NOI18N
+            String fkTable = (String)wizard.getProperty("detailFKTable"); // NOI18N
+            String fkColumn = (String)wizard.getProperty("detailFKColumn"); // NOI18N
+            if (key.getPKTable().equals(pkTable)
+                && key.getPKColumn().equals(pkColumn)
+                && key.getFKTable().equals(fkTable)
+                && key.getFKColumn().equals(fkColumn)) {
+                defaultPreselect = false;
+            }
+        }
+        
         fillTableCombo();
+        if (!defaultPreselect) {
+            preSelectColumns(detailColumns);
+            defaultPreselect = true;
+        }
     }
 
     /**
@@ -579,6 +611,7 @@ public class DetailPanel implements WizardDescriptor.Panel {
     public void storeSettings(Object settings) {
         WizardDescriptor wizard = (WizardDescriptor) settings;
         ForeignKey key = getForeignKey();
+        wizard.putProperty("detailTable", (key == null) ? masterTable : null); // NOI18N
         wizard.putProperty("detailPKTable", (key == null) ? null : key.getPKTable()); // NOI18N
         wizard.putProperty("detailPKColumn", (key == null) ? null : key.getPKColumn()); // NOI18N
         wizard.putProperty("detailFKTable", (key == null) ? null : key.getFKTable()); // NOI18N
