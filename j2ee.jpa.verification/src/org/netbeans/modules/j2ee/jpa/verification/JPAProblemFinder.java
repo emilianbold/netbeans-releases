@@ -216,7 +216,7 @@ public abstract class JPAProblemFinder {
     }
     
     public void cancel(){
-        LOG.info("Cancelling JPAProblemFinder task");
+        LOG.fine("Cancelling JPAProblemFinder task");
         cancelled = true;
         
         synchronized(cancellationLock){
