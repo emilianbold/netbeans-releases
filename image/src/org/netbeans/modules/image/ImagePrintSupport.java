@@ -29,6 +29,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.ErrorManager;
 import org.openide.DialogDisplayer;
 import org.openide.cookies.PrintCookie;
+import org.openide.text.PrintPreferences;
 import org.openide.util.NbBundle;
 
 /** Printing support.
@@ -105,7 +106,7 @@ public class ImagePrintSupport implements PrintCookie, Printable, ImageObserver 
         
         PrinterJob job = PrinterJob.getPrinterJob();
         Book book = new Book();
-        PageFormat pf = org.openide.text.PrintSettings.getPageFormat(job);
+        PageFormat pf = PrintPreferences.getPageFormat(job);
         book.append( this, pf );
         job.setPageable( book );
 
