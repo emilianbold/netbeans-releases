@@ -50,7 +50,7 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author Libor Kotouc
  */
-public final class PaletteItemNode extends FilterNode {
+public final class PaletteItemNode extends FilterNode implements Node.Cookie {
     
     private static final Node.PropertySet[] NO_PROPERTIES = new Node.PropertySet[0];
 
