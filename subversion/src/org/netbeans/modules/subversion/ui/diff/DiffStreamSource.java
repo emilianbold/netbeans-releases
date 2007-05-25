@@ -153,6 +153,7 @@ public class DiffStreamSource extends StreamSource {
             return;
         }
         if (baseFile.isDirectory()) {
+            mimeType = "content/unknown"; // NOI18N
             return;
         }
         mimeType = Subversion.getInstance().getMimeType(baseFile);
