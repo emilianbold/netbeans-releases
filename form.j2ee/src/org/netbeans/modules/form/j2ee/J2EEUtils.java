@@ -18,21 +18,7 @@
  */
 package org.netbeans.modules.form.j2ee;
 
-import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.BlockTree;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ExpressionStatementTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.ModifiersTree;
-import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.StatementTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.*;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
@@ -41,7 +27,6 @@ import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -406,23 +391,6 @@ public class J2EEUtils {
         } catch (DataObjectNotFoundException dnfex) {
             dnfex.printStackTrace();
         }
-    }
-
-    /**
-     * Creates persistence generator of the given type.
-     *
-     * @param type type of the generator.
-     * @return persistence generator of the given type.
-     */
-    private static PersistenceGenerator createPersistenceGenerator(String type) {
-        Lookup.Template template = new Lookup.Template(PersistenceGeneratorProvider.class);
-        Collection<PersistenceGeneratorProvider> providers = Lookup.getDefault().lookup(template).allInstances();
-        for (PersistenceGeneratorProvider provider : providers) {
-            if (type.equals(provider.getGeneratorType())) {
-                return provider.createGenerator();
-            }
-        }
-        throw new AssertionError("Could not find a persistence generator of type " + type); // NOI18N
     }
 
     /**

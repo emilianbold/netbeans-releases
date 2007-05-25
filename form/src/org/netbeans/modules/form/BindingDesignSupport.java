@@ -29,7 +29,6 @@ import java.beans.*;
 import org.netbeans.modules.form.FormUtils.TypeHelper;
 import org.netbeans.modules.form.project.ClassPathUtils;
 import org.openide.ErrorManager;
-import org.openide.util.NbBundle;
 
 /**
  * Design support for beans binding.
@@ -320,7 +319,7 @@ public class BindingDesignSupport {
      * @param sourcePath binding path from the source.
      * @return type of the binding.
      */
-    TypeHelper determineType(RADComponent comp, String sourcePath) {
+    public TypeHelper determineType(RADComponent comp, String sourcePath) {
         String[] path = parsePath(sourcePath);
         TypeHelper type = determineType(comp);
         for (int i=0; i<path.length; i++) {
@@ -716,6 +715,23 @@ public class BindingDesignSupport {
                         subParameters.add(column);
                     } catch (NumberFormatException nfex) {
                         nfex.printStackTrace();
+                    }
+                }
+                String columnClass = sub.getParameter(MetaBinding.TABLE_COLUMN_CLASS_PARAMETER);
+                if (columnClass != null) {
+                    try {
+                        if ((columnClass != null) && columnClass.trim().endsWith(".class")) { // NOI18N
+                            columnClass = columnClass.trim();
+                            columnClass = columnClass.substring(0, columnClass.length()-6);
+                        }
+                        if (columnClass.indexOf('.') == -1) {
+                            columnClass = "java.lang." + columnClass; // NOI18N
+                        }
+                        Class clazz = FormUtils.loadClass(columnClass, bindingDef.getSource().getFormModel());
+                        subParameters.add(SwingBindingSupport.TableColumnClassParameter);
+                        subParameters.add(clazz);
+                    } catch (ClassNotFoundException cnfex) {
+                        cnfex.printStackTrace();
                     }
                 }
                 binding.addBinding(sub.getSourcePath(), sub.getTargetPath(), subParameters.toArray());

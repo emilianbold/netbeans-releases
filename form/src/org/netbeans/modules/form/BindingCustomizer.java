@@ -507,8 +507,18 @@ public class BindingCustomizer extends JPanel {
                 if (columnSelector.isVisible()) {
                     List items = columnSelector.getSelectedItems();
                     for (int i=0; i<items.size(); i++) {
-                        MetaBinding subBinding = binding.addSubBinding(BindingDesignSupport.elWrap(items.get(i).toString()), null);
+                        String item = items.get(i).toString();
+                        MetaBinding subBinding = binding.addSubBinding(BindingDesignSupport.elWrap(item), null);
                         subBinding.setParameter(MetaBinding.TABLE_COLUMN_PARAMETER, i+""); // NOI18N
+                        Class columnType = columnToType.get(item);
+                        if ((columnType != null) && (columnType != java.lang.Object.class)) {
+                            String clazz = FormUtils.autobox(columnType).getName();
+                            if (clazz.startsWith("java.lang.")) { // NOI18N
+                                clazz = clazz.substring(10);
+                            }
+                            clazz += ".class"; // NOI18N
+                            subBinding.setParameter(MetaBinding.TABLE_COLUMN_CLASS_PARAMETER, clazz);
+                        }
                     }
                 }
             }
@@ -1017,6 +1027,8 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         return type;
     }
 
+    private Map<String,Class> columnToType;
+    
     // Updates also displayExpressionCombo
     private void updateColumnSelector() {
         boolean showDisplayExpression = showDisplayExpression();
@@ -1028,7 +1040,9 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
                 List<BindingDescriptor> descriptors = designSupport.getAllBindingDescriptors(elemType);
                 columnSelector.setVisible(descriptors.size() > 0);
                 List available = new LinkedList();
+                columnToType = new HashMap<String,Class>();
                 for (BindingDescriptor desc : descriptors) {
+                    columnToType.put(desc.getPath(), desc.getValueType());
                     available.add(desc.getPath());
                 }
                 columnSelector.setItems(Collections.EMPTY_LIST, available);
@@ -1058,10 +1072,11 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         typeChangeSupport.firePropertyChange(null, null, null);
     }
 
-   private class ExpressionNode extends JTree.DynamicUtilTreeNode {
+   public class ExpressionNode extends JTree.DynamicUtilTreeNode {
        private BindingDescriptor descriptor;
        private RADComponent comp;
        private int category;
+       private TypeHelper type;
        
        ExpressionNode(RADComponent comp) {
            this(new TypeHelper(comp.getBeanClass()));
@@ -1070,12 +1085,14 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
 
        ExpressionNode(TypeHelper type) {
            super("root", designSupport.getBindingDescriptors(type)); // NOI18N
+           this.type = type;
            setAllowsChildren(true);
        }
        
        private ExpressionNode(BindingDescriptor descriptor) {
            super(descriptor.getPath(), designSupport.getBindingDescriptors(descriptor.getGenericValueType()));
            this.descriptor = descriptor;
+           this.type = descriptor.getGenericValueType();
            updateLeafStatus();
        }
        
@@ -1103,6 +1120,10 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
 
        int getCategory() {
            return category;
+       }
+
+       public Class getType() {
+           return FormUtils.typeToClass(type);
        }
 
        protected void loadChildren() {

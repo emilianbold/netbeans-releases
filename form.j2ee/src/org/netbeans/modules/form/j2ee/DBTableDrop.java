@@ -18,23 +18,23 @@
  */
 package org.netbeans.modules.form.j2ee;
 
+import com.sun.source.tree.*;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTargetDragEvent;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.util.ElementFilter;
 import javax.swing.ImageIcon;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.db.api.explorer.DatabaseMetaDataTransfer;
-import org.netbeans.modules.form.BindingDesignSupport;
-import org.netbeans.modules.form.BindingProperty;
-import org.netbeans.modules.form.FormEditor;
-import org.netbeans.modules.form.FormModel;
-import org.netbeans.modules.form.MetaBinding;
-import org.netbeans.modules.form.RADComponent;
-import org.netbeans.modules.form.RADVisualContainer;
+import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.assistant.AssistantMessages;
 import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.project.ClassPathUtils;
@@ -191,7 +191,7 @@ public class DBTableDrop extends DBConnectionDrop {
             if (beanClass.equals(javax.swing.JTable.class)) {
                 // Bind the table component to the result list
                 bindTableComponent(isBindingOnly() ? droppedOverId : componentId,
-                    resultList, mappings, entityInfo[0]);
+                    resultList, mappings, entityInfo);
             } else {
                 // JList and JComboBox
                 bindListComponent(droppedOverId, resultList);
@@ -260,7 +260,7 @@ public class DBTableDrop extends DBConnectionDrop {
      * @param scope persistence scope.
      * @param entity persistence entity.
      */
-    private void bindTableComponent(String tableID, RADComponent resultList, MetadataModel<EntityMappingsMetadata> mappings, String entityName) throws Exception {
+    private void bindTableComponent(String tableID, RADComponent resultList, MetadataModel<EntityMappingsMetadata> mappings, String[] entityInfo) throws Exception {
         RADComponent table = model.getMetaComponent(tableID);
         if (javax.swing.JScrollPane.class.isAssignableFrom(table.getBeanClass())) {
             table = ((RADVisualContainer)table).getSubComponent(0);
@@ -271,9 +271,32 @@ public class DBTableDrop extends DBConnectionDrop {
         MetaBinding binding = new MetaBinding(resultList, null, table, "elements"); // NOI18N
 
         int count = 0;
-        for (String column : propertiesForColumns(mappings, entityName)) {
+        List<String> propertyNames = propertiesForColumns(mappings, entityInfo[0]);
+        FileObject formFile = FormEditor.getFormDataObject(model).getPrimaryFile();
+        ClassPath cp = ClassPath.getClassPath(formFile, ClassPath.SOURCE);
+        String resourceName = entityInfo[1].replace('.', '/') + ".java"; // NOI18N
+        FileObject entity = cp.findResource(resourceName);
+        List<String> propertyTypes = typesOfProperties(entity, propertyNames);
+        Iterator<String> typeIter = propertyTypes.iterator();
+        for (String column : propertyNames) {
             MetaBinding subBinding = binding.addSubBinding(BindingDesignSupport.elWrap(column), null);
-            subBinding.setParameter(MetaBinding.TABLE_COLUMN_PARAMETER, ""+count++); // NOI18N            
+            subBinding.setParameter(MetaBinding.TABLE_COLUMN_PARAMETER, ""+count++); // NOI18N
+            String clazz = typeIter.next();
+            if (clazz != null) {
+                if (clazz.startsWith("java.lang.")) { // NOI18N
+                    clazz = clazz.substring(10);
+                }
+                // Autoboxing
+                if (clazz.equals("byte") || clazz.equals("short") || clazz.equals("long") // NOI18N
+                        || clazz.equals("float") || clazz.equals("double") || clazz.equals("boolean")) { // NOI18N
+                    clazz = Character.toUpperCase(clazz.charAt(0)) + clazz.substring(1);
+                } else if (clazz.equals("int")) { // NOI18N
+                    clazz = "Integer"; // NOI18N
+                } else if (clazz.equals("char")) { // NOI18N
+                    clazz = "Character"; // NOI18N
+                }
+                subBinding.setParameter(MetaBinding.TABLE_COLUMN_CLASS_PARAMETER, clazz + ".class"); // NOI18N
+            }
         }
 
         prop.setValue(binding);
@@ -312,6 +335,62 @@ public class DBTableDrop extends DBConnectionDrop {
                 return props;
             }
         });
+    }
+
+    public static List<String> typesOfProperties(FileObject entity, final List<String> propertyNames) {
+        final List<String> types = new LinkedList<String>();
+        JavaSource source = JavaSource.forFileObject(entity);
+        try {
+            source.runUserActionTask(new CancellableTask<CompilationController>() {
+                public void run(CompilationController cc) throws Exception {
+                    cc.toPhase(JavaSource.Phase.RESOLVED);
+                    CompilationUnitTree cu = cc.getCompilationUnit();
+                    ClassTree clazz = null;
+                    for (Tree typeDecl : cu.getTypeDecls()) {
+                        if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                            clazz = (ClassTree) typeDecl;
+                            break;
+                        }
+                    }
+                    Map<String, String> variables = new HashMap<String, String>();
+                    Map<String, String> methods = new HashMap<String, String>();
+                    Element classElement = cc.getTrees().getElement(cc.getTrees().getPath(cu, clazz));
+                    for (VariableElement variable : ElementFilter.fieldsIn(classElement.getEnclosedElements())) {
+                        String name = variable.getSimpleName().toString();
+                        String type = variable.asType().toString();
+                        variables.put(name, type);
+                    }
+                    for (ExecutableElement method : ElementFilter.methodsIn(classElement.getEnclosedElements())) {
+                        String type = method.getReturnType().toString();
+                        String name = method.getSimpleName().toString();
+                        if (name.startsWith("get")) { // NOI18N
+                            name = name.substring(3);
+                        } else if (name.startsWith("is") && type.equals("boolean")) { // NOI18N
+                            name = name.substring(2);
+                        } else {
+                            name = null;
+                        }
+                        if ((name != null) && (name.length() > 0)) {
+                            name = Character.toLowerCase(name.charAt(0)) + name.substring(1);
+                            methods.put(name, type);
+                        }                        
+                    }
+                    for (String name : propertyNames) {
+                        String type = methods.get(name);
+                        if (type == null) {
+                            type = variables.get(name);
+                        }
+                        types.add(type);
+                    }
+                }
+
+                public void cancel() {
+                }
+            }, true);
+        } catch (IOException ioex) {
+            ioex.printStackTrace();
+        }
+        return types;
     }
 
     /**

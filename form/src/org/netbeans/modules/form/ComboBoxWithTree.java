@@ -163,8 +163,7 @@ public class ComboBoxWithTree extends JComboBox {
      * Updates tree selection according to string in combo. 
      */
     private void updateTreeSelection() {
-        String value = getEditor().getItem().toString();
-        final TreePath path = converter.stringToPath(value);
+        final TreePath path = getSelectedTreePath();
         if (path == null) {
             tree.clearSelection();
         } else {
@@ -175,6 +174,12 @@ public class ComboBoxWithTree extends JComboBox {
                 }
             });
         }
+    }
+
+    public TreePath getSelectedTreePath() {
+        String value = getEditor().getItem().toString();
+        TreePath path = converter.stringToPath(value);
+        return path;
     }
 
     /**

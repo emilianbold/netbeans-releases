@@ -26,6 +26,7 @@ public class MetaBinding {
     public static final int UPDATE_STRATEGY_READ_FROM_SOURCE = 1;
     public static final int UPDATE_STRATEGY_READ_ONCE = 2;
     public static final String TABLE_COLUMN_PARAMETER = "javax.swing.binding.SwingBindingSupport.TableColumnParameter"; // NOI18N
+    public static final String TABLE_COLUMN_CLASS_PARAMETER = "javax.swing.binding.SwingBindingSupport.TableColumnClassParameter"; // NOI18N
     public static final String TEXT_CHANGE_STRATEGY = "javax.swing.binding.SwingBindingSupport.TextChangeStrategyParameter"; // NOI18N
     public static final String TEXT_CHANGE_ON_TYPE = "javax.swing.binding.SwingBindingSupport.TextChangeStrategy.CHANGE_ON_TYPE"; // NOI18N
     public static final String TEXT_CHANGE_ON_ACTION_OR_FOCUS_LOST = "javax.swing.binding.SwingBindingSupport.TextChangeStrategy.CHANGE_ON_ACTION_OR_FOCUS_LOST"; // NOI18N;
@@ -37,7 +38,7 @@ public class MetaBinding {
     private int updateStrategy = UPDATE_STRATEGY_READ_WRITE;
     private boolean nullValueSpecified;
     private boolean incompleteValueSpecified;
-    private Map<String,String> parameters = new HashMap();
+    private Map<String,String> parameters = new TreeMap();
     private boolean bindImmediately;
 
     private List<MetaBinding> subBindings;
