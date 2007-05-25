@@ -27,22 +27,19 @@ import org.netbeans.api.visual.widget.Widget;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.api.visual.router.ConnectionWidgetCollisionsCollector;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidget;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 
 /**
- * Modified to only register CasaNodeWidget widgets as being collisions.
- * This is no longer an actual org.netbeans.api.visual.router.CollisionsCollector.
- * We need to prevent connections that share the same endpoints from colliding,
- * and in order to do so, the collisions collector must have some context - which
- * is not by default provided by the graph library. Thus, the orthogonal
- * search routing code has been copied, *temporarily*, until the graph library
- * can be modified to pass in context into the collisions collector.
+ * Modified to only register collisions from:
+ * - connection widgets with no shared endpoints with another connection widget
+ * - CasaNodeWidget widgets
  *
  * @author Josh Sandusky
  */
-public class CasaCollisionCollector {
+public class CasaCollisionCollector implements ConnectionWidgetCollisionsCollector {
 
     public static final int MAX_ORTHOGONAL_CONNECTIONS = 15;
     public static final int MAX_ORTHOGONAL_NODES       = 15;

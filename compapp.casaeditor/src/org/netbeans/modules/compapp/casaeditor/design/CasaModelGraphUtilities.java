@@ -29,6 +29,7 @@ import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetDropEvent;
 import org.netbeans.api.visual.action.WidgetAction.WidgetDropTargetEvent;
 import org.netbeans.api.visual.action.WidgetAction.WidgetKeyEvent;
 import org.netbeans.api.visual.action.WidgetAction.WidgetMouseEvent;
+import org.netbeans.api.visual.router.RouterFactory;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.Constants;
@@ -38,7 +39,6 @@ import org.netbeans.modules.compapp.casaeditor.graph.CasaPinWidget;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaRegionWidget;
 import org.netbeans.modules.compapp.casaeditor.graph.RegionUtilities;
 import org.netbeans.modules.compapp.casaeditor.graph.layout.CasaCollisionCollector;
-import org.netbeans.modules.compapp.casaeditor.graph.layout.CasaOrthogonalSearchRouter;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConnection;
@@ -125,7 +125,7 @@ public class CasaModelGraphUtilities {
                 createEdge(connection, consumes, provides, scene, false);
             }
         }
-        scene.setOrthogonalRouter(new CasaOrthogonalSearchRouter(new CasaCollisionCollector(
+        scene.setOrthogonalRouter(RouterFactory.createOrthogonalSearchRouter(new CasaCollisionCollector(
                 scene.getBindingRegion(),
                 scene.getEngineRegion(),
                 scene.getExternalRegion(),
