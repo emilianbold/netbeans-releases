@@ -275,7 +275,7 @@ public final class ParseProjectXml extends Task {
     }
     
     
-    public void execute() throws BuildException {
+    public @Override void execute() throws BuildException {
         try {
             if (getProjectFile() == null) {
                 throw new BuildException("You must set 'project' or 'projectfile'", getLocation());
@@ -563,7 +563,7 @@ public final class ParseProjectXml extends Task {
             this.modules = modules;
         }
         
-        public String toString() throws BuildException {
+        public @Override String toString() throws BuildException {
             StringBuffer b = new StringBuffer(codenamebase);
             if (release != null) {
                 b.append('/');
@@ -907,7 +907,7 @@ public final class ParseProjectXml extends Task {
         
     /** construct test compilation compilation dependencies.
      * Use case: unit tests of masterfs depends on tests of fs
-     * @return relatives projects folders separated by colon mark(,)
+     * @return relative project folder paths separated by comma
      */
     public  String getTestCompileDep() {
         Set<String> cnbs = new HashSet<String>();
@@ -921,7 +921,7 @@ public final class ParseProjectXml extends Task {
             return;
         }
         ModuleListParser.Entry entry = modulesParser.findByCodeNameBase(cnb);
-        if (!cnbs.isEmpty()) {
+        if (!cnbs.isEmpty() && entry != null) {
             // check if is tests are already built
             for (TestDep td : dependencies) {
                 if (cnb.equals(td.cnb) && new File(td.getTestJarPath()).exists()) {
