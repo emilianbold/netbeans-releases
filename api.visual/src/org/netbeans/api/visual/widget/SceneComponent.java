@@ -205,6 +205,8 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
         WidgetAction.State state = processLocationOperator (Operator.DROP, new WidgetAction.WidgetDropTargetDropEvent (++ eventIDcounter, e));
         if (! state.isConsumed ())
             e.rejectDrop ();
+        else
+            e.dropComplete (true);
     }
 
     private WidgetAction.State processLocationOperator (Operator operator, WidgetAction.WidgetLocationEvent event) {
