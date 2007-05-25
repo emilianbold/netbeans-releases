@@ -32,7 +32,8 @@ public class UMLMeasureActions  {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
             
-        //suite.addTest(new TestCase("measureTime", "Name of the performance data"));
+        suite.addTest(new OpenUMLProject("measureTime", "Open UML Project"));
+        suite.addTest(new ReverseEngineering("measureTime", "Reverse Engineering"));
         return suite;
     }
     
