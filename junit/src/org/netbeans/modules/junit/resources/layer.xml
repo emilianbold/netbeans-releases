@@ -175,8 +175,9 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
             <file name="org-netbeans-modules-junit-GoToOppositeAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-GoToOppositeAction.instance"/>            
             </file>
+            <attr name="org-netbeans-modules-java-actions-GoToType/org-netbeans-modules-junit-GoToOppositeAction.shadow" boolvalue="true"/>   
             <attr name="org-netbeans-modules-junit-GoToOppositeAction.shadow/org-netbeans-core-windows-actions-RecentViewListAction.shadow" boolvalue="true"/>   
-
+            <attr name="org-netbeans-modules-jumpto-file-FileSearchAction.shadow/org-netbeans-modules-junit-GoToOppositeAction.shadow" boolvalue="true"/>   
         </folder>
         <folder name="Window">
             <folder name="Output">

@@ -67,6 +67,8 @@ Microsystems, Inc. All Rights Reserved.
             </file>            
             <attr name="org-netbeans-modules-editor-MainMenuAction$ShowToolBarAction.instance/org-netbeans-modules-versioning-diff-ShowDiffSidebarAction.shadow" boolvalue="true"/>
             <attr name="org-netbeans-modules-versioning-diff-ShowDiffSidebarAction.shadow/org-netbeans-modules-versioning-ShowTextAnnotationsAction.shadow" boolvalue="true"/>
+            <attr name="org-netbeans-modules-versioning-diff-ShowDiffSidebarAction.shadow/ToggleFullScreenAction.shadow" boolvalue="true"/>
+            <attr name="org-netbeans-modules-versioning-ShowTextAnnotationsAction.shadow/ToggleFullScreenAction.shadow" boolvalue="true"/>
         </folder>
 
         <attr name="RunProject/Versioning" boolvalue="true" />
