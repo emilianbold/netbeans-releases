@@ -25,6 +25,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -109,7 +110,7 @@ public abstract class JPAProblemFinder {
             // end of workround for 102643
             
             MetadataModel<EntityMappingsMetadata> emModel = scope.getEntityMappingsModel(null);
-            emModel.runReadAction(new MetadataModelAction<EntityMappingsMetadata, Void>() {
+            emModel.runReadActionWhenReady(new MetadataModelAction<EntityMappingsMetadata, Void>() {
                 public Void run(EntityMappingsMetadata metadata) {
                     for (Tree tree : info.getCompilationUnit().getTypeDecls()){
                         if (isCancelled()){
@@ -117,15 +118,23 @@ public abstract class JPAProblemFinder {
                         }
                         
                         if (tree.getKind() == Tree.Kind.CLASS){
+                            long startTime = Calendar.getInstance().getTimeInMillis();                            
                             TreePath path = info.getTrees().getPath(info.getCompilationUnit(), tree);
                             TypeElement javaClass = (TypeElement) info.getTrees().getElement(path);
-                            LOG.fine("processing class " + javaClass.getSimpleName());
+                                                      
                             context = findProblemContext(info, javaClass, metadata, false);
                             JPARulesEngine rulesEngine = new JPARulesEngine();
                             javaClass.accept(rulesEngine, context);
                             problemsFound.addAll(rulesEngine.getProblemsFound());
                             
                             problemsFound.addAll(processIdClassAnnotation(info, javaClass, metadata));
+                            
+                            if (LOG.isLoggable(Level.FINE)){
+                                long timeElapsed = Calendar.getInstance().getTimeInMillis() - startTime;
+                                
+                                LOG.log(Level.FINE, "processed class {0} in {1} ms",
+                                        new Object[]{javaClass.getSimpleName(), timeElapsed});
+                            }
                             
                             synchronized(cancellationLock){
                                 context = null;
@@ -138,7 +147,6 @@ public abstract class JPAProblemFinder {
             });
             
             //TODO: should we really reset the errors if the task is cancelled?
-            LOG.log(Level.FINE, "resetting errors, current number of errors in file: {0}", problemsFound.size());
             HintsController.setErrors(file, "JPA Verification", problemsFound); //NOI18N
             runningInstance = null;
         }
