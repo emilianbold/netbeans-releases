@@ -28,7 +28,6 @@
         </folder>
     </folder>
     -->
-
     <folder name="Actions">
         <folder name="File">
             <file name="org-netbeans-modules-print-impl-action-PageSetupAction.instance"/>
@@ -73,7 +72,7 @@
         <file name="D-P.shadow"> <!-- Ctrl+P -->
             <attr name="originalFile" stringvalue="Actions/File/org-netbeans-modules-print-impl-action-PrintAction.instance"/>
         </file>
-        <file name="OS-P.shadow"> <!-- Alt+Shift+P -->
+        <file name="DOS-P.shadow"> <!-- Ctrl+Alt+Shift+P -->
             <attr name="originalFile" stringvalue="Actions/File/org-netbeans-modules-print-impl-action-PreviewAction.instance"/>
         </file>
     </folder>
