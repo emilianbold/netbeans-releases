@@ -2,7 +2,7 @@
 <!DOCTYPE mconfig PUBLIC "-//NetBeans//DTD XTest cfg 1.0//EN" "http://www.netbeans.org/dtds/xtest-cfg-1_0.dtd">
 <!--
  The contents of this file are subject to the terms of the Common Development
- and Distribution License (the License). You may not use this file excUMLt in
+ and Distribution License (the License). You may not use this file except in
  compliance with the License.
  
  You can obtain a copy of the License at http://www.netbeans.org/cddl.html
@@ -11,7 +11,7 @@
  When distributing Covered Code, include this CDDL Header Notice in each file
  and include the License file at http://www.netbeans.org/cddl.txt.
  If applicable, add the following below the CDDL Header, with the fields
- enclosed by brackets [] rUMLlaced by your own identifying information:
+ enclosed by brackets [] replaced by your own identifying information:
  "Portions Copyrighted [year] [name of copyright owner]"
  
  The Original Software is NetBeans. The Initial Developer of the Original
@@ -110,43 +110,33 @@
         </testset>
     </testbag>
 -->    
-    <!-- Scan Classpath test bag -->    
-    <testbag testattribs="all or classpath_scan" prio="100"
-             executor="ide_performance_scan" name="Classpath Scan" >
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="gui/scanclasspath/UMLScanClasspath.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-
     
 <!-- Memory Footprint Testbags -->
 
-    <!-- J2EE Project workflow -->
-    <testbag testattribs="all or footprint or footprint_EntUMLrisUMLroject" prio="330"
-             executor="ide_footprint" name="Footprint - J2EE project workflow" >
+    <!-- UML Project workflow -->
+    <testbag testattribs="all or footprint or footprint_UMLproject" prio="330"
+             executor="ide_footprint" name="Footprint - UML project workflow" >
 	<testset dir="footprint/src">
 	    <patternset>
-		<include name="footprint/J2EUMLrojectWorkflow.class"/>
+		<include name="footprint/UMLWorkflow.class"/>
 	    </patternset>
 	</testset>
     </testbag>
 
-    <testbag testattribs="(all or footprint or footprint_EntUMLrisUMLroject) and NOT once" prio="331"
-             executor="ide_footprint" name="Footprint - J2EE project workflow" >
+    <testbag testattribs="(all or footprint or footprint_UMLproject) and NOT once" prio="331"
+             executor="ide_footprint" name="Footprint - UML project workflow" >
 	<testset dir="footprint/src">
 	    <patternset>
-		<include name="footprint/J2EUMLrojectWorkflow.class"/>
+		<include name="footprint/UMLWorkflow.class"/>
 	    </patternset>
 	</testset>
     </testbag>
 
-    <testbag testattribs="(all or footprint or footprint_EntUMLrisUMLroject) and NOT once" prio="332"
-             executor="ide_footprint" name="Footprint - J2EE project workflow" >
+    <testbag testattribs="(all or footprint or footprint_UMLproject) and NOT once" prio="332"
+             executor="ide_footprint" name="Footprint - UML project workflow" >
 	<testset dir="footprint/src">
 	    <patternset>
-		<include name="footprint/J2EUMLrojectWorkflow.class"/>
+		<include name="footprint/UMLWorkflow.class"/>
 	    </patternset>
 	</testset>
     </testbag>

@@ -19,8 +19,6 @@
 
 package gui;
 
-import gui.window.*;
-
 import org.netbeans.junit.NbTestSuite;
 
 /**

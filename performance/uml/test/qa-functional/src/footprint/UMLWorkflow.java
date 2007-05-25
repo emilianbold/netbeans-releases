@@ -20,25 +20,27 @@
 package footprint;
 
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.OutputOperator;
+import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.actions.EditAction;
-import org.netbeans.jellytools.actions.SaveAllAction;
+import org.netbeans.jellytools.WizardOperator;
+import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.actions.OutputWindowViewAction;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JListOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 /**
- * Measure J2EE Project Workflow Memory footprint
+ * Measure UML Project Workflow Memory footprint
  *
  * @author  mmirilovic@netbeans.org
  */
 public class UMLWorkflow extends org.netbeans.performance.test.utilities.MemoryFootprintTestCase {
     
-    private String j2eeproject, j2eeproject_ejb, j2eeproject_war, j2eeproject_app;
+    private ProjectRootNode j2seproject, j2seprojectmodel;
     
     /**
      * Creates a new instance of J2EEProjectWorkflow
@@ -47,7 +49,7 @@ public class UMLWorkflow extends org.netbeans.performance.test.utilities.MemoryF
      */
     public UMLWorkflow(String testName) {
         super(testName);
-        prefix = "J2EE Project Workflow |";
+        prefix = "UML Project Workflow |";
     }
     
     /**
@@ -58,7 +60,12 @@ public class UMLWorkflow extends org.netbeans.performance.test.utilities.MemoryF
      */
     public UMLWorkflow(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        prefix = "J2EE Project Workflow |";
+        prefix = "UML Project Workflow |";
+    }
+    
+    @Override
+    public void setUp() {
+        //do nothing
     }
     
     public void prepare() {
@@ -71,49 +78,45 @@ public class UMLWorkflow extends org.netbeans.performance.test.utilities.MemoryF
     }
     
     public ComponentOperator open(){
-        // Create, edit, build and execute a sample J2EE project
-        // Create, edit, build and execute a sample J2EE project
-        j2eeproject = UMLFootprintUtilities.creatJ2EEeproject("Enterprise", "Enterprise Application", true);  // NOI18N
-        j2eeproject_ejb = j2eeproject + "-ejb";
-        j2eeproject_war = j2eeproject + "-war";
-        j2eeproject_app = j2eeproject + "-app-client";
+        // Create, edit, build and execute a sample J2SE project
+        String j2seprojectName = UMLFootprintUtilities.createproject("Samples|General", "Anagram Game", true);
+        j2seproject = new ProjectsTabOperator().getProjectRootNode(j2seprojectName);
         
-        UMLFootprintUtilities.openFile(new Node(new ProjectsTabOperator().getProjectRootNode(j2eeproject_war), UMLFootprintUtilities.WEB_PAGES + "|index.jsp"),"index.jsp", true);
-        UMLFootprintUtilities.insertToFile("index.jsp", 23, "Hello World", true);
+        new OutputWindowViewAction().performAPI();
+        UMLFootprintUtilities.buildproject(j2seprojectName);
         
-        new EditAction().perform(new Node(new ProjectsTabOperator().getProjectRootNode(j2eeproject_war), "Configuration Files|sun-web.xml")); // NOI18N
-        TopComponentOperator xmlEditor = new TopComponentOperator("sun-web.xml");
-        new JButtonOperator(xmlEditor, "New...", 0).push(); //NOI18N
+        // reverse enginnering
+        new ActionNoBlock(null,"Reverse Engineer...").performPopup(j2seproject); //NOI18N
+        new NbDialogOperator("Reverse Engineer").ok(); //NOI18N
         
-        NbDialogOperator dialog = new NbDialogOperator("JSP Configuration Property"); // NOI18N
-        JComboBoxOperator combo = new JComboBoxOperator(dialog, 0);
-        combo.selectItem("javaEncoding");
-        combo.waitItemSelected("javaEncoding");
-        dialog.ok();
+        new OutputOperator().getOutputTab("Reverse Engineering Log").waitText("Task Successful"); //NOI18N
+        j2seprojectmodel = new ProjectsTabOperator().getProjectRootNode(j2seprojectName+"-Model");
+        j2seprojectmodel.expand();
         
-        if (xmlEditor.isModified() )
-            xmlEditor.saveDocument();
+        Node modelNode = new Node(j2seprojectmodel, "Model");
+        modelNode.expand();
         
-        Node node = new Node(new SourcePackagesNode(j2eeproject_app), new SourcePackagesNode(j2eeproject_app).getChildren()[0]+"|Main.java" );
-        UMLFootprintUtilities.openFile(node,"Main.java",true);
-        UMLFootprintUtilities.insertToFile("Main.java", 20, "System.out.println(\"Hello World\");",true);
+        String modelNodeNames[] = modelNode.getChildren();
+        Node modelNodes[] = new Node[modelNodeNames.length];
         
-        new SaveAllAction().performAPI();
+        for (int i = 0; i < modelNodeNames.length; i++) {
+            modelNodes[i] = new Node(modelNode, modelNodeNames[i]);
+        }
         
-        UMLFootprintUtilities.buildproject(j2eeproject);
-        //runProject(j2seproject,true);
-        //debugProject(j2seproject,true);
-        //testProject(j2seproject);
-        //collapseProject(j2seproject);
+        new ActionNoBlock(null,"Create Diagram From Selected Elements...").performPopup(modelNodes); //NOI18N
+        WizardOperator createNewDiagram = new WizardOperator("Create New Diagram"); //NOI18N
+        new JListOperator(createNewDiagram, "Activity Diagram").selectItem("Class Diagram"); //NOI18N
+        JTextFieldOperator textfield = new JTextFieldOperator(createNewDiagram);
+        textfield.clearText();
+        textfield.typeText("ClassDiagram");
+        createNewDiagram.finish();
         
         return null;
     }
     
     public void close(){
-        UMLFootprintUtilities.deleteProject(j2eeproject);
-        UMLFootprintUtilities.deleteProject(j2eeproject_war);
-        UMLFootprintUtilities.deleteProject(j2eeproject_ejb);
-        UMLFootprintUtilities.deleteProject(j2eeproject_app,false);
+//        UMLFootprintUtilities.deleteProject(j2seprojectmodel.getText());
+//        UMLFootprintUtilities.deleteProject(j2seproject.getText());
     }
     
     public static void main(java.lang.String[] args) {
