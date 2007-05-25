@@ -7,6 +7,7 @@
 package org.netbeans.modules.visualweb.ejb.util;
 
 import java.io.File;
+import java.util.logging.Logger;
 
 /**
  * This class contains some utility methods
@@ -14,6 +15,16 @@ import java.io.File;
  * @author  cao
  */
 public class Util {
+    
+    /** Logger for visualweb EJB module */
+    private static final Logger logger;
+
+    static {
+        String utilPkg = Util.class.getPackage().getName();
+        int lastIndex = utilPkg.lastIndexOf(".");
+        String codeNameBase = utilPkg.substring(0, lastIndex);
+        logger = Logger.getLogger(codeNameBase);
+    }
     
     /**
      * Get the file name out of the path
@@ -101,5 +112,9 @@ public class Util {
             return true;
         else
             return false;
+    }
+    
+    public static Logger getLogger() {
+        return logger;
     }
 }

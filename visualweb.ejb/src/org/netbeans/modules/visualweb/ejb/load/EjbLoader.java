@@ -6,18 +6,25 @@
 
 package org.netbeans.modules.visualweb.ejb.load;
 
+import java.io.File;
+import java.lang.reflect.Method;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
 import org.netbeans.modules.visualweb.ejb.datamodel.EjbContainerVendor;
-import org.netbeans.modules.visualweb.ejb.datamodel.EjbInfo;
 import org.netbeans.modules.visualweb.ejb.datamodel.EjbGroup;
+import org.netbeans.modules.visualweb.ejb.datamodel.EjbInfo;
 import org.netbeans.modules.visualweb.ejb.datamodel.MethodInfo;
 import org.netbeans.modules.visualweb.ejb.datamodel.MethodParam;
 import org.netbeans.modules.visualweb.ejb.datamodel.MethodReturn;
 import org.netbeans.modules.visualweb.ejb.ui.ConfigureMethodsDialog;
 import org.netbeans.modules.visualweb.ejb.util.Util;
-import java.io.File;
-import java.lang.reflect.Method;
-import java.net.URLClassLoader;
-import java.util.*;
 import org.openide.ErrorManager;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
@@ -30,8 +37,8 @@ import org.openide.util.NbBundle;
 public class EjbLoader {
     
     // The package where all the client wrapper will be
-    // TODO - Need to fix this package name
-    public static final String CLIENT_WRAPPER_PACKAGE_NAME = "com.sun.rave.ejbwrapper";
+    // FIXME The icon code needs to be fixed. Right now it's either broken or working by accident.
+    public static final String CLIENT_WRAPPER_PACKAGE_NAME = "org.netbeans.modules.visualweb.ejb";
     
     // Two jar files needed for compiling the generated data provider and wrapper classes
     public static final String ejb20Jar = InstalledFileLocator.getDefault().locate("modules/ext/ejb20.jar", null, false ).getAbsolutePath(); // NOI18N

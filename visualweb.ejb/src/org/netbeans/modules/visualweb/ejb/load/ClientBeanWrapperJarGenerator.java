@@ -110,7 +110,7 @@ public class ClientBeanWrapperJarGenerator {
                                     origin = new BufferedInputStream( beanImageIn, BUFFER );
                                     
                                     // The image entry should be something like org/netbeans/modules/visualweb/ejb/resources/session_bean.png
-                                    JarEntry beanImageEntry = new JarEntry( EjbLoader.CLIENT_WRAPPER_PACKAGE_NAME.replace( '.', '/' ) + "/images/" + entryNames[i] ); // NOI18N
+                                    JarEntry beanImageEntry = new JarEntry( EjbLoader.CLIENT_WRAPPER_PACKAGE_NAME.replace( '.', '/' ) + "/resources/" + entryNames[i] ); // NOI18N
                                     jarOutputStream.putNextEntry( beanImageEntry );
                                     
                                     int count;
