@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.modules.javacvs.actions;
@@ -21,7 +21,8 @@ package org.netbeans.jellytools.modules.javacvs.actions;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 
-/** Used to call "Versioning|CVS|Import into Repository" popup or main menu item.
+/** Used to call "Versioning|CVS|Import into Repository" main menu item or
+ * "Versioning|Import into CVS Repository..." popup.
  * @see ActionNoBlock
  * @author Jiri.Skrivanek@sun.com
  */
@@ -36,10 +37,13 @@ public class ImportAction extends ActionNoBlock {
     // "Import into Repository"
     private static final String IMPORT_ITEM = Bundle.getStringTrimmed(
             "org.netbeans.modules.versioning.system.cvss.ui.actions.project.Bundle", "BK0006");
+    // Import into CVS Repository...
+    private static final String IMPORT_CVS_ITEM = Bundle.getStringTrimmed(
+            "org.netbeans.modules.versioning.system.cvss.Bundle", "CTL_PopupMenuItem_Import");
     
     /** Creates new ImportAction instance. */
     public ImportAction() {
-        super(VERSIONING_ITEM+"|"+CVS_ITEM+"|"+IMPORT_ITEM, CVS_ITEM+"|"+IMPORT_ITEM);
+        super(VERSIONING_ITEM+"|"+CVS_ITEM+"|"+IMPORT_ITEM, VERSIONING_ITEM+"|"+IMPORT_CVS_ITEM);
     }
 }
 
