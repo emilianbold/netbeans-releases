@@ -1133,7 +1133,8 @@ A connection can have assigned a source and a target <code>AnchorShape</code> an
 
 <ul>
 <li><code>RouterFactory.createDirectRouter</code> creates a straight line between the source and the target anchor.
-<li><code>RouterFactory.createOrthogonalSeachRouter (Collector)</code> creates an orthogonal path that tries to avoid overlapping areas specified by the <code>Collector</code>. There is a built-in implementation <code>RouterFactory.createWidgetsCollisionCollector (LayerWidget...)</code> which collects all validated children widgets of the specified layer widgets and for each it gets the widget boundary and claims it as a vertical and horizontal collision. In case of ConnectionWidget, it takes the path (defined by its control points) and claims all horizontal and vertical segments as appropriate collisions.
+<li><code>RouterFactory.createOrthogonalSeachRouter (CollisionsCollector)</code> creates an orthogonal path that tries to avoid overlapping areas specified by the <code>CollisionsCollector</code>. There is a built-in implementation <code>RouterFactory.createWidgetsCollisionCollector (LayerWidget...)</code> which collects all validated children widgets of the specified layer widgets and for each it gets the widget boundary and claims it as a vertical and horizontal collision. In case of ConnectionWidget, it takes the path (defined by its control points) and claims all horizontal and vertical segments as appropriate collisions.
+<li><code>RouterFactory.createOrthogonalSeachRouter (ConnectionWidgetCollisionsCollector)</code> creates an orthogonal path similarly as the previous case but the <code>ConnectionWidgetCollisionsCollector</code> gets a context of currently routed connection widget.
 <li><code>RouterFactory.createFreeRouter</code> is similar to <code>DirectRouter</code> but it modifies only the first and last point of the route. The "middle" control points stay the same. This effect is used by <code>AddRemoveControlPointAction</code> to maintain the control points created by user.
 </ul>
 
@@ -1881,7 +1882,24 @@ Supported animations:
 <tr>
 <td>animateForegroundColor (Widget, Color targetForegroundColor)
 <td>Starts foregroundColor animation for the widget.
+<tr>
+<td>getPreferredLocationAnimator
+<td>Returns the preferred location animator which controls animation of preferred location of all widgets in the scene.
+<tr>
+<td>getPreferredBoundsAnimator
+<td>Returns the preferred bounds animator which controls animation of preferred bounds of all widgets in the scene.
+<tr>
+<td>getZoomAnimator
+<td>Returns the zoom animator of the scene.
+<tr>
+<td>getColorAnimator
+<td>Returns the color animator which controls backgorund and foreground animation of all widgets in the scene.
 </table>
+
+<p>
+Each animation is done by an <code>Animator</code> interface implementation. The <code>Animator</code> allows to listen
+to important events of an animator <strong>started</strong>, <strong>finished</strong>, <strong>reset</strong>, <strong>pre-tick</strong> and <strong>post-tick</strong> events using <code>AnimatorListener</code> interface.
+Instances of built-in animators can be obtained using getters of the <code>SceneAnimator</code> class.
 
 <p>
 

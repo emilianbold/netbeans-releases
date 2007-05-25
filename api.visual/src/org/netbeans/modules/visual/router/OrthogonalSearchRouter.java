@@ -21,6 +21,7 @@ package org.netbeans.modules.visual.router;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.router.Router;
 import org.netbeans.api.visual.router.CollisionsCollector;
+import org.netbeans.api.visual.router.ConnectionWidgetCollisionsCollector;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 
 import java.awt.*;
@@ -38,9 +39,14 @@ public final class OrthogonalSearchRouter implements Router {
     static final int SPACING_NODE = 16;
 
     private CollisionsCollector collector;
+    private ConnectionWidgetCollisionsCollector connectionWidgetCollector;
 
     public OrthogonalSearchRouter (CollisionsCollector collector) {
         this.collector = collector;
+    }
+
+    public OrthogonalSearchRouter (ConnectionWidgetCollisionsCollector collector) {
+        this.connectionWidgetCollector = collector;
     }
 
     public java.util.List<Point> routeConnection (ConnectionWidget widget) {
@@ -51,7 +57,11 @@ public final class OrthogonalSearchRouter implements Router {
 
         ArrayList<Rectangle> verticalCollisions = new ArrayList<Rectangle> ();
         ArrayList<Rectangle> horizontalCollisions = new ArrayList<Rectangle> ();
-        collector.collectCollisions (verticalCollisions, horizontalCollisions);
+        if (collector != null)
+            collector.collectCollisions (verticalCollisions, horizontalCollisions);
+        else
+            connectionWidgetCollector.collectCollisions (widget, verticalCollisions, horizontalCollisions);
+
 
         Anchor.Result sourceResult = sourceAnchor.compute(widget.getSourceAnchorEntry ());
         Anchor.Result targetResult = targetAnchor.compute(widget.getTargetAnchorEntry ());

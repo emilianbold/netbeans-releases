@@ -88,4 +88,17 @@ public final class RouterFactory {
         return new WidgetsCollisionCollector (layers);
     }
 
+    /**
+     * Creates an orthogonal search router. The router uses collision regions from specified collector
+     * with a connection widget context.
+     * The instance can be shared by multiple widgets.
+     * @param collector the collision collector
+     * @return the orthogonal search router
+     * @since 2.2
+     */
+    public static Router createOrthogonalSearchRouter (ConnectionWidgetCollisionsCollector collector) {
+        assert collector != null;
+        return new OrthogonalSearchRouter (collector);
+    }
+
 }

@@ -188,6 +188,42 @@ public final class SceneAnimator {
         colorAnimator.setForegroundColor (widget, targetForegroundColor);
     }
 
+    /**
+     * Returns the preferred location animator which animates preferred location of all widgets in the scene.
+     * @return the preferred location animator
+     * @since 2.2
+     */
+    public Animator getPreferredLocationAnimator () {
+        return preferredLocationAnimator;
+    }
+
+    /**
+     * Returns the preferred bounds animator which animates preferred bounds of all widgets in the scene.
+     * @return the preferred bounds animator
+     * @since 2.2
+     */
+    public Animator getPreferredBoundsAnimator () {
+        return preferredBoundsAnimator;
+    }
+
+    /**
+     * Returns the zoom animator.
+     * @return the zoom animator
+     * @since 2.2
+     */
+    public Animator getZoomAnimator () {
+        return zoomAnimator;
+    }
+
+    /**
+     * Returns the color animator which animates background and foreground colors of all widgets in the scene.
+     * @return the preferred location animator
+     * @since 2.2
+     */
+    public Animator getColorAnimator () {
+        return colorAnimator;
+    }
+
     private class UpdateTask implements Runnable {
 
         public void run () {

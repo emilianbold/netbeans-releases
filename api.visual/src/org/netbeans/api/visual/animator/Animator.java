@@ -20,21 +20,26 @@ package org.netbeans.api.visual.animator;
 
 import org.netbeans.api.visual.widget.Scene;
 
+import java.util.concurrent.CopyOnWriteArrayList;
+
 /**
  * Represents an animator. An animator is registed to a scene animator and could be started.
  * From that moment the scene animator automatically calls Animator.tick method for a solid period of time set by the scene animator.
  * In the tick method the animation has to implemented. The animation should be independent on time-duration.
+ * <p>
+ * Since 2.2, it is possible to listener on important events of the animator using <code>AnimatorListener</code> interface.
  *
  * @author David Kaspar
  */
 public abstract class Animator {
 
+    private CopyOnWriteArrayList<AnimatorListener> listeners = new CopyOnWriteArrayList<AnimatorListener> ();
     private SceneAnimator sceneAnimator;
     private boolean reset;
 
     /**
      * Creates an animator and assigns a scene animator.
-     * @param sceneAnimator
+     * @param sceneAnimator the scene animator
      */
     protected Animator (SceneAnimator sceneAnimator) {
         assert sceneAnimator != null;
@@ -53,6 +58,11 @@ public abstract class Animator {
      * Registers and starts the animation.
      */
     protected final void start () {
+        if (! listeners.isEmpty ()) {
+            AnimatorEvent event = new AnimatorEvent (this);
+            for (AnimatorListener listener : listeners)
+                listener.animatorStarted (event);
+        }
         sceneAnimator.start (this);
     }
 
@@ -65,6 +75,11 @@ public abstract class Animator {
     }
 
     final void reset () {
+        if (! listeners.isEmpty ()) {
+            AnimatorEvent event = new AnimatorEvent (this);
+            for (AnimatorListener listener : listeners)
+                listener.animatorReset (event);
+        }
         reset = true;
     }
 
@@ -73,7 +88,28 @@ public abstract class Animator {
             reset = false;
             return;
         }
+
+        if (! listeners.isEmpty ()) {
+            AnimatorEvent event = new AnimatorEvent (this, progress);
+            for (AnimatorListener listener : listeners)
+                listener.animatorPreTick (event);
+        }
+
         tick (progress);
+
+        if (! listeners.isEmpty ()) {
+            AnimatorEvent event = new AnimatorEvent (this, progress);
+            for (AnimatorListener listener : listeners)
+                listener.animatorPostTick (event);
+        }
+
+        if (progress >= 1.0) {
+            if (! listeners.isEmpty ()) {
+                AnimatorEvent event = new AnimatorEvent (this);
+                for (AnimatorListener listener : listeners)
+                    listener.animatorFinished (event);
+            }
+        }
     }
 
     /**
@@ -82,5 +118,23 @@ public abstract class Animator {
      * @param progress the progress
      */
     protected abstract void tick (double progress);
+
+    /**
+     * Adds an animator listener to the animator.
+     * @param listener the animator listener
+     * @since 2.2
+     */
+    public void addAnimatorListener (AnimatorListener listener) {
+        listeners.add (listener);
+    }
+
+    /**
+     * Removes an animator listener from the animator.
+     * @param listener the animator listener
+     * @since 2.2
+     */
+    public void removeAnimatorListener (AnimatorListener listener) {
+        listeners.remove (listener);
+    }
 
 }
