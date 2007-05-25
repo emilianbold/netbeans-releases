@@ -23,4 +23,8 @@ Microsystems, Inc. All Rights Reserved.
         <ext name="js"/>
         <resolver mime="text/javascript"/>
     </file>
+    <file>
+        <ext name="json"/>
+        <resolver mime="text/x-json"/>
+    </file>
 </MIME-resolver>

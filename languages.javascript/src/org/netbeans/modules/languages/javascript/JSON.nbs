@@ -1,0 +1,173 @@
+# The contents of this file are subject to the terms of the Common Development
+# and Distribution License (the License). You may not use this file except in
+# compliance with the License.
+#
+# You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+# or http://www.netbeans.org/cddl.txt.
+#
+# When distributing Covered Code, include this CDDL Header Notice in each file
+# and include the License file at http://www.netbeans.org/cddl.txt.
+# If applicable, add the following below the CDDL Header, with the fields
+# enclosed by brackets [] replaced by your own identifying information:
+# "Portions Copyrighted [year] [name of copyright owner]"
+#
+# The Original Software is NetBeans. The Initial Developer of the Original
+# Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+# Microsystems, Inc. All Rights Reserved.
+
+
+
+########### tokens #############################################################
+
+TOKEN:js_comment: ("/*" - "*/")
+TOKEN:js_line_comment: ("//"[^"\n""\r"]*)
+
+TOKEN:js_keyword: (
+    "true" | "false" | "null"
+)
+
+TOKEN:js_operator: (
+    "," | "(" | ")" | ":" | "[" | "]"
+)
+
+TOKEN:js_separator: ( "{" | "}" )
+
+TOKEN:js_string: (
+    "\"" ( 
+        [^ "\\" "\"" "\n" "\r"] |
+        ("\\" (
+            . |
+            (["0"-"7"] ["0"-"7"] ["0"-"7"]) |
+            ("x" ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"]) |
+            ("u" ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"])
+        ))
+    )* 
+    "\""
+)
+TOKEN:js_string: (
+    "\'" ( 
+        [^ "\\" "\'" "\n" "\r"] |
+        ("\\" (
+            . |
+            (["0"-"7"] ["0"-"7"] ["0"-"7"]) |
+            ("x" ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"]) |
+            ("u" ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"])
+        ))
+    )* 
+    "\'"
+)
+
+TOKEN:js_number: (
+    ["0"-"9"] ['l' 'L']? |
+    ["1"-"9"] ["0"-"9"]* ['l' 'L']? |
+    "0" ["0"-"7"]+ ['l' 'L']? |
+    "0" ["x" "X"] ["0"-"9" "a"-"f" "A"-"F"]+ ['l' 'L']? |
+    ["0"-"9"]+ "." ["0"-"9"]* (["e" "E"] ["+" "-"]? ["0"-"9"]+)? ["f" "F" "d" "D"]? |
+    "." ["0"-"9"]+ (["e" "E"] ["+" "-"]? ["0"-"9"]+)? ["f" "F" "d" "D"]? |
+    ["0"-"9"]+ ["e" "E"] ["+" "-"]? ["0"-"9"]+ ["f" "F" "d" "D"]? |
+    ["0"-"9"]+ (["e" "E"] ["+" "-"]? ["0"-"9"]+)? ["f" "F" "d" "D"]
+)
+
+TOKEN:js_whitespace: ([" " "\t" "\n" "\r"]+)
+
+
+########### grammar ############################################################
+
+SKIP:js_whitespace
+SKIP:js_comment
+SKIP:js_line_comment
+
+S = [Object];
+Object = "{" Members "}";
+Members = Pair ("," Pair)*;
+Pair = <js_string> ":" Value;
+Value = <js_string> | <js_number> | Object | Array | "true" | "false" | "null";
+Array = "[" [Elements] "]";
+Elements = Value ("," Value)*;
+
+
+########### colors #############################################################
+
+COLOR:js_separator: {
+    color_name: "js_operator";
+}
+
+########### code folding #######################################################
+
+FOLD:js_comment: {
+    expand_type_action_name:"LBL_ExpandComments";
+    collapse_type_action_name:"LBL_CollapseComments";
+}
+FOLD:Array: {
+    expand_type_action_name:"LBL_ExpandArrays";
+    collapse_type_action_name:"LBL_CollapseArrays";
+}
+FOLD:Object: {
+    expand_type_action_name:"LBL_ExpandObjects";
+    collapse_type_action_name:"LBL_CollapseObjects";
+}
+
+########### brace matching #####################################################
+
+BRACE "{:}"
+BRACE "[:]"
+
+########### navigator ##########################################################
+
+NAVIGATOR:Pair: {
+    display_name: "$js_string$";
+    icon: "/org/netbeans/modules/languages/resources/variable.gif";
+}
+NAVIGATOR:Value: {
+    display_name: "$$";
+    icon: "/org/netbeans/modules/languages/resources/variable.gif";
+}
+
+MARK:ERROR: {
+    type:"Error";
+    message:"Syntax error.";
+}
+
+MARK:error: {
+    type:"Error";
+    message:"Unexpected character.";
+}
+COMPLETE "{:}"
+COMPLETE "\":\""
+COMPLETE "':'"
+COMPLETE "[:]"
+
+INDENT "(:)"
+INDENT "{:}"
+INDENT "[:]"
+
+PROPERTIES {
+    #traceSteps:"true";
+    #printRules:"true";
+    #printFirst:"true";
+    projectsViewIcon:"org/netbeans/modules/languages/javascript/JavaScript.jpg";
+}
+
+BUNDLE "org.netbeans.modules.languages.javascript.JavaScript"
+
+SELECTION ( ["a"-"z" "A"-"Z" "0"-"9" "_" "$"] )
+
+COMMENT_LINE {
+    prefix:"//";
+}
+
+########### actions ############################################################
+
+ACTION:run_script: {
+    name:"LBL_Run";
+    performer:org.netbeans.modules.languages.javascript.JavaScript.performRun;
+    enabled:org.netbeans.modules.languages.javascript.JavaScript.enabledRun;
+    explorer:"false";
+}
+
+IMPORT:js_string: {
+    mimeType:"text/x-string";
+    startSkipLength:"1";
+    endSkipLength:"1";
+}
+
