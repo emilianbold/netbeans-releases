@@ -15,8 +15,8 @@
 		<data>rave_nbpack-toc.xml</data>
 	</view>
 	<view>
-		<name>Index</name>
-		<label>Index</label>
+		<name></name>
+		<label></label>
 		<type>javax.help.IndexView</type>
 		<data>rave_nbpack-idx.xml</data>
 	</view>

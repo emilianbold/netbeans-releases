@@ -981,8 +981,6 @@
 						<file title="Root"/>
 						<file title="Template"/>
 					</directory>
-					<file title="new_project_choose_type.html"/>
-					<file title="new_project_name.html"/>
 				</directory>
 			</directory>
 			<directory title="web">

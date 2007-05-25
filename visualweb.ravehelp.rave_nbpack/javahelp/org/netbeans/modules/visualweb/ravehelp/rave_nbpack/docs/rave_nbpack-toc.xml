@@ -3,7 +3,7 @@
                      "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0">
-	<tocitem text="Visual Web Pack" expand="true">
+	<tocitem text="Visual Web Development" expand="true">
 		<tocitem text="Introduction and Setup" expand="false">
 			<tocitem text="Introducing the Visual Web Pack" target="projrave_intro_creator" />
 			<tocitem text="About Web Applications" target="projrave_design_web_app_concepts" />
@@ -443,7 +443,7 @@
 			</tocitem>
 		</tocitem>
 	</tocitem>
-	<tocitem text="Web Applications">
+	<tocitem text="Web Application Development">
 		<tocitem text="About Web Applications">
 			<tocitem text="About Web Applications" target="about_webapps" />
 			<tocitem text="Working with Web Applications" target="webapps_process" />

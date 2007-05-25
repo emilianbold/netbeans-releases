@@ -541,8 +541,6 @@
 	<mapID target="projrave_ui_elements_server_nav_run_query_options_dialog" url="ui_elements/server_nav/run_query_options_dialog.html"/>
 	<mapID target="projrave_ui_elements_server_nav_runtime_nav_driver_node_popup" url="ui_elements/server_nav/runtime_nav_driver_node_popup.html"/>
 	<mapID target="projrave_ui_elements_server_nav_runtime_navigator" url="ui_elements/server_nav/runtime_navigator.html"/>
-	<mapID target="projrave_ui_elements_wizards_new_project_choose_type" url="ui_elements/wizards/new_project_choose_type.html"/>
-	<mapID target="projrave_ui_elements_wizards_new_project_name" url="ui_elements/wizards/new_project_name.html"/>
 	<mapID target="propfiles.prop" url="ui_elements/editors/about_properties_editor.html"/>
 	<mapID target="about_webapps" url="web/about/about_webapps.html"/>
 	<mapID target="webapps_process" url="web/about/webapps_process.html"/>
