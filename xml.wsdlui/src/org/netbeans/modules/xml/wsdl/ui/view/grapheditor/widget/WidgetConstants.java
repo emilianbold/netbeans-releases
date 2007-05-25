@@ -34,12 +34,12 @@ import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.GradientFillBord
  */
 public interface WidgetConstants {
     /** The minimum width for message widget */
-    public int MESSAGE_MINIMUM_WIDTH = 600;
+    public int MESSAGE_MINIMUM_WIDTH = 550;
     /** The minimum widget for the top-level widgets (e.g. collaborations). */
-    public int PARTNERLLINKTYPE_MINIMUM_WIDTH = 675;
+    public int PARTNERLLINKTYPE_MINIMUM_WIDTH = 625;
     
     /** Minimum width for partnerlinktypes and messages header*/
-    public int HEADER_MINIMUM_WIDTH = 900;
+    public int HEADER_MINIMUM_WIDTH = 700;
     
     public Color HIT_POINT_BORDER = new Color(0xE68B2C);
 

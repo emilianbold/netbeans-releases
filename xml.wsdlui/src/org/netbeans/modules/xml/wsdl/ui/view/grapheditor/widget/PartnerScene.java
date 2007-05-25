@@ -203,7 +203,8 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
         }
     }
 
-    public Font getDefaultFont() {
+    @Override
+	public Font getDefaultFont() {
         return defaultFont;
     }
 
