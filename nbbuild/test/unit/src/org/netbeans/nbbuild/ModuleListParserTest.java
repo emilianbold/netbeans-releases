@@ -48,7 +48,7 @@ public class ModuleListParserTest extends TestCase {
         return file(root, relpath).getAbsolutePath();
     }
 
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
         String prop = System.getProperty("nb_all");
         assertNotNull("${nb_all} defined", prop);
@@ -56,7 +56,7 @@ public class ModuleListParserTest extends TestCase {
     }
     
     public void testScanSourcesInNetBeansOrg() throws Exception {
-        Hashtable properties = new Hashtable();
+        Hashtable<String,String> properties = new Hashtable<String,String>();
         properties.put("nb_all", nball.getAbsolutePath());
         File build = file(nball, "build");
         properties.put("netbeans.dest.dir", build.getAbsolutePath());
@@ -79,11 +79,13 @@ public class ModuleListParserTest extends TestCase {
         assertEquals("correct CP extensions (using <binary-origin> and relative paths)",
             Collections.singletonList(file(nball, "libs/external/xerces-2.8.0.jar")),
             Arrays.asList(e.getClassPathExtensions()));
+        /*
         e = p.findByCodeNameBase("javax.jmi.model");
         assertNotNull(e);
         assertEquals("correct CP extensions (using <binary-origin> and property substitutions #1)", Arrays.asList(new File[] {
             file(nball, "mdr/external/mof.jar"),
         }), Arrays.asList(e.getClassPathExtensions()));
+         */
         e = p.findByCodeNameBase("org.netbeans.modules.css");
         assertNotNull(e);
         assertEquals("correct CP extensions (using <binary-origin> and property substitutions #2)", Arrays.asList(new File[] {
@@ -127,7 +129,7 @@ public class ModuleListParserTest extends TestCase {
             public void buildStarted(BuildEvent buildEvent) {}
             public void buildFinished(BuildEvent buildEvent) {}
         });
-        Hashtable properties = new Hashtable();
+        Hashtable<String,String> properties = new Hashtable<String,String>();
         properties.put("netbeans.dest.dir", filePath(nball, "nbbuild/netbeans"));
         properties.put("basedir", filePath(nball, "apisupport/project/test/unit/data/example-external-projects/suite1/action-project"));
         properties.put("suite.dir", filePath(nball, "apisupport/project/test/unit/data/example-external-projects/suite1"));
@@ -174,7 +176,7 @@ public class ModuleListParserTest extends TestCase {
     }
     
     public void testScanSourcesAndBinariesForExternalStandaloneModule() throws Exception {
-        Hashtable properties = new Hashtable();
+        Hashtable<String,String> properties = new Hashtable<String,String>();
         properties.put("netbeans.dest.dir", filePath(nball, "apisupport/project/test/unit/data/example-external-projects/suite3/nbplatform"));
         properties.put("basedir", filePath(nball, "apisupport/project/test/unit/data/example-external-projects/suite3/dummy-project"));
         properties.put("project", filePath(nball, "apisupport/project/test/unit/data/example-external-projects/suite3/dummy-project"));
