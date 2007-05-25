@@ -5,7 +5,7 @@
 <toc version="2.0">
 	<tocitem text="Visual Web Development" expand="true">
 		<tocitem text="Introduction and Setup" expand="false">
-			<tocitem text="Introducing the Visual Web Pack" target="projrave_intro_creator" />
+			<tocitem text="Introducing Visual Web Development" target="projrave_intro_creator" />
 			<tocitem text="About Web Applications" target="projrave_design_web_app_concepts" />
 			<tocitem text="Working With Web Applications" target="projrave_general_process" />
 			<tocitem text="Introductory Tutorials" target="projrave_intro_web_walkthru" />
