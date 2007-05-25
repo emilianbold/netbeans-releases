@@ -8,15 +8,23 @@
  */
 
 package org.netbeans.modules.java.navigation;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -37,6 +45,7 @@ import javax.lang.model.util.ElementScanner6;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.timers.TimesCollector;
 import org.netbeans.modules.java.navigation.ElementNode.Description;
 
 /** XXX Remove the ElementScanner class from here it should be wenough to
@@ -47,8 +56,7 @@ import org.netbeans.modules.java.navigation.ElementNode.Description;
 public class ElementScanningTask implements CancellableTask<CompilationInfo>{
     
     private ClassMemberPanelUI ui;
-    private FindChildrenElementVisitor scanner;
-    private volatile boolean canceled;
+    private final AtomicBoolean canceled = new AtomicBoolean ();
     
     private static final String TYPE_COLOR = "#707070";
     
@@ -58,16 +66,12 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
     
     public void cancel() {
         //System.out.println("Element task canceled");
-        canceled = true;
-        if ( scanner != null ) {
-            scanner.cancel();
-        }
+        canceled.set(true);
     }
 
-    public void run(CompilationInfo info) throws Exception {
-        
-        canceled = false; // Task shared for one file needs reset first
-        
+    public void run(CompilationInfo info) throws Exception {        
+        canceled.set (false); // Task shared for one file needs reset first
+        long start = System.currentTimeMillis();        
         //System.out.println("The task is running" + info.getFileObject().getNameExt() + "=====================================" ) ;
         
         Description rootDescription = new Description( ui );
@@ -86,40 +90,111 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                 elements.add( e );
             }
         }
+        Map<Element,Long> pos = new HashMap<Element,Long>();
+        if (!canceled.get()) {
+            Trees trees = info.getTrees();
+            PositionVisitor posVis = new PositionVisitor (trees, canceled);
+            posVis.scan(cuTree, pos);
+        }
         
-        if ( !canceled ) {
-            scanner = new FindChildrenElementVisitor(info);                      
+        if ( !canceled.get()) {
+            FindChildrenElementVisitor scanner = new FindChildrenElementVisitor(info, pos, canceled);                      
             for (Element element : elements) {
                 scanner.scan(element, rootDescription);
             }
         }
         
-        if ( !canceled ) {
-            ui.refresh( rootDescription );
-            
+        if ( !canceled.get()) {
+            ui.refresh( rootDescription );            
         }
+        long end = System.currentTimeMillis();
+        TimesCollector.getDefault().reportTime(info.getFileObject(),  "element-scanning-task",   //NOI18N
+            "Element Scanning Task", end - start);   //NOI18N
+    }
+
+    private static class PositionVisitor extends TreePathScanner<Void, Map<Element,Long>> {
+
+        private final Trees trees;
+        private final SourcePositions sourcePositions;
+        private final AtomicBoolean canceled;
+        private CompilationUnitTree cu;
+
+        public PositionVisitor (final Trees trees, final AtomicBoolean canceled) {
+            assert trees != null;
+            assert canceled != null;
+            this.trees = trees;
+            this.sourcePositions = trees.getSourcePositions();
+            this.canceled = canceled;
+        }
+
+        @Override
+        public Void visitCompilationUnit(CompilationUnitTree node, Map<Element, Long> p) {
+            this.cu = node;
+            return super.visitCompilationUnit(node, p);
+        }
+
+        @Override
+        public Void visitClass(ClassTree node, Map<Element, Long> p) {
+            Element e = this.trees.getElement(this.getCurrentPath());
+            if (e != null) {
+                long pos = this.sourcePositions.getStartPosition(cu, node);
+                p.put(e, pos);
+            }
+            return super.visitClass(node, p);
+        }
+
+        @Override
+        public Void visitMethod(MethodTree node, Map<Element, Long> p) {
+            Element e = this.trees.getElement(this.getCurrentPath());
+            if (e != null) {
+                long pos = this.sourcePositions.getStartPosition(cu, node);
+                p.put(e, pos);
+            }
+            return null;
+        }
+
+        @Override
+        public Void visitVariable(VariableTree node, Map<Element, Long> p) {
+            Element e = this.trees.getElement(this.getCurrentPath());
+            if (e != null) {
+                long pos = this.sourcePositions.getStartPosition(cu, node);
+                p.put(e, pos);
+            }
+            return null;
+        }
+
+        @Override
+        public Void scan(Tree tree, Map<Element, Long> p) {
+            if (!canceled.get()) {
+                return super.scan(tree, p);
+            }
+            else {                
+                return null;
+            }
+        }        
     }
      
     private static class FindChildrenElementVisitor extends ElementScanner6<Void, ElementNode.Description> {
         
         private CompilationInfo info;
+        private final Map<Element,Long> pos;
+        private final AtomicBoolean canceled;
         
-        private volatile boolean canceled = false;
-        
-        public FindChildrenElementVisitor(CompilationInfo info) {
+        public FindChildrenElementVisitor(CompilationInfo info, Map<Element,Long> pos, AtomicBoolean canceled) {
+            assert info != null;
+            assert pos != null;
+            assert canceled != null;
             this.info = info;
-        }
-        
-        void cancel() {
-            canceled = true;
-        }
+            this.pos = pos;
+            this.canceled = canceled;
+        }        
         
         public Void visitPackage(PackageElement e, Description p) {
             return null; // No interest in packages here
         }
         
         public Void visitType(TypeElement e, Description p) {
-            if ( !canceled  && !info.getElementUtilities().isSynthetic(e) ) {            
+            if ( !canceled.get()  && !info.getElementUtilities().isSynthetic(e) ) {            
                 
                 Description d = new Description(p.ui, e.getSimpleName().toString(), ElementHandle.create(e), e.getKind());
                 d.modifiers = e.getModifiers();
@@ -136,7 +211,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         }
         
         public Void visitVariable(VariableElement e, Description p) {
-            if ( !canceled && !info.getElementUtilities().isSynthetic(e) && 
+            if ( !canceled.get() && !info.getElementUtilities().isSynthetic(e) && 
                 ( e.getKind() == ElementKind.FIELD || e.getKind() == ElementKind.ENUM_CONSTANT ) ) {
                 Description d = new Description(p.ui, e.getSimpleName().toString(), ElementHandle.create(e), e.getKind());
                 d.modifiers = e.getModifiers();
@@ -152,7 +227,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         }
         
         public Void visitExecutable(ExecutableElement e, Description p) {
-            if ( !canceled  && !info.getElementUtilities().isSynthetic(e) ) {
+            if ( !canceled.get()  && !info.getElementUtilities().isSynthetic(e) ) {
                 Description d = new Description(p.ui, e.getSimpleName().toString(), ElementHandle.create(e), e.getKind());
                 d.modifiers = e.getModifiers();
                 d.pos = getPosition( e );
@@ -171,19 +246,13 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             return null;
         }
         
-        private long getPosition( Element e ) {
-             Trees trees = info.getTrees();
-             CompilationUnitTree cut = info.getCompilationUnit();
-             Tree t = trees.getTree(e);
-             
-             if ( t == null ) {
-                 // Methods like values in Enums - should noty be shown in navigator
-                 return -1;
+        private long getPosition( Element e ) {   
+             Long res = pos.get(e);
+             if (res == null) {
+//                java.util.logging.Logger.getLogger(ElementScanningTask.class.getName()).warning("No pos for: " + e);
+                return -1;
              }
-             
-             SourcePositions sourcePositions = trees.getSourcePositions();
-             
-             return sourcePositions.getStartPosition(cut, t );
+             return res.longValue();
         }
         
                 
