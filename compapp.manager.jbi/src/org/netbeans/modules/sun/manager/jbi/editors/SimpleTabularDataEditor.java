@@ -22,16 +22,12 @@ package org.netbeans.modules.sun.manager.jbi.editors;
 import java.beans.PropertyEditorSupport;
 import java.util.Collection;
 import java.util.StringTokenizer;
-import java.util.Vector;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.CompositeDataSupport;
 import javax.management.openmbean.CompositeType;
 import javax.management.openmbean.TabularData;
 import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.TabularType;
-import javax.swing.table.DefaultTableModel;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 
 
 /**
@@ -99,7 +95,8 @@ public class SimpleTabularDataEditor extends PropertyEditorSupport {
             throw new java.lang.IllegalArgumentException(e.getMessage());
         }
     }
-    
+
+    @Override    
     public void setValue(Object v) {
         super.setValue(v);
     }

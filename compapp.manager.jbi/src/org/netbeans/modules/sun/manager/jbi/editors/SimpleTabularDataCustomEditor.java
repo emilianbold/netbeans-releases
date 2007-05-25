@@ -19,54 +19,42 @@
 
 package org.netbeans.modules.sun.manager.jbi.editors;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.*;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.StringTokenizer;
-import java.awt.*;
 import java.util.Vector;
-import javax.management.InvalidAttributeValueException;
-import javax.management.MBeanException;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.CompositeDataSupport;
 import javax.management.openmbean.CompositeType;
-import javax.management.openmbean.OpenDataException;
 import javax.management.openmbean.OpenType;
-import javax.management.openmbean.SimpleType;
 import javax.management.openmbean.TabularData;
 import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.TabularType;
 import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.UIManager;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import org.openide.DialogDisplayer;
 
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.NotifyDescriptor;
 
 /**
- * A custom editor for basic TabularData.
+ * A generic custom editor for basic TabularData.
  *
  * @author jqian
  */
@@ -123,7 +111,7 @@ public class SimpleTabularDataCustomEditor extends JPanel
                 
                 // Ignore rows with null keys
                 boolean nullKeyRow = false;
-                System.out.println("indexCoumnCount is " + indexColumnCount + " first value is " + itemValues[0]);
+                //System.out.println("indexCoumnCount is " + indexColumnCount + " first value is " + itemValues[0]);
                 for (int i = 0; i < indexColumnCount; i++) {
                     if (itemValues[i] == null) {
                         nullKeyRow = true;
@@ -153,29 +141,8 @@ public class SimpleTabularDataCustomEditor extends JPanel
         return new Dimension(400, 250);
     }
     
-    private void initComponents(TabularData tabularData) {
-        DefaultTableModel tableModel = initTableModel(tabularData);
-        
-        table = new JTable(tableModel) {
-            // TMP
-            public TableCellRenderer getCellRenderer(int row, int column) {
-                TableCellRenderer renderer = new DefaultTableCellRenderer() {
-                    public Component getTableCellRendererComponent(JTable table,
-                            Object value,
-                            boolean isSelected,
-                            boolean hasFocus,
-                            int row, int column) {
-                        // Highlight key columns
-                        if (column < indexColumnCount && value instanceof String) {
-                            value = "<html><body><b>" + value + "</b></body></html>";
-                        }
-                        return super.getTableCellRendererComponent(
-                                table, value, isSelected, hasFocus, row, column);
-                    }
-                };
-                return renderer;
-            }
-            
+    protected JTable createTable(DefaultTableModel tableModel) {
+         JTable table = new JTable(tableModel) {           
             public Class getColumnClass(int column) {
                 OpenType columnType = columnTypes[column];
                 String className = columnType.getClassName();
@@ -190,6 +157,15 @@ public class SimpleTabularDataCustomEditor extends JPanel
                 return clazz;
             }
         };
+        
+        return table;
+    }
+    
+    private void initComponents(TabularData tabularData) {
+        DefaultTableModel tableModel = initTableModel(tabularData);
+        
+        table = createTable(tableModel);
+       
         
         table.getTableHeader().setReorderingAllowed(false);
         
@@ -280,12 +256,15 @@ public class SimpleTabularDataCustomEditor extends JPanel
         return tableModel;
     }
     
-    private void addNewRow() {
+    protected Vector createNewRow() {
         Vector row = new Vector();
         for (int i = 0; i < columnNames.length; i++) {
             row.addElement(null);
         }
-        
+        return row;
+    }
+    
+    private void addNewRow(Vector row) {        
         Vector dataVector = getDataVector();
         dataVector.addElement(row);
         table.addNotify();
@@ -319,7 +298,10 @@ public class SimpleTabularDataCustomEditor extends JPanel
         String actionCommand = source.getActionCommand();
         
         if (actionCommand.equals(ADD_ROW)) {
-            addNewRow();
+            Vector row = createNewRow();
+            if (row != null) {
+                addNewRow(row);
+            }
         } else if (actionCommand.equals(DELETE_ROW)) {
             deleteSelectedRows();
         }
@@ -338,7 +320,8 @@ public class SimpleTabularDataCustomEditor extends JPanel
                     setFont(header.getFont());
                 }
             }
-            String myValue = (value == null) ? "" : ("<html><body><b>" + value.toString() + "</b></body></html>");
+            String myValue = (value == null) ? "" : 
+                "<html><body><b>" + value.toString().toUpperCase() + "</b></body></html>";
             setText(myValue);
             setToolTipText(columnDescriptions[colIndex]);
             setBorder(UIManager.getBorder("TableHeader.cellBorder"));
