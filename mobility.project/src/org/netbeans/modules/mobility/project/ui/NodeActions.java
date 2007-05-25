@@ -626,20 +626,15 @@ class AddConfigurationAction extends ContextAction
         return false;
     }
 }
-    
-class BuildConfigurationAction extends ContextAction
+
+abstract class AntAction extends ContextAction
 {
-    final static String aName  = NbBundle.getMessage(ContextAction.class,"Title_CfgSelection_build-all");
-    final static Action action = new BuildConfigurationAction();
+    final String command;
     
-    private BuildConfigurationAction()
+    AntAction(String aName, String comm)
     {
         super(aName);
-    }
-    
-    public static Action getStaticInstance()
-    {
-        return action;
+        command=comm;
     }
     
     protected void performAction(final Node[] activatedNodes)
@@ -670,7 +665,7 @@ class BuildConfigurationAction extends ContextAction
                 for (Map.Entry<J2MEProject,String> entry : todo.entrySet())
                 {
                     int tokens=new StringTokenizer(entry.getValue(),",").countTokens();
-                    final String[] targetNames=new String[] {"build-all"};
+                    final String[] targetNames=new String[] {command};
                     final Properties props=new Properties();
                     props.put(DefaultPropertiesDescriptor.SELECTED_CONFIGURATIONS,
                               entry.getValue());
@@ -688,8 +683,145 @@ class BuildConfigurationAction extends ContextAction
         
         action.run();
     }
+}
+
+class BuildConfigurationAction extends AntAction
+{
+    final static String aName  = NbBundle.getMessage(ContextAction.class,"Title_CfgSelection_build-all");
+    final static Action action = new BuildConfigurationAction();
+    
+    private BuildConfigurationAction()
+    {
+        super(aName,"build-all");
+    }
+    
+    public static Action getStaticInstance()
+    {
+        return action;
+    }
     
 }
+
+class CleanConfigurationAction extends AntAction
+{
+    final static String aName  = NbBundle.getMessage(ContextAction.class,"Title_CfgSelection_clean-all");
+    final static Action action = new CleanConfigurationAction();
+    
+    private CleanConfigurationAction()
+    {
+        super(aName,"clean-all");
+    }
+    
+    public static Action getStaticInstance()
+    {
+        return action;
+    }
+    
+}
+
+class CleanAndBuildConfigurationAction extends AntAction
+{
+    final static String aName  = NbBundle.getMessage(ContextAction.class,"Title_CfgSelection_rebuild-all");
+    final static Action action = new CleanAndBuildConfigurationAction();
+    
+    private CleanAndBuildConfigurationAction()
+    {
+        super(aName,"rebuild-all");
+    }
+    
+    public static Action getStaticInstance()
+    {
+        return action;
+    }
+    
+}
+
+
+class DeployConfigurationAction extends AntAction
+{
+    final static String aName  = NbBundle.getMessage(ContextAction.class,"Title_CfgSelection_deploy-all");
+    final static Action action = new DeployConfigurationAction();
+    
+    private DeployConfigurationAction()
+    {
+        super(aName,"deploy-all");
+    }
+    
+    public static Action getStaticInstance()
+    {
+        return action;
+    }
+    
+}
+
+abstract class AntSingleAction extends ContextAction
+{
+    final String command;
+    
+    AntSingleAction(String aName, String comm)
+    {
+        super(aName);
+        command=comm;
+    }
+    
+    protected void performAction(Node[] activatedNodes)
+    {
+        String conf=activatedNodes[0].getLookup().lookup(ProjectConfiguration.class).getDisplayName();
+        J2MEProject project=activatedNodes[0].getLookup().lookup(J2MEProject.class);
+        
+        final String[] targetNames=new String[] {command};
+        final Properties props=new Properties();
+        props.put(DefaultPropertiesDescriptor.CONFIG_ACTIVE,conf);
+
+        try 
+        {
+            ActionUtils.runTarget(project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH), 
+                                  targetNames, props);
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(e);
+        }
+    }
+    
+    protected boolean enable(final Node[] activatedNodes)
+    {
+        return activatedNodes.length == 1;
+    }
+}
+
+
+class RunConfigurationAction extends AntSingleAction
+{
+    final static String aName  = NbBundle.getMessage(ContextAction.class,"LBL_RunConfigurationAction_Name");
+    final static Action action = new RunConfigurationAction();
+    
+    private RunConfigurationAction()
+    {
+        super(aName,"run");
+    }
+    
+    public static Action getStaticInstance()
+    {
+        return action;
+    }
+}
+
+class DebugConfigurationAction extends AntSingleAction
+{
+    final static String aName  = NbBundle.getMessage(ContextAction.class,"LBL_DebugConfigurationAction_Name");
+    final static Action action = new DebugConfigurationAction();
+    
+    private DebugConfigurationAction()
+    {
+        super(aName,"debug");
+    }
+    
+    public static Action getStaticInstance()
+    {
+        return action;
+    }
+}
+
+
 
 class RemoveConfigurationAction extends ContextAction
 {
@@ -728,7 +860,6 @@ class RemoveConfigurationAction extends ContextAction
                         final J2MEProject project=node.getLookup().lookup(J2MEProject.class);
                         
                         removeProperties(project, conf); 
-                        
 
                         // And save the project
                         try {
