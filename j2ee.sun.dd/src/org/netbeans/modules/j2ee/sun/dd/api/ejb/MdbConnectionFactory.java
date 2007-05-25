@@ -50,4 +50,6 @@ public interface MdbConnectionFactory extends org.netbeans.modules.j2ee.sun.dd.a
      * @return property value
      */
     public DefaultResourcePrincipal getDefaultResourcePrincipal();
+
+    public DefaultResourcePrincipal newDefaultResourcePrincipal();
 }
