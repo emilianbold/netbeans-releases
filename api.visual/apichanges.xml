@@ -65,14 +65,14 @@
             <compatibility addition="yes"/>
             <description>
                 FillLayout class has been renamed to OverlayLayout. SerialLayout class has been renamed to FlowLayout.
-		At the same time their factory methods has bee renamed too.
-		LayoutFactory.createFillLayout method renamed to LayoutFactory.createOverlayLayout.
-		LayoutFactory.createHorizontalLayout method renamed to LayoutFactory.createHorizontalFlowLayout.
-		LayoutFactory.createVerticalLayout method renamed to LayoutFactory.createVerticalFlowLayout.
-		The original methods are deprecated now and are going to be removed for 6.0 Milestone 9. The new methods has been added.
+		        At the same time their factory methods has bee renamed too.
+		        LayoutFactory.createFillLayout method renamed to LayoutFactory.createOverlayLayout.
+		        LayoutFactory.createHorizontalLayout method renamed to LayoutFactory.createHorizontalFlowLayout.
+		        LayoutFactory.createVerticalLayout method renamed to LayoutFactory.createVerticalFlowLayout.
+		        The original methods are deprecated now and are going to be removed for 6.0 Milestone 9. The new methods has been added.
                 Also BorderLayout.createFancyDashedBorder method is going to be removed for 6.0 Milestone 9.
                 Use BorderLayout.createDashedBorder(...,true) method instead.
-		Note that the LayouFactory.SerialAlignment enum name is not changed.
+		        Note that the LayouFactory.SerialAlignment enum name is not changed.
             </description>
             <class package="org.netbeans.api.visual.layout" name="LayoutFactory" link="yes"/>
             <issue number="97562"/>
@@ -86,7 +86,7 @@
             <author login="dkaspar"/>
             <compatibility addition="yes"/>
             <description>
-		ListWidget and ListItemWidget are not in final shape and are deprecated. Therefore they have been moved out from the public-API packages.
+        		ListWidget and ListItemWidget are not in final shape and are deprecated. Therefore they have been moved out from the public-API packages.
                 Now they are copied in the org.netbeans.modules.visual.experimental.widget.general package.
                 The original classes are still deprecated and going to be removed for 6.0 Milestone 9.
                 Note that if you want to use the experimental widgets (outside of the public-API packages), you have to set an implementation dependency
