@@ -395,6 +395,15 @@ private void bProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         public void focusLost (FocusEvent arg0) {
             enableDisableRemove ();
         }
+        
+        private boolean canEditEnable (int [] rows) {
+            if (rows == null || rows.length != 1) {
+                return false;
+            }
+            UpdateUnitProvider p = getSettingsTableModel ().getUpdateUnitProvider (rows [0]);
+            return p.getProviderURL () != null;
+        }
+        
         private void enableDisableRemove () {
             int rowIndex = jTable1.getSelectedRow ();
             SettingsTableModel model = getSettingsTableModel ();
@@ -402,7 +411,7 @@ private void bProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
             
             boolean enable = rowIndex != -1 &&  uup != null;
             bRemove.setEnabled (enable);
-            bEdit.setEnabled (jTable1.getSelectedRows ().length == 1);
+            bEdit.setEnabled (canEditEnable (jTable1.getSelectedRows ()));
         }
         
         public void tableChanged (TableModelEvent arg0) {
