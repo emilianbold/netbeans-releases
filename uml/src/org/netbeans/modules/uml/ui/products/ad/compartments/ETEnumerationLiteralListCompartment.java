@@ -248,9 +248,6 @@ public class ETEnumerationLiteralListCompartment extends ETNamedElementListCompa
     
     public void addModelElement(IElement pElement, int pIndex)
     {
-        // Call the base class first
-        super.addModelElement(pElement, pIndex);
-        
         // don't allow re-entrant adds
         if (m_engine != null)
         {
