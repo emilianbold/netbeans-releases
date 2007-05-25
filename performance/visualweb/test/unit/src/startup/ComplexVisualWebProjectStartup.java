@@ -50,7 +50,7 @@ public class ComplexVisualWebProjectStartup extends org.netbeans.performance.tes
     /** Testing start of IDE with measurement of the startup time.
      * @throws IOException
      */
-    public void testStartIDEWithOpenedFilesNBproject() throws java.io.IOException {
+    public void testStartIDEWithOpenedVWProject() throws java.io.IOException {
         measureComplexStartupTime("Startup Time with opened Visual Web project");
     }
     protected long runIDEandMeasureStartup(String performanceDataName, File measureFile, File userdir, long timeout) throws IOException {
