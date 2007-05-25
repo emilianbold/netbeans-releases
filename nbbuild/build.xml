@@ -1033,6 +1033,13 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <delete dir="${netbeans.dest.dir}"/>
   </target>
 
+  <target name="rebuild-cluster" depends="init" description="Builds only one cluster with dependencies - takes rebuild.cluster.name as parameter">
+    <delete file="netbeans/${rebuild.cluster.name}.built" failonerror="false"/>
+    <antcall target="build-one-cluster">
+      <param name="one.cluster.name" value="${rebuild.cluster.name}"/>
+    </antcall>
+  </target>
+
   <target name="build-vw" depends="init" description="Build only the Visual Web modules.">
     <delete file="netbeans/nb.cluster.visualweb.built" failonerror="false"/>
     <antcall target="build-one-cluster">
@@ -1097,6 +1104,15 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
           description="Clean out (almost) all build products.">
     <echo message="Run `ant real-clean' if desired."/>
   </target>
+
+  <target name="clean-cluster" description="Clean only one cluster - takes clean.cluster.name as parameters">
+    <resolve name="modules.to.clean" value="${clean.cluster.name}"/>
+    <antcall target="cleanall" inheritAll="false">
+      <param name="allmodules" value="${nb.cluster.visualweb}"/>
+    </antcall>
+    <delete file="netbeans/${clean.cluster.name}.built" failonerror="false"/>
+  </target>
+
 
   <target name="clean-vw" depends="init" description="Clean only Visual Web modules">
     <antcall target="cleanall" inheritAll="false">
