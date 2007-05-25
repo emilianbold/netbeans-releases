@@ -49,6 +49,7 @@ public class ArtificialFeaturesProvider implements UpdateProvider {
     private static final String UNSORTED_CATEGORY = NbBundle.getMessage (ArtificialFeaturesProvider.class, "ArtificialFeaturesProvider_Unsorted_Category");
     private static final String LIBRARIES_CATEGORY = NbBundle.getMessage (ArtificialFeaturesProvider.class, "ArtificialFeaturesProvider_Libraries_Category");
     private static final String BRIDGES_CATEGORY = NbBundle.getMessage (ArtificialFeaturesProvider.class, "ArtificialFeaturesProvider_Bridges_Category");
+    private static final String FEATURES_CATEGORY = NbBundle.getMessage (ArtificialFeaturesProvider.class, "ArtificialFeaturesProvider_Features_Category");
         
     private final Collection<UpdateItem> originalItems;
     private final Logger log = Logger.getLogger (ArtificialFeaturesProvider.class.getName ());
@@ -101,7 +102,7 @@ public class ArtificialFeaturesProvider implements UpdateProvider {
             } else if (impl instanceof ModuleItem) {
                 ModuleItem updateModule = (ModuleItem) impl;
                 String category = (String) updateModule.getModuleInfo ().getLocalizedAttribute ("OpenIDE-Module-Display-Category");
-                if (LIBRARIES_CATEGORY.equals (category) || BRIDGES_CATEGORY.equals (category)) {
+                if (LIBRARIES_CATEGORY.equals (category) || BRIDGES_CATEGORY.equals (category) || FEATURES_CATEGORY.equals (category)) {
                     continue;
                 }
                 if (category == null || category.length () == 0) {
