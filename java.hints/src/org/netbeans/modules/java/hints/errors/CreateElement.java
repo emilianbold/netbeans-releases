@@ -261,7 +261,7 @@ public final class CreateElement implements ErrorRule<Void> {
             NewClassTree nct = (NewClassTree) newClass.getLeaf();
             Element clazz = info.getTrees().getElement(new TreePath(newClass, nct.getIdentifier()));
             
-            if (clazz == null || clazz.asType().getKind() == TypeKind.ERROR) {
+            if (clazz == null || clazz.asType().getKind() == TypeKind.ERROR || (!clazz.getKind().isClass() && !clazz.getKind().isInterface())) {
                 //the class does not exist...
                 return Collections.<Fix>emptyList();
             }
@@ -270,7 +270,9 @@ public final class CreateElement implements ErrorRule<Void> {
                 return Collections.<Fix>emptyList();
             }
             
-            return prepareCreateMethodFix(info, newClass, modifiers, target, "<init>", nct.getArguments(), null);
+            target = (TypeElement) clazz;
+            
+            return prepareCreateMethodFix(info, newClass, getAccessModifiers(source, target), target, "<init>", nct.getArguments(), null);
         }
         
         //field like:
@@ -1098,6 +1100,9 @@ public final class CreateElement implements ErrorRule<Void> {
                 value.append("CreateConstructorFix:");
                 addArguments(info, value);
             }
+            
+            value.append(':');
+            value.append(inFQN);
             
             return value.toString();
         }

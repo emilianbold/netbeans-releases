@@ -19,7 +19,6 @@
 package org.netbeans.modules.java.hints.errors;
 
 import com.sun.source.util.TreePath;
-import java.util.Arrays;
 import org.netbeans.api.java.source.CompilationInfo;
 import java.util.LinkedList;
 import java.util.List;
@@ -40,11 +39,11 @@ public class CreateMethodTest extends ErrorHintsTestBase {
     }
     
     public void testMoreMethods() throws Exception {
-        performAnalysisTest("test/Test.java", "package test; public class Test {public void test() {test(1);}}", 103 - 48, "CreateMethodFix:test(int i)void");
+        performAnalysisTest("test/Test.java", "package test; public class Test {public void test() {test(1);}}", 103 - 48, "CreateMethodFix:test(int i)void:test.Test");
     }
     
     public void testConstructor() throws Exception {
-        performAnalysisTest("test/Test.java", "package test; public class Test {public static void test() {new Test(1);}}", 114 - 48, "CreateConstructorFix:(int i)");
+        performAnalysisTest("test/Test.java", "package test; public class Test {public static void test() {new Test(1);}}", 114 - 48, "CreateConstructorFix:(int i):test.Test");
     }
     
     public void testNoCreateConstructorForNonExistingClass() throws Exception {
@@ -56,15 +55,19 @@ public class CreateMethodTest extends ErrorHintsTestBase {
     }
 
     public void testMemberSelect1() throws Exception {
-        performAnalysisTest("test/Test.java", "package test; public class Test {public void test() {emptyList().doSomething();}}", 107 - 48, "CreateMethodFix:emptyList()java.lang.Object");
+        performAnalysisTest("test/Test.java", "package test; public class Test {public void test() {emptyList().doSomething();}}", 107 - 48, "CreateMethodFix:emptyList()java.lang.Object:test.Test");
     }
     
     public void testMemberSelect2() throws Exception {
-        performAnalysisTest("test/Test.java", "package test; public class Test {public Test test() {test().doSomething();}}", 112 - 48, "CreateMethodFix:doSomething()void");
+        performAnalysisTest("test/Test.java", "package test; public class Test {public Test test() {test().doSomething();}}", 112 - 48, "CreateMethodFix:doSomething()void:test.Test");
     }
     
     public void testAssignment() throws Exception {
-        performAnalysisTest("test/Test.java", "package test; public class Test {public void test() {int i = fff();}}", 110 - 48, "CreateMethodFix:fff()int");
+        performAnalysisTest("test/Test.java", "package test; public class Test {public void test() {int i = fff();}}", 110 - 48, "CreateMethodFix:fff()int:test.Test");
+    }
+    
+    public void testNewInAnnonymousInnerclass() throws Exception {
+        performAnalysisTest("test/Test.java", "package test; public class Test {public Test(){} public void test() {new Runnable() {public void run() {new Test(1);}}}}", 158 - 48, "CreateConstructorFix:(int i):test.Test");
     }
     
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) {
