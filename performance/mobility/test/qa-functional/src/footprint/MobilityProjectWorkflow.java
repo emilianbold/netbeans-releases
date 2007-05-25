@@ -56,6 +56,11 @@ public class MobilityProjectWorkflow extends org.netbeans.performance.test.utili
         prefix = "Mobility Project Workflow |";
     }
     
+    @Override
+    public void setUp() {
+        // do nothing
+    }
+    
     public void prepare() {
     }
     

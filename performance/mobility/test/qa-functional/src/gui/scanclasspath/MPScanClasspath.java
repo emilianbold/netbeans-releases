@@ -65,6 +65,11 @@ public class MPScanClasspath extends gui.scanclasspath.ScanClasspath {
         return suite;
     }
     
+    @Override
+    public void setUp() {
+        // do nothing
+    }
+    
     public void measureClassPathScan() {
         super.measureClassPathScan();
         reportPerformance("Scanning Mobility Project Classpath", wholeClasspathScan, "ms", 1);

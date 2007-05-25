@@ -55,8 +55,6 @@ import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.progress.module.Controller;
 import org.netbeans.progress.spi.InternalHandle;
 import org.netbeans.progress.spi.TaskModel;
-import org.openide.util.Exceptions;
-
 
 
 /**

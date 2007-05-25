@@ -109,4 +109,10 @@ public class ScanClasspath extends org.netbeans.performance.test.utilities.Perfo
     
     public void prepare(){
     }
+    
+    @Override
+    public void setUp() {
+        // do nothing
+    }
+    
 }

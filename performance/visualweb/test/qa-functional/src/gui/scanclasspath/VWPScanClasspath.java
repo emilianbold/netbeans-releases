@@ -65,6 +65,11 @@ public class VWPScanClasspath extends gui.scanclasspath.ScanClasspath {
         return suite;
     }
     
+    @Override
+    public void setUp() {
+        // do nothing
+    }
+    
     public void openHugeAppProject() {
         VWPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + java.io.File.separator + "HugeApp");
         measureClassPathScan();
