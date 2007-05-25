@@ -70,6 +70,13 @@ public class CreateMethodTest extends ErrorHintsTestBase {
         performAnalysisTest("test/Test.java", "package test; public class Test {public Test(){} public void test() {new Runnable() {public void run() {new Test(1);}}}}", 158 - 48, "CreateConstructorFix:(int i):test.Test");
     }
     
+    public void testCreateMethodInInterface() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test {public void test() {Int i = null; i.test(1);} public static interface Int{}}", 96 - 24,
+                       "CreateMethodFix:test(int i)void:test.Test.Int",
+                       "package test; public class Test {public void test() {Int i = null; i.test(1);} public static interface Int{ public void test(int i); }}");
+    }
+    
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) {
         List<Fix> fixes = new CreateElement().analyze(info, pos);
         List<Fix> result=  new LinkedList<Fix>();

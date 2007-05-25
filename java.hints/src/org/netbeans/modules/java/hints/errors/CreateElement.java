@@ -416,6 +416,10 @@ public final class CreateElement implements ErrorRule<Void> {
     }
     
     private static EnumSet<Modifier> getAccessModifiers(TypeElement source, TypeElement target) {
+        if (target.getKind().isInterface()) {
+            return EnumSet.of(Modifier.PUBLIC);
+        }
+        
         TypeElement outterMostSource = SourceUtils.getOutermostEnclosingTypeElement(source);
         TypeElement outterMostTarget = SourceUtils.getOutermostEnclosingTypeElement(target);
         
@@ -1050,7 +1054,7 @@ public final class CreateElement implements ErrorRule<Void> {
                             argTypes.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), argName, make.Type(tmh.resolve(working)), null));
                         }
                         
-                        BlockTree body = createDefaultMethodBody(working, returnType);
+                        BlockTree body = targetType.getKind().isClass() ? createDefaultMethodBody(working, returnType) : null;
                         MethodTree mt = make.Method(make.Modifiers(modifiers), name, returnType != null ? make.Type(returnType) : null, Collections.<TypeParameterTree>emptyList(), argTypes, Collections.<ExpressionTree>emptyList(), body, null);
                         ClassTree decl = GeneratorUtils.insertClassMember(working, targetTree, mt);
                         
