@@ -55,6 +55,20 @@ Microsystems, Inc. All Rights Reserved.
                 <runtime-relative-path>ext/dom4j/org-dom4j.jar</runtime-relative-path>
                 <binary-origin>../external/org-dom4j.jar</binary-origin>
             </class-path-extension>
+            
+            <class-path-extension>
+                <runtime-relative-path>ext/dom4j/jsr173_1.0_api.jar</runtime-relative-path>
+                <binary-origin>../external/jsr173_1.0_api.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/dom4j/jaxb-impl.jar</runtime-relative-path>
+                <binary-origin>../external/jaxb-impl.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/dom4j/jaxb-api.jar</runtime-relative-path>
+                <binary-origin>../external/jaxb-api.jar</binary-origin>
+            </class-path-extension>
+            
             <friend-packages>
                 <friend>org.netbeans.modules.uml</friend>
                 <friend>org.netbeans.modules.uml.codegen</friend>
@@ -167,6 +181,55 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.xml.sax</package>
                 <package>org.xml.sax.ext</package>
                 <package>org.xml.sax.helpers</package>
+                
+                <package>com.sun.codemodel</package>
+                <package>com.sun.codemodel.fmt</package>
+                <package>com.sun.codemodel.util</package>
+                <package>com.sun.codemodel.writer</package>
+                <package>com.sun.istack</package>
+                <package>com.sun.istack.tools</package>
+                <package>com.sun.xml.bind</package>
+                <package>com.sun.xml.bind.annotation</package>
+                <package>com.sun.xml.bind.api</package>
+                <package>com.sun.xml.bind.api.impl</package>
+                <package>com.sun.xml.bind.marshaller</package>
+                <package>com.sun.xml.bind.serializer</package>
+                <package>com.sun.xml.bind.unmarshaller</package>
+                <package>com.sun.xml.bind.util</package>
+                <package>com.sun.xml.bind.v2</package>
+                <package>com.sun.xml.bind.v2.bytecode</package>
+                <package>com.sun.xml.bind.v2.model.annotation</package>
+                <package>com.sun.xml.bind.v2.model.core</package>
+                <package>com.sun.xml.bind.v2.model.impl</package>
+                <package>com.sun.xml.bind.v2.model.nav</package>
+                <package>com.sun.xml.bind.v2.model.runtime</package>
+                <package>com.sun.xml.bind.v2.runtime</package>
+                <package>com.sun.xml.bind.v2.runtime.output</package>
+                <package>com.sun.xml.bind.v2.runtime.property</package>
+                <package>com.sun.xml.bind.v2.runtime.reflect</package>
+                <package>com.sun.xml.bind.v2.runtime.reflect.opt</package>
+                <package>com.sun.xml.bind.v2.runtime.unmarshaller</package>
+                <package>com.sun.xml.bind.v2.schemagen</package>
+                <package>com.sun.xml.bind.v2.schemagen.episode</package>
+                <package>com.sun.xml.bind.v2.schemagen.xmlschema</package>
+                <package>com.sun.xml.bind.v2.util</package>
+                <package>com.sun.xml.bind.validator</package>
+                <package>com.sun.xml.bind.xmlschema</package>
+                <package>com.sun.xml.dtdparser</package>
+                <package>com.sun.xml.txw2</package>
+                <package>com.sun.xml.txw2.annotation</package>
+                <package>com.sun.xml.txw2.output</package>
+                <package>com.sun.xml.util</package>
+                <package>javax.xml.bind</package>
+                <package>javax.xml.bind.annotation</package>
+                <package>javax.xml.bind.annotation.adapters</package>
+                <package>javax.xml.bind.attachment</package>
+                <package>javax.xml.bind.helpers</package>
+                <package>javax.xml.bind.util</package>
+                <package>javax.xml.stream</package>
+                <package>javax.xml.stream.events</package>
+                <package>javax.xml.stream.util</package>
+
             </friend-packages>
         </data>
     </configuration>
