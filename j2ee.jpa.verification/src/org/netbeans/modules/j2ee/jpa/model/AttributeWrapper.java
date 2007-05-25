@@ -25,6 +25,7 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Basic;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Column;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Id;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Version;
 
 /**
  *
@@ -53,6 +54,10 @@ public class AttributeWrapper {
             return ((Id)modelElement).getName();
         }
         
+        if (modelElement instanceof Version){
+            return ((Version)modelElement).getName();
+        }
+        
         return null;
     }
     
@@ -65,6 +70,10 @@ public class AttributeWrapper {
             return ((Id)modelElement).getColumn();
         }
         
+        if (modelElement instanceof Version){
+            return ((Version)modelElement).getColumn();
+        }
+        
         return null;
     }
     
@@ -75,6 +84,10 @@ public class AttributeWrapper {
         
         if (modelElement instanceof Id){
             return ((Id)modelElement).getTemporal();
+        }
+        
+        if (modelElement instanceof Version){
+            return ((Version)modelElement).getTemporal();
         }
         
         return null;

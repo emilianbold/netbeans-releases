@@ -34,9 +34,11 @@ import org.netbeans.modules.j2ee.jpa.verification.rules.attribute.RelationshipFo
 import org.netbeans.modules.j2ee.jpa.verification.rules.attribute.ValidBasicType;
 import org.netbeans.modules.j2ee.jpa.verification.rules.attribute.ValidColumnName;
 import org.netbeans.modules.j2ee.jpa.verification.rules.attribute.ValidModifiers;
+import org.netbeans.modules.j2ee.jpa.verification.rules.attribute.ValidVersionType;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Basic;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Id;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Version;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 
 /**
@@ -51,7 +53,8 @@ public class ValidAttributes extends JPAClassRule {
         new ValidBasicType(),
         new RelationshipForEntityTypeAttrDefined(),
         new MVRelationshipForEntityTypeAttrDefined(),
-        new AttrIsEncapsulated()
+        new AttrIsEncapsulated(),
+        new ValidVersionType()
         //TODO: enable this check once #104484 is fixed
         // new TemporalFieldsAnnotated()
     };
@@ -67,12 +70,15 @@ public class ValidAttributes extends JPAClassRule {
         List <AttributeWrapper> attrs = new ArrayList<AttributeWrapper>();
         Basic basicFields[] = null;
         Id idFields[] = null;
+        Version versionFields[] = null;
         
         if (ctx.getModelElement() instanceof Entity){
             Entity entity = (Entity)ctx.getModelElement();
             basicFields = entity.getAttributes().getBasic();
             
             idFields = entity.getAttributes().getId();
+            //TODO: uncomment the line below when #104834 is fixed
+            //versionFields = entity.getAttributes().getVersion();
         }
         
         //TODO: handle MappedSuperClass etc.
@@ -86,6 +92,12 @@ public class ValidAttributes extends JPAClassRule {
         if (idFields != null){
             for (Id id: idFields){
                 attrs.add(new AttributeWrapper(id));
+            }
+        }
+        
+        if (versionFields != null){
+            for (Version version : versionFields){
+                attrs.add(new AttributeWrapper(version));
             }
         }
         
