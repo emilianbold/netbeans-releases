@@ -60,13 +60,13 @@ import org.openide.util.Lookup;
  * @author Tran Duc Trung, Tomas Pavek
  */
 
-class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
+public class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
 {
     // constants for mode parameter of getMetaComponentAt(Point,int) method
-    static final int COMP_DEEPEST = 0; // get the deepest component (at given position)
-    static final int COMP_SELECTED = 1; // get the deepest selected component
-    static final int COMP_ABOVE_SELECTED = 2; // get the component above the deepest selected component
-    static final int COMP_UNDER_SELECTED = 3; // get the component under the deepest selected component
+    public static final int COMP_DEEPEST = 0; // get the deepest component (at given position)
+    public static final int COMP_SELECTED = 1; // get the deepest selected component
+    public static final int COMP_ABOVE_SELECTED = 2; // get the component above the deepest selected component
+    public static final int COMP_UNDER_SELECTED = 3; // get the component under the deepest selected component
     
     private static final int DESIGNER_RESIZING = 256; // flag for resizeType
     private static MessageFormat resizingHintFormat;
@@ -490,7 +490,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
      *     for COMP_ABOVE_SELECTED the deepest component is returned
      *     for COMP_UNDER_SELECTED the top component is returned
      */
-    private RADComponent getMetaComponentAt(Point point, int mode) {
+    public RADComponent getMetaComponentAt(Point point, int mode) {
         Component[] deepComps = getDeepestComponentsAt(
                                     formDesigner.getComponentLayer(), point);
         if (deepComps == null) {
@@ -1487,6 +1487,10 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         if (formDesigner.getDesignerMode() == FormDesigner.MODE_ADD) {
             formDesigner.requestActive();
             PaletteItem item = PaletteUtils.getSelectedItem();
+            if(formDesigner.getMenuEditLayer().isPossibleNewMenuComponent(item)) {
+                formDesigner.getMenuEditLayer().startNewMenuComponentPickAndPlop(item,e.getPoint());
+                return;
+            }
             if( null != item ) {
                 StatusDisplayer.getDefault().setStatusText(
                     FormUtils.getFormattedBundleString(
@@ -2830,6 +2834,12 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                             }
                         }
                     }
+                }
+                //switch to the menu layer if this is a menu component other than JMenuBar
+                if(item != null && MenuEditLayer.isMenuRelatedComponentClass(item.getComponentClass()) &&
+                        !JMenuBar.class.isAssignableFrom(item.getComponentClass())) {
+                    formDesigner.getMenuEditLayer().startNewMenuComponentDragAndDrop(item);
+                    return;
                 }
                 if (item != null) {
                     if ((item.getComponentClassName().indexOf('.') != -1) // Issue 79573

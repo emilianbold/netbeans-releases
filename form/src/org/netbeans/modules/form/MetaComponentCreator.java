@@ -202,7 +202,7 @@ public class MetaComponentCreator {
         }
     }
 
-    RADVisualComponent getPrecreatedMetaComponent() {
+    public RADVisualComponent getPrecreatedMetaComponent() {
         return preMetaComp;
     }
 

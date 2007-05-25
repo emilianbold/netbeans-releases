@@ -109,9 +109,9 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     private JToggleButton[] resizabilityButtons;
             
     private int designerMode;
-    static final int MODE_SELECT = 0;
-    static final int MODE_CONNECT = 1;
-    static final int MODE_ADD = 2;
+    public static final int MODE_SELECT = 0;
+    public static final int MODE_CONNECT = 1;
+    public static final int MODE_ADD = 2;
     
     private boolean initialized = false;
     private boolean firstLayout;
@@ -367,7 +367,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         return formModel;
     }
 
-    HandleLayer getHandleLayer() {
+    public HandleLayer getHandleLayer() {
         return handleLayer;
     }
 
@@ -718,11 +718,11 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         }
     }
 
-    int getDesignerMode() {
+    public int getDesignerMode() {
         return designerMode;
     }
 
-    void toggleSelectionMode() {
+    public void toggleSelectionMode() {
         setDesignerMode(MODE_SELECT);
         PaletteUtils.clearPaletteSelection();
     }

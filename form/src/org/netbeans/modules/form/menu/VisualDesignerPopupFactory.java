@@ -104,7 +104,6 @@ class VisualDesignerPopupFactory extends PopupFactory {
         SwingUtilities.convertPointFromScreen(pt,canvas);
         
         JComponent parent = canvas.getMenuParent(menu);
-        p("parent = " + parent);
         if(parent instanceof JMenu) {
             // get this menu's location in local coords
             // move to the right edge of the menu
@@ -124,11 +123,9 @@ class VisualDesignerPopupFactory extends PopupFactory {
     }
     
     void hideOtherMenus(JMenu menu) {
-        p("hiding other menus");
         for(JMenu m : containerMap.keySet()) {
             if(m != menu) {
                 // hide if not an ancestor of this menu
-                p("checking for ancestor");
                 if(!isAncestor(m,menu)) {
                     JPanel popup = containerMap.get(m);
                     popup.setVisible(false);
@@ -146,7 +143,6 @@ class VisualDesignerPopupFactory extends PopupFactory {
             this.menu = menu;
         }
         public void setVisible(boolean visible) {
-            p("setting vis : " + visible);
             // if making visible
             if(visible) {
                 // make sure the other menus are hidden
