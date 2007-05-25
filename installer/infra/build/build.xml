@@ -143,7 +143,7 @@
             dest="${temp.file}"/>
         -->
         <get
-            src="${glassfish.builds.host}/java/re/glassfish/9.1/promoted/beta2_branch/latest/bundles/"
+            src="${glassfish.builds.host}/java/re/glassfish/9.1/promoted/beta3/latest/bundles/"
             dest="${temp.file}"/>
         <glassfish-buildnumber 
             file="${temp.file}" 
