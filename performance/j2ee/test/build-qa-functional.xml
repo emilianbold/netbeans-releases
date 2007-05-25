@@ -248,6 +248,8 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Executor for Measure Complex Startup Time -->
     <target name="runcodetest_measure_complex_startup" depends="make_netbeans_executable">
         <antcall target="copy_released_ide_cfg_file"/>
+        <!-- copy xsl transformator file for ActionTracker log into appropriate directory -->
+        <copy file="${performance.testutilities.dist.dir}/ActionTracker.xsl" todir="${xtest.results.testrun.dir}" />
         <executeTests pluginName="jvm">
             <property name="xtest.enable.assertions" value="false" /> 
             <property name="xtest.ide.reuse.userdir" value="true"/>
