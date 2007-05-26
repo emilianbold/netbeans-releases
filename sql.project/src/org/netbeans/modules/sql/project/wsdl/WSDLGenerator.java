@@ -51,6 +51,11 @@ import java.util.StringTokenizer;
 
 import java.net.URL;
 import java.net.URI;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Writer;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -289,12 +294,29 @@ public class WSDLGenerator {
     public Definition generateWSDL() throws Exception {
         try {
             //wsdlFileName = wsdlFileLocation + "/" + sqlFileName + ".wsdl";
-            if (new File(wsdlFileLocation + File.separator + wsdlFileName + ".wsdl").exists()) {
-                wsdlFileExsits = true;
-                this.def = loadExistingWSDLFile(wsdlFileName);
-            } else {
-                this.def = getWsdlTemplate();
+        	File f1 = new File(wsdlFileLocation + File.separator + wsdlFileName + ".wsdl");
+        	File f2 = new File(wsdlFileLocation + File.separator + wsdlFileName + ".wsdl_old");
+            if (f1.exists()) {
+            	try{
+            	      InputStream in = new FileInputStream(f1);
+            	      OutputStream out = new FileOutputStream(f2);
+            	      byte[] buf = new byte[1024];
+            	      int len;
+            	      while ((len = in.read(buf)) > 0){
+            	        out.write(buf, 0, len);
+            	      }
+            	      in.close();
+            	      out.close();
+            	      System.out.println("File copied.");
+            	    }
+            	    catch(FileNotFoundException ex){
+            	    	logger.log(Level.WARNING, ex.getMessage(), ex);
+            	    }
+            	    catch(IOException e){
+            	    	logger.log(Level.WARNING, e.getMessage(), e);
+            	    }
             }
+            this.def = getWsdlTemplate();
             modifyWSDL();
             writeWsdl();
         } catch (Exception e) {
