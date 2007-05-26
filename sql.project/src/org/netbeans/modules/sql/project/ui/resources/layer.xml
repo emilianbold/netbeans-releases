@@ -34,23 +34,8 @@ Microsystems, Inc. All Rights Reserved.
 <?xml-stylesheet type="text/xml" href="http://openide.netbeans.org/fs/filesystem.xsl"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-    <folder name="Actions">
-        <folder name="Edit">
-            <file name="org-netbeans-modules-sql-project-ui-SQLEditorAction.instance"/>
-        </folder>
-    </folder>
-    <folder name="Editors">
-        <folder name="text">
-            <folder name="x-sql">
-                <folder name="Popup">
-                    <file name="org-netbeans-modules-sql-project-ui-SQLEditorAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-sql-project-ui-SQLEditorAction.instance"/>
-                    </file>
-                    <attr name="org-netbeans-modules-sql-project-ui-SQLEditorAction.shadow/org-netbeans-modules-db-sql-editor-ui-actions-RunSQLSelectionAction.shadow" boolvalue="true"/>
-                </folder>
-            </folder>
-        </folder>
-    </folder>
+    
+    
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-sql">
@@ -89,14 +74,6 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
                     <file name="org-openide-actions-PropertiesAction.instance"/>
                     <attr name="OpenAction.instance/org-netbeans-modules-sql-project-ui-separatorBefore.instance" boolvalue="true"/>
-                    <file name="org-netbeans-modules-sql-project-ui-separatorBefore.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                    </file>
-                    <attr name="org-netbeans-modules-sql-project-ui-separatorBefore.instance/org-netbeans-modules-sql-project-ui-SQLEditorAction.shadow" boolvalue="true"/>
-                    <file name="org-netbeans-modules-sql-project-ui-SQLEditorAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-sql-project-ui-SQLEditorAction.instance"/>
-                    </file>
-                    <attr name="org-netbeans-modules-sql-project-ui-SQLEditorAction.shadow/org-netbeans-modules-sql-project-ui-separatorAfter.instance" boolvalue="true"/>
                     <file name="org-netbeans-modules-sql-project-ui-separatorAfter.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>
