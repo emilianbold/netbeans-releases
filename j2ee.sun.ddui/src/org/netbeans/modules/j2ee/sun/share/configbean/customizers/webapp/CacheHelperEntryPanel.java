@@ -37,10 +37,10 @@ import java.awt.Insets;
 import javax.swing.JPanel;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import org.netbeans.modules.j2ee.sun.dd.api.web.WebProperty;
 
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
+import org.netbeans.modules.j2ee.sun.dd.api.web.WebProperty;
 import org.netbeans.modules.j2ee.sun.share.Constants;
-import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.ListMapping;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.GenericTableModel;

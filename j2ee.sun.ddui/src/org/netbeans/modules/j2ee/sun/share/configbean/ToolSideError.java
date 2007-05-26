@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import javax.enterprise.deploy.model.DDBean;
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 /**
  *
  * @author  vkraemer

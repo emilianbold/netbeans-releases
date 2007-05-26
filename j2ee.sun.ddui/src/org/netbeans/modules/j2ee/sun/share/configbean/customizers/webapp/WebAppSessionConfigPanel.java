@@ -37,12 +37,12 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.TableModelListener;
 import javax.swing.event.TableModelEvent;
 
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.web.ManagerProperties;
 import org.netbeans.modules.j2ee.sun.dd.api.web.StoreProperties;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SessionProperties;
 import org.netbeans.modules.j2ee.sun.dd.api.web.CookieProperties;
 import org.netbeans.modules.j2ee.sun.dd.api.web.WebProperty;
-import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
 
 import org.netbeans.modules.j2ee.sun.share.configbean.ValidationError;
 import org.netbeans.modules.j2ee.sun.share.configbean.WebAppRoot;

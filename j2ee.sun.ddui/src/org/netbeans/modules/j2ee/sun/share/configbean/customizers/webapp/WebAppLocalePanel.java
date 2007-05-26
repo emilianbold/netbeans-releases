@@ -40,6 +40,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.web.LocaleCharsetInfo;
 import org.netbeans.modules.j2ee.sun.dd.api.web.LocaleCharsetMap;
@@ -50,9 +51,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.WebAppRoot;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.GenericTableModel;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.GenericTablePanel;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.HelpContext;
-
 import org.netbeans.modules.j2ee.sun.share.CharsetMapping;
-import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
 
 /**
  *

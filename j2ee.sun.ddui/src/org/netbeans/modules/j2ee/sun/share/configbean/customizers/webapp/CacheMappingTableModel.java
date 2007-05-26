@@ -30,8 +30,8 @@ import java.util.ResourceBundle;
 
 import javax.swing.table.AbstractTableModel;
 
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.web.CacheMapping;
-import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
 
 import org.netbeans.modules.j2ee.sun.share.configbean.StorageBeanFactory;
 

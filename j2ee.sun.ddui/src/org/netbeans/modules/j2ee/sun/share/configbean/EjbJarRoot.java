@@ -85,6 +85,7 @@ import com.sun.jdo.api.persistence.model.mapping.MappingFieldElement;
 import com.sun.jdo.api.persistence.model.mapping.impl.MappingFieldElementImpl;
 import com.sun.jdo.api.persistence.model.mapping.impl.MappingRelationshipElementImpl;
 // end TODO
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 
 
 /**

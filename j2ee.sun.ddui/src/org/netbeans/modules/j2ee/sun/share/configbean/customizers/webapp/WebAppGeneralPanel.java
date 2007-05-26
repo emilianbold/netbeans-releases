@@ -37,10 +37,10 @@ import java.beans.PropertyVetoException;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.web.JspConfig;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 import org.netbeans.modules.j2ee.sun.dd.api.web.WebProperty;
-import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
 
 import org.netbeans.modules.j2ee.sun.share.configbean.WebAppRoot;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BaseCustomizer;

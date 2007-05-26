@@ -60,6 +60,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.sun.api.ResourceConfiguratorInterface;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentConfigurationInterface;
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.DDException;
@@ -594,7 +595,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
     }
 
     public StorageBeanFactory getStorageFactory() {
-        return appServerVersion.getStorageFactory();
+        return StorageBeanFactory.getStorageBeanFactory(appServerVersion);
     }
     
     /** Get the AppServer version to be used for saving deployment descriptors.

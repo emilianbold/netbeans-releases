@@ -50,9 +50,9 @@ import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JTextField;
 import javax.swing.DefaultComboBoxModel;
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 
 import org.netbeans.modules.j2ee.sun.share.Constants;
-import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.GenericTableDialogPanelAccessor;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.ValidationSupport;

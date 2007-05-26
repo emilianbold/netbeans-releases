@@ -30,9 +30,9 @@ import java.util.ResourceBundle;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
-import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
 
 /**
  *

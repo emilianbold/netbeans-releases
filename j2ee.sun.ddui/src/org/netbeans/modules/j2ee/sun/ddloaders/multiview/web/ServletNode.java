@@ -21,6 +21,7 @@ package org.netbeans.modules.j2ee.sun.ddloaders.multiview.web;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.NamedBeanNode;
+import org.netbeans.modules.j2ee.sun.share.configbean.customizers.ServletPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 

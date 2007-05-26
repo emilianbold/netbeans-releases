@@ -34,9 +34,9 @@ import java.util.Collection;
 import java.util.ResourceBundle;
 import javax.swing.JPanel;
 
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.share.Constants;
 import org.netbeans.modules.j2ee.sun.share.PrincipalNameMapping;
-import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.HelpContext;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.InputDialog;

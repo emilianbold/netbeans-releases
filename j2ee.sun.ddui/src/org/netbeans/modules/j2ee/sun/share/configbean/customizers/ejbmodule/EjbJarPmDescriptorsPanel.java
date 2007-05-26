@@ -39,11 +39,11 @@ import javax.swing.event.ListDataListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.PmDescriptor;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.PmDescriptors;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.PmInuse;
-import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
 
 import org.netbeans.modules.j2ee.sun.share.configbean.EjbJarRoot;
 import org.netbeans.modules.j2ee.sun.share.configbean.StorageBeanFactory;

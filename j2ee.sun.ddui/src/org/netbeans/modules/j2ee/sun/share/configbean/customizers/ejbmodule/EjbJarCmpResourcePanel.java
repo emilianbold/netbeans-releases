@@ -34,12 +34,12 @@ import java.awt.Insets;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.CmpResource;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.PropertyElement;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.SchemaGeneratorProperties;
 
-import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.share.configbean.EjbJarRoot;
 import org.netbeans.modules.j2ee.sun.share.configbean.StorageBeanFactory;
 import org.netbeans.modules.j2ee.sun.share.configbean.Utils;

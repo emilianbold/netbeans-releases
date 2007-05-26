@@ -24,6 +24,7 @@
 
 package org.netbeans.modules.j2ee.sun.share.configbean;
 
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
 

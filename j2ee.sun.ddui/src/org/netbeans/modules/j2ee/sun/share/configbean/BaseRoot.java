@@ -24,6 +24,7 @@ import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 import javax.enterprise.deploy.model.DDBean;
 import javax.enterprise.deploy.model.DDBeanRoot;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 
 import org.netbeans.modules.j2ee.sun.share.config.DDRoot;
 import org.openide.ErrorManager;

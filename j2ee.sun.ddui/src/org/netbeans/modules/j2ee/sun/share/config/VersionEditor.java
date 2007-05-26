@@ -24,7 +24,7 @@ import java.awt.Component;
 import java.awt.event.ActionListener;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
-import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.InplaceEditor;

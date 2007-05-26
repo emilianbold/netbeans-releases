@@ -26,6 +26,7 @@ import java.util.Map;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 import javax.enterprise.deploy.model.DDBean;
 import javax.enterprise.deploy.model.DDBeanRoot;
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;

@@ -39,6 +39,7 @@ import javax.swing.JPanel;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.common.JavaMethod;
 import org.netbeans.modules.j2ee.sun.dd.api.common.Message;
@@ -46,7 +47,6 @@ import org.netbeans.modules.j2ee.sun.dd.api.common.MessageSecurity;
 import org.netbeans.modules.j2ee.sun.dd.api.common.MessageSecurityBinding;
 
 import org.netbeans.modules.j2ee.sun.share.Constants;
-import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.share.configbean.Base;
 import org.netbeans.modules.j2ee.sun.share.configbean.StorageBeanFactory;
 import org.netbeans.modules.j2ee.sun.share.configbean.Utils;

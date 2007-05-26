@@ -26,8 +26,8 @@ package org.netbeans.modules.j2ee.sun.share.configbean.customizers.common;
 
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 
-import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
 
 /** Interface to be implemented by dialog subpanels that are to be used for data
  *  entry into a table managed by the GenericTablePanel/GenericTableModel pair.

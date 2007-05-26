@@ -31,8 +31,8 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
-import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
 
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.share.configbean.ServletRef;
 import org.netbeans.modules.j2ee.sun.share.configbean.ServletVersion;
 import org.netbeans.modules.j2ee.sun.share.configbean.Utils;

@@ -24,49 +24,80 @@
 
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers;
 
+import java.awt.Dimension;
 import java.util.ResourceBundle;
+import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
+import org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping;
+import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.TextItemEditorModel;
 import org.netbeans.modules.j2ee.sun.share.PrincipalNameMapping;
-import org.netbeans.modules.j2ee.sun.share.configbean.SecurityRoleMapping;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BaseCustomizer;
+import org.netbeans.modules.xml.multiview.ItemEditorHelper;
+import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 
 /**
  *
  * @author Peter Williams
  */
-public class SecurityRoleMappingCustomizer extends BaseCustomizer 
+public class SecurityRoleMappingPanel extends SectionNodeInnerPanel
         implements ListSelectionListener, TableModelListener {
-
+	
     public static final ResourceBundle customizerBundle = ResourceBundle.getBundle(
         "org.netbeans.modules.j2ee.sun.share.configbean.customizers.Bundle");	// NOI18N
 
-    private SecurityRoleMapping theBean;
+    private SunDescriptorDataObject dataObject;
+    private SecurityRoleMapping mapping;
+    private ASDDVersion version;
 
-    private PrincipalTableModel principalTableModel;
-    private GroupTableModel groupTableModel;
+    private SRMPrincipalTableModel principalTableModel;
+    private SRMGroupTableModel groupTableModel;
 
     // true if AS 9.0+ fields are visible.
     private boolean as90FeaturesVisible;
 
-    /**
-     * Creates new form SecurityRoleMappingCustomizer
-     */
-    public SecurityRoleMappingCustomizer() {
-        initComponents();
-        initUserComponents();
-    }
+	public SecurityRoleMappingPanel(SectionNodeView sectionNodeView, final SecurityRoleMapping mapping, final ASDDVersion version) {
+        super(sectionNodeView);
+        
+        this.dataObject = (SunDescriptorDataObject) sectionNodeView.getDataObject();
+        this.mapping = mapping;
+        this.version = version;
+        this.as90FeaturesVisible = true;
 
-    public SecurityRoleMapping getBean() {
-        return theBean;
-    }
+		initComponents();
+		initUserComponents();
+	}
+
+	private void initUserComponents() {
+        if(ASDDVersion.SUN_APPSERVER_9_0.compareTo(version) <= 0) {
+            as90FeaturesVisible = true;
+        } else {
+            as90FeaturesVisible = false;
+        }
+
+        XmlMultiViewDataSynchronizer synchronizer = dataObject.getModelSynchronizer();
+        
+        principalTableModel = new SRMPrincipalTableModel(synchronizer, mapping, as90FeaturesVisible ? 2 : 1);
+        jTblPrincipals.setModel(principalTableModel);
+        
+        groupTableModel = new SRMGroupTableModel(synchronizer, mapping);
+        jTblGroups.setModel(groupTableModel);
+        
+        enablePrincipalButtons();
+        enableGroupButtons();
+
+        addRefreshable(new ItemEditorHelper(jTxtSecurityRoleName, new SecurityRoleMappingNameEditorModel(synchronizer)));
+        
+        addListeners();
+	}
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -82,12 +113,14 @@ public class SecurityRoleMappingCustomizer extends BaseCustomizer
         jLblAssignedPrincipals = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTblPrincipals = new org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.FixedHeightJTable();
+        jPnlPrincipalButtons = new javax.swing.JPanel();
         jBtnAddPrincipal = new javax.swing.JButton();
         jBtnEditPrincipal = new javax.swing.JButton();
         jBtnRemovePrincipal = new javax.swing.JButton();
         jLblAssignedGroups = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTblGroups = new org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.FixedHeightJTable();
+        jPnlGroupButtons = new javax.swing.JPanel();
         jBtnAddGroup = new javax.swing.JButton();
         jBtnEditGroup = new javax.swing.JButton();
         jBtnRemoveGroup = new javax.swing.JButton();
@@ -99,19 +132,17 @@ public class SecurityRoleMappingCustomizer extends BaseCustomizer
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         add(jLblSecurityRoleName, gridBagConstraints);
-
-        jTxtSecurityRoleName.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 5);
         add(jTxtSecurityRoleName, gridBagConstraints);
-        jTxtSecurityRoleName.getAccessibleContext().setAccessibleName(customizerBundle.getString("ACSN_SecurityRoleName"));
-        jTxtSecurityRoleName.getAccessibleContext().setAccessibleDescription(customizerBundle.getString("ACSD_SecurityRoleName"));
+        jTxtSecurityRoleName.getAccessibleContext().setAccessibleName(customizerBundle.getString("ACSN_SecurityRoleName")); // NOI18N
+        jTxtSecurityRoleName.getAccessibleContext().setAccessibleDescription(customizerBundle.getString("ACSD_SecurityRoleName")); // NOI18N
 
         jLblAssignedPrincipals.setLabelFor(jTblPrincipals);
-        jLblAssignedPrincipals.setText(customizerBundle.getString("LBL_PrincipalsAssigned"));
+        jLblAssignedPrincipals.setText(customizerBundle.getString("LBL_PrincipalsAssigned")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -119,71 +150,76 @@ public class SecurityRoleMappingCustomizer extends BaseCustomizer
         add(jLblAssignedPrincipals, gridBagConstraints);
 
         jScrollPane1.setViewportView(jTblPrincipals);
-        jTblPrincipals.getAccessibleContext().setAccessibleName(customizerBundle.getString("ACSN_PrincipalsAssigned"));
-        jTblPrincipals.getAccessibleContext().setAccessibleDescription(customizerBundle.getString("ACSD_PrincipalsAssigned"));
+        jTblPrincipals.getAccessibleContext().setAccessibleName(customizerBundle.getString("ACSN_PrincipalsAssigned")); // NOI18N
+        jTblPrincipals.getAccessibleContext().setAccessibleDescription(customizerBundle.getString("ACSD_PrincipalsAssigned")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.gridheight = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 5);
         add(jScrollPane1, gridBagConstraints);
 
-        jBtnAddPrincipal.setText(customizerBundle.getString("LBL_AddPrincipal"));
+        jPnlPrincipalButtons.setOpaque(false);
+        jPnlPrincipalButtons.setLayout(new java.awt.GridBagLayout());
+
+        jBtnAddPrincipal.setText(customizerBundle.getString("LBL_AddPrincipal")); // NOI18N
         jBtnAddPrincipal.setMargin(new java.awt.Insets(2, 12, 2, 12));
         jBtnAddPrincipal.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBtnAddPrincipalActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 5);
-        add(jBtnAddPrincipal, gridBagConstraints);
-        jBtnAddPrincipal.getAccessibleContext().setAccessibleName(customizerBundle.getString("ACSN_AddPrincipal"));
-        jBtnAddPrincipal.getAccessibleContext().setAccessibleDescription(customizerBundle.getString("ACSD_AddPrincipal"));
+        gridBagConstraints.weightx = 1.0;
+        jPnlPrincipalButtons.add(jBtnAddPrincipal, gridBagConstraints);
+        jBtnAddPrincipal.getAccessibleContext().setAccessibleName(customizerBundle.getString("ACSN_AddPrincipal")); // NOI18N
+        jBtnAddPrincipal.getAccessibleContext().setAccessibleDescription(customizerBundle.getString("ACSD_AddPrincipal")); // NOI18N
 
-        jBtnEditPrincipal.setText(customizerBundle.getString("LBL_EditPrincipal"));
+        jBtnEditPrincipal.setText(customizerBundle.getString("LBL_EditPrincipal")); // NOI18N
         jBtnEditPrincipal.setMargin(new java.awt.Insets(2, 12, 2, 12));
         jBtnEditPrincipal.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBtnEditPrincipalActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
-        add(jBtnEditPrincipal, gridBagConstraints);
-        jBtnEditPrincipal.getAccessibleContext().setAccessibleName(customizerBundle.getString("ACSN_EditPrincipal"));
-        jBtnEditPrincipal.getAccessibleContext().setAccessibleDescription(customizerBundle.getString("ACSD_EditPrincipal"));
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        jPnlPrincipalButtons.add(jBtnEditPrincipal, gridBagConstraints);
+        jBtnEditPrincipal.getAccessibleContext().setAccessibleName(customizerBundle.getString("ACSN_EditPrincipal")); // NOI18N
+        jBtnEditPrincipal.getAccessibleContext().setAccessibleDescription(customizerBundle.getString("ACSD_EditPrincipal")); // NOI18N
 
-        jBtnRemovePrincipal.setText(customizerBundle.getString("LBL_RemovePrincipals"));
+        jBtnRemovePrincipal.setText(customizerBundle.getString("LBL_RemovePrincipals")); // NOI18N
         jBtnRemovePrincipal.setMargin(new java.awt.Insets(2, 12, 2, 12));
         jBtnRemovePrincipal.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBtnRemovePrincipalActionPerformed(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        jPnlPrincipalButtons.add(jBtnRemovePrincipal, gridBagConstraints);
+        jBtnRemovePrincipal.getAccessibleContext().setAccessibleName(customizerBundle.getString("ACSN_RemovePrincipal")); // NOI18N
+        jBtnRemovePrincipal.getAccessibleContext().setAccessibleDescription(customizerBundle.getString("ACSD_RemovePrincipal")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
-        add(jBtnRemovePrincipal, gridBagConstraints);
-        jBtnRemovePrincipal.getAccessibleContext().setAccessibleName(customizerBundle.getString("ACSN_RemovePrincipal"));
-        jBtnRemovePrincipal.getAccessibleContext().setAccessibleDescription(customizerBundle.getString("ACSD_RemovePrincipal"));
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 5);
+        add(jPnlPrincipalButtons, gridBagConstraints);
 
         jLblAssignedGroups.setLabelFor(jTblGroups);
-        jLblAssignedGroups.setText(customizerBundle.getString("LBL_GroupsAssigned"));
+        jLblAssignedGroups.setText(customizerBundle.getString("LBL_GroupsAssigned")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -191,69 +227,73 @@ public class SecurityRoleMappingCustomizer extends BaseCustomizer
         add(jLblAssignedGroups, gridBagConstraints);
 
         jScrollPane2.setViewportView(jTblGroups);
-        jTblGroups.getAccessibleContext().setAccessibleName(customizerBundle.getString("ACSN_GroupsAssigned"));
-        jTblGroups.getAccessibleContext().setAccessibleDescription(customizerBundle.getString("ACSD_GroupsAssigned"));
+        jTblGroups.getAccessibleContext().setAccessibleName(customizerBundle.getString("ACSN_GroupsAssigned")); // NOI18N
+        jTblGroups.getAccessibleContext().setAccessibleDescription(customizerBundle.getString("ACSD_GroupsAssigned")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.gridheight = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 5);
         add(jScrollPane2, gridBagConstraints);
 
-        jBtnAddGroup.setText(customizerBundle.getString("LBL_AddGroup"));
+        jPnlGroupButtons.setOpaque(false);
+        jPnlGroupButtons.setLayout(new java.awt.GridBagLayout());
+
+        jBtnAddGroup.setText(customizerBundle.getString("LBL_AddGroup")); // NOI18N
         jBtnAddGroup.setMargin(new java.awt.Insets(2, 12, 2, 12));
         jBtnAddGroup.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBtnAddGroupActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 5);
-        add(jBtnAddGroup, gridBagConstraints);
-        jBtnAddGroup.getAccessibleContext().setAccessibleName(customizerBundle.getString("ACSN_AddGroup"));
-        jBtnAddGroup.getAccessibleContext().setAccessibleDescription(customizerBundle.getString("ACSD_AddGroup"));
+        gridBagConstraints.weightx = 1.0;
+        jPnlGroupButtons.add(jBtnAddGroup, gridBagConstraints);
+        jBtnAddGroup.getAccessibleContext().setAccessibleName(customizerBundle.getString("ACSN_AddGroup")); // NOI18N
+        jBtnAddGroup.getAccessibleContext().setAccessibleDescription(customizerBundle.getString("ACSD_AddGroup")); // NOI18N
 
-        jBtnEditGroup.setText(customizerBundle.getString("LBL_EditGroup"));
+        jBtnEditGroup.setText(customizerBundle.getString("LBL_EditGroup")); // NOI18N
         jBtnEditGroup.setMargin(new java.awt.Insets(2, 12, 2, 12));
         jBtnEditGroup.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBtnEditGroupActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
-        add(jBtnEditGroup, gridBagConstraints);
-        jBtnEditGroup.getAccessibleContext().setAccessibleName(customizerBundle.getString("ACSN_EditGroup"));
-        jBtnEditGroup.getAccessibleContext().setAccessibleDescription(customizerBundle.getString("ACSD_EditGroup"));
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        jPnlGroupButtons.add(jBtnEditGroup, gridBagConstraints);
+        jBtnEditGroup.getAccessibleContext().setAccessibleName(customizerBundle.getString("ACSN_EditGroup")); // NOI18N
+        jBtnEditGroup.getAccessibleContext().setAccessibleDescription(customizerBundle.getString("ACSD_EditGroup")); // NOI18N
 
-        jBtnRemoveGroup.setText(customizerBundle.getString("LBL_RemoveGroups"));
+        jBtnRemoveGroup.setText(customizerBundle.getString("LBL_RemoveGroups")); // NOI18N
         jBtnRemoveGroup.setMargin(new java.awt.Insets(2, 12, 2, 12));
         jBtnRemoveGroup.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBtnRemoveGroupActionPerformed(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        jPnlGroupButtons.add(jBtnRemoveGroup, gridBagConstraints);
+        jBtnRemoveGroup.getAccessibleContext().setAccessibleName(customizerBundle.getString("ACSN_RemoveGroup")); // NOI18N
+        jBtnRemoveGroup.getAccessibleContext().setAccessibleDescription(customizerBundle.getString("ACSD_RemoveGroup")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
-        add(jBtnRemoveGroup, gridBagConstraints);
-        jBtnRemoveGroup.getAccessibleContext().setAccessibleName(customizerBundle.getString("ACSN_RemoveGroup"));
-        jBtnRemoveGroup.getAccessibleContext().setAccessibleDescription(customizerBundle.getString("ACSD_RemoveGroup"));
-
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 5);
+        add(jPnlGroupButtons, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void jBtnRemoveGroupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnRemoveGroupActionPerformed
@@ -291,6 +331,8 @@ public class SecurityRoleMappingCustomizer extends BaseCustomizer
     private javax.swing.JLabel jLblAssignedGroups;
     private javax.swing.JLabel jLblAssignedPrincipals;
     private javax.swing.JLabel jLblSecurityRoleName;
+    private javax.swing.JPanel jPnlGroupButtons;
+    private javax.swing.JPanel jPnlPrincipalButtons;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.FixedHeightJTable jTblGroups;
@@ -298,37 +340,6 @@ public class SecurityRoleMappingCustomizer extends BaseCustomizer
     private javax.swing.JTextField jTxtSecurityRoleName;
     // End of variables declaration//GEN-END:variables
 
-    private void initUserComponents() {
-        as90FeaturesVisible = true;
-
-        // Add title panel
-        addTitlePanel(customizerBundle.getString("TITLE_SecurityRoleMapping"));	// NOI18N
-        getAccessibleContext().setAccessibleName(customizerBundle.getString("ACSN_SecurityRoleMapping"));	// NOI18N
-        getAccessibleContext().setAccessibleDescription(customizerBundle.getString("ACSD_SecurityRoleMapping"));	// NOI18N
-
-        // Add error panel
-        addErrorPanel();
-    }
-
-    protected void initFields() {
-        jTxtSecurityRoleName.setText(theBean.getRoleName());
-
-        if(ASDDVersion.SUN_APPSERVER_9_0.compareTo(theBean.getAppServerVersion()) <= 0) {
-            as90FeaturesVisible = true;
-        } else {
-            as90FeaturesVisible = false;
-        }
-
-        principalTableModel = new DCBPrincipalTableModel(theBean.getPrincipalNames(), as90FeaturesVisible ? 2 : 1);
-        jTblPrincipals.setModel(principalTableModel);
-
-        groupTableModel = new DCBGroupTableModel(theBean.getGroupNames());
-        jTblGroups.setModel(groupTableModel);
-
-        enablePrincipalButtons();
-        enableGroupButtons();
-    }
-    
     /** Popup a dialog that lets the user add a new principal to this mapping.
      *  The new name will not be allowed to match any existing name.  The
      *  new item will be preselected afterwards.  The new name will either come
@@ -339,7 +350,7 @@ public class SecurityRoleMappingCustomizer extends BaseCustomizer
         ListSelectionModel selectionModel = jTblPrincipals.getSelectionModel();
         try {
             selectionModel.setValueIsAdjusting(true);
-            SecurityAddPrincipalPanel.addPrincipalName(this, principalTableModel, theBean.getAppServerVersion());
+            SecurityAddPrincipalPanel.addPrincipalName(this, principalTableModel, version);
 
             int index = principalTableModel.getRowCount()-1;
             selectionModel.setSelectionInterval(index, index);
@@ -358,7 +369,7 @@ public class SecurityRoleMappingCustomizer extends BaseCustomizer
 			ListSelectionModel selectionModel = jTblPrincipals.getSelectionModel();
 			try {
                 PrincipalNameMapping entry = principalTableModel.getElementAt(selectedIndices[0]);
-				SecurityEditPrincipalPanel.editPrincipalName(this, entry, principalTableModel, theBean.getAppServerVersion());
+				SecurityEditPrincipalPanel.editPrincipalName(this, entry, principalTableModel, version);
 				selectionModel.setSelectionInterval(selectedIndices[0], selectedIndices[0]);
 			} finally {
 				selectionModel.setValueIsAdjusting(false);
@@ -411,7 +422,7 @@ public class SecurityRoleMappingCustomizer extends BaseCustomizer
 		if(selectedIndices.length > 0) {
 			ListSelectionModel selectionModel = theTable.getSelectionModel();
 			try {
-				SecurityMappingTableModel theModel = (SecurityMappingTableModel) theTable.getModel();
+				SRMBaseTableModel theModel = (SRMBaseTableModel) theTable.getModel();
 				selectionModel.setValueIsAdjusting(true);
 				theModel.removeElements(selectedIndices);
 				int numElements = theTable.getModel().getRowCount();
@@ -457,46 +468,22 @@ public class SecurityRoleMappingCustomizer extends BaseCustomizer
     /** Adds selection listeners to the lists for proper button enabling.
      */
     protected void addListeners() {
-        super.addListeners();
-
         jTblPrincipals.getSelectionModel().addListSelectionListener(this);
         principalTableModel.addTableModelListener(this);
         jTblGroups.getSelectionModel().addListSelectionListener(this);
         groupTableModel.addTableModelListener(this);
     }
 
-    /** Removes previously added selection listeners.
-     */
-    protected void removeListeners() {
-        super.removeListeners();
-        
-        groupTableModel.removeTableModelListener(this);
-        jTblGroups.getSelectionModel().removeListSelectionListener(this);
-        principalTableModel.removeTableModelListener(this);
-        jTblPrincipals.getSelectionModel().removeListSelectionListener(this);
-    }
-
-    protected boolean setBean(Object bean) {
-        boolean result = super.setBean(bean);
-
-        if(bean instanceof SecurityRoleMapping) {
-            theBean = (SecurityRoleMapping) bean;
-            result = true;
-        } else {
-            // if bean is not a SecurityRoleMapping, then it shouldn't have passed Base either.
-            assert (result == false) : 
-                "SecurityRoleMappingCustomizer was passed wrong bean type in setBean(Object bean)";	// NOI18N
-
-            theBean = null;
-            result = false;
-        }
-
-        return result;
-    }
-
-    public String getHelpId() {
-        return "AS_CFG_SecurityRoleMapping"; // NOI18N
-    }
+//    /** Removes previously added selection listeners.
+//     */
+//    protected void removeListeners() {
+//        super.removeListeners();
+//        
+//        groupTableModel.removeTableModelListener(this);
+//        jTblGroups.getSelectionModel().removeListSelectionListener(this);
+//        principalTableModel.removeTableModelListener(this);
+//        jTblPrincipals.getSelectionModel().removeListSelectionListener(this);
+//    }
 
     /**
      * Implementation of the ListSelectionListener interface
@@ -519,8 +506,8 @@ public class SecurityRoleMappingCustomizer extends BaseCustomizer
      * Implementation of the TableModelListener interface
      */
     public void tableChanged(TableModelEvent tableModelEvent) {
-        Object source = tableModelEvent.getSource();
-        theBean.setDirty();
+//        Object source = tableModelEvent.getSource();
+//        theBean.setDirty();
     }
     
 //    public void partitionStateChanged(ErrorMessageDB.PartitionState oldState, ErrorMessageDB.PartitionState newState) {
@@ -546,4 +533,44 @@ public class SecurityRoleMappingCustomizer extends BaseCustomizer
 //                return ValidationError.PARTITION_SECURITY_ASSIGN;
 //        }
 //    }
+    
+	public String getHelpId() {
+		return "AS_CFG_SecurityRoleMapping";	// NOI18N
+	}
+    
+    public void setValue(JComponent source, Object value) {
+    }
+
+    public void linkButtonPressed(Object ddBean, String ddProperty) {
+    }
+
+    public JComponent getErrorComponent(String errorId) {
+        return null;
+    }
+    
+    private class SecurityRoleMappingNameEditorModel extends TextItemEditorModel {
+
+        public SecurityRoleMappingNameEditorModel(XmlMultiViewDataSynchronizer synchronizer) {
+            super(synchronizer, true, true);
+        }
+
+        protected String getValue() {
+            return mapping.getRoleName();
+        }
+
+        protected void setValue(String value) {
+            mapping.setRoleName(value);
+        }
+    }
+    
+    /** Return correct preferred size.  The tables in this are a bit territorial.
+     */
+    public Dimension getPreferredSize() {
+        Dimension minSize = getMinimumSize();
+        Dimension maxSize = getMaximumSize();
+        int preferredWidth = Math.min(Math.max(200, maxSize.width), minSize.width);
+        System.out.println("preferredWidth = " + preferredWidth);
+        return new Dimension(preferredWidth, minSize.height);
+    }
+    
 }

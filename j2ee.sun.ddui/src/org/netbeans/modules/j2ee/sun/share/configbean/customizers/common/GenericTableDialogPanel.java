@@ -41,9 +41,9 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 
 import org.netbeans.modules.j2ee.sun.share.Constants;
-import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
 
 /**

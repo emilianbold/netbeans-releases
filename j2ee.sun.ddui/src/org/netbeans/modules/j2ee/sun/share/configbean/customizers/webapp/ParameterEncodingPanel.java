@@ -31,8 +31,8 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.SortedMap;
 import javax.swing.DefaultComboBoxModel;
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.share.CharsetMapping;
-import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
 
 
 /**

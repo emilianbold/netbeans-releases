@@ -36,7 +36,7 @@ import javax.swing.JTable;
 public class FixedHeightJTable extends JTable {
 
     private boolean firstPaint = true;
-
+    
     public void setFont (Font f) {
         firstPaint = true;
         super.setFont(f);

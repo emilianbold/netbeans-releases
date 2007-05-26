@@ -43,10 +43,10 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.share.Constants;
 import org.netbeans.modules.j2ee.sun.share.PrincipalNameMapping;
 import org.netbeans.modules.j2ee.sun.share.SecurityMasterListModel;
-import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.FixedHeightJTable;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.HelpContext;

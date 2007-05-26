@@ -38,11 +38,11 @@ import java.util.ResourceBundle;
 import javax.swing.JPanel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 
 import org.netbeans.modules.j2ee.sun.share.Constants;
 import org.netbeans.modules.j2ee.sun.share.config.ConfigDataObject;
 import org.netbeans.modules.j2ee.sun.share.config.ConfigurationStorage;
-import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.share.configbean.Base;
 import org.netbeans.modules.j2ee.sun.share.configbean.BaseRoot;
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;

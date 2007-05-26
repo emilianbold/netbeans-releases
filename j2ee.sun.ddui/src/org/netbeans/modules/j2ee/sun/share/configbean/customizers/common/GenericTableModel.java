@@ -26,9 +26,8 @@ package org.netbeans.modules.j2ee.sun.share.configbean.customizers.common;
 
 import java.util.List;
 import java.util.ResourceBundle;
-
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
-import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
 
 
 /** This is a messy class. My apologies, it should have been created on it's own,

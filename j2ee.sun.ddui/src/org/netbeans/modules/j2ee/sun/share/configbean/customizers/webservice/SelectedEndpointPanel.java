@@ -33,12 +33,12 @@ import javax.swing.DefaultComboBoxModel;
 
 import org.openide.ErrorManager;
 
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.sun.dd.api.common.LoginConfig;
 import org.netbeans.modules.j2ee.sun.dd.api.common.MessageSecurityBinding;
 import org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceEndpoint;
 
-import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
 import org.netbeans.modules.j2ee.sun.share.configbean.WebServiceDescriptor;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.TextMapping;

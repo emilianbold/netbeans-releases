@@ -34,10 +34,10 @@ import java.beans.PropertyVetoException;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestination;
 import org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef;
-import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
 
 import org.netbeans.modules.j2ee.sun.share.configbean.WebAppRoot;
 import org.netbeans.modules.j2ee.sun.share.configbean.StorageBeanFactory;

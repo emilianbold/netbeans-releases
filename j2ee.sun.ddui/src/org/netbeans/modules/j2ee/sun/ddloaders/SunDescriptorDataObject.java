@@ -426,6 +426,12 @@ public class SunDescriptorDataObject extends DDMultiViewDataObject
             saxEx = ddRootProxy != null ? ddRootProxy.getError() : new SAXParseException("No proxy object found created by parser.", null);
         }
         
+        if(saxEx != null) {
+            System.out.println(this.getName() + ": Parse error = " + saxEx.getMessage());
+        } else {
+            System.out.println(this.getName() + " parsed successfully.");
+        }
+               
         setSaxError(saxEx);
     }
     

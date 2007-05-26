@@ -20,6 +20,7 @@ package org.netbeans.modules.j2ee.sun.ddloaders.multiview.common;
 
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping;
+import org.netbeans.modules.j2ee.sun.share.configbean.customizers.SecurityRoleMappingPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
