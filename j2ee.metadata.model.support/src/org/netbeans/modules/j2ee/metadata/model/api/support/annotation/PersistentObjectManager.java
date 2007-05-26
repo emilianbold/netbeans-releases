@@ -21,7 +21,10 @@ package org.netbeans.modules.j2ee.metadata.model.api.support.annotation;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -36,7 +39,7 @@ import org.netbeans.api.java.source.SourceUtils;
  */
 public class PersistentObjectManager<T extends PersistentObject> implements JavaContextListener {
 
-    // XXX perhaps also initialize temporary when classpath not registered in GPR 
+    // XXX perhaps also initialize temporary when classpath not registered in GPR
     // (since then there would be no events)
 
     private static final Logger LOGGER = Logger.getLogger(PersistentObjectManager.class.getName());
@@ -47,10 +50,11 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
 
     private final AnnotationModelHelper helper;
     private final ObjectProvider<T> provider;
-    private final Map<ElementHandle<TypeElement>, T> objects = new HashMap<ElementHandle<TypeElement>, T>();
+    private final Map<ElementHandle<TypeElement>, List<T>> objects = new HashMap<ElementHandle<TypeElement>, List<T>>();
 
     private boolean initialized = false;
-    private boolean temporary = false;
+    // not private because used in unit tests
+    boolean temporary = false;
 
     static <V extends PersistentObject> PersistentObjectManager<V> create(AnnotationModelHelper helper, ObjectProvider<V> provider) {
         PersistentObjectManager<V> pom = new PersistentObjectManager<V>(helper, provider);
@@ -68,13 +72,16 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
 
     public Collection<T> getObjects() {
         ensureInitialized();
-        Collection<T> values = objects.values();
-        if (LOGGER.isLoggable(Level.FINEST)) {
-            LOGGER.log(Level.FINEST, "getObjects returning {0} objects: {1}", new Object[] { values.size(), values }); // NOI18N
-        } else {
-            LOGGER.log(Level.FINE, "getObjects returning {0} objects", values.size()); // NOI18N
+        List<T> result = new ArrayList<T>(objects.size() * 2);
+        for (List<T> list : objects.values()) {
+            result.addAll(list);
         }
-        return values;
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "getObjects returning {0} objects: {1}", new Object[] { result.size(), result}); // NOI18N
+        } else {
+            LOGGER.log(Level.FINE, "getObjects returning {0} objects", result.size()); // NOI18N
+        }
+        return Collections.unmodifiableList(result);
     }
 
     private void ensureInitialized() {
@@ -86,10 +93,9 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
             } else {
                 LOGGER.log(Level.FINE, "intializing"); // NOI18N
             }
-            for (T object : provider.createInitialObjects()) {
-                LOGGER.log(Level.FINE, "created object {0}", object); // NOI18N
-                objects.put(object.getSourceElementHandle(), object);
-            }
+            List<T> objects = provider.createInitialObjects();
+            LOGGER.log(Level.FINE, "created initial objects {0}", objects); // NOI18N
+            putObjects(objects);
             initialized = true;
         }
     }
@@ -109,13 +115,12 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
         for (ElementHandle<TypeElement> typeHandle : typeHandles) {
             TypeElement type = typeHandle.resolve(helper.getCompilationController());
             if (type == null) {
+                LOGGER.log(Level.WARNING, "typesAdded: type {0} has dissapeared", typeHandle); // NOI18N
                 continue;
             }
-            T object = provider.createObject(type);
-            if (object != null) {
-                LOGGER.log(Level.FINE, "typesAdded: new object {0}", object); // NOI18N
-                objects.put(object.getSourceElementHandle(), object);
-            }
+            List<T> newObjects = provider.createObjects(type);
+            LOGGER.log(Level.FINE, "typesAdded: new objects {0}", newObjects); // NOI18N
+            putObjects(newObjects);
         }
     }
 
@@ -126,9 +131,9 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
         }
         LOGGER.log(Level.FINE, "typesRemoved called with {0}", typeHandles); // NOI18N
         for (ElementHandle<TypeElement> typeHandle : typeHandles) {
-            T object = objects.remove(typeHandle);
-            if (object != null) {
-                LOGGER.log(Level.FINE, "typesRemoved: removing object {0}", object); // NOI18N
+            List<T> list = objects.remove(typeHandle);
+            if (list != null) {
+                LOGGER.log(Level.FINE, "typesRemoved: removing objects {0}", list); // NOI18N
             }
         }
     }
@@ -140,31 +145,50 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
         }
         LOGGER.log(Level.FINE, "typesChanged called with {0}", typeHandles); // NOI18N
         for (ElementHandle<TypeElement> typeHandle : typeHandles) {
-            T object = objects.get(typeHandle);
-            if (object != null) {
-                boolean valid = object.sourceElementChanged();
-                if (valid) {
-                    LOGGER.log(Level.FINE, "typesChanged: changing object {0}", object); // NOI18N
-                } else {
-                    objects.remove(typeHandle);
-                    LOGGER.log(Level.FINE, "typesChanged: removing object {0}", object); // NOI18N
-                }
-            } else {
-                TypeElement type = typeHandle.resolve(helper.getCompilationController());
-                if (type != null) {
-                    T newObject = provider.createObject(type);
-                    if (newObject != null) {
-                        objects.put(newObject.getSourceElementHandle(), newObject);
-                        LOGGER.log(Level.FINE, "typesChanged: new object {0}", newObject); // NOI18N
+            List<T> list = objects.get(typeHandle);
+            if (list != null){
+                // we have objects based on this type
+                for (Iterator<T> i = list.iterator(); i.hasNext();) {
+                    T object = i.next();
+                    boolean valid = object.sourceElementChanged();
+                    if (valid) {
+                        // the object changed as the type changed
+                        LOGGER.log(Level.FINE, "typesChanged: changing object {0}", object); // NOI18N
+                    } else {
+                        // as the type changed the object is not valid anymore, removing it
+                        i.remove();
+                        LOGGER.log(Level.FINE, "typesChanged: removing object {0}", object); // NOI18N
                     }
                 }
+            } else {
+                // we don't have any object based on this type
+                TypeElement type = typeHandle.resolve(helper.getCompilationController());
+                if (type == null) {
+                    LOGGER.log(Level.WARNING, "typesChanged: type {0} has dissapeared", typeHandle); // NOI18N
+                    continue;
+                }
+                List<T> newObjects = provider.createObjects(type);
+                LOGGER.log(Level.FINE, "typesChanged: new objects {0}", newObjects); // NOI18N
+                putObjects(newObjects);
             }
+        }
+    }
+
+    private void putObjects(List<T> newObjects) {
+        for (T newObject : newObjects) {
+            List<T> list = objects.get(newObject.getSourceElementHandle());
+            if (list == null) {
+                list = new LinkedList<T>();
+                objects.put(newObject.getSourceElementHandle(), list);
+            }
+            list.add(newObject);
         }
     }
 
     void rootsChanged() {
         // XXX assert not in AMH java context
         LOGGER.log(Level.FINE, "rootsChanged called"); // NOI18N
+        deinitialize();
     }
 
     public void javaContextLeft() {

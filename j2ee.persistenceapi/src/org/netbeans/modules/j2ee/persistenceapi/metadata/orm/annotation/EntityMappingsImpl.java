@@ -21,6 +21,7 @@ package org.netbeans.modules.j2ee.persistenceapi.metadata.orm.annotation;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
@@ -373,11 +374,11 @@ public class EntityMappingsImpl implements EntityMappings {
             return result;
         }
 
-        public EntityImpl createObject(TypeElement type) {
+        public List<EntityImpl> createObjects(TypeElement type) {
             if (helper.hasAnnotation(type.getAnnotationMirrors(), "javax.persistence.Entity")) { // NOI18N
-                return new EntityImpl(helper, EntityMappingsImpl.this, type);
+                return Collections.singletonList(new EntityImpl(helper, EntityMappingsImpl.this, type));
             }
-            return null;
+            return Collections.emptyList();
         }
     }
 }

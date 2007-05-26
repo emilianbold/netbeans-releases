@@ -36,7 +36,7 @@ public abstract class PersistentObject {
         sourceElementHandle = ElementHandle.create(typeElement);
     }
 
-    public AnnotationModelHelper getHelper() {
+    protected final AnnotationModelHelper getHelper() {
         return helper;
     }
 

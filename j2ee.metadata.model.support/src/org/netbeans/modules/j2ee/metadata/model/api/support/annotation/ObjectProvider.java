@@ -30,5 +30,7 @@ public interface ObjectProvider<T> {
 
     List<T> createInitialObjects();
 
-    T createObject(TypeElement type);
+    List<T> createObjects(TypeElement type);
+
+    // List<T> modifyObjects(TypeElement type, List<T> oldObjects);
 }

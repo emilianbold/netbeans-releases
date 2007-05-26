@@ -35,6 +35,7 @@ import org.netbeans.api.java.source.ClassIndexListener;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.RootsEvent;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TypesEvent;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
@@ -91,6 +92,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
                 }
                 assertNotNull(employeeEntity[0]);
                 assertNotNull(addressEntity[0]);
+                assertFalse(manager.temporary); // we are testing events, so we don't want a temporary manager
             }
         });
         // adding, removing and changing some types
@@ -255,8 +257,6 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
-        final EntityImpl[] employeeEntity = { null };
-        final EntityImpl[] addressEntity = { null };
         helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 manager = helper.createPersistentObjectManager(new EntityProvider(helper));
@@ -283,9 +283,11 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         addedLatch.await(10, TimeUnit.SECONDS);
         assertTrue("Should have got a typesAdded event for Department", departmentAdded.get());
         cpi.getClassIndex().removeClassIndexListener(listener);
+        SourceUtils.waitScanFinished(); // otherwise the PMO will initialize temporarily
         helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 assertEquals(0, manager.getObjects().size());
+                assertFalse(manager.temporary);
             }
         });
         // modifying the class to be an entity class
@@ -361,11 +363,11 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
             return result;
         }
 
-        public EntityImpl createObject(TypeElement type) {
+        public List<EntityImpl> createObjects(TypeElement type) {
             if (helper.hasAnnotation(type.getAnnotationMirrors(), "javax.persistence.Entity")) {
-                return new EntityImpl(helper, type);
+                return Collections.singletonList(new EntityImpl(helper, type));
             }
-            return null;
+            return Collections.emptyList();
         }
     }
 
