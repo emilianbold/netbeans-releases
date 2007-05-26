@@ -20,7 +20,6 @@ package org.netbeans.modules.sun.manager.jbi.editors;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Rectangle;
 import java.io.Serializable;
 import java.text.NumberFormat;
 import java.util.Vector;
@@ -31,7 +30,6 @@ import javax.swing.JLabel;
 import javax.swing.JPasswordField;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -39,6 +37,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
@@ -51,7 +50,8 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
     
     private static TableCellRenderer booleanRenderer = new BooleanRenderer();
     private static TableCellRenderer doubleRenderer = new DoubleRenderer();
-    private static TableCellRenderer passwordRenderer = new PasswordRenderer();
+    private static TableCellRenderer passwordRenderer = new PasswordRenderer();    
+    private static TableCellRenderer stringRenderer = new StringRenderer();
     
     private static TableCellEditor booleanEditor = new BooleanEditor();
     private static TableCellEditor doubleEditor = new NumberEditor();
@@ -65,12 +65,16 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
     
     @Override
     protected Vector createNewRow() {
-        NewEnvironmentVariableTypeSelectionDialog dialog =
-                new NewEnvironmentVariableTypeSelectionDialog(null, true);
-        dialog.setVisible(true);
+        NewEnvironmentVariableTypeSelectionPanel typeSelectionPanel =
+                new NewEnvironmentVariableTypeSelectionPanel();
         
-        if (dialog.getReturnStatus() == dialog.RET_OK) {
-            String type = dialog.getTypeChoice();
+        DialogDescriptor dd = new DialogDescriptor(typeSelectionPanel,
+                "Select Environment Variable Type");
+        typeSelectionPanel.requestFocus();
+        DialogDisplayer.getDefault().notify(dd);
+        
+        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
+            String type = typeSelectionPanel.getTypeChoice();
             Vector row = super.createNewRow();
             row.add(type);
             
@@ -82,9 +86,12 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
     
     @Override
     protected JTable createTable(DefaultTableModel tableModel) {
+        final Border myBorder = new EmptyBorder(1, 4, 1, 1);
+        
         JTable table = new JTable(tableModel) {
             public TableCellRenderer getCellRenderer(int row, int column) {
-                TableCellRenderer renderer = new DefaultTableCellRenderer() {
+                TableCellRenderer renderer = new DefaultTableCellRenderer() {                  
+                    
                     public Component getTableCellRendererComponent(JTable table,
                             Object value,
                             boolean isSelected,
@@ -98,7 +105,7 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
                             }
                             Component component = super.getTableCellRendererComponent(
                                     table, value, isSelected, hasFocus, row, column);
-                            //((JLabel) component).setHorizontalAlignment(JLabel.CENTER);
+                            ((JComponent)component).setBorder(myBorder);
                             return component;
                         } else {
                             String type = null;
@@ -108,14 +115,6 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
                                 Vector rowData = (Vector) tableModel.getDataVector().get(row);
                                 type = (String) rowData.get(column + 1);
                             } catch (Exception e) {
-                            }
-                            
-                            if (type == null) {
-                                // TMP for testing purpose
-                                if (row % 4 == 0) type = "Boolean";
-                                else if (row % 4 == 1) type = "Password";
-                                else if (row % 4 == 2) type = "Number";
-                                else if (row % 4== 3) type = "String";
                             }
                             
                             if (type.equalsIgnoreCase("Boolean")) {
@@ -128,7 +127,7 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
                                 return doubleRenderer.getTableCellRendererComponent(
                                         table, value, isSelected, hasFocus, row, column);
                             } else if (type.equalsIgnoreCase("String")) {
-                                return super.getTableCellRendererComponent(
+                                return stringRenderer.getTableCellRendererComponent(
                                         table, value, isSelected, hasFocus, row, column);
                             } else {
                                 throw new RuntimeException("Unknown type: " + type);
@@ -151,14 +150,6 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
                     } catch (Exception e) {
                     }
                     
-                    if (type == null) {
-                        // TMP for testing purpose
-                        if (row % 4 == 0) type = "Boolean";
-                        else if (row % 4 == 1) type = "Password";
-                        else if (row % 4 == 2) type = "Number";
-                        else if (row % 4 == 3) type = "String";
-                    }
-                    
                     if (type.equalsIgnoreCase("Boolean")) {
                         return booleanEditor;
                     } else if (type.equalsIgnoreCase("Password")) {
@@ -176,19 +167,39 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
         
         return table;
     }
-    
-    static class NumberRenderer extends DefaultTableCellRenderer.UIResource {
-        public NumberRenderer() {
+        
+    static class StringRenderer extends DefaultTableCellRenderer {
+        private static final Border myBorder = new EmptyBorder(1, 4, 1, 1);
+        
+        public StringRenderer() {
             super();
-            setHorizontalAlignment(JLabel.RIGHT);
+            setHorizontalAlignment(JLabel.LEFT);
+        }
+        
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                          boolean isSelected, boolean hasFocus, int row, int column) {
+            Component component = super.getTableCellRendererComponent(
+                    table, value, isSelected, hasFocus, row, column);
+            setBorder(myBorder);
+            return component;
         }
     }
     
-    static class DoubleRenderer extends NumberRenderer {
+    static class DoubleRenderer extends DefaultTableCellRenderer {
+        private static final Border myBorder = new EmptyBorder(1, 4, 1, 1);
+        
         NumberFormat formatter;
         public DoubleRenderer() {
             super();
-            setHorizontalAlignment(JTextField.LEFT);
+            setHorizontalAlignment(JLabel.LEFT);
+        }
+        
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                          boolean isSelected, boolean hasFocus, int row, int column) {
+            Component component = super.getTableCellRendererComponent(
+                    table, value, isSelected, hasFocus, row, column);
+            setBorder(myBorder);
+            return component;
         }
         
         public void setValue(Object value) {
@@ -202,16 +213,15 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
                 double d = Double.parseDouble((String)value);
                 setText(formatter.format(d));
             }
-        }
+        }        
     }
     
     static class BooleanRenderer extends JCheckBox implements TableCellRenderer {
-        private static final Border noFocusBorder = new EmptyBorder(1, 1, 1, 1);
+        private static final Border myBorder = new EmptyBorder(1, 4, 1, 1);
         
         public BooleanRenderer() {
             super();
-            //            setHorizontalAlignment(JLabel.CENTER);
-            setBorderPainted(true);
+            setBorder(myBorder);
         }
         
         public Component getTableCellRendererComponent(JTable table, Object value,
@@ -225,12 +235,6 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
             }
             setSelected((value != null && ((Boolean)value).booleanValue()));
             
-            if (hasFocus) {
-                setBorder(UIManager.getBorder("Table.focusCellHighlightBorder"));
-            } else {
-                setBorder(noFocusBorder);
-            }
-            
             return this;
         }
     }
@@ -238,149 +242,35 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
     static class PasswordRenderer extends JPasswordField
             implements TableCellRenderer, Serializable {
         
-        protected static Border noFocusBorder = new EmptyBorder(1, 1, 1, 1);
-        private static final Border SAFE_NO_FOCUS_BORDER = new EmptyBorder(1, 1, 1, 1);
+        private static final Border myBorder = new EmptyBorder(1, 4, 1, 1);
         
-        // We need a place to store the color the JLabel should be returned
-        // to after its foreground and background colors have been set
-        // to the selection background color.
-        // These ivars will be made protected when their names are finalized.
-        //        private Color unselectedForeground;
-        //        private Color unselectedBackground;
-        
-        /**
-         * Creates a default table cell renderer.
-         */
         public PasswordRenderer() {
             super();
             setOpaque(true);
-            setBorder(getNoFocusBorder());
+            setBorder(myBorder);
         }
         
-        private static Border getNoFocusBorder() {
-            if (System.getSecurityManager() != null) {
-                return SAFE_NO_FOCUS_BORDER;
-            } else {
-                return noFocusBorder;
-            }
-        }
-        
-        //        /**
-        //         * Overrides <code>JComponent.setForeground</code> to assign
-        //         * the unselected-foreground color to the specified color.
-        //         *
-        //         * @param c set the foreground color to this value
-        //         */
-        //        public void setForeground(Color c) {
-        //            super.setForeground(c);
-        //            unselectedForeground = c;
-        //        }
-        //
-        //        /**
-        //         * Overrides <code>JComponent.setBackground</code> to assign
-        //         * the unselected-background color to the specified color.
-        //         *
-        //         * @param c set the background color to this value
-        //         */
-        //        public void setBackground(Color c) {
-        //            super.setBackground(c);
-        //            unselectedBackground = c;
-        //        }
-        
-        /**
-         *
-         * Returns the default table cell renderer.
-         *
-         * @param table  the <code>JTable</code>
-         * @param value  the value to assign to the cell at
-         *			<code>[row, column]</code>
-         * @param isSelected true if cell is selected
-         * @param hasFocus true if cell has focus
-         * @param row  the row of the cell to render
-         * @param column the column of the cell to render
-         * @return the default table cell renderer
-         */
         public Component getTableCellRendererComponent(JTable table, Object value,
                 boolean isSelected, boolean hasFocus, int row, int column) {
             
             if (isSelected) {
                 setForeground(table.getSelectionForeground());
-                /*super.*/setBackground(table.getSelectionBackground());
+                setBackground(table.getSelectionBackground());
             } else {
                 setForeground(table.getForeground());
                 setBackground(table.getBackground());
             }
-            
-            if (hasFocus) {
-                Border border = null;
-                if (isSelected) {
-                    border = UIManager.getBorder("Table.focusSelectedCellHighlightBorder");
-                }
-                if (border == null) {
-                    border = UIManager.getBorder("Table.focusCellHighlightBorder");
-                }
-                setBorder(border);
-            } else {
-                setBorder(getNoFocusBorder());
-            }
-            
-            //            } else {
-            //                super.setForeground((unselectedForeground != null) ? unselectedForeground
-            //                        : table.getForeground());
-            //                super.setBackground((unselectedBackground != null) ? unselectedBackground
-            //                        : table.getBackground());
-            //            }
-            //
-            //            setFont(table.getFont());
-            //
-            //            if (hasFocus) {
-            //                Border border = null;
-            //                if (isSelected) {
-            //                    border = UIManager.getBorder("Table.focusSelectedCellHighlightBorder");
-            //                }
-            //                if (border == null) {
-            //                    border = UIManager.getBorder("Table.focusCellHighlightBorder");
-            //                }
-            //                setBorder(border);
-            //
-            //                if (!isSelected && table.isCellEditable(row, column)) {
-            //                    Color col;
-            //                    col = UIManager.getColor("Table.focusCellForeground");
-            //                    if (col != null) {
-            //                        super.setForeground(col);
-            //                    }
-            //                    col = UIManager.getColor("Table.focusCellBackground");
-            //                    if (col != null) {
-            //                        super.setBackground(col);
-            //                    }
-            //                }
-            //            } else {
-            //                setBorder(getNoFocusBorder());
-            //            }
             
             setValue(value);
             
             return this;
         }
         
-        
-        /**
-         * Sets the <code>String</code> object for the cell being rendered to
-         * <code>value</code>.
-         *
-         * @param value  the string value for this cell; if value is
-         *		<code>null</code> it sets the text value to an empty string
-         * @see JLabel#setText
-         *
-         */
         protected void setValue(Object value) {
             setText((value == null) ? "" : value.toString());
         }
     }
     
-    /**
-     * Default Editors
-     */
     static class GenericEditor extends DefaultCellEditor {
         
         Class[] argTypes = new Class[]{String.class};
@@ -390,6 +280,7 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
         public GenericEditor() {
             super(new JTextField());
             getComponent().setName("Table.editor");
+            setClickCountToStart(1);
         }
         
         public boolean stopCellEditing() {
@@ -443,19 +334,30 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
     }
     
     static class NumberEditor extends GenericEditor {
+        private static final Border myBorder = new EmptyBorder(1, 4, 1, 1);
         public NumberEditor() {
-            //((JTextField)getComponent()).setHorizontalAlignment(JTextField.LEFT);
+        }
+        
+        public Component getTableCellEditorComponent(JTable table, Object value,
+                boolean isSelected,
+                int row, int column) {
+            Component component = super.getTableCellEditorComponent(
+                    table, value, isSelected, row, column);
+            ((JComponent)component).setBorder(myBorder);
+            return component;
         }
         
         public Object getCellEditorValue() {
-            try {
-                Double.parseDouble((String)value);
-                return value;
-            } catch (Exception e) {
-                NotifyDescriptor d = new NotifyDescriptor.Message(//e.getMessage(),
-                        "Invalid number: " + value,
-                        NotifyDescriptor.ERROR_MESSAGE);
-                DialogDisplayer.getDefault().notify(d);
+            if (value != null && ((String)value).trim().length() > 0) {
+                try {
+                    Double.parseDouble((String)value);
+                    return value;
+                } catch (Exception e) {
+                    NotifyDescriptor d = new NotifyDescriptor.Message(//e.getMessage(),
+                            "Invalid number: " + value,
+                            NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(d);
+                }
             }
             
             return ""; // FIXME: restore the old value
@@ -470,14 +372,21 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
     }
     
     static class PasswordEditor extends DefaultCellEditor {
+        private static final Border myBorder = new EmptyBorder(1, 3, 1, 1);
         public PasswordEditor() {
             super(new JPasswordField());
+            setClickCountToStart(1);
+            ((JComponent)getComponent()).setBorder(myBorder);
         }
     }
     
     static class StringEditor extends DefaultCellEditor {
+        private static final Border myBorder = new EmptyBorder(1, 4, 1, 1);
+        
         public StringEditor() {
             super(new JTextField());
+            setClickCountToStart(1);
+            ((JComponent)getComponent()).setBorder(myBorder);
         }
     }
 }
