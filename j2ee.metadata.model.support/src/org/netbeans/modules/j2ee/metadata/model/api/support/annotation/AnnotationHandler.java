@@ -38,11 +38,11 @@ public interface AnnotationHandler {
      * this method will be called once for each element annotated with the
      * specified annotation.
      *
-     * @param typeElement the type in which annotated element can be found. Never <code>null</code>.
+     * @param type        the type in which annotated element can be found. Never <code>null</code>.
      * @param element     the element annotated with the annotation specified
      *                    by the <code>annotation</code> parameter. Never <code>null</code>.
      *                    The same as typeElement for class.
      * @param annotation  an annotation mirror.
      */
-    void handleAnnotation(TypeElement typeElement, Element element, AnnotationMirror annotation);
+    void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation);
 }

@@ -367,8 +367,8 @@ public class EntityMappingsImpl implements EntityMappings {
         public List<EntityImpl> createInitialObjects() {
             final List<EntityImpl> result = new ArrayList<EntityImpl>();
             helper.getAnnotationScanner().findAnnotatedTypes("javax.persistence.Entity", new TypeAnnotationHandler() { // NOI18N
-                public void typeAnnotation(TypeElement typeElement, AnnotationMirror annotation) {
-                    result.add(new EntityImpl(helper, EntityMappingsImpl.this, typeElement));
+                public void typeAnnotation(TypeElement type, AnnotationMirror annotation) {
+                    result.add(new EntityImpl(helper, EntityMappingsImpl.this, type));
                 }
             });
             return result;
