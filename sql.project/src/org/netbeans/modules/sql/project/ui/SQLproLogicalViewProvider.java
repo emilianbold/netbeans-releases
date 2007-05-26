@@ -35,11 +35,17 @@ package org.netbeans.modules.sql.project.ui;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Collections;
+import java.util.StringTokenizer;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.modules.sql.project.SQLproProject;
 
 import org.openide.nodes.*;
 import org.openide.util.*;
@@ -47,6 +53,8 @@ import org.openide.util.actions.SystemAction;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -62,6 +70,7 @@ import org.netbeans.modules.sql.project.wsdl.GenFiles;
 import org.netbeans.modules.sql.project.wsdl.ActionImpl;
 import org.netbeans.modules.compapp.projects.base.IcanproConstants;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -100,6 +109,17 @@ public class SQLproLogicalViewProvider implements LogicalViewProvider {
 
    private static Lookup createLookup( Project project ) {
         DataFolder rootFolder = DataFolder.findFolder( project.getProjectDirectory() );
+        Sources sources = ProjectUtils.getSources(project);
+        List<SourceGroup> roots = new ArrayList<SourceGroup>();
+        SourceGroup[] javaRoots = 
+            sources.getSourceGroups(SQLproProject.SOURCES_TYPE_ICANPRO);
+        roots.addAll(Arrays.asList(javaRoots));
+        if (roots.isEmpty()) {
+            SourceGroup[] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+            roots.addAll(Arrays.asList(sourceGroups));
+        }
+        DataFolder folder = DataFolder.findFolder(roots.get(0).getRootFolder());
+        rootFolder = folder != null ? folder : rootFolder;
         // XXX Remove root folder after FindAction rewrite
         return Lookups.fixed( new Object[] { project, rootFolder } );
     }
