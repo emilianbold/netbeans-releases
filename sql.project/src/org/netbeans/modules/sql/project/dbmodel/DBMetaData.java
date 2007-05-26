@@ -725,6 +725,7 @@ public class DBMetaData {
         } catch (Exception e) {
             e.printStackTrace();
             errMsg = e.getLocalizedMessage();
+            checkPrepStmtMetaData = true;
             //throw e;
         }
 		return newPrepStmt;
