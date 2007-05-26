@@ -23,14 +23,13 @@
 
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.awt.GridBagConstraints;
 
 import com.sun.jdo.api.persistence.model.Model;
 import com.sun.jdo.modules.persistence.mapping.core.util.MappingContext;
 import com.sun.jdo.modules.persistence.mapping.core.util.MappingContextFactory;
 import com.sun.jdo.modules.persistence.mapping.ejb.ui.panels.BeanMappingPanel;
+import javax.swing.event.TableModelEvent;
 
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.Cmp;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.Finder;
@@ -40,15 +39,17 @@ import org.netbeans.modules.j2ee.sun.share.configbean.Base;
 import org.netbeans.modules.j2ee.sun.share.configbean.BaseEjb;
 import org.netbeans.modules.j2ee.sun.share.configbean.CmpEntityEjb;
 import org.netbeans.modules.j2ee.sun.share.configbean.EjbJarRoot;
+import org.netbeans.modules.j2ee.sun.share.configbean.ValidationError;
 
 /**
  *
  * @author  Rajeshwar Patil
  * @version %I%, %G%
  */
-public class CmpEntityEjbCustomizer extends EntityEjbCustomizer{
+public class CmpEntityEjbCustomizer extends EntityEjbCustomizer {
 
-    private CmpEntityEjb theBean;
+    private CmpEntityEjb theCmpEntityBean;
+    
     private OneOneFinderPanel finderPanel;
 //    private FlushAtEndOfMethodPanel flushAtEndOfMethodPanel;
     private PrefetchDisabledPanel prefetchDisabledPanel;
@@ -56,28 +57,23 @@ public class CmpEntityEjbCustomizer extends EntityEjbCustomizer{
     private CmpPanel cmpPanel;
     private BeanMappingPanel mappingPanel;
 
+    private OneOneFinderModel finderModel;
+    
+    
     /** Creates a new instance of CmpEntityEjbCustomizer */
     public CmpEntityEjbCustomizer() {
     }
-
-
-    public void setObject(Object bean) {
-        super.setObject(bean);
-        // Only do this if the bean is actually changing.
-        if(theBean != bean) {
-            if(bean instanceof CmpEntityEjb) {
-                theBean = (CmpEntityEjb) bean;
-           }
-        }
+    
+    public CmpEntityEjb getCmpEntityBean() {
+        return theCmpEntityBean;
     }
 
-
-    //get the bean specific panel
-    protected javax.swing.JPanel getBeanPanel(){
+    // Get the bean specific panel
+    protected javax.swing.JPanel getBeanPanel() {
         cmpPanel = new CmpPanel();
 
         EntityEjbPanel entityEjbPanel = (EntityEjbPanel)super.getBeanPanel();
-        if(entityEjbPanel != null){
+        if(entityEjbPanel != null) {
             GridBagConstraints gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
             gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
@@ -86,7 +82,7 @@ public class CmpEntityEjbCustomizer extends EntityEjbCustomizer{
         }
 
         cmpEntityEjbPanel = new CmpEntityEjbPanel(this);
-        if(cmpEntityEjbPanel != null){
+        if(cmpEntityEjbPanel != null) {
             GridBagConstraints gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
             gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
@@ -98,101 +94,92 @@ public class CmpEntityEjbCustomizer extends EntityEjbCustomizer{
     }
 
 
-    //initialize all the elements in the bean specific panel
-    protected void initializeBeanPanel(BaseEjb theBean){
+    // Initialize all the elements in the bean specific panel
+    protected void initializeBeanPanel(BaseEjb theBean) {
         super.initializeBeanPanel(theBean);
-        if(!(theBean instanceof CmpEntityEjb)){
-            assert(false);
-        }
 
-        CmpEntityEjb cmpEntityEjb = (CmpEntityEjb)theBean;
-        Cmp cmp = cmpEntityEjb.getCmp();
-        
-        if(cmp != null){
-            String mappingProperties =
-                cmp.getMappingProperties();
-            if(mappingProperties != null){
-                cmpEntityEjbPanel.setMappingProperties(mappingProperties);
-            }
-        }
+        cmpEntityEjbPanel.initFields(theCmpEntityBean);
     }
 
 
     protected void addTabbedBeanPanels() {
         super.addTabbedBeanPanels();
-        MappingContext dummyContext = 
-            MappingContextFactory.getMappingContext(Model.RUNTIME);
-        OneOneFinderModel finderModel = 
-            new OneOneFinderModel();
-        finderModel.addTableModelListener(this);
+        
+        MappingContext dummyContext = MappingContextFactory.getMappingContext(Model.RUNTIME);
+
+        finderModel = new OneOneFinderModel();
         finderPanel = new OneOneFinderPanel(finderModel);
+        finderPanel.putClientProperty(PARTITION_KEY, ValidationError.PARTITION_EJB_FINDER);
         finderPanel.getAccessibleContext().setAccessibleName(bundle.getString("One_One_Finders_Acsbl_Name"));             //NOI18N
         finderPanel.getAccessibleContext().setAccessibleDescription(bundle.getString("One_One_Finders_Acsbl_Desc"));      //NOI18N  
         tabbedPanel.addTab(bundle.getString("LBL_One_One_Finders"),    // NOI18N
             finderPanel);
 
-
-
 //        flushAtEndOfMethodPanel = new FlushAtEndOfMethodPanel(theBean, this);
-//        flushAtEndOfMethodPanel.addTableModelListener(this);
 //        tabbedPanel.addTab(bundle.getString("LBL_Flush_At_End_Of_Method"),    // NOI18N
 //            flushAtEndOfMethodPanel);
 
-
-        prefetchDisabledPanel = new PrefetchDisabledPanel(theBean, this);
+        prefetchDisabledPanel = new PrefetchDisabledPanel(theCmpEntityBean, this);
+        prefetchDisabledPanel.putClientProperty(PARTITION_KEY, ValidationError.PARTITION_EJB_PREFETCH);
         prefetchDisabledPanel.getAccessibleContext().setAccessibleName(bundle.getString("Prefetch_Disabled_Acsbl_Name"));             //NOI18N
         prefetchDisabledPanel.getAccessibleContext().setAccessibleDescription(bundle.getString("Prefetch_Disabled_Acsbl_Desc"));      //NOI18N  
-        prefetchDisabledPanel.addTableModelListener(this);
         tabbedPanel.addTab(bundle.getString("LBL_Prefetch_Disabled"),        // NOI18N
             prefetchDisabledPanel);
 
         mappingPanel =  new BeanMappingPanel(dummyContext);
+        mappingPanel.putClientProperty(PARTITION_KEY, ValidationError.PARTITION_EJB_CMPMAPPING);
         mappingPanel.getAccessibleContext().setAccessibleName(bundle.getString("Cmp_Mapping_Acsbl_Name"));             //NOI18N
         mappingPanel.getAccessibleContext().setAccessibleDescription(bundle.getString("Cmp_Mapping_Acsbl_Desc"));      //NOI18N  
         mappingPanel.setApplyChangesImmediately(true);
         tabbedPanel.add(mappingPanel, bundle.getString("LBL_Cmp_Mapping"), 0);   // NOI18N
 
-        //Select Cmp Mapping Panel
+        // Select Cmp Mapping Panel
         tabbedPanel.setSelectedIndex(0);
     }
 
+    protected void addListeners() {
+        super.addListeners();
+        
+        finderModel.addTableModelListener(this);
+//        flushAtEndOfMethodPanel.addTableModelListener(this);
+        prefetchDisabledPanel.addTableModelListener(this);
+    }
+    
+    protected void removeListeners() {
+        super.removeListeners();
 
+        finderModel.removeTableModelListener(this);
+//        flushAtEndOfMethodPanel.removeTableModelListener(this);
+        prefetchDisabledPanel.removeTableModelListener(this);
+    } 
+    
     protected void initializeTabbedBeanPanels(BaseEjb theBean) {
         super.initializeTabbedBeanPanels(theBean);
-        if(!(theBean instanceof CmpEntityEjb)){
-            assert(false);
-        }
 
-
-        CmpEntityEjb cmpEntityEjb = (CmpEntityEjb)theBean;
-        Cmp cmp = cmpEntityEjb.getCmp();
-        if(cmp == null){
-            finderPanel.setModel(cmpEntityEjb,null);
-        }else{
+        Finder[] finders = null;
+        Cmp cmp = theCmpEntityBean.getCmp();
+        if(cmp != null) {
             OneOneFinders oneOneFinders = cmp.getOneOneFinders();
-            if(oneOneFinders == null){
-                finderPanel.setModel(cmpEntityEjb,null);
-            }else{
-                Finder[] finder = oneOneFinders.getFinder();
-                finderPanel.setModel(cmpEntityEjb, finder);
+            if(oneOneFinders != null) {
+                finders = oneOneFinders.getFinder();
             }
         }
+        finderPanel.setModel(theCmpEntityBean, finders);
  
-//        flushAtEndOfMethodPanel.setData(cmpEntityEjb);
+//        flushAtEndOfMethodPanel.setData(theCmpEntityBean);
 
-        prefetchDisabledPanel.setData(cmpEntityEjb);
+        prefetchDisabledPanel.setData(theCmpEntityBean);
 
-        if (theBean != null) {
+        if(theBean != null) {
             Base myParent = theBean.getParent();
             EjbJarRoot jarBean;
 
             if (myParent instanceof EjbJarRoot) {
                 String beanName = null;
 
-                jarBean = (EjbJarRoot)myParent;
+                jarBean = (EjbJarRoot) myParent;
                 beanName = theBean.getEjbName();
-                mappingPanel.setMappingContext(
-                    jarBean.getMappingContext(), jarBean.getEJBInfoHelper());
+                mappingPanel.setMappingContext(jarBean.getMappingContext(), jarBean.getEJBInfoHelper());
 
                 // if no corresponding MCE object, this must be a new
                 // bean, have jarBean create the skeleton
@@ -204,60 +191,43 @@ public class CmpEntityEjbCustomizer extends EntityEjbCustomizer{
 // TODO - clear the mapping panel if theBean is null?
     }
 
-
-    public Collection getErrors(){
-        ArrayList errors = null;
-        if(validationSupport == null) assert(false);
-        errors = (ArrayList)super.getErrors();
-
-        //Cmp Entity Ejb field Validations
-        String property = cmpEntityEjbPanel.getMappingProperties();
-        errors.addAll(validationSupport.validate(property,
-            "/sun-ejb-jar/enterprise-beans/ejb/cmp/mapping-properties", //NOI18N
-                bundle.getString("LBL_Mapping_Properties")));           //NOI18N
-
-        return errors;
-    }
-
-
     public String getHelpId() {
-	return "AS_CFG_CmpEntityEjb";                                   //NOI18N
+        return "AS_CFG_CmpEntityEjb"; // NOI18N
     }
-
-    //Cmp Entity Ejb(Mapping Properties) update methods
-    void updateMappingProperties(String mappingProperties){
-        Cmp cmp = getCmp();
-        if((EMPTY_STRING.equals(mappingProperties)) || (null == mappingProperties)){
-            cmp.setMappingProperties(null);
-            updateCmp();
-        }else{
-            cmp.setMappingProperties(mappingProperties);
-        }
-        notifyChange();
-    }
-
-
-    private Cmp getCmp(){
-        Cmp cmp = theBean.getCmp();
-        if(cmp == null){
-            cmp = theBean.getConfig().getStorageFactory().createCmp();
-            try {
-                theBean.setCmp(cmp);
-            }catch(java.beans.PropertyVetoException exception){
+    
+    protected boolean setBean(Object bean) {
+		boolean result = super.setBean(bean);
+		
+		if(bean instanceof CmpEntityEjb) {
+            theCmpEntityBean = (CmpEntityEjb) bean;
+			result = true;
+		} else {
+			// if bean is not a CmpEntityEjb, then it shouldn't have passed BaseEjb either.
+			assert (result == false) : 
+				"CmpEntityEjbCustomizer was passed wrong bean type in setBean(Object bean)";	// NOI18N
+				
+            theCmpEntityBean = null;
+			result = false;
+		}
+		
+		return result;
+    } 
+    
+    public void tableChanged(TableModelEvent e) {
+        super.tableChanged(e);
+        
+        CmpEntityEjb bean = getCmpEntityBean();
+        if(bean != null) {
+            Object eventSource = e.getSource();
+            
+            // TODO send event on what row actually changed.
+            if(eventSource == finderModel) {
+                bean.firePropertyChange("oneOneFinder", null, new Object());
+//                validateField(CmpEntityEjb.FIELD_???);
+            } else if(eventSource == prefetchDisabledPanel.getModel()) {
+                bean.firePropertyChange("prefetchDisabled", null, new Object());
+//                validateField(CmpEntityEjb.FIELD_???);
             }
         }
-        return cmp;
-    }
-
-
-    private void updateCmp(){
-        Cmp cmp = getCmp();
-        if(cmp.getMappingProperties() != null) return;
-        if (cmp.getOneOneFinders() != null) return;
-
-        try{
-            theBean.setCmp(null);
-        }catch(java.beans.PropertyVetoException exception){
-        }
-    }
+    }    
 }

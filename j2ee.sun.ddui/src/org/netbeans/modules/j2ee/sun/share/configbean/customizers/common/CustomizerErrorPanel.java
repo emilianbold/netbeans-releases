@@ -24,6 +24,7 @@
 
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.common;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -107,8 +108,18 @@ public class CustomizerErrorPanel extends JPanel {
 		// Get error list, if any,
 		ErrorMessageDB messageDB = ErrorMessageDB.getMessageDB(bean);
 		if(messageDB != null) {
+			ValidationError.Partition globalPartition = errorClient.getGlobalPartition();
+			List globalErrorList = messageDB.getErrors(globalPartition);
+            
 			ValidationError.Partition visiblePartition = errorClient.getPartition();
-			errorList = messageDB.getErrors(visiblePartition);
+			List subPanelErrorList = messageDB.getErrors(visiblePartition);
+            
+            if(globalErrorList != null && subPanelErrorList != null) {
+                errorList = new ArrayList(globalErrorList);
+                errorList.addAll(subPanelErrorList);
+            } else {
+                errorList = (globalErrorList != null) ? globalErrorList : subPanelErrorList;
+            }
 		}
 		
         if(errorList != null && errorList.size() > 0) {
@@ -155,18 +166,27 @@ public class CustomizerErrorPanel extends JPanel {
 		 */
 		public Color getErrorMessageForegroundColor();
 		
+        
 //		/** Foreground color to use with warning messages.
 //		 *
 //		 *  @return Foreground color for warning messages.
 //		 */
 //		public Color getWarningMessageForegroundColor();
 		
+        
 		/** Gets the current panel descriptor.
 		 *
 		 *  @return Current panel descriptor.
 		 */
 		public ValidationError.Partition getPartition();
 		
+        
+		/** Gets the global partition, if there is one.
+		 *
+		 *  @return Global partition for this customizer or null of none.
+		 */
+		public ValidationError.Partition getGlobalPartition();
+    
 	}	
 }
 

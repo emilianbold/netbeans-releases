@@ -23,109 +23,34 @@
 
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule;
 
-import java.util.ArrayList;
 import java.util.ResourceBundle;
+import javax.swing.JPanel;
 
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.BeanPool;
-
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BaseCustomizer;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.ErrorSupport;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.ErrorSupportClient;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.ValidationSupport;
+import org.netbeans.modules.j2ee.sun.share.configbean.BaseEjb;
+import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
+import org.netbeans.modules.j2ee.sun.share.configbean.ValidationError;
 
 /**
  *
  * @author  Rajeshwar Patil
  * @version %I%, %G%
  */
-public class BeanPoolPanel extends javax.swing.JPanel 
-        implements ErrorSupportClient {
+public class BeanPoolPanel extends JPanel {
 
-    private EjbCustomizer ejbCutomizer;
-    protected ErrorSupport errorSupport;
-    protected ValidationSupport validationSupport;
+    private EjbCustomizer masterPanel;
 
-    static final ResourceBundle bundle = 
-        ResourceBundle.getBundle(
+    static final ResourceBundle bundle = ResourceBundle.getBundle(
             "org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule.Bundle"); // NOI18N
    
 
     /** Creates new form BeanPoolPanel */
-    public BeanPoolPanel(EjbCustomizer customizer) {
+    public BeanPoolPanel(EjbCustomizer src) {
+        this.masterPanel = src;
+        
         initComponents();
-        this.ejbCutomizer = customizer;
-        errorSupport = new ErrorSupport(this);
-        validationSupport = new ValidationSupport();
+        initUserComponents();
     }
-
-
-    public void setValues(BeanPool beanPool){
-        if(beanPool != null){
-            steadyPoolSizeTextField.setText(beanPool.getSteadyPoolSize());
-            resizeQuantityTextField.setText(beanPool.getResizeQuantity());
-            maxPoolSizeTextField.setText(beanPool.getMaxPoolSize());
-            poolIdleTimeoutInSecondsTextField.setText(
-                beanPool.getPoolIdleTimeoutInSeconds());
-        }
-    }
-
-
-    public java.awt.Container getErrorPanelParent(){
-        return this;
-    }
-
-
-    public java.awt.GridBagConstraints getErrorPanelConstraints(){
-        java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.insets = new java.awt.Insets(6,12,11,11);
-        return gridBagConstraints;
-    }
-
-
-    public java.util.Collection getErrors(){
-        if(validationSupport == null) assert(false);
-        ArrayList errors = new ArrayList();
-        
-        //Bean Pool fields Validation
-        String property = steadyPoolSizeTextField.getText();
-        errors.addAll(validationSupport.validate(property,
-            "/sun-ejb-jar/enterprise-beans/ejb/bean-pool/steady-pool-size", //NOI18N
-                bundle.getString("LBL_Steady_Pool_Size")));         //NOI18N
-            
-        property = resizeQuantityTextField.getText();
-        errors.addAll(validationSupport.validate(property,
-            "/sun-ejb-jar/enterprise-beans/ejb/bean-pool/resize-quantity", //NOI18N
-                bundle.getString("LBL_Resize_Quantity")));          //NOI18N
-
-        property = poolIdleTimeoutInSecondsTextField.getText();
-        errors.addAll(validationSupport.validate(property,
-            "/sun-ejb-jar/enterprise-beans/ejb/bean-pool/pool-idle-timeout-in-seconds", //NOI18N
-                bundle.getString("LBL_Pool_Idle_Timeout_In_Seconds"))); //NOI18N
-
-        property = maxPoolSizeTextField.getText();
-        errors.addAll(validationSupport.validate(property,
-            "/sun-ejb-jar/enterprise-beans/ejb/bean-pool/max-pool-size", //NOI18N
-                bundle.getString("LBL_Max_Pool_Size")));            //NOI18N
-
-        return errors;
-    }
-	
-	public java.awt.Color getMessageForegroundColor() {
-		return BaseCustomizer.getErrorForegroundColor();
-	}
-
-    private void validateEntries(){
-        if(errorSupport != null){
-            errorSupport.showErrors();
-            ejbCutomizer.validate();
-            this.validate();
-        }
-        
-    }
-
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -158,11 +83,6 @@ public class BeanPoolPanel extends javax.swing.JPanel
         steadyPoolSizeLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Steady_Pool_Size_Acsbl_Name"));
         steadyPoolSizeLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Steady_Pool_Size_Acsbl_Desc"));
 
-        steadyPoolSizeTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                steadyPoolSizeActionPerformed(evt);
-            }
-        });
         steadyPoolSizeTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 steadyPoolSizeKeyReleased(evt);
@@ -189,16 +109,6 @@ public class BeanPoolPanel extends javax.swing.JPanel
         resizeQuantityLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Bean_Pool_Resize_Quantity_Acsbl_Desc"));
 
         resizeQuantityTextField.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Bean_Pool_Resize_Quantity_Tool_Tip"));
-        resizeQuantityTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                resizeQuantityActionPerformed(evt);
-            }
-        });
-        resizeQuantityTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                resizeQuantityFocusGained(evt);
-            }
-        });
         resizeQuantityTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 resizeQuantityKeyReleased(evt);
@@ -225,16 +135,6 @@ public class BeanPoolPanel extends javax.swing.JPanel
         maxPoolSizeLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Max_Pool_Size_Acsbl_Desc"));
 
         maxPoolSizeTextField.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Max_Pool_Size_Tool_Tip"));
-        maxPoolSizeTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                maxPoolSizeActionPerformed(evt);
-            }
-        });
-        maxPoolSizeTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                maxPoolSizeFocusGained(evt);
-            }
-        });
         maxPoolSizeTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 maxPoolSizeKeyReleased(evt);
@@ -261,16 +161,6 @@ public class BeanPoolPanel extends javax.swing.JPanel
         poolIdleTimeoutInSecondsLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Pool_Idle_Timeout_In_Seconds_Acsbl_Desc"));
 
         poolIdleTimeoutInSecondsTextField.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Pool_Idle_Timeout_In_Seconds_Tool_Tip"));
-        poolIdleTimeoutInSecondsTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                poolIdleTimeoutInSecondsActionPerformed(evt);
-            }
-        });
-        poolIdleTimeoutInSecondsTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                poolIdleTimeoutInSecondsFocusGained(evt);
-            }
-        });
         poolIdleTimeoutInSecondsTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 poolIdleTimeoutInSecondsKeyReleased(evt);
@@ -295,67 +185,84 @@ public class BeanPoolPanel extends javax.swing.JPanel
 
     }// </editor-fold>//GEN-END:initComponents
 
-    private void poolIdleTimeoutInSecondsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_poolIdleTimeoutInSecondsActionPerformed
-        // Add your handling code here:
-        validateEntries();
-    }//GEN-LAST:event_poolIdleTimeoutInSecondsActionPerformed
-
-    private void poolIdleTimeoutInSecondsFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_poolIdleTimeoutInSecondsFocusGained
-        // Add your handling code here:
-        validateEntries();
-    }//GEN-LAST:event_poolIdleTimeoutInSecondsFocusGained
-
-    private void maxPoolSizeFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_maxPoolSizeFocusGained
-        // Add your handling code here:
-        validateEntries();
-    }//GEN-LAST:event_maxPoolSizeFocusGained
-
-    private void maxPoolSizeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_maxPoolSizeActionPerformed
-        // Add your handling code here:
-        validateEntries();
-    }//GEN-LAST:event_maxPoolSizeActionPerformed
-
-    private void resizeQuantityFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_resizeQuantityFocusGained
-        // Add your handling code here:
-        validateEntries();
-    }//GEN-LAST:event_resizeQuantityFocusGained
-
-    private void resizeQuantityActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resizeQuantityActionPerformed
-        // Add your handling code here:
-        validateEntries();
-    }//GEN-LAST:event_resizeQuantityActionPerformed
-
-    private void steadyPoolSizeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_steadyPoolSizeActionPerformed
-        // Add your handling code here:
-        validateEntries();
-    }//GEN-LAST:event_steadyPoolSizeActionPerformed
-
     private void poolIdleTimeoutInSecondsKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_poolIdleTimeoutInSecondsKeyReleased
-        // Add your handling code here:
-        String item = poolIdleTimeoutInSecondsTextField.getText();
-        ejbCutomizer.updatePoolIdleTimeoutInSeconds(item);
-        validateEntries();
+        BaseEjb theBean = masterPanel.getBean();
+        if(theBean != null) {
+            BeanPool beanPool = theBean.getBeanPool();
+            String newPoolIdleTimeout = poolIdleTimeoutInSecondsTextField.getText();
+            String oldPoolIdleTimeout = beanPool.getPoolIdleTimeoutInSeconds();
+
+            if(!Utils.strEquivalent(oldPoolIdleTimeout, newPoolIdleTimeout)) {
+                if(Utils.notEmpty(newPoolIdleTimeout)) {
+                    beanPool.setPoolIdleTimeoutInSeconds(newPoolIdleTimeout);
+                } else {
+                    beanPool.setPoolIdleTimeoutInSeconds(null);
+                }
+
+                theBean.firePropertyChange("beanPoolIdleTimeout", oldPoolIdleTimeout, newPoolIdleTimeout); // NOI18N
+                masterPanel.validateField(BaseEjb.FIELD_BEANPOOL_IDLETIMEOUT);
+            }
+        }
     }//GEN-LAST:event_poolIdleTimeoutInSecondsKeyReleased
 
     private void maxPoolSizeKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_maxPoolSizeKeyReleased
-        // Add your handling code here:
-        String item = maxPoolSizeTextField.getText();
-        ejbCutomizer.updateMaxPoolSize(item);
-        validateEntries();
+        BaseEjb theBean = masterPanel.getBean();
+        if(theBean != null) {
+            BeanPool beanPool = theBean.getBeanPool();
+            String newMaxPoolSize = maxPoolSizeTextField.getText();
+            String oldMaxPoolSize = beanPool.getMaxPoolSize();
+
+            if(!Utils.strEquivalent(oldMaxPoolSize, newMaxPoolSize)) {
+                if(Utils.notEmpty(newMaxPoolSize)) {
+                    beanPool.setMaxPoolSize(newMaxPoolSize);
+                } else {
+                    beanPool.setMaxPoolSize(null);
+                }
+
+                theBean.firePropertyChange("beanPoolMaxPoolSize", oldMaxPoolSize, newMaxPoolSize); // NOI18N
+                masterPanel.validateField(BaseEjb.FIELD_BEANPOOL_MAXPOOLSIZE);
+            }
+        }
     }//GEN-LAST:event_maxPoolSizeKeyReleased
 
     private void resizeQuantityKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_resizeQuantityKeyReleased
-        // Add your handling code here:
-        String item = resizeQuantityTextField.getText();
-        ejbCutomizer.updateResizeQuantity(item); 
-        validateEntries();
+        BaseEjb theBean = masterPanel.getBean();
+        if(theBean != null) {
+            BeanPool beanPool = theBean.getBeanPool();
+            String newResizeQuantity = resizeQuantityTextField.getText();
+            String oldResizeQuantity = beanPool.getResizeQuantity();
+
+            if(!Utils.strEquivalent(oldResizeQuantity, newResizeQuantity)) {
+                if(Utils.notEmpty(newResizeQuantity)) {
+                    beanPool.setResizeQuantity(newResizeQuantity);
+                } else {
+                    beanPool.setResizeQuantity(null);
+                }
+
+                theBean.firePropertyChange("beanPoolResizeQuantity", oldResizeQuantity, newResizeQuantity); // NOI18N
+                masterPanel.validateField(BaseEjb.FIELD_BEANPOOL_RESIZEQUANTITY);
+            }
+        }
     }//GEN-LAST:event_resizeQuantityKeyReleased
 
     private void steadyPoolSizeKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_steadyPoolSizeKeyReleased
-        // Add your handling code here:
-        String item = steadyPoolSizeTextField.getText();
-        ejbCutomizer.updateSteadyPoolSize(item);
-        validateEntries();
+        BaseEjb theBean = masterPanel.getBean();
+        if(theBean != null) {
+            BeanPool beanPool = theBean.getBeanPool();
+            String newSteadyPoolSize = steadyPoolSizeTextField.getText();
+            String oldSteadyPoolSize = beanPool.getSteadyPoolSize();
+
+            if(!Utils.strEquivalent(oldSteadyPoolSize, newSteadyPoolSize)) {
+                if(Utils.notEmpty(newSteadyPoolSize)) {
+                    beanPool.setSteadyPoolSize(newSteadyPoolSize);
+                } else {
+                    beanPool.setSteadyPoolSize(null);
+                }
+
+                theBean.firePropertyChange("beanPoolSteadyPoolSize", oldSteadyPoolSize, newSteadyPoolSize); // NOI18N
+                masterPanel.validateField(BaseEjb.FIELD_BEANPOOL_STEADYPOOLSIZE);
+            }
+        }
     }//GEN-LAST:event_steadyPoolSizeKeyReleased
     
     
@@ -370,4 +277,17 @@ public class BeanPoolPanel extends javax.swing.JPanel
     private javax.swing.JLabel steadyPoolSizeLabel;
     private javax.swing.JTextField steadyPoolSizeTextField;
     // End of variables declaration//GEN-END:variables
+
+    private void initUserComponents() {
+        putClientProperty(EjbCustomizer.PARTITION_KEY, ValidationError.PARTITION_EJB_BEANPOOL);
+    }
+    
+    public void initFields(BeanPool beanPool) {
+        if(beanPool != null) {
+            steadyPoolSizeTextField.setText(beanPool.getSteadyPoolSize());
+            resizeQuantityTextField.setText(beanPool.getResizeQuantity());
+            maxPoolSizeTextField.setText(beanPool.getMaxPoolSize());
+            poolIdleTimeoutInSecondsTextField.setText(beanPool.getPoolIdleTimeoutInSeconds());
+        }
+    }    
 }

@@ -169,11 +169,6 @@ public class CustomizerTitlePanel extends JPanel {
             BaseCustomizer masterPanel = (BaseCustomizer) parent;
             theBean = masterPanel.getBean();
         } 
-        // FIXME we can remove this part when EjbJar customizers are migrated to BaseCustomizer.
-        else if(parent instanceof BeanCustomizer) {
-            BeanCustomizer masterPanel = (BeanCustomizer) parent;
-            theBean = masterPanel.getBean();
-        }
 
         if(theBean != null) {
             switchToXml(theBean.getConfig());
@@ -189,11 +184,6 @@ public class CustomizerTitlePanel extends JPanel {
                 BaseCustomizer masterPanel = (BaseCustomizer) parent;
                 theBean = masterPanel.getBean();
             } 
-            // FIXME we can remove this part when EjbJar customizers are migrated to BaseCustomizer.
-            else if(parent instanceof BeanCustomizer) {
-                BeanCustomizer masterPanel = (BeanCustomizer) parent;
-                theBean = masterPanel.getBean();
-            }
 
             if(theBean != null) {
                 ChangeDocTypePanel.editASVersion(parent, theBean);

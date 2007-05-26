@@ -21,14 +21,10 @@ package org.netbeans.modules.j2ee.sun.share.configbean;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.enterprise.deploy.spi.DConfigBean;
-import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
-import javax.enterprise.deploy.model.DDBean;
+import java.util.Iterator;
 
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
+import org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.CheckpointAtEndOfMethod;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.Method;
@@ -43,10 +39,62 @@ public class StatefulEjb extends SessionEjb {
     public StatefulEjb() {
     }
 
+    /** Holds value of property availabilityEnabled. */
     private String availabilityEnabled;
 
-
+    /** Holds value of property checkpointAtEndOfMethod. */
     private CheckpointAtEndOfMethod checkpointAtEndOfMethod;
+    
+    
+    /** -----------------------------------------------------------------------
+     *  Validation implementation
+     */
+
+    // relative xpaths (double as field id's)
+    public static final String FIELD_STATEFUL_AVAILABILITY = "availability-enabled";
+    
+    protected void updateValidationFieldList() {
+        super.updateValidationFieldList();
+
+        validationFieldList.add(FIELD_STATEFUL_AVAILABILITY);
+    }
+
+    public boolean validateField(String fieldId) {
+        boolean result = super.validateField(fieldId);
+        
+        Collection/*ValidationError*/ errors = new ArrayList();
+
+        // !PW use visitor pattern to get rid of switch/if statement for validation
+        //     field -- data member mapping.
+        //
+        // ValidationSupport can return multiple errors for a single field.  We only want
+        // to display one error per field, so we'll pick the first error rather than adding
+        // them all.  As the user fixes each error, the remainder will display until all of
+        // them are handled.  (Hopefully the errors are generated in a nice order, e.g. 
+        // check blank first, then content, etc.  If not, we may have to reconsider this.)
+        //
+        String absoluteFieldXpath = getAbsoluteXpath(fieldId);
+        if(fieldId.equals(FIELD_STATEFUL_AVAILABILITY)) {
+            errors.add(executeValidator(ValidationError.PARTITION_EJB_GLOBAL, 
+                    availabilityEnabled, absoluteFieldXpath, bundle.getString("LBL_Availability_Enabled"))); // NOI18N
+        }
+
+        boolean noErrors = true;
+        Iterator errorIter = errors.iterator();
+
+        while(errorIter.hasNext()) {
+            ValidationError error = (ValidationError) errorIter.next();
+            getMessageDB().updateError(error);
+
+            if(Utils.notEmpty(error.getMessage())) {
+                noErrors = false;
+            }
+        }
+
+        // return true if there was no error added
+        return noErrors || result;
+    } 
+    
     
     
     /* ------------------------------------------------------------------------
@@ -75,23 +123,17 @@ public class StatefulEjb extends SessionEjb {
             Ejb ejb = (Ejb) super.getDDSnippet();
             String version = getAppServerVersion().getEjbJarVersionAsString();
 
-            if(availabilityEnabled != null){
-                try{
-                    if(availabilityEnabled.length() > 0){
-                        ejb.setAvailabilityEnabled(availabilityEnabled);
-                    }else{
-                        ejb.setAvailabilityEnabled(null);
-                    }
-                }catch(org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException e){
-                    //System.out.println("Not Supported Version");      //NOI18N
+            if(Utils.notEmpty(availabilityEnabled)) {
+                try {
+                    ejb.setAvailabilityEnabled(availabilityEnabled);
+                } catch (VersionNotSupportedException ex) {
                 }
             }
 
-            if(null != checkpointAtEndOfMethod){
-                try{
+            if(checkpointAtEndOfMethod != null && checkpointAtEndOfMethod.sizeMethod() > 0) {
+                try {
                     ejb.setCheckpointAtEndOfMethod((CheckpointAtEndOfMethod)checkpointAtEndOfMethod.cloneVersion(version));
-                }catch(org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException e){
-                    //System.out.println("Not Supported Version");      //NOI18N
+                } catch(org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException e) {
                 }
             }
 
@@ -99,17 +141,18 @@ public class StatefulEjb extends SessionEjb {
         }
 
         public boolean hasDDSnippet() {
-            if(super.hasDDSnippet()){
+            if(super.hasDDSnippet()) {
                 return true;
             }
 
-            if (null != availabilityEnabled) {
+            if(Utils.notEmpty(availabilityEnabled)) {
                 return true;
             }
 
-            if (null != checkpointAtEndOfMethod) {
+            if(checkpointAtEndOfMethod != null && checkpointAtEndOfMethod.sizeMethod() > 0) {
                 return true;
             }
+            
             return false;
         }
     }
@@ -124,21 +167,18 @@ public class StatefulEjb extends SessionEjb {
 
     protected void loadEjbProperties(Ejb savedEjb) {
         super.loadEjbProperties(savedEjb);
-        try{
+
+        try {
             availabilityEnabled =  savedEjb.getAvailabilityEnabled();
-        }catch(org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException e){
-            //System.out.println("Not Supported Version");      //NOI18N
+        } catch(VersionNotSupportedException e) {
         }
 
-        CheckpointAtEndOfMethod checkpointAtEndOfMethod = null;
-        try{
-            checkpointAtEndOfMethod = savedEjb.getCheckpointAtEndOfMethod();
-        }catch(org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException e){
-            //System.out.println("Not Supported Version");      //NOI18N
-        }
-
-        if(null != checkpointAtEndOfMethod){
-            this.checkpointAtEndOfMethod = checkpointAtEndOfMethod;
+        try {
+            CheckpointAtEndOfMethod cpem = savedEjb.getCheckpointAtEndOfMethod();
+            if(cpem != null) {
+                checkpointAtEndOfMethod = (CheckpointAtEndOfMethod) cpem.clone();
+            }
+        } catch(VersionNotSupportedException e) {
         }
     }
 
@@ -146,7 +186,7 @@ public class StatefulEjb extends SessionEjb {
         super.clearProperties();
         
         availabilityEnabled = null;
-        checkpointAtEndOfMethod = null;
+        checkpointAtEndOfMethod = getConfig().getStorageFactory().createCheckpointAtEndOfMethod();
     }
     
 
@@ -172,7 +212,7 @@ public class StatefulEjb extends SessionEjb {
             CheckpointAtEndOfMethod oldCheckpointAtEndOfMethod = this.checkpointAtEndOfMethod;
             getVCS().fireVetoableChange("checkpointAtEndOfMethod", oldCheckpointAtEndOfMethod, checkpointAtEndOfMethod);       //NOI18N
             this.checkpointAtEndOfMethod = checkpointAtEndOfMethod;
-            getPCS().firePropertyChange("checkpoint at end of method", oldCheckpointAtEndOfMethod, checkpointAtEndOfMethod);   //NOI18N
+            getPCS().firePropertyChange("checkpointAtEndOfMethod", oldCheckpointAtEndOfMethod, checkpointAtEndOfMethod);   //NOI18N
     }
 
 

@@ -23,17 +23,7 @@
 
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule;
 
-import java.util.ArrayList;
-import java.util.Collection;
 
-//DEPLOYMENT API
-import javax.enterprise.deploy.spi.DConfigBean;
-
-//Swing
-import javax.swing.event.TableModelListener;
-
-import org.netbeans.modules.j2ee.sun.dd.api.ejb.BeanCache;
-import org.netbeans.modules.j2ee.sun.dd.api.ejb.BeanPool;
 import org.netbeans.modules.j2ee.sun.share.configbean.BaseEjb;
 import org.netbeans.modules.j2ee.sun.share.configbean.EntityEjb;
 
@@ -42,12 +32,11 @@ import org.netbeans.modules.j2ee.sun.share.configbean.EntityEjb;
  * @author  Rajeshwar Patil
  * @version %I%, %G%
  */
-public class EntityEjbCustomizer extends EjbCustomizer
-            implements TableModelListener {
+public class EntityEjbCustomizer extends EjbCustomizer {
 
-
-    private EntityEjb theBean;
-    private EntityEjbPanel enityEjbPanel;
+    private EntityEjb theEntityBean;
+    
+    private EntityEjbPanel entityEjbPanel;
     private BeanPoolPanel beanPoolPanel;
     private BeanCachePanel beanCachePanel;
 
@@ -55,45 +44,21 @@ public class EntityEjbCustomizer extends EjbCustomizer
     /** Creates a new instance of EntityEjbCustomizer */
 	public EntityEjbCustomizer() {
 	}
-	
-    public void setObject(Object bean) {
-        super.setObject(bean);
-		
-		// Only do this if the bean is actually changing.
-		if(theBean != bean) {
-			if(bean instanceof EntityEjb) {
-				theBean = (EntityEjb) bean;
-			}
-		}
-	}
     
-
-    //get the bean specific panel
-    protected javax.swing.JPanel getBeanPanel(){
-        enityEjbPanel = new EntityEjbPanel(this);
-        return enityEjbPanel;
+    public EntityEjb getEntityBean() {
+        return theEntityBean;
+    }
+	
+    // Get the bean specific panel
+    protected javax.swing.JPanel getBeanPanel() {
+        entityEjbPanel = new EntityEjbPanel(this);
+        return entityEjbPanel;
     }
 
-
-    //initialize all the elements in the bean specific panel
-    protected void initializeBeanPanel(BaseEjb theBean){
-        if(!(theBean instanceof EntityEjb)){
-            assert(false);
-        }
-
-        EntityEjb entityEjb = (EntityEjb)theBean;
-        String isReadOnlyBean = entityEjb.getIsReadOnlyBean();
-        if(isReadOnlyBean != null){
-            enityEjbPanel.setIsreadOnlyBean(isReadOnlyBean);
-        }
-        String refPeriodInSecs = entityEjb.getRefreshPeriodInSeconds();
-        if(refPeriodInSecs != null){
-            enityEjbPanel.setRefreshPeriodInSeconds(refPeriodInSecs);
-        }
-        String commitOption = entityEjb.getCommitOption();
-        enityEjbPanel.setCommitOption(commitOption);
+    // Initialize all the elements in the bean specific panel
+    protected void initializeBeanPanel(BaseEjb theBean) {
+        entityEjbPanel.initFields(theEntityBean);
     };
-
 
     protected void addTabbedBeanPanels() {
         beanPoolPanel = new BeanPoolPanel(this);
@@ -107,102 +72,34 @@ public class EntityEjbCustomizer extends EjbCustomizer
         tabbedPanel.addTab(bundle.getString("LBL_BeanCache"),          // NOI18N
             beanCachePanel);
 
-        //Select Bean Pool Panel
+        // Select Bean Pool Panel
         tabbedPanel.setSelectedIndex(tabbedPanel.indexOfTab(bundle.getString("LBL_BeanPool")));  //NOI18N
     }
 
-
     protected void initializeTabbedBeanPanels(BaseEjb theBean) {
-        if(!(theBean instanceof EntityEjb)){
-            assert(false);
-        }
-        
-        EntityEjb entityEjb = (EntityEjb)theBean;
-        BeanPool beanPool = entityEjb.getBeanPool();
-        beanPoolPanel.setValues(beanPool);
-        
-        BeanCache beanCache = entityEjb.getBeanCache();
-        beanCachePanel.setValues(beanCache);
+        beanPoolPanel.initFields(theBean.getBeanPool());
+        beanCachePanel.initFields(theBean.getBeanCache());
     }
-
-
-    public Collection getErrors(){
-        ArrayList errors = null;
-        if(validationSupport == null) assert(false);
-        errors = (ArrayList)super.getErrors();
-
-        //Entity Ejb field Validations
-        String property = enityEjbPanel.getIsreadOnlyBean();
-        errors.addAll(validationSupport.validate(property,
-            "/sun-ejb-jar/enterprise-beans/ejb/is-read-only-bean",      //NOI18N
-                bundle.getString("LBL_Is_Read_Only_Bean")));            //NOI18N
-
-        property = enityEjbPanel.getRefreshPeriodInSeconds();
-        errors.addAll(validationSupport.validate(property,
-            "/sun-ejb-jar/enterprise-beans/ejb/refresh-period-in-seconds", //NOI18N
-                bundle.getString("LBL_Refresh_Period_In_Seconds")));    //NOI18N
-
-        property = enityEjbPanel.getCommitOption();
-        errors.addAll(validationSupport.validate(property,
-            "/sun-ejb-jar/enterprise-beans/ejb/commit-option",          //NOI18N
-                bundle.getString("LBL_Commit_Option")));                //NOI18N
-
-        return errors;
-    }
-
-
-    public void validateEntries(){
-        super.validateEntries();
-    }
-
 
     public String getHelpId() {
         return "AS_CFG_EntityEjb";                                      //NOI18N
     }
 
-
-    //Entity Ejb update methods
-    void updateIsReadOnlyBean(String isReadOnlyBean){
-        if(theBean != null){
-            try{
-                if(EMPTY_STRING.equals(isReadOnlyBean)){
-                    theBean.setIsReadOnlyBean(null);
-                }else{
-                    theBean.setIsReadOnlyBean(isReadOnlyBean);
-                }
-            }catch(java.beans.PropertyVetoException exception){
-            }
-            notifyChange();
-        }
-    }
-
-
-    void updateRefreshPeriodInSeconds(String refPeriodInSecs){
-        if(theBean != null){
-            try{
-                if(EMPTY_STRING.equals(refPeriodInSecs)){
-                    theBean.setRefreshPeriodInSeconds(null);
-                }else{
-                    theBean.setRefreshPeriodInSeconds(refPeriodInSecs);
-                }
-            }catch(java.beans.PropertyVetoException exception){
-            }
-            notifyChange();
-        }
-    }
-
-
-    void updateSetCommitOption(String commitOption){
-        if(theBean != null){
-            try{
-                if(EMPTY_STRING.equals(commitOption)){
-                    theBean.setCommitOption(null);
-                }else{
-                    theBean.setCommitOption(commitOption);
-                }
-            }catch(java.beans.PropertyVetoException exception){
-            }
-            notifyChange();
-        }
-    }
+    protected boolean setBean(Object bean) {
+		boolean result = super.setBean(bean);
+		
+		if(bean instanceof EntityEjb) {
+            theEntityBean = (EntityEjb) bean;
+			result = true;
+		} else {
+			// if bean is not a EntityEjb, then it shouldn't have passed BaseEjb either.
+			assert (result == false) : 
+				"EntityEjbCustomizer was passed wrong bean type in setBean(Object bean)";	// NOI18N
+				
+            theEntityBean = null;
+			result = false;
+		}
+		
+		return result;
+    }       
 }

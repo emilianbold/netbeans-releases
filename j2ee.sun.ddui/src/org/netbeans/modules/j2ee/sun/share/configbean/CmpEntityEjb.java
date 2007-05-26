@@ -21,11 +21,13 @@ package org.netbeans.modules.j2ee.sun.share.configbean;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.enterprise.deploy.model.DDBean;
 
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
+import org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.FlushAtEndOfMethod;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.Cmp;
@@ -67,6 +69,56 @@ public class CmpEntityEjb extends EntityEjb {
     /** Creates a new instance of CmpEntityEjb */
     public CmpEntityEjb() {
     }
+
+    /** -----------------------------------------------------------------------
+     *  Validation implementation
+     */
+
+    // relative xpaths (double as field id's)
+    public static final String FIELD_CMP_MAPPINGPROPERTIES = "cmp/mapping-properties"; // NOI18N
+    
+    protected void updateValidationFieldList() {
+        super.updateValidationFieldList();
+
+        validationFieldList.add(FIELD_CMP_MAPPINGPROPERTIES);
+    }
+
+    public boolean validateField(String fieldId) {
+        boolean result = super.validateField(fieldId);
+        
+        Collection/*ValidationError*/ errors = new ArrayList();
+
+        // !PW use visitor pattern to get rid of switch/if statement for validation
+        //     field -- data member mapping.
+        //
+        // ValidationSupport can return multiple errors for a single field.  We only want
+        // to display one error per field, so we'll pick the first error rather than adding
+        // them all.  As the user fixes each error, the remainder will display until all of
+        // them are handled.  (Hopefully the errors are generated in a nice order, e.g. 
+        // check blank first, then content, etc.  If not, we may have to reconsider this.)
+        //
+        String absoluteFieldXpath = getAbsoluteXpath(fieldId);
+        if(fieldId.equals(FIELD_CMP_MAPPINGPROPERTIES)) {
+            String value = (cmp != null) ? cmp.getMappingProperties() : null;
+            errors.add(executeValidator(ValidationError.PARTITION_EJB_GLOBAL, 
+                    value, absoluteFieldXpath, bundle.getString("LBL_Mapping_Properties"))); // NOI18N
+        }
+
+        boolean noErrors = true;
+        Iterator errorIter = errors.iterator();
+
+        while(errorIter.hasNext()) {
+            ValidationError error = (ValidationError) errorIter.next();
+            getMessageDB().updateError(error);
+
+            if(Utils.notEmpty(error.getMessage())) {
+                noErrors = false;
+            }
+        }
+
+        // return true if there was no error added
+        return noErrors || result;
+    }    
     
     /** Getter for property schema.
      * @return Value of property schema.
@@ -138,47 +190,77 @@ public class CmpEntityEjb extends EntityEjb {
     public String getBeanName() {
         return cleanDDBeanText(getDDBean());
     }
-    
+
     /* ------------------------------------------------------------------------
      * Persistence support.  Loads DConfigBeans from previously saved Deployment
      * plan file.
      */
     protected class CmpEntityEjbSnippet extends EntityEjb.EntityEjbSnippet {
+        
         public CommonDDBean getDDSnippet() {
             Ejb ejb = (Ejb) super.getDDSnippet();
             String version = getAppServerVersion().getEjbJarVersionAsString();
 
-            if(null != cmp){
-                ejb.setCmp((Cmp) cmp.cloneVersion(version));
+            Cmp c = getCmp();
+            if(hasContent(c)) {
+                ejb.setCmp((Cmp) c.cloneVersion(version));
             }
 
-            if(null != flushAtEndOfMethod){
-                try{
-                    ejb.setFlushAtEndOfMethod((FlushAtEndOfMethod)flushAtEndOfMethod.cloneVersion(version));
-                }catch(org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException e){
-                    //System.out.println("Not Supported Version");      //NOI18N
-                }
-            }
+            try {
+                FlushAtEndOfMethod feom = getFlushAtEndOfMethod();
+                if(feom != null && feom.sizeMethod() > 0) {
+                    ejb.setFlushAtEndOfMethod((FlushAtEndOfMethod) feom.cloneVersion(version));
+                }            
+            } catch (VersionNotSupportedException ex) {
+            }            
 
             return ejb;
         }
 
         public boolean hasDDSnippet() {
-            if(super.hasDDSnippet()){
+            if(super.hasDDSnippet()) {
                 return true;
             }
 
-            if(null != cmp){
+            if(hasContent(getCmp())) {
                 return true;
             }
 
-            if(null != flushAtEndOfMethod){
+            FlushAtEndOfMethod feom = getFlushAtEndOfMethod();
+            if(feom != null && feom.sizeMethod() > 0) {
                 return true;
             }
+
             return false;
         }
-    }
+    
+        private boolean hasContent(Cmp c) {
+            if(c == null) {
+                return false;
+            }
 
+            if(Utils.notEmpty(c.getIsOneOneCmp()) ||
+                    Utils.notEmpty(c.getMappingProperties())) {
+                return true;
+            }
+
+            OneOneFinders finders = c.getOneOneFinders();
+            if(finders != null && finders.sizeFinder() > 0) {
+                return true;
+            }
+
+            try {
+                PrefetchDisabled pd = c.getPrefetchDisabled();
+                if(pd != null && pd.sizeQueryMethod() > 0) {
+                    return true;
+                }
+            } catch (VersionNotSupportedException ex) {
+            }
+
+            return false;
+        }    
+    }
+    
     java.util.Collection getSnippets() {
         Collection snippets = new ArrayList();
         snippets.add(new CmpEntityEjbSnippet());
@@ -210,9 +292,10 @@ public class CmpEntityEjb extends EntityEjb {
     
     protected void clearProperties() {
         super.clearProperties();
+        StorageBeanFactory beanFactory = getConfig().getStorageFactory();        
         
-        cmp = null;
-        flushAtEndOfMethod = null;
+        cmp = beanFactory.createCmp();
+        flushAtEndOfMethod = beanFactory.createFlushAtEndOfMethod();
         schema = null;
         tableName = null;
         consistency = null;
@@ -225,14 +308,6 @@ public class CmpEntityEjb extends EntityEjb {
 	 */
 	public Cmp getCmp() {
 		return this.cmp;
-	}
-
-
-        /** Getter for property flushAtEndOfMethod.
-	 * @return Value of property flushAtEndOfMethod.
-	 */
-	public FlushAtEndOfMethod getFlushAtEndOfMethod() {
-		return this.flushAtEndOfMethod;
 	}
 
 
@@ -250,6 +325,14 @@ public class CmpEntityEjb extends EntityEjb {
 	}
 
         
+    /** Getter for property flushAtEndOfMethod.
+	 * @return Value of property flushAtEndOfMethod.
+	 */
+	public FlushAtEndOfMethod getFlushAtEndOfMethod() {
+		return this.flushAtEndOfMethod;
+	}
+
+
 	/** Setter for property flushAtEndOfMethod.
 	 * @param flushAtEndOfMethod New value of property flushAtEndOfMethod.
 	 *
@@ -259,7 +342,7 @@ public class CmpEntityEjb extends EntityEjb {
 		FlushAtEndOfMethod oldFlushAtEndOfMethod = this.flushAtEndOfMethod;
 		getVCS().fireVetoableChange("flushAtEndOfMethod", oldFlushAtEndOfMethod, flushAtEndOfMethod);        //NOI18N
 		this.flushAtEndOfMethod = flushAtEndOfMethod;
-		getPCS().firePropertyChange("flush at end  of method", oldFlushAtEndOfMethod, flushAtEndOfMethod);   //NOI18N
+		getPCS().firePropertyChange("flushAtEndOfMethod", oldFlushAtEndOfMethod, flushAtEndOfMethod);   //NOI18N
 	}
 
 

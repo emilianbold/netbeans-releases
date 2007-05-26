@@ -20,6 +20,7 @@ package org.netbeans.modules.j2ee.sun.share.configbean;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import javax.enterprise.deploy.model.DDBean;
 import javax.enterprise.deploy.model.XpathEvent;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
@@ -60,6 +61,66 @@ public class EntityEjb extends BaseEjb {
 		addPropertyChangeListener(new KeepRefreshPeriodValid());
     }	
 
+    /** -----------------------------------------------------------------------
+     *  Validation implementation
+     */
+
+    // relative xpaths (double as field id's)
+    public static final String FIELD_ENTITY_READONLY = "is-read-only-bean"; // NOI18N
+    public static final String FIELD_ENTITY_REFRESHPERIOD = "refresh-period-in-seconds"; // NOI18N
+    public static final String FIELD_ENTITY_COMMITOPTION = "commit-option"; // NOI18N
+    
+    protected void updateValidationFieldList() {
+        super.updateValidationFieldList();
+
+        validationFieldList.add(FIELD_ENTITY_READONLY);
+        validationFieldList.add(FIELD_ENTITY_REFRESHPERIOD);
+        validationFieldList.add(FIELD_ENTITY_COMMITOPTION);
+    }
+
+    public boolean validateField(String fieldId) {
+        boolean result = super.validateField(fieldId);
+        
+        Collection/*ValidationError*/ errors = new ArrayList();
+
+        // !PW use visitor pattern to get rid of switch/if statement for validation
+        //     field -- data member mapping.
+        //
+        // ValidationSupport can return multiple errors for a single field.  We only want
+        // to display one error per field, so we'll pick the first error rather than adding
+        // them all.  As the user fixes each error, the remainder will display until all of
+        // them are handled.  (Hopefully the errors are generated in a nice order, e.g. 
+        // check blank first, then content, etc.  If not, we may have to reconsider this.)
+        //
+        String absoluteFieldXpath = getAbsoluteXpath(fieldId);
+        if(fieldId.equals(FIELD_ENTITY_READONLY)) {
+            errors.add(executeValidator(ValidationError.PARTITION_EJB_GLOBAL, 
+                    isReadOnlyBean, absoluteFieldXpath, bundle.getString("LBL_Is_Read_Only_Bean"))); // NOI18N
+        } else if(fieldId.equals(FIELD_ENTITY_REFRESHPERIOD)) {
+            errors.add(executeValidator(ValidationError.PARTITION_EJB_GLOBAL, 
+                    refreshPeriodInSeconds, absoluteFieldXpath, bundle.getString("LBL_Refresh_Period_In_Seconds"))); // NOI18N
+        } else if(fieldId.equals(FIELD_ENTITY_COMMITOPTION)) {
+            errors.add(executeValidator(ValidationError.PARTITION_EJB_GLOBAL, 
+                    commitOption, absoluteFieldXpath, bundle.getString("LBL_Commit_Option"))); // NOI18N
+        }
+
+        boolean noErrors = true;
+        Iterator errorIter = errors.iterator();
+
+        while(errorIter.hasNext()) {
+            ValidationError error = (ValidationError) errorIter.next();
+            getMessageDB().updateError(error);
+
+            if(Utils.notEmpty(error.getMessage())) {
+                noErrors = false;
+            }
+        }
+
+        // return true if there was no error added
+        return noErrors || result;
+    }
+    
+    
     /* ------------------------------------------------------------------------
      * XPath to Factory mapping support
      */
@@ -85,15 +146,15 @@ public class EntityEjb extends BaseEjb {
         public CommonDDBean getDDSnippet() {
             Ejb ejb = (Ejb) super.getDDSnippet();
 
-            if(isReadOnlyBean != null){
+            if(Utils.notEmpty(isReadOnlyBean)) {
                 ejb.setIsReadOnlyBean(isReadOnlyBean);
             }
 
-            if(refreshPeriodInSeconds != null){
+            if(Utils.notEmpty(refreshPeriodInSeconds)) {
                 ejb.setRefreshPeriodInSeconds(refreshPeriodInSeconds);
             }
 
-            if(commitOption != null){
+            if(Utils.notEmpty(commitOption)) {
                 ejb.setCommitOption(commitOption);
             }
 
@@ -105,16 +166,18 @@ public class EntityEjb extends BaseEjb {
                 return true;
             }
 
-            if(isReadOnlyBean != null){
-                return true;            }
-
-            if(refreshPeriodInSeconds != null){
+            if(Utils.notEmpty(isReadOnlyBean)) {
                 return true;
             }
 
-            if(commitOption != null){
+            if(Utils.notEmpty(refreshPeriodInSeconds)) {
                 return true;
             }
+
+            if(Utils.notEmpty(commitOption)) {
+                return true;
+            }
+            
             return false;
         }
     }

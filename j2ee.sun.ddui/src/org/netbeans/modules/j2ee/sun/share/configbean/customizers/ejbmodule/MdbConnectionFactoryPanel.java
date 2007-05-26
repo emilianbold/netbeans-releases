@@ -23,171 +23,70 @@
 
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule;
 
-import java.util.ArrayList;
 import java.util.ResourceBundle;
+import javax.swing.JPanel;
 
 import org.netbeans.modules.j2ee.sun.dd.api.common.DefaultResourcePrincipal;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.MdbConnectionFactory;
-
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BaseCustomizer;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.ErrorSupport;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.ErrorSupportClient;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.ValidationSupport;
-
+import org.netbeans.modules.j2ee.sun.share.configbean.BaseEjb;
+import org.netbeans.modules.j2ee.sun.share.configbean.MDEjb;
+import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
+import org.netbeans.modules.j2ee.sun.share.configbean.ValidationError;
 
 /**
  *
  * @author  Rajeshwar Patil
  * @version %I%, %G%
  */
-public class MdbConnectionFactoryPanel extends javax.swing.JPanel
-                implements ErrorSupportClient {
+public class MdbConnectionFactoryPanel extends JPanel {
 
-    private MDEjbCustomizer mdEjbCutomizer;
-    protected ErrorSupport errorSupport;
-    protected ValidationSupport validationSupport;
+    private MDEjbCustomizer masterPanel;
 
-    static final ResourceBundle bundle = 
-        ResourceBundle.getBundle(
+    static final ResourceBundle bundle = ResourceBundle.getBundle(
             "org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule.Bundle"); // NOI18N
 
 
     /** Creates new form MdbConnectionFactoryPanel */
-    public MdbConnectionFactoryPanel(MDEjbCustomizer customizer) {
-        initComponents();
-        this.mdEjbCutomizer = customizer;
-        errorSupport = new ErrorSupport(this);
-        validationSupport = new ValidationSupport();
-    }
-
-
-    public void setValues(MdbConnectionFactory mdbConnectionFactory){
-        if(mdbConnectionFactory != null){
-            String jndiName = mdbConnectionFactory.getJndiName();
-            if(jndiName != null){
-                jndiNameTextField.setText(jndiName);
-            }
-            
-            setDefaultResourcePrincipal(
-                mdbConnectionFactory.getDefaultResourcePrincipal());
-        }
-    }
-  
-
-    public java.awt.Container getErrorPanelParent(){
-        return this;
-    }
-
-
-    public java.awt.GridBagConstraints getErrorPanelConstraints(){
-        java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.insets = new java.awt.Insets(6,12,11,11);
-        return gridBagConstraints;
-    }
-
-
-    public java.util.Collection getErrors(){
-        if(validationSupport == null) assert(false);
-        ArrayList errors = new ArrayList();
-
-        //Mdb Connection Factory fields Validation
+    public MdbConnectionFactoryPanel(MDEjbCustomizer src) {
+        this.masterPanel = src;
         
-        String property;
-        boolean mdbConnectionFactoryPresent = isMdbConnectionFactoryPresent();
-        if(mdbConnectionFactoryPresent){
-            property = jndiNameTextField.getText();
-            errors.addAll(validationSupport.validate(property,
-                "/sun-ejb-jar/enterprise-beans/ejb/mdb-connection-factory/jndi-name", //NOI18N
-                    bundle.getString("LBL_Jndi_Name")));                    //NOI18N
-        }
-
-        boolean resourcePrincipalPresent = isDefaultResourcePrincipalPresent();
-        if(resourcePrincipalPresent){
-            property = nameTextField.getText();
-            errors.addAll(validationSupport.validate(property,
-                "/sun-ejb-jar/enterprise-beans/ejb/mdb-connection-factory/default-resource-principal/name", //NOI18N
-                    bundle.getString("LBL_Name")));                     //NOI18N
-
-            property = passwordTextField.getText();
-            errors.addAll(validationSupport.validate(property,
-                "/sun-ejb-jar/enterprise-beans/ejb/mdb-connection-factory/default-resource-principal/password", //NOI18N
-                    bundle.getString("LBL_Password")));                 //NOI18N
-
-        }
-
-        return errors;
-    }
-	
-	public java.awt.Color getMessageForegroundColor() {
-		return BaseCustomizer.getErrorForegroundColor();
-	}
-
-    private boolean isMdbConnectionFactoryPresent(){
-        boolean mdbConnectionFactoryPresent = false;
-        String property = jndiNameTextField.getText();
-        while(true){
-            if((property != null) && (property.length() != 0)){
-                mdbConnectionFactoryPresent = true;
-                break;
-            }
-            
-            if(isDefaultResourcePrincipalPresent()){
-                mdbConnectionFactoryPresent = true;
-                break;
-            }
-            break;
-        }
-        return mdbConnectionFactoryPresent;
+        initComponents();
+        initUserComponents();
     }
 
+//    public java.util.Collection getErrors() {
+//        if(validationSupport == null) assert(false);
+//        ArrayList errors = new ArrayList();
+//
+//        //Mdb Connection Factory fields Validation
+//        
+//        String property;
+//        boolean mdbConnectionFactoryPresent = isMdbConnectionFactoryPresent();
+//        if(mdbConnectionFactoryPresent) {
+//            property = jndiNameTextField.getText();
+//            errors.addAll(validationSupport.validate(property,
+//                "/sun-ejb-jar/enterprise-beans/ejb/mdb-connection-factory/jndi-name", //NOI18N
+//                    bundle.getString("LBL_Jndi_Name")));                    //NOI18N
+//        }
+//
+//        boolean resourcePrincipalPresent = isDefaultResourcePrincipalPresent();
+//        if(resourcePrincipalPresent) {
+//            property = nameTextField.getText();
+//            errors.addAll(validationSupport.validate(property,
+//                "/sun-ejb-jar/enterprise-beans/ejb/mdb-connection-factory/default-resource-principal/name", //NOI18N
+//                    bundle.getString("LBL_Name")));                     //NOI18N
+//
+//            property = passwordTextField.getText();
+//            errors.addAll(validationSupport.validate(property,
+//                "/sun-ejb-jar/enterprise-beans/ejb/mdb-connection-factory/default-resource-principal/password", //NOI18N
+//                    bundle.getString("LBL_Password")));                 //NOI18N
+//
+//        }
+//
+//        return errors;
+//    }
 
-    private boolean isDefaultResourcePrincipalPresent(){
-        boolean defaultResourcePrincipalPresent = false;
-        String property = nameTextField.getText();
-        while(true){
-            if((property != null) && (property.length() != 0)){
-                defaultResourcePrincipalPresent = true;
-                break;
-            }
-            
-            property = passwordTextField.getText();
-            if((property != null) && (property.length() != 0)){
-                defaultResourcePrincipalPresent = true;
-                break;
-            }
-            break;
-        }
-        return defaultResourcePrincipalPresent;
-    }
-
-
-    private void validateEntries(){
-        if(errorSupport != null){
-            errorSupport.showErrors();
-            ///mdEjbCutomizer.validate();
-            ///this.validate();
-        }
-    }
-
-
-    private void setDefaultResourcePrincipal(
-        DefaultResourcePrincipal defaultResPrincipal){
-        if(defaultResPrincipal != null){
-            String name = defaultResPrincipal.getName();
-            if(name != null){
-                nameTextField.setText(name);
-            }
-            String password = defaultResPrincipal.getPassword();
-            if(password != null){
-                passwordTextField.setText(password);
-            }
-        }
-    }
-
-
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -210,12 +109,6 @@ public class MdbConnectionFactoryPanel extends javax.swing.JPanel
 
         setLayout(new java.awt.GridBagLayout());
 
-        addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                formFocusGained(evt);
-            }
-        });
-
         jndiNamePanel.setLayout(new java.awt.GridBagLayout());
 
         jndiNameLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("MNC_Mdb_Conn_Fctry_Jndi_Name").charAt(0));
@@ -228,16 +121,6 @@ public class MdbConnectionFactoryPanel extends javax.swing.JPanel
         jndiNameLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Mdb_Conn_Fctry_Jndi_Name_Acsbl_Desc"));
 
         jndiNameTextField.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Mdb_Conn_Fctry_Jndi_Name_Tool_Tip"));
-        jndiNameTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jndiNameActionPerformed(evt);
-            }
-        });
-        jndiNameTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                jndiNameFocusGained(evt);
-            }
-        });
         jndiNameTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 jndiNameKeyReleased(evt);
@@ -284,16 +167,6 @@ public class MdbConnectionFactoryPanel extends javax.swing.JPanel
         nameLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Dflt_Res_Prncpl_Name_Acsbl_Desc"));
 
         nameTextField.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Dflt_Res_Prncpl_Name_Tool_Tip"));
-        nameTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                nameActionPerformed(evt);
-            }
-        });
-        nameTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                nameFocusGained(evt);
-            }
-        });
         nameTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 nameKeyReleased(evt);
@@ -319,16 +192,6 @@ public class MdbConnectionFactoryPanel extends javax.swing.JPanel
         passwordLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Dflt_Res_Prncpl_Password_Acsbl_Desc"));
 
         passwordTextField.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Dflt_Res_Prncpl_Password_Tool_Tip"));
-        passwordTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                passwordActionPerformed(evt);
-            }
-        });
-        passwordTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                passwordFocusGained(evt);
-            }
-        });
         passwordTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 passwordKeyReleased(evt);
@@ -359,59 +222,82 @@ public class MdbConnectionFactoryPanel extends javax.swing.JPanel
 
     }// </editor-fold>//GEN-END:initComponents
 
-    private void formFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusGained
-        validateEntries();
-    }//GEN-LAST:event_formFocusGained
-
-    private void passwordFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_passwordFocusGained
-        // Add your handling code here:
-        validateEntries();
-    }//GEN-LAST:event_passwordFocusGained
-
-    private void passwordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_passwordActionPerformed
-        // Add your handling code here:
-        validateEntries();
-    }//GEN-LAST:event_passwordActionPerformed
-
-    private void nameFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_nameFocusGained
-        // Add your handling code here:
-        validateEntries();
-    }//GEN-LAST:event_nameFocusGained
-
-    private void nameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nameActionPerformed
-        // Add your handling code here:
-        validateEntries();
-    }//GEN-LAST:event_nameActionPerformed
-
-    private void jndiNameFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_jndiNameFocusGained
-        // Add your handling code here:
-        validateEntries();
-    }//GEN-LAST:event_jndiNameFocusGained
-
-    private void jndiNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jndiNameActionPerformed
-        // Add your handling code here:
-        validateEntries();
-    }//GEN-LAST:event_jndiNameActionPerformed
-
     private void passwordKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_passwordKeyReleased
-        // Add your handling code here:
-        String item = passwordTextField.getText();
-        mdEjbCutomizer.updateDefaultResourcePrincipalPassword(item);
-        validateEntries();
+        MDEjb theBean = masterPanel.getMDBean();
+        if(theBean != null) {
+            MdbConnectionFactory connectionFactory = theBean.getMdbConnectionFactory();
+            DefaultResourcePrincipal drp = connectionFactory.getDefaultResourcePrincipal();
+            String newPassword = passwordTextField.getText();
+            String oldPassword = (drp != null) ? drp.getPassword() : null;
+
+            if(!Utils.strEquivalent(oldPassword, newPassword)) {
+                if(Utils.notEmpty(newPassword)) {
+                    if(drp == null) {
+                        drp = connectionFactory.newDefaultResourcePrincipal();
+                        connectionFactory.setDefaultResourcePrincipal(drp);
+                    }
+                    drp.setPassword(newPassword);
+                } else if(drp != null) {
+                    if(Utils.notEmpty(drp.getName())) {
+                        drp.setPassword(null);
+                    } else {
+                        connectionFactory.setDefaultResourcePrincipal(null);
+                    }
+                }
+                
+                theBean.firePropertyChange("mdbConnFactoryDrpPassword", oldPassword, newPassword); // NOI18N
+                masterPanel.validateField(MDEjb.FIELD_MD_CONNFACTORY);
+            }
+        }
     }//GEN-LAST:event_passwordKeyReleased
 
     private void nameKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_nameKeyReleased
-        // Add your handling code here:
-        String item = nameTextField.getText();
-        mdEjbCutomizer.updateDefaultResourcePrincipalName(item);
-        validateEntries();
+        MDEjb theBean = masterPanel.getMDBean();
+        if(theBean != null) {
+            MdbConnectionFactory connectionFactory = theBean.getMdbConnectionFactory();
+            DefaultResourcePrincipal drp = connectionFactory.getDefaultResourcePrincipal();
+            String newName = nameTextField.getText();
+            String oldName = (drp != null) ? drp.getName() : null;
+
+            if(!Utils.strEquivalent(oldName, newName)) {
+                if(Utils.notEmpty(newName)) {
+                    if(drp == null) {
+                        drp = connectionFactory.newDefaultResourcePrincipal();
+                        connectionFactory.setDefaultResourcePrincipal(drp);
+                    }
+                    drp.setName(newName);
+                } else if(drp != null) {
+                    if(Utils.notEmpty(drp.getPassword())) {
+                        drp.setName(null);
+                    } else {
+                        connectionFactory.setDefaultResourcePrincipal(null);
+                    }
+                }
+                
+                theBean.firePropertyChange("mdbConnFactoryDrpName", oldName, newName); // NOI18N
+                masterPanel.validateField(MDEjb.FIELD_MD_CONNFACTORY);
+            }
+        }
     }//GEN-LAST:event_nameKeyReleased
 
     private void jndiNameKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jndiNameKeyReleased
-        // Add your handling code here:
-        String item = jndiNameTextField.getText();
-        mdEjbCutomizer.updateMdbConnectionFactoryJndiName(item);
-        validateEntries();
+        MDEjb theBean = masterPanel.getMDBean();
+        if(theBean != null) {
+            MdbConnectionFactory connectionFactory = theBean.getMdbConnectionFactory();
+            String newJndiName = jndiNameTextField.getText();
+            String oldJndiName = connectionFactory.getJndiName();
+
+            if(!Utils.strEquivalent(oldJndiName, newJndiName)) {
+                if(Utils.notEmpty(newJndiName)) {
+                    connectionFactory.setJndiName(newJndiName);
+                } else {
+                    connectionFactory.setJndiName(null);
+                }
+
+                theBean.firePropertyChange("mdbConnFactoryJndiName", oldJndiName, newJndiName); // NOI18N
+                masterPanel.validateField(MDEjb.FIELD_MD_CONNFACTORY);
+           }
+        }
     }//GEN-LAST:event_jndiNameKeyReleased
 
 
@@ -428,4 +314,28 @@ public class MdbConnectionFactoryPanel extends javax.swing.JPanel
     private javax.swing.JTextField passwordTextField;
     // End of variables declaration//GEN-END:variables
     
+    private void initUserComponents() {
+        putClientProperty(EjbCustomizer.PARTITION_KEY, ValidationError.PARTITION_EJB_MDBCONNFACTORY);
+    }
+    
+    public void initFields(MDEjb theBean) {
+        String jndiName = null;
+        String name = null;
+        String password = null;
+        
+        if(theBean != null) {
+            MdbConnectionFactory connectionFactory = theBean.getMdbConnectionFactory();
+            jndiName = connectionFactory.getJndiName();
+            
+            DefaultResourcePrincipal drp = connectionFactory.getDefaultResourcePrincipal();
+            if(drp != null) {
+                name = drp.getName();
+                password = drp.getPassword();
+            }
+        }
+        
+        jndiNameTextField.setText(jndiName);
+        nameTextField.setText(name);
+        passwordTextField.setText(password);
+    }
 }

@@ -23,56 +23,27 @@
 
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule;
 
+import java.beans.PropertyVetoException;
+import javax.swing.JPanel;
+import org.netbeans.modules.j2ee.sun.share.configbean.BaseEjb;
+import org.netbeans.modules.j2ee.sun.share.configbean.EntityEjb;
+import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
+
 /**
  *
  * @author  Rajeshwar Patil
  * @version %I%, %G%
  */
-public class EntityEjbPanel extends javax.swing.JPanel {
+public class EntityEjbPanel extends JPanel {
 
-    private EntityEjbCustomizer entityEjbCutomizer;
+    private EntityEjbCustomizer masterPanel;
 
 
     /** Creates new form EntityEjbPanel */
-    public EntityEjbPanel(EntityEjbCustomizer customizer) {
+    public EntityEjbPanel(EntityEjbCustomizer src) {
+        this.masterPanel = src;
+        
         initComponents();
-        this.entityEjbCutomizer = customizer;
-    }
-
-
-    public void setIsreadOnlyBean(String isReadOnlyBean){
-        if(isReadOnlyBean != null){
-            isReadOnlyBeanComboBox.setSelectedItem(isReadOnlyBean);
-        }
-    }
-
-
-    public void setRefreshPeriodInSeconds(String refPeriodInSecs){
-        if(refPeriodInSecs != null){
-            refreshPeriodInSecondsTextField.setText(refPeriodInSecs);
-        }
-    }
-
-
-    public void setCommitOption(String commitOption){
-        if(commitOption != null){
-            commitOptionComboBox.setSelectedItem(commitOption);
-        }
-    }
-
-    
-    public String getIsreadOnlyBean(){
-        return (String)isReadOnlyBeanComboBox.getSelectedItem();
-    }
-
-
-    public String getRefreshPeriodInSeconds(){
-        return refreshPeriodInSecondsTextField.getText();
-    }
-
-
-    public String getCommitOption(){
-        return (String)commitOptionComboBox.getSelectedItem();
     }
 
 
@@ -106,9 +77,9 @@ public class EntityEjbPanel extends javax.swing.JPanel {
 
         isReadOnlyBeanComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "", "true", "false" }));
         isReadOnlyBeanComboBox.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Is_Read_Only_Bean_Tool_Tip"));
-        isReadOnlyBeanComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                isReadOnlyBeanItemStateChanged(evt);
+        isReadOnlyBeanComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                isReadOnlyBeanComboBoxActionPerformed(evt);
             }
         });
 
@@ -132,16 +103,6 @@ public class EntityEjbPanel extends javax.swing.JPanel {
         refreshPeriodInSecondsLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Refresh_Period_In_Seconds_Acsbl_Desc"));
 
         refreshPeriodInSecondsTextField.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Refresh_Period_In_Seconds_Tool_Tip"));
-        refreshPeriodInSecondsTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                refreshPeriodInSecondsActionPerformed(evt);
-            }
-        });
-        refreshPeriodInSecondsTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                refreshPeriodInSecondsFocusGained(evt);
-            }
-        });
         refreshPeriodInSecondsTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 refreshPeriodInSecondsKeyReleased(evt);
@@ -169,9 +130,9 @@ public class EntityEjbPanel extends javax.swing.JPanel {
 
         commitOptionComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "", "B", "C" }));
         commitOptionComboBox.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Commit_Option_Tool_Tip"));
-        commitOptionComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                commitOptionItemStateChanged(evt);
+        commitOptionComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                commitOptionComboBoxActionPerformed(evt);
             }
         });
 
@@ -186,36 +147,74 @@ public class EntityEjbPanel extends javax.swing.JPanel {
 
     }// </editor-fold>//GEN-END:initComponents
 
-    private void refreshPeriodInSecondsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshPeriodInSecondsActionPerformed
-        // Add your handling code here:
-        entityEjbCutomizer.validateEntries();
-    }//GEN-LAST:event_refreshPeriodInSecondsActionPerformed
+    private void commitOptionComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_commitOptionComboBoxActionPerformed
+        EntityEjb theBean = masterPanel.getEntityBean();
+        if(theBean != null) {
+            String newCommitOption = (String) commitOptionComboBox.getSelectedItem();
+            String oldCommitOption = theBean.getCommitOption();
 
-    private void refreshPeriodInSecondsFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_refreshPeriodInSecondsFocusGained
-        // Add your handling code here:
-        entityEjbCutomizer.validateEntries();
-    }//GEN-LAST:event_refreshPeriodInSecondsFocusGained
+            try {
+               if(!Utils.strEquivalent(oldCommitOption, newCommitOption)) {
+                    if(Utils.notEmpty(newCommitOption)) {
+                        theBean.setCommitOption(newCommitOption);
+                    } else {
+                        theBean.setCommitOption(null);
+                    }
 
-    private void commitOptionItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_commitOptionItemStateChanged
-        // Add your handling code here:
-        String item = (String)commitOptionComboBox.getSelectedItem();
-        entityEjbCutomizer.updateSetCommitOption(item);
-        entityEjbCutomizer.validateEntries();
-    }//GEN-LAST:event_commitOptionItemStateChanged
+//                theBean.firePropertyChange("entityCommitOption", oldCommitOption, newCommitOption); // NOI18N
+                masterPanel.validateField(EntityEjb.FIELD_ENTITY_COMMITOPTION);
+                }
+            } catch (PropertyVetoException ex) {
+                commitOptionComboBox.setSelectedItem(oldCommitOption);
+            }
+        }
+    }//GEN-LAST:event_commitOptionComboBoxActionPerformed
+
+    private void isReadOnlyBeanComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_isReadOnlyBeanComboBoxActionPerformed
+        EntityEjb theBean = masterPanel.getEntityBean();
+        if(theBean != null) {
+            String newReadOnly = (String) isReadOnlyBeanComboBox.getSelectedItem();
+            String oldReadOnly = theBean.getIsReadOnlyBean();
+
+            try {
+               if(!Utils.strEquivalent(oldReadOnly, newReadOnly)) {
+                    if(Utils.notEmpty(newReadOnly)) {
+                        theBean.setIsReadOnlyBean(newReadOnly);
+                    } else {
+                        theBean.setIsReadOnlyBean(null);
+                    }
+
+//                theBean.firePropertyChange("entityIsReadOnly", oldReadOnly, newReadOnly); // NOI18N
+                masterPanel.validateField(EntityEjb.FIELD_ENTITY_READONLY);
+                }
+            } catch (PropertyVetoException ex) {
+                isReadOnlyBeanComboBox.setSelectedItem(oldReadOnly);
+            }
+        }
+    }//GEN-LAST:event_isReadOnlyBeanComboBoxActionPerformed
 
     private void refreshPeriodInSecondsKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_refreshPeriodInSecondsKeyReleased
-        // Add your handling code here:
-        String item = refreshPeriodInSecondsTextField.getText();
-        entityEjbCutomizer.updateRefreshPeriodInSeconds(item);
-        entityEjbCutomizer.validateEntries();
-    }//GEN-LAST:event_refreshPeriodInSecondsKeyReleased
+        EntityEjb theBean = masterPanel.getEntityBean();
+        if(theBean != null) {
+            String newRefreshPeriod = refreshPeriodInSecondsTextField.getText();
+            String oldRefreshPeriod = theBean.getRefreshPeriodInSeconds();
 
-    private void isReadOnlyBeanItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_isReadOnlyBeanItemStateChanged
-        // Add your handling code here:
-        String item = (String)isReadOnlyBeanComboBox.getSelectedItem();
-        entityEjbCutomizer.updateIsReadOnlyBean(item);
-        entityEjbCutomizer.validateEntries();
-    }//GEN-LAST:event_isReadOnlyBeanItemStateChanged
+            try {
+               if(!Utils.strEquivalent(oldRefreshPeriod, newRefreshPeriod)) {
+                    if(Utils.notEmpty(newRefreshPeriod)) {
+                        theBean.setRefreshPeriodInSeconds(newRefreshPeriod);
+                    } else {
+                        theBean.setRefreshPeriodInSeconds(null);
+                    }
+
+//                theBean.firePropertyChange("entityRefreshPeriod", oldRefreshPeriod, newRefreshPeriod); // NOI18N
+                masterPanel.validateField(EntityEjb.FIELD_ENTITY_REFRESHPERIOD);
+                }
+            } catch (PropertyVetoException ex) {
+                refreshPeriodInSecondsTextField.setText(oldRefreshPeriod);
+            }
+        }
+    }//GEN-LAST:event_refreshPeriodInSecondsKeyReleased
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -227,4 +226,15 @@ public class EntityEjbPanel extends javax.swing.JPanel {
     private javax.swing.JTextField refreshPeriodInSecondsTextField;
     // End of variables declaration//GEN-END:variables
 
+    public void initFields(EntityEjb theBean) {
+        if(theBean != null) {
+            isReadOnlyBeanComboBox.setSelectedItem(theBean.getIsReadOnlyBean());
+            refreshPeriodInSecondsTextField.setText(theBean.getRefreshPeriodInSeconds());
+            commitOptionComboBox.setSelectedItem(theBean.getCommitOption());
+        } else {
+            isReadOnlyBeanComboBox.setSelectedItem(null);
+            refreshPeriodInSecondsTextField.setText(null);
+            commitOptionComboBox.setSelectedItem(null);
+        }
+    }    
 }

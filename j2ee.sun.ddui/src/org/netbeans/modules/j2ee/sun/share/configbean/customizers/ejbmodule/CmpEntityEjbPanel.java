@@ -23,33 +23,29 @@
 
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule;
 
+import javax.swing.JPanel;
+
+import org.netbeans.modules.j2ee.sun.dd.api.ejb.Cmp;
+import org.netbeans.modules.j2ee.sun.share.configbean.BaseEjb;
+import org.netbeans.modules.j2ee.sun.share.configbean.CmpEntityEjb;
+import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
+
 /**
  *
  * @author  Rajeshwar Patil
  * @version %I%, %G%
  */
-public class CmpEntityEjbPanel extends javax.swing.JPanel {
+public class CmpEntityEjbPanel extends JPanel {
 
-    private CmpEntityEjbCustomizer cmpEntityEjbCutomizer;
+    private CmpEntityEjbCustomizer masterPanel;
 
 
     /** Creates new form CmpEntityEjbPanel */
-    public CmpEntityEjbPanel(CmpEntityEjbCustomizer customizer) {
+    public CmpEntityEjbPanel(CmpEntityEjbCustomizer src) {
+        this.masterPanel = src;
         initComponents();
-        this.cmpEntityEjbCutomizer = customizer;
     }
 
-
-    public void setMappingProperties(String mappingProperties){
-        if(mappingProperties != null){
-            mappingPropertiesTextField.setText(mappingProperties);
-        }
-    }
-
-
-    public String getMappingProperties(){
-        return mappingPropertiesTextField.getText();
-    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -76,19 +72,6 @@ public class CmpEntityEjbPanel extends javax.swing.JPanel {
         mappingPropertiesLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Mapping_Properties_Acsbl_Desc"));
 
         mappingPropertiesTextField.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Mapping_Properties_Tool_Tip"));
-        mappingPropertiesTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                mappingPropertiesActionPerformed(evt);
-            }
-        });
-        mappingPropertiesTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                mappingPropertiesFocusGained(evt);
-            }
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                mappingPropertiesFocusLost(evt);
-            }
-        });
         mappingPropertiesTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 mappingPropertiesKeyReleased(evt);
@@ -106,26 +89,24 @@ public class CmpEntityEjbPanel extends javax.swing.JPanel {
 
     }// </editor-fold>//GEN-END:initComponents
 
-    private void mappingPropertiesFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_mappingPropertiesFocusLost
-        // Add your handling code here:
-        cmpEntityEjbCutomizer.validateEntries();
-    }//GEN-LAST:event_mappingPropertiesFocusLost
-
-    private void mappingPropertiesFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_mappingPropertiesFocusGained
-        // Add your handling code here:
-        cmpEntityEjbCutomizer.validateEntries();
-    }//GEN-LAST:event_mappingPropertiesFocusGained
-
-    private void mappingPropertiesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mappingPropertiesActionPerformed
-        // Add your handling code here:
-        cmpEntityEjbCutomizer.validateEntries();
-    }//GEN-LAST:event_mappingPropertiesActionPerformed
-
     private void mappingPropertiesKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_mappingPropertiesKeyReleased
-        // Add your handling code here:
-        String item = mappingPropertiesTextField.getText();
-        cmpEntityEjbCutomizer.updateMappingProperties(item);
-        cmpEntityEjbCutomizer.validateEntries();
+        CmpEntityEjb theBean = masterPanel.getCmpEntityBean();
+        if(theBean != null) {
+            Cmp cmp = theBean.getCmp();
+            String newMappingProperties = mappingPropertiesTextField.getText();
+            String oldMappingProperties = theBean.getRefreshPeriodInSeconds();
+
+            if(!Utils.strEquivalent(oldMappingProperties, newMappingProperties)) {
+                if(Utils.notEmpty(newMappingProperties)) {
+                    cmp.setMappingProperties(newMappingProperties);
+                } else {
+                    cmp.setMappingProperties(null);
+                }
+
+                theBean.firePropertyChange("cmpMappingProperties", oldMappingProperties, newMappingProperties); // NOI18N
+                masterPanel.validateField(CmpEntityEjb.FIELD_CMP_MAPPINGPROPERTIES);
+            }
+        }
     }//GEN-LAST:event_mappingPropertiesKeyReleased
 
 
@@ -134,4 +115,14 @@ public class CmpEntityEjbPanel extends javax.swing.JPanel {
     private javax.swing.JTextField mappingPropertiesTextField;
     // End of variables declaration//GEN-END:variables
 
+    public void initFields(CmpEntityEjb theBean) {
+        String mappingProperties = null;
+        
+        if(theBean != null) {
+            mappingProperties = theBean.getCmp().getMappingProperties();
+        }
+        
+        mappingPropertiesTextField.setText(mappingProperties);
+    }     
+    
 }

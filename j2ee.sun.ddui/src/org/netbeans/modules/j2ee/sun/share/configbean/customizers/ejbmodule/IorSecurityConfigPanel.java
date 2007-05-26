@@ -23,237 +23,38 @@
 
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule;
 
-import java.util.ArrayList;
 import java.util.ResourceBundle;
+import javax.swing.JPanel;
 
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.AsContext;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.IorSecurityConfig;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.SasContext;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.TransportConfig;
+import org.netbeans.modules.j2ee.sun.share.configbean.BaseEjb;
+import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
+import org.netbeans.modules.j2ee.sun.share.configbean.ValidationError;
 
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BaseCustomizer;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.ErrorSupport;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.ErrorSupportClient;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.ValidationSupport;
 
 /**
  *
  * @author  Rajeshwar Patil
  * @version %I%, %G%
  */
-public class IorSecurityConfigPanel extends javax.swing.JPanel 
-        implements ErrorSupportClient {
+public class IorSecurityConfigPanel extends JPanel {
 
-    private EjbCustomizer customizer;
+    private EjbCustomizer masterPanel;
     
-    protected ErrorSupport errorSupport;
-    protected ValidationSupport validationSupport;
-
-    static final ResourceBundle bundle = 
-        ResourceBundle.getBundle(
+    static final ResourceBundle bundle = ResourceBundle.getBundle(
             "org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule.Bundle"); // NOI18N
 
     
     /** Creates new form IorSecurityConfigPanel */
-    public IorSecurityConfigPanel(EjbCustomizer customizer) {
+    public IorSecurityConfigPanel(EjbCustomizer src) {
+        this.masterPanel = src;
+
         initComponents();
-        this.customizer = customizer;
-        errorSupport = new ErrorSupport(this);
-        validationSupport = new ValidationSupport();
+        initUserComponents();
     }
-
-
-    public void setValues(IorSecurityConfig iorSecCfg){
-        if(iorSecCfg != null){
-            TransportConfig transportConfig = iorSecCfg.getTransportConfig();
-            if(transportConfig != null){
-                integrityComboBox.setSelectedItem(
-                    transportConfig.getIntegrity());
-                
-                confidentialityComboBox.setSelectedItem(
-                    transportConfig.getConfidentiality());
-
-                estbTrstInTrgtComboBox.setSelectedItem(
-                    transportConfig.getEstablishTrustInTarget());
-
-                estbTrstInClntComboBox.setSelectedItem(
-                    transportConfig.getEstablishTrustInClient());
-            }
-
-            AsContext asContext = iorSecCfg.getAsContext();
-            if(asContext != null){
-                requiredComboBox.setSelectedItem(asContext.getRequired());
-                authMethodComboBox.setSelectedItem(asContext.getAuthMethod());
-                realmTextField.setText(asContext.getRealm());
-            }
-
-            SasContext sasContext = iorSecCfg.getSasContext();
-            if(sasContext != null){
-                callerPropagationComboBox.setSelectedItem(
-                    sasContext.getCallerPropagation());
-            }
-        }
-    }
-
-    public java.awt.Container getErrorPanelParent(){
-        return this;
-    }
-
-
-    public java.awt.GridBagConstraints getErrorPanelConstraints(){
-        java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.insets = new java.awt.Insets(6,12,11,11);
-        return gridBagConstraints;
-    }
-
-
-    public java.util.Collection getErrors(){
-        if(validationSupport == null) assert(false);
-        ArrayList errors = new ArrayList();
-         String property;
-        
-        //Transport Config fields Validation
-        boolean transportConfigPresent = isTransportConfigPresent();
-        if(transportConfigPresent){
-            property = (String)integrityComboBox.getSelectedItem();
-            errors.addAll(validationSupport.validate(property,
-                "/sun-ejb-jar/enterprise-beans/ejb/ior-security-config/transport-config/integrity", //NOI18N
-                    bundle.getString("LBL_Integrity")));                //NOI18N
-
-            property = (String)confidentialityComboBox.getSelectedItem();
-            errors.addAll(validationSupport.validate(property,
-                "/sun-ejb-jar/enterprise-beans/ejb/ior-security-config/transport-config/confidentiality", //NOI18N
-                    bundle.getString("LBL_Confidentiality")));          //NOI18N
-
-            property = (String)estbTrstInTrgtComboBox.getSelectedItem();
-            errors.addAll(validationSupport.validate(property,
-                "/sun-ejb-jar/enterprise-beans/ejb/ior-security-config/transport-config/establish-trust-in-target", //NOI18N
-                    bundle.getString("LBL_Establish_Trust_In_Target")));//NOI18N
-
-            property = (String)estbTrstInClntComboBox.getSelectedItem();
-            errors.addAll(validationSupport.validate(property,
-                "/sun-ejb-jar/enterprise-beans/ejb/ior-security-config/transport-config/establish-trust-in-client", //NOI18N
-                    bundle.getString("LBL_Establish_Trust_In_Client")));//NOI18N
-        }
-
-        //As Context fields Validation
-        boolean asContextPresent = isAsContextPresent();
-        if(asContextPresent){
-            property = (String)requiredComboBox.getSelectedItem();
-            errors.addAll(validationSupport.validate(property,
-                "/sun-ejb-jar/enterprise-beans/ejb/ior-security-config/as-context/required", //NOI18N
-                    bundle.getString("LBL_Required")));                 //NOI18N
-
-            property = realmTextField.getText();
-            errors.addAll(validationSupport.validate(property,
-                "/sun-ejb-jar/enterprise-beans/ejb/ior-security-config/as-context/realm", //NOI18N
-                    bundle.getString("LBL_Realm")));                    //NOI18N
-
-            property = (String)authMethodComboBox.getSelectedItem();
-            errors.addAll(validationSupport.validate(property,
-                "/sun-ejb-jar/enterprise-beans/ejb/ior-security-config/as-context/auth-method", //NOI18N
-                    bundle.getString("LBL_Auth_Method")));              //NOI18N
-        }            
-            
-        //Sas Context fields Validation
-        boolean sasContextPresent = isSasContextPresent();
-        if(sasContextPresent){
-            property = (String)callerPropagationComboBox.getSelectedItem();
-            errors.addAll(validationSupport.validate(property,
-                "/sun-ejb-jar/enterprise-beans/ejb/ior-security-config/sas-context/caller-propagation", //NOI18N
-                    bundle.getString("LBL_Caller_Propagation")));       //NOI18N
-        }
-
-        return errors;
-    }
-	
-	public java.awt.Color getMessageForegroundColor() {
-		return BaseCustomizer.getErrorForegroundColor();
-	}
-
-
-    private boolean isTransportConfigPresent(){
-        boolean transportConfigPresent = false;
-        String property = (String)integrityComboBox.getSelectedItem();
-        while(true){
-            if((property != null) && (property.length() != 0)){
-                transportConfigPresent = true;
-                break;
-            }
-
-            property = (String)confidentialityComboBox.getSelectedItem();
-            if((property != null) && (property.length() != 0)){
-                transportConfigPresent = true;
-                break;
-            }
-
-            property = (String)estbTrstInTrgtComboBox.getSelectedItem();
-            if((property != null) && (property.length() != 0)){
-                transportConfigPresent = true;
-                break;
-            }
-
-            property = (String)estbTrstInClntComboBox.getSelectedItem();
-            if((property != null) && (property.length() != 0)){
-                transportConfigPresent = true;
-                break;
-            }
-            break;
-        }
-        return transportConfigPresent;
-    }
-
-
-    private boolean isAsContextPresent(){
-        boolean asContextPresent = false;
-        String property = (String)requiredComboBox.getSelectedItem();
-        while(true){
-            if((property != null) && (property.length() != 0)){
-                asContextPresent = true;
-                break;
-            }
-
-            property = realmTextField.getText();
-            if((property != null) && (property.length() != 0)){
-                asContextPresent = true;
-                break;
-            }
-
-            property = (String)authMethodComboBox.getSelectedItem();
-            if((property != null) && (property.length() != 0)){
-                asContextPresent = true;
-                break;
-            }
-            break;
-        }
-        return asContextPresent;
-    }
-
-
-    private boolean isSasContextPresent(){
-        boolean sasContextPresent = false;
-        String property = (String)callerPropagationComboBox.getSelectedItem();
-        while(true){
-            if((property != null) && (property.length() != 0)){
-                sasContextPresent = true;
-                break;
-            }
-            break;
-        }
-        return sasContextPresent;
-    }
-
-
-    private void validateEntries(){
-        if(errorSupport != null){
-            errorSupport.showErrors();
-            firePropertyChange("", null, null);
-        }
-    }
-
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -292,12 +93,6 @@ public class IorSecurityConfigPanel extends javax.swing.JPanel
 
         setLayout(new java.awt.GridBagLayout());
 
-        addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                formFocusGained(evt);
-            }
-        });
-
         transportConfigLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Transport_Config"));
         transportConfigLabel.setToolTipText("");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -323,14 +118,9 @@ public class IorSecurityConfigPanel extends javax.swing.JPanel
 
         integrityComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "", "NONE", "SUPPORTED", "REQUIRED" }));
         integrityComboBox.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Integrity_Tool_Tip"));
-        integrityComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                integrityStateChanged(evt);
-            }
-        });
-        integrityComboBox.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                integrityComboBoxFocusLost(evt);
+        integrityComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                integrityComboBoxActionPerformed(evt);
             }
         });
 
@@ -354,9 +144,9 @@ public class IorSecurityConfigPanel extends javax.swing.JPanel
 
         confidentialityComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "", "NONE", "SUPPORTED", "REQUIRED" }));
         confidentialityComboBox.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Confidentiality_Tool_Tip"));
-        confidentialityComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                confidentialityStateChanged(evt);
+        confidentialityComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                confidentialityComboBoxActionPerformed(evt);
             }
         });
 
@@ -389,9 +179,9 @@ public class IorSecurityConfigPanel extends javax.swing.JPanel
 
         estbTrstInTrgtComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "", "NONE", "SUPPORTED" }));
         estbTrstInTrgtComboBox.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Establish_Trust_In_Target_Tool_Tip"));
-        estbTrstInTrgtComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                estbTrstInTrgtStateChanged(evt);
+        estbTrstInTrgtComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                estbTrstInTrgtComboBoxActionPerformed(evt);
             }
         });
 
@@ -415,9 +205,9 @@ public class IorSecurityConfigPanel extends javax.swing.JPanel
 
         estbTrstInClntComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "", "NONE", "SUPPORTED", "REQUIRED" }));
         estbTrstInClntComboBox.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Establish_Trust_In_Client_Tool_Tip"));
-        estbTrstInClntComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                estbTrstInClntStateChanged(evt);
+        estbTrstInClntComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                estbTrstInClntComboBoxActionPerformed(evt);
             }
         });
 
@@ -468,9 +258,9 @@ public class IorSecurityConfigPanel extends javax.swing.JPanel
 
         requiredComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "", "true", "false" }));
         requiredComboBox.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Required_Tool_Tip"));
-        requiredComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                requiredStateChanged(evt);
+        requiredComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                requiredComboBoxActionPerformed(evt);
             }
         });
 
@@ -494,9 +284,9 @@ public class IorSecurityConfigPanel extends javax.swing.JPanel
 
         authMethodComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "", "USERNAME_PASSWORD" }));
         authMethodComboBox.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Auth_Method_Tool_Tip"));
-        authMethodComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                authMethodStateChanged(evt);
+        authMethodComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                authMethodComboBoxActionPerformed(evt);
             }
         });
 
@@ -519,11 +309,6 @@ public class IorSecurityConfigPanel extends javax.swing.JPanel
         realmLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Realm_Acsbl_Desc"));
 
         realmTextField.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Realm_Tool_Tip"));
-        realmTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                realmActionPerformed(evt);
-            }
-        });
         realmTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 realmTextFieldKeyReleased(evt);
@@ -573,9 +358,9 @@ public class IorSecurityConfigPanel extends javax.swing.JPanel
 
         callerPropagationComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "", "NONE", "SUPPORTED" }));
         callerPropagationComboBox.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Caller_Propagation_Tool_Tip"));
-        callerPropagationComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                callerPropagationStateChanged(evt);
+        callerPropagationComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                callerPropagationComboBoxActionPerformed(evt);
             }
         });
 
@@ -603,75 +388,245 @@ public class IorSecurityConfigPanel extends javax.swing.JPanel
 
     }// </editor-fold>//GEN-END:initComponents
 
-    private void formFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusGained
-// TODO add your handling code here:
-        validateEntries();
-    }//GEN-LAST:event_formFocusGained
-
-    private void integrityComboBoxFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_integrityComboBoxFocusLost
-// TODO add your handling code here:
-    }//GEN-LAST:event_integrityComboBoxFocusLost
-
-    private void estbTrstInClntStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_estbTrstInClntStateChanged
-        // Add your handling code here:
-        String item = (String)estbTrstInClntComboBox.getSelectedItem();
-        customizer.updateEstbTrstInClnt(item);
-        validateEntries();
-    }//GEN-LAST:event_estbTrstInClntStateChanged
-
-    private void estbTrstInTrgtStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_estbTrstInTrgtStateChanged
-        // Add your handling code here:
-        String item = (String)estbTrstInTrgtComboBox.getSelectedItem();
-        customizer.updateEstbTrstInTrgt(item);
-        validateEntries();
-    }//GEN-LAST:event_estbTrstInTrgtStateChanged
-
-    private void realmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_realmActionPerformed
-        // Add your handling code here:
-        validateEntries();
-    }//GEN-LAST:event_realmActionPerformed
-
-    private void callerPropagationStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_callerPropagationStateChanged
-        // Add your handling code here:
-        String item = (String)callerPropagationComboBox.getSelectedItem();
-        customizer.updateCallerPropagation(item);
-        validateEntries();
-    }//GEN-LAST:event_callerPropagationStateChanged
-
     private void realmTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_realmTextFieldKeyReleased
-        // Add your handling code here:
-        String item = realmTextField.getText();
-        customizer.updateRealm(item);
-        validateEntries();
+        BaseEjb theBean = masterPanel.getBean();
+        if(theBean != null) {
+            IorSecurityConfig iorSecurityConfig = theBean.getIorSecurityConfig();
+            AsContext asContext = iorSecurityConfig.getAsContext();
+            String newRealm = (String) realmTextField.getText();
+            String oldRealm = (asContext != null) ? asContext.getRealm() : null;
+            
+            if(!Utils.strEquals(oldRealm, newRealm)) {
+                if(Utils.notEmpty(newRealm)) {
+                    if(asContext == null) {
+                        asContext = iorSecurityConfig.newAsContext();
+                        iorSecurityConfig.setAsContext(asContext);
+                    }
+                    asContext.setRealm(newRealm);
+                } else if(asContext != null) {
+                    if(Utils.notEmpty(asContext.getRequired()) || Utils.notEmpty(asContext.getAuthMethod())) {
+                        asContext.setRealm(null);
+                    } else {
+                        iorSecurityConfig.setAsContext(null);
+                    }
+                }
+
+                theBean.firePropertyChange("iorAsContextRealm", oldRealm, newRealm); // NOI18N
+                masterPanel.validateField(BaseEjb.FIELD_IOR_ASCONTEXT);
+            }
+        } 
     }//GEN-LAST:event_realmTextFieldKeyReleased
 
-    private void authMethodStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_authMethodStateChanged
-        // Add your handling code here:
-        String item = (String)authMethodComboBox.getSelectedItem();
-        customizer.updateAuthMethod(item);
-        validateEntries();
-    }//GEN-LAST:event_authMethodStateChanged
+    private void callerPropagationComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_callerPropagationComboBoxActionPerformed
+        BaseEjb theBean = masterPanel.getBean();
+        if(theBean != null) {
+            IorSecurityConfig iorSecurityConfig = theBean.getIorSecurityConfig();
+            SasContext sasContext = iorSecurityConfig.getSasContext();
+            String newCallerProp = (String) callerPropagationComboBox.getSelectedItem();
+            String oldCallerProp = (sasContext != null) ? sasContext.getCallerPropagation() : null;
+            
+            if(!Utils.strEquals(oldCallerProp, newCallerProp)) {
+                if(Utils.notEmpty(newCallerProp)) {
+                    if(sasContext == null) {
+                        sasContext = iorSecurityConfig.newSasContext();
+                        iorSecurityConfig.setSasContext(sasContext);
+                    }
+                    sasContext.setCallerPropagation(newCallerProp);
+                } else if(sasContext != null) {
+                    iorSecurityConfig.setSasContext(null);
+                }
 
-    private void requiredStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_requiredStateChanged
-        // Add your handling code here:
-        String item = (String)requiredComboBox.getSelectedItem();
-        customizer.updateRequired(item);
-        validateEntries();
-    }//GEN-LAST:event_requiredStateChanged
+                theBean.firePropertyChange("iorSasCallerProp", oldCallerProp, newCallerProp); // NOI18N
+                masterPanel.validateField(BaseEjb.FIELD_IOR_SAS);
+            }
+        }
+    }//GEN-LAST:event_callerPropagationComboBoxActionPerformed
 
-    private void confidentialityStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_confidentialityStateChanged
-        // Add your handling code here:
-        String item = (String)confidentialityComboBox.getSelectedItem();
-        customizer.updateConfidentiality(item);
-        validateEntries();
-    }//GEN-LAST:event_confidentialityStateChanged
+    private void authMethodComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_authMethodComboBoxActionPerformed
+        BaseEjb theBean = masterPanel.getBean();
+        if(theBean != null) {
+            IorSecurityConfig iorSecurityConfig = theBean.getIorSecurityConfig();
+            AsContext asContext = iorSecurityConfig.getAsContext();
+            String newAuthMethod = (String) authMethodComboBox.getSelectedItem();
+            String oldAuthMethod = (asContext != null) ? asContext.getAuthMethod() : null;
+            
+            if(!Utils.strEquals(oldAuthMethod, newAuthMethod)) {
+                if(Utils.notEmpty(newAuthMethod)) {
+                    if(asContext == null) {
+                        asContext = iorSecurityConfig.newAsContext();
+                        iorSecurityConfig.setAsContext(asContext);
+                    }
+                    asContext.setAuthMethod(newAuthMethod);
+                } else if(asContext != null) {
+                    if(Utils.notEmpty(asContext.getRealm()) || Utils.notEmpty(asContext.getRequired())) {
+                        asContext.setAuthMethod(null);
+                    } else {
+                        iorSecurityConfig.setAsContext(null);
+                    }
+                }
 
-    private void integrityStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_integrityStateChanged
-        // Add your handling code here:
-        String item = (String)integrityComboBox.getSelectedItem();
-        customizer.updateIntegrity(item);
-        validateEntries();
-    }//GEN-LAST:event_integrityStateChanged
+                theBean.firePropertyChange("iorAsContextAuthMethod", oldAuthMethod, newAuthMethod); // NOI18N
+                masterPanel.validateField(BaseEjb.FIELD_IOR_ASCONTEXT);
+            }
+        } 
+    }//GEN-LAST:event_authMethodComboBoxActionPerformed
+
+    private void requiredComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_requiredComboBoxActionPerformed
+        BaseEjb theBean = masterPanel.getBean();
+        if(theBean != null) {
+            IorSecurityConfig iorSecurityConfig = theBean.getIorSecurityConfig();
+            AsContext asContext = iorSecurityConfig.getAsContext();
+            String newRequired = (String) requiredComboBox.getSelectedItem();
+            String oldRequired = (asContext != null) ? asContext.getRequired() : null;
+            
+            if(!Utils.strEquals(oldRequired, newRequired)) {
+                if(Utils.notEmpty(newRequired)) {
+                    if(asContext == null) {
+                        asContext = iorSecurityConfig.newAsContext();
+                        iorSecurityConfig.setAsContext(asContext);
+                    }
+                    asContext.setRequired(newRequired);
+                } else if(asContext != null) {
+                    if(Utils.notEmpty(asContext.getRealm()) || Utils.notEmpty(asContext.getAuthMethod())) {
+                        asContext.setRequired(null);
+                    } else {
+                        iorSecurityConfig.setAsContext(null);
+                    }
+                }
+
+                theBean.firePropertyChange("iorAsContextRequired", oldRequired, newRequired); // NOI18N
+                masterPanel.validateField(BaseEjb.FIELD_IOR_ASCONTEXT);
+            }
+        } 
+    }//GEN-LAST:event_requiredComboBoxActionPerformed
+
+    private void estbTrstInClntComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_estbTrstInClntComboBoxActionPerformed
+        BaseEjb theBean = masterPanel.getBean();
+        if(theBean != null) {
+            IorSecurityConfig iorSecurityConfig = theBean.getIorSecurityConfig();
+            TransportConfig transportConfig = iorSecurityConfig.getTransportConfig();
+            String newClientTrust = (String) estbTrstInClntComboBox.getSelectedItem();
+            String oldClientTrust = (transportConfig != null) ? transportConfig.getEstablishTrustInClient() : null;
+            
+            if(!Utils.strEquals(oldClientTrust, newClientTrust)) {
+                if(Utils.notEmpty(newClientTrust)) {
+                    if(transportConfig == null) {
+                        transportConfig = iorSecurityConfig.newTransportConfig();
+                        iorSecurityConfig.setTransportConfig(transportConfig);
+                    }
+                    transportConfig.setEstablishTrustInClient(newClientTrust);
+                } else if(transportConfig != null) {
+                    if(Utils.notEmpty(transportConfig.getConfidentiality()) || 
+                            Utils.notEmpty(transportConfig.getIntegrity()) ||
+                            Utils.notEmpty(transportConfig.getEstablishTrustInTarget())
+                            ) {
+                        transportConfig.setEstablishTrustInClient(null);
+                    } else {
+                        iorSecurityConfig.setTransportConfig(null);
+                    }
+                }
+
+                theBean.firePropertyChange("iorTransportEstTrustClient", oldClientTrust, newClientTrust); // NOI18N
+                masterPanel.validateField(BaseEjb.FIELD_IOR_TRANSPORT);
+            }
+        }       
+    }//GEN-LAST:event_estbTrstInClntComboBoxActionPerformed
+
+    private void estbTrstInTrgtComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_estbTrstInTrgtComboBoxActionPerformed
+        BaseEjb theBean = masterPanel.getBean();
+        if(theBean != null) {
+            IorSecurityConfig iorSecurityConfig = theBean.getIorSecurityConfig();
+            TransportConfig transportConfig = iorSecurityConfig.getTransportConfig();
+            String newTargetTrust = (String) estbTrstInTrgtComboBox.getSelectedItem();
+            String oldTargetTrust = (transportConfig != null) ? transportConfig.getEstablishTrustInTarget() : null;
+            
+            if(!Utils.strEquals(oldTargetTrust, newTargetTrust)) {
+                if(Utils.notEmpty(newTargetTrust)) {
+                    if(transportConfig == null) {
+                        transportConfig = iorSecurityConfig.newTransportConfig();
+                        iorSecurityConfig.setTransportConfig(transportConfig);
+                    }
+                    transportConfig.setEstablishTrustInTarget(newTargetTrust);
+                } else if(transportConfig != null) {
+                    if(Utils.notEmpty(transportConfig.getConfidentiality()) || 
+                            Utils.notEmpty(transportConfig.getIntegrity()) ||
+                            Utils.notEmpty(transportConfig.getEstablishTrustInClient())
+                            ) {
+                        transportConfig.setEstablishTrustInTarget(null);
+                    } else {
+                        iorSecurityConfig.setTransportConfig(null);
+                    }
+                }
+
+                theBean.firePropertyChange("iorTransportEstTrustTarget", oldTargetTrust, newTargetTrust); // NOI18N
+                masterPanel.validateField(BaseEjb.FIELD_IOR_TRANSPORT);
+            }
+        }   
+    }//GEN-LAST:event_estbTrstInTrgtComboBoxActionPerformed
+
+    private void confidentialityComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_confidentialityComboBoxActionPerformed
+        BaseEjb theBean = masterPanel.getBean();
+        if(theBean != null) {
+            IorSecurityConfig iorSecurityConfig = theBean.getIorSecurityConfig();
+            TransportConfig transportConfig = iorSecurityConfig.getTransportConfig();
+            String newConfidentiality = (String) confidentialityComboBox.getSelectedItem();
+            String oldConfidentiality = (transportConfig != null) ? transportConfig.getConfidentiality() : null;
+            
+            if(!Utils.strEquals(oldConfidentiality, newConfidentiality)) {
+                if(Utils.notEmpty(newConfidentiality)) {
+                    if(transportConfig == null) {
+                        transportConfig = iorSecurityConfig.newTransportConfig();
+                        iorSecurityConfig.setTransportConfig(transportConfig);
+                    }
+                    transportConfig.setConfidentiality(newConfidentiality);
+                } else if(transportConfig != null) {
+                    if(Utils.notEmpty(transportConfig.getIntegrity()) ||
+                            Utils.notEmpty(transportConfig.getEstablishTrustInClient()) ||
+                            Utils.notEmpty(transportConfig.getEstablishTrustInTarget())
+                            ) {
+                        transportConfig.setConfidentiality(null);
+                    } else {
+                        iorSecurityConfig.setTransportConfig(null);
+                    }
+                }
+
+                theBean.firePropertyChange("iorTransportConfidendiality", oldConfidentiality, newConfidentiality); // NOI18N
+                masterPanel.validateField(BaseEjb.FIELD_IOR_TRANSPORT);
+            }
+        } 
+    }//GEN-LAST:event_confidentialityComboBoxActionPerformed
+
+    private void integrityComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_integrityComboBoxActionPerformed
+        BaseEjb theBean = masterPanel.getBean();
+        if(theBean != null) {
+            IorSecurityConfig iorSecurityConfig = theBean.getIorSecurityConfig();
+            TransportConfig transportConfig = iorSecurityConfig.getTransportConfig();
+            String newIntegrity = (String) integrityComboBox.getSelectedItem();
+            String oldIntegrity = (transportConfig != null) ? transportConfig.getIntegrity() : null;
+            
+            if(!Utils.strEquals(oldIntegrity, newIntegrity)) {
+                if(Utils.notEmpty(newIntegrity)) {
+                    if(transportConfig == null) {
+                        transportConfig = iorSecurityConfig.newTransportConfig();
+                        iorSecurityConfig.setTransportConfig(transportConfig);
+                    }
+                    transportConfig.setIntegrity(newIntegrity);
+                } else if(transportConfig != null) {
+                    if(Utils.notEmpty(transportConfig.getConfidentiality()) || 
+                            Utils.notEmpty(transportConfig.getEstablishTrustInClient()) ||
+                            Utils.notEmpty(transportConfig.getEstablishTrustInTarget())
+                            ) {
+                        transportConfig.setIntegrity(null);
+                    } else {
+                        iorSecurityConfig.setTransportConfig(null);
+                    }
+                }
+
+                theBean.firePropertyChange("iorTransportIntegrity", oldIntegrity, newIntegrity); // NOI18N
+                masterPanel.validateField(BaseEjb.FIELD_IOR_TRANSPORT);
+            }
+        } 
+    }//GEN-LAST:event_integrityComboBoxActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -701,4 +656,51 @@ public class IorSecurityConfigPanel extends javax.swing.JPanel
     private javax.swing.JPanel transportConfigPanel2;
     private javax.swing.JPanel transportConfigPanelPanel1;
     // End of variables declaration//GEN-END:variables
+
+    private void initUserComponents() {
+        putClientProperty(EjbCustomizer.PARTITION_KEY, ValidationError.PARTITION_EJB_IORSECURITY);
+    }
+
+    public void initFields(IorSecurityConfig iorSecurityConfig) {
+        String transportIntegrity = null;
+        String transportConfidentiality = null;
+        String transportTrustTarget = null;
+        String transportTrustClient = null;
+        String asRequired = null;
+        String asAuthMethod = null;
+        String asRealm = null;
+        String sasCallerPropagation = null;
+        
+        if(iorSecurityConfig != null) {
+            TransportConfig transportConfig = iorSecurityConfig.getTransportConfig();
+            
+            if(transportConfig != null) {
+                transportIntegrity = transportConfig.getIntegrity();
+                transportConfidentiality = transportConfig.getConfidentiality();
+                transportTrustTarget = transportConfig.getEstablishTrustInTarget();
+                transportTrustClient = transportConfig.getEstablishTrustInClient();
+            }
+
+            AsContext asContext = iorSecurityConfig.getAsContext();
+            if(asContext != null) {
+                asRequired = asContext.getRequired();
+                asAuthMethod = asContext.getAuthMethod();
+                asRealm = asContext.getRealm();
+            }
+
+            SasContext sasContext = iorSecurityConfig.getSasContext();
+            if(sasContext != null) {
+                sasCallerPropagation = sasContext.getCallerPropagation();
+            }
+        }
+        
+        integrityComboBox.setSelectedItem(transportIntegrity);
+        confidentialityComboBox.setSelectedItem(transportConfidentiality);
+        estbTrstInTrgtComboBox.setSelectedItem(transportTrustTarget);
+        estbTrstInClntComboBox.setSelectedItem(transportTrustClient);
+        requiredComboBox.setSelectedItem(asRequired);
+        authMethodComboBox.setSelectedItem(asAuthMethod);
+        realmTextField.setText(asRealm);
+        callerPropagationComboBox.setSelectedItem(sasCallerPropagation);
+    }
 }

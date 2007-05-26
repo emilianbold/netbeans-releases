@@ -72,7 +72,7 @@ public class FlushAtEndOfMethodPanel extends MultiMethodTablePanel{
         Map selectionToMethodsMap = getSelectionToMethodsMap();
         Map selectionToDDMethodsMap = getSelectionToDDMethodsMap();
         model = new FlushAtEndOfMethodModel(cmpEntityEjb, selectionToMethodsMap, selectionToDDMethodsMap);
-        model.addTableModelListener((TableModelListener)customizer);
+//        model.addTableModelListener((TableModelListener)customizer);
         return model;
     }
 
@@ -300,7 +300,11 @@ public class FlushAtEndOfMethodPanel extends MultiMethodTablePanel{
         }
     }
     
-    public void addTableModelListener(TableModelListener listner){
-        model.addTableModelListener(listner);
+    public void addTableModelListener(TableModelListener listener) {
+        model.addTableModelListener(listener);
     }
+    
+    public void removeTableModelListener(TableModelListener listener) {
+        model.removeTableModelListener(listener);
+    }    
 }

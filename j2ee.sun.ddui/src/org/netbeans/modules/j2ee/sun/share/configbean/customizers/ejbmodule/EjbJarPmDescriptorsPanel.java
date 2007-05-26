@@ -147,11 +147,11 @@ public class EjbJarPmDescriptorsPanel extends javax.swing.JPanel implements Tabl
             } else {
                 newPmInuse = oldPmInuse;
                 
-                if(!Utils.strEquals(newPmIdentifier, newPmInuse.getPmIdentifier())) {
+                if(!Utils.strEquivalent(newPmIdentifier, newPmInuse.getPmIdentifier())) {
                     newPmInuse.setPmIdentifier(newPmIdentifier);
                     oldPmInuse = null;
                 }
-                if(!Utils.strEquals(newPmVersion, newPmInuse.getPmVersion())) {
+                if(!Utils.strEquivalent(newPmVersion, newPmInuse.getPmVersion())) {
                     newPmInuse.setPmVersion(newPmVersion);
                     oldPmInuse = null;
                 }
@@ -258,8 +258,8 @@ public class EjbJarPmDescriptorsPanel extends javax.swing.JPanel implements Tabl
                 if(mapping != null) {
                     PmDescriptor pmDescriptor = mapping.getPmDescriptor();
                     if(pmDescriptor != null && 
-                            Utils.strEquals(pmDescriptor.getPmIdentifier(), pmIdentifier) && 
-                            Utils.strEquals(pmDescriptor.getPmVersion(), pmVersion)) {
+                            Utils.strEquivalent(pmDescriptor.getPmIdentifier(), pmIdentifier) && 
+                            Utils.strEquivalent(pmDescriptor.getPmVersion(), pmVersion)) {
                         return mapping;
                     }
                 }

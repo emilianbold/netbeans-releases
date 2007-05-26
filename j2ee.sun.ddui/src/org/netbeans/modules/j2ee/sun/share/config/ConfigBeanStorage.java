@@ -20,6 +20,7 @@ package org.netbeans.modules.j2ee.sun.share.config;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,6 +39,7 @@ import org.netbeans.modules.j2ee.sun.share.config.ui.ConfigBeanNode;
 import org.netbeans.modules.j2ee.sun.share.configbean.Base;
 import org.netbeans.modules.j2ee.sun.share.configbean.DConfigBeanProperties;
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
+import org.netbeans.modules.j2ee.sun.share.configbean.WebAppRoot;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 
@@ -80,11 +82,24 @@ public class ConfigBeanStorage implements PropertyChangeListener, Comparable {
         return node;
     }
     
+    private static final String [] ignorableProperties = {
+        DConfigBeanProperties.PROP_DISPLAY_NAME,
+        WebAppRoot.SERVLET_LIST_CHANGED
+    };
+    
+    static {
+        Arrays.sort(ignorableProperties);
+    }
+    
     public void propertyChange(PropertyChangeEvent pce) {
         if (storage != null) {
             // Only set changed on true change events (as opposed to DISPLAY_NAME, which can
             // be changed by a validation event and is not associated with a change of persistable data.)
-            if(!DConfigBeanProperties.PROP_DISPLAY_NAME.equalsIgnoreCase(pce.getPropertyName())) {
+            if(Arrays.binarySearch(ignorableProperties, pce.getPropertyName()) < 0) {
+                System.out.println("PROPERTY CHANGE: " + pce.getPropertyName());
+                if("contextRoot".equals(pce.getPropertyName())) {
+                    System.out.println("  old = '" + pce.getOldValue() + "', new = '" + pce.getNewValue() + "'");
+                }
                 storage.setChanged();
             }
         }

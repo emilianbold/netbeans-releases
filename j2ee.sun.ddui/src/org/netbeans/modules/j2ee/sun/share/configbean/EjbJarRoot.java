@@ -179,8 +179,6 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
      *  Validation implementation
      */
 
-    private static ValidationSupport validationSupport = new ValidationSupport();
-
     // relative xpaths (double as field id's)
     public static final String FIELD_EJBJAR_NAME = "enterprise-beans/name";
     public static final String FIELD_CMP_RESOURCE = "enterprise-beans/cmp-resource";

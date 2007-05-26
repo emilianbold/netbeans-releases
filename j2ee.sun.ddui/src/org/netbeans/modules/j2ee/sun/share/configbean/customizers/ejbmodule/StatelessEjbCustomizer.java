@@ -22,17 +22,9 @@
  */
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import javax.swing.JPanel;
 
-import javax.swing.event.TableModelListener;
-
-//DEPLOYMENT API
-import javax.enterprise.deploy.spi.DConfigBean;
-
-import org.netbeans.modules.j2ee.sun.dd.api.ejb.BeanPool;
 import org.netbeans.modules.j2ee.sun.share.configbean.BaseEjb;
-import org.netbeans.modules.j2ee.sun.share.configbean.SessionEjb;
 import org.netbeans.modules.j2ee.sun.share.configbean.StatelessEjb;
 
 /**
@@ -40,81 +32,62 @@ import org.netbeans.modules.j2ee.sun.share.configbean.StatelessEjb;
  * @author  Rajeshwar Patil
  * @version %I%, %G%
  */
-public class StatelessEjbCustomizer extends SessionEjbCustomizer 
-            implements TableModelListener {
+public class StatelessEjbCustomizer extends SessionEjbCustomizer {
 
-    private StatelessEjb theBean;
     private BeanPoolPanel beanPoolPanel;
 
+    
     /** Creates a new instance of StatelessEjbCustomizer */
 	public StatelessEjbCustomizer() {
 	}
-	
-    public StatelessEjbCustomizer(DConfigBean bean) {
-		setObject(bean);
-    }
-
-    public void setObject(Object bean) {
-        super.setObject(bean);
-		
-		// Only do this if the bean is actually changing.
-		if(theBean != bean) {
-			if(bean instanceof StatelessEjb) {
-				theBean = (StatelessEjb) bean;
-			}
-		}
-    }
-
 
     public String getHelpId() {
         return "AS_CFG_StatelessEjb";                                   //NOI18N
     }
 
-
-    //get the bean specific panel
-    protected javax.swing.JPanel getBeanPanel(){
+    // Get the bean specific panel
+    protected JPanel getBeanPanel() {
         return null;
     }
 
-
-    //initialize all the elements in the bean specific panel
-    protected void initializeBeanPanel(BaseEjb theBean){};
-    
+    // Initialize all the elements in the bean specific panel
+    protected void initializeBeanPanel(BaseEjb theBean) {
+    }
 
     protected void addTabbedBeanPanels() {
         super.addTabbedBeanPanels();
+        
         beanPoolPanel = new BeanPoolPanel(this);
         beanPoolPanel.getAccessibleContext().setAccessibleName(bundle.getString("BeanPool_Acsbl_Name"));             //NOI18N
         beanPoolPanel.getAccessibleContext().setAccessibleDescription(bundle.getString("BeanPool_Acsbl_Desc"));      //NOI18N  
         tabbedPanel.insertTab(bundle.getString("LBL_BeanPool"), null, beanPoolPanel, null, 0); // NOI18N
-        //Select Bean Pool Panel
+        
+        // Select Bean Pool Panel
         tabbedPanel.setSelectedIndex(tabbedPanel.indexOfTab(bundle.getString("LBL_BeanPool")));  //NOI18N
     }
 
 
     protected void initializeTabbedBeanPanels(BaseEjb theBean) {
         super.initializeTabbedBeanPanels(theBean);
-        if(!(theBean instanceof StatelessEjb)){
-            assert(false);
+        
+        if(theBean != null) {
+            beanPoolPanel.initFields(theBean.getBeanPool());
         }
-        StatelessEjb statelessEjb = (StatelessEjb)theBean;
-        BeanPool beanPool = statelessEjb.getBeanPool();
-        beanPoolPanel.setValues(beanPool);
     }
 
-
-    public Collection getErrors(){
-        ArrayList errors = null;
-        if(validationSupport == null) assert(false);
-        errors = (ArrayList)super.getErrors();
-
-        //Stateless Session Ejb field Validations
-
-        return errors;
-    }
-
-
-    public java.awt.GridBagConstraints getErrorPanelConstraints(){
-        return super.getErrorPanelConstraints();
+    protected boolean setBean(Object bean) {
+		boolean result = super.setBean(bean);
+		
+		if(bean instanceof StatelessEjb) {
+			result = true;
+		} else {
+			// if bean is not a StatelessEjb, then it shouldn't have passed BaseEjb either.
+			assert (result == false) : 
+				"StatelessEjbCustomizer was passed wrong bean type in setBean(Object bean)";	// NOI18N
+				
+			result = false;
+		}
+		
+		return result;
     }
 }

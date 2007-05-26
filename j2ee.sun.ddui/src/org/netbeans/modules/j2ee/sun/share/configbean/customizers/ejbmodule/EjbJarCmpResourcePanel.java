@@ -218,7 +218,7 @@ public class EjbJarCmpResourcePanel extends javax.swing.JPanel implements TableM
             String newDropValue = (String) jCbxDropOnUndeploy.getSelectedItem();
             String oldDropValue = cmpResource.getDropTablesAtUndeploy();
         
-            if(!Utils.strEquals(oldDropValue, newDropValue)) {
+            if(!Utils.strEquivalent(oldDropValue, newDropValue)) {
                 if(Utils.notEmpty(newDropValue)) {
                     cmpResource.setDropTablesAtUndeploy(newDropValue);
                 } else {
@@ -238,7 +238,7 @@ public class EjbJarCmpResourcePanel extends javax.swing.JPanel implements TableM
             String newCreateValue = (String) jCbxCreateOnDeploy.getSelectedItem();
             String oldCreateValue = cmpResource.getCreateTablesAtDeploy();
 
-            if(!Utils.strEquals(oldCreateValue, newCreateValue)) {
+            if(!Utils.strEquivalent(oldCreateValue, newCreateValue)) {
                 if(Utils.notEmpty(newCreateValue)) {
                     cmpResource.setCreateTablesAtDeploy(newCreateValue);
                 } else {
@@ -258,7 +258,7 @@ public class EjbJarCmpResourcePanel extends javax.swing.JPanel implements TableM
             String newVendorName = jTxtVendorName.getText();
             String oldVendorName = cmpResource.getDatabaseVendorName();
 
-            if(!Utils.strEquals(oldVendorName, newVendorName)) {
+            if(!Utils.strEquivalent(oldVendorName, newVendorName)) {
                 if(Utils.notEmpty(newVendorName)) {
                     cmpResource.setDatabaseVendorName(newVendorName);
                 } else {
@@ -278,7 +278,7 @@ public class EjbJarCmpResourcePanel extends javax.swing.JPanel implements TableM
             String newJndiName = jTxtJndiName.getText();
             String oldJndiName = cmpResource.getJndiName();
 
-            if(!Utils.strEquals(oldJndiName, newJndiName)) {
+            if(!Utils.strEquivalent(oldJndiName, newJndiName)) {
                 if(Utils.notEmpty(newJndiName)) {
                     cmpResource.setJndiName(newJndiName);
                 } else {

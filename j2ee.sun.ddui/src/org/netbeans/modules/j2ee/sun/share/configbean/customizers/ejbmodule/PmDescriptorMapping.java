@@ -89,11 +89,11 @@ public class PmDescriptorMapping {
             return false;
         }
 		
-        if(!Utils.strEquals(pmIdentifier, pmDescriptor.getPmIdentifier())) {
+        if(!Utils.strEquivalent(pmIdentifier, pmDescriptor.getPmIdentifier())) {
             return true;
         }
 
-        if(!Utils.strEquals(pmVersion, pmDescriptor.getPmVersion())) {
+        if(!Utils.strEquivalent(pmVersion, pmDescriptor.getPmVersion())) {
             return true;
         }
 		

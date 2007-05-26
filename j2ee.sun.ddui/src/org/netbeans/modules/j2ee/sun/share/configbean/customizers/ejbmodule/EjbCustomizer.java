@@ -23,64 +23,55 @@
 
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule;
 
+import java.awt.Component;
 import java.awt.GridBagConstraints;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.awt.Insets;
+import java.beans.PropertyVetoException;
+import java.util.HashMap;
 import java.util.ResourceBundle;
+import javax.swing.JPanel;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 
-
-//DEPLOYMENT API
-import javax.enterprise.deploy.spi.DConfigBean;
-
-import org.netbeans.modules.j2ee.sun.dd.api.ejb.AsContext;
-import org.netbeans.modules.j2ee.sun.dd.api.ejb.BeanCache;
-import org.netbeans.modules.j2ee.sun.dd.api.ejb.BeanPool;
-import org.netbeans.modules.j2ee.sun.dd.api.ejb.IorSecurityConfig;
-import org.netbeans.modules.j2ee.sun.dd.api.ejb.SasContext;
-import org.netbeans.modules.j2ee.sun.dd.api.ejb.TransportConfig;
 import org.netbeans.modules.j2ee.sun.share.configbean.BaseEjb;
-import org.netbeans.modules.j2ee.sun.share.configbean.StorageBeanFactory;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BeanCustomizer;
+import org.netbeans.modules.j2ee.sun.share.configbean.ErrorMessageDB;
+import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
+import org.netbeans.modules.j2ee.sun.share.configbean.ValidationError;
+import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BaseCustomizer;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.CustomizerTitlePanel;
 
 
-/**
+/**F
  *
  * @author  Rajeshwar Patil
  * @version %I%, %G%
  */
-public abstract class EjbCustomizer extends BeanCustomizer 
-        implements org.netbeans.modules.j2ee.sun.share.Constants {
+public abstract class EjbCustomizer extends BaseCustomizer implements TableModelListener {
 
-    private BaseEjb theBean;
-    private IorSecurityConfigPanel iorSecCfgPanel;
-
-    static final ResourceBundle bundle = 
-        ResourceBundle.getBundle(
+    static final ResourceBundle bundle = ResourceBundle.getBundle(
             "org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule.Bundle"); // NOI18N
+    
+    /** Tabbed panels on the ejb customizer are very dynamic, so we'll use a property
+     *  bound to the panels added to the tab control of which partition they are in.
+     */
+    static final String PARTITION_KEY = "validationPartition";
+    
+    private BaseEjb theBean;
+    private IorSecurityConfigPanel iorSecurityConfigPanel;
+//    protected boolean initializing = false;
 
 
     /** Creates new customizer EjbCustomizer */
     public EjbCustomizer() {
         initComponents();
-        createPanels();
+        initUserComponents();
     }
-	
-    public void setObject(Object bean) {
-                super.setObject(bean);
-		// Only do this if the bean is actually changing.
-		if(theBean != bean) {
-			if(theBean != null) {
-				// commit old object
-			}
-			if(bean instanceof BaseEjb) {
-				theBean = (BaseEjb) bean;
-				setComponentValues();
-			}
-		}
-                initializing = false;
+    
+    public BaseEjb getBean() {
+        return theBean;
     }
 
+    
     //get the bean specific panel
     protected abstract javax.swing.JPanel getBeanPanel();
 
@@ -92,489 +83,6 @@ public abstract class EjbCustomizer extends BeanCustomizer
 
     //initialize bean specific panels in tabbed pane
     protected abstract void initializeTabbedBeanPanels(BaseEjb theBean);
-
-
-
-    //update methods called by the panel
-    private void updateJndiName(String jndiName){
-        //update theBean
-        try{
-            if(EMPTY_STRING.equals(jndiName)){
-                theBean.setJndiName(null);
-            }else{
-                theBean.setJndiName(jndiName);
-            }
-        }catch(java.beans.PropertyVetoException exception){
-        }
-        notifyChange();
-    }
-
-
-    private void updatePassByRef(String passByRef){
-        try{
-            if(EMPTY_STRING.equals(passByRef)){
-                theBean.setPassByReference(null);
-            }else{
-                theBean.setPassByReference(passByRef);
-            }
-        }catch(java.beans.PropertyVetoException exception){
-        }
-        notifyChange();
-    }
-
-
-    void updateIntegrity(String integrity){
-        TransportConfig transportConfig = getTransportConfig();
-        if((EMPTY_STRING.equals(integrity)) || (null == integrity)){
-            transportConfig.setIntegrity(null);
-            updateTransportConfig();
-        }else{
-            transportConfig.setIntegrity(integrity);
-        }
-        notifyChange();
-    }
-
-
-    void updateConfidentiality(String confidentiality){
-        TransportConfig transportConfig = getTransportConfig();
-        if((EMPTY_STRING.equals(confidentiality)) || (null == confidentiality)){
-            transportConfig.setConfidentiality(null);
-            updateTransportConfig();
-        }else{
-            transportConfig.setConfidentiality(confidentiality);
-        }
-        notifyChange();
-    }
-
-
-    void updateEstbTrstInTrgt(String estbTrstInTrgt){
-        TransportConfig transportConfig = getTransportConfig();
-        if((EMPTY_STRING.equals(estbTrstInTrgt)) || (null == estbTrstInTrgt)){
-            transportConfig.setEstablishTrustInTarget(null);
-            updateTransportConfig();
-        }else{
-            transportConfig.setEstablishTrustInTarget(estbTrstInTrgt);
-        }
-        notifyChange();
-    }
-
-
-    void updateEstbTrstInClnt(String estbTrstInClnt){
-        TransportConfig transportConfig = getTransportConfig();
-        if((EMPTY_STRING.equals(estbTrstInClnt)) || (null == estbTrstInClnt)){
-            transportConfig.setEstablishTrustInClient(null);
-            updateTransportConfig();
-        }else{
-            transportConfig.setEstablishTrustInClient(estbTrstInClnt);
-        }
-        notifyChange();
-    }
-
-
-    void updateAuthMethod(String authMethod){
-        AsContext asContext = getAsContext();
-        if((EMPTY_STRING.equals(authMethod)) || (null == authMethod)){
-            asContext.setAuthMethod(null);
-            updateAsContext();
-        }else{
-            asContext.setAuthMethod(authMethod);
-        }
-        notifyChange();
-    }
-
-
-    void updateRealm(String realm){
-        AsContext asContext = getAsContext();
-        if((EMPTY_STRING.equals(realm)) || (null == realm)){
-            asContext.setRealm(null);
-            updateAsContext();
-        }else{
-            asContext.setRealm(realm);
-        }
-        notifyChange();
-    }
-
-
-    void updateRequired(String reqd){
-        AsContext asContext = getAsContext();
-        if((EMPTY_STRING.equals(reqd)) || (null == reqd)){
-            asContext.setRequired(null);
-            updateAsContext();
-        }else{
-            asContext.setRequired(reqd);
-        }
-        notifyChange();
-    }
-
-
-    void updateCallerPropagation(String callerPrpgtn){
-        SasContext sasContext = getSasContext();
-        if((EMPTY_STRING.equals(callerPrpgtn)) || (null == callerPrpgtn)){
-            sasContext.setCallerPropagation(null);
-            updateSasContext();
-        }else{
-            sasContext.setCallerPropagation(callerPrpgtn);
-        }
-        notifyChange();
-    }
-
-
-    private void createPanels(){
-        //add bean specific panel
-        
-        //title panel
-        CustomizerTitlePanel titlePanel = new CustomizerTitlePanel();
-        String title = getCustomizerTitle();
-        titlePanel.setCustomizerTitle(title);
-
-        java.awt.GridBagConstraints gridBagConstraints = 
-            new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 0);
-        add(titlePanel, gridBagConstraints, 0);
-
-        javax.swing.JPanel beanSpecificPanel = getBeanPanel();
-        if(beanSpecificPanel != null){
-            beanSpecificPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-            gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
-            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-            gridBagConstraints.weightx = 1.0;
-            gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
-            add(beanSpecificPanel, gridBagConstraints, 2);
-        }
-
-        iorSecCfgPanel = new IorSecurityConfigPanel(this);
-        iorSecCfgPanel.getAccessibleContext().setAccessibleName(bundle.getString("IorSecurityConfig_Acsbl_Name"));             //NOI18N
-        iorSecCfgPanel.getAccessibleContext().setAccessibleDescription(bundle.getString("IorSecurityConfig_Acsbl_Desc"));      //NOI18N  
-        tabbedPanel.addTab(bundle.getString("LBL_IorSecurityConfig"),  // NOI18N
-            iorSecCfgPanel);
-
-        //add bean sepcific tabbed panels
-        addTabbedBeanPanels();
-    }
-
-
-    public Collection getErrors(){
-        ArrayList errors = null;
-        if(validationSupport == null) assert(false);
-        errors = new ArrayList();
-
-        //Ejb field Validations
-        String property = jndiNameTextField.getText();
-        errors.addAll(validationSupport.validate(property,
-            "/sun-ejb-jar/enterprise-beans/ejb/jndi-name",              //NOI18N
-                bundle.getString("LBL_Jndi_Name")));                    //NOI18N
-        
-        property = (String)passByRefComboBox.getSelectedItem();
-        errors.addAll(validationSupport.validate(property,
-            "/sun-ejb-jar/enterprise-beans/ejb/pass-by-reference",  //NOI18N
-                bundle.getString("LBL_Pass_By_Reference")));        //NOI18N
-
-        return errors;
-    }
-
-    
-    private void setComponentValues() {
-        //initialize all the elements in the general panel
-        nameTextField.setText(theBean.getEjbName());
-        jndiNameTextField.setText(theBean.getJndiName());
-        String passByRef = theBean.getPassByReference();
-        if(passByRef != null){
-            passByRefComboBox.setSelectedItem(passByRef);
-        }
-
-        //initialize all the elements in the bean specific panel
-       initializeBeanPanel(theBean);  //abstract
-
-       //initialize IorSecurityConfig
-       initializeIorSecurityConfig();
-       
-
-       //initialize bean specific panels in tabbed pane
-       initializeTabbedBeanPanels(theBean); //abstract
-    }
-
-
-    private void initializeIorSecurityConfig(){
-        IorSecurityConfig iorSecurityConfig = theBean.getIorSecurityConfig();
-        iorSecCfgPanel.setValues(iorSecurityConfig);
-    }
-
-
-    private TransportConfig getTransportConfig(){
-        IorSecurityConfig iorSecCnfg = getIorSecurityConfig();
-        TransportConfig transportCfg = iorSecCnfg.getTransportConfig();
-        if(transportCfg == null){
-            transportCfg = theBean.getConfig().getStorageFactory().createTransportConfig();
-            iorSecCnfg.setTransportConfig(transportCfg);
-        }
-        return transportCfg;
-    }
-
-
-    private AsContext getAsContext(){
-        IorSecurityConfig iorSecCnfg = getIorSecurityConfig();
-        AsContext asContext = iorSecCnfg.getAsContext();
-        if(asContext == null){
-            asContext = theBean.getConfig().getStorageFactory().createAsContext();
-            iorSecCnfg.setAsContext(asContext);
-        }
-        return asContext;
-    }
-
-
-    private SasContext getSasContext(){
-        IorSecurityConfig iorSecCnfg = getIorSecurityConfig();
-        SasContext sasContext = iorSecCnfg.getSasContext();
-        if(sasContext == null){
-            sasContext = theBean.getConfig().getStorageFactory().createSasContext();
-            iorSecCnfg.setSasContext(sasContext);
-        }
-        return sasContext;
-    }
-
-    
-    private IorSecurityConfig getIorSecurityConfig(){
-        IorSecurityConfig iorSecCnfg = theBean.getIorSecurityConfig();
-        if(iorSecCnfg == null){
-            iorSecCnfg = theBean.getConfig().getStorageFactory().createIorSecurityConfig();
-            try{
-                theBean.setIorSecurityConfig(iorSecCnfg);
-            }catch(java.beans.PropertyVetoException exception){
-            }
-        }
-        return iorSecCnfg;
-    }
-
-
-    //BeanPool update methods
-    void updateSteadyPoolSize(String steadyPoolSize){
-        BeanPool beanPool = getBeanPool();
-        if((EMPTY_STRING.equals(steadyPoolSize)) || (null == steadyPoolSize)){
-            beanPool.setSteadyPoolSize(null);
-            updateBeanPool();
-        }else{
-            beanPool.setSteadyPoolSize(steadyPoolSize);
-        }
-        notifyChange();
-    }
-
-
-    void updateResizeQuantity(String resizeQuantity){
-        BeanPool beanPool = getBeanPool();
-        if((EMPTY_STRING.equals(resizeQuantity)) || (null == resizeQuantity)){
-            beanPool.setResizeQuantity(null);
-            updateBeanPool();
-        }else{
-            beanPool.setResizeQuantity(resizeQuantity);
-        }
-        notifyChange();
-    }
-
-
-    void updateMaxPoolSize(String maxPoolSize){
-        BeanPool beanPool = getBeanPool();
-        if((EMPTY_STRING.equals(maxPoolSize)) || (null == maxPoolSize)){
-            beanPool.setMaxPoolSize(null);
-            updateBeanPool();
-        }else{
-            beanPool.setMaxPoolSize(maxPoolSize);
-        }
-        notifyChange();
-    }
-
-
-    void updatePoolIdleTimeoutInSeconds(String poolIdleTimeoutInSec){
-        BeanPool beanPool = getBeanPool();
-        if((EMPTY_STRING.equals(poolIdleTimeoutInSec)) || (null == poolIdleTimeoutInSec)){
-            beanPool.setPoolIdleTimeoutInSeconds(null);
-            updateBeanPool();
-        }else{
-            beanPool.setPoolIdleTimeoutInSeconds(poolIdleTimeoutInSec);
-        }
-        notifyChange();
-    }
-
-
-    //BeanCache update methods
-    void updateMaxCacheSize(String maxCacheSize){
-        BeanCache beanCache = getBeanCache();
-        if((EMPTY_STRING.equals(maxCacheSize)) || (null == maxCacheSize)){
-            beanCache.setMaxCacheSize(null);
-            updateBeanCache();
-        }else{
-            beanCache.setMaxCacheSize(maxCacheSize);
-        }
-        notifyChange();
-    }
-
-
-    void updateCacheResizeQuantity(String resizeQuantity){
-        BeanCache beanCache = getBeanCache();
-        if((EMPTY_STRING.equals(resizeQuantity)) || (null == resizeQuantity)){
-            beanCache.setResizeQuantity(null);
-            updateBeanCache();
-        }else{
-            beanCache.setResizeQuantity(resizeQuantity);
-        }
-        notifyChange();
-    }
-
-
-    void updateIsCacheOverflowAllowed(String isOverflowAllowed){
-        BeanCache beanCache = getBeanCache();
-        if((EMPTY_STRING.equals(isOverflowAllowed)) || (null == isOverflowAllowed)){
-            beanCache.setIsCacheOverflowAllowed(null);
-            updateBeanCache();
-        }else{
-            beanCache.setIsCacheOverflowAllowed(isOverflowAllowed);
-        }
-        notifyChange();
-    }
-
-
-    void updateCacheIdleTimeoutInSeconds(String idleTimeoutInSec){
-        BeanCache beanCache = getBeanCache();
-        if((EMPTY_STRING.equals(idleTimeoutInSec)) || (null == idleTimeoutInSec)){
-            beanCache.setCacheIdleTimeoutInSeconds(null);
-            updateBeanCache();
-        }else{
-            beanCache.setCacheIdleTimeoutInSeconds(idleTimeoutInSec);
-        }
-        notifyChange();
-    }
-
-
-    void updateRemovalTimeoutInSeconds(String removalTimeoutInSeconds){
-        BeanCache beanCache = getBeanCache();
-        if((EMPTY_STRING.equals(removalTimeoutInSeconds)) || (null == removalTimeoutInSeconds)){
-            beanCache.setRemovalTimeoutInSeconds(null);
-            updateBeanCache();
-        }else{
-            beanCache.setRemovalTimeoutInSeconds(removalTimeoutInSeconds);
-        }
-        notifyChange();
-    }
-
-
-    void updateVictimSelectionPolicy(String victimSelectionPolicy){
-        BeanCache beanCache = getBeanCache();
-        if((EMPTY_STRING.equals(victimSelectionPolicy)) || (null == victimSelectionPolicy)){
-            beanCache.setVictimSelectionPolicy(null);
-            updateBeanCache();
-        }else{
-            beanCache.setVictimSelectionPolicy(victimSelectionPolicy);
-        }
-        notifyChange();
-    }
-
-
-    private BeanPool getBeanPool(){
-        BeanPool beanPool = theBean.getBeanPool();
-        if(beanPool == null){
-            beanPool = theBean.getConfig().getStorageFactory().createBeanPool();
-            try{
-                theBean.setBeanPool(beanPool);
-            }catch(java.beans.PropertyVetoException exception){
-            }
-        }
-        return beanPool;
-    }
-
-
-    private BeanCache getBeanCache(){
-        BeanCache beanCache = theBean.getBeanCache();
-        if(beanCache == null){
-            beanCache = theBean.getConfig().getStorageFactory().createBeanCache();
-            try{
-                theBean.setBeanCache(beanCache);
-            }catch(java.beans.PropertyVetoException exception){
-            }
-        }
-        return beanCache;
-    }    
-
-
-    public void tableChanged(javax.swing.event.TableModelEvent e) {
-        notifyChange();
-    }
-
-
-    private String getCustomizerTitle(){
-        String title = bundle.getString("EJB_TITLE"); // NOI18N
-        return title;
-    }        
-
-
-    private void updateTransportConfig(){
-        TransportConfig transportConfig = getTransportConfig();
-        if(transportConfig.getIntegrity() != null) return;
-        if(transportConfig.getConfidentiality() != null) return;
-        if(transportConfig.getEstablishTrustInTarget() != null) return;
-        if(transportConfig.getEstablishTrustInClient() != null) return;
-        getIorSecurityConfig().setTransportConfig(null);
-        updateIorSecurityConfig();
-    }
-
-
-    private void updateAsContext(){
-        AsContext asContext = getAsContext();
-        if(asContext.getAuthMethod() != null) return;
-        if(asContext.getRealm() != null) return;
-        if(asContext.getRequired() != null) return;
-        getIorSecurityConfig().setAsContext(null);
-        updateIorSecurityConfig();
-    }
-
-
-    private void updateSasContext(){
-        SasContext sasContext = getSasContext();
-        if(sasContext.getCallerPropagation() != null) return;
-        getIorSecurityConfig().setSasContext(null);
-        updateIorSecurityConfig();
-    }
-
-
-    private void updateIorSecurityConfig(){
-        IorSecurityConfig iorSecCnfg = getIorSecurityConfig();
-        if(iorSecCnfg.getTransportConfig() != null) return;
-        if(iorSecCnfg.getAsContext() != null) return;
-        if(iorSecCnfg.getSasContext() != null) return;
-        try{
-            theBean.setIorSecurityConfig(null);
-        }catch(java.beans.PropertyVetoException exception){
-        }
-    }
-
-
-    private void updateBeanPool(){
-        BeanPool beanPool = getBeanPool();
-        if(beanPool.getSteadyPoolSize() != null) return;
-        if(beanPool.getResizeQuantity() != null) return;
-        if(beanPool.getMaxPoolSize() != null) return;
-        if(beanPool.getPoolIdleTimeoutInSeconds() != null) return;
-        try{
-            theBean.setBeanPool(null);
-        }catch(java.beans.PropertyVetoException exception){
-        }
-    }
-
-
-    private void updateBeanCache(){
-        BeanCache beanCache = getBeanCache();
-        if(beanCache.getMaxCacheSize() != null) return;
-        if(beanCache.getResizeQuantity() != null) return;
-        if(beanCache.getIsCacheOverflowAllowed() != null) return;
-        if(beanCache.getCacheIdleTimeoutInSeconds() != null) return;
-        if(beanCache.getRemovalTimeoutInSeconds() != null) return;
-        if(beanCache.getVictimSelectionPolicy() != null) return;
-        try{
-            theBean.setBeanCache(null);
-        }catch(java.beans.PropertyVetoException exception){
-        }
-    }
 
 
      /** This method is called from within the constructor to
@@ -598,21 +106,9 @@ public abstract class EjbCustomizer extends BeanCustomizer
 
         setLayout(new java.awt.GridBagLayout());
 
-        addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                formFocusGained(evt);
-            }
-        });
-
         generalPanel.setLayout(new java.awt.GridBagLayout());
 
         generalPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        generalPanel.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                generalPanelFocusGained(evt);
-            }
-        });
-
         nameLabel.setLabelFor(nameTextField);
         nameLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Name_1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -624,12 +120,6 @@ public abstract class EjbCustomizer extends BeanCustomizer
 
         nameTextField.setEditable(false);
         nameTextField.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Ejb_Name_Tool_Tip"));
-        nameTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                nameFocusGained(evt);
-            }
-        });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -651,16 +141,6 @@ public abstract class EjbCustomizer extends BeanCustomizer
         jndiNameLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Ejb_Jndi_Name_Acsbl_Desc"));
 
         jndiNameTextField.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Ejb_Jndi_Name_Tool_Tip"));
-        jndiNameTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jndiNameActionPerformed(evt);
-            }
-        });
-        jndiNameTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                jndiNameFocusGained(evt);
-            }
-        });
         jndiNameTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 jndiNameKeyReleased(evt);
@@ -688,9 +168,9 @@ public abstract class EjbCustomizer extends BeanCustomizer
 
         passByRefComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "", "true", "false" }));
         passByRefComboBox.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Pass_By_Reference_Tool_Tip"));
-        passByRefComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                passByRefItemStateChanged(evt);
+        passByRefComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                passByRefComboBoxActionPerformed(evt);
             }
         });
 
@@ -711,6 +191,12 @@ public abstract class EjbCustomizer extends BeanCustomizer
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 5);
         add(generalPanel, gridBagConstraints);
 
+        tabbedPanel.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                tabbedPanelStateChanged(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -720,43 +206,51 @@ public abstract class EjbCustomizer extends BeanCustomizer
 
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jndiNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jndiNameActionPerformed
-        // Add your handling code here:
-        validateEntries();
-    }//GEN-LAST:event_jndiNameActionPerformed
+    private void tabbedPanelStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_tabbedPanelStateChanged
+        showErrors();
+    }//GEN-LAST:event_tabbedPanelStateChanged
 
-    private void jndiNameFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_jndiNameFocusGained
-        // Add your handling code here:
-        validateEntries();
-    }//GEN-LAST:event_jndiNameFocusGained
+    private void passByRefComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_passByRefComboBoxActionPerformed
+        if(theBean != null) {
+            String newPassByRef = (String) passByRefComboBox.getSelectedItem();
+            String oldPassByRef = theBean.getPassByReference();
+        
+            if(!Utils.strEquivalent(oldPassByRef, newPassByRef)) {
+                try {
+                    if(Utils.notEmpty(newPassByRef)) {
+                        theBean.setPassByReference(newPassByRef);
+                    } else {
+                        theBean.setPassByReference(null);
+                    }
 
-    private void generalPanelFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_generalPanelFocusGained
-        // Add your handling code here:
-        validateEntries();
-    }//GEN-LAST:event_generalPanelFocusGained
-
-    private void nameFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_nameFocusGained
-        // Add your handling code here:
-        validateEntries();
-    }//GEN-LAST:event_nameFocusGained
-
-    private void formFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusGained
-        // Add your handling code here:
-        validateEntries();
-    }//GEN-LAST:event_formFocusGained
-
-    private void passByRefItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_passByRefItemStateChanged
-        // Add your handling code here:
-        updatePassByRef((String)passByRefComboBox.getSelectedItem());
-        notifyChange();        
-        validateEntries();
-    }//GEN-LAST:event_passByRefItemStateChanged
+//                    theBean.firePropertyChange("passByReference", oldPassByRef, newPassByRef); // NOI18N
+                    validateField(BaseEjb.FIELD_PASS_BY_REFERENCE);
+                } catch (PropertyVetoException ex) {
+                }
+            }
+        }
+    }//GEN-LAST:event_passByRefComboBoxActionPerformed
 
     private void jndiNameKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jndiNameKeyReleased
-        // Add your handling code here:
-        updateJndiName(jndiNameTextField.getText());
-        notifyChange();
-        validateEntries();
+        if(theBean != null) {
+            String newJndiName = (String) jndiNameTextField.getText();
+            String oldJndiName = theBean.getJndiName();
+        
+            if(!Utils.strEquivalent(oldJndiName, newJndiName)) {
+                try {
+                    if(Utils.notEmpty(newJndiName)) {
+                        theBean.setJndiName(newJndiName);
+                    } else {
+                        theBean.setJndiName(null);
+                    }
+
+//                    theBean.firePropertyChange("jndiName", oldJndiName, newJndiName); // NOI18N
+                    validateField(BaseEjb.FIELD_JNDI_NAME);
+                } catch (PropertyVetoException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }        
     }//GEN-LAST:event_jndiNameKeyReleased
 
 
@@ -771,4 +265,141 @@ public abstract class EjbCustomizer extends BeanCustomizer
     private javax.swing.JLabel passByRefLabel;
     protected javax.swing.JTabbedPane tabbedPanel;
     // End of variables declaration//GEN-END:variables
+
+    private void initUserComponents() {
+		// Add title panel
+		CustomizerTitlePanel titlePanel = new CustomizerTitlePanel();
+		titlePanel.setCustomizerTitle(bundle.getString("EJB_TITLE")); //NOI18N
+		add(titlePanel, titlePanel.getConstraints(), 0);		
+
+        // Add bean specific non-tabbed panel.
+        JPanel beanSpecificPanel = getBeanPanel();
+        if(beanSpecificPanel != null) {
+            GridBagConstraints gridBagConstraints = new GridBagConstraints();
+            beanSpecificPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+            gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
+            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+            gridBagConstraints.weightx = 1.0;
+            gridBagConstraints.insets = new Insets(6, 6, 0, 5);
+            add(beanSpecificPanel, gridBagConstraints, 2);
+        }
+
+        // ior-security-config is support for all types of EJB's.
+        iorSecurityConfigPanel = new IorSecurityConfigPanel(this);
+        iorSecurityConfigPanel.getAccessibleContext().setAccessibleName(bundle.getString("IorSecurityConfig_Acsbl_Name")); // NOI18N
+        iorSecurityConfigPanel.getAccessibleContext().setAccessibleDescription(bundle.getString("IorSecurityConfig_Acsbl_Desc")); // NOI18N  
+        tabbedPanel.addTab(bundle.getString("LBL_IorSecurityConfig"), iorSecurityConfigPanel); // NOI18N
+
+        // Add bean specific tabbed panels
+        addTabbedBeanPanels();
+        
+		// Add error panel
+		addErrorPanel();
+    }
+    
+    protected void initFields() {
+        // Initialize all the elements in the general panel
+        nameTextField.setText(theBean.getEjbName());
+        jndiNameTextField.setText(theBean.getJndiName());
+
+        // !PW FIXME probably bug here since passByRefComboBox is not always initialized.
+        String passByRef = theBean.getPassByReference();
+        if(passByRef != null) {
+            passByRefComboBox.setSelectedItem(passByRef);
+        }
+
+        // Initialize all the elements in the bean specific panel
+        initializeBeanPanel(theBean);  // abstract
+
+        // Initialize IorSecurityConfig
+        iorSecurityConfigPanel.initFields(theBean.getIorSecurityConfig());
+
+        // Initialize bean specific panels in tabbed pane
+        initializeTabbedBeanPanels(theBean); // abstract
+    }
+    
+//    protected void addListeners() {
+//        super.addListeners();
+//    }
+//    
+//    protected void removeListeners() {
+//        super.removeListeners();
+//    }     
+
+	public void partitionStateChanged(ErrorMessageDB.PartitionState oldState, ErrorMessageDB.PartitionState newState) {
+		if(newState.getPartition() == getPartition() || 
+                newState.getPartition() == getGlobalPartition()) {
+			showErrors();
+		}
+		
+		if(oldState.hasMessages() != newState.hasMessages()) {
+            int tabIndex = getTabIndex(newState.getPartition());
+			if(tabIndex != -1) {
+                tabbedPanel.setIconAt(tabIndex, newState.hasMessages() ? panelErrorIcon : null);
+            }
+		}
+	}
+    
+    protected boolean setBean(Object bean) {
+		boolean result = super.setBean(bean);
+		
+		if(bean instanceof BaseEjb) {
+			theBean = (BaseEjb) bean;
+			result = true;
+		} else {
+			// if bean is not a BaseEjb, then it shouldn't have passed Base either.
+			assert (result == false) : 
+				"EjbCustomizer was passed wrong bean type in setBean(Object bean)";	// NOI18N
+				
+			theBean = null;
+			result = false;
+		}
+		
+		return result;
+    }
+    
+    /** Retrieve the partition that should be associated with the current 
+     *  selected tab.
+     *
+     *  @return ValidationError.Partition
+     */
+    public ValidationError.Partition getPartition() {
+        return getPartition(tabbedPanel.getSelectedComponent());
+    } 
+
+    /** Retrieve the partition used for global error messages.
+     */
+    public ValidationError.Partition getGlobalPartition() {
+        return ValidationError.PARTITION_EJB_GLOBAL;
+    }
+
+    private ValidationError.Partition getPartition(Component c) {
+        ValidationError.Partition panelPartition = ValidationError.PARTITION_EJB_GLOBAL;
+        if(c instanceof JPanel) {
+            JPanel p = (JPanel) c;
+            panelPartition = (ValidationError.Partition) p.getClientProperty(PARTITION_KEY);
+        }
+        return panelPartition;
+    }
+    
+    private HashMap partitionTabIndexMap;
+    
+    private int getTabIndex(ValidationError.Partition partition) {
+        if(partitionTabIndexMap == null) {
+            partitionTabIndexMap = new HashMap();
+            int ntabs = tabbedPanel.getTabCount();
+            for(int tab = 0; tab < ntabs; tab++) {
+                ValidationError.Partition tabPartition = getPartition(tabbedPanel.getComponentAt(tab));
+                if(!ValidationError.PARTITION_EJB_GLOBAL.equals(tabPartition)) {
+                    partitionTabIndexMap.put(tabPartition, new Integer(tab));
+                }
+            }
+        }
+        Integer tabIndex = (Integer) partitionTabIndexMap.get(partition);
+        return (tabIndex != null) ? tabIndex.intValue() : -1;
+    }
+    
+    public void tableChanged(TableModelEvent e) {
+        // Placeholder so super.tableChanged has a place to go.
+    }    
 }

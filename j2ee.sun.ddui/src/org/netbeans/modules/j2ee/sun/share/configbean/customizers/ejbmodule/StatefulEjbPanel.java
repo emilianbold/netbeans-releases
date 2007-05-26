@@ -20,35 +20,30 @@
  * EntityEjbPanel.java        Feb 20, 2005, 6:11 PM
  *
  */
-
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule;
+
+import java.beans.PropertyVetoException;
+import javax.swing.JPanel;
+import org.netbeans.modules.j2ee.sun.share.configbean.BaseEjb;
+
+import org.netbeans.modules.j2ee.sun.share.configbean.StatefulEjb;
+import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
+
 
 /**
  *
  * @author  Rajeshwar Patil
  * @version %I%, %G%
  */
-public class StatefulEjbPanel extends javax.swing.JPanel {
+public class StatefulEjbPanel extends JPanel {
 
-    private StatefulEjbCustomizer statefulEjbCutomizer;
+    private StatefulEjbCustomizer masterPanel;
 
 
     /** Creates new form StatefulEjbPanel */
-    public StatefulEjbPanel(StatefulEjbCustomizer customizer) {
+    public StatefulEjbPanel(StatefulEjbCustomizer src) {
+        this.masterPanel = src;
         initComponents();
-        this.statefulEjbCutomizer = customizer;
-    }
-
-
-    public void setAvailabilityEnabled(String availabilityEnabled){
-        if(availabilityEnabled != null){
-            availabilityEnabledComboBox.setSelectedItem(availabilityEnabled);
-        }
-    }
-
-
-    public String getAvailabilityEnabled(){
-        return (String)availabilityEnabledComboBox.getSelectedItem();
     }
 
 
@@ -78,9 +73,9 @@ public class StatefulEjbPanel extends javax.swing.JPanel {
 
         availabilityEnabledComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "", "true", "false" }));
         availabilityEnabledComboBox.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Availability_Enabled_Tool_Tip"));
-        availabilityEnabledComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                availabilityEnabledItemStateChanged(evt);
+        availabilityEnabledComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                availabilityEnabledComboBoxActionPerformed(evt);
             }
         });
 
@@ -96,12 +91,27 @@ public class StatefulEjbPanel extends javax.swing.JPanel {
 
     }// </editor-fold>//GEN-END:initComponents
 
-    private void availabilityEnabledItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_availabilityEnabledItemStateChanged
-        // Add your handling code here:
-        String item = (String)availabilityEnabledComboBox.getSelectedItem();
-        statefulEjbCutomizer.updateAvailabilityEnabled(item);
-        statefulEjbCutomizer.validateEntries();
-    }//GEN-LAST:event_availabilityEnabledItemStateChanged
+    private void availabilityEnabledComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_availabilityEnabledComboBoxActionPerformed
+        StatefulEjb theBean = masterPanel.getStatefulBean();
+        if(theBean != null) {
+            String newAvailability = (String) availabilityEnabledComboBox.getSelectedItem();
+            String oldAvailability = theBean.getAvailabilityEnabled();
+            try {
+                if(!Utils.strEquivalent(oldAvailability, newAvailability)) {
+                    if(Utils.notEmpty(newAvailability)) {
+                        theBean.setAvailabilityEnabled(newAvailability);
+                    } else {
+                        theBean.setAvailabilityEnabled(null);
+                    }
+
+//                    theBean.firePropertyChange("statefulAvailabilityEnabled", oldAvailability, newAvailability); // NOI18N
+                    masterPanel.validateField(StatefulEjb.FIELD_STATEFUL_AVAILABILITY);
+                }
+            } catch (PropertyVetoException ex) {
+                availabilityEnabledComboBox.setSelectedItem(oldAvailability);
+            }
+        }
+    }//GEN-LAST:event_availabilityEnabledComboBoxActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -109,4 +119,9 @@ public class StatefulEjbPanel extends javax.swing.JPanel {
     private javax.swing.JLabel availabilityEnabledLabel;
     // End of variables declaration//GEN-END:variables
 
+    public void initFields(StatefulEjb theBean) {
+        if(theBean != null) {
+            availabilityEnabledComboBox.setSelectedItem(theBean.getAvailabilityEnabled());
+        }
+    }
 }

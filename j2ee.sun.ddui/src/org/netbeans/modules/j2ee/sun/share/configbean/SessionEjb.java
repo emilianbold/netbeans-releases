@@ -55,10 +55,7 @@ abstract public class SessionEjb extends BaseEjb implements WebserviceOperationL
         }
 
         public boolean hasDDSnippet() {
-            if(super.hasDDSnippet()) {
-                return true;
-            }
-            return false;
+            return super.hasDDSnippet();
         }
     }
 

@@ -51,7 +51,9 @@ import org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceEndpoint;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 
 import org.netbeans.modules.j2ee.sun.share.Constants;
+import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.ValidationSupport;
 import org.openide.ErrorManager;
+
 
 /** This is the base class for all DConfigBean objects in the SunONE App Server
  * JSR88 implementation.
@@ -81,6 +83,7 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
     private DDBean dDBean;
     private Base parent;
     private String baseXpath;
+    private String sunBaseXpath;
     
     private J2eeModule module; 
 
@@ -161,7 +164,8 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
         this.dDBean = dDBean;
         this.parent = parent;
         this.baseXpath = dDBean.getXpath();
-
+        this.sunBaseXpath = translateXpath(this.baseXpath);
+        
         // Build validation field list for this bean
         // !PW We need a better way to do this.  See comment by validationFieldList
         //     member definition.
@@ -220,13 +224,14 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
     }
 
     protected String getAbsoluteXpath(String field) {
-        StringBuffer buf = new StringBuffer(baseXpath.length() + field.length() + 1);
-        buf.append(baseXpath);
-        buf.append("/");	// NOI18N
-        buf.append(field);
-        return buf.toString();
+        // JVM will optimize this to use StringBuffer/StringBuilder
+        return sunBaseXpath + "/" + field;
     }
 
+    protected String translateXpath(String ddXpath) {
+        return ddXpath;
+    }
+    
     /* Does this class of DConfigBeans require JNDI names in general.  Right now
      * this means J2EE 1.3, 1.4 = Yes, JavaEE5 = No.
      */
@@ -400,6 +405,17 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
 
     /** -----------------------------------------------------------------------
      *  Validation implementation
+     */
+    
+    /** Global access to Rajeshwar's validation manager.  This is only used for EJB
+     *  validations but is here so it can be shared between EjbJarRoot and BaseEJb + 
+     *  derivatives.
+     * 
+     *  Web, App Clients, and EAR's use a different rule manager.
+     */
+    protected static ValidationSupport validationSupport = new ValidationSupport();
+
+    /** Message database, one per DConfigBean.
      */
     protected final synchronized ErrorMessageDB getMessageDB() {
         if(errorMessageDB == null) {
@@ -575,6 +591,8 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
                     putDCBInstance(dcbResult);
                     addChild(dcbResult);
 
+                    System.out.println("New DCB for " + dDBean.getXpath());
+                    
                     // Lastly, if this bean is a member of a group, return the head
                     // of the group to the caller.
                     //
@@ -708,6 +726,8 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
                     if(beanToRemove != null) {
                         // !PW FIXME 1st half - workaround for IZ 41214 (see method comment)
                         String beanXpath = beanToRemove.getDDBean().getXpath();
+
+                        System.out.println("DCB removed for " + beanToRemove.getDDBean().getXpath());
 
                         // cleanup bean before throwing away
                         beanToRemove.cleanup();

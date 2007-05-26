@@ -23,15 +23,13 @@
 
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule;
 
-import java.util.ArrayList;
 import java.util.ResourceBundle;
+import javax.swing.JPanel;
 
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.BeanCache;
-
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BaseCustomizer;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.ErrorSupport;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.ErrorSupportClient;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.ValidationSupport;
+import org.netbeans.modules.j2ee.sun.share.configbean.BaseEjb;
+import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
+import org.netbeans.modules.j2ee.sun.share.configbean.ValidationError;
 
 /**
  *
@@ -39,107 +37,20 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Validat
  * @version %I%, %G%
  */
 
-public class BeanCachePanel extends javax.swing.JPanel 
-        implements ErrorSupportClient {
+public class BeanCachePanel extends JPanel {
 
-    private EjbCustomizer customizer;
-    protected ErrorSupport errorSupport;
-    protected ValidationSupport validationSupport;
+    private EjbCustomizer masterPanel;
     
-    static final ResourceBundle bundle = 
-        ResourceBundle.getBundle(
+    static final ResourceBundle bundle = ResourceBundle.getBundle(
             "org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule.Bundle"); // NOI18N
 
-
     /** Creates new form BeanCachePanel */
-    public BeanCachePanel(EjbCustomizer customizer){
-        initComponents();
-        this.customizer = customizer;
-        errorSupport = new ErrorSupport(this);
-        validationSupport = new ValidationSupport();
-    }
-
-
-    public void setValues(BeanCache beanCache){
-        if(beanCache != null){
-            maxCacheSizeTextField.setText(beanCache.getMaxCacheSize());
-            resizeQuantityTextField.setText(beanCache.getResizeQuantity());
-            isCacheOverflowAllowedComboBox.setSelectedItem(
-                beanCache.getIsCacheOverflowAllowed());
-            cacheIdleTimeoutInSecondsTextField.setText(
-                beanCache.getCacheIdleTimeoutInSeconds());
-            removalTimeoutInSecondsTextField.setText(
-                beanCache.getRemovalTimeoutInSeconds());
-            victimSelectionPolicyComboBox.setSelectedItem(
-                beanCache.getVictimSelectionPolicy());
-        }
-    }
-
-
-    public java.awt.Container getErrorPanelParent(){
-        return this;
-    }
-
-
-    public java.awt.GridBagConstraints getErrorPanelConstraints(){
-        java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.insets = new java.awt.Insets(6,12,11,11);
-        return gridBagConstraints;
-    }
-
-
-    public java.util.Collection getErrors(){
-        if(validationSupport == null) assert(false);
-        ArrayList errors = new ArrayList();
+    public BeanCachePanel(EjbCustomizer src) {
+        this.masterPanel = src;
         
-        //Bean Cache fields Validation
-        String property = maxCacheSizeTextField.getText();
-        errors.addAll(validationSupport.validate(property,
-            "/sun-ejb-jar/enterprise-beans/ejb/bean-cache/max-cache-size", //NOI18N
-                bundle.getString("LBL_Max_Cache_Size")));           //NOI18N
-
-        property = resizeQuantityTextField.getText();
-        errors.addAll(validationSupport.validate(property,
-            "/sun-ejb-jar/enterprise-beans/ejb/bean-cache/resize-quantity", //NOI18N
-            bundle.getString("LBL_Resize_Quantity")));          //NOI18N
-
-
-        property = (String)isCacheOverflowAllowedComboBox.getSelectedItem();
-        errors.addAll(validationSupport.validate(property,
-            "/sun-ejb-jar/enterprise-beans/ejb/bean-cache/is-cache-overflow-allowed", //NOI18N
-                bundle.getString("LBL_Is_Cache_Overflow_Allowed")));        //NOI18N
-
-        property = cacheIdleTimeoutInSecondsTextField.getText();
-        errors.addAll(validationSupport.validate(property,
-            "/sun-ejb-jar/enterprise-beans/ejb/bean-cache/cache-idle-timeout-in-seconds", //NOI18N
-                bundle.getString("LBL_Cache_Idle_Timeout_In_Seconds")));    //NOI18N
-            
-        property = removalTimeoutInSecondsTextField.getText();
-        errors.addAll(validationSupport.validate(property,
-            "/sun-ejb-jar/enterprise-beans/ejb/bean-cache/removal-timeout-in-seconds", //NOI18N
-                bundle.getString("LBL_Removal_Timeout_In_Seconds")));       //NOI18N
-
-        property = (String)victimSelectionPolicyComboBox.getSelectedItem();
-        errors.addAll(validationSupport.validate(property,
-            "/sun-ejb-jar/enterprise-beans/ejb/bean-cache/victim-selection-policy", //NOI18N
-                bundle.getString("LBL_Victim_Selection_Policy")));  //NOI18N
-            
-        return errors;
+        initComponents();
+        initUserComponents();
     }
-	
-	public java.awt.Color getMessageForegroundColor() {
-		return BaseCustomizer.getErrorForegroundColor();
-	}
-	
-    private void validateEntries(){
-        if(errorSupport != null){
-            errorSupport.showErrors();
-        }
-    }
-
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -177,16 +88,6 @@ public class BeanCachePanel extends javax.swing.JPanel
         maxCacheSizeLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Max_Cache_Size_Acsbl_Desc"));
 
         maxCacheSizeTextField.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Max_Cache_Size_Tool_Tip"));
-        maxCacheSizeTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                maxCacheSizeActionPerformed(evt);
-            }
-        });
-        maxCacheSizeTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                maxCacheSizeFocusGained(evt);
-            }
-        });
         maxCacheSizeTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 maxCacheSizeKeyReleased(evt);
@@ -213,16 +114,6 @@ public class BeanCachePanel extends javax.swing.JPanel
         resizeQuantityLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Bean_Cache_Resize_Quantity_Acsbl_Desc"));
 
         resizeQuantityTextField.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Bean_Cache_Resize_Quantity_Tool_Tip"));
-        resizeQuantityTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                resizeQuantityActionPerformed(evt);
-            }
-        });
-        resizeQuantityTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                resizeQuantityFocusGained(evt);
-            }
-        });
         resizeQuantityTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 resizeQuantityKeyReleased(evt);
@@ -250,9 +141,9 @@ public class BeanCachePanel extends javax.swing.JPanel
 
         isCacheOverflowAllowedComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "", "true", "false" }));
         isCacheOverflowAllowedComboBox.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Is_Cache_Overflow_Allowed_Tool_Tip"));
-        isCacheOverflowAllowedComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                isCacheOverflowAllowedItemStateChanged(evt);
+        isCacheOverflowAllowedComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                isCacheOverflowAllowedComboBoxActionPerformed(evt);
             }
         });
 
@@ -276,16 +167,6 @@ public class BeanCachePanel extends javax.swing.JPanel
         cacheIdleTimeoutInSecondsLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Cache_Idle_Timeout_In_Seconds_Acsbl_Desc"));
 
         cacheIdleTimeoutInSecondsTextField.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Cache_Idle_Timeout_In_Seconds_Tool_Tip"));
-        cacheIdleTimeoutInSecondsTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cacheIdleTimeoutInSecondsActionPerformed(evt);
-            }
-        });
-        cacheIdleTimeoutInSecondsTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                cacheIdleTimeoutInSecondsFocusGained(evt);
-            }
-        });
         cacheIdleTimeoutInSecondsTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 cacheIdleTimeoutInSecondsKeyReleased(evt);
@@ -312,16 +193,6 @@ public class BeanCachePanel extends javax.swing.JPanel
         removalTimeoutInSecondsLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Removal_Timeout_In_Seconds_Acsbl_Desc"));
 
         removalTimeoutInSecondsTextField.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Removal_Timeout_In_Seconds_Tool_Tip"));
-        removalTimeoutInSecondsTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                removalTimeoutInSecondsActionPerformed(evt);
-            }
-        });
-        removalTimeoutInSecondsTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                removalTimeoutInSecondsFocusGained(evt);
-            }
-        });
         removalTimeoutInSecondsTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 removalTimeoutInSecondsKeyReleased(evt);
@@ -349,9 +220,9 @@ public class BeanCachePanel extends javax.swing.JPanel
 
         victimSelectionPolicyComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "", "FIFO", "LRU", "NRU" }));
         victimSelectionPolicyComboBox.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Victim_Selection_Policy_Tool_Tip"));
-        victimSelectionPolicyComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                victimSelectionPolicyItemStateChanged(evt);
+        victimSelectionPolicyComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                victimSelectionPolicyComboBoxActionPerformed(evt);
             }
         });
 
@@ -373,86 +244,124 @@ public class BeanCachePanel extends javax.swing.JPanel
 
     }// </editor-fold>//GEN-END:initComponents
 
-    private void removalTimeoutInSecondsFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_removalTimeoutInSecondsFocusGained
-        // Add your handling code here:
-        validateEntries();
-    }//GEN-LAST:event_removalTimeoutInSecondsFocusGained
+    private void victimSelectionPolicyComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_victimSelectionPolicyComboBoxActionPerformed
+        BaseEjb theBean = masterPanel.getBean();
+        if(theBean != null) {
+            BeanCache beanCache = theBean.getBeanCache();
+            String newVictimPolicy = (String) victimSelectionPolicyComboBox.getSelectedItem();
+            String oldVictimPolicy = beanCache.getVictimSelectionPolicy();
 
-    private void removalTimeoutInSecondsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removalTimeoutInSecondsActionPerformed
-        // Add your handling code here:
-        validateEntries();
-    }//GEN-LAST:event_removalTimeoutInSecondsActionPerformed
+            if(!Utils.strEquivalent(oldVictimPolicy, newVictimPolicy)) {
+                if(Utils.notEmpty(newVictimPolicy)) {
+                    beanCache.setVictimSelectionPolicy(newVictimPolicy);
+                } else {
+                    beanCache.setVictimSelectionPolicy(null);
+                }
 
-    private void cacheIdleTimeoutInSecondsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cacheIdleTimeoutInSecondsActionPerformed
-        // Add your handling code here:
-        validateEntries();
-    }//GEN-LAST:event_cacheIdleTimeoutInSecondsActionPerformed
+                theBean.firePropertyChange("beanCacheVictimPolicy", oldVictimPolicy, newVictimPolicy); // NOI18N
+                masterPanel.validateField(BaseEjb.FIELD_BEANCACHE_VICTIMPOLICY);
+            }
+        }
+    }//GEN-LAST:event_victimSelectionPolicyComboBoxActionPerformed
 
-    private void cacheIdleTimeoutInSecondsFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_cacheIdleTimeoutInSecondsFocusGained
-        // Add your handling code here:
-        validateEntries();
-    }//GEN-LAST:event_cacheIdleTimeoutInSecondsFocusGained
+    private void isCacheOverflowAllowedComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_isCacheOverflowAllowedComboBoxActionPerformed
+        BaseEjb theBean = masterPanel.getBean();
+        if(theBean != null) {
+            BeanCache beanCache = theBean.getBeanCache();
+            String newOverflowAllowed = (String) isCacheOverflowAllowedComboBox.getSelectedItem();
+            String oldOverflowAllowed = beanCache.getIsCacheOverflowAllowed();
 
-    private void maxCacheSizeFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_maxCacheSizeFocusGained
-        // Add your handling code here:
-        validateEntries();
-    }//GEN-LAST:event_maxCacheSizeFocusGained
+            if(!Utils.strEquivalent(oldOverflowAllowed, newOverflowAllowed)) {
+                if(Utils.notEmpty(newOverflowAllowed)) {
+                    beanCache.setIsCacheOverflowAllowed(newOverflowAllowed);
+                } else {
+                    beanCache.setIsCacheOverflowAllowed(null);
+                }
 
-    private void resizeQuantityFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_resizeQuantityFocusGained
-        // Add your handling code here:
-        validateEntries();
-    }//GEN-LAST:event_resizeQuantityFocusGained
-
-    private void resizeQuantityActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resizeQuantityActionPerformed
-        // Add your handling code here:
-        validateEntries();
-    }//GEN-LAST:event_resizeQuantityActionPerformed
-
-    private void maxCacheSizeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_maxCacheSizeActionPerformed
-        // Add your handling code here:
-        validateEntries();
-    }//GEN-LAST:event_maxCacheSizeActionPerformed
-
-    private void victimSelectionPolicyItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_victimSelectionPolicyItemStateChanged
-        // Add your handling code here:
-        String item = (String)victimSelectionPolicyComboBox.getSelectedItem();
-        customizer.updateVictimSelectionPolicy(item);
-        validateEntries();
-    }//GEN-LAST:event_victimSelectionPolicyItemStateChanged
+                theBean.firePropertyChange("beanCacheOverflowAllowed", oldOverflowAllowed, newOverflowAllowed); // NOI18N
+                masterPanel.validateField(BaseEjb.FIELD_BEANCACHE_OVERFLOWALLOWED);
+            }
+        }
+    }//GEN-LAST:event_isCacheOverflowAllowedComboBoxActionPerformed
 
     private void removalTimeoutInSecondsKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_removalTimeoutInSecondsKeyReleased
-        // Add your handling code here:
-        String item = removalTimeoutInSecondsTextField.getText();
-        customizer.updateRemovalTimeoutInSeconds(item);
-        validateEntries();
+        BaseEjb theBean = masterPanel.getBean();
+        if(theBean != null) {
+            BeanCache beanCache = theBean.getBeanCache();
+            String newRemovalTimeout = removalTimeoutInSecondsTextField.getText();
+            String oldRemovalTimeout = beanCache.getRemovalTimeoutInSeconds();
+
+            if(!Utils.strEquivalent(oldRemovalTimeout, newRemovalTimeout)) {
+                if(Utils.notEmpty(newRemovalTimeout)) {
+                    beanCache.setRemovalTimeoutInSeconds(newRemovalTimeout);
+                } else {
+                    beanCache.setRemovalTimeoutInSeconds(null);
+                }
+
+                theBean.firePropertyChange("beanCacheRemovalTimeout", oldRemovalTimeout, newRemovalTimeout); // NOI18N
+                masterPanel.validateField(BaseEjb.FIELD_BEANCACHE_REMOVALTIMEOUT);
+            }
+        }
     }//GEN-LAST:event_removalTimeoutInSecondsKeyReleased
 
     private void cacheIdleTimeoutInSecondsKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_cacheIdleTimeoutInSecondsKeyReleased
-        // Add your handling code here:
-        String item = cacheIdleTimeoutInSecondsTextField.getText();
-        customizer.updateCacheIdleTimeoutInSeconds(item);
-        validateEntries();
+        BaseEjb theBean = masterPanel.getBean();
+        if(theBean != null) {
+            BeanCache beanCache = theBean.getBeanCache();
+            String newCacheIdleTimeout = cacheIdleTimeoutInSecondsTextField.getText();
+            String oldCacheIdleTimeout = beanCache.getCacheIdleTimeoutInSeconds();
+
+            if(!Utils.strEquivalent(oldCacheIdleTimeout, newCacheIdleTimeout)) {
+                if(Utils.notEmpty(newCacheIdleTimeout)) {
+                    beanCache.setCacheIdleTimeoutInSeconds(newCacheIdleTimeout);
+                } else {
+                    beanCache.setCacheIdleTimeoutInSeconds(null);
+                }
+
+                theBean.firePropertyChange("beanCacheIdleTimeout", oldCacheIdleTimeout, newCacheIdleTimeout); // NOI18N
+                masterPanel.validateField(BaseEjb.FIELD_BEANCACHE_IDLETIMEOUT);
+            }
+        }
     }//GEN-LAST:event_cacheIdleTimeoutInSecondsKeyReleased
 
-    private void isCacheOverflowAllowedItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_isCacheOverflowAllowedItemStateChanged
-        // Add your handling code here:
-        String item = (String)isCacheOverflowAllowedComboBox.getSelectedItem();
-        customizer.updateIsCacheOverflowAllowed(item);
-        validateEntries();
-    }//GEN-LAST:event_isCacheOverflowAllowedItemStateChanged
-
     private void resizeQuantityKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_resizeQuantityKeyReleased
-        // Add your handling code here:
-        String item = resizeQuantityTextField.getText();
-        customizer.updateCacheResizeQuantity(item);
-        validateEntries();
+        BaseEjb theBean = masterPanel.getBean();
+        if(theBean != null) {
+            BeanCache beanCache = theBean.getBeanCache();
+            String newResizeQuantity = resizeQuantityTextField.getText();
+            String oldResizeQuantity = beanCache.getResizeQuantity();
+
+            if(!Utils.strEquivalent(oldResizeQuantity, newResizeQuantity)) {
+                if(Utils.notEmpty(newResizeQuantity)) {
+                    beanCache.setResizeQuantity(newResizeQuantity);
+                } else {
+                    beanCache.setResizeQuantity(null);
+                }
+
+                theBean.firePropertyChange("beanCacheResizeQuantity", oldResizeQuantity, newResizeQuantity); // NOI18N
+                masterPanel.validateField(BaseEjb.FIELD_BEANCACHE_RESIZEQUANTITY);
+            }
+        }
     }//GEN-LAST:event_resizeQuantityKeyReleased
 
     private void maxCacheSizeKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_maxCacheSizeKeyReleased
-        // Add your handling code here:
-        String item = maxCacheSizeTextField.getText();
-        customizer.updateMaxCacheSize(item);
-        validateEntries();
+        BaseEjb theBean = masterPanel.getBean();
+        if(theBean != null) {
+            BeanCache beanCache = theBean.getBeanCache();
+            String newMaxCacheSize = maxCacheSizeTextField.getText();
+            String oldMaxCacheSize = beanCache.getMaxCacheSize();
+
+            if(!Utils.strEquivalent(oldMaxCacheSize, newMaxCacheSize)) {
+                if(Utils.notEmpty(newMaxCacheSize)) {
+                    beanCache.setMaxCacheSize(newMaxCacheSize);
+                } else {
+                    beanCache.setMaxCacheSize(null);
+                }
+
+                theBean.firePropertyChange("beanCacheMaxCacheSize", oldMaxCacheSize, newMaxCacheSize); // NOI18N
+                masterPanel.validateField(BaseEjb.FIELD_BEANCACHE_MAXSIZE);
+            }
+        }
     }//GEN-LAST:event_maxCacheSizeKeyReleased
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -470,5 +379,19 @@ public class BeanCachePanel extends javax.swing.JPanel
     private javax.swing.JComboBox victimSelectionPolicyComboBox;
     private javax.swing.JLabel victimSelectionPolicyLabel;
     // End of variables declaration//GEN-END:variables
+
+    private void initUserComponents() {
+        putClientProperty(EjbCustomizer.PARTITION_KEY, ValidationError.PARTITION_EJB_BEANCACHE);
+    }
     
+    public void initFields(BeanCache beanCache) {
+        if(beanCache != null) {
+            maxCacheSizeTextField.setText(beanCache.getMaxCacheSize());
+            resizeQuantityTextField.setText(beanCache.getResizeQuantity());
+            isCacheOverflowAllowedComboBox.setSelectedItem(beanCache.getIsCacheOverflowAllowed());
+            cacheIdleTimeoutInSecondsTextField.setText(beanCache.getCacheIdleTimeoutInSeconds());
+            removalTimeoutInSecondsTextField.setText(beanCache.getRemovalTimeoutInSeconds());
+            victimSelectionPolicyComboBox.setSelectedItem(beanCache.getVictimSelectionPolicy());
+        }
+    }
 }

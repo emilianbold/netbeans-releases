@@ -220,6 +220,27 @@ public final class ValidationError implements Comparable {
 	public static final Partition PARTITION_EJBJAR_MESSAGES = 
 		new Partition("EjbJarMessages", 2);	// NOI18N
 
+    // Partitions for Ejb panels
+	public static final Partition PARTITION_EJB_GLOBAL = 
+		new Partition("EjbGlobal", 0);	// NOI18N
+	public static final Partition PARTITION_EJB_IORSECURITY = 
+		new Partition("EjbIorSecurity", 1);	// NOI18N
+	public static final Partition PARTITION_EJB_BEANPOOL = 
+		new Partition("EjbBeanPool", 2);	// NOI18N
+	public static final Partition PARTITION_EJB_BEANCACHE = 
+		new Partition("EjbBeanCache", 3);	// NOI18N
+	public static final Partition PARTITION_EJB_CHECKPOINT = 
+		new Partition("EjbCheckpoint", 4);	// NOI18N
+	public static final Partition PARTITION_EJB_FINDER = 
+		new Partition("EjbFinder", 5);	// NOI18N
+	public static final Partition PARTITION_EJB_PREFETCH = 
+		new Partition("EjbPrefetch", 6);	// NOI18N
+	public static final Partition PARTITION_EJB_CMPMAPPING = 
+		new Partition("EjbCmpMapping", 7);	// NOI18N
+	public static final Partition PARTITION_EJB_MDBCONNFACTORY = 
+		new Partition("EjbMdbConnFactory", 8);	// NOI18N
+	public static final Partition PARTITION_EJB_MDBACTIVATION = 
+		new Partition("EjbMdbActivation", 9);	// NOI18N
     
 	public static final class Partition implements Comparable {
 		private final String partitionName;

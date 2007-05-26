@@ -24,6 +24,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import javax.enterprise.deploy.spi.DConfigBean;
@@ -33,6 +34,7 @@ import javax.enterprise.deploy.model.exceptions.DDBeanCreateException;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
+import org.netbeans.modules.j2ee.sun.dd.api.common.DefaultResourcePrincipal;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.ActivationConfig;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.ActivationConfigProperty;
@@ -47,6 +49,21 @@ import org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestination;
  */
 public class MDEjb extends BaseEjb {
     
+    public static final String __Enabled = "enabled"; //NOI18N
+    public static final String __JMSResource = "jms"; //NOI18N
+    public static final String __JMSConnectionFactory = "jms_CF"; //NOI18N
+    public static final String __JndiName = "jndi-name"; //NOI18N
+    public static final String __ResType = "res-type"; //NOI18N
+
+    private static final String MESSAGE_DSTN_NAME = "msg_dstn_name"; //NOI18N
+    private static final String MESSAGE_DSTN_TYPE = "msg_dstn_type"; //NOI18N
+
+    private static final String QUEUE = "javax.jms.Queue"; //NOI18N
+    private static final String QUEUE_CNTN_FACTORY = "javax.jms.QueueConnectionFactory"; //NOI18N
+    private static final String TOPIC = "javax.jms.Topic"; //NOI18N
+    private static final String TOPIC_CNTN_FACTORY = "javax.jms.TopicConnectionFactory"; //NOI18N
+
+    
     /** Holds value of property subscriptionName. */
     private String subscriptionName;
     
@@ -59,26 +76,126 @@ public class MDEjb extends BaseEjb {
 	/** Holds value of property mdbResourceAdapter. */
 	private MdbResourceAdapter mdbResourceAdapter;
 
-        public static final String __Enabled = "enabled"; //NOI18N
-        public static final String __JMSResource = "jms"; //NOI18N
-        public static final String __JMSConnectionFactory = "jms_CF"; //NOI18N
-        public static final String __JndiName = "jndi-name"; //NOI18N
-        public static final String __ResType = "res-type"; //NOI18N
-
-        private static final String MESSAGE_DSTN_NAME = "msg_dstn_name"; //NOI18N
-        private static final String MESSAGE_DSTN_TYPE = "msg_dstn_type"; //NOI18N
-
-        private static final String QUEUE = "javax.jms.Queue"; //NOI18N
-        private static final String QUEUE_CNTN_FACTORY = "javax.jms.QueueConnectionFactory"; //NOI18N
-        private static final String TOPIC = "javax.jms.Topic"; //NOI18N
-        private static final String TOPIC_CNTN_FACTORY = "javax.jms.TopicConnectionFactory"; //NOI18N
-       
-
-
+    
     /** Creates a new instance of SunONEStatelessEjbDConfigBean */
 	public MDEjb() {
 	}
 
+    
+    /** -----------------------------------------------------------------------
+     *  Validation implementation
+     */
+
+    // relative xpaths (double as field id's)
+    public static final String FIELD_MD_SUBSCRIPTION = "jms-durable-subscription-name";
+    public static final String FIELD_MD_MAXMESSAGES = "jms-max-messages-load";
+    public static final String FIELD_MD_ADAPTER = "mdb-resource-adapter";
+    public static final String FIELD_MD_ADAPTERMID = FIELD_MD_ADAPTER + "/resource-adapter-mid";
+    public static final String FIELD_MD_ACDESC = FIELD_MD_ADAPTER + "/activation-config/description";
+    public static final String FIELD_MD_CONNFACTORY = "mdb-connection-factory";
+    public static final String FIELD_MD_CONNFACTORY_JNDINAME = FIELD_MD_CONNFACTORY + "/jndi-name";
+    public static final String FIELD_MD_CONNFACTORY_DRP_NAME = FIELD_MD_CONNFACTORY + "/default-resource-principal/name";
+    public static final String FIELD_MD_CONNFACTORY_DRP_PASSWORD = FIELD_MD_CONNFACTORY + "/default-resource-principal/password";
+    
+    protected void updateValidationFieldList() {
+        super.updateValidationFieldList();
+
+        validationFieldList.add(FIELD_MD_SUBSCRIPTION);
+        validationFieldList.add(FIELD_MD_MAXMESSAGES);
+        validationFieldList.add(FIELD_MD_ADAPTER);
+        validationFieldList.add(FIELD_MD_CONNFACTORY);
+    }
+
+    public boolean validateField(String fieldId) {
+        boolean result = super.validateField(fieldId);
+        
+        Collection/*ValidationError*/ errors = new ArrayList();
+
+        // !PW use visitor pattern to get rid of switch/if statement for validation
+        //     field -- data member mapping.
+        //
+        // ValidationSupport can return multiple errors for a single field.  We only want
+        // to display one error per field, so we'll pick the first error rather than adding
+        // them all.  As the user fixes each error, the remainder will display until all of
+        // them are handled.  (Hopefully the errors are generated in a nice order, e.g. 
+        // check blank first, then content, etc.  If not, we may have to reconsider this.)
+        //
+        String absoluteFieldXpath = getAbsoluteXpath(fieldId);
+        if(fieldId.equals(FIELD_MD_SUBSCRIPTION)) {
+            errors.add(executeValidator(ValidationError.PARTITION_EJB_GLOBAL, 
+                    subscriptionName, absoluteFieldXpath, bundle.getString("LBL_Jms_Durable_Subscription_Name"))); // NOI18N
+        } else if(fieldId.equals(FIELD_MD_MAXMESSAGES)) {
+            errors.add(executeValidator(ValidationError.PARTITION_EJB_GLOBAL, 
+                    maxMessageLoad, absoluteFieldXpath, bundle.getString("LBL_Jms_Max_Messages_Load"))); // NOI18N
+        } else if(fieldId.equals(FIELD_MD_ADAPTER)) {
+            if(hasContent(mdbResourceAdapter)) {
+                errors.add(executeValidator(ValidationError.PARTITION_EJB_GLOBAL, 
+                        mdbResourceAdapter.getResourceAdapterMid(), getAbsoluteXpath(FIELD_MD_ADAPTERMID), bundle.getString("LBL_Resource_Adapter_Mid"))); // NOI18N
+                ActivationConfig ac = mdbResourceAdapter.getActivationConfig();
+                String value = (ac != null) ? ac.getDescription() : null;
+                errors.add(executeValidator(ValidationError.PARTITION_EJB_GLOBAL, 
+                        value, getAbsoluteXpath(FIELD_MD_ACDESC), bundle.getString("LBL_Activation_Config_Description"))); // NOI18N
+            } else {
+                errors.add(ValidationError.getValidationErrorMask(
+                        ValidationError.PARTITION_EJB_GLOBAL, getAbsoluteXpath(FIELD_MD_ADAPTERMID)));
+                errors.add(ValidationError.getValidationErrorMask(
+                        ValidationError.PARTITION_EJB_GLOBAL, getAbsoluteXpath(FIELD_MD_ACDESC)));
+            }
+        } else if(fieldId.equals(FIELD_MD_CONNFACTORY_JNDINAME)) {
+            String value = (mdbConnectionFactory != null) ? mdbConnectionFactory.getJndiName() : null;
+            if(hasDRP(mdbConnectionFactory) || Utils.notEmpty(value)) {
+                errors.add(executeValidator(ValidationError.PARTITION_EJB_MDBCONNFACTORY, 
+                        value, absoluteFieldXpath, bundle.getString("LBL_Jndi_Name"))); // NOI18N
+            } else {
+                errors.add(ValidationError.getValidationErrorMask(
+                        ValidationError.PARTITION_EJB_MDBCONNFACTORY, getAbsoluteXpath(FIELD_MD_CONNFACTORY_JNDINAME)));
+            }
+        } else if(fieldId.equals(FIELD_MD_CONNFACTORY)) {
+            // All the MDB Connection Factory fields have to be validated against each other.
+            if(hasContent(mdbConnectionFactory)) {
+                errors.add(executeValidator(ValidationError.PARTITION_EJB_MDBCONNFACTORY, 
+                        mdbConnectionFactory.getJndiName(), getAbsoluteXpath(FIELD_MD_CONNFACTORY_JNDINAME), 
+                        bundle.getString("LBL_Jndi_Name"))); // NOI18N
+                DefaultResourcePrincipal drp = mdbConnectionFactory.getDefaultResourcePrincipal();
+                if(hasDRP(mdbConnectionFactory)) {
+                    errors.add(executeValidator(ValidationError.PARTITION_EJB_MDBCONNFACTORY, 
+                            drp.getName(), getAbsoluteXpath(FIELD_MD_CONNFACTORY_DRP_NAME), 
+                            bundle.getString("LBL_Name"))); // NOI18N
+                    errors.add(executeValidator(ValidationError.PARTITION_EJB_MDBCONNFACTORY, 
+                            drp.getPassword(), getAbsoluteXpath(FIELD_MD_CONNFACTORY_DRP_PASSWORD), 
+                            bundle.getString("LBL_Password"))); // NOI18N
+                } else {
+                    errors.add(ValidationError.getValidationErrorMask(
+                            ValidationError.PARTITION_EJB_MDBCONNFACTORY, getAbsoluteXpath(FIELD_MD_CONNFACTORY_DRP_NAME)));
+                    errors.add(ValidationError.getValidationErrorMask(
+                            ValidationError.PARTITION_EJB_MDBCONNFACTORY, getAbsoluteXpath(FIELD_MD_CONNFACTORY_DRP_PASSWORD)));
+                }
+            } else {
+                errors.add(ValidationError.getValidationErrorMask(
+                        ValidationError.PARTITION_EJB_MDBCONNFACTORY, getAbsoluteXpath(FIELD_MD_CONNFACTORY_JNDINAME)));
+                errors.add(ValidationError.getValidationErrorMask(
+                        ValidationError.PARTITION_EJB_MDBCONNFACTORY, getAbsoluteXpath(FIELD_MD_CONNFACTORY_DRP_NAME)));
+                errors.add(ValidationError.getValidationErrorMask(
+                        ValidationError.PARTITION_EJB_MDBCONNFACTORY, getAbsoluteXpath(FIELD_MD_CONNFACTORY_DRP_PASSWORD)));
+            }
+        }
+
+        boolean noErrors = true;
+        Iterator errorIter = errors.iterator();
+
+        while(errorIter.hasNext()) {
+            ValidationError error = (ValidationError) errorIter.next();
+            getMessageDB().updateError(error);
+
+            if(Utils.notEmpty(error.getMessage())) {
+                noErrors = false;
+            }
+        }
+
+        // return true if there was no error added
+        return noErrors || result;
+    }     
+    
     /** Getter for property subscriptionName.
      * @return Value of property subscriptionName.
      *
@@ -126,6 +243,7 @@ public class MDEjb extends BaseEjb {
 	 * plan file.
 	 */
 	protected class MDEjbSnippet extends BaseEjb.BaseEjbSnippet {
+        
         public CommonDDBean getDDSnippet() {
             Ejb ejb = (Ejb) super.getDDSnippet();
             String version = getAppServerVersion().getEjbJarVersionAsString();
@@ -138,48 +256,87 @@ public class MDEjb extends BaseEjb {
                 ejb.setJmsMaxMessagesLoad(maxMessageLoad);
             }
 
-            if(null != mdbConnectionFactory){
-                ejb.setMdbConnectionFactory((MdbConnectionFactory)mdbConnectionFactory.cloneVersion(version));
+            MdbConnectionFactory mcf = getMdbConnectionFactory();
+            if(hasContent(mcf)) {
+                ejb.setMdbConnectionFactory((MdbConnectionFactory) mcf.cloneVersion(version));
             }
-
-            if(null != mdbResourceAdapter){
-                ejb.setMdbResourceAdapter((MdbResourceAdapter)mdbResourceAdapter.cloneVersion(version));
+            
+            MdbResourceAdapter mra = getMdbResourceAdapter();
+            if(hasContent(mra)) {
+                ejb.setMdbResourceAdapter((MdbResourceAdapter) mra.cloneVersion(version));
             }
 
             return ejb;
         }
-        
-		public boolean hasDDSnippet() {
-            boolean result = super.hasDDSnippet();
-            
-            if(!result) {
-                if(Utils.notEmpty(subscriptionName)) {
-                    return true;
-                }
 
-                if(Utils.notEmpty(maxMessageLoad)) {
-                    return true;
-                }
+        public boolean hasDDSnippet() {
+            if(super.hasDDSnippet()) {
+                return true;
+            }
 
-                if(mdbConnectionFactory != null) {
-                    return true;
-                }
-
-                if(mdbResourceAdapter != null) {
-                    return true;
-                }
+            if(Utils.notEmpty(subscriptionName) ||
+                    Utils.notEmpty(maxMessageLoad) ||
+                    hasContent(getMdbConnectionFactory()) ||
+                    hasContent(getMdbResourceAdapter())
+                    ) {
+                return true;
             }
             
-            return result;
-		}
+            return false;
+        }
+        
     }
 
-
-	java.util.Collection getSnippets() {
-            Collection snippets = new ArrayList();
-            snippets.add(new MDEjbSnippet());	
-            return snippets;
+    private boolean hasContent(MdbConnectionFactory mcf) {
+        if(mcf == null) {
+            return false;
         }
+        
+        if(Utils.notEmpty(mcf.getJndiName()) ||
+                hasDRP(mcf)) {
+            return true;
+        }
+
+        return false;
+    }
+    
+    private boolean hasDRP(MdbConnectionFactory mcf) {
+        DefaultResourcePrincipal drp = (mcf != null) ? mcf.getDefaultResourcePrincipal() : null;
+        if(drp != null && (
+                Utils.notEmpty(drp.getName()) ||
+                Utils.notEmpty(drp.getPassword()))
+                ) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    private boolean hasContent(MdbResourceAdapter mra) {
+        if(mra == null) {
+            return false;
+        }
+        
+        if(Utils.notEmpty(mra.getResourceAdapterMid())) {
+            return true;
+        }
+        
+        ActivationConfig ac = mra.getActivationConfig();
+        if(ac != null && (
+                Utils.notEmpty(ac.getDescription()) ||
+                ac.sizeActivationConfigProperty() > 0)
+                ) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    java.util.Collection getSnippets() {
+        Collection snippets = new ArrayList();
+        snippets.add(new MDEjbSnippet());	
+        return snippets;
+    }
 
 
 	protected void loadEjbProperties(Ejb savedEjb) {
@@ -188,24 +345,25 @@ public class MDEjb extends BaseEjb {
         subscriptionName = savedEjb.getJmsDurableSubscriptionName();
         maxMessageLoad = savedEjb.getJmsMaxMessagesLoad();
                 
-		MdbConnectionFactory mdbConnectionFactory = savedEjb.getMdbConnectionFactory();
-		if(null != mdbConnectionFactory){
-			this.mdbConnectionFactory = mdbConnectionFactory;
+		MdbConnectionFactory mcf = savedEjb.getMdbConnectionFactory();
+		if(mcf != null) {
+			mdbConnectionFactory = mcf;
 		}
 
-		MdbResourceAdapter mdbResourceAdapter = savedEjb.getMdbResourceAdapter();
-		if(null != mdbResourceAdapter){
-			this.mdbResourceAdapter = mdbResourceAdapter;
+		MdbResourceAdapter mra = savedEjb.getMdbResourceAdapter();
+		if(mra != null) {
+			mdbResourceAdapter = mra;
 		}
 	}
     
     protected void clearProperties() {
         super.clearProperties();
+        StorageBeanFactory beanFactory = getConfig().getStorageFactory();        
         
         subscriptionName = null;
         maxMessageLoad = null;
-        mdbConnectionFactory = null;
-        mdbResourceAdapter = null;
+        mdbConnectionFactory = beanFactory.createMdbConnectionFactory();
+        mdbResourceAdapter = beanFactory.createMdbResourceAdapter();
     }
     
 //    protected void setDefaultProperties() {
@@ -258,18 +416,12 @@ public class MDEjb extends BaseEjb {
             ActivationConfig activationCfg = mdbResourceAdapter.getActivationConfig();
             if(null != activationCfg){
                 activationCfg.removeActivationConfigProperty(property);
-                if(activationCfg.sizeActivationConfigProperty() < 1){
-                    activationCfg.setActivationConfigProperty(null);
-                }
-                if(null == activationCfg.getDescription()){
-                    mdbResourceAdapter.setActivationConfig(null);
-                    if(null == mdbResourceAdapter.getResourceAdapterMid()){
-                        try{
-                            setMdbResourceAdapter(null);
-                        }catch(java.beans.PropertyVetoException exception){
-                        }
-                    }
-                }
+            }
+            if(activationCfg.sizeActivationConfigProperty() < 1){
+                activationCfg.setActivationConfigProperty(null);
+            }
+            if(null == activationCfg.getDescription()){
+                mdbResourceAdapter.setActivationConfig(null);
             }
         }
     }

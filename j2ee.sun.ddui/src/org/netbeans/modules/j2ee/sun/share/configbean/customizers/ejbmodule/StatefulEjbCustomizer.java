@@ -22,74 +22,50 @@
  */
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import javax.swing.JPanel;
+import javax.swing.event.TableModelEvent;
 
-import javax.swing.event.TableModelListener;
-
-//DEPLOYMENT API
-import javax.enterprise.deploy.spi.DConfigBean;
-
-import org.netbeans.modules.j2ee.sun.dd.api.ejb.BeanCache;
-import org.netbeans.modules.j2ee.sun.dd.api.ejb.BeanPool;
 import org.netbeans.modules.j2ee.sun.share.configbean.BaseEjb;
-import org.netbeans.modules.j2ee.sun.share.configbean.SessionEjb;
+import org.netbeans.modules.j2ee.sun.share.configbean.MDEjb;
 import org.netbeans.modules.j2ee.sun.share.configbean.StatefulEjb;
+import org.netbeans.modules.j2ee.sun.share.configbean.ValidationError;
 
 /**
  *
  * @author  Rajeshwar Patil
  * @version %I%, %G%
  */
-public class StatefulEjbCustomizer extends SessionEjbCustomizer 
-            implements TableModelListener {
+public class StatefulEjbCustomizer extends SessionEjbCustomizer {
 
-    private StatefulEjb theBean;
+    private StatefulEjb theStatefulBean;
     private StatefulEjbPanel statefulEjbPanel;
     private BeanPoolPanel beanPoolPanel;
     private BeanCachePanel beanCachePanel;
     private CheckpointAtEndOfMethodPanel checkpointAtEndOfMethodPanel;
 
 
-
     /** Creates a new instance of StatefulEjbCustomizer */
 	public StatefulEjbCustomizer() {
 	}
-	
-    public void setObject(Object bean) {
-        super.setObject(bean);
-		
-		// Only do this if the bean is actually changing.
-		if(theBean != bean) {
-			if(bean instanceof StatefulEjb) {
-				theBean = (StatefulEjb) bean;
-			}
-		}
+
+    public StatefulEjb getStatefulBean() {
+        return theStatefulBean;
     }
 
-
-    //get the bean specific panel
-    protected javax.swing.JPanel getBeanPanel(){
+    // Get the bean specific panel
+    protected JPanel getBeanPanel() {
         statefulEjbPanel = new StatefulEjbPanel(this);
         return statefulEjbPanel;
     }
 
-
-    //initialize all the elements in the bean specific panel
-    protected void initializeBeanPanel(BaseEjb theBean){
-        if(!(theBean instanceof StatefulEjb)){
-            assert(false);
-        }
-        StatefulEjb statefulEjb = (StatefulEjb)theBean;
-        String availabilityEnabled = statefulEjb.getAvailabilityEnabled();
-        if(availabilityEnabled != null){
-            statefulEjbPanel.setAvailabilityEnabled(availabilityEnabled);
-        }
-    };
-
+    // Initialize all the elements in the bean specific panel
+    protected void initializeBeanPanel(BaseEjb theBean) {
+        statefulEjbPanel.initFields(theStatefulBean);
+    }
 
     protected void addTabbedBeanPanels() {
         super.addTabbedBeanPanels();
+
         beanPoolPanel = new BeanPoolPanel(this);
         beanPoolPanel.getAccessibleContext().setAccessibleName(bundle.getString("BeanPool_Acsbl_Name"));             //NOI18N
         beanPoolPanel.getAccessibleContext().setAccessibleDescription(bundle.getString("BeanPool_Acsbl_Desc"));      //NOI18N  
@@ -101,66 +77,70 @@ public class StatefulEjbCustomizer extends SessionEjbCustomizer
         tabbedPanel.addTab(bundle.getString("LBL_BeanCache"),          // NOI18N
             beanCachePanel);
 
-         checkpointAtEndOfMethodPanel = new CheckpointAtEndOfMethodPanel(theBean, this);
-        checkpointAtEndOfMethodPanel.addTableModelListener(this);
+        checkpointAtEndOfMethodPanel = new CheckpointAtEndOfMethodPanel(theStatefulBean, this);
+        checkpointAtEndOfMethodPanel.putClientProperty(PARTITION_KEY, ValidationError.PARTITION_EJB_CHECKPOINT);
         tabbedPanel.addTab(bundle.getString("LBL_Checkpoint_At_End_Of_Method"),    // NOI18N
             checkpointAtEndOfMethodPanel);
-        
-        //Select Bean Pool Panel
-        tabbedPanel.setSelectedIndex(tabbedPanel.indexOfTab(bundle.getString("LBL_BeanPool")));  //NOI18N
 
+        // Select Bean Pool Panel
+        tabbedPanel.setSelectedIndex(tabbedPanel.indexOfTab(bundle.getString("LBL_BeanPool")));  //NOI18N
     }
 
+    protected void addListeners() {
+        super.addListeners();
+        
+        checkpointAtEndOfMethodPanel.addTableModelListener(this);
+    }
+    
+    protected void removeListeners() {
+        super.removeListeners();
 
+        checkpointAtEndOfMethodPanel.removeTableModelListener(this);
+    } 
+    
     protected void initializeTabbedBeanPanels(BaseEjb theBean) {
         super.initializeTabbedBeanPanels(theBean);
-        if(!(theBean instanceof StatefulEjb)){
-            assert(false);
-        }
-        StatefulEjb statefulEjb = (StatefulEjb)theBean;
-        BeanPool beanPool = statefulEjb.getBeanPool();
-        beanPoolPanel.setValues(beanPool);
-
-        BeanCache beanCache = statefulEjb.getBeanCache();
-        beanCachePanel.setValues(beanCache);
         
-        checkpointAtEndOfMethodPanel.setData(statefulEjb);
+        beanPoolPanel.initFields(theBean.getBeanPool());
+        beanCachePanel.initFields(theBean.getBeanCache());
+        
+        checkpointAtEndOfMethodPanel.setData(theStatefulBean);
     }
-
-
-    public Collection getErrors(){
-        ArrayList errors = null;
-        if(validationSupport == null) assert(false);
-        errors = (ArrayList)super.getErrors();
-
-        //Stateful Session Ejb field Validations
-        //Stateful Ejb field Validations
-        String property = statefulEjbPanel.getAvailabilityEnabled();
-        errors.addAll(validationSupport.validate(property,
-            "/sun-ejb-jar/enterprise-beans/ejb/availability-enabled",   //NOI18N
-                bundle.getString("LBL_Availability_Enabled")));            //NOI18N
-        return errors;
-    }
-
-
-    public void validateEntries(){
-        super.validateEntries();
-    }
-
 
     public String getHelpId() {
         return "AS_CFG_StatefulEjb";                                    //NOI18N
     }
+   
+    protected boolean setBean(Object bean) {
+		boolean result = super.setBean(bean);
+		
+		if(bean instanceof StatefulEjb) {
+            theStatefulBean = (StatefulEjb) bean;
+			result = true;
+		} else {
+			// if bean is not a StatefulEjb, then it shouldn't have passed BaseEjb either.
+			assert (result == false) : 
+				"StatefulEjbCustomizer was passed wrong bean type in setBean(Object bean)";	// NOI18N
+				
+            theStatefulBean = null;
+			result = false;
+		}
+		
+		return result;
+    }
+    
+    public void tableChanged(TableModelEvent e) {
+        super.tableChanged(e);
 
-
-    //Stateful Ejb update methods
-    void updateAvailabilityEnabled(String availabilityEnabled){
-        if(theBean != null){
-            try{
-                theBean.setAvailabilityEnabled(availabilityEnabled);
-            }catch(java.beans.PropertyVetoException exception){
+        StatefulEjb bean = getStatefulBean();
+        if(bean != null) {
+            Object eventSource = e.getSource();
+            
+            // TODO send event on what row actually changed.
+            if(eventSource == checkpointAtEndOfMethodPanel.getModel()) {
+                bean.firePropertyChange("checkpointAtEndOfMethod", null, new Object());
+                validateField(MDEjb.FIELD_MD_ADAPTER);
             }
-            notifyChange();
         }
     }
 }

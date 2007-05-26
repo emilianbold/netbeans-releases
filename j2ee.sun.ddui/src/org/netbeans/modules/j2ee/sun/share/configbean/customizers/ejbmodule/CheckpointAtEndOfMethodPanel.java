@@ -72,10 +72,14 @@ public class CheckpointAtEndOfMethodPanel extends MultiMethodTablePanel{
         Map selectionToMethodsMap = getSelectionToMethodsMap();
         Map selectionToDDMethodsMap = getSelectionToDDMethodsMap();
         model = new CheckpointAtEndOfMethodModel(statefulEjb, selectionToMethodsMap, selectionToDDMethodsMap);
-        model.addTableModelListener((TableModelListener)customizer);
+//        model.addTableModelListener((TableModelListener)customizer);
         return model;
     }
 
+    // For use by customizer to determine event source.
+    CheckpointAtEndOfMethodModel getModel() {
+        return model;
+    }
 
     public void setData(StatefulEjb statefulEjb){
         this.statefulEjb = statefulEjb;
@@ -304,8 +308,11 @@ public class CheckpointAtEndOfMethodPanel extends MultiMethodTablePanel{
         }
     }
 
+    public void addTableModelListener(TableModelListener listener) {
+        model.addTableModelListener(listener);
+    }
 
-    public void addTableModelListener(TableModelListener listner){
-        model.addTableModelListener(listner);
+    public void removeTableModelListener(TableModelListener listener) {
+        model.removeTableModelListener(listener);
     }
 }

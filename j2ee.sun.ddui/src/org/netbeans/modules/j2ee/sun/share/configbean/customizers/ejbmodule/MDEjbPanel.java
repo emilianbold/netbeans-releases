@@ -20,73 +20,34 @@
  * MDEjbPanel.java        October 27, 2003, 3:59 PM
  *
  */
-
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule;
+
+import java.beans.PropertyVetoException;
+import javax.swing.JPanel;
+
+import org.netbeans.modules.j2ee.sun.dd.api.ejb.ActivationConfig;
+import org.netbeans.modules.j2ee.sun.dd.api.ejb.MdbResourceAdapter;
+import org.netbeans.modules.j2ee.sun.share.configbean.BaseEjb;
+import org.netbeans.modules.j2ee.sun.share.configbean.MDEjb;
+import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
+
 
 /**
  *
  * @author  Rajeshwar Patil
  * @version %I%, %G%
  */
-public class MDEjbPanel extends javax.swing.JPanel {
+public class MDEjbPanel extends JPanel {
 
-    private MDEjbCustomizer mdEjbCustomizer;
+    private MDEjbCustomizer masterPanel;
 
 
     /** Creates new form MDEjbPanel */
-    public MDEjbPanel(MDEjbCustomizer customizer) {
+    public MDEjbPanel(MDEjbCustomizer src) {
+        this.masterPanel = src;
+        
         initComponents();
-        this.mdEjbCustomizer = customizer;
     }
-
-
-    public void setJmsDurableSubscriptionName(String subscriptionName){
-        if(subscriptionName != null){
-            jmsDurableSubscriptionNameTextField.setText(subscriptionName);
-        }
-    }
-
-
-    public void setMaxMessagesLoad(String maxMessagesLoad){
-        if(maxMessagesLoad != null){
-            jmsMaxMessagesLoadTextField.setText(maxMessagesLoad);
-        }
-    }
-
-
-    public void setResourceAdapterMid(String mid){
-        if(mid != null){
-            resourceAdapterMidTextField.setText(mid);
-        }
-    }
-
-
-    public void setActivationConfigDescription(String description){
-        if(description != null){
-            activationConfigDescriptionTextField.setText(description);
-        }
-    }
-
-
-    public String getJmsDurableSubscriptionName(){
-        return jmsDurableSubscriptionNameTextField.getText();
-    }
-
-
-    public String getMaxMessagesLoad(){
-        return jmsMaxMessagesLoadTextField.getText();
-    }
-
-
-    public String getResourceAdapterMid(){
-        return resourceAdapterMidTextField.getText();
-    }
-
-
-    public String getActivationConfigDescription(){
-        return activationConfigDescriptionTextField.getText();
-    }
-
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -119,16 +80,6 @@ public class MDEjbPanel extends javax.swing.JPanel {
         jmsDurableSubscriptionNameLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Jms_Durable_Subscription_Name_Acsbl_Desc"));
 
         jmsDurableSubscriptionNameTextField.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Jms_Durable_Subscription_Name_Tool_Tip"));
-        jmsDurableSubscriptionNameTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmsDurableSubscriptionNameActionPerformed(evt);
-            }
-        });
-        jmsDurableSubscriptionNameTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                jmsDurableSubscriptionNameFocusGained(evt);
-            }
-        });
         jmsDurableSubscriptionNameTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 jmsDurableSubscriptionNameKeyReleased(evt);
@@ -154,16 +105,6 @@ public class MDEjbPanel extends javax.swing.JPanel {
         jmsMaxMessagesLoadLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Jms_Max_Messages_Load_Acsbl_Desc"));
 
         jmsMaxMessagesLoadTextField.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Jms_Max_Messages_Load_Tool_Tip"));
-        jmsMaxMessagesLoadTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmsMaxMessagesLoadActionPerformed(evt);
-            }
-        });
-        jmsMaxMessagesLoadTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                jmsMaxMessagesLoadFocusGained(evt);
-            }
-        });
         jmsMaxMessagesLoadTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 jmsMaxMessagesLoadKeyReleased(evt);
@@ -190,16 +131,6 @@ public class MDEjbPanel extends javax.swing.JPanel {
         resourceAdapterMidLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Resource_Adapter_Mid_Acsbl_Desc"));
 
         resourceAdapterMidTextField.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Resource_Adapter_Mid_Tool_Tip"));
-        resourceAdapterMidTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                resourceAdapterMidActionPerformed(evt);
-            }
-        });
-        resourceAdapterMidTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                resourceAdapterMidFocusGained(evt);
-            }
-        });
         resourceAdapterMidTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 resourceAdapterMidKeyReleased(evt);
@@ -226,19 +157,6 @@ public class MDEjbPanel extends javax.swing.JPanel {
         activationConfigDescriptionLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Activation_Config_Description_Acsbl_Desc"));
 
         activationConfigDescriptionTextField.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Activation_Config_Description_Tool_Tip"));
-        activationConfigDescriptionTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                activationConfigDescriptionActionPerformed(evt);
-            }
-        });
-        activationConfigDescriptionTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                activationConfigDescriptionFocusGained(evt);
-            }
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                activationConfigDescriptionFocusLost(evt);
-            }
-        });
         activationConfigDescriptionTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 activationConfigDescriptionKeyReleased(evt);
@@ -256,77 +174,99 @@ public class MDEjbPanel extends javax.swing.JPanel {
 
     }// </editor-fold>//GEN-END:initComponents
 
-    private void activationConfigDescriptionFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_activationConfigDescriptionFocusLost
-        // Add your handling code here:
-        mdEjbCustomizer.validateEntries();
-    }//GEN-LAST:event_activationConfigDescriptionFocusLost
-
-    private void activationConfigDescriptionFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_activationConfigDescriptionFocusGained
-        // Add your handling code here:
-        mdEjbCustomizer.validateEntries();
-    }//GEN-LAST:event_activationConfigDescriptionFocusGained
-
-    private void activationConfigDescriptionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_activationConfigDescriptionActionPerformed
-        // Add your handling code here:
-        mdEjbCustomizer.validateEntries();
-    }//GEN-LAST:event_activationConfigDescriptionActionPerformed
-
-    private void resourceAdapterMidFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_resourceAdapterMidFocusGained
-        // Add your handling code here:
-        mdEjbCustomizer.validateEntries();
-    }//GEN-LAST:event_resourceAdapterMidFocusGained
-
-    private void resourceAdapterMidActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resourceAdapterMidActionPerformed
-        // Add your handling code here:
-        mdEjbCustomizer.validateEntries();
-    }//GEN-LAST:event_resourceAdapterMidActionPerformed
-
-    private void jmsDurableSubscriptionNameFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_jmsDurableSubscriptionNameFocusGained
-        // Add your handling code here:
-        mdEjbCustomizer.validateEntries();
-    }//GEN-LAST:event_jmsDurableSubscriptionNameFocusGained
-
-    private void jmsMaxMessagesLoadFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_jmsMaxMessagesLoadFocusGained
-        // Add your handling code here:
-        mdEjbCustomizer.validateEntries();
-    }//GEN-LAST:event_jmsMaxMessagesLoadFocusGained
-
-    private void jmsMaxMessagesLoadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmsMaxMessagesLoadActionPerformed
-        // Add your handling code here:
-        mdEjbCustomizer.validateEntries();
-    }//GEN-LAST:event_jmsMaxMessagesLoadActionPerformed
-
-    private void jmsDurableSubscriptionNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmsDurableSubscriptionNameActionPerformed
-        // Add your handling code here:
-        mdEjbCustomizer.validateEntries();
-    }//GEN-LAST:event_jmsDurableSubscriptionNameActionPerformed
-
     private void activationConfigDescriptionKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_activationConfigDescriptionKeyReleased
-        // Add your handling code here:
-        String item = activationConfigDescriptionTextField.getText();
-        mdEjbCustomizer.updateActivationConfigDescription(item);
-        mdEjbCustomizer.validateEntries();
+        MDEjb theBean = masterPanel.getMDBean();
+        if(theBean != null) {
+            MdbResourceAdapter mra = theBean.getMdbResourceAdapter();
+            ActivationConfig ac = mra.getActivationConfig();
+            String newDescription = activationConfigDescriptionTextField.getText();
+            String oldDescription = (ac != null) ? ac.getDescription() : null;
+
+            if(!Utils.strEquivalent(oldDescription, newDescription)) {
+                if(Utils.notEmpty(newDescription)) {
+                    if(ac == null) {
+                        ac = mra.newActivationConfig();
+                        mra.setActivationConfig(ac);
+                    }
+                    ac.setDescription(newDescription);
+                } else if(ac != null) {
+                    if(ac.sizeActivationConfigProperty() == 0) {
+                        mra.setActivationConfig(null);
+                    } else {
+                        ac.setDescription(null);
+                    }
+                }
+
+                theBean.firePropertyChange("mdActCfgDescription", oldDescription, newDescription); // NOI18N
+                masterPanel.validateField(MDEjb.FIELD_MD_ADAPTER);
+            }
+        }
     }//GEN-LAST:event_activationConfigDescriptionKeyReleased
 
     private void resourceAdapterMidKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_resourceAdapterMidKeyReleased
-        // Add your handling code here:
-        String item = resourceAdapterMidTextField.getText();
-        mdEjbCustomizer.updateResourceAdapterMid(item);
-        mdEjbCustomizer.validateEntries();
+        MDEjb theBean = masterPanel.getMDBean();
+        if(theBean != null) {
+            MdbResourceAdapter mra = theBean.getMdbResourceAdapter();
+            String newResourceAdapterMid = resourceAdapterMidTextField.getText();
+            String oldResourceAdapterMid = mra.getResourceAdapterMid();
+
+            if(!Utils.strEquivalent(oldResourceAdapterMid, newResourceAdapterMid)) {
+                if(Utils.notEmpty(newResourceAdapterMid)) {
+                    mra.setResourceAdapterMid(newResourceAdapterMid);
+                } else {
+                    mra.setResourceAdapterMid(null);
+                }
+
+                theBean.firePropertyChange("mdResourceAdapterMid", oldResourceAdapterMid, newResourceAdapterMid); // NOI18N
+                masterPanel.validateField(MDEjb.FIELD_MD_ADAPTER);
+            }
+        }
     }//GEN-LAST:event_resourceAdapterMidKeyReleased
 
     private void jmsMaxMessagesLoadKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jmsMaxMessagesLoadKeyReleased
-        // Add your handling code here:
-        String item = jmsMaxMessagesLoadTextField.getText();
-        mdEjbCustomizer.updateJmsMaxMessagesLoad(item);
-        mdEjbCustomizer.validateEntries();
+        MDEjb theBean = masterPanel.getMDBean();
+        if(theBean != null) {
+            String newMaxMessages = jmsMaxMessagesLoadTextField.getText();
+            String oldMaxMessages = theBean.getMaxMessageLoad();
+
+            try {
+               if(!Utils.strEquivalent(oldMaxMessages, newMaxMessages)) {
+                    if(Utils.notEmpty(newMaxMessages)) {
+                        theBean.setMaxMessageLoad(newMaxMessages);
+                    } else {
+                        theBean.setMaxMessageLoad(null);
+                    }
+
+//                    theBean.firePropertyChange("mdJmsSubscriptionName", oldMaxMessages, newMaxMessages); // NOI18N
+                    masterPanel.validateField(MDEjb.FIELD_MD_MAXMESSAGES);
+                }
+            } catch (PropertyVetoException ex) {
+                jmsDurableSubscriptionNameTextField.setText(oldMaxMessages);
+            }
+        }
     }//GEN-LAST:event_jmsMaxMessagesLoadKeyReleased
 
     private void jmsDurableSubscriptionNameKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jmsDurableSubscriptionNameKeyReleased
-        // Add your handling code here:
-        String item = jmsDurableSubscriptionNameTextField.getText();
-        mdEjbCustomizer.updateJmsDurableSubscriptionName(item);
-        mdEjbCustomizer.validateEntries();
+        MDEjb theBean = masterPanel.getMDBean();
+        if(theBean != null) {
+            String newSubscriptionName = jmsDurableSubscriptionNameTextField.getText();
+            String oldSubscriptionName = theBean.getSubscriptionName();
+
+            try {
+               if(!Utils.strEquivalent(oldSubscriptionName, newSubscriptionName)) {
+                    if(Utils.notEmpty(newSubscriptionName)) {
+                        theBean.setSubscriptionName(newSubscriptionName);
+                    } else {
+                        theBean.setSubscriptionName(null);
+                    }
+
+//                    theBean.firePropertyChange("mdJmsSubscriptionName", oldSubscriptionName, newSubscriptionName); // NOI18N
+                    masterPanel.validateField(MDEjb.FIELD_MD_SUBSCRIPTION);
+                }
+            } catch (PropertyVetoException ex) {
+                jmsDurableSubscriptionNameTextField.setText(oldSubscriptionName);
+            }
+        }
     }//GEN-LAST:event_jmsDurableSubscriptionNameKeyReleased
     
     
@@ -340,5 +280,30 @@ public class MDEjbPanel extends javax.swing.JPanel {
     private javax.swing.JLabel resourceAdapterMidLabel;
     private javax.swing.JTextField resourceAdapterMidTextField;
     // End of variables declaration//GEN-END:variables
-    
+ 
+    public void initFields(MDEjb theBean) {
+        String subscriptionName = null;
+        String maxMessageLoad = null;
+        String resourceAdaptorMid = null;
+        String acDescription = null;
+        
+        if(theBean != null) {
+            subscriptionName = theBean.getSubscriptionName();
+            maxMessageLoad = theBean.getMaxMessageLoad();
+            
+            MdbResourceAdapter mra = theBean.getMdbResourceAdapter();
+            if(mra != null) {
+                resourceAdaptorMid = mra.getResourceAdapterMid();
+                ActivationConfig ac = mra.getActivationConfig();
+                if(ac != null) {
+                    acDescription = ac.getDescription();
+                }
+            }
+        }
+        
+        jmsDurableSubscriptionNameTextField.setText(subscriptionName);
+        jmsMaxMessagesLoadTextField.setText(maxMessageLoad);
+        resourceAdapterMidTextField.setText(resourceAdaptorMid);
+        activationConfigDescriptionTextField.setText(acDescription);
+    }
 }

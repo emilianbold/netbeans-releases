@@ -22,48 +22,23 @@
  */
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
-import javax.swing.event.TableModelListener;
-
-import javax.enterprise.deploy.spi.DConfigBean;
-
 import org.netbeans.modules.j2ee.sun.share.configbean.BaseEjb;
-import org.netbeans.modules.j2ee.sun.share.configbean.SessionEjb;
 
 /**
  *
  * @author  Rajeshwar Patil
  * @version %I%, %G%
  */
-public abstract class SessionEjbCustomizer extends EjbCustomizer
-            implements TableModelListener {
+public abstract class SessionEjbCustomizer extends EjbCustomizer {
 
     /** Creates a new instance of SessionEjbCustomizer */
-	public SessionEjbCustomizer() {
-	}
-	
+    public SessionEjbCustomizer() {
+    }
 
     protected void addTabbedBeanPanels() {
     }
 
-
     protected void initializeTabbedBeanPanels(BaseEjb theBean) {
-        if(!(theBean instanceof SessionEjb)){
-            assert(false);
-        }
-        SessionEjb sessionEjb = (SessionEjb)theBean;
     }
 
-
-    public Collection getErrors(){
-        ArrayList errors = null;
-        if(validationSupport == null) assert(false);
-        errors = (ArrayList)super.getErrors();
-
-        //Session Ejb field Validations
-
-        return errors;
-    }
 }

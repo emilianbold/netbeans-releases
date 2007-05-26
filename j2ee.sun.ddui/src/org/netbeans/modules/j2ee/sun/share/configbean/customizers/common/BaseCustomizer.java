@@ -438,4 +438,15 @@ public abstract class BaseCustomizer extends JPanel implements Customizer,
 	public ValidationError.Partition getPartition() {
 		return ValidationError.PARTITION_GLOBAL;
 	}
+    
+	/** Gets the global partition descriptor.  Derived classes with subpanels should
+	 *  override this method if they also have a shared area where global error messages
+     *  could occurs (i.e. EjbCustomizer).
+	 *
+	 *  @return Global partition object by default.
+	 */
+    public ValidationError.Partition getGlobalPartition() {
+        return null;
+    }
+    
 } 

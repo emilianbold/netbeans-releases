@@ -277,7 +277,7 @@ public abstract class MethodTableModel extends AbstractTableModel {
         } 
         methodToDDMethodMap.put(method, ddMethod);
         addDDMethod(ddMethod);
-        fireTableDataChanged();
+//        fireTableDataChanged();
     }
 
 
@@ -291,7 +291,7 @@ public abstract class MethodTableModel extends AbstractTableModel {
             methodToDDMethodMap.remove(method);
             removeDDMethod(ddMethod);
         }
-        fireTableDataChanged();
+//        fireTableDataChanged();
     }
 
 

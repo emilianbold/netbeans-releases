@@ -825,6 +825,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
             DCBFactory factory = (DCBFactory) getDCBFactoryMap().get(dDBeanRoot.getXpath());
             if(factory != null) {
                 rootDCBean = (BaseRoot) factory.createDCB(dDBeanRoot, null);
+                System.out.println("New DCB Root for " + dDBeanRoot.getXpath());
                 if(rootDCBean != null) {
                     getDCBCache().put(dDBeanRoot, rootDCBean);
                     getDCBRootCache().put(dDBeanRoot, rootDCBean);
@@ -875,6 +876,8 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
                     }
                 }
 
+                System.out.println("DCB Root removed for " + key.getXpath());
+                
                 // Remove this bean from both general and root caches.
                 getDCBCache().remove(key);
                 getDCBRootCache().remove(key);
@@ -1734,6 +1737,8 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
                 throw new IOException(errorMsg);
             }
             
+            System.out.println("Writing descriptor file " + fname);
+            
             FileSystem fs = folder.getFileSystem();
             fs.runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() throws IOException {
@@ -1922,6 +1927,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         int len = getValidatedNumberOfFiles(configFiles);
         for (int i = 0; i < len; i++) {
             if(configFiles[i].exists()) {
+                System.out.println("Reading descriptor file " + configFiles[i].getName());
                 addFileToPlanForModule(configFiles[i], module, storage);
                 loadGraph = true;
             }

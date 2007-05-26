@@ -102,7 +102,7 @@ public class Utils implements org.netbeans.modules.j2ee.sun.share.Constants {
         }
         return result;
     }
-    
+
     public static boolean strEquivalent(String one, String two) {
         boolean result = false;
         

@@ -78,10 +78,14 @@ public class PrefetchDisabledPanel extends MethodTablePanel {
         //printList(methodList);
         //printList(prefetchedMethodList);
         model = new PrefetchDisabledModel(cmpEntityEjb, methodList, prefetchedMethodList);
-        model.addTableModelListener((TableModelListener)customizer);
+//        model.addTableModelListener((TableModelListener)customizer);
         return model;
     }
 
+    // For use by customizer to determine event source.
+    PrefetchDisabledModel getModel() {
+        return model;
+    }
 
     protected String getTablePaneAcsblName(){
         return bundle.getString("Prefetched_Method_Acsbl_Name");        //NOI18N
@@ -147,11 +151,16 @@ public class PrefetchDisabledPanel extends MethodTablePanel {
     }
 
 
-    public void addTableModelListener(TableModelListener listner){
-        model.addTableModelListener(listner);
+    public void addTableModelListener(TableModelListener listener) {
+        model.addTableModelListener(listener);
     }
 
 
+    public void removeTableModelListener(TableModelListener listener) {
+        model.removeTableModelListener(listener);
+    }
+
+    
     protected JPanel getPanel() {
         return null;
     }
