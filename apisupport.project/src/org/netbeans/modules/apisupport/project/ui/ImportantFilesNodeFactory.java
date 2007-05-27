@@ -150,7 +150,10 @@ public class ImportantFilesNodeFactory implements NodeFactory {
     
     public static Node createLayerNode(Project prj) {
         LayerUtils.LayerHandle handle = LayerUtils.layerForProject(prj);
-        return new SpecialFileNode(new LayerNode(handle), null);
+        if (handle != null && handle.getLayerFile() != null) {
+            return new SpecialFileNode(new LayerNode(handle), null);
+        }
+        return null;
     }
     
     /**
