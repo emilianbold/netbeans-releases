@@ -154,6 +154,8 @@ public final class DocumentModel {
     final Map<String,String> elementsAttrNamesCache = new WeakHashMap<String,String>();
     final Map<String,String> elementsAttrValueCache = new WeakHashMap<String,String>();
     
+    private static final Map<String,String> EMPTY_ATTRS_MAP = Collections.emptyMap();
+    private static final List<DocumentElement> EMPTY_ELEMENTS_LIST = Collections.emptyList();
     
     DocumentModel(Document doc, DocumentModelProvider provider) throws DocumentModelException {
         this.doc = (BaseDocument)doc; //type changed in DocumentModel.getDocumentModel(document);
@@ -492,7 +494,8 @@ public final class DocumentModel {
     private void addRootElement() {
         try {
             DocumentModelModificationTransaction dmt = createTransaction(false);
-            rootElement = dmt.addDocumentElement("root", DOCUMENT_ROOT_ELEMENT_TYPE, Collections.EMPTY_MAP,
+            
+            rootElement = dmt.addDocumentElement("root", DOCUMENT_ROOT_ELEMENT_TYPE, EMPTY_ATTRS_MAP,
                     0, getDocument().getLength());
             dmt.commit();
         }catch(BadLocationException e) {
@@ -620,7 +623,7 @@ public final class DocumentModel {
     
     /** This method should be owerrided by subclasses to return appropriate DocumentElement
      * instancies according to given DocumentElementType. */
-    private DocumentElement createDocumentElement(String name, String type, Map attributes,
+    private DocumentElement createDocumentElement(String name, String type, Map<String, String> attributes,
             int startOffset, int endOffset) throws BadLocationException {
         //by default return DocumentElementBase
         return new DocumentElement(name, type, attributes, startOffset, endOffset, this );
@@ -738,7 +741,7 @@ public final class DocumentModel {
          * @throws DocumentModelTransactionCancelledException when the transaction has been cancelled and someone
          * calls this method.
          */
-        public DocumentElement addDocumentElement(String name, String type, Map attributes, int startOffset,
+        public DocumentElement addDocumentElement(String name, String type, Map<String, String> attributes, int startOffset,
                 int endOffset) throws BadLocationException, DocumentModelTransactionCancelledException {
             //test if the transaction has been cancelled and if co throw TransactionCancelledException
             if(transactionCancelled) throw new DocumentModelTransactionCancelledException();
@@ -803,7 +806,7 @@ public final class DocumentModel {
          * @param de the Document element which text content has been changed.
          * @param attrs updated attributes
          */
-        public void updateDocumentElementAttribs(DocumentElement de, Map attrs) throws DocumentModelTransactionCancelledException {
+        public void updateDocumentElementAttribs(DocumentElement de, Map<String, String> attrs) throws DocumentModelTransactionCancelledException {
             //test if the transaction has been cancelled and if co throw TransactionCancelledException
             if(transactionCancelled) throw new DocumentModelTransactionCancelledException();
             
@@ -896,7 +899,7 @@ public final class DocumentModel {
             ((DocumentElement)de).contentChanged();
         }
         
-        private void updateDEAttrs(DocumentElement de, Map attrs) {
+        private void updateDEAttrs(DocumentElement de, Map<String, String> attrs) {
             //set the new attributes
             de.setAttributes(attrs);
             
@@ -946,7 +949,7 @@ public final class DocumentModel {
             }
             
             //get children of the element to be removed
-            List<DocumentElement> children = de.isEmpty() ? Collections.EMPTY_LIST : de.getChildren();
+            List<DocumentElement> children = de.isEmpty() ? EMPTY_ELEMENTS_LIST : de.getChildren();
             
             /* events firing:
              * If the removed element had a children, we have to fire add event
@@ -984,14 +987,14 @@ public final class DocumentModel {
             
             public int type;
             public DocumentElement de;
-            public Map attrs = null;
+            public Map<String, String> attrs = null;
             
             public DocumentModelModification(DocumentElement de, int type) {
                 this.de = de;
                 this.type = type;
             }
             
-            public DocumentModelModification(DocumentElement de, int type, Map attrs) {
+            public DocumentModelModification(DocumentElement de, int type, Map<String, String> attrs) {
                 this(de, type);
                 this.attrs = attrs;
             }
@@ -1109,6 +1112,7 @@ public final class DocumentModel {
         }
         
         public DocumentChange[] getDocumentChanges() {
+            @SuppressWarnings("unchecked")
             List<DocumentChange> changes = (List<DocumentChange>)documentChanges.clone();
             return changes.toArray(new DocumentChange[]{});
         }

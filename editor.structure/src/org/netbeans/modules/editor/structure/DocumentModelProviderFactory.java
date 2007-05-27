@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.editor.structure.spi.DocumentModelProvider;
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
@@ -62,7 +63,7 @@ public class DocumentModelProviderFactory {
         if(mimeType != null) {
             provider = mime2provider.get(mimeType);
             if (provider == null) { // not cached yet
-                MimeLookup mimeLookup = MimeLookup.getMimeLookup(mimeType);
+                Lookup mimeLookup = MimeLookup.getLookup(MimePath.get(mimeType));
                 Collection<? extends DocumentModelProvider> providers = 
                         mimeLookup.lookup(new Lookup.Template<DocumentModelProvider>(DocumentModelProvider.class)).allInstances();
                 if(providers.size() > 1)

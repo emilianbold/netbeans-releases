@@ -238,7 +238,7 @@ public final class DocumentElement {
     /* EOF j.s.t.Element methods */
     
     //called by the model when an element's attributes has changed
-    void setAttributes(Map attrs) {
+    void setAttributes(Map<String, String> attrs) {
         this.attributes = new Attributes(model, attrs);
     }
     
@@ -439,9 +439,9 @@ public final class DocumentElement {
             }
         }
         
-        private List keys() {
+        private List<String> keys() {
             if(attr_keys == null) {
-                return Collections.EMPTY_LIST;
+                return Collections.emptyList();
             } else {
                 return Arrays.asList(attr_keys);
             }
@@ -476,7 +476,7 @@ public final class DocumentElement {
             return null;
         }
         
-        public Enumeration<?> getAttributeNames() {
+        public Enumeration<String> getAttributeNames() {
             return Collections.enumeration(keys());
         }
         
