@@ -161,7 +161,11 @@ public final class DocumentModel {
         
         //init RP & RP task
         requestProcessor = new RequestProcessor(DocumentModel.class.getName());
-        task = null;
+        task = requestProcessor.create(new Runnable() {
+            public void run() {
+                updateModel();
+            }
+        });
         
         //create a new root element - this element comprises the entire document
         addRootElement();
@@ -415,18 +419,7 @@ public final class DocumentModel {
         if(modelUpdateTransaction != null) {
             modelUpdateTransaction.setTransactionCancelled();
         }
-        
-        if(requestProcessor == null) return ;
-        //if there is an already scheduled update task cancel it and create a new one
-        if(task != null) task.cancel();
-        
-        Runnable modelUpdate = new Runnable() {
-            public void run() {
-                updateModel();
-            }
-        };
-        
-        task = requestProcessor.post(modelUpdate, MODEL_UPDATE_TIMEOUT);
+        task.schedule(MODEL_UPDATE_TIMEOUT);
     }
     
     private void updateModel() {
@@ -443,7 +436,7 @@ public final class DocumentModel {
             
             //do that in EDT
             try {
-                SwingUtilities.invokeLater(new Runnable() {
+                SwingUtilities.invokeAndWait(new Runnable() {
                     public void run() {
                         try {
                             writeLock(); //lock the model for reading
@@ -469,7 +462,6 @@ public final class DocumentModel {
         }catch(DocumentModelTransactionCancelledException dmcte) {
             if(debug) System.out.println("[document model] update transaction cancelled.");
         }
-        
         if(debug) DocumentModelUtils.dumpElementStructure(getRootElement());
     }
     
