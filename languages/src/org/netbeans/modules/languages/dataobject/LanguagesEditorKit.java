@@ -91,37 +91,11 @@ public class LanguagesEditorKit extends NbEditorKit {
             public void updateSettingsMap (Class kitClass, Map settingsMap) {
                 if (kitClass != null && kitClass.equals (LanguagesEditorKit.class)) {
                     settingsMap.put (SettingsNames.CODE_FOLDING_ENABLE, Boolean.TRUE);
-                    Acceptor acceptor = getAcceptor();
-                    if (acceptor != null) {
-                        settingsMap.put (SettingsNames.IDENTIFIER_ACCEPTOR, acceptor);
-                    }
+                    Acceptor original = (Acceptor) settingsMap.get (SettingsNames.IDENTIFIER_ACCEPTOR);
+                    Acceptor acceptor = new LanguagesAcceptor(mimeType, original);
+                    settingsMap.put (SettingsNames.IDENTIFIER_ACCEPTOR, acceptor);
                 }
             }
-            
-            private Acceptor getAcceptor() {
-                try {
-                    Language language = LanguagesManager.getDefault ().getLanguage (mimeType);
-                    Feature f = language.getFeature("SELECTION");
-                    if (f == null) {
-                        return null;
-                    }
-                    final Pattern pat = f.getPattern();
-                    if (pat == null) {
-                        return null;
-                    }
-                    return new Acceptor() {
-                        public boolean accept(char ch) {
-                            StringBuffer buf = new StringBuffer();
-                            buf.append(ch);
-                            boolean matches = pat.matches(buf.toString());
-                            return matches;
-                        }
-                    };
-                } catch (LanguageDefinitionNotFoundException e) {
-                }
-                return null;
-            }
-            
         });
     }
     
@@ -292,5 +266,35 @@ public class LanguagesEditorKit extends NbEditorKit {
     public Object clone () {
         return new LanguagesEditorKit (mimeType);
     }
+
+    private static class LanguagesAcceptor implements Acceptor {
+        
+        private String mimeType;
+        private Acceptor original;
+
+        LanguagesAcceptor(String mimeType, Acceptor original) {
+            this.mimeType = mimeType;
+            this.original = original;
+        }
+
+        public boolean accept(char ch) {
+            try {
+                Language language = LanguagesManager.getDefault ().getLanguage (mimeType);
+                Feature f = language.getFeature("SELECTION");
+                if (f != null) {
+                    Pattern pat = f.getPattern();
+                    if (pat != null) {
+                        StringBuffer buf = new StringBuffer();
+                        buf.append(ch);
+                        return pat.matches(buf.toString());
+                    }
+                }
+            } catch (LanguageDefinitionNotFoundException e) {
+            }
+            return original != null ? original.accept(ch) : false;
+        }
+
+    }
+
 }
 
