@@ -56,6 +56,9 @@ public final class SearchAction extends NodeAction {
   }
 
   private static BpelModel getBpelModel(Node node) {
+//out();
+//out("GET BPEL MO|DEL !!!!!!");
+//out();
     DataObject dataObject = getDataObject(node);
 
     if (dataObject instanceof Lookup.Provider) {
