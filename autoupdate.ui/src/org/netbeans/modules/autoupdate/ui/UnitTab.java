@@ -564,10 +564,12 @@ public class UnitTab extends javax.swing.JPanel {
             if (e.isPopupTrigger ()) {
                 int row = UnitTab.this.table.rowAtPoint (e.getPoint ());
                 if (row >= 0) {
-                    table.getSelectionModel ().setSelectionInterval (row, row);
-                    JPopupMenu popup = createPopup ();
-                    if (popup != null) {
-                        popup.show (e.getComponent (),e.getX (), e.getY ());
+                    if (!getModel().equals(UnitCategoryTableModel.Type.LOCAL)) {
+                        table.getSelectionModel ().setSelectionInterval (row, row);
+                        JPopupMenu popup = createPopup ();
+                        if (popup != null) {
+                            popup.show (e.getComponent (),e.getX (), e.getY ());
+                        }
                     }
                 }
             } else if (org.openide.awt.MouseUtils.isDoubleClick (e) && model.getType ().equals (UnitCategoryTableModel.Type.INSTALLED)) {
