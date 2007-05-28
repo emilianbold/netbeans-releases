@@ -20,11 +20,11 @@
 package startup;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.io.File;
 import java.io.IOException;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jemmy.ComponentChooser;
-import org.netbeans.jemmy.operators.ComponentOperator;
+import java.util.Set;
+import org.openide.windows.TopComponent;
 
 /**
  * Measure startup time by org.netbeans.core.perftool.StartLog.
@@ -36,9 +36,15 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  * it's a attempt to have still the same testing conditions with
  * loaded and cached files.
  *
- * @author mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org, mkhramov@netbeags.org
  */
-public class ComplexVisualWebProjectStartup extends org.netbeans.performance.test.utilities.MeasureStartupTimeTestCase {
+public class ComplexVisualWebProjectStartup extends org.netbeans.performance.test.utilities.MeasureStartupTimeTestCase {    
+
+    private static final String TCN = "org.netbeans.modules.visualweb.designer.DesignerPane";
+    private long MAX_TIMEOUT = 1000000;
+    private long SLEEP_TIME = 50;
+    
+    private long timeoutTime = 0;    
     
     /** Define testcase
      * @param testName name of the testcase
@@ -62,34 +68,84 @@ public class ComplexVisualWebProjectStartup extends org.netbeans.performance.tes
     }
     private long waitDocumentLoaded() {
         long startTime = System.currentTimeMillis();
-
-        TopComponentOperator tco = new TopComponentOperator("Page1");
-        long oldTimeout = tco.getTimeouts().getTimeout("ComponentOperator.WaitComponentTimeout");        
-        tco.getTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout", 1000000);
-            try {
-                new ComponentOperator(tco,new ComponentChooser() {
-                    
-                    public boolean checkComponent(Component arg0) {
-                        return arg0.getClass().getName().equals("org.netbeans.modules.visualweb.designer.DesignerPane");
-                    }
-                    
-                    public String getDescription() {
-                        return "Web Designer Component";
-                    }
-                });
-                
-            } catch (Exception exception) {
-                fail("WaitDocumentLoad failed because "+exception.getMessage());
-            }
-
-        tco.getTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout",oldTimeout);
-        
+        try {
+            waitDocumentLoadedViaAPI();
+        } catch(InterruptedException ie) {
+            fail("Document loading failed because of "+ie.toString());
+        }
         long stopTime = System.currentTimeMillis();
         long delta = stopTime-startTime;
         if(delta <= 0) {
             fail("Measured value ["+delta+"] is not > 0 !");
         }
         return delta;
+    }
+    private void waitDocumentLoadedViaAPI() throws InterruptedException {
+        long startTime = System.currentTimeMillis();
+        
+        // Wait for TopComponent
+        TopComponent tc;
+        while((tc = findTopComponent("Page1")) == null) {
+            Thread.currentThread().sleep(SLEEP_TIME);
+            if(timeoutExceed(startTime)) {
+               fail("waitDocumentLoadedViaAPI:findTopComponent wait exceeds "+MAX_TIMEOUT);
+            }
+        }
+        
+        startTime = System.currentTimeMillis();
+        //Wait for Designer Surface loaded into TopComponent
+        while(findNestedComponent(tc, TCN) == false) {
+            Thread.currentThread().sleep(SLEEP_TIME);
+            if(timeoutExceed(startTime)) {
+               fail("waitDocumentLoadedViaAPI:findNestedComponent wait exceeds "+MAX_TIMEOUT);
+            }            
+        }
+    }
+    private boolean timeoutExceed(long startTime) {
+        long timeout = System.currentTimeMillis() - startTime;
+        if(timeout >= MAX_TIMEOUT) {
+            return true;
+        }
+        return false;
+    }
+    private TopComponent findTopComponent(String componentName) {
+        log("finding TopComponent...");
+        Set<TopComponent> tcs = TopComponent.getRegistry().getOpened();
+        log("taken a list of TCs");
+        
+        for (TopComponent tc : tcs) {          
+          if(tc.getName().equals(componentName) && (tc.isShowing()))  {
+              log("function findTopComponent passed with success");
+              return tc;
+          }
+        }
+        log("function findTopComponent passed with no result");
+        return null;
+    }
+    private boolean compareClass(Component x) {
+        return x.getClass().getName().equals(TCN);
+    }
+    
+    private boolean findNestedComponent(Container x, String componentClassName) {
+        log("finding nested components");
+        Component[] child = x.getComponents();
+        
+        if(child.length == 0) { // No nested components
+            log("no nested components found in container. returning");
+            return false;
+        }
+        log("enumeration nested components");
+        // Passed component has nested components
+        for(Component c : child) {
+            if(compareClass(c) && c.isShowing()) { 
+                log("expected component found in container. returning");
+                return true; 
+            }
+            log("try to find expected component in current");
+            if(findNestedComponent((Container)c,componentClassName)) { return true; }            
+        }
+        log("expected component not found neither in nested components nor in current container");
+        return false;
     }
 
 }
