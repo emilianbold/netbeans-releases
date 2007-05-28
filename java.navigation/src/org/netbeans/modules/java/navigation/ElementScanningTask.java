@@ -185,7 +185,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             Description d = element2description(m, e, parentDescription.isInherited, info);
             if( null != d ) {
                 parentDescription.subs.add( d );
-                if( m instanceof TypeElement ) {
+                if( m instanceof TypeElement && !d.isInherited ) {
                     addMembers( (TypeElement)m, d, info);
                 }
             }
