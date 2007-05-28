@@ -48,6 +48,8 @@ public class VersioningOutputTopComponent extends TopComponent implements Extern
     private JTabbedPane tabbedPane = TabbedPaneFactory.createCloseButtonTabbedPane();
     
     public VersioningOutputTopComponent() {
+        // XXX - please rewrite to regular API when available - see issue #55955
+        putClientProperty("SlidingName", NbBundle.getMessage(VersioningOutputTopComponent.class, "CTL_VersioningOutput_Title")); //NOI18N 
         setIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/versioning/util/resources/window-versioning.png"));  // NOI18N
         setLayout(new BorderLayout());
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(VersioningOutputTopComponent.class, "CTL_VersioningOutput_Title"));  // NOI18N
