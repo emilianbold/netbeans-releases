@@ -22,7 +22,6 @@ package org.netbeans.modules.uml.codegen.java;
 
 import java.awt.event.*;
 import java.io.*;
-import java.nio.CharBuffer;
 import java.util.*;
 
 import org.openide.filesystems.FileObject;
@@ -35,16 +34,10 @@ import org.openide.loaders.DataObject;
 import org.netbeans.modules.uml.core.coreapplication.ICodeGenerator;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.structure.ISourceFileArtifact;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Classifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Operation;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameter;
 import org.netbeans.modules.uml.core.metamodel.profiles.IStereotype;
 import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
-
 import org.netbeans.modules.uml.integration.ide.events.ClassInfo;
-
 import org.netbeans.modules.uml.codegen.java.merging.Merger;
 
 
@@ -359,15 +352,8 @@ public class JavaCodegen implements ICodeGenerator {
 
     }
 
-
-
-
-
-
-
-
+    public void generate(IClassifier classifier, String targetFolderName, boolean backup) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
 }
-
-
-
