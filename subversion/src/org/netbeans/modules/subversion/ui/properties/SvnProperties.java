@@ -442,6 +442,16 @@ public class SvnProperties implements ActionListener, DocumentListener {
         } else {
             panel.btnAdd.setEnabled(true);
         }
+        
+        if (root.isFile()) {
+            if (name.equals("svn:ignore") || name.equals("svn:externals")) {
+                panel.btnAdd.setEnabled(false);
+            }    
+        } else if (root.isDirectory()) { 
+            if (name.equals("svn:eol-style") || name.equals("svn:executable") || name.equals("svn:keywords") || name.equals("svn:needs-lock") || name.equals("svn:mime-type")) {
+                panel.btnAdd.setEnabled(false);
+            }    
+        }  
     }    
     
     public class TableMouseListener extends MouseAdapter {
