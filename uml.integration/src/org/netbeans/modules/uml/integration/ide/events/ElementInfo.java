@@ -26,6 +26,7 @@
 package org.netbeans.modules.uml.integration.ide.events;
 
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.ITaggedValue;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 
 /**
@@ -74,10 +75,13 @@ public abstract class ElementInfo implements Cloneable {
         return null;
     }
 
+    private INamedElement element;
+
     public ElementInfo(INamedElement el) {
         setChangeType(MODIFY);
         if (el != null)
             setComment(el.getDocumentation());
+	element = el;
     }
 
     /**
@@ -235,14 +239,33 @@ public abstract class ElementInfo implements Cloneable {
 	}
 
     /**
+     *  produces marker id 
+     */
+    public String getMarkerID() {
+	String markerID = null;
+	ITaggedValue tag = element.getTaggedValueByName("MarkerID");
+	if (tag != null)
+	{
+	    markerID = tag.getDataValue();
+	}
+	if (markerID == null || markerID.trim().equals("")) {
+	    markerID = element.getXMIID();
+	}
+	return markerID;
+    }
+
+
+    /**
      * Retrieves the Comment that appears before the element.
      * @return The comment.
      */
     public String getComment() {
+	
 		if (mComment != null && mComment.trim().length() == 0)
-			mComment = null;
+			mComment = null;		
         return mComment;
     }
+
 
     /**
      *  Determines if the given name is a valid Java identifier.

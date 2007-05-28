@@ -3347,6 +3347,11 @@ public class UMLParsingIntegrator
     
     protected void addTaggedValue(Node parent, String tag, String value)
     {
+	addTaggedValue(parent, tag, value, false);
+    }
+
+    protected void addTaggedValue(Node parent, String tag, String value, boolean hidden)
+    {
         try
         {
             Node node = XMLManip.ensureNodeExists(
@@ -3361,6 +3366,9 @@ public class UMLParsingIntegrator
                 {
                     establishXMIID(tagNode);
                     XMLManip.setAttributeValue(tagNode, "name", tag);
+		    if (hidden) {
+			XMLManip.setAttributeValue(tagNode, "hidden", "true");
+		    }
 
                     try
                     {
@@ -3493,6 +3501,13 @@ public class UMLParsingIntegrator
                 // No longer needed.
                 
                 commentNode.detach();
+            }
+            Node markerIDNode = node.selectSingleNode("./TokenDescriptors/TDescriptor[@type='Marker-id']");
+            if (markerIDNode != null)
+            {
+                String markerID = XMLManip.getAttributeValue(markerIDNode, "value");
+		addTaggedValue(node, "MarkerID", markerID, true);
+		markerIDNode.detach();
             }
         }
         catch (Exception e)
@@ -5362,10 +5377,6 @@ public class UMLParsingIntegrator
     
     public void removeTokenDescriptors(Node node, boolean all)
     {
-	// temporary for current codegen/merge work
-	if (System.getProperty("uml.codegen.merge") != null) {
-	    return; 
-	}
         try
         {
             List descriptors = null;

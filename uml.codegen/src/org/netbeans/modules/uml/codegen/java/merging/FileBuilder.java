@@ -31,6 +31,9 @@ import org.openide.filesystems.FileUtil;
  */
 public class FileBuilder
 {
+   public static final int HEADER_ONLY = 0;
+   public static final int HEADER_AND_BODY = 1;
+        
    private static final String SPACE = " ";
    private static final String NEWLINE ="\n";
    private static final int BUFFER_SIZE= 256;
@@ -98,6 +101,16 @@ public class FileBuilder
     */
    public void replace(ElementDescriptor newElem, ElementDescriptor oldElem)
    {
+	replace(newElem, oldElem, HEADER_AND_BODY);
+   } 
+   
+    /**
+     *  @param replacementType indicates whether it should be header only  
+     *                         or header + body replacement;
+     *                         doesn't apply for attributes
+     */
+    public void replace(ElementDescriptor newElem, ElementDescriptor oldElem, int replacementType) 
+    {
       if (newElem == null)
          return;
       
@@ -196,8 +209,7 @@ public class FileBuilder
          completed();
       }
    }
-   
-   
+      
    
    /**
     *  client calls this method to indicate that text fragment representing
@@ -315,6 +327,14 @@ public class FileBuilder
       }
    }
    
+    /**
+     *  client calls this method to indicate that text fragment representing
+     *  newElem in new file should be added to the old file
+     */
+    public void add(ElementDescriptor newElem, ElementDescriptor oldParentElem) {
+	add(newElem);
+    }
+
    /**
     *  client calls this method to indicate that text fragment representing
     *  newElem in new file should be added to the old file
@@ -410,6 +430,14 @@ public class FileBuilder
       }
    }
    
+    /**
+     *  client calls this method to indicate that text fragment representing 
+     *  newElem in the new file should be inserted after(or before) the text 
+     *  fragment represented by oldElem in the old file
+     */
+    public void insert(ElementDescriptor newElem, ElementDescriptor oldElem, boolean after) {
+    }
+
    /**
     *  client calls this method to indicate that it finished
     *  with posting of the requests, and on return from this method

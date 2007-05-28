@@ -27,6 +27,15 @@ import org.dom4j.Node;
 
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Classifier;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Operation;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameter;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Parameter;
 
 /** 
  */
@@ -38,7 +47,7 @@ public class ElementMatcher {
 
     // the match to be performed using marker ID
     // thus allowing to handle renames or signature changes 
-    // if ID marker is present
+    // if ID marker is present. 
     public static final int ID_MARKER_MATCH = 1;
 
 	
@@ -46,24 +55,230 @@ public class ElementMatcher {
      *   will return matching node if found, if several found 
      *   only first will be returned, an error will be logged
      */
-    public Node findTypeMatch(Node elem, Node scopingType, int matchType) {
+    public Node findTypeMatch(IClassifier type, IClassifier scopingType, int matchType) {
 	return null;		
     }
 
-    public Node findOperationMatch(Node elem, Node scopingType, int matchType) {
-	String query = ".//UML:Operation";
-	List opnodes = XMLManip.selectNodeList(scopingType, query);
-	if (opnodes != null) {
-	    Iterator iter = opnodes.iterator();
+    
+    public INamedElement findElementMatch(INamedElement elem, 
+					  IClassifier scopingType, 
+					  int matchType) 
+    {
+	List elems = null;
+	if (elem instanceof IAttribute) {
+	    elems = Merger.getAttributes(scopingType);
+	} else if (elem instanceof IOperation) {
+	    elems = Merger.getOperations(scopingType);
+	}
+	if (elems != null) {
+	    Iterator iter = elems.iterator();
 	    while(iter.hasNext()) {
-		// match against elem or it's marker ID
+		INamedElement e = (INamedElement)iter.next();
+		boolean isMatch = matchElements(elem, e, matchType);
+		if (isMatch) {
+		    return e;
+		}
+	    }
+	}
+	return null;		
+    }
+
+
+    public IAttribute findAttributeMatch(IAttribute attr, IClassifier scopingType, int matchType) {
+	List<IAttribute> attrs = Merger.getAttributes(scopingType);
+	for(IAttribute a : attrs) {
+	    boolean isMatch = matchAttributes(attr, a, matchType);
+	    if (isMatch) {
+		return a;
+	    }
+	}
+	return null;		
+    }
+
+
+    public IOperation findOperationMatch(IOperation oper, IClassifier scopingType, int matchType) {
+	List<IOperation> opers = Merger.getOperations(scopingType);
+	for(IOperation o : opers) {
+	    boolean isMatch = matchOperations(oper, o, matchType);
+	    if (isMatch) {
+		return o;
+	    }
+	}
+	return null;		
+    }
+    
+
+    public boolean matchElements(INamedElement el1, INamedElement el2, int matchType) 
+    {       
+	if (matchType == BASE_MATCH) 
+	{
+	    if (el1 instanceof IOperation) {
+		return matchOperations((IOperation)el1, (IOperation)el2, matchType);
+	    }
+	    return matchElementsByName(el1, el2);	    
+	} 
+	else if (matchType == ID_MARKER_MATCH) 
+	{
+	    return matchElementsByMarkerID(el1, el2);
+	}
+	return false;
+    }
+
+
+    public boolean matchOperations(IOperation op1, IOperation op2, int matchType) 
+    {
+	if (matchType == BASE_MATCH) 
+	{
+	    if (! matchElementsByName(op1, op2)) {
+		return false;
+	    }
+	    List<IParameter> pars1 = Merger.getParameters(op1);
+	    List<IParameter> pars2 = Merger.getParameters(op2);
+	    if (pars1 == null) {
+		if (pars2 == null) {
+		    return true;
+		} 
+		return false;
+	    } else {
+		if (pars2 == null) {
+		    return false;
+		}
+		if (pars1.size() != pars2.size()) {
+		    return false;
+		}
+		Iterator<IParameter> iter1 = pars1.iterator();
+		Iterator<IParameter> iter2 = pars2.iterator();
+		while(iter1.hasNext()) {
+		    IParameter p1 = iter1.next();
+		    IParameter p2 = iter2.next();
+		    if (! p1.getTypeName().equals(p2.getTypeName())) {
+			return false;
+		    }
+		}
+		return true;
+	    }	    
+	}
+	else if (matchType == ID_MARKER_MATCH) 
+	{
+	    return matchElementsByMarkerID(op1, op2);
+	}
+	return false;	
+    }
+
+
+    public boolean matchAttributes(IAttribute at1, IAttribute at2, int matchType) 
+    {       
+	if (matchType == BASE_MATCH) 
+	{
+	    return matchElementsByName(at1, at2);	    
+	} 
+	else if (matchType == ID_MARKER_MATCH) 
+	{
+	    return matchElementsByMarkerID(at1, at2);
+	}
+	return false;
+    }
+
+
+    public boolean matchTypes(IClassifier cl1, IClassifier cl2, int matchType) 
+    {
+	if (matchType == BASE_MATCH) 
+	{
+	    return matchElementsByName(cl1, cl2);	    
+	}
+	else if (matchType == ID_MARKER_MATCH) 
+	{
+	    return matchElementsByMarkerID(cl1, cl2);
+	}
+	return false;	
+    }
+
+
+    public boolean matchElementsByMarkerID(INamedElement el1, INamedElement el2) 
+    {
+	String id1 = getIDMarker(el1);
+	String id2 = getIDMarker(el2);
+	if (id1 != null && id2 != null 
+	    && id1.equals(id2)) 
+	{
+	    return true;
+	}     
+	return false;
+    }
+
+
+    public boolean matchElementsByName(INamedElement el1, INamedElement el2) 
+    { 
+	String name1 = el1.getName();
+	String name2 = el2.getName();	    
+	if (name1 != null && name2 != null 
+	    && name1.equals(name2)) 
+	{
+	    return true;
+	}   
+	return false;
+    }
+
+
+    public static String getIDMarker(IElement elem) 
+    {
+	return getIDMarker(elem.getNode());
+    }
+
+
+    public static String getComment(Node elemNode) 
+    {
+	return getMarkerValue(elemNode, "Comment");
+    }
+
+
+    public static String getIDMarker(Node elemNode)
+    {
+	return getMarkerValue(elemNode, "id");
+    }
+
+
+    public static boolean isMarked(IElement elem) 
+    {
+	String regen = getMarkerValue(elem.getNode(), "regen");
+	if (regen != null 
+	    && ( regen.equalsIgnoreCase("yes") 
+		 || regen.equalsIgnoreCase("ok")))
+	{
+	    return true;
+	}
+	return false;
+    }
+
+    public static boolean isRegenBody(IElement elem) 
+    {
+	String regen = getMarkerValue(elem.getNode(), "regenBody");
+	if (regen != null 
+	    && ( regen.equalsIgnoreCase("yes") 
+		 || regen.equalsIgnoreCase("ok")))
+	{
+	    return true;
+	}
+	return false;
+    }
+
+    public static String getMarkerValue(Node elemNode, String markerValueName) 
+    {
+ 	String query = "./TokenDescriptors/TDescriptor[@type=\"Marker-"+markerValueName+"\"]";
+	Node tdnode = XMLManip.selectSingleNode(elemNode, query);
+	if (tdnode !=  null) 
+	{
+	    try
+	    {
+		return XMLManip.getAttributeValue(tdnode, "value");
+	    } catch(Exception e) {
+		e.printStackTrace();
 	    }
 	} 
-	return null;	
+	return null;
     }
 
-    public Node findAttributeMatch(Node elem, Node scopingType, int matchType) {
-	return null;		
-    }
+
+ 
 
 }

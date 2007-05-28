@@ -49,14 +49,7 @@ import ${type};
 
 
 <#macro TypeDeclarationComment classInfo nestingLevel >
-<#if classInfo.getComment()?? >
-<#assign comment=classInfo.getComment() />
-<@ident nestingLevel />/**
-<#list comment?split("\n") as line >
-<@ident nestingLevel /> *  ${line}
-</#list>
-<@ident nestingLevel /> */
-</#if>
+<@MemberDeclarationComment classInfo nestingLevel />
 </#macro>
 
 
@@ -69,6 +62,7 @@ import ${type};
 </#list>
 <@ident nestingLevel /> */
 </#if>
+<@idMarker memberInfo nestingLevel />
 </#macro>
 
 
@@ -313,6 +307,13 @@ ${literal.getName()}
 </#if>
 </#list>
 </@singleline>
+</#if>
+</#macro>
+
+
+<#macro idMarker elementInfo nestingLevel>
+<#if codegenOptions["GENERATE_MARKER_ID"]?? && codegenOptions["GENERATE_MARKER_ID"] >
+<@ident nestingLevel />// #[regen=yes,id=${elementInfo.getMarkerID()}]
 </#if>
 </#macro>
 

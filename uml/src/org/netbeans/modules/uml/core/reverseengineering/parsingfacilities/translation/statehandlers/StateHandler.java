@@ -496,9 +496,8 @@ public class StateHandler
                     String pos = pToken.getProperty("CommentStartPos");
                     String length = pToken.getProperty("CommentLength");
 
-					try
-					{
-                    createTokenDescriptor(pNode,
+		                       try {
+		    createTokenDescriptor(pNode,
                                             "Comment",
                                             Long.parseLong(line),
                                             Long.parseLong(col),
@@ -511,8 +510,60 @@ public class StateHandler
 						e.printStackTrace();
 					}
              }
-          }
+	  }
+	  handleMarkerComment(pNode, pToken);
        }
+    }
+
+    protected void handleMarkerComment(Node pNode, ITokenDescriptor pToken)
+    {
+        if(pToken != null)
+        {
+            String comment = pToken.getProperty("Marker-Comment");
+
+            if(comment != null && comment.trim().length() > 0)
+            {
+                String cleansedComment = cleanseComment(comment);
+                if(comment != null)
+                {
+                    String line = pToken.getProperty("Marker-CommentStartLine");
+                    String col = pToken.getProperty("Marker-CommentStartColumn");
+                    String pos = pToken.getProperty("Marker-CommentStartPos");
+                    String length = pToken.getProperty("Marker-CommentLength");
+
+					try
+					{
+                    createTokenDescriptor(pNode,
+                                            "Marker-Comment",
+                                            Long.parseLong(line),
+                                            Long.parseLong(col),
+                                            Long.parseLong(pos),
+                                            cleansedComment,
+                                            Long.parseLong(length));
+					}
+					catch (NumberFormatException e)
+					{
+						e.printStackTrace();
+					}
+		}
+		String[] markerValueNames 
+		    = new String[]{"Marker-regen", "Marker-regenBody", "Marker-id"};
+		for(String key : markerValueNames) 
+		{
+		    String value = pToken.getProperty(key);
+		    if(value != null && value.trim().length() > 0)
+		    {
+			createTokenDescriptor(pNode,
+					      key,
+					      -1,
+					      -1,
+					      -1,
+					      value,
+					      value.length());
+		    }
+		}		    	       
+	    }
+	}
     }
 
     /**

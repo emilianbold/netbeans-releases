@@ -24,6 +24,10 @@
  */
 package org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework;
 
+import java.util.Hashtable;
+import java.util.Set;
+import java.util.StringTokenizer;
+
 import antlr.CommonHiddenStreamToken;
 import antlr.collections.AST;
 import antlr.*;
@@ -74,8 +78,9 @@ public class CommentGather implements ICommentGather
         long startPos    = -1;
         int length      = -1;
 
-        boolean processingComment = false;
+	boolean processingComment = false;
         String comment = "";
+	boolean markerFound = false;
 
         while(pHiddenToken != null)
         {
@@ -83,15 +88,23 @@ public class CommentGather implements ICommentGather
 
             if(type == getSingleLineType() || type == getMultiLineType())
             {
-                comment = pHiddenToken.getText() + comment;
-                startLine = pHiddenToken.getLine();
-                startColumn = pHiddenToken.getColumn();
-                startPos = pHiddenToken.getPosition();
-
-                String value = pHiddenToken.getText();
-                length += value.length();
-
-                processingComment = true;
+		Hashtable<String, String> parsedValues = new Hashtable<String, String>();
+		if (! markerFound && type == getSingleLineType() 
+		    && parseMarkerComment(pHiddenToken.getText(), parsedValues)) 
+		{
+		    storeMarkerComment(pHiddenToken, parsedValues, pDesc);
+		    markerFound = true;
+		} else {
+		    comment = pHiddenToken.getText() + comment;
+		    startLine = pHiddenToken.getLine();
+		    startColumn = pHiddenToken.getColumn();
+		    startPos = pHiddenToken.getPosition();
+		    
+		    String value = pHiddenToken.getText();
+		    length += value.length();
+		    
+		    processingComment = true;
+		}
             }
 
             if( pHiddenToken != null && type != getMultiLineType())
@@ -120,7 +133,6 @@ public class CommentGather implements ICommentGather
             pDesc.addProperty("CommentStartPos", String.valueOf(startPos));
             pDesc.addProperty("CommentLength", String.valueOf(length + 1));
         }
-
         return pDesc;
     }
 
@@ -140,6 +152,71 @@ public class CommentGather implements ICommentGather
     {
         // TODO Auto-generated method stub
         return m_SLCOMMENT;
+    }
+
+    /**
+     *  parses (in a very ad-hoc style) the line of the following format
+     *  #[regen=yes,id=C2FEEEAC-CFCD-11D1-8B05-00600806D9B6]
+     */
+    public static boolean parseMarkerComment(String comment, 
+					     Hashtable<String, String> result) 
+    {
+	if (comment == null || result == null) {
+	    return false;
+	}
+	String ln = comment.trim();
+	int cs = ln.indexOf("//");
+	if (cs == 0 && ln.length() > 5) {
+	    ln = ln.substring(cs + 2).trim();
+	}
+	if (ln.length() < 3) {
+	    return false;
+	}
+	if ( ! ( ln.charAt(0) == '#' && ln.charAt(1) == '[' ) ) {
+	    return false;
+	}  
+	int start = 2;
+	int end = ln.indexOf("]", start);
+	if (end < 0) {
+	    return false;
+	}
+	String values = ln.substring(start, end);
+	StringTokenizer pairs = new StringTokenizer(values, ",");
+	while(pairs.hasMoreTokens()) {
+	    String pair = pairs.nextToken();
+	    if (pair != null) {
+		pair = pair.trim();
+		int ind = pair.indexOf("=");
+		if (ind > 0) {
+		    String key = pair.substring(0, ind).trim();
+		    String value = pair.substring(ind + 1, pair.length()).trim();
+		    result.put(key, value);
+		}
+	    }
+	}
+	return true;
+    }
+
+    private void storeMarkerComment(CommonHiddenStreamToken pHiddenToken, 
+				    Hashtable<String, String> parsedValues, 
+				    ITokenDescriptor pDesc) 
+    {
+	Set<String> keys = parsedValues.keySet();
+	for(String key: keys) {
+            pDesc.addProperty("Marker-"+key.toLowerCase(), parsedValues.get(key));       
+	}
+
+        String commentMarker = pHiddenToken.getText();
+        int startLineMarker   = pHiddenToken.getLine();
+        int startColumnMarker = pHiddenToken.getColumn();
+        long startPosMarker    = pHiddenToken.getPosition();
+        int lengthMarker      = commentMarker.length();
+
+	pDesc.addProperty("Marker-Comment", commentMarker);
+	pDesc.addProperty("Marker-CommentStartLine", String.valueOf(startLineMarker));
+	pDesc.addProperty("Marker-CommentStartColumn", String.valueOf(startColumnMarker));
+	pDesc.addProperty("Marker-CommentStartPos", String.valueOf(startPosMarker));
+	pDesc.addProperty("Marker-CommentLength", String.valueOf(lengthMarker + 1));
     }
 
 }

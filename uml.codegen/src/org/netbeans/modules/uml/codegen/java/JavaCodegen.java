@@ -22,6 +22,7 @@ package org.netbeans.modules.uml.codegen.java;
 
 import java.awt.event.*;
 import java.io.*;
+import java.nio.CharBuffer;
 import java.util.*;
 
 import org.openide.filesystems.FileObject;
@@ -34,10 +35,16 @@ import org.openide.loaders.DataObject;
 import org.netbeans.modules.uml.core.coreapplication.ICodeGenerator;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.structure.ISourceFileArtifact;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Classifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Operation;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameter;
 import org.netbeans.modules.uml.core.metamodel.profiles.IStereotype;
 import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
+
 import org.netbeans.modules.uml.integration.ide.events.ClassInfo;
+
 import org.netbeans.modules.uml.codegen.java.merging.Merger;
 
 
@@ -65,19 +72,12 @@ public class JavaCodegen implements ICodeGenerator {
 
     }
 
-    
-    public void generate(IClassifier classifier, String targetFolderName, boolean backup) {
+       
+    public void generate(IClassifier classifier, String targetFolderName, Properties props) {
 
-	// temporary detour to not mess up with codegen now,
-	// will be refactored back soon
-	if (System.getProperty("uml.codegen.merge") != null) {
-	    generate_merge(classifier, targetFolderName, backup); 
-	    return;
-	}
-
-
-	try {
-	    
+	boolean backup = Boolean.valueOf(props.getProperty("backup", "true")).booleanValue();
+	boolean genMarkers = Boolean.valueOf(props.getProperty("generateMarkers", "true")).booleanValue();	
+	try {	    
 	    
 	    ClassInfo clinfo = new ClassInfo(classifier);
 
@@ -93,121 +93,62 @@ public class JavaCodegen implements ICodeGenerator {
 	    // TODO sourceFile name determination and thus existence 
 	    //should be moved below to be done based on the templates descs
 	    File sourceFile = sourceFile(targetFolderName, classifier);
-	    if (sourceFile.exists()) {
 
-		if (backup) {
-		    FileObject buFileObj = backupFile(sourceFile);		
-		    if (buFileObj != null) {
-			FileObject efo = FileUtil.toFileObject(sourceFile);
-			if (efo != null) 
-			    efo.delete();
-		    }
-		}		
-		try {
-		    clinfo.updateFilename(sourceFile.getCanonicalPath());
-		} catch (Exception ex) {
-		    ex.printStackTrace();
-		}
-	    } 
-                
-	    // 2 possible places to get templates from - 
-	    // registry and teplates subdir of the project 
-            FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
-	    FileObject root = fs.getRoot().getFileObject("Templates/UML/CodeGeneration/Java");
-	    String projTemplPath = clinfo.getOwningProject().getBaseDirectory()+File.separator+"templates"+File.separator+"java";
-
-	    List<TemplateDesc> templateDescs = templatesToUse(clinfo);
-	    Iterator<TemplateDesc> iterDescs = templateDescs.iterator();
-	    while(iterDescs.hasNext()) {
-		TemplateDesc templDesc = iterDescs.next();	    		
-		try {
-		    FileObject tfo;
-		    File tf = new File(projTemplPath + File.separator + templDesc.templateName);
-		    if (tf.exists()) {
-			tfo = FileUtil.toFileObject(tf);
-		    } else {
-			tfo = root.getFileObject(templDesc.templateName);
-		    }
-		    
-		    tfo.setAttribute("javax.script.ScriptEngine", "freemarker");
-		    DataObject obj = DataObject.find(tfo);
-	    		    
-		    FileObject dfo = clinfo.getExportPackageFileObject();
-		    if (dfo != null) {
-		
-			DataFolder folder = DataFolder.findFolder(dfo);
-			//Map parameters = Collections.singletonMap("classInfo", clinfo);
-			HashMap parameters = new HashMap();
-			parameters.put("classInfo", clinfo);
-			parameters.put("modelElement", classifier);
-			DataObject n = obj.createFromTemplate(folder, clinfo.getName(), parameters);
-
-			try {
-			    // TBD codegen inteface returning associative map 
-			    // (classifier, generated files) that makes sense in that type 
-			    // of codegen; 
-			    // the codegen client to decide what type of sources / of what codegen, 
-			    // to associate, if any, with the element
-			    List<IElement> sourceFiles =  classifier.getSourceFiles();
-			    if (sourceFiles != null) {
-				for(IElement src : sourceFiles) {
-				    if (src instanceof ISourceFileArtifact) {
-					classifier.removeSourceFile(((ISourceFileArtifact)src).getSourceFile());
-				    }
-				}
-			    }
-			    classifier.addSourceFileNotDuplicate(sourceFile.getCanonicalPath());
-			} catch (IOException ex) {
-			    ex.printStackTrace();
-			}
-		    } else {
-			// TBD - couldn't create the package directory for some reason
-			;			
-		    }
-		} catch (Exception e) {
-		    e.printStackTrace();		
+	    // existing associated source file
+	    boolean oldAssociated = false;
+	    String associatedSource = ClassInfo.getSymbolFilename(classifier);
+	    File ascFile = null;
+	    if (associatedSource != null) {
+		ascFile = new File(associatedSource);
+		if (ascFile.exists() && !ascFile.equals(sourceFile)) {
+		    // check that it is under the same targetFolder
+		    File targetFolderFile = new File(targetFolderName);
+		    File parent = ascFile.getParentFile();
+		    while(parent != null) {
+			if (parent.equals(targetFolderFile)) {
+			    // TBD the file should be parsed and the path to parent 
+			    // should be compared with package value
+			    oldAssociated = true;
+			    break;
+			}		
+			parent = parent.getParentFile();
+		    } 
 		}
 	    }
-	} catch (Exception e) {
-	    e.printStackTrace();		
-	}
 
-    }
-    
-    public void generate_merge(IClassifier classifier, String targetFolderName, boolean backup) {
-
-	try {
-	    
-	    
-	    ClassInfo clinfo = new ClassInfo(classifier);
-
-	    // skip inner class/interface/enumeration elements
-	    // as they are taken care of by their outer class code gen
-	    if (clinfo.getOuterClass() != null)
-		return;
-        
-	    clinfo.setMethodsAndMembers(classifier);
-	    clinfo.setExportSourceFolderName(targetFolderName);
-	    clinfo.setComment(classifier.getDocumentation());
-
-	    // TODO sourceFile name determination and thus existence 
-	    //should be moved below to be done based on the templates descs
-	    File sourceFile = sourceFile(targetFolderName, classifier);
 	    File newSourceFile = null;
 	    String newTargetFolderName = null;
+	    File newTargetFolder = null;
+	    if (! sourceFile.exists() && oldAssociated ) {
+		FileUtil.copyFile(FileUtil.toFileObject(ascFile),
+				  FileUtil.toFileObject(sourceFile.getParentFile()),
+				  sourceFile.getName(), "");
+	    }
 	    if (sourceFile.exists()) {
-
-		newTargetFolderName = "/tmp/generated_"+((int)(Math.random() * 10000));
-		new File(newTargetFolderName).mkdirs();		
+		//String tmpdir = "/tmp/generated_";
+		String tmpdir = System.getProperty("java.io.tmpdir")+"/generated_";
+		newTargetFolderName = new File(tmpdir).getCanonicalPath()
+		    +((int)(Math.random() * 10000));
+		newTargetFolder = new File(newTargetFolderName);
+		newTargetFolder.mkdirs();		
 		clinfo.setExportSourceFolderName(new File(newTargetFolderName).getAbsolutePath());
 		newSourceFile = sourceFile(newTargetFolderName, classifier);
 
 		if (backup) {
-		    FileObject buFileObj = backupFile(sourceFile);		
-		    if (buFileObj != null) {
-			FileObject efo = FileUtil.toFileObject(sourceFile);
-			if (efo != null) 
-			    ; //efo.delete();
+		    if (!oldAssociated) {
+			FileObject buFileObj = backupFile(sourceFile);		
+			if (buFileObj != null) {
+			    FileObject efo = FileUtil.toFileObject(sourceFile);
+			    if (efo != null) 
+				; //efo.delete();
+			}
+		    } else {
+			FileObject buFileObj = backupFile(ascFile);		
+			if (buFileObj != null) {
+			    FileObject efo = FileUtil.toFileObject(ascFile);
+			    if (efo != null) 
+				efo.delete();
+			}
 		    }
 		}		
 		try {
@@ -216,6 +157,7 @@ public class JavaCodegen implements ICodeGenerator {
 		    ex.printStackTrace();
 		}
 	    } 
+
                 
 	    // 2 possible places to get templates from - 
 	    // registry and teplates subdir of the project 
@@ -243,14 +185,19 @@ public class JavaCodegen implements ICodeGenerator {
 		    if (dfo != null) {
 		
 			DataFolder folder = DataFolder.findFolder(dfo);
-			//Map parameters = Collections.singletonMap("classInfo", clinfo);
 			HashMap parameters = new HashMap();
 			parameters.put("classInfo", clinfo);
 			parameters.put("modelElement", classifier);
+			Hashtable codegenOptions = new Hashtable();
+			codegenOptions.put("GENERATE_MARKER_ID", genMarkers);
+			parameters.put("codegenOptions", codegenOptions);
 			DataObject n = obj.createFromTemplate(folder, clinfo.getName(), parameters);
 
 			if (newSourceFile != null) {
 			    new Merger(newSourceFile.getAbsolutePath(), sourceFile.getAbsolutePath()).merge();
+			    FileObject trg = FileUtil.toFileObject(newTargetFolder);
+			    if (trg != null) 
+				trg.delete();
 			}
 
 			try {
