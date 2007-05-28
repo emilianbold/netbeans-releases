@@ -710,6 +710,11 @@ public class CvsVersioningSystem {
 
         // TODO: it is not easy to tell whether the file is not yet versioned OR some real error occurred   
         try {
+            if (CvsVersioningSystem.getInstance().getAdminHandler().getEntry(workingCopy) == null) {
+                // VC would throw IAE in this case, so silently return here
+                // TODO: this can happen because of implicit logic in the cache that treats not-present files as uptodate, thus failing the STATUS_DIFFABLE test above 
+                return;
+            }
             File original = VersionsCache.getInstance().getRemoteFile(workingCopy, VersionsCache.REVISION_BASE, null, true);
             if (original == null) throw new IOException("Unable to get BASE revision of " + workingCopy);
             org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(new FileOutputStream(originalFile), new FileInputStream(original));
