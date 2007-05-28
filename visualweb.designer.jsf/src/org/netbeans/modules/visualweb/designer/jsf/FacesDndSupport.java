@@ -1392,6 +1392,9 @@ class FacesDndSupport {
 
                             // Ensure that the two lists are kept in sync
                             beanItems.add(null);
+                            
+                            // #104792 To select the fragment not the added surrounding div.
+                            select = child;
                         }
 
                         // If inserted in flow, put a <div> with relative
