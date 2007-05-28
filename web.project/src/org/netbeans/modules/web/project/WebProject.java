@@ -27,6 +27,7 @@ import java.util.*;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
@@ -38,7 +39,6 @@ import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModelProvider;
-import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
 import org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportFactory;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportFactory;
 import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportFactory;
@@ -85,10 +85,13 @@ import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
+import org.netbeans.spi.project.ant.AntBuildExtenderFactory;
+import org.netbeans.spi.project.ant.AntBuildExtenderImplementation;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
@@ -142,6 +145,8 @@ public final class WebProject implements Project, AntProjectListener, FileChange
     private JaxWsListener jaxWsListener;
     private FileObject jaxWsFo;
     private JaxWsModel.ServiceListener jaxWsServiceListener;
+    
+    private AntBuildExtender buildExtender;
             
     private class FileWatch implements AntProjectListener, FileChangeListener {
 
@@ -261,6 +266,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         refHelper = new ReferenceHelper(helper, aux, eval);
         genFilesHelper = new GeneratedFilesHelper(helper);
         this.updateHelper = new UpdateHelper (this, this.helper, this.aux, UpdateHelper.createDefaultNotifier());
+        buildExtender = AntBuildExtenderFactory.createAntExtender(new WebExtenderImplementation());
         webModule = new ProjectWebModule (this, updateHelper);
         apiWebModule = WebModuleFactory.createWebModule (webModule);
         WebProjectWebServicesSupport webProjectWebServicesSupport = new WebProjectWebServicesSupport(this, helper, refHelper);
@@ -345,6 +351,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             new RecommendedTemplatesImpl(),
             new WebFileBuiltQuery (this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()),
             classPathExtender,
+            buildExtender,
             cpMod,
             new WebProjectOperations(this),
             new WebPersistenceProvider(this, evaluator(), cpProvider),
@@ -360,7 +367,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             LookupProviderSupport.createSourcesMerger(),
             new WebPropertyEvaluatorImpl(evaluator()),
-            this, // never cast an externally obtained Project to WebProject - use lookup instead
+            WebProject.this, // never cast an externally obtained Project to WebProject - use lookup instead
             new WebProjectRestSupport(helper),
             new WebProjectLibrariesModifierImpl(this, this.updateHelper, eval, refHelper),
         });
@@ -608,7 +615,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         protected void projectXmlSaved() throws IOException {
             int flags = genFilesHelper.getBuildScriptState(
                 GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                WebProject.class.getResource("resources/build-impl.xsl"),jaxWsFo);
+                WebProject.class.getResource("resources/build-impl.xsl"));
             if ((flags & GeneratedFilesHelper.FLAG_MODIFIED) != 0) {
                 RequestProcessor.getDefault().post(new Runnable () {
                     public void run () {
@@ -626,7 +633,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                             try {
                                 genFilesHelper.generateBuildScriptFromStylesheet(
                                     GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                                    WebProject.class.getResource("resources/build-impl.xsl"),jaxWsFo);
+                                    WebProject.class.getResource("resources/build-impl.xsl"));
                             } catch (IOException e) {
                                 ErrorManager.getDefault().notify(e);
                             } catch (IllegalStateException e) {
@@ -638,12 +645,11 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             } else {
                 genFilesHelper.refreshBuildScript(org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                                                   org.netbeans.modules.web.project.WebProject.class.getResource("resources/build-impl.xsl"),
-                                                  jaxWsFo, false);
+                                                  false);
             }
             genFilesHelper.refreshBuildScript(
                 getBuildXmlName (),
-                WebProject.class.getResource("resources/build.xsl"),
-                jaxWsFo, false);
+                WebProject.class.getResource("resources/build.xsl"),false);
         }
         
     }
@@ -708,9 +714,9 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                 if (updateHelper.isCurrent()) {
                     int flags = genFilesHelper.getBuildScriptState(
                         GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                        WebProject.class.getResource("resources/build-impl.xsl"),jaxWsFo);
+                        WebProject.class.getResource("resources/build-impl.xsl"));
                     if ((flags & GeneratedFilesHelper.FLAG_MODIFIED) != 0
-                        && (flags & (GeneratedFilesHelper.FLAG_OLD_PROJECT_XML | GeneratedFilesHelper.FLAG_OLD_JAX_WS)) != 0) {
+                        && (flags & GeneratedFilesHelper.FLAG_OLD_PROJECT_XML) != 0) {
                         JButton updateOption = new JButton (NbBundle.getMessage(WebProject.class, "CTL_Regenerate"));
                         if (DialogDisplayer.getDefault().notify(
                             new NotifyDescriptor (NbBundle.getMessage(WebProject.class,"TXT_BuildImplRegenerate"),
@@ -724,18 +730,16 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                                 updateOption)) == updateOption) {
                             genFilesHelper.generateBuildScriptFromStylesheet(
                                 GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                                WebProject.class.getResource("resources/build-impl.xsl"), jaxWsFo);
+                                WebProject.class.getResource("resources/build-impl.xsl"));
                         }
                     } else {
                         genFilesHelper.refreshBuildScript(
                             GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                            WebProject.class.getResource("resources/build-impl.xsl"),
-                            jaxWsFo, true);
+                            WebProject.class.getResource("resources/build-impl.xsl"), true);
                     }
                     genFilesHelper.refreshBuildScript(
                         getBuildXmlName(),
-                        WebProject.class.getResource("resources/build.xsl"),
-                        jaxWsFo, true);
+                        WebProject.class.getResource("resources/build.xsl"), true);
                     
                     WebProjectProperties wpp = getWebProjectProperties();
                     String servInstID = (String) wpp.get(WebProjectProperties.J2EE_SERVER_INSTANCE);
@@ -1236,7 +1240,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
     }
     
     private FileObject findJaxWsFileObject(FileObject projectDir) {
-        return projectDir.getFileObject(GeneratedFilesHelper.JAX_WS_XML_PATH);
+        return projectDir.getFileObject("nbproject/jax-ws.xml"); //NOI18N
     }
     
     private JaxWsModel getJaxWsModel() {
@@ -1322,8 +1326,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                 if (jaxWsModel!=null && newModel!=null) jaxWsModel.merge(newModel);
                 genFilesHelper.refreshBuildScript(
                 GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                WebProject.class.getResource("resources/build-impl.xsl"),
-                jaxWsFo, false);
+                WebProject.class.getResource("resources/build-impl.xsl"), false);
             } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ex);
             }
@@ -1338,5 +1341,20 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         public PropertyEvaluator evaluator() {
             return evaluator;
         }
+    }
+    
+    private class WebExtenderImplementation implements AntBuildExtenderImplementation {
+        //add targets here as required by the external plugins..
+        public List<String> getExtensibleTargets() {
+            String[] targets = new String[] {
+                "-do-init", "-init-check", "-post-clean", "jar", "-pre-pre-compile","-do-compile","-do-compile-single" //NOI18N
+            };
+            return Arrays.asList(targets);
+        }
+
+        public Project getOwningProject() {
+            return WebProject.this;
+        }
+
     }
 }
