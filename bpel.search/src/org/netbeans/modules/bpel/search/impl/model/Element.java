@@ -24,7 +24,7 @@ import org.netbeans.modules.bpel.editors.api.utils.Util;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.NamedElement;
 
-import org.netbeans.modules.bpel.search.api.SearchElement;
+import org.netbeans.modules.xml.xam.ui.search.api.SearchElement;
 
 /**
  * @author Vladimir Yaroslavskiy

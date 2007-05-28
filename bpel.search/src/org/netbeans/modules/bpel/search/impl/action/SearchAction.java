@@ -25,7 +25,7 @@ import org.openide.util.Lookup;
 import org.openide.util.actions.NodeAction;
 
 import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.search.api.SearchManagerAccess;
+import org.netbeans.modules.xml.xam.ui.search.api.SearchManagerAccess;
 import org.netbeans.modules.bpel.search.impl.util.Util;
 
 import static org.netbeans.modules.print.ui.PrintUI.*;

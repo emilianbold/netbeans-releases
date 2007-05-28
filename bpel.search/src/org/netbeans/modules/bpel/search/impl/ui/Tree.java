@@ -54,9 +54,10 @@ import javax.swing.tree.TreeSelectionModel;
 
 import org.openide.windows.WindowManager;
 
-import org.netbeans.modules.bpel.search.api.SearchEvent;
-import org.netbeans.modules.bpel.search.api.SearchElement;
-import org.netbeans.modules.bpel.search.spi.SearchListener;
+import org.netbeans.modules.xml.xam.ui.search.api.SearchElement;
+import org.netbeans.modules.xml.xam.ui.search.api.SearchEvent;
+import org.netbeans.modules.xml.xam.ui.search.spi.SearchListener;
+
 import org.netbeans.modules.bpel.search.impl.util.Util;
 
 import static org.netbeans.modules.print.ui.PrintUI.*;

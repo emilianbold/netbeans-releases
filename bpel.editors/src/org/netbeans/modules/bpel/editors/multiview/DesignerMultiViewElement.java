@@ -128,7 +128,7 @@ import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
 import org.netbeans.modules.print.api.PrintManagerAccess;
-import org.netbeans.modules.bpel.search.api.SearchManagerAccess;
+import org.netbeans.modules.xml.xam.ui.search.api.SearchManagerAccess;
 import org.openide.loaders.DataObject;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.Mode;

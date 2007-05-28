@@ -24,10 +24,10 @@ import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.NamedElement;
 
-import org.netbeans.modules.bpel.search.api.SearchException;
-import org.netbeans.modules.bpel.search.api.SearchMatch;
-import org.netbeans.modules.bpel.search.api.SearchOption;
-import org.netbeans.modules.bpel.search.spi.SearchEngine;
+import org.netbeans.modules.xml.xam.ui.search.api.SearchException;
+import org.netbeans.modules.xml.xam.ui.search.api.SearchMatch;
+import org.netbeans.modules.xml.xam.ui.search.api.SearchOption;
+import org.netbeans.modules.xml.xam.ui.search.spi.SearchEngine;
 
 import static org.netbeans.modules.print.ui.PrintUI.*;
 
