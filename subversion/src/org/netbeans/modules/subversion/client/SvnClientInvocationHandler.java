@@ -118,7 +118,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
 
         try {      
             Object ret = null;        
-            if(SwingUtilities.isEventDispatchThread()) {
+            if(parallelizable(method, args)) {
                 ret = invokeMethod(method, args);    
             } else {
                 synchronized (semaphor) {
@@ -161,6 +161,10 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                 throw t;
             }
         }
+    }
+    
+    protected boolean parallelizable(Method method, Object[] args) {
+        return  SwingUtilities.isEventDispatchThread();
     }
     
     protected Object invokeMethod(Method proxyMethod, Object[] args)

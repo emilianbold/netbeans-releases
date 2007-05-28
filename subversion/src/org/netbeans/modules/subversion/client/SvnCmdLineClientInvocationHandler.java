@@ -22,9 +22,9 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.subversion.client.parser.LocalSubversionException;
 import org.netbeans.modules.subversion.client.parser.SvnWcParser;
-import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 
 /**
@@ -89,6 +89,10 @@ public class SvnCmdLineClientInvocationHandler extends SvnClientInvocationHandle
             );
         }
         return returnValue;
+    }
+
+    protected boolean parallelizable(Method method, Object[] args) {
+        return super.parallelizable(method, args) || isHandledIntern(method, args);
     }
 
     /**
