@@ -33,8 +33,10 @@ import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Fix;
+import org.openide.LifecycleManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -53,7 +55,13 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/java/editor/resources/layer.xml"}, new Object[0]);
+        String[] additionalLayers = getAdditionalLayers();
+        String[] layers = new String[additionalLayers.length + 1];
+        
+        System.arraycopy(additionalLayers, 0, layers, 1, additionalLayers.length);
+        layers[0] = "org/netbeans/modules/java/editor/resources/layer.xml";
+        
+        SourceUtilsTestUtil.prepareTest(layers, new Object[] {JavaDataLoader.class});
     }
     
     private void prepareTest(String fileName, String code) throws Exception {
@@ -63,7 +71,8 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         
         assertNotNull(workFO);
         
-        FileObject sourceRoot = workFO.createFolder("src");
+        sourceRoot = workFO.createFolder("src");
+        
         FileObject buildRoot  = workFO.createFolder("build");
         FileObject cache = workFO.createFolder("cache");
         
@@ -93,6 +102,7 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         assertNotNull(info);
     }
     
+    private FileObject sourceRoot;
     private CompilationInfo info;
     private Document doc;
     
@@ -102,6 +112,10 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         return f.toString();
     }
     
+    protected String[] getAdditionalLayers() {
+        return new String[0];
+    }
+            
     protected void performAnalysisTest(String fileName, String code, int pos, String... golden) throws Exception {
         prepareTest(fileName, code);
         
@@ -120,6 +134,10 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
     }
     
     protected void performFixTest(String fileName, String code, int pos, String fixCode, String golden) throws Exception {
+        performFixTest(fileName, code, pos, fixCode, fileName, golden);
+    }
+    
+    protected void performFixTest(String fileName, String code, int pos, String fixCode, String goldenFileName, String golden) throws Exception {
         prepareTest(fileName, code);
         
         TreePath path = info.getTreeUtilities().pathFor(pos);
@@ -144,12 +162,22 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         
         fix.implement();
         
-        String realCode = doc.getText(0, doc.getLength());
+        FileObject toCheck = sourceRoot.getFileObject(goldenFileName);
+        
+        assertNotNull(toCheck);
+        
+        DataObject toCheckDO = DataObject.find(toCheck);
+        EditorCookie ec = toCheckDO.getLookup().lookup(EditorCookie.class);
+        Document toCheckDocument = ec.openDocument();
+        
+        String realCode = toCheckDocument.getText(0, toCheckDocument.getLength());
         
         //ignore whitespaces:
         realCode = realCode.replaceAll("[ \t\n]+", " ");
         
         assertEquals(golden, realCode);
+        
+        LifecycleManager.getDefault().saveAll();
     }
     
 }
