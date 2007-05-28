@@ -246,11 +246,6 @@ public class HintsUI implements MouseListener, KeyListener, ChangeListener, AWTE
         ToolTipManager.sharedInstance().setEnabled(false);
         ToolTipManager.sharedInstance().setEnabled(true);
         assert hintListComponent == null;
-        hintListComponent = 
-                new ScrollCompletionPane(comp, hints, null, null);
-        
-        hintListComponent.getView().addMouseListener (this);
-        hintListComponent.setName(POPUP_NAME);
         Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.MOUSE_EVENT_MASK);
         
         try {
@@ -259,6 +254,15 @@ public class HintsUI implements MouseListener, KeyListener, ChangeListener, AWTE
 
             Point p = new Point (r.x + 5, r.y + 20);
             SwingUtilities.convertPointToScreen(p, comp);
+            
+            Dimension maxSize = Toolkit.getDefaultToolkit().getScreenSize();
+            maxSize.width -= p.x;
+            maxSize.height -= p.y;
+            hintListComponent = 
+                    new ScrollCompletionPane(comp, hints, null, null, maxSize);
+
+            hintListComponent.getView().addMouseListener (this);
+            hintListComponent.setName(POPUP_NAME);
             
             assert listPopup == null;
             listPopup = getPopupFactory().getPopup(
@@ -315,9 +319,11 @@ public class HintsUI implements MouseListener, KeyListener, ChangeListener, AWTE
                 ErrorManager.getDefault().notify (blE);
                 errorTooltip = null;
             }
-            
+            Dimension maxSize = Toolkit.getDefaultToolkit().getScreenSize();
+            maxSize.width -= p.x;
+            maxSize.height -= p.y;
             hintListComponent =
-                    new ScrollCompletionPane(comp, fixes, null, null);
+                    new ScrollCompletionPane(comp, fixes, null, null, maxSize);
             
             hintListComponent.getView().addMouseListener (this);
             hintListComponent.setName(POPUP_NAME);

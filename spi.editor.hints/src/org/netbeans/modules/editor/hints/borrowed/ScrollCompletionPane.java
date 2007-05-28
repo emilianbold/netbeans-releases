@@ -72,6 +72,10 @@ public class ScrollCompletionPane extends JScrollPane implements SettingsChangeL
     private Dimension scrollBarSize;
 
     public ScrollCompletionPane(JTextComponent component, LazyFixList fixes, String title, ListSelectionListener listener) {
+        this( component, fixes, title, listener, null );
+    }
+    
+    public ScrollCompletionPane(JTextComponent component, LazyFixList fixes, String title, ListSelectionListener listener, Dimension maxSize ) {
         this.component = component;
         
         // Compute size of the scrollbars
@@ -89,6 +93,10 @@ public class ScrollCompletionPane extends JScrollPane implements SettingsChangeL
         setViewportBorder( null );
         Settings.addSettingsChangeListener(this);
         settingsChange(null); // initialize sizes
+        if( maxSize != null ) {
+            this.maxSize = maxSize;
+            setMaximumSize(maxSize);
+        }
 
         // Add the completion view
         view = new ListCompletionView();
@@ -133,7 +141,7 @@ public class ScrollCompletionPane extends JScrollPane implements SettingsChangeL
             setMaximumSize(maxSize);
         }
     }
-
+    
     public Dimension getPreferredSize() {
         Dimension ps = super.getPreferredSize();
 
