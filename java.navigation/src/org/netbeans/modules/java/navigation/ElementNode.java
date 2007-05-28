@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.java.navigation;
@@ -29,7 +29,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.swing.Action;
-import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.UiUtils;
@@ -245,7 +245,7 @@ public class ElementNode extends AbstractNode {
         String htmlHeader;
         long pos;
         boolean isInherited;
-        CompilationInfo compilationInfo;
+        ClasspathInfo cpInfo;
         
         Description( ClassMemberPanelUI ui ) {
             this.ui = ui;
@@ -270,7 +270,7 @@ public class ElementNode extends AbstractNode {
         public FileObject getFileObject() {
             if( !isInherited )
                 return ui.getFileObject();
-            return SourceUtils.getFile( elementHandle, compilationInfo.getClasspathInfo() );
+            return SourceUtils.getFile( elementHandle, cpInfo );
         }
         
         @Override
