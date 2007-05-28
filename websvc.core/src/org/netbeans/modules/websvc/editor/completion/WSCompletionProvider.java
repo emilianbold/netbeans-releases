@@ -19,22 +19,55 @@
 
 package org.netbeans.modules.websvc.editor.completion;
 
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.TreePath;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Enumeration;
+import java.util.List;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeMirror;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent; 
-import org.netbeans.editor.Utilities;
-// Retouche
-//import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
+import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author Marek Fukala
+ * @author Milan Kuchtiak
  */
 public class WSCompletionProvider implements CompletionProvider {
+    
+    private static final String[] BINDING_TYPES = {
+        "SOAPBinding.SOAP11HTTP_BINDING", //NOI18N
+        "SOAPBinding.SOAP11HTTP_MTOM_BINDING", //NOI18N
+        "SOAPBinding.SOAP12HTTP_BINDING", //NOI18N
+        "SOAPBinding.SOAP12HTTP_MTOM_BINDING", //NOI18N
+        "HTTPBinding.HTTP_BINDING"}; //NOI18N
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         return 0;
@@ -42,70 +75,203 @@ public class WSCompletionProvider implements CompletionProvider {
 
     public CompletionTask createTask(int queryType, JTextComponent component) {
         if (queryType == CompletionProvider.COMPLETION_QUERY_TYPE) {
-            return new AsyncCompletionTask(new Query(component.getCaret().getDot()), component);
+            return new AsyncCompletionTask(new WsCompletionQuery(component.getSelectionStart()), component);
         }
         return null;
     }
     
-    static final class Query extends AsyncCompletionQuery {
-        
+    static final class WsCompletionQuery extends AsyncCompletionQuery implements CancellableTask<CompilationController> {
+        private int caretOffset;
+        private int anchorOffset;
+        private List<CompletionItem> results;
         private JTextComponent component;
+        private JAXWSSupport jaxWsSupport;
         
-        private int creationCaretOffset;
-        private int queryCaretOffset;
-        
-        private int queryAnchorOffset;
-        
-        private String filterPrefix;
-        
-        Query(int caretOffset) {
-            this.creationCaretOffset = caretOffset;
+        private WsCompletionQuery(int caretOffset) {
+            this.caretOffset = caretOffset;
         }
-        
-        protected void preQueryUpdate(JTextComponent component) {
-//            int caretOffset = component.getCaretPosition();
-//            Document doc = component.getDocument();
-//            if (caretOffset >= creationCaretOffset) {
-//                try {
-//                    if (isJavaIdentifierPart(doc.getText(creationCaretOffset, caretOffset - creationCaretOffset)))
-//                        return;
-//                } catch (BadLocationException e) {
-//                }
-//            }
-//            Completion.get().hideCompletion();
-        }        
         
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-// Retouche            
-//            if (JavaMetamodel.getManager().isScanInProgress()) {
-//                resultSet.setWaitText(NbBundle.getMessage(WSCompletionProvider.class, "scanning-in-progress")); //NOI18N
-//            }
-//            WSCompletionQuery query = new WSCompletionQuery(true);
-//            WSCompletionQuery.DefaultResult res = (WSCompletionQuery.DefaultResult)query.query(component, caretOffset, Utilities.getSyntaxSupport(component));
-//            if (res != null) {
-//                queryCaretOffset = caretOffset;
-//                //queryAnchorOffset = res.getSubstituteOffset();
-//                resultSet.setTitle(res.getTitle());
-//                // resultSet.setAnchorOffset(queryAnchorOffset);
-//                resultSet.addAllItems(res.getData());
-//                // queryResult = res;
-//            }
-              resultSet.finish();
+            try {
+                NbEditorUtilities.getFileObject(doc);
+                JavaSource js = JavaSource.forDocument(doc);
+                if (js!=null) {
+                        if (SourceUtils.isScanInProgress())
+                            resultSet.setWaitText(NbBundle.getMessage(WSCompletionProvider.class, "scanning-in-progress")); //NOI18N
+                        js.runUserActionTask(this, true);
+                        if (results != null)
+                            resultSet.addAllItems(results);
+                        if (anchorOffset > -1)
+                            resultSet.setAnchorOffset(anchorOffset);
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                resultSet.finish();
+            }
         }
         
+        public void cancel() {}
+
+        public void run(CompilationController controller) throws Exception {
+            resolveCompletion(controller);
+        }
+         
+        private void resolveCompletion(CompilationController controller) throws IOException {
+            
+            controller.toPhase(Phase.PARSED);
+            results = new ArrayList<CompletionItem>();
+            Env env = getCompletionEnvironment(controller, true);
+            
+            anchorOffset = env.getOffset();
+            TreePath path = env.getPath();
+
+            Tree leaf = path.getLeaf();
+            
+            switch(path.getLeaf().getKind()) {
+                case ANNOTATION:
+                    break;
+                case STRING_LITERAL:
+                    createStringResults(controller,env);
+                    break;
+                case ASSIGNMENT:
+                    createAssignmentResults(controller,env);
+                    break;
+            }
+        }
+        
+        @Override
         protected void prepareQuery(JTextComponent component) {
             this.component = component;
+            FileObject fo = NbEditorUtilities.getFileObject(component.getDocument());
+            jaxWsSupport = JAXWSSupport.getJAXWSSupport(fo);
         }
         
-//        private boolean isJavaIdentifierPart(String text) {
-//            for (int i = 0; i < text.length(); i++) {
-//                if (!(Character.isJavaIdentifierPart(text.charAt(i))) ) {
-//                    return false;
-//                }
-//            }
-//            return true;
-//        }
+        private Env getCompletionEnvironment(CompilationController controller, boolean upToOffset) throws IOException {
+            int offset = caretOffset;
+            String prefix = "";
+            if (upToOffset && offset > 0) {
+                TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+                if (ts.move(offset) == 0) // When right at the token end
+                    ts.movePrevious(); // Move to previous token
+                else
+                    ts.moveNext(); // otherwise move to the token that "contains" the offset
+                
+                if (ts.offset() < offset) {
+                    prefix = ts.token().toString().substring(0, offset - ts.offset());
+                    offset=ts.offset();
+                    if (ts.token().id() == JavaTokenId.STRING_LITERAL && prefix.startsWith("\"")) { //NOI18N
+                        prefix = prefix.substring(1);
+                        offset++;
+                    } else if (ts.token().id() == JavaTokenId.EQ && prefix.startsWith("=")) { //NOI18N
+                        prefix = prefix.substring(1);
+                        offset++;
+                    }
+                }
+            }
+            controller.toPhase(Phase.PARSED);
+            TreePath path = controller.getTreeUtilities().pathFor(caretOffset);
+            return new Env(offset, prefix, path);
+        }
         
-        // TODO: filtering
+        private void createStringResults(CompilationController controller, Env env) 
+            throws IOException {
+            TreePath elementPath = env.getPath();
+            TreePath parentPath = elementPath.getParentPath();
+            Tree parent = parentPath.getLeaf();
+            Tree grandParent = parentPath.getParentPath().getLeaf();
+            switch (grandParent.getKind()) {                
+                case ANNOTATION : {
+                    switch (parent.getKind()) {
+                        case ASSIGNMENT : {
+                            ExpressionTree var = ((AssignmentTree)parent).getVariable();
+                            if (var.getKind() == Kind.IDENTIFIER) {
+                                Name name = ((IdentifierTree)var).getName();
+                                if (name.contentEquals("wsdlLocation") && jaxWsSupport!=null) { //NOI18N
+                                    controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                                    TypeElement webMethodEl = controller.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
+                                    if (webMethodEl!=null) {
+                                        TypeMirror el = controller.getTrees().getTypeMirror(parentPath.getParentPath());
+                                        if (el!=null) {
+                                            if ( webMethodEl!=null && controller.getTypes().isSameType(el,webMethodEl.asType())) {
+                                                FileObject wsdlFolder = jaxWsSupport.getWsdlFolder(false);
+                                                if (wsdlFolder!=null) {                                                
+                                                    Enumeration<? extends FileObject> en = wsdlFolder.getChildren(true);
+                                                    while (en.hasMoreElements()) {
+                                                        FileObject fo = en.nextElement();
+                                                        if (fo.isData() && "wsdl".equalsIgnoreCase(fo.getExt())) {
+                                                            String wsdlPath = FileUtil.getRelativePath(wsdlFolder.getParent().getParent(), fo);
+                                                            // Temporary fix for wsdl files in EJB project
+                                                            if (wsdlPath.startsWith("conf/")) wsdlPath = "META-INF/"+wsdlPath.substring(5); //NOI18
+                                                            if (wsdlPath.startsWith(env.getPrefix())) {
+                                                                results.add(WSCompletionItem.createWsdlFileItem(wsdlFolder, fo, env.getOffset()));
+                                                            }
+                                                        } 
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } break; //ASSIGNMENT
+                    }
+                } break; // ANNOTATION
+            }
+        }
+        
+        private void createAssignmentResults(CompilationController controller, Env env) 
+            throws IOException {
+            TreePath elementPath = env.getPath();
+            TreePath parentPath = elementPath.getParentPath();
+            Tree parent = parentPath.getLeaf();
+            switch (parent.getKind()) {                
+                case ANNOTATION : {
+                    ExpressionTree var = ((AssignmentTree)elementPath.getLeaf()).getVariable();
+                    if (var.getKind() == Kind.IDENTIFIER) {
+                        Name name = ((IdentifierTree)var).getName();
+                        if (name.contentEquals("value"))  {//NOI18N
+                            controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                            TypeElement webParamEl = controller.getElements().getTypeElement("javax.xml.ws.BindingType"); //NOI18N
+                            if (webParamEl!=null) {
+                                TypeMirror el = controller.getTrees().getTypeMirror(parentPath);
+                                if (el!=null) {
+                                    if ( webParamEl!=null && controller.getTypes().isSameType(el,webParamEl.asType())) {
+                                        for (String mode : BINDING_TYPES) {
+                                            if (mode.startsWith(env.getPrefix())) 
+                                                results.add(WSCompletionItem.createEnumItem(mode, "String", env.getOffset())); //NOI18N
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } break; // ANNOTATION
+            }
+        }
+
+        private class Env {
+            private int offset;
+            private String prefix;
+            private TreePath path;
+            
+            private Env(int offset, String prefix, TreePath path) {
+                this.offset = offset;
+                this.prefix = prefix;
+                this.path = path;
+            }
+            
+            public int getOffset() {
+                return offset;
+            }
+            
+            public String getPrefix() {
+                return prefix;
+            }
+            
+            public TreePath getPath() {
+                return path;
+            }
+        }   
     }
 }
