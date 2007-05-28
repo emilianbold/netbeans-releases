@@ -27,13 +27,18 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
+import javax.swing.AbstractAction;
 import javax.swing.Icon;
+import javax.swing.InputMap;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
 import org.openide.util.NbBundle;
@@ -79,15 +84,7 @@ public class FixDuplicateImportStmts extends javax.swing.JPanel{
                 }
             };
             for (int i=0; i<choices.length; i++){
-                combos[i] = new JComboBox(choices[i]);
-                combos[i].setSelectedItem(defaults[i]);
-                combos[i].getAccessibleContext().setAccessibleDescription(getBundleString("FixDupImportStmts_Combo_ACSD")); //NOI18N
-                combos[i].getAccessibleContext().setAccessibleName(getBundleString("FixDupImportStmts_Combo_Name_ACSD")); //NOI18N
-                combos[i].setOpaque(false);
-                combos[i].setFont( monoSpaced );
-                combos[i].addFocusListener( focusListener );
-                combos[i].setEnabled( choices[i].length > 1 );
-                combos[i].setRenderer( new DelegatingRenderer(combos[i].getRenderer(), choices[i], icons[i] ) );
+                combos[i] = createComboBox( choices[i], defaults[i], icons[i], monoSpaced, focusListener );
 
                 JLabel lblSimpleName = new JLabel( simpleNames[i] );
                 lblSimpleName.setOpaque( false );
@@ -115,6 +112,22 @@ public class FixDuplicateImportStmts extends javax.swing.JPanel{
         bottomPanel.add( checkUnusedImports, BorderLayout.WEST );
         checkUnusedImports.setEnabled(true);
         checkUnusedImports.setSelected(removeUnusedImports);
+    }
+    
+    private JComboBox createComboBox( String[] choices, String defaultValue, Icon[] icons, Font font, FocusListener listener ) {
+        JComboBox combo = new JComboBox(choices);
+        combo.setSelectedItem(defaultValue);
+        combo.getAccessibleContext().setAccessibleDescription(getBundleString("FixDupImportStmts_Combo_ACSD")); //NOI18N
+        combo.getAccessibleContext().setAccessibleName(getBundleString("FixDupImportStmts_Combo_Name_ACSD")); //NOI18N
+        combo.setOpaque(false);
+        combo.setFont( font );
+        combo.addFocusListener( listener );
+        combo.setEnabled( choices.length > 1 );
+        combo.setRenderer( new DelegatingRenderer(combo.getRenderer(), choices, icons ) );
+        InputMap inputMap = combo.getInputMap( JComboBox.WHEN_FOCUSED );
+        inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_SPACE, 0), "showPopup" ); //NOI18N
+        combo.getActionMap().put( "showPopup", new TogglePopupAction() ); //NOI18N
+        return combo;
     }
     
     private int getRowHeight() {
@@ -230,6 +243,15 @@ public class FixDuplicateImportStmts extends javax.swing.JPanel{
                 }
             }
             return res;
+        }
+    }
+    
+    private static class TogglePopupAction extends AbstractAction {
+        public void actionPerformed(ActionEvent e) {
+            if( e.getSource() instanceof JComboBox ) {
+                JComboBox combo = (JComboBox)e.getSource();
+                combo.setPopupVisible( !combo.isPopupVisible() );
+            }
         }
     }
 }
