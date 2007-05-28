@@ -103,6 +103,10 @@ public class ComponentInspector extends TopComponent
         return instance;
     }
 
+    static boolean exists() {
+        return instance != null;
+    }
+
     /** Overriden to explicitely set persistence type of ComponentInspector
      * to PERSISTENCE_ALWAYS */
     public int getPersistenceType() {

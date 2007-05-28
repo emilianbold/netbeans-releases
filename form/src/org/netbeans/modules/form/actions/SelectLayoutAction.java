@@ -269,7 +269,7 @@ public class SelectLayoutAction extends CallableSystemAction {
             if (autoUndo) {
                 formModel.forceUndoOfCompoundEdit();
             } else {
-                FormEditor.getFormEditor(formModel).updateProjectForNaturalLayout();
+                FormEditor.updateProjectForNaturalLayout(formModel);
             }
         }
     }

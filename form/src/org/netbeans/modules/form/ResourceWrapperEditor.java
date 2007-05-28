@@ -158,7 +158,9 @@ public class ResourceWrapperEditor implements ExPropertyEditor, FormAwareEditor,
                 enable = true;
             }
             else {
-                key = ResourceSupport.getDefaultKey(property);
+                key = ResourceSupport.getDefaultKey(null,
+                        property.getPropertyContext().getContextPath(),
+                        property.getName(), ResourceSupport.AUTO_RESOURCING);
                 enable = ResourceSupport.isPropertyForResourcing(property);
             }
             resourcePanel.init(key, enable);
@@ -229,6 +231,7 @@ public class ResourceWrapperEditor implements ExPropertyEditor, FormAwareEditor,
     }
 
     // called when OK button is pressed in the custom editor dialog
+    // TODO: this should only be done if this property editor is the selected one
     public void vetoableChange(PropertyChangeEvent ev) throws PropertyVetoException {
         if (PropertyEnv.PROP_STATE.equals(ev.getPropertyName())) {
             boolean excludeRes = false;

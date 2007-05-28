@@ -458,7 +458,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }        
                 
         if (Boolean.TRUE.equals(newLayout) && (!underTest)) { // for sure update project classpath with layout extensions library
-            FormEditor.getFormEditor(formModel).updateProjectForNaturalLayout();
+            FormEditor.updateProjectForNaturalLayout(formModel);
         }
         if (!Boolean.FALSE.equals(newLayout)) {
             formModel.setFreeDesignDefaultLayout(true);

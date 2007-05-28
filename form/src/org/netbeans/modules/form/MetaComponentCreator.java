@@ -763,7 +763,7 @@ public class MetaComponentCreator {
                     || (!knownLayout && SwingLayoutBuilder.isRelevantContainer(laysup.getPrimaryContainerDelegate())))
                 {   // general containers should use the new layout support when created
                     newMetaCont.setOldLayoutSupport(false);
-                    FormEditor.getFormEditor(formModel).updateProjectForNaturalLayout();
+                    FormEditor.updateProjectForNaturalLayout(formModel);
                     knownLayout = true;
                 }
             }

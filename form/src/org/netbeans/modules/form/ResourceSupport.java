@@ -165,11 +165,12 @@ public class ResourceSupport {
             // key set to COMPUTE_AUTO_KEY asking form editor to provide it
             ExternalValue eValue = (ExternalValue) value;
             if (eValue.getKey() == ExternalValue.COMPUTE_AUTO_KEY) {
-                String key = getDefaultKey(property);
                 if (value instanceof I18nValue && getI18nService() != null) {
+                    String key = getDefaultKey(property, AUTO_I18N);
                     eValue = i18nService.changeKey((I18nValue)value, key);
                 }
                 else if (value instanceof ResourceValue && getResourceService() != null) {
+                    String key = getDefaultKey(property, AUTO_RESOURCING);
                     eValue = resourceService.changeKey((ResourceValue)value, key);
                 }
             }
@@ -204,7 +205,7 @@ public class ResourceSupport {
             if (value instanceof String) {
                 I18nValue i18nValue = searchDroppedI18nValue(property, value.toString());
                 if (i18nValue == null) {
-                    i18nValue = i18nService.create(getDefaultKey(property),
+                    i18nValue = i18nService.create(getDefaultKey(property, AUTO_I18N),
                                                    value.toString(),
                                                    getSrcDataObject());
                 }
@@ -221,7 +222,7 @@ public class ResourceSupport {
 
             ResourceValue resValue = searchDroppedResourceValue(property, value);
             if (resValue == null) {
-                resValue = resourceService.create(getDefaultKey(property),
+                resValue = resourceService.create(getDefaultKey(property, AUTO_RESOURCING),
                                                   property.getValueType(),
                                                   value,
                                                   getStringValue(property, value),
@@ -401,8 +402,9 @@ public class ResourceSupport {
      */
     public static void componentRenamed(RADComponent metacomp, String newName) {
         ResourceSupport support = getResourceSupport(metacomp);
-        if (support.isAutoMode())
-            support.renameDefaultKeys(metacomp, newName);
+        if (support.isAutoMode()) {
+            support.renameDefaultKeysForComponent(metacomp, null, newName);
+        }
 
         // hack: "name" property needs special treatment
         FormProperty nameProp = getNameProperty(metacomp);
@@ -422,51 +424,91 @@ public class ResourceSupport {
         }
     }
 
-    private void renameDefaultKeys(RADComponent metacomp, String newName) {
-//        if (getI18nService() == null)
-//            return;
+    public static void formRenamed(FormModel formModel, String oldName) {
+        ResourceSupport support = FormEditor.getResourceSupport(formModel);
+        if (support.isAutoMode()) {
+            support.renameDefaultKeys(oldName);
+        }
+    }
 
-        assert metacomp != metacomp.getFormModel().getTopRADComponent();
+    private void renameDefaultKeys(String oldFormName) {
+        for (RADComponent metacomp : formModel.getAllComponents()) {
+            renameDefaultKeysForComponent(metacomp, oldFormName, null);
+        }
+    }
 
-        String oldName = metacomp.getName();
+    private void renameDefaultKeysForComponent(RADComponent metacomp, String oldFormName, String newCompName) {
+        // renaming is a bit special:
+        // - if the whole form is renamed, we are notified afterwards, so the actual
+        //   form has already the new name (thus we have the 'oldFormName' param)
+        // - if a component is renamed, we are notified in advance, so the
+        //   component still has its original name (thus 'newCompName' param)
+        String newFormName = getSrcDataObject().getName();
+        if (oldFormName == null) {
+            oldFormName = newFormName;
+        }
+        String oldCompName = (metacomp != metacomp.getFormModel().getTopRADComponent())
+                             ? metacomp.getName() : null;
+        if (newCompName == null) {
+            newCompName = oldCompName;
+        }
+
         for (FormProperty prop : getComponentResourceProperties(metacomp, VALID_RESOURCE_VALUE, false)) {
-            ExternalValue eValue = null;
+            int type = -1;
+            I18nValue i18nValue = null;
+            ResourceValue resValue = null;
+            // check if the value uses a default key
+            String oldPath = prop.getPropertyContext().getContextPath(); // incl. oldCompName
             String oldKey = null;
-            String oldDefaultKey = null;
             try {
-                ExternalValue val = (ExternalValue) prop.getValue();
+                ExternalValue eValue = (ExternalValue) prop.getValue();
                 oldKey = eValue.getKey();
-                oldDefaultKey = getDefaultKey(prop);
-                if (isAutoKey(oldKey, oldDefaultKey))
-                    eValue = val;
+                if (eValue instanceof I18nValue) {
+                    i18nValue = (I18nValue) eValue;
+                    type = AUTO_I18N;
+                } else if (eValue instanceof ResourceValue) {
+                    resValue = (ResourceValue) eValue;
+                    type = AUTO_RESOURCING;
+                }
             }
             catch (Exception ex) { // should not happen
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
-            if (eValue == null)
+            String oldDefaultKey = getDefaultKey(oldFormName, oldPath, prop.getName(), type);
+            if (!isAutoKey(oldKey, oldDefaultKey)) {
                 continue;
+            }
 
-            // let's rename this key
-            String oldPath = prop.getPropertyContext().getContextPath();
-            int idx = oldPath.indexOf(oldName);
-            String newPath = oldPath.substring(0, idx) + newName + oldPath.substring(idx+oldName.length());
-            String newKey = getDefaultKey(newPath, prop.getName());
-            if (oldKey.length() > oldDefaultKey.length()) // key can be longer than default key
-                newKey = newKey + oldKey.substring(oldDefaultKey.length());
+            // derive the new key
+            String newPath;
+            if (oldCompName != null) {
+                int idx = oldPath.indexOf(oldCompName);
+                newPath = oldPath.substring(0, idx) + newCompName
+                          + oldPath.substring(idx+oldCompName.length());
+            } else { // root component has no name
+                newPath = oldPath;
+            }
+            String suffix = oldKey.length() > oldDefaultKey.length() ?
+                            oldKey.substring(oldDefaultKey.length()) : ""; // NOI18N
+            String newKey = getDefaultKey(newFormName, newPath, prop.getName(), type) + suffix;
+            if (newKey.equals(oldKey)) {
+                continue;
+            }
 
+            // set the new key
             boolean fire = prop.isChangeFiring();
             prop.setChangeFiring(false); // suppress firing - update is not done the usual way
             try {
-                if (eValue instanceof I18nValue) {
-                    I18nValue oldI18nValue = (I18nValue) eValue;
+                if (i18nValue != null) {
+                    I18nValue oldI18nValue = i18nValue;
                     I18nValue newI18nValue = i18nService.changeKey(oldI18nValue, newKey);
                     prop.setValue(newI18nValue);
                     i18nService.update(oldI18nValue, newI18nValue,
                                        getSrcDataObject(), getI18nBundleName(), designLocale,
                                        true);
                 }
-                else if (eValue instanceof ResourceValue) {
-                    ResourceValue oldResValue = (ResourceValue) eValue;
+                else if (resValue != null) {
+                    ResourceValue oldResValue = resValue;
                     ResourceValue newResValue = resourceService.changeKey(oldResValue, newKey);
                     prop.setValue(newResValue);
                     resourceService.update(oldResValue, newResValue, getSourceFile(), designLocale);
@@ -603,7 +645,7 @@ public class ResourceSupport {
             try {
                 i18nService.update(oldVal, newVal,
                                    getSrcDataObject(), getI18nBundleName(), designLocale,
-                                   isAutoValue(oldValue, getDefaultKey(property)));
+                                   isAutoValue(oldVal, getDefaultKey(property, AUTO_I18N)));
             }
             catch (IOException ex) {
                 // [can't store to properties bundle - should do something?]
@@ -720,7 +762,7 @@ public class ResourceSupport {
                     value = prop.getValue();
                     if (value instanceof ResourceValue) {
                         String key = ((ResourceValue)value).getKey();
-                        if (key != null && getDefaultKey(prop).equals(key)) {
+                        if (key != null && support.getDefaultKey(prop, AUTO_INJECTION).equals(key)) {
                             return true;
                         }
                     }
@@ -1062,13 +1104,35 @@ public class ResourceSupport {
 
     // -----
 
-    static String getDefaultKey(FormProperty prop) {
-        return getDefaultKey(prop.getPropertyContext().getContextPath(), prop.getName());
+    private String getDefaultKey(FormProperty prop, int type) {
+        return getDefaultKey(getSrcDataObject().getName(), prop.getPropertyContext().getContextPath(), prop.getName(), type);
     }
 
-    private static String getDefaultKey(String path, String propName) {
-        return path != null && !path.equals("") ? // NOI18N
-               path + "." + propName : propName; // NOI18N
+    static String getDefaultKey(String formName, String propPath, String propName, int type) {
+        if (type != AUTO_I18N) {
+            // TBD consult the I18nService for the default key...
+            // TBD consult the ResourceService for the default key...
+            formName = null;
+        }
+        StringBuilder buf = new StringBuilder();
+        if (formName != null && !formName.equals("")) { // NOI18N
+            buf.append(formName).append("."); // NOI18N
+        }
+        if (propPath != null && !propPath.equals("")) { // NOI18N
+            buf.append(propPath).append("."); // NOI18N
+        }
+        buf.append(propName);
+        return buf.toString();
+    }
+
+    private String getDefaultKey(FormProperty prop, ExternalValue eValue) {
+        if (eValue instanceof I18nValue) {
+            return getDefaultKey(prop, AUTO_I18N);
+        } else if (eValue instanceof ResourceValue) {
+            return getDefaultKey(prop, AUTO_RESOURCING);
+        } else {
+            return null;
+        }
     }
 
     private FileObject getSourceFile() {
@@ -1142,7 +1206,7 @@ public class ResourceSupport {
      * Returns value of the property if it is an ExternalValue with a default
      * key (i.e. used exclusively only in this property).
      */
-    private static Object getAutoValue(FormProperty prop) {
+    private ExternalValue getAutoValue(FormProperty prop) {
         Object value;
         try {
             value = prop.getValue();
@@ -1151,11 +1215,18 @@ public class ResourceSupport {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             return null;
         }
-        return isAutoValue(value, getDefaultKey(prop)) ? value : null;
+        ExternalValue eVal;
+        if (value instanceof ExternalValue) {
+            eVal = (ExternalValue) value;
+            if (isAutoValue(eVal, getDefaultKey(prop, eVal))) {
+                return eVal;
+            }
+        }
+        return null;
     }
 
-    private static boolean isAutoValue(Object value, String defaultKey) {
-        String key = value instanceof ExternalValue ? ((ExternalValue)value).getKey() : null;
+    private static boolean isAutoValue(ExternalValue value, String defaultKey) {
+        String key = (value != null) ? value.getKey() : null;
         return key != null ? isAutoKey(key, defaultKey) : false;
     }
 
