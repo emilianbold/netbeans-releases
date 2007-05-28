@@ -146,6 +146,11 @@ public class InstanceImpl implements Instance {
         return fields;
     }
 
+    public Object getValueOfField(String name) {
+        // TODO
+        return null;
+   }
+
     public List<FieldValue> getStaticFieldValues() {
         return getJavaClass().getStaticFieldValues();
     }

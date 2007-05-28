@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -91,6 +92,11 @@ public class HeapImpl implements Heap {
         return null;
     }
     
+    public Properties getSystemProperties() {
+        // TODO
+        return null;
+    }
+
     public InstanceNumberCollector getInstanceNumberCollector() {
         return instanceNumberCollector;
     }

@@ -26,6 +26,7 @@ import com.sun.tools.profiler.heap.JavaClass;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import org.netbeans.api.debugger.jpda.JPDAArrayType;
@@ -134,6 +135,11 @@ public class JavaClassImpl implements JavaClass {
             }
         }
         return fields;
+    }
+
+    public Object getValueOfStaticField(String name) {
+        // TODO
+        return Collections.EMPTY_LIST;
     }
 
     public List<Instance> getInstances() {
