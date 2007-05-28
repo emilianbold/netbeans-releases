@@ -23,7 +23,6 @@ import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
 import org.openide.windows.TopComponent;
 import org.openide.nodes.Node;
-import org.openide.cookies.ViewCookie;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -36,7 +35,6 @@ import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.update.RevertModifications;
 import org.netbeans.modules.subversion.ui.update.RevertModificationsAction;
 import org.netbeans.modules.subversion.ui.diff.DiffSetupSource;
-import org.netbeans.modules.subversion.ui.diff.ExportDiffAction;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import javax.swing.*;
@@ -50,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.tigris.subversion.svnclientadapter.ISVNLogMessageChangePath;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
@@ -246,7 +245,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 
         menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackChange")) { // NOI18N
             {
-                setEnabled(true);
+                setEnabled(!(drev.getFile().exists() && drev.getChangedPath().getAction() == 'D') );
             }
             public void actionPerformed(ActionEvent e) {
                 revertModifications(selection);
@@ -255,7 +254,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 
         if (!revisionSelected) {
             menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackTo", revision)) { // NOI18N
-                {
+                {                    
                     setEnabled(selection.length == 1 && !revisionSelected);
                 }
                 public void actionPerformed(ActionEvent e) {
@@ -354,15 +353,15 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         }                           
         final RepositoryFile repositoryFile = new RepositoryFile(url, url, SVNRevision.HEAD);
         for (RepositoryRevision revision : revisions) {
-            RevertModifications revertModifications = new RevertModifications(repositoryFile, Long.toString(revision.getLog().getRevision().getNumber()));
+            RevertModifications.RevisionInterval revisionInterval = new RevertModifications.RevisionInterval(revision.getLog().getRevision());
             final Context ctx = new Context(master.getRoots());
-            RevertModificationsAction.performRevert(ctx, revertModifications, progress);
+            RevertModificationsAction.performRevert(revisionInterval, false, ctx, progress);
         }
         for (RepositoryRevision.Event event : events) {
             if (event.getFile() == null) continue;
-            RevertModifications revertModifications = new RevertModifications(repositoryFile, Long.toString(event.getLogInfoHeader().getLog().getRevision().getNumber()));
+            RevertModifications.RevisionInterval revisionInterval = new RevertModifications.RevisionInterval(event.getLogInfoHeader().getLog().getRevision());            
             final Context ctx = new Context(event.getFile());
-            RevertModificationsAction.performRevert(ctx, revertModifications, progress);
+            RevertModificationsAction.performRevert(revisionInterval, false, ctx, progress);
         }
     }
 

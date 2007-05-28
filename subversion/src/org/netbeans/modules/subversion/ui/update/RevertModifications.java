@@ -46,6 +46,19 @@ public class RevertModifications implements PropertyChangeListener {
     private JButton okButton;
     private JButton cancelButton;
     private RevertType[] types;
+
+    public static class RevisionInterval {
+        public RevisionInterval(SVNRevision revision) {
+            this.startRevision = revision;
+            this.endRevision = revision;
+        }                
+        public RevisionInterval(SVNRevision startRevision, SVNRevision endRevision) {
+            this.startRevision = startRevision;
+            this.endRevision = endRevision;
+        }        
+        SVNRevision startRevision;
+        SVNRevision endRevision;
+    }
     
     /** Creates a new instance of RevertModifications */
     public RevertModifications(RepositoryFile repositoryFile) {
@@ -78,7 +91,7 @@ public class RevertModifications implements PropertyChangeListener {
         return panel;
     }
 
-    RevisionInterval getRevisionInterval() {
+    public RevisionInterval getRevisionInterval() {
         for (int i = 0; i < types.length; i++) {
             if(types[i].isSelected()) {
                 return types[i].getRevisionInterval();
@@ -87,7 +100,7 @@ public class RevertModifications implements PropertyChangeListener {
         return null;
     }      
 
-    boolean revertNewFiles() {
+    public boolean revertNewFiles() {
         for (int i = 0; i < types.length; i++) {
             if(types[i].isSelected()) {
                 return types[i].revertNewFiles();
@@ -133,11 +146,6 @@ public class RevertModifications implements PropertyChangeListener {
         getPanel().oneRevisionTextField.setEnabled(b);
     }
         
-    static class RevisionInterval {
-        SVNRevision startRevision;
-        SVNRevision endRevision;
-    }
-
     private abstract class RevertType implements ActionListener, DocumentListener {
         private JRadioButton button;
 
@@ -231,9 +239,7 @@ public class RevertModifications implements PropertyChangeListener {
 
         RevertModifications.RevisionInterval getRevisionInterval() {
             SVNRevision revision = getRevision(oneRevisionPath);
-            RevisionInterval ret = new RevisionInterval();
-            ret.startRevision = revision;
-            ret.endRevision = revision;
+            RevisionInterval ret = new RevisionInterval(revision);
             return ret;
         }
 
@@ -303,27 +309,20 @@ public class RevertModifications implements PropertyChangeListener {
         }
 
         private RevisionInterval getResortedRevisionInterval(SVNRevision revision1, SVNRevision revision2) {
-            RevisionInterval ret = new RevisionInterval ();
-            if(revision1.equals(SVNRevision.HEAD) &&
-               revision1.equals(SVNRevision.HEAD))
-            {
-                ret.startRevision = revision1;
-                ret.endRevision = revision2;
+            RevisionInterval ret; 
+            if(revision1.equals(SVNRevision.HEAD) && revision1.equals(SVNRevision.HEAD)) {
+                ret = new RevisionInterval (revision1, revision2);
             } else if (revision1.equals(SVNRevision.HEAD)) {
-                ret.startRevision = revision2;
-                ret.endRevision = revision1;
+                ret = new RevisionInterval (revision2, revision1);
             } else if (revision2.equals(SVNRevision.HEAD)) {
-                ret.startRevision = revision1;
-                ret.endRevision = revision2;
+                ret = new RevisionInterval (revision1, revision2);                
             } else {
                 Long r1 = Long.parseLong(revision1.toString());
                 Long r2 = Long.parseLong(revision2.toString());
                 if(r1.compareTo(r2) < 0) {
-                    ret.startRevision = revision1;
-                    ret.endRevision = revision2;
+                    ret = new RevisionInterval (revision1, revision2);
                 } else {
-                    ret.startRevision = revision2;
-                    ret.endRevision = revision1;
+                    ret = new RevisionInterval (revision2, revision1);
                 }
             }
             return ret;

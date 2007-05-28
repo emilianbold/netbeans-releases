@@ -26,7 +26,6 @@ import org.netbeans.modules.subversion.*;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.*;
@@ -48,7 +47,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * @author Petr Kuzel
  */
 public class RevertModificationsAction extends ContextAction {
-    
+          
     /** Creates a new instance of RevertModificationsAction */
     public RevertModificationsAction() {        
     }
@@ -90,14 +89,14 @@ public class RevertModificationsAction extends ContextAction {
 
         ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
             public void perform() {
-                performRevert(ctx, revertModifications, this);
+                performRevert(revertModifications.getRevisionInterval(), revertModifications.revertNewFiles(), ctx, this);
             }
         };            
         support.start(createRequestProcessor(nodes));
     }
         
     /** Recursive revert */
-    public static void performRevert(Context ctx, RevertModifications revertModifications, SvnProgressSupport support) {
+    public static void performRevert(RevertModifications.RevisionInterval revisions, boolean revertNewFiles, Context ctx, SvnProgressSupport support) {
         SvnClient client;
         try {
             client = Subversion.getInstance().getClient(ctx, support);
@@ -118,8 +117,7 @@ public class RevertModificationsAction extends ContextAction {
                 files = SvnUtils.flatten(files, FileInformation.STATUS_REVERTIBLE_CHANGE);
             }
 
-            try {
-                RevertModifications.RevisionInterval revisions = revertModifications.getRevisionInterval();
+            try {                
                 if(revisions != null) {
                     for (int i= 0; i<files.length; i++) {
                         if(support.isCanceled()) {
@@ -127,7 +125,12 @@ public class RevertModificationsAction extends ContextAction {
                         }
                         SVNUrl url = SvnUtils.getRepositoryUrl(files[i]);
                         revisions = recountStartRevision(client, url, revisions);
-                        client.merge(url, revisions.endRevision, url, revisions.startRevision, files[i], false, recursive);                        
+                        if(files[i].exists()) {
+                            client.merge(url, revisions.endRevision, url, revisions.startRevision, files[i], false, recursive);                        
+                        } else {
+                            assert revisions.startRevision instanceof SVNRevision.Number : "The revision has to be a Number when trying to undelete file!";
+                            client.copy(url, files[i], revisions.startRevision);
+                        }
                     }
                 } else {
                     if(support.isCanceled()) {
@@ -146,7 +149,7 @@ public class RevertModificationsAction extends ContextAction {
             return;
         }
                 
-        if(revertModifications.revertNewFiles()) {
+        if(revertNewFiles) {
             File[] newfiles = Subversion.getInstance().getStatusCache().listFiles(ctx.getRootFiles(), FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);
             for (int i = 0; i < newfiles.length; i++) {                                
                 FileObject fo = FileUtil.toFileObject(newfiles[i]);                                    

@@ -412,7 +412,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(url);
         SvnProgressSupport support = new SvnProgressSupport() {
             public void perform() {                    
-                RevertModificationsAction.performRevert(ctx, revertModifications, this);
+                RevertModificationsAction.performRevert(revertModifications.getRevisionInterval(), revertModifications.revertNewFiles(), ctx, this);
             }
         };
         support.start(rp, url, NbBundle.getMessage(AnnotationBar.class, "MSG_Revert_Progress")); // NOI18N
