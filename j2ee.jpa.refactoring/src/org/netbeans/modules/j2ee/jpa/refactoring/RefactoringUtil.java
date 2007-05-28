@@ -19,7 +19,11 @@
 
 package org.netbeans.modules.j2ee.jpa.refactoring;
 
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.util.TreePath;
 import java.io.IOException;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CancellableTask;
@@ -198,5 +202,70 @@ public abstract class RefactoringUtil {
         }
         return 0;
     }
+    
+    /**
+     * Resolves the TreePathHandle for the given refactoring.
+     * @param refactoring the refactoring.
+     * @return the TreePathHandle or null if no handle could be resolved.
+     */
+    public static TreePathHandle resolveTreePathHandle(AbstractRefactoring refactoring) throws IOException {
+        Parameters.notNull("refactoring", refactoring); //NO18N
+        
+        TreePathHandle tph = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
+        if (tph != null) {
+            return tph;
+        }
+        
+        final TreePathHandle[] result = new TreePathHandle[1];
+        JavaSource source = JavaSource.forFileObject(refactoring.getRefactoringSource().lookup(FileObject.class));
+        
+        source.runUserActionTask(new CancellableTask<CompilationController>() {
+            public void cancel() {
+            }
+            public void run(CompilationController co) throws Exception {
+                co.toPhase(JavaSource.Phase.RESOLVED);
+                CompilationUnitTree cut = co.getCompilationUnit();
+                result[0] = TreePathHandle.create(TreePath.getPath(cut, cut.getTypeDecls().get(0)), co);
+            }
+            
+        }, true);
+        
+        return result[0];
+    }
+    
+    /**
+     * Gets a TreePathHandle for the specified property.
+     *
+     * @param fieldName the name of the field.
+     * @param className the FQN of the class.
+     * @param file the file object representing the class.
+     */
+    public static TreePathHandle getTreePathHandle(final String fieldName,
+            final String className, FileObject file) throws IOException{
+        
+        final TreePathHandle[] result = new TreePathHandle[1];
+        JavaSource source = JavaSource.forFileObject(file);
+        
+        source.runUserActionTask(new CancellableTask<CompilationController>() {
+            public void cancel() {
+            }
+            
+            public void run(CompilationController info) throws Exception {
+                info.toPhase(JavaSource.Phase.RESOLVED);
+                
+                TypeElement te = info.getElements().getTypeElement(className);
+                
+                for (Element enclosed : te.getEnclosedElements()){
+                    if (enclosed.getSimpleName().contentEquals(fieldName)){
+                        TreePath propertyPath = info.getTrees().getPath(enclosed);
+                        result[0] = TreePathHandle.create(propertyPath, info);
+                    }
+                }
+            }
+        }, true);
+        
+        return result[0];
+    }
+    
     
 }

@@ -44,5 +44,5 @@ public class RefactoringUtilTest extends TestCase {
         assertEquals("something", RefactoringUtil.getPropertyName(nonJavaBeanAccessor));
         assertEquals("getme", RefactoringUtil.getPropertyName(nonJavaBeanGetter));
     }
-    
+
 }

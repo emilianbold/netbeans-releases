@@ -22,6 +22,8 @@ package org.netbeans.modules.j2ee.jpa.refactoring;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.modules.j2ee.jpa.refactoring.rename.EntityRename;
 import org.netbeans.modules.j2ee.jpa.refactoring.rename.PersistenceXmlPackageRename;
 import org.netbeans.modules.j2ee.jpa.refactoring.rename.PersistenceXmlRename;
 import org.netbeans.modules.j2ee.jpa.refactoring.safedelete.PersistenceXmlSafeDelete;
@@ -33,7 +35,6 @@ import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 
 /**
  * A refactoring factory for creating JPA refactoring plugins.
@@ -49,8 +50,11 @@ public class JPARefactoringFactory implements RefactoringPluginFactory{
         
         FileObject targetFile = refactoring.getRefactoringSource().lookup(FileObject.class);
         NonRecursiveFolder folder = refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class);
+        TreePathHandle handle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
+                
         boolean javaPackage = folder != null && RefactoringUtil.isOnSourceClasspath(folder.getFolder());
         boolean javaFile = targetFile != null && RefactoringUtil.isJavaFile(targetFile);
+        boolean javaMember = handle != null;
         
         List<JPARefactoring> refactorings = new ArrayList<JPARefactoring>();
         
@@ -60,6 +64,8 @@ public class JPARefactoringFactory implements RefactoringPluginFactory{
                 refactorings.add(new PersistenceXmlRename(rename));
             } else if (javaPackage){
                 refactorings.add(new PersistenceXmlPackageRename(rename));
+            } else if (javaMember){
+                refactorings.add(new EntityRename(rename));
             }
             return new JPARefactoringPlugin(refactorings);
         }

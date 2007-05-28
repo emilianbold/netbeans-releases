@@ -42,8 +42,6 @@ import org.openide.util.NbBundle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -124,7 +122,36 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
         return result[0];
     }
     
+    protected final boolean isClass(){
+        final boolean[] result = new boolean[1];
+        
+        JavaSource source = JavaSource.forFileObject(getRefactoringSource());
+        try{
+            source.runUserActionTask(new CancellableTask<CompilationController>(){
+                
+                public void cancel() {
+                }
+                
+                public void run(CompilationController info) throws Exception {
+                    info.toPhase(JavaSource.Phase.RESOLVED);
+                    TreePathHandle treePathHandle = resolveTreePathHandle();
+                    Element element = treePathHandle.resolveElement(info);
+                    result[0] = element.getKind() == ElementKind.CLASS;
+                }
+            }, true);
+        } catch(IOException ex){
+            Exceptions.printStackTrace(ex);
+        }
+        
+        return result[0];
+    }
+    
     /**
+     * Checks whether the object being refactored should be handled by 
+     * this refactoring. Override in subclasses as appropriated, the 
+     * default implementation returns true if the refactored object
+     * is a class.
+     * 
      * @return true if the refactoring source represents a class that
      * should be handled by persistence.xml refactorings.
      */
