@@ -640,7 +640,7 @@ extractFile() {
 
 	if [ 0 -eq $diskSpaceCheck ] ; then
 		dir=`dirname "$name"`
-		message "$MSG_ERROR_FREESPACE" "$size" "$dir" "$ARG_TEMPDIR"	
+		message "$MSG_ERROR_FREESPACE" "$size" "$ARG_TEMPDIR"	
 		exitProgram $ERROR_FREESPACE
 	fi
 
@@ -1076,7 +1076,7 @@ checkFreeSpace() {
 			mbSize="$mbDownSize"
 		fi
 		
-		message "$MSG_ERROR_FREESPACE" "$LAUNCHER_TEMP" "$mbSize" "$ARG_TEMPDIR"	
+		message "$MSG_ERROR_FREESPACE" "$mbSize" "$ARG_TEMPDIR"	
 		exitProgram $ERROR_FREESPACE
 	fi
 }
