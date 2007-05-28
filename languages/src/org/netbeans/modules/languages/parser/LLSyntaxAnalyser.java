@@ -291,25 +291,25 @@ public class LLSyntaxAnalyser {
         List<ASTItem> children = token.getChildren ();
         if (children.isEmpty ())
             return token;
-        
-        String mimeType = children.get (0).getMimeType ();
-        Language oLanguage = LanguagesManager.getDefault ().
-            getLanguage (token.getMimeType ());
-        Feature f = oLanguage.getPreprocessorImport ();
-        if (f != null && 
-            mimeType.equals (f.getValue ("mimeType")) &&
-            f.getBoolean ("continual", false)
-        )
-            return skipEmbedding (token, embeddings, children, mimeType);
-        f = oLanguage.getTokenImports ().get (token.getType ());
-        if (f != null && 
-            mimeType.equals (f.getValue ("mimeType")) &&
-            f.getBoolean ("continual", false)
-        )
-            return skipEmbedding (token, embeddings, children, mimeType);
-        
+
         TokenInput in = TokenInputUtils.create (children);
         try {
+            String mimeType = children.get (0).getMimeType ();
+            Language oLanguage = LanguagesManager.getDefault ().
+                getLanguage (token.getMimeType ());
+            Feature f = oLanguage.getPreprocessorImport ();
+            if (f != null && 
+                mimeType.equals (f.getValue ("mimeType")) &&
+                f.getBoolean ("continual", false)
+            )
+                return skipEmbedding (token, embeddings, children, mimeType);
+            f = oLanguage.getTokenImports ().get (token.getType ());
+            if (f != null && 
+                mimeType.equals (f.getValue ("mimeType")) &&
+                f.getBoolean ("continual", false)
+            )
+                return skipEmbedding (token, embeddings, children, mimeType);
+
             Language language = LanguagesManager.getDefault ().
                 getLanguage (children.get (0).getMimeType ());
             ASTNode root = language.getAnalyser ().read (in, skipErrors, embeddings);
