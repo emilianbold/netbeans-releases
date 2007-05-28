@@ -42,7 +42,6 @@ import javax.lang.model.type.WildcardType;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.timers.TimesCollector;
 import org.netbeans.modules.java.navigation.ElementNode.Description;
 
@@ -215,7 +214,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         d.pos = getPosition( e, info );
         
         if( inherited ) {
-            d.sourceFile = SourceUtils.getFile(e, info.getClasspathInfo() );
+            d.compilationInfo = info;
         }
         
         return d;

@@ -29,7 +29,9 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.swing.Action;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.modules.java.navigation.ElementNode.Description;
 import org.netbeans.modules.java.navigation.actions.OpenAction;
@@ -108,7 +110,7 @@ public class ElementNode extends AbstractNode {
     
     private synchronized Action getOpenAction() {
         if ( openAction == null ) {
-            FileObject fo = null == description.sourceFile ? description.ui.getFileObject() : description.sourceFile;
+            FileObject fo = description.getFileObject();
             openAction = new OpenAction(description.elementHandle, fo);
         }
         return openAction;
@@ -243,7 +245,7 @@ public class ElementNode extends AbstractNode {
         String htmlHeader;
         long pos;
         boolean isInherited;
-        FileObject sourceFile;
+        CompilationInfo compilationInfo;
         
         Description( ClassMemberPanelUI ui ) {
             this.ui = ui;
@@ -265,7 +267,11 @@ public class ElementNode extends AbstractNode {
             this.isInherited = inherited;
         }
 
-        
+        public FileObject getFileObject() {
+            if( !isInherited )
+                return ui.getFileObject();
+            return SourceUtils.getFile( elementHandle, compilationInfo.getClasspathInfo() );
+        }
         
         @Override
         public boolean equals(Object o) {
