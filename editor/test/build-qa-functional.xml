@@ -95,7 +95,7 @@ Microsystems, Inc. All Rights Reserved.
     -->
     <target name="runidetest-nogui">        
         <executeTests  pluginName="ide">
-            <property name="xtest.ide.commandline.suffix" value="-nogui"/>
+            <property name="xtest.ide.commandline.suffix" value="--nogui"/>
             <classpath/>
         </executeTests>
     </target>
