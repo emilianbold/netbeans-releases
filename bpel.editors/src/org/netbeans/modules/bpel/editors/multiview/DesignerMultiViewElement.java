@@ -128,6 +128,7 @@ import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
 import org.netbeans.modules.print.api.PrintManagerAccess;
+import org.netbeans.modules.xml.xam.ui.search.api.SearchManager;
 import org.netbeans.modules.xml.xam.ui.search.api.SearchManagerAccess;
 import org.openide.loaders.DataObject;
 import org.openide.util.RequestProcessor;
@@ -391,12 +392,17 @@ public class DesignerMultiViewElement extends TopComponent
                     toolbar.add(Box.createHorizontalStrut(1));
                 }
             }
-            // vlv: print and search
+            // vlv: print
             toolbar.addSeparator();
             toolbar.add(PrintManagerAccess.getManager().getPreviewAction());
-            toolbar.add(SearchManagerAccess.getManager().getSearchAction());
 
-            // Add button for valdiate action.
+            // vlv: search
+            SearchManager manager = SearchManagerAccess.getManager();
+
+            if (manager != null) {
+              toolbar.add(manager.getSearchAction());
+            }
+            // valdiation
             toolbar.addSeparator();
             toolbar.add(new BPELValidateAction(myDesignView.getBPELModel()));
             
@@ -483,24 +489,25 @@ public class DesignerMultiViewElement extends TopComponent
         
         myDesignView = createDesignView();
         ThumbScrollPane scroll = new ThumbScrollPane(myDesignView.getView());
-//        JScrollPane scroll = new JScrollPane(myDesignView.getView());
         scroll.setBorder(null);
         scroll.getVerticalScrollBar().setUnitIncrement(16);
         scroll.getHorizontalScrollBar().setUnitIncrement(16);
         add(scroll, BorderLayout.CENTER);
         add(myDesignView.getRightStripe(), BorderLayout.EAST);
 
-        Component search =
-          SearchManagerAccess.getManager().getUI(new DiagramImpl(getDesignView()), this, false);
+        // vlv
+        SearchManager manager = SearchManagerAccess.getManager();
+
+        if (manager != null) {
+          Component search =
+            manager.getUI(new DiagramImpl(getDesignView()), this, false);
         
-        if (search != null) {
+          if (search != null) {
             search.setVisible(false);
             add(search, BorderLayout.SOUTH);
+          }
         }
-
-        
         setVisible(true);
-        
     }
 
     /**
