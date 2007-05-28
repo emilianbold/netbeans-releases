@@ -111,7 +111,11 @@ public class UnitTable extends JTable {
         if (u != null && !u.isDefaultOperationAllowed ()) {
             c.setForeground (Color.gray);
         } else {
-            c.setForeground (getForeground ());
+            if (isRowSelected(rowIndex)) {
+                c.setForeground(getSelectionForeground());
+            } else {
+                c.setForeground(getForeground());
+            }
         }
         if (!isCellSelected (rowIndex, vColIndex)) {
             if (rowIndex % 2 == 0) {
