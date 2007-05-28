@@ -20,7 +20,7 @@ package org.netbeans.modules.form.j2ee;
 
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTargetDragEvent;
-import java.util.ResourceBundle;
+import java.util.*;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.db.api.explorer.DatabaseMetaDataTransfer;
@@ -168,8 +168,9 @@ public class DBColumnDrop extends DBConnectionDrop {
                 control.getPropertyByName("columns").setValue(15); // NOI18N
             }
             
-            // PENDING find field or property that corresponds to the dragged column - consider annotations
-            String sourcePath = J2EEUtils.columnToField(column.getColumnName());
+            List<String> l = Collections.singletonList(column.getColumnName());
+            l = J2EEUtils.propertiesForColumns(mappings, entityInfo[0], l);
+            String sourcePath = l.get(0);
             
             RADComponent metaTable = null;
             for (RADComponent component : model.getAllComponents()) {

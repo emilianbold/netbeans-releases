@@ -63,8 +63,10 @@ public class MasterDetailGenerator {
     private String masterEntity;
     /** Name of the detail entity. */
     private String detailEntity;
-    /** Name of the join field. */
-    private String joinField;    
+    /** Name of the join property. */
+    private String joinProperty;
+    /** Name of the join collection property. */
+    private String joinCollectionProperty;    
     /** Name of the persistence unit. */
     private String unit;
     /** Columns of the master table. */
@@ -85,18 +87,21 @@ public class MasterDetailGenerator {
      * @param detailClass class name of the detail entity.
      * @param masterEntity name of the master entity.
      * @param detailEntity name of the detail entity.
-     * @param joinField name of the join/fk field.
+     * @param joinProperty name of the join/fk property.
+     * @param joinCollectionProperty name of the join/fk collection property.
      * @param unit name of the persistence unit.
      */
     MasterDetailGenerator(FileObject formFile, FileObject javaFile,
-        String masterClass, String detailClass, String masterEntity, String detailEntity, String joinField, String unit) {
+            String masterClass, String detailClass, String masterEntity, String detailEntity,
+            String joinProperty, String joinCollectionProperty, String unit) {
         this.formFile = formFile;
         this.javaFile = javaFile;
         this.masterClass = masterClass;
         this.detailClass = detailClass;
         this.masterEntity = masterEntity;
         this.detailEntity = detailEntity;
-        this.joinField = joinField;
+        this.joinProperty = joinProperty;
+        this.joinCollectionProperty = joinCollectionProperty;
         this.unit = unit;
     }
 
@@ -180,7 +185,11 @@ public class MasterDetailGenerator {
         for (String column : masterColumns) {
             String binding = template.replace("_index_", ""+i++); // NOI18N
             binding = binding.replace("_fieldName_", column); // NOI18N
-            binding = binding.replace("_fieldType_", iter.next()); // NOI18N
+            String type = iter.next();
+            if (type == null) { // fallback - shouldn't happen - means corrupted entity
+                type = "Object.class"; // NOI18N
+            }
+            binding = binding.replace("_fieldType_", type); // NOI18N
             sb.append(binding);
         }
         StringBuilder rsb = new StringBuilder(result);
@@ -459,10 +468,9 @@ public class MasterDetailGenerator {
             if (detailInitial == masterInitial) {
                 masterInitial = Character.toUpperCase(masterInitial);
             }
-            // PENDING find correct mapping
-            map.put("_joinCollection_", Character.toLowerCase(detailEntity.charAt(0)) + detailEntity.substring(1) + "Collection"); // NOI18N
-            map.put("_joinCollectionCapital_", detailEntity + "Collection"); // NOI18N
-            map.put("_joinCapital_", Character.toUpperCase(joinField.charAt(0)) + joinField.substring(1)); // NOI18N
+            map.put("_joinCollection_", joinCollectionProperty); // NOI18N
+            map.put("_joinCollectionCapital_", Character.toUpperCase(joinCollectionProperty.charAt(0)) + joinCollectionProperty.substring(1)); // NOI18N
+            map.put("_joinCapital_", Character.toUpperCase(joinProperty.charAt(0)) + joinProperty.substring(1)); // NOI18N
         }
         map.put("_masterEntityInitial_", Character.toString(masterInitial)); // NOI18N
         return map;

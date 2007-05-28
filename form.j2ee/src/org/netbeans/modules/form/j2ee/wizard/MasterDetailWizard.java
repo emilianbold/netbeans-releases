@@ -25,7 +25,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.swing.JComponent;
@@ -38,8 +37,12 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.form.j2ee.J2EEUtils;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.ManyToOne;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.OneToMany;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.openide.WizardDescriptor;
@@ -319,29 +322,25 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
             String masterEntity = entity[0][0];
             String detailClass = null;
             String detailEntity = null;
+            String[] joinInfo = null;
             if (entity[1] != null) {
                 detailClass = entity[1][1];
                 detailEntity = entity[1][0];
-                joinColumn = J2EEUtils.columnToField(joinColumn);
+                joinInfo = findOneToManyRelationProperties(mappings, masterEntity, detailEntity, joinColumn);
             }
             MasterDetailGenerator generator = new MasterDetailGenerator(formFile, javaFile,
-                masterClass, detailClass, masterEntity, detailEntity, joinColumn, unitName);
+                masterClass, detailClass, masterEntity, detailEntity,
+                (joinInfo == null) ? null : joinInfo[0], (joinInfo == null) ? null : joinInfo[1], unitName);
 
             List<String> masterColumnNames = (List<String>)wizard.getProperty("masterColumns"); // NOI18N
-            List<String> masterColumns = new LinkedList();
-            for (String columnName : masterColumnNames) {
-                masterColumns.add(J2EEUtils.columnToField(columnName));
-            }
+            List<String> masterColumns = J2EEUtils.propertiesForColumns(mappings, masterEntity, masterColumnNames);
             generator.setMasterColumns(masterColumns);
 
             List<String> masterColumnTypes = J2EEUtils.typesOfProperties(javaFile, masterClass, masterColumns);
             generator.setMasterColumnTypes(masterColumnTypes);
 
             List<String> detailColumnNames = (List<String>)wizard.getProperty("detailColumns"); // NOI18N
-            List<String> detailColumns = new LinkedList();
-            for (String columnName : detailColumnNames) {
-                detailColumns.add(J2EEUtils.columnToField(columnName));
-            }
+            List<String> detailColumns = J2EEUtils.propertiesForColumns(mappings, (detailEntity == null) ? masterEntity : detailEntity, detailColumnNames);;
             generator.setDetailColumns(detailColumns);
 
             if (detailClass != null) {
@@ -357,6 +356,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
         return resultSet;
     }
 
+    private MetadataModel<EntityMappingsMetadata> mappings;
     /** Name of persistence unit that contains entity classes for master and detail tables. */
     private String unitName;
     
@@ -386,7 +386,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
 
             // Obtain description of entity mappings
             PersistenceScope scope = PersistenceScope.getPersistenceScope(folder);
-            MetadataModel<EntityMappingsMetadata> mappings = scope.getEntityMappingsModel(unit.getName());
+            mappings = scope.getEntityMappingsModel(unit.getName());
  
             String[] tables;
             if (J2EEUtils.TABLE_CLOSURE) {
@@ -460,5 +460,49 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
     public void removeChangeListener(ChangeListener listener) {
         // Not used
     }
-    
+
+    private static String[] findOneToManyRelationProperties(MetadataModel<EntityMappingsMetadata> mappings,
+            final String masterEntityName, final String detailEntityName, final String relationColumn) throws IOException {
+        return mappings.runReadAction(new MetadataModelAction<EntityMappingsMetadata, String[]>() {
+            public String[] run(EntityMappingsMetadata metadata) {
+                Entity[] entities = metadata.getRoot().getEntity();
+                Entity masterEntity = null;
+                Entity detailEntity = null;
+                for (int i=0; i<entities.length; i++) {
+                    String entityName = entities[i].getName();
+                    if (masterEntityName.equals(entityName)) {
+                        masterEntity = entities[i];
+                    }
+                    if (detailEntityName.equals(entityName)) {
+                        detailEntity = entities[i];
+                    }
+                }
+                String relationField = null;
+                for (ManyToOne manyToOne : detailEntity.getAttributes().getManyToOne()) {
+                    // PENDING when there can be more JoinColumns?
+                    String columnName = manyToOne.getJoinColumn()[0].getName();
+                    if (relationColumn.equals(columnName)) {
+                        relationField = manyToOne.getName();
+                        break;
+                    }
+                }
+                for (OneToMany oneToMany : masterEntity.getAttributes().getOneToMany()) {
+                    String targetEntity = oneToMany.getTargetEntity();
+                    int index = targetEntity.lastIndexOf('.');
+                    if (index != -1) {
+                        targetEntity = targetEntity.substring(index+1);
+                    }
+                    if (detailEntityName.equals(targetEntity)
+                            && relationField.equals(oneToMany.getMappedBy())) {
+                        return new String[] {
+                            J2EEUtils.fieldToProperty(relationField),
+                            J2EEUtils.fieldToProperty(oneToMany.getName())
+                        };
+                    }
+                }
+                return null;
+            }
+        });
+    }
+
 }

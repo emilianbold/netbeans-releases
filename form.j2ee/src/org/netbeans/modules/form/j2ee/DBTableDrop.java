@@ -21,7 +21,6 @@ package org.netbeans.modules.form.j2ee;
 import com.sun.source.tree.*;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTargetDragEvent;
-import java.io.IOException;
 import java.util.*;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -32,13 +31,8 @@ import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.project.ClassPathUtils;
 import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Attributes;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Basic;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Id;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -263,7 +257,7 @@ public class DBTableDrop extends DBConnectionDrop {
         MetaBinding binding = new MetaBinding(resultList, null, table, "elements"); // NOI18N
 
         int count = 0;
-        List<String> propertyNames = propertiesForColumns(mappings, entityInfo[0]);
+        List<String> propertyNames = J2EEUtils.propertiesForColumns(mappings, entityInfo[0], null);
         FileObject formFile = FormEditor.getFormDataObject(model).getPrimaryFile();
         List<String> propertyTypes = J2EEUtils.typesOfProperties(formFile, entityInfo[1], propertyNames);
         Iterator<String> typeIter = propertyTypes.iterator();
@@ -277,41 +271,6 @@ public class DBTableDrop extends DBConnectionDrop {
         }
 
         prop.setValue(binding);
-    }
-
-    /**
-     * Determines properties of the entity that will be displayed as table columns.
-     * 
-     * @param mappings information about entity mappings.
-     * @param entityName of the entity.
-     * @return list of property names.
-     * @throws IOException when something goes wrong.
-     */
-    public static List<String> propertiesForColumns(MetadataModel<EntityMappingsMetadata> mappings, final String entityName) throws IOException {
-        return mappings.runReadAction(new MetadataModelAction<EntityMappingsMetadata, List<String>>() {
-            public List<String> run(EntityMappingsMetadata metadata) {
-                Entity[] entities = metadata.getRoot().getEntity();
-                Entity entity = null;
-                for (int i=0; i<entities.length; i++) {
-                    if (entityName.equals(entities[i].getName())) {
-                        entity = entities[i];
-                        break;
-                    }
-                }
-                if (entity == null) {
-                    return Collections.EMPTY_LIST;
-                }
-                List<String> props = new LinkedList<String>();
-                Attributes attrs = entity.getAttributes();
-                for (Id id : attrs.getId()) {
-                    props.add(id.getName());
-                }
-                for (Basic basic : attrs.getBasic()) {
-                    props.add(basic.getName());
-                }
-                return props;
-            }
-        });
     }
 
     /**

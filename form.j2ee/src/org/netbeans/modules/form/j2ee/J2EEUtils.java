@@ -60,8 +60,11 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.entity.generator.EntitiesFromDBGenerator;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Attributes;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Basic;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Id;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
@@ -501,27 +504,20 @@ public class J2EEUtils {
         }
     }
 
-    // PENDING get rid of that - find correct mapping instead
-    /**
-     * Converts SQL column name to Java class field name.
-     *
-     * @param columnName name to covert.
-     * @return field name that corresponds to the given column name.
-     */
-    public static String columnToField(String columnName) {
-        StringBuilder sb = new StringBuilder(columnName.length());
-        boolean toUpper = false;
-        for (int i=0; i<columnName.length(); i++) {
-            char c = columnName.charAt(i);
-            if (!toUpper) {
-                c = Character.toLowerCase(c);
+    public static String fieldToProperty(String fieldName) {
+        char first = fieldName.charAt(0);
+        if (fieldName.length() > 1) {
+            char second = fieldName.charAt(1);
+            String suffix = fieldName.substring(1);
+            if (Character.isLowerCase(second)) {
+                first = Character.toLowerCase(first);
+            } else {
+                first = Character.toUpperCase(first);
             }
-            toUpper = (c == '_');
-            if (!toUpper) {
-                sb.append(c);
-            }
+            return first + suffix;
+        } else {
+            return Character.toString(Character.toLowerCase(first));
         }
-        return sb.toString();
     }
 
     /**
@@ -786,7 +782,9 @@ public class J2EEUtils {
                             name = null;
                         }
                         if ((name != null) && (name.length() > 0)) {
-                            name = Character.toLowerCase(name.charAt(0)) + name.substring(1);
+                            if ((name.length() == 1) || Character.isLowerCase(name.charAt(1))) {
+                                name = Character.toLowerCase(name.charAt(0)) + name.substring(1);
+                            }
                             methods.put(name, type);
                         }                        
                     }
@@ -821,6 +819,62 @@ public class J2EEUtils {
             ioex.printStackTrace();
         }
         return types;
+    }
+
+    /**
+     * Determines properties of the entity that will be displayed as table columns.
+     * 
+     * @param mappings information about entity mappings.
+     * @param entityName of the entity.
+     * @return list of property names.
+     * @throws IOException when something goes wrong.
+     */
+    public static List<String> propertiesForColumns(MetadataModel<EntityMappingsMetadata> mappings,
+            final String entityName, final List<String> columns) throws IOException {
+        return mappings.runReadAction(new MetadataModelAction<EntityMappingsMetadata, List<String>>() {
+            public List<String> run(EntityMappingsMetadata metadata) {
+                Entity[] entities = metadata.getRoot().getEntity();
+                Entity entity = null;
+                for (int i=0; i<entities.length; i++) {
+                    if (entityName.equals(entities[i].getName())) {
+                        entity = entities[i];
+                        break;
+                    }
+                }
+                if (entity == null) {
+                    return Collections.EMPTY_LIST;
+                }
+                boolean all = (columns == null);
+                List<String> props = new LinkedList<String>();
+                Map<String,String> columnToProperty = all ? null : new HashMap<String,String>();
+                Attributes attrs = entity.getAttributes();
+                for (Id id : attrs.getId()) {
+                    String propName = J2EEUtils.fieldToProperty(id.getName());
+                    if (all) {
+                        props.add(propName);
+                    } else {
+                        String columnName = id.getColumn().getName();
+                        columnToProperty.put(columnName, propName);
+                    }
+                }
+                for (Basic basic : attrs.getBasic()) {
+                    String propName = J2EEUtils.fieldToProperty(basic.getName());
+                    if (all) {
+                        props.add(propName);
+                    } else {
+                        String columnName = basic.getColumn().getName();
+                        columnToProperty.put(columnName, propName);                        
+                    }
+                }
+                if (!all) {
+                    for (String column : columns) {
+                        String propName = columnToProperty.get(column);
+                        props.add(propName);
+                    }
+                }
+                return props;
+            }
+        });
     }
 
 }
