@@ -108,6 +108,8 @@ public class Installer implements FinishHandler {
     /**
      * The only private constructor - we need to hide the default one as
      * <code>Installer is a singleton.
+     * 
+     * @param arguments Command-line parameters.
      */
     private Installer(String[] arguments) {
         LogManager.log("initializing the installer engine");
@@ -154,7 +156,7 @@ public class Installer implements FinishHandler {
         
         final Wizard wizard = Wizard.getInstance();
         wizard.setFinishHandler(this);
-        wizard.getContext().put(Registry.getInstance());
+        wizard.getContext().put(registry);
         
         createInstallerLockFile();
         
