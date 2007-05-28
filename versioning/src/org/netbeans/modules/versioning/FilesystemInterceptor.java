@@ -145,7 +145,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
 
     public void fileDataCreated(FileEvent fe) {
         removeFromDeletedFiles(fe.getFile());
-        getInterceptor(fe).afterCreate();        
+        getAllInterceptors(fe).afterCreate();        
     }
     
     // ==================================================================================================
@@ -203,6 +203,30 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         }
     }
 
+    private DelegatingInterceptor getAllInterceptors(FileEvent fe) {
+        FileObject fo = fe.getFile();
+        if (fo == null) return nullDelegatingInterceptor;
+        File file = FileUtil.toFile(fo);
+        if (file == null) return nullDelegatingInterceptor;
+
+        VersioningSystem [] systems = master.getVersioningSystems();
+        VersioningSystem lh = master.getLocalHistory(file);
+
+        List<VCSInterceptor> interceptors = new ArrayList<VCSInterceptor>(systems.length);
+        for (VersioningSystem system : systems) {
+            VCSInterceptor interceptor = system.getVCSInterceptor();
+            if (system != lh && interceptor != null) {
+                interceptors.add(interceptor);
+            }
+            
+        }
+        VCSInterceptor lhInterceptor = lh != null ? lh.getVCSInterceptor() : null;
+        
+        if (interceptors.size() == 0 && lhInterceptor == null) return nullDelegatingInterceptor;
+
+        return new DelegatingInterceptor(interceptors, lhInterceptor, file, null, false);
+    }
+    
     private DelegatingInterceptor getInterceptor(File file, boolean isDirectory) {
         if (file == null) return nullDelegatingInterceptor;
         
@@ -252,6 +276,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
     
     private class DelegatingInterceptor implements IOHandler, DeleteHandler {
         
+        final Collection<VCSInterceptor> interceptors;
         final VCSInterceptor  interceptor;
         final VCSInterceptor  lhInterceptor;
         final File            file;
@@ -259,11 +284,22 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         private final boolean isDirectory;
 
         private DelegatingInterceptor() {
-            this(null, null, null, null, false);
+            this((VCSInterceptor) null, null, null, null, false);
         }
         
         public DelegatingInterceptor(VCSInterceptor interceptor, VCSInterceptor lhInterceptor, File file, File to, boolean isDirectory) {
             this.interceptor = interceptor != null ? interceptor : nullVCSInterceptor;
+            this.interceptors = Collections.singleton(this.interceptor);
+            this.lhInterceptor = lhInterceptor != null ? lhInterceptor : nullVCSInterceptor;
+            this.file = file;
+            this.to = to;
+            this.isDirectory = isDirectory;
+        }
+
+        // TODO: special hotfix for #95243        
+        public DelegatingInterceptor(Collection<VCSInterceptor> interceptors, VCSInterceptor lhInterceptor, File file, File to, boolean isDirectory) {
+            this.interceptors = interceptors != null ? interceptors : Collections.singleton(nullVCSInterceptor);
+            this.interceptor = this.interceptors.iterator().next(); 
             this.lhInterceptor = lhInterceptor != null ? lhInterceptor : nullVCSInterceptor;
             this.file = file;
             this.to = to;
@@ -312,7 +348,10 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
 
         public void afterCreate() {
             lhInterceptor.afterCreate(file);
-            interceptor.afterCreate(file);            
+            // TODO: special hotfix for #95243
+            for (VCSInterceptor vcsInterceptor : interceptors) {
+                vcsInterceptor.afterCreate(file);            
+            }
         }
 
         public void afterChange() {
