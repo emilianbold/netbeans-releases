@@ -343,7 +343,7 @@ public class ProjectDataSourceTracker{
         private ProjectDataSourceNode projectNode ;  // used in the project navigator
 
         private Project project = null ;
-        private HashSet listeners = new HashSet();
+        private HashSet listeners = new HashSet <WeakReference>();
         private HashSet listenersForDSContainer = new HashSet();
         
         AuxiliaryConfiguration projectAux = null ;
@@ -512,7 +512,7 @@ public class ProjectDataSourceTracker{
                 String[] dynamicDataSources = getDynamicDataSources();
                 String[] hardcodedDataSources = getHardcodedDataSources();
                 for (Iterator i = listeners.iterator(); i.hasNext();) {
-                    ProjectDataSourceListener pair = (ProjectDataSourceListener)i.next();
+                    ProjectDataSourceListener pair = (ProjectDataSourceListener)((WeakReference)i.next()).get();
                     pair.dataSourceChange(
                             new ProjectDataSourceChangeEvent(dynamicDataSources, hardcodedDataSources));
                 }

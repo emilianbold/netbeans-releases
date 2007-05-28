@@ -51,7 +51,7 @@ public class CurrentProject implements ProjectOpenedListener  {
     private Project project = null;
     private final PropertyChangeListener topComponentRegistryListener = new TopComponentRegistryListener();
     private TopComponent.Registry registry  = null;
-    Set listeners = new HashSet();
+    Set listeners = new HashSet<WeakReference>();
     private Project previousProject = null;
     private static boolean datasourcesUpdated = false;
     private OpenProjectDetector openedProject;
@@ -91,7 +91,7 @@ public class CurrentProject implements ProjectOpenedListener  {
             ProjectChangeEvent evt = new  ProjectChangeEvent(project);
             Iterator iter = listeners.iterator();
             while(iter.hasNext()) {
-                ((ProjectChangeListener)iter.next()).projectChanged(evt);
+                ((ProjectChangeListener)((WeakReference)iter.next()).get()).projectChanged(evt);
             }
         }       
     }
