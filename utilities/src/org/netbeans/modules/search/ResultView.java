@@ -26,12 +26,14 @@ import java.awt.event.ActionListener;
 import java.awt.EventQueue;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.lang.ref.Reference;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import javax.accessibility.AccessibleContext;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -98,7 +100,7 @@ final class ResultView extends TopComponent {
      *
      * @see  #getInstance
      */
-    private static WeakReference instance = null;
+    private static Reference<ResultView> instance = null;
     
     /**
      * tree view for displaying found objects
@@ -116,9 +118,11 @@ final class ResultView extends TopComponent {
     private final NodeListener nodeListener;
     
     /** */
-    private Node[] lastSearchNodes;
+    private SearchScope searchScope;
     /** */
-    private List lastEnabledSearchTypes;
+    private BasicSearchCriteria basicSearchCriteria;
+    /** */
+    private List<SearchType> searchTypes;
     
     /** template for displaying number of matching files found so far */
     private MessageFormat nodeCountFormat;
@@ -156,12 +160,12 @@ final class ResultView extends TopComponent {
         ResultView view;
         if (instance == null) {
             view = new ResultView();
-            instance = new WeakReference(view);
+            instance = new WeakReference<ResultView>(view);
         } else {
-            view = (ResultView) instance.get();
+            view = instance.get();
             if (view == null) {
                 view = new ResultView();
-                instance = new WeakReference(view);
+                instance = new WeakReference<ResultView>(view);
             }
         }
         return view;
@@ -405,7 +409,7 @@ final class ResultView extends TopComponent {
         
         setRootDisplayName(getInitialRootNodeText());
         /*selectAndActivateNode(root);*/
-        if (lastSearchNodes == null) {
+        if (searchScope == null) {
             btnModifySearch.setEnabled(false);
         }
     }
@@ -414,7 +418,7 @@ final class ResultView extends TopComponent {
     protected void componentClosed() {
         assert EventQueue.isDispatchThread();
         
-        rememberInput(null, null);
+        rememberInput(null, null, null);
         Manager.getInstance().searchWindowClosed();
         
         if (contextView != null) {
@@ -580,7 +584,7 @@ final class ResultView extends TopComponent {
             if (resultModel.searchAndReplace) {
                 bundleKey = "TEXT_MSG_FOUND_X_NODES_REPLACE";           //NOI18N
                 args = new Object[4];
-            } else if (resultModel.fullTextOnly) {
+            } else if (resultModel.isBasicCriteriaOnly && resultModel.basicCriteria.isFullText()) {
                 bundleKey = "TEXT_MSG_FOUND_X_NODES_FULLTEXT";          //NOI18N
                 args = new Object[2];
             } else {
@@ -592,8 +596,8 @@ final class ResultView extends TopComponent {
                 args[1] = new Integer(resultModel.getTotalDetailsCount());
             }
             if (args.length > 2) {
-               args[2] = resultModel.fullTextSearchType.getMatchTemplateDescr();
-               args[3] = resultModel.fullTextSearchType.getReplaceString();
+               args[2] = resultModel.basicCriteria.getTextPatternExpr();
+               args[3] = resultModel.basicCriteria.getReplaceExpr();
             }
             baseMsg = NbBundle.getMessage(getClass(), bundleKey, args);
         }
@@ -820,7 +824,7 @@ final class ResultView extends TopComponent {
         hasResults = true;
         
         setRootDisplayName(
-                resultModel.fullTextOnly
+                resultModel.isBasicCriteriaOnly && resultModel.basicCriteria.isFullText()
                 ? nodeCountFormatFullText.format(
                             new Object[] {new Integer(objectsCount),
                                           new Integer(totalDetailsCount)})
@@ -1067,57 +1071,77 @@ final class ResultView extends TopComponent {
     
     /**
      */
-    void rememberInput(Node[] nodes,
-                       List enabledSearchTypes) {
-        lastSearchNodes = nodes;
-        lastEnabledSearchTypes = enabledSearchTypes;
+    void rememberInput(SearchScope searchScope,
+                       BasicSearchCriteria basicSearchCriteria,
+                       List<SearchType> searchTypes) {
+        this.searchScope = searchScope;
+	this.basicSearchCriteria = basicSearchCriteria;
+        this.searchTypes = searchTypes;
     }
     
     /** (Re)open the dialog window for entering (new) search criteria. */
     private void customizeCriteria() {
         assert EventQueue.isDispatchThread();
         
-        Node[] nodesToSearch;
-        List searchTypes;
+	BasicSearchCriteria basicSearchCriteriaClone
+		= (basicSearchCriteria != null)
+                  ? new BasicSearchCriteria(basicSearchCriteria)
+                  : new BasicSearchCriteria();
+	List<SearchType> extraSearchTypesClones
+		= cloneAvailableSearchTypes(searchTypes);
         
-        assert (lastSearchNodes != null);
-        nodesToSearch = lastSearchNodes;
-        searchTypes = lastEnabledSearchTypes;
-            
-        /*
-        if (resultModel != null) {
-            nodesToSearch = resultModel.getSearchGroup().getSearchRoots();
-            searchTypes = resultModel.getEnabledSearchTypes();
-        } else {
-            Node repositoryNode = RepositoryNodeFactory.getDefault()
-                                  .repository(DataFilter.ALL);
-            nodesToSearch = new Node[] {repositoryNode};
-            searchTypes = SearchPerformer.getTypes(nodesToSearch);
-        }
-         */
-
-        /* Clone the list (deep copy): */
-        List searchTypesClone = new ArrayList(searchTypes.size());
-        for (Iterator it = searchTypes.iterator(); it.hasNext(); ) {
-            searchTypesClone.add(((SearchType) it.next()).clone());
-        }
-        
-        lastEnabledSearchTypes = searchTypesClone;
-        
-        SearchPanel searchPanel = new SearchPanel(searchTypesClone, true);
+        SearchPanel searchPanel = new SearchPanel(
+                SearchScopeRegistry.getInstance().getSearchScopes(),
+                searchScope,
+                basicSearchCriteriaClone,
+                extraSearchTypesClones);
         searchPanel.showDialog();
         
         if (searchPanel.getReturnStatus() != SearchPanel.RET_OK) {
             return;
         }
         
-        rememberInput(nodesToSearch,
-                      Utils.cloneSearchTypes(searchTypesClone));
+        searchScope = searchPanel.getSearchScope();
+        basicSearchCriteria = searchPanel.getBasicSearchCriteria();
+        searchTypes = searchPanel.getSearchTypes();
 
         Manager.getInstance().scheduleSearchTask(
-                new SearchTask(nodesToSearch,
-                               searchTypesClone,
+                new SearchTask(searchScope,
+                               basicSearchCriteria,
                                searchPanel.getCustomizedSearchTypes()));
+    }
+
+    /**
+     * Makes a list of clones of given {@code SearchType}s.
+     * The given {@code SearchType}s are checked such that those that are
+     * no longer supported by the current set of IDE modules are skipped.
+     * 
+     * @param  searchTypes  list of {@code SearchType}s to be cloned
+     * @return  list of cloned {@code SearchType}s, with unsupported
+     *		{@code SearchType}s omitted
+     */
+    private static List<SearchType> cloneAvailableSearchTypes(List<SearchType> searchTypes) {
+
+	/* build a collection of class names of supported SearchTypes: */
+	Collection<? extends SearchType> availableSearchTypes = Utils.getSearchTypes();
+        Collection<String> availableSearchTypeNames
+                = new ArrayList<String>(availableSearchTypes.size());
+        for (SearchType searchType : availableSearchTypes) {
+            availableSearchTypeNames.add(searchType.getClass().getName());
+        }
+
+	if (availableSearchTypeNames.isEmpty()) {
+            return Collections.<SearchType>emptyList();     //trivial case
+	}
+
+	/* clone all supported SearchTypes: */
+	List<SearchType> clones = new ArrayList<SearchType>(searchTypes.size());
+	for (SearchType searchType : searchTypes) {
+            if (availableSearchTypeNames.contains(searchType.getClass().getName())) {
+                clones.add((SearchType) searchType.clone());
+            }
+	}
+	return clones;
     }
     
     /**

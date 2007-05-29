@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -30,13 +30,11 @@ import org.openide.modules.ModuleInstall;
 public class Installer extends ModuleInstall {
 
     public void restored () {
-        FindActionManager.getInstance().init();
-        FindDialogMemory.getDefault().initialize();
+        SearchScopeRegistry.getInstance().registerSearchScope(
+                new SearchScopeNodeSelection());
     }
 
     public void uninstalled () {
-        FindActionManager.getInstance().cleanup();
-        FindDialogMemory.getDefault().uninitialize();
         Manager.getInstance().doCleanup();
     }
 }

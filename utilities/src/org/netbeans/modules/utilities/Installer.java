@@ -13,9 +13,10 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.utilities;
 
 import org.netbeans.modules.openfile.RecentFiles;
@@ -33,8 +34,7 @@ public class Installer extends ModuleInstall {
 
     /** Constructs modules installer. */
     public Installer() {
-        searchInstaller = (org.netbeans.modules.search.Installer)
-                          SharedClassObject.findObject(
+        searchInstaller = SharedClassObject.findObject(
                                   org.netbeans.modules.search.Installer.class,
                                   true);
     }

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,7 +22,6 @@ package org.netbeans.modules.search;
 import java.awt.EventQueue;
 import java.io.IOException;
 import java.nio.channels.ClosedByInterruptException;
-import org.netbeans.modules.search.types.TextDetail;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;

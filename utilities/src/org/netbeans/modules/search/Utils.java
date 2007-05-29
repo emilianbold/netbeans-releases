@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2003 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2003-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,11 +21,8 @@ package org.netbeans.modules.search;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
@@ -43,7 +40,7 @@ final class Utils {
      *
      * @see  #getSearchTypes
      */
-    private static Lookup.Result result;
+    private static Lookup.Result<SearchType> result;
 
     private Utils() { }
     
@@ -56,10 +53,10 @@ final class Utils {
      * @return  result of lookup for instances of class <code>SearchType</code>
      * @see  SearchType
      */
-    private static Lookup.Result getSearchTypes0() {
+    private static Lookup.Result<SearchType> getSearchTypes0() {
         if (result == null) {
             result = Lookup.getDefault().lookup(
-                    new Lookup.Template(SearchType.class));
+                    new Lookup.Template<SearchType>(SearchType.class));
         }
         return result;
     }
@@ -70,7 +67,7 @@ final class Utils {
      * @return  all instances of {@link SearchType} available via
      *          {@link Lookup}
      */
-    static Collection getSearchTypes() {
+    static Collection<? extends SearchType> getSearchTypes() {
         return getSearchTypes0().allInstances();
     }
     
@@ -85,50 +82,12 @@ final class Utils {
      * @see  SearchType
      */
     static Class searchTypeForName(String className) {
-        Set allClasses = getSearchTypes0().allClasses();
-        for (Iterator i = allClasses.iterator(); i.hasNext(); ) {
-            Class c = (Class) i.next();
+        for (Class c : getSearchTypes0().allClasses()) {
             if (c.getName().equals(className)) {
                 return c;
             }
         }
         return null;
-    }
-    
-    /**
-     * Sorts search criteria by search types. Constructs a table which contains
-     * pairs
-     * <blockquote>
-     * (search type, saved criteria for the search type)
-     * </blockquote>
-     *
-     * @param  criteria  criteria to sort
-     * @return  map with search type class names as keys and collections of
-     *          search criteria as values; or <code>null</code> if no search
-     *          criterion is saved
-     */
-    static Map sortCriteriaBySearchType(SearchCriterion[] criteria) {
-        
-        if (criteria == null || criteria.length == 0) {
-            return null;
-        }
-        
-        Map map = new HashMap(6, 0.75f);
-        for (int i = 0; i < criteria.length; i++) {
-            SearchCriterion c = criteria[i];
-            String className = c.searchTypeClassName;
-            Collection criteriaOfType;
-            Object o = map.get(className);
-            if (o == null) {
-                criteriaOfType = new ArrayList(4);
-                criteriaOfType.add(c);
-                map.put(className, criteriaOfType);
-            } else {
-                criteriaOfType = (Collection) o;
-                criteriaOfType.add(c);
-            }
-        }
-        return map;
     }
     
     /**
@@ -153,10 +112,16 @@ final class Utils {
      * @param  searchTypes  list of search types to be cloned
      * @return  deep copy of the given list of <code>SearchTypes</code>s
      */
-    static List cloneSearchTypes(List searchTypes) {
-        List clonedSearchTypes = new ArrayList(searchTypes.size());
-        for (Iterator it = searchTypes.iterator(); it.hasNext(); ) {
-            clonedSearchTypes.add(((SearchType) it.next()).clone());
+    static List<SearchType> cloneSearchTypes(
+                                Collection<? extends SearchType> searchTypes) {
+        if (searchTypes.isEmpty()) {
+            return Collections.<SearchType>emptyList();
+        }
+        
+        List<SearchType> clonedSearchTypes
+                = new ArrayList<SearchType>(searchTypes.size());
+        for (SearchType searchType : searchTypes) {
+            clonedSearchTypes.add((SearchType) searchType.clone());
         }
         return clonedSearchTypes;
     }

@@ -13,16 +13,12 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2004 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2004-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openidex.search;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.api.queries.SharabilityQuery;
-import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
@@ -264,6 +260,31 @@ public final class SearchInfoFactory {
      */
     public static SearchInfo createSearchInfoBySubnodes(Node node) {
         return new SubnodesSearchInfo(node);
+    }
+    
+    /**
+     * Creates a <code>SearchInfo</code> compound of the given delegates.
+     * It combines the delegates such that:
+     * <ul>
+     *     <li>its method {@link SearchInfo#canSearch()} returns
+     *         <code>true</code> if and only if at least one of the delegate's
+     *         <code>canSearch()</code> returns <code>true</code></li>
+     *     <li>its method {@link SearchInfo#objectsToSearch()} chains iterators
+     *         of the delegates, skipping those delegates whose
+     *         <code>canSearch()</code> method returns <code>false</code></li>
+     * </ul>
+     *
+     * @param  delegates  delegates the compound <code>SearchInfo</code> should
+     *                    delegate to
+     * @return  created compound <code>SearchInfo</code>
+     * @exception  java.lang.IllegalArgumentException
+     *             if the argument is <code>null</code>
+     */
+    static SearchInfo createCompoundSearchInfo(SearchInfo[] delegates) {
+        if (delegates == null) {
+            throw new IllegalArgumentException("null");                 //NOI18N
+        }
+        return new CompoundSearchInfo(delegates);
     }
 
 }

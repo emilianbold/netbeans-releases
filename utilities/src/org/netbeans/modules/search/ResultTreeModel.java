@@ -86,13 +86,13 @@ final class ResultTreeModel implements TreeModel {
                 }
             }
         } else if (parent.getClass() == MatchingObject.class) {
-            if (!resultModel.canHaveDetails()) {
+            if (resultModel.canHaveDetails() == Boolean.FALSE) {
                 ret = null;
             } else {
                 MatchingObject matchingObject = (MatchingObject) parent;
                 Node[] detailNodes
                         = resultModel.searchAndReplace
-                          ? resultModel.fullTextSearchType.getDetails(
+                          ? resultModel.basicCriteria.getDetails(
                                                     matchingObject.object)
                           : resultModel.getDetails(matchingObject);
                 if ((detailNodes == null) || (index >= detailNodes.length)) {
@@ -119,7 +119,7 @@ final class ResultTreeModel implements TreeModel {
             ret = objectsCount;
         } else if (parent.getClass() == MatchingObject.class) {
             if (resultModel.searchAndReplace) {
-                ret = resultModel.fullTextSearchType.getDetailsCount(
+                ret = resultModel.basicCriteria.getDetailsCount(
                                             ((MatchingObject) parent).object);
             } else if (resultModel.canHaveDetails() == Boolean.FALSE) {
                 ret = 0;
@@ -178,7 +178,7 @@ final class ResultTreeModel implements TreeModel {
                 MatchingObject matchingObject = (MatchingObject) parent;
                 Node[] detailNodes
                         = resultModel.searchAndReplace
-                          ? resultModel.fullTextSearchType.getDetails(
+                          ? resultModel.basicCriteria.getDetails(
                                         matchingObject.object)
                           : resultModel.getDetails(matchingObject);
                 if (detailNodes != null) {
@@ -418,7 +418,7 @@ final class ResultTreeModel implements TreeModel {
     /**
      */
     void fireFileNodeChildrenSelectionChanged(MatchingObject matchingObj) {
-        Node[] children = resultModel.fullTextSearchType
+        Node[] children = resultModel.basicCriteria
                           .getDetails(matchingObj.object);
         int[] indices = new int[children.length];
         for (int i = 0; i < indices.length; i++) {
@@ -445,7 +445,7 @@ final class ResultTreeModel implements TreeModel {
         }
 
         int[] changedIndices = new int[] { index };
-        Node[] detailNodes = resultModel.fullTextSearchType
+        Node[] detailNodes = resultModel.basicCriteria
                              .getDetails(matchingObj.object);
         Node[] changedNodes = (detailNodes.length == 1)
                               ? detailNodes

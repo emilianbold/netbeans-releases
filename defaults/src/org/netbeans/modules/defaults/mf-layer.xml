@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
@@ -226,9 +226,6 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             <file name="DS-U.shadow">
                 <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-CreateTestAction.instance"/>
-            </file>
-            <file name="DS-P.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-search-project-ProjectsSearchAction.instance"/>
             </file>
             <file name="CONTEXT_MENU.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PopupAction.instance"/>
@@ -599,9 +596,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="DS-U.shadow">
                 <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-CreateTestAction.instance"/>
             </file>
-            <file name="DS-P.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-search-project-ProjectsSearchAction.instance"/>
-            </file>
             <file name="CONTEXT_MENU.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PopupAction.instance"/>
             </file>
@@ -832,9 +826,6 @@ Microsystems, Inc. All Rights Reserved.
 <!--            <file name="AS-R.shadow">
                 <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-ui-RenameAction.instance"/>
             </file>-->
-            <file name="C-H.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-search-project-ProjectsSearchAction.instance"/>
-            </file>
             <file name="S-DELETE.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
             </file>

@@ -13,14 +13,13 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.search;
 
 import java.util.List;
-import org.netbeans.modules.search.types.TextDetail;
 
 /**
  *
@@ -51,7 +50,7 @@ final class Item {
         }
         
         List<TextDetail> textDetails
-            = resultModel.fullTextSearchType.getTextDetails(matchingObj.object);
+            = resultModel.basicCriteria.getTextDetails(matchingObj.object);
         return detailIndex < textDetails.size()
                ? textDetails.get(detailIndex)
                : null;

@@ -14,43 +14,12 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 
 <filesystem>
-
-    <folder name="Templates">
-        <attr name="API_Support/Other" boolvalue="true"/>
-        <folder name="Services">
-            <folder name="SearchType">
-                <attr name="helpID" stringvalue="org.openidex.search.SearchType"/>
-                <!--
-                <file name="org-netbeans-modules-search-FullTextType.settings" url="../search/FullTextType.settings">
-                    <attr name="template" boolvalue="true"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.search.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/openidex/search/res/find.gif"/>
-                </file>
-                <file name="org-netbeans-modules-search-ModificationDateType.settings" url="../search/ModificationDateType.settings">
-                    <attr name="template" boolvalue="true"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.search.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/openidex/search/res/find.gif"/>
-                </file>
-                <file name="org-netbeans-modules-search-ObjectTypeType.settings" url="../search/ObjectTypeType.settings">
-                    <attr name="template" boolvalue="true"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.search.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/openidex/search/res/find.gif"/>
-                </file>
-                <file name="org-netbeans-modules-search-ObjectNameType.settings" url="../search/ObjectNameType.settings">
-                    <attr name="template" boolvalue="true"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.search.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/openidex/search/res/find.gif"/>
-                </file>
-                -->
-            </folder> <!-- SearchType -->
-        </folder> <!-- Services -->
-    </folder> <!-- Templates -->
 
     <!-- [PENDING] Eventually it may be a good idea to just kill BookmarksAction and simply place Bookmarks/ -->
     <!-- folder underneath Menu/Help/ and use SFS icons and so on to make it look pretty... -->
@@ -224,6 +193,11 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-url-BookmarksAction.instance"/>
         </folder> < ! - - Help - - >
         -->
+        
+        <folder name="Edit">
+            <file name="org-netbeans-modules-search-FindInFilesAction.instance"/>
+            <file name="org-netbeans-modules-search-ReplaceInFilesAction.instance"/>
+        </folder> <!-- Edit -->
 
         <folder name="System">
             <file name="org-netbeans-modules-openfile-OpenFileAction.instance"/>
@@ -238,6 +212,16 @@ Microsystems, Inc. All Rights Reserved.
     </folder> <!-- Actions -->
 
     <folder name="Menu">
+        <folder name="Edit">
+            <file name="sep-before-reposearch.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+            <attr name="sep-before-reposearch.instance/org-netbeans-modules-search-FindInFilesAction.instance" boolvalue="true"/>
+            <file name="org-netbeans-modules-search-FindInFilesAction.instance"/>
+            <attr name="org-netbeans-modules-search-FindInFilesAction.instance/org-netbeans-modules-search-ReplaceInFilesAction.instance" boolvalue="true"/>
+            <file name="org-netbeans-modules-search-ReplaceInFilesAction.instance"/>
+        </folder>
+        
         <folder name="File">
             <!-- position of OpenFileAction defined in projects/ui module -->
             <file name="org-netbeans-modules-openfile-OpenFileAction.instance"/>
@@ -304,6 +288,14 @@ Microsystems, Inc. All Rights Reserved.
         <file name="D-O.instance">
     	    <attr name="instanceClass" stringvalue="org.netbeans.modules.openfile.OpenFileAction"/>
 	</file>
+        <!--
+        <file name="DS-F.shadow">
+    	    <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-search-FindInFilesAction.instance"/>
+	</file>
+        <file name="DS-H.shadow">
+    	    <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-search-ReplaceInFilesAction.instance"/>
+	</file>
+        -->
         <file name="DS-0.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-search-ResultViewOpenAction.instance"/>
         </file>
@@ -390,27 +382,6 @@ Microsystems, Inc. All Rights Reserved.
         </file>
         -->
 
-        <!-- Project Settings [Search] -->
-        <file name="org-netbeans-modules-search-SearchProjectSettings.settings" url="../search/res/SearchProjectSettings.settings">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.search.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/search/res/find.gif"/>
-            <attr name="SystemFileSystem.layer" stringvalue="project"/>
-        </file>
-
-        <folder name="Hidden">
-            <!-- Search types -->
-            <file name="org-netbeans-modules-search-types-FullTextType.instance"/>
-            <file name="org-netbeans-modules-search-types-ObjectNameType.instance"/>
-            <file name="org-netbeans-modules-search-types-ObjectTypeType.instance"/>
-            <file name="org-netbeans-modules-search-types-ModificationDateType.instance"/>
-
-            <!-- Defines default order of search types -->
-            <attr name="org-netbeans-modules-search-types-FullTextType.instance/org-netbeans-modules-search-types-ObjectNameType.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-search-types-ObjectNameType.instance/org-netbeans-modules-search-types-ObjectTypeType.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-search-types-ObjectTypeType.instance/org-netbeans-modules-search-types-ModificationDateType.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-search-types-ModificationDateType.instance/org-netbeans-modules-vcscore-search-VcsSearchType.instance" boolvalue="true"/>
-
-        </folder> <!-- Hidden -->
     </folder> <!-- Services -->
 
     <folder name="UI">

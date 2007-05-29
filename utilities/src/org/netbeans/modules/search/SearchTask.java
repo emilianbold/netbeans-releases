@@ -17,25 +17,15 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.search;
 
-
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.List;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.search.types.FullTextType;
 import org.openide.LifecycleManager;
-
-import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
-import org.openide.util.WeakListeners;
-import org.openidex.search.SearchGroup;
 import org.openidex.search.SearchType;
-
 
 /**
  * Task performing search.
@@ -46,20 +36,15 @@ import org.openidex.search.SearchType;
 final class SearchTask implements Runnable, Cancellable {
 
     /** nodes to search */
-    private final Node[] nodes;
+    private final SearchScope searchScope;
     /** */
-    private final SearchType[] customizedSearchTypes;
+    private final List<SearchType> customizedSearchTypes;
     /** */
-    private final List searchTypeList;
+    private final BasicSearchCriteria basicSearchCriteria;
     /** ResultModel result model. */
     private ResultModel resultModel;
     /** <code>SearchGroup</code> to search on. */
-    private SearchGroup searchGroup;
-    /**
-     * listener which listens for the search group's notifications of found
-     * objects
-     */
-    private PropertyChangeListener searchGroupListener;
+    private SpecialSearchGroup searchGroup;
     /** attribute used by class <code>Manager</code> */
     private boolean notifyWhenFinished = true;
     /** */
@@ -73,34 +58,20 @@ final class SearchTask implements Runnable, Cancellable {
     /**
      * Creates a new <code>SearchTask</code>.
      *
-     * @param 
-     * @param 
-     * @param 
+     * @param  searchScope  defines scope of the search task
+     * @param  basicSearchCriteria  basic search criteria
+     * @param  customizedSearchTypes  search types
      */
-    public SearchTask(final Node[] nodes,
-                      final List searchTypeList,
-                      final SearchType[] customizedSearchTypes) {
-        this.nodes = nodes;
-        this.searchTypeList = searchTypeList;
+    public SearchTask(final SearchScope searchScope,
+                      final BasicSearchCriteria basicSearchCriteria,
+                      final List<SearchType> customizedSearchTypes) {
+        this.searchScope = searchScope;
+        this.basicSearchCriteria = basicSearchCriteria;
         this.customizedSearchTypes = customizedSearchTypes;
         
-        this.replaceString = getReplaceString(customizedSearchTypes);
-    }
-    
-    /**
-     * Checks whether we are about to do search &amp; replace.
-     * 
-     * @param  customizedSearchTypes  array of applied search types
-     * @return  replace string set in the full text search,
-     *          or {@code null} if no replacing should be performed
-     */
-    private static String getReplaceString(SearchType[] searchTypes) {
-        for (SearchType searchType : searchTypes) {
-            if (searchType.getClass() == FullTextType.class) {
-                return ((FullTextType) searchType).getReplaceString();
-            }
-        }
-        return null;
+        this.replaceString = (basicSearchCriteria != null)
+                             ? basicSearchCriteria.getReplaceExpr()
+                             : null;
     }
     
     /**
@@ -125,31 +96,23 @@ final class SearchTask implements Runnable, Cancellable {
             return;
         }
 
-        //Set of search types to be used able to search on the same object type.
-        searchGroup.addPropertyChangeListener(WeakListeners.propertyChange(
-            searchGroupListener = new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (SearchGroup.PROP_FOUND.equals(evt.getPropertyName())) {
-                        matchingObjectFound(evt.getNewValue());
-                    }
-                }
-            }, searchGroup)
-        );
-
-        searchGroup.setSearchRootNodes(nodes);
+        searchGroup.setListeningSearchTask(this);
         try {
             searchGroup.search();
         } catch (RuntimeException ex) {
             resultModel.searchException(ex);
             ex.printStackTrace();
         } finally {
+            searchGroup.setListeningSearchTask(null);
             finished = true;
             progressHandle.finish();
         }
     }
     
     SearchTask createNewGeneration() {
-        return new SearchTask(nodes, searchTypeList, customizedSearchTypes);
+        return new SearchTask(searchScope,
+                              basicSearchCriteria,
+                              customizedSearchTypes);
     }
 
     /**
@@ -163,11 +126,10 @@ final class SearchTask implements Runnable, Cancellable {
      */
     private void ensureResultModelExists() {
         if (resultModel == null) {
-            SearchGroup[] groups
-                    = SearchGroup.createSearchGroups(customizedSearchTypes);
-            searchGroup = (groups.length != 0) ? groups[0] : null;
-            resultModel = new ResultModel(searchTypeList,
-                                          searchGroup,
+            searchGroup = new SpecialSearchGroup(basicSearchCriteria,
+                                                 customizedSearchTypes,
+                                                 searchScope);
+            resultModel = new ResultModel(searchGroup,
                                           replaceString);
         }
     }
@@ -179,7 +141,7 @@ final class SearchTask implements Runnable, Cancellable {
      *
      * @param  object  found matching object
      */
-    private void matchingObjectFound(Object object) {
+    void matchingObjectFound(Object object) {
         boolean canContinue = resultModel.objectFound(object);
         if (!canContinue) {
             searchGroup.stopSearch();

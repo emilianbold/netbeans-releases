@@ -22,11 +22,8 @@ package org.netbeans.modules.search;
 
 
 import java.util.*;
-import org.netbeans.modules.search.types.FullTextType;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
-import org.openidex.search.DataObjectSearchGroup;
-import org.openidex.search.SearchGroup;
 import org.openidex.search.SearchType;
 
 
@@ -42,11 +39,6 @@ public final class ResultModel {
     private static final int COUNT_LIMIT = 500;
     /** maximum total number of detail entries for found objects */
     private static final int DETAILS_COUNT_LIMIT = 5000;
-    /** */
-    private static final String DEF_SEARCH_TYPES_PACKAGE
-            = "org.netbeans.modules.search.types";                      //NOI18N
-    private static final String FULLTEXT_SEARCH_TYPE
-            = "FullTextType";                                           //NOI18N
     
     /** */
     private final long creationTime;
@@ -68,28 +60,18 @@ public final class ResultModel {
      */
     private boolean limitReached = false;
 
-    /** Which search types creates were enabled for this model. */
-    private List<SearchType> searchTypeList;
-
     /** Search group this result shows search results for. */
-    private SearchGroup searchGroup;
+    private SpecialSearchGroup searchGroup;
     
-    /**
-     * is the {@code searchGroup} an instance of class
-     * {@code DataObjectSearchGroup}?
-     * 
-     * @see  #searchGroup
-     */
-    private final boolean isDataObjectSearchGroup;
     /**
      * are all search types defined in the {@code SearchGroup} those
      * defined in the Utilities module?
      */
-    final boolean defaultSearchTypesOnly;
+    final boolean isBasicCriteriaOnly;
     /** */
-    final boolean fullTextOnly;
+    final BasicSearchCriteria basicCriteria;
     /** */
-    final FullTextType fullTextSearchType;
+    private final boolean isFullText;
     /** */
     final String replaceString;
     /** */
@@ -102,35 +84,15 @@ public final class ResultModel {
     private String finishMessage;
 
     /** Creates new <code>ResultModel</code>. */
-    public ResultModel(List<SearchType> searchTypeList,
-                       SearchGroup searchGroup,
+    public ResultModel(SpecialSearchGroup searchGroup,
                        String replaceString) {
-        this.searchTypeList = searchTypeList;
         this.searchGroup = searchGroup;
         this.replaceString = replaceString;
         this.searchAndReplace = (replaceString != null);
         
-        isDataObjectSearchGroup
-                = (searchGroup.getClass() == DataObjectSearchGroup.class);
-        boolean hasNonDefaultSearchType = false;
-        FullTextType fullTextType = null;
-        for (SearchType searchType : searchGroup.getSearchTypes()) {
-            Class searchTypeClass = searchType.getClass();
-            String searchTypeName = searchTypeClass.getName();
-            if (searchTypeClass == FullTextType.class) {
-                fullTextType = (FullTextType) searchType;
-            } else if (!searchTypeName.startsWith(DEF_SEARCH_TYPES_PACKAGE)) {
-                hasNonDefaultSearchType = true;
-            }
-            if (hasNonDefaultSearchType && (fullTextType != null)) {
-                break;
-            }
-        }
-        defaultSearchTypesOnly = !hasNonDefaultSearchType;
-        fullTextSearchType = fullTextType;
-        fullTextOnly = (searchAndReplace || defaultSearchTypesOnly)
-                       && (fullTextSearchType != null);
-        
+	basicCriteria = searchGroup.basicCriteria;
+	isFullText = (basicCriteria != null) && basicCriteria.isFullText();
+        isBasicCriteriaOnly = (searchGroup.getSearchTypes().length == 0);
         creationTime = System.currentTimeMillis();
     }
     
@@ -159,8 +121,8 @@ public final class ResultModel {
     }
 
     /**
-     * Clean the allocated resources. Do not rely on GC there as we are often referenced from
-     * various objects (some VisualizerNode realy loves us). So keep leak as small as possible.
+     * Clean the allocated resources. Do not rely on GC there as we are often
+     * referenced from various objects. So keep leak as small as possible.
      * */
     void close() {
         if ((matchingObjects != null) && !matchingObjects.isEmpty()) {
@@ -169,23 +131,6 @@ public final class ResultModel {
             }
         }
         
-        if (searchTypeList != null){
-            for (SearchType searchType : searchTypeList) {
-                /*
-                 * HACK:
-                 * GC should eliminate FullTextType details map but it does not,
-                 * so we force cleaning of the map
-                 */
-                if (searchType instanceof                           //XXX - hack
-                        org.netbeans.modules.search.types.FullTextType) {
-                    ((org.netbeans.modules.search.types.FullTextType)searchType)
-                    .destroy();
-                }
-            }
-            searchTypeList.clear();
-            searchTypeList = null;
-        }
-
         // eliminate search group content
         // no other way then leaving it on GC, it should work because
         // search group is always recreated by a it's factory and
@@ -218,7 +163,7 @@ public final class ResultModel {
         
         return size < COUNT_LIMIT && totalDetailsCount < DETAILS_COUNT_LIMIT;
     }
-    
+
     /**
      */
     public void objectBecameInvalid(MatchingObject matchingObj) {
@@ -277,9 +222,9 @@ public final class ResultModel {
      */
     Boolean canHaveDetails() {
         Boolean ret;
-        if (fullTextSearchType != null) {
+        if (isFullText) {
             ret = Boolean.TRUE;
-        } else if (defaultSearchTypesOnly) {
+        } else if (isBasicCriteriaOnly) {
             ret = Boolean.FALSE;
         } else {
             ret = null;
@@ -331,9 +276,9 @@ public final class ResultModel {
      */
     private boolean hasDetailsReal(MatchingObject matchingObject) {
         boolean ret;
-        if (fullTextSearchType != null) {
+        if (isFullText) {
             ret = true;
-        } else if (defaultSearchTypesOnly) {
+        } else if (isBasicCriteriaOnly) {
             ret = false;
         } else {
             ret = false;
@@ -372,21 +317,16 @@ public final class ResultModel {
      *          available for the given object (usually {@code DataObject})
      */
     private int getDetailsCountReal(MatchingObject matchingObject) {
-        if (defaultSearchTypesOnly) {
-            return (fullTextSearchType != null)
-                   ? fullTextSearchType.getDetailsCount(matchingObject.object)
-                   : 0;
+        int count = isFullText ? basicCriteria.getDetailsCount(matchingObject.object)
+                               : 0;
+        if (isBasicCriteriaOnly) {
+            return count;
         }
         
-        int count = 0;
         final Object foundObject = matchingObject.object;
         for (SearchType searchType : searchGroup.getSearchTypes()) {
-            if (searchType == fullTextSearchType) {
-                count += fullTextSearchType.getDetailsCount(foundObject);
-            } else {
-                Node[] detailNodes = searchType.getDetails(foundObject);
-                count += (detailNodes != null) ? detailNodes.length : 0;
-            }
+            Node[] detailNodes = searchType.getDetails(foundObject);
+            count += (detailNodes != null) ? detailNodes.length : 0;
         }
         return count;
     }
@@ -424,13 +364,16 @@ public final class ResultModel {
      *          or {@code null} if there are no detail nodes
      */
     private Node[] getDetailsReal(MatchingObject matchingObject) {
-        if (defaultSearchTypesOnly) {
-            return (fullTextSearchType != null)
-                   ? fullTextSearchType.getDetails(matchingObject.object)
-                   : null;
+        Node[] nodesTotal = null;
+        if (basicCriteria != null) {
+            nodesTotal = basicCriteria.isFullText()
+                         ? basicCriteria.getDetails(matchingObject.object)
+                         : null;
+	}
+        if (isBasicCriteriaOnly) {
+            return nodesTotal;
         }
         
-        Node[] nodesTotal = null;
         final Object foundObject = matchingObject.object;
         for (SearchType searchType : searchGroup.getSearchTypes()) {
             Node[] detailNodes = searchType.getDetails(foundObject);
@@ -466,13 +409,8 @@ public final class ResultModel {
     }
 
     /** Getter for search group property. */
-    SearchGroup getSearchGroup() {
+    SpecialSearchGroup getSearchGroup() {
         return searchGroup;
-    }
-    
-    /** Gets all search types, all enabled not only customized ones. */
-    List getEnabledSearchTypes() {
-        return searchTypeList;
     }
     
     /**

@@ -40,8 +40,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.modules.search.types.FullTextType;
-import org.netbeans.modules.search.types.TextDetail;
+import org.netbeans.modules.search.TextDetail;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -394,7 +393,7 @@ final class MatchingObject implements PropertyChangeListener {
         
         ByteBuffer buf = getByteBuffer();
         if (buf != null) {
-            Charset charset = FullTextType.getCharset(getFileObject());
+            Charset charset = BasicSearchCriteria.getCharset(getFileObject());
             CharBuffer cbuf = decodeByteBuffer(buf, charset);
             String terminator
                     = System.getProperty("line.separator");         //NOI18N
@@ -449,8 +448,7 @@ final class MatchingObject implements PropertyChangeListener {
         BECAME_DIR(true, "Inv_status_Err_became_dir"),                  //NOI18N
         CHANGED(false, "Inv_status_Err_changed"),                       //NOI18N
         TOO_BIG(false, "Inv_status_Err_too_big"),                       //NOI18N
-        CANT_READ(false, "Inv_status_Err_cannot_read"),                 //NOI18N
-        TOO_SHORT(false, "Inv_status_Err_too_short");                   //NOI18N
+        CANT_READ(false, "Inv_status_Err_cannot_read");                 //NOI18N
         
         /**
          * Is this invalidity the fatal one?
@@ -552,12 +550,6 @@ final class MatchingObject implements PropertyChangeListener {
             return InvalidityStatus.CANT_READ;
         }
         
-        FullTextType fullTextType = resultModel.fullTextSearchType;
-        if ((fullTextType.getRe().length() == 0)
-                && f.length() < fullTextType.getMatchString().length()) {
-            return InvalidityStatus.TOO_SHORT;
-        }
-        
         return null;
     }
     
@@ -583,7 +575,7 @@ final class MatchingObject implements PropertyChangeListener {
         
         StringBuilder content = text(true);   //refresh the cache, reads the file
         
-        List<TextDetail> textMatches = resultModel.fullTextSearchType
+        List<TextDetail> textMatches = resultModel.basicCriteria
                                                     .getTextDetails(object);
         int matchIndex = 0;
 
@@ -667,7 +659,7 @@ final class MatchingObject implements PropertyChangeListener {
                 text = new StringBuilder(
                         text.toString().replace("\n", terminator));     //NOI18N
             }
-            Charset charset = FullTextType.getCharset(getFileObject());
+            Charset charset = BasicSearchCriteria.getCharset(getFileObject());
             ByteBuffer buffer = encodeCharBuffer(CharBuffer.wrap(text), charset);
 
             FileOutputStream fos = new FileOutputStream(getFile());

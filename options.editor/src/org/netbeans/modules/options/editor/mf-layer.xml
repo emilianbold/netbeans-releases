@@ -135,9 +135,6 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Find Usages.shadow">
                     <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance"/>
                 </file>
-                <file name="Find in Projects.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-search-project-ProjectsSearchAction.instance"/>
-                </file>
                 <file name="Paste.shadow">
                     <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
                 </file>
