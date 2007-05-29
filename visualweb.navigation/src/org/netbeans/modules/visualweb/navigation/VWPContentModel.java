@@ -198,7 +198,7 @@ public class VWPContentModel extends PageContentModel{
     }
     
     
-    
+    private final static Logger LOG = Logger.getLogger("org.netbeans.modules.visualweb.navigation");
     private final static Image commandIcon = org.openide.util.Utilities.loadImage("com/sun/rave/navigation/command.gif"); // NOI18N
     //     private boolean updateBeans() {
     private boolean updatePageContentItems() {
@@ -207,6 +207,10 @@ public class VWPContentModel extends PageContentModel{
             List<DesignBean> zoomedBeans = new ArrayList<DesignBean>();
             if (container != null) {
                 findCommandBeans(facesModel, container, zoomedBeans, true);
+                LOG.fine("Container or RootBean found for page: " + pageName);
+            } else {
+                LOG.fine("Container or RootBean is null for the facesModel of page: " + pageName);
+                return false;
             }
             
             pageContentItems.clear();
@@ -536,6 +540,12 @@ public class VWPContentModel extends PageContentModel{
         UndoEvent undo = null;
         //        DesignBean designBean = item.getDesignBean();
         String fromOutcome = item.getFromOutcome();
+        
+        if( fromOutcome == null ){
+            LOG.warning("From outcome is returning null for the given item: " + item.getName());
+            return;
+        }
+        
         DesignBean container = facesModel.getRootBean();
         List<DesignBean> beans = new ArrayList<DesignBean>();
         findCommandBeans( facesModel, container, beans, false);
