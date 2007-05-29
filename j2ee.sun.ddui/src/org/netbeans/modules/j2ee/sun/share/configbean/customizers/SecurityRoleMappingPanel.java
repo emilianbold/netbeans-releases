@@ -16,12 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * SecurityRoleMappingCustomizer.java
- *
- * Created on April 13, 2006, 12:18 AM
- */
-
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers;
 
 import java.awt.Dimension;
