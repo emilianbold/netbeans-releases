@@ -721,6 +721,12 @@ public class UnitTab extends javax.swing.JPanel {
         public void tableDataChanged () {
             unitChanged ();
         }
+
+        @Override
+        public void tableDataChanged(Collection<Unit> units) {
+            unitChanged ();
+        }
+        
         public final  void performerImpl () {
             performerImpl (u);
         }
@@ -1128,18 +1134,6 @@ public class UnitTab extends javax.swing.JPanel {
         }
         
         protected boolean isEnabled (Unit uu) {
-            //takes time when going down/up
-         /*boolean retval = false;
-         int count = model.getRowCount();
-         for (int i = 0; i < count; i++) {
-             Unit u = ((UnitCategoryTableModel)model).getUnitAtRow(i);
-             if (u != null && !u.isMarked()) {
-                 retval = true;
-                 break;
-             }
-         }
-         return retval;
-          */
             return true;
         }
         protected String getContextName (Unit u) {
@@ -1167,18 +1161,6 @@ public class UnitTab extends javax.swing.JPanel {
         }
         
         protected boolean isEnabled (Unit uu) {
-            //takes time when going down/up
-         /*boolean retval = false;
-         int count = model.getRowCount();
-         for (int i = 0; i < count; i++) {
-             Unit u = ((UnitCategoryTableModel)model).getUnitAtRow(i);
-             if (u != null && u.isMarked()) {
-                 retval = true;
-                 break;
-             }
-         }
-         return retval;
-          */
             return true;
         }
         

@@ -384,6 +384,14 @@ private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:
             decorateTitle(1, availableTable, NbBundle.getMessage(PluginManagerUI.class, "PluginManagerUI_UnitTab_Available_Title"));
             decorateTitle(2, localTable, NbBundle.getMessage(PluginManagerUI.class, "PluginManagerUI_UnitTab_Local_Title"));
             decorateTitle(3, installedTable, NbBundle.getMessage(PluginManagerUI.class, "PluginManagerUI_UnitTab_Installed_Title"));
+            Component[] components = tpTabs.getComponents();
+            for (Component component : components) {
+                if (component instanceof UnitTab) {
+                    UnitTab tab = (UnitTab)component;
+                    tab.refreshState();
+                }
+            }
+
         }
     }
         
