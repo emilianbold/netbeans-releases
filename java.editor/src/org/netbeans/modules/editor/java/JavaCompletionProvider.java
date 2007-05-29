@@ -60,8 +60,10 @@ import org.openide.util.NbBundle;
  */
 public class JavaCompletionProvider implements CompletionProvider {
     
+    private static final boolean autoMode = Boolean.getBoolean("org.netbeans.modules.editor.java.completionAutoMode");
+
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        if (".".equals(typedText)) {
+        if (".".equals(typedText) || (autoMode && JavaCompletionQuery.isJavaIdentifierPart(typedText))) {
             if (Utilities.isJavaContext(component, component.getSelectionStart() - 1))
                 return COMPLETION_QUERY_TYPE;
         }
@@ -204,7 +206,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             int newCaretOffset = component.getSelectionStart();
             if (newCaretOffset >= caretOffset) {
                 try {
-                    if (getJavaIdentifierPart(component.getDocument().getText(caretOffset, newCaretOffset - caretOffset)) != null)
+                    if (isJavaIdentifierPart(component.getDocument().getText(caretOffset, newCaretOffset - caretOffset)))
                         return;
                 } catch (BadLocationException e) {
                 }
@@ -269,7 +271,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if (newOffset >= caretOffset) {
                         try {
                             String prefix = component.getDocument().getText(offset, newOffset - offset);
-                            filterPrefix = getJavaIdentifierPart(prefix);
+                            filterPrefix = isJavaIdentifierPart(prefix) ? prefix : null;
                             if (filterPrefix != null && filterPrefix.length() == 0)
                                 anchorOffset = newOffset;
                         } catch (BadLocationException e) {}
@@ -3077,12 +3079,12 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
             return false;
         }
-        private String getJavaIdentifierPart(String text) {
+        private static boolean isJavaIdentifierPart(String text) {
             for (int i = 0; i < text.length(); i++) {
                 if (!(Character.isJavaIdentifierPart(text.charAt(i))))
-                    return null;
+                    return false;
             }
-            return text;
+            return true;
         }
 
         private Collection getFilteredData(Collection<JavaCompletionItem> data, String prefix) {

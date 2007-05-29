@@ -76,7 +76,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     
     private static final boolean debug = Boolean.getBoolean("org.netbeans.modules.editor.completion.debug");
     private static final boolean alphaSort = Boolean.getBoolean("org.netbeans.modules.editor.completion.alphabeticalSort"); // [TODO] create an option
-    
+
     private static final Logger UI_LOG = Logger.getLogger("org.netbeans.ui.editor.completion"); // NOI18N
 
     private static CompletionImpl singleton = null;
@@ -261,10 +261,11 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                     synchronized (this) {
                         completionResultNull = (completionResult == null);
                     }
-                    if (completionResultNull && (type & CompletionProvider.COMPLETION_QUERY_TYPE) != 0 &&
+                    if ((type & CompletionProvider.COMPLETION_QUERY_TYPE) != 0 &&
                             CompletionSettings.INSTANCE.completionAutoPopup()) {
                         autoModEndOffset = modEndOffset;
-                        showCompletion(false, true, CompletionProvider.COMPLETION_QUERY_TYPE);
+                        if (completionResultNull)
+                            showCompletion(false, true, CompletionProvider.COMPLETION_QUERY_TYPE);
                     }
 
                     boolean tooltipResultNull;
