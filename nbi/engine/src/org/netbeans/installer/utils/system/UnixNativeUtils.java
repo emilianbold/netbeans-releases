@@ -548,8 +548,12 @@ public abstract class UnixNativeUtils extends NativeUtils {
             FileUtils.writeFile(cleanerFile, StringUtils.asString(lines, SystemUtils.getLineSeparator()));
         }
         
-        protected void writeCleaningFileList(File listFile, List<String> files) throws IOException {
-            FileUtils.writeStringList(listFile, files);
+        protected void writeCleaningFileList(File listFile, List<String> files) throws IOException {            
+            // be sure that the list file contains end-of-line
+            // otherwise the installer will run into Issue 104079
+            List<String> newList = new LinkedList<String> (files);
+            newList.add(SystemUtils.getLineSeparator());
+            FileUtils.writeStringList(listFile, newList);
         }
     }
     protected void initializeForbiddenFiles(String ... files) {
