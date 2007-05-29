@@ -42,24 +42,73 @@ public class ChangeTypeTest extends ErrorHintsTestBase {
         performAnalysisTest("test/Test.java", "package test; public class Test {int i = \"s\";}", 34, "Change type of i to String");
     }
     
+    public void testIntToStringFix() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test {int i = \"s\";}",
+                       34,
+                       "Change type of i to String",
+                       "package test; public class Test { String i = \"s\";}");
+    }
+    
     public void testStringToInt() throws Exception {
         performAnalysisTest("test/Test.java", "package test; public class Test {String s = 5;}", 34, "Change type of s to int");
     }
-
+    
+    public void testStringToIntFix() throws Exception {
+        performFixTest("test/Test.java",
+                "package test; public class Test {String s = 5;}",
+                34,
+                "Change type of s to int",
+                "package test; public class Test { int s = 5;}");
+    }
+    
     public void testStringToObject() throws Exception {
         performAnalysisTest("test/Test.java", "package test; public class Test {String s = new Object();}", 34, "Change type of s to Object");
+    }
+
+    public void testStringToObjectFix() throws Exception {
+        performFixTest("test/Test.java",
+                "package test; public class Test {String s = new Object();}",
+                34,
+                "Change type of s to Object",
+                "package test; public class Test {Object s = new Object();}");
     }
     
     public void testLocalVariableIntToString() throws Exception {
         performAnalysisTest("test/Test.java", "package test; public class Test {private void test() {int i = \"s\";}}", 55, "Change type of i to String");
     }
     
+    public void testLocalVariableIntToStringFix() throws Exception {
+        performFixTest("test/Test.java",
+                "package test; public class Test {private void test() {int i = \"s\";}}",
+                55,
+                "Change type of i to String",
+                "package test; public class Test {private void test() { String i = \"s\";}}"
+                );
+    }
+
     public void testLocalVariableStringToInt() throws Exception {
         performAnalysisTest("test/Test.java", "package test; public class Test {private void test() {String s = 5;}}", 55, "Change type of s to int");
+    }
+    
+    public void testLocalVariableStringToIntFix() throws Exception {
+        performFixTest("test/Test.java",
+                "package test; public class Test {private void test() {String s = 5;}}",
+                55,
+                "Change type of s to int",
+                "package test; public class Test {private void test() { int s = 5;}}");
     }
 
     public void testLocalVariableStringToObject() throws Exception {
         performAnalysisTest("test/Test.java", "package test; public class Test {private void test() {String s = new Object();}}", 55, "Change type of s to Object");
+    }
+    
+    public void testLocalVariableStringToObjectFix() throws Exception {
+        performFixTest("test/Test.java",
+                "package test; public class Test {private void test() {String s = new Object();}}",
+                55,
+                "Change type of s to Object",
+                "package test; public class Test {private void test() {Object s = new Object();}}");
     }
     
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) {
