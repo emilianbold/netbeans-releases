@@ -851,6 +851,8 @@ public final class ParseProjectXml extends Task {
       // code name base of tested module
       final String cnb;
       final ModuleListParser modulesParser;
+      
+      private Set<String> misingEntries;
   
       public  static final String TEST_DIST_VAR = "test.dist.dir";
       public TestDeps(String testtype,String cnb,ModuleListParser modulesParser) {
@@ -884,7 +886,7 @@ public final class ParseProjectXml extends Task {
         }
 
         String getCompileClassPath() {
-            return getPath(getFiles(true));
+            return getPath(getFiles(true)) + getMisingEntries();
         }
         private String getPath(List<String> files) {
             StringBuffer path = new StringBuffer();
@@ -902,7 +904,7 @@ public final class ParseProjectXml extends Task {
         }
 
         String getRuntimeClassPath() {
-            return getPath(getFiles(false));
+            return getPath(getFiles(false)) + getMisingEntries();
         }
         
     /** construct test compilation compilation dependencies.
@@ -948,6 +950,26 @@ public final class ParseProjectXml extends Task {
             } 
         }
     }
+    
+    public void addMisingEntry(String cnd) {
+        if (misingEntries == null) {
+            misingEntries = new HashSet<String>();
+        }
+        misingEntries.add(cnd);
+    }
+    
+    public String getMisingEntries() {
+       if ( misingEntries != null) {
+           StringBuilder builder = new StringBuilder();
+           builder.append("\n-mising-Module-Entries-: ");
+           for (String cnd : misingEntries) {
+               builder.append(cnd);
+               builder.append("\n");
+           }
+           return builder.toString();
+       }
+       return "";
+    }
   }
    /** Test dependency for module and type
     */ 
@@ -981,9 +1003,11 @@ public final class ParseProjectXml extends Task {
            } else {
                ModuleListParser.Entry entry = modulesParser.findByCodeNameBase(cnb);
                if (entry == null) {
-                   throw new BuildException("Module "  + cnb + " doesn't exist.");
+                   //throw new BuildException("Module "  + cnb + " doesn't exist.");
+                   testDeps.addMisingEntry(cnb);
+               } else {
+                    entries.add(modulesParser.findByCodeNameBase(cnb));
                }
-               entries.add(modulesParser.findByCodeNameBase(cnb));
            }
            return entries;      
            
@@ -993,14 +1017,16 @@ public final class ParseProjectXml extends Task {
            if (!entriesMap.containsKey(cnd)) {
                ModuleListParser.Entry entry = modulesParser.findByCodeNameBase(cnd);
                if (entry == null) {
-                   throw new BuildException("Module "  + cnd + " doesn't exist.");
-               }
-               entriesMap.put(cnd,entry);
-               String cnds[] = entry.getRuntimeDependencies();
-               // cnds can be null
-               if (cnds != null) {
-                   for (String c : cnds) {
-                       addRecursiveModules(c, entriesMap);
+//                   throw new BuildException("Module "  + cnd + " doesn't exist.");
+                   testDeps.addMisingEntry(cnd);
+               } else {
+                   entriesMap.put(cnd,entry);
+                   String cnds[] = entry.getRuntimeDependencies();
+                   // cnds can be null
+                   if (cnds != null) {
+                       for (String c : cnds) {
+                           addRecursiveModules(c, entriesMap);
+                       }
                    }
                }
            }
@@ -1020,7 +1046,9 @@ public final class ParseProjectXml extends Task {
                if (test) {
                    // get test folder
                    String jarPath = getTestJarPath() ;
-                   files.add(jarPath);
+                   if (jarPath != null) {
+                      files.add(jarPath);
+                   }
                }
            }
            return files;
@@ -1028,11 +1056,16 @@ public final class ParseProjectXml extends Task {
        public String getTestJarPath() {
            String sep = File.separator;
            ModuleListParser.Entry entry = modulesParser.findByCodeNameBase(cnb);
-           String cluster = entry.getClusterName();
-           if (cluster == null) {
-               cluster = "cluster";
+           if (entry == null) {
+               testDeps.addMisingEntry(cnb);
+               return null;
+           } else {
+               String cluster = entry.getClusterName();
+               if (cluster == null) {
+                   cluster = "cluster";
+               }
+                return ParseProjectXml.testDistLocation + sep + testDeps.testtype + sep + cluster  + sep + cnb.replace('.','-') + sep + "tests.jar";           
            }
-            return ParseProjectXml.testDistLocation + sep + testDeps.testtype + sep + cluster  + sep + cnb.replace('.','-') + sep + "tests.jar";           
        }
    } 
     private String computeClassPathExtensions(Document pDoc) {

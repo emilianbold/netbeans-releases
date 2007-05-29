@@ -126,4 +126,62 @@ Microsystems, Inc. All Rights Reserved.
         <fail message="{ok-qa-testcompileclasspath}" if="qa.compile.cp2"/> 
         <fail message="{ok-qa-testruntimeclasspath}" if="qa.runtime.cp2"/> 
   </target>
-  </project>
+
+     <target name="test-deps-missing-module-entry-test-deps" >
+        <!-- default netbeans.dest.dir if it is not overriden -->
+        <property name="netbeans.dest.dir" location="${netbeans.dest.dir.work}"/>
+        <propertyfile file="${netbeans.dest.dir}/moduleCluster.properties"/>
+        <property name="xtest.home" value="any"/>
+        <property name="xtest.testtype" value="testtype"/>
+        <parseprojectxml projectfile="${project.file}" project="${nb_all}/java/">
+            <testtype name="unit" folder="unit.dist.folder" compilecp="unit.compile.cp2" runtimecp="unit.runtime.cp2"/>
+            <testtype name="qa-functional" folder="qa.dist.folder" compilecp="qa.compile.cp2" runtimecp="qa.runtime.cp2"/>
+        </parseprojectxml>        
+
+  <!-- unittests -->
+  
+        <condition property="ok-unit-dist-folder" >
+            <contains string="${unit.dist.folder}" substring="${test.dist.dir}/unit/platform7/org-openide-loaders" />
+        </condition>
+        <condition property="ok-unittestruntimeclasspath" >
+            <and>
+                <contains string="${unit.runtime.cp2}" substring="-mising-Module-Entries-:"/>
+            </and>
+        </condition> 
+        <condition property="ok-unittestcompileclasspath" >
+            <and>
+                <contains string="${unit.compile.cp2}" substring="-mising-Module-Entries-:"/>
+            </and>    
+        </condition>     
+        
+        <echo message="unittestfolder  : ${unit.dist.folder}" />
+        <echo message="unittestruntimeclasspath : ${unit.runtime.cp2}" />
+        <echo message="unit.compile.cp           : ${unit.compile.cp2}" />
+        <fail message="{unit.dist.folder}" unless="ok-unit-dist-folder" />
+        <fail message="{ok-unittestcompileclasspath}" unless="ok-unittestcompileclasspath"/> 
+        <fail message="{ok-unittestruntimeclasspath}" unless="ok-unittestruntimeclasspath"/> 
+
+   <!-- qa-functional tests -->
+        <condition property="ok-qa-dist-folder" >
+            <contains string="${qa.dist.folder}" substring="${test.dist.dir}/qa-functional/platform7/org-openide-loaders" />
+        </condition>
+
+        <condition property="ok-qatestruntimeclasspath" >
+            <and>
+                <contains string="${qa.runtime.cp2}" substring="-mising-Module-Entries-:"/>
+            </and>
+        </condition> 
+        <condition property="ok-qatestcompileclasspath" >
+            <and>
+                <contains string="${qa.compile.cp2}" substring="-mising-Module-Entries-:"/>
+            </and>    
+        </condition>     
+        
+        <echo message="qa test folder  : ${qa.dist.folder}" />
+        <echo message="qa-testruntimeclasspath : ${qa.runtime.cp2}" />
+        <echo message="qa.compile.cp           : ${qa.compile.cp2}" />
+        <fail message="{qa.dist.folder}" unless="ok-qa-dist-folder" />
+        <fail message="{ok-qa-testcompileclasspath}" unless="ok-qatestcompileclasspath"/> 
+        <fail message="{ok-qa-testruntimeclasspath}" unless="ok-qatestruntimeclasspath"/> 
+  </target>
+</project>

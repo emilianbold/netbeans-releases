@@ -372,6 +372,17 @@ Microsystems, Inc. All Rights Reserved.
         
 
     <target name="do-test-build-qa-functional" depends="init,test-init-qa-functional">
+        <condition property="missing-test-testdeps" >
+            <or>
+             <contains string="${test.qa-functional.runtime.cp}" substring="-mising-Module-Entries-:" />
+             <contains string="${test.qa-functional.compile.cp}" substring="-mising-Module-Entries-:" />
+            </or>
+        </condition>
+        <fail if="missing-test-testdeps" >Missing test dependency 
+          Runtime classpath: ${test.unit.runtime.cp}
+          Compile classpath: ${test.unit.compile.cp} 
+         </fail>
+
         <mkdir dir="${build.test.qa-functional.classes.dir}"/>
         <javac srcdir="${test.qa-functional.src.dir}" destdir="${build.test.qa-functional.classes.dir}"
                debug="true" deprecation="${build.compiler.deprecation}" encoding="UTF-8"

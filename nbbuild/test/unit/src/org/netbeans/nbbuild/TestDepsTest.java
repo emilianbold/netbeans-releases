@@ -56,6 +56,11 @@ public class TestDepsTest extends NbTestCase {
       PublicPackagesInProjectizedXMLTest.execute ("TestDeps.xml", new String[] { "-verbose", "-Dproject.file=" + projectxml, "test-deps-no-test-deps" });
         
     }
+  public void testMisingModuleEntryTestDeps() throws Exception {
+      File projectxml = extractFile(TestDepsTest.class.getResourceAsStream("TestDepsMissingModuleEntry.xml"),"project.xml");
+      PublicPackagesInProjectizedXMLTest.execute ("TestDeps.xml", new String[] { "-verbose", "-Dproject.file=" + projectxml, "test-deps-missing-module-entry-test-deps" });
+        
+    }
 
     private File extractFile(InputStream is, String fileName) throws IOException {
         File f = new File(getWorkDir(),fileName);
