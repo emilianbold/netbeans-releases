@@ -53,6 +53,8 @@ public class AsynchStepTest extends NbTestCase {
                 ("org.netbeans.api.debugger.jpda.testapps.AsynchStepApp");
             support.waitState (JPDADebugger.STATE_STOPPED);
             dm.removeBreakpoint (lb);
+            assertNotNull("No Current Thread.", support.getDebugger ().getCurrentThread());
+            assertNotNull("No Current Call Stack Frame.", support.getDebugger ().getCurrentCallStackFrame());
             assertEquals (
                 "Execution stopped in wrong class", 
                 support.getDebugger ().getCurrentCallStackFrame ().
