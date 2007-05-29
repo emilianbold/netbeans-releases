@@ -103,7 +103,6 @@ public class MeasureDialogs  {
         
         suite.addTest(new SelectProfilingTaskDialog("measureTime", "Select Profiling Task dialog open"));
         suite.addTest(new ProfilerAboutDialog("measureTime","Profiler About Dialog"));
-        suite.addTest(new AddProfilingPointWizard("measureTime","Add Profiling point Wizard"));
         suite.addTest(new CompareMemorySnapshotsDialog("measureTime","Compare memory Snapshots dialog"));
         
         suite.addTest(new ProfilerWindows("testProfilerControlPanel","Open Profiler Control Panel Window"));
@@ -111,7 +110,8 @@ public class MeasureDialogs  {
         suite.addTest(new ProfilerWindows("testProfilerLiveResults","Open Profiler Live Results Window"));
         suite.addTest(new ProfilerWindows("testProfilerVMTelemetry","Open Profiler Profiler VM Telemetry Window Window"));
         suite.addTest(new ProfilerWindows("testProfilerThreads","Open Profiler Threads Window"));
-        suite.addTest(new ProfilerWindows("testProfilerProfilingPoints","Open Profiler Profiling Pints Window"));
+        suite.addTest(new ProfilerWindows("testProfilerProfilingPoints","Open Profiler Profiling Points Window"));
+        suite.addTest(new AddProfilingPointWizard("measureTime","Add Profiling point Wizard"));
         
         
 //TODO failing after retouche integration        suite.addTest(new RefactorFindUsagesDialog("measureTime", "Refactor find usages dialog open"));
