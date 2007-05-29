@@ -138,7 +138,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
     
     private void saveValue(String text) {
         final int length = text.length();
-        if (length > 0) {
+//        if (length > 0) {
             super.setValue(MidpTypes.createStringValue(text));
             switch (dependance) {
                 case DEPENDENCE_TEXT_BOX:
@@ -162,7 +162,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
                     });
                     break;
             }
-        }
+  //      }
     }
     
     public void customEditorOKButtonPressed() {
