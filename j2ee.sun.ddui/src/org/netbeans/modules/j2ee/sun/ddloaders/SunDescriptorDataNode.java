@@ -40,6 +40,7 @@ import org.openide.util.NbBundle;
  * A node to represent this ejb-jar.xml object.
  *
  * @author pfiala
+ * @author Peter Williams
  */
 public class SunDescriptorDataNode extends DataNode {
     

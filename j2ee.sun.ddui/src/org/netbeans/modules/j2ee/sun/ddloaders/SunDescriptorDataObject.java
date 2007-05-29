@@ -88,6 +88,7 @@ import org.xml.sax.SAXParseException;
  * Represents a DD object in the Repository.
  *
  * @author pfiala
+ * @author Peter Williams
  */
 public class SunDescriptorDataObject extends DDMultiViewDataObject
 //        implements 

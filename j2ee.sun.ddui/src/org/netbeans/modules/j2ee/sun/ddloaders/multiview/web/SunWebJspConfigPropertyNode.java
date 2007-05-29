@@ -37,6 +37,7 @@ import org.openide.util.NbBundle;
 
 /**
  * @author pfiala
+ * @auther Peter Williams
  */
 public class SunWebJspConfigPropertyNode extends BaseSectionNode {
 
