@@ -54,6 +54,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Annotation;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
@@ -526,7 +527,11 @@ public class HintsUI implements MouseListener, KeyListener, ChangeListener, AWTE
         try {
             t = RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    changes = f.implement();
+                    try {
+                        changes = f.implement();
+                    } catch (Exception e) {
+                        Exceptions.printStackTrace(e);
+                    }
                 }
             });
         } finally {

@@ -34,7 +34,7 @@ public interface Fix {
      *  if no such change was made, or proper caret positioning cannot be
      *  determined.
      */
-    public abstract ChangeInfo implement();
+    public abstract ChangeInfo implement() throws Exception;
     
     public abstract int hashCode();
     
