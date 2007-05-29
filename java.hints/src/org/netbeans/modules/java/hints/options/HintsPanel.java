@@ -50,6 +50,8 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
     HintsPanel() {        
         initComponents();
         
+        descriptionTextArea.setContentType("text/html"); // NOI18N
+
         if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
             setOpaque( false );
         
@@ -94,7 +96,7 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         jLabel1 = new javax.swing.JLabel();
         descriptionPanel = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        descriptionTextArea = new javax.swing.JTextArea();
+        descriptionTextArea = new javax.swing.JEditorPane();
         descriptionLabel = new javax.swing.JLabel();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
@@ -177,9 +179,8 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         descriptionPanel.setOpaque(false);
         descriptionPanel.setLayout(new java.awt.GridBagLayout());
 
-        descriptionTextArea.setColumns(20);
         descriptionTextArea.setEditable(false);
-        descriptionTextArea.setRows(5);
+        descriptionTextArea.setFont(new java.awt.Font("Dialog", 0, 10));
         jScrollPane2.setViewportView(descriptionTextArea);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -292,7 +293,7 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
     private javax.swing.JPanel customizerPanel;
     private javax.swing.JLabel descriptionLabel;
     private javax.swing.JPanel descriptionPanel;
-    private javax.swing.JTextArea descriptionTextArea;
+    private javax.swing.JEditorPane descriptionTextArea;
     private javax.swing.JPanel detailsPanel;
     private javax.swing.JTree errorTree;
     private javax.swing.JLabel jLabel1;

@@ -36,6 +36,7 @@ import java.util.prefs.Preferences;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTree;
@@ -64,6 +65,15 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     
     private static Map<HintSeverity,Integer> severity2index;
     
+    private static final String DESCRIPTION_HEADER = 
+        "<html><head>" + // NOI18N
+        //"<link rel=\"StyleSheet\" href=\"nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css\" type=\"text/css\">" // NOI18N
+        "<link rel=\"StyleSheet\" href=\"nbresloc:/org/netbeans/modules/java/hints/resources/ide.css\" type=\"text/css\">" + // NOI18N
+        "</head><body>"; // NOI18N
+
+    private static final String DESCRIPTION_FOOTER = "</body></html>"; // NOI18N
+    
+    
     static {
         severity2index = new HashMap<HintSeverity, Integer>();
         severity2index.put( HintSeverity.ERROR, 0  );
@@ -75,7 +85,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     private JComboBox severityComboBox;
     private JCheckBox tasklistCheckBox;
     private JPanel customizerPanel;
-    private JTextArea descriptionTextArea;
+    private JEditorPane descriptionTextArea;
     
     HintsPanelLogic() {
         changes = new HashMap<AbstractHint, ModifiedPreferences>();        
@@ -83,7 +93,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     
     void connect( JTree errorTree, JComboBox severityComboBox, 
                   JCheckBox tasklistCheckBox, JPanel customizerPanel,
-                  JTextArea descriptionTextArea) {
+                  JEditorPane descriptionTextArea) {
         
         this.errorTree = errorTree;
         this.severityComboBox = severityComboBox;
@@ -233,7 +243,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             tasklistCheckBox.setSelected(toTasklist);
             
             String description = hint.getDescription();
-            descriptionTextArea.setText( description == null ? "" : description); // NOI18N
+            descriptionTextArea.setText( description == null ? "" : wrapDescription(description)); // NOI18N
                                     
             // Optionally show the customizer
             customizerPanel.removeAll();
@@ -277,6 +287,10 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
    
     // Private methods ---------------------------------------------------------
 
+    private String wrapDescription( String description ) {
+        return new StringBuffer( DESCRIPTION_HEADER ).append(description).append(DESCRIPTION_FOOTER).toString();        
+    }
+    
     private HintSeverity index2severity( int index ) {
         for( Map.Entry<HintSeverity,Integer> e : severity2index.entrySet()) {
             if ( e.getValue() == index ) {
