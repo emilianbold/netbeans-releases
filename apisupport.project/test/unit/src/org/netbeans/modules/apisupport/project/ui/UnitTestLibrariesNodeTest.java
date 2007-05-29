@@ -29,9 +29,7 @@ import org.netbeans.modules.apisupport.project.ui.UnitTestLibrariesNode.RemoveDe
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.TestModuleDependency;
-import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.modules.ModuleInfo;
-import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
@@ -61,12 +59,8 @@ public class UnitTestLibrariesNodeTest extends TestBase {
             nc++;
         }
 
-        LogicalViewProvider lvp = (LogicalViewProvider) p.getLookup().lookup(LogicalViewProvider.class);
-        assertNotNull("have a LogicalViewProvider", lvp);
-        Node root = lvp.createLogicalView();
-        Node libs = root.getChildren().findChild(UnitTestLibrariesNode.UNIT_TEST_LIBRARIES_NAME);
+        Node libs = new UnitTestLibrariesNode(p);
         assertNotNull("have the Libraries node", libs);
-        libs.getChildren().getNodes();
         assertEquals("nc node", nc, libs.getChildren().getNodes(true).length);
         
         //add tests dependecy
@@ -88,10 +82,7 @@ public class UnitTestLibrariesNodeTest extends TestBase {
     public void testActions() throws Exception{
         Lookup.getDefault().lookup(ModuleInfo.class);
         NbModuleProject p = generateStandaloneModule("module");
-        LogicalViewProvider lvp = (LogicalViewProvider) p.getLookup().lookup(LogicalViewProvider.class);
-        assertNotNull("have a LogicalViewProvider", lvp);
-        Node root = lvp.createLogicalView();
-        Node libs = root.getChildren().findChild(UnitTestLibrariesNode.UNIT_TEST_LIBRARIES_NAME);
+        Node libs = new UnitTestLibrariesNode(p);
         assertNotNull("have the Libraries node", libs);
         //test removedep action
         addTestDependency(p);
