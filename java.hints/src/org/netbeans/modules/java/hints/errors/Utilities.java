@@ -26,11 +26,11 @@ import com.sun.source.tree.Scope;
 import com.sun.source.util.TreePath;
 import java.util.EnumSet;
 import java.util.Set;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
@@ -81,8 +81,7 @@ public class Utilities {
         switch (tm.getKind()) {
             case DECLARED:
                 DeclaredType dt = (DeclaredType) tm;
-                String name = dt.asElement().getSimpleName().toString();
-                return Character.toLowerCase(name.charAt(0)) + name.substring(1);
+                return firstToLower(dt.asElement().getSimpleName().toString());
             case ARRAY:
                 return getName(((ArrayType) tm).getComponentType());
             default:
@@ -94,7 +93,7 @@ public class Utilities {
         return adjustName(getNameRaw(et));
     }
     
-    public static String getNameRaw(ExpressionTree et) {
+    private static String getNameRaw(ExpressionTree et) {
         if (et == null)
             return null;
         
@@ -125,10 +124,20 @@ public class Utilities {
         }
         
         if (shortName != null) {
-            return Character.toLowerCase(shortName.charAt(0)) + shortName.substring(1);
+            return firstToLower(shortName);
         }
         
         return name;
+    }
+    
+    private static String firstToLower(String name) {
+        String cand = Character.toLowerCase(name.charAt(0)) + name.substring(1);
+        
+        if (SourceVersion.isKeyword(cand)) {
+            cand = "a" + name;
+        }
+        
+        return cand;
     }
     
     private static final class VariablesFilter implements ElementAcceptor {

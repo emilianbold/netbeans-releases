@@ -72,6 +72,13 @@ public class UtilitiesTest extends NbTestCase {
         performNameGuessTest("package test; public class Test {public void t() {get();} public int get() {return 0;}}", 52, "get");
     }
     
+    public void testNameGuessKeyword() throws Exception {
+        performNameGuessTest("package test; public class Test {public void t() {getDo();} public int getDo() {return 0;}}", 52, "aDo");
+    }
+    
+    public void testNameGuessKeywordTypeMirror() throws Exception {
+        performNameGuessTest("package test; public class Test {public void t() {getDo();} public int getDo() {return 0;}}", 52, "aDo");
+    }
     
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();
