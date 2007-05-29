@@ -66,6 +66,7 @@ class DragOperation {
         dragComponent = new JMenuItem();
         dragComponent.setText(item.getText());
         dragComponent.setIcon(item.getIcon());
+        dragComponent.setAccelerator(item.getAccelerator());
         dragComponent.setBorder(MenuEditLayer.DRAG_MENU_BORDER);
         dragComponent.setMargin(new Insets(1,1,1,1));
         dragComponent.setBorderPainted(true);
