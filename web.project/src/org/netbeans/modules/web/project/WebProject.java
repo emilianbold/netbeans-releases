@@ -37,8 +37,6 @@ import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSSupport;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModelProvider;
 import org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportFactory;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportFactory;
 import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportFactory;
@@ -141,10 +139,6 @@ public final class WebProject implements Project, AntProjectListener, FileChange
     private final WebProjectClassPathExtender classPathExtender;
     private final WebProjectClassPathModifier cpMod;
     private PropertyChangeListener evalListener;
-    private JaxWsModel jaxWsModel;
-    private JaxWsListener jaxWsListener;
-    private FileObject jaxWsFo;
-    private JaxWsModel.ServiceListener jaxWsServiceListener;
     
     private AntBuildExtender buildExtender;
             
@@ -264,9 +258,9 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         eval = createEvaluator();
         aux = helper.createAuxiliaryConfiguration();
         refHelper = new ReferenceHelper(helper, aux, eval);
-        genFilesHelper = new GeneratedFilesHelper(helper);
-        this.updateHelper = new UpdateHelper (this, this.helper, this.aux, UpdateHelper.createDefaultNotifier());
         buildExtender = AntBuildExtenderFactory.createAntExtender(new WebExtenderImplementation());
+        genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
+        this.updateHelper = new UpdateHelper (this, this.helper, this.aux, UpdateHelper.createDefaultNotifier());
         webModule = new ProjectWebModule (this, updateHelper);
         apiWebModule = WebModuleFactory.createWebModule (webModule);
         WebProjectWebServicesSupport webProjectWebServicesSupport = new WebProjectWebServicesSupport(this, helper, refHelper);
@@ -326,7 +320,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
         ClassPathProviderImpl cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots());
-        Lookup base = Lookups.fixed(new Object[] {
+        Lookup base = Lookups.fixed(new Object[] {            
             new Info(),
             aux,
             helper.createCacheDirectoryProvider(),
@@ -356,7 +350,6 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             new WebProjectOperations(this),
             new WebPersistenceProvider(this, evaluator(), cpProvider),
             new WebJAXWSMetadataFinder(this),
-            getJaxWsModel(),
             new WebPersistenceProviderSupplier(this),
             new WebEMGenStrategyResolver(),
             new WebJPADataSourceSupport(this), 
@@ -810,12 +803,9 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             if (evalListener != null) {
                 evaluator().removePropertyChangeListener(evalListener);
             }
-            
-            // remove file change listener from jax-ws.xml
-            if (jaxWsFo!=null) jaxWsFo.removeFileChangeListener(jaxWsListener);
-            
+
             // remove ServiceListener from jaxWsModel            
-            if (jaxWsModel!=null) jaxWsModel.removeServiceListener(jaxWsServiceListener);
+            //if (jaxWsModel!=null) jaxWsModel.removeServiceListener(jaxWsServiceListener);
 
             // Probably unnecessary, but just in case:
             try {
@@ -1210,98 +1200,20 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             });
         }
     }
-    
-    /** copy jax-ws.xml from resource to nbproject directory,
-     *  generate JaxWsModel,
-     *  add FileChangeListener to jax-ws.xml file object
-     */
-    public void createJaxWsFileObject() throws IOException {
-        FileObject projectDir = helper.getProjectDirectory();
-        WSUtils.retrieveJaxWsFromResource(projectDir);
-        
-        jaxWsFo = findJaxWsFileObject(projectDir);
-        if (jaxWsFo!=null) {
-            jaxWsListener = new JaxWsListener();
-            jaxWsFo.addFileChangeListener(jaxWsListener);
-         
-            if (jaxWsModel!=null) {
-                jaxWsModel.setJaxWsFile(jaxWsFo);
-            } else {
-                jaxWsModel = JaxWsModelProvider.getDefault().getJaxWsModel(jaxWsFo);
-                if (jaxWsModel!=null) {
-                    attachServiceListener(jaxWsModel);
-                }
-            }
-        }
-    }
-    
-    public FileObject findJaxWsFileObject() {
-        return findJaxWsFileObject(helper.getProjectDirectory());
-    }
-    
-    private FileObject findJaxWsFileObject(FileObject projectDir) {
-        return projectDir.getFileObject("nbproject/jax-ws.xml"); //NOI18N
-    }
-    
-    private JaxWsModel getJaxWsModel() {
-        if (jaxWsModel==null)
-            try {
-                final FileObject projectDir = helper.getProjectDirectory();
-                jaxWsFo = findJaxWsFileObject(projectDir);
-                if (jaxWsFo==null) {
-                    // create jaxWsModel from the resource
-                    jaxWsModel = JaxWsModelProvider.getDefault().getJaxWsModel(
-                            WSUtils.class.getResourceAsStream("/org/netbeans/modules/websvc/jaxwsmodel/resources/jax-ws.xml"));//NOI18N
-                    jaxWsModel.setJaxWsFile(projectDir);
-                } else {
-                    jaxWsListener = new JaxWsListener();
-                    try {
-                        jaxWsModel = JaxWsModelProvider.getDefault().getJaxWsModel(jaxWsFo);
-                        jaxWsFo.addFileChangeListener(jaxWsListener);
-                    } catch (RuntimeException ex) {
-                        // create jaxWsModel from the resource
-                        jaxWsModel = JaxWsModelProvider.getDefault().getJaxWsModel(
-                                WSUtils.class.getResourceAsStream("/org/netbeans/modules/websvc/jaxwsmodel/resources/jax-ws.xml"));//NOI18N
-                        jaxWsModel.setJaxWsFile(projectDir);
-                        final FileObject oldJaxWsFo = jaxWsFo;
-                        jaxWsFo=null;
-                        final RuntimeException exception = ex;
-                        RequestProcessor.getDefault().post(new Runnable() {
-                            public void run() {
-                                try {
-                                    jaxWsFo = WSUtils.backupAndGenerateJaxWs(projectDir, oldJaxWsFo, exception);
-                                    if (jaxWsFo!=null) {
-                                        jaxWsModel.setJaxWsFile(jaxWsFo);
-                                        jaxWsFo.addFileChangeListener(jaxWsListener);
-                                    }
-                                } catch (IOException ex) {
-                                    ErrorManager.getDefault().log(ex.getLocalizedMessage());
-                                }
-                            }
-                        });
-                    }
-                }
-                if (jaxWsModel!=null) {
-                    attachServiceListener(jaxWsModel);
-                }
-            } catch (IOException ex) {
-                ErrorManager.getDefault().log(ex.getLocalizedMessage());
-            }
-        return jaxWsModel;
-    }
-    
-    private void attachServiceListener(JaxWsModel jaxWsModel) {
-        jaxWsServiceListener = new JaxWsModel.ServiceListener() {
-            public void serviceAdded(String name, String implementationClass) {
-                getAPIJAXWSSupport().addService(name, implementationClass, isJsr109Supported() && isJavaEE5(WebProject.this));
-            }
 
-            public void serviceRemoved(String name) {
-                getAPIJAXWSSupport().serviceFromJavaRemoved(name);
-            }
-        };
-        jaxWsModel.addServiceListener(jaxWsServiceListener);
-    }
+    
+//    private void attachServiceListener(JaxWsModel jaxWsModel) {
+//        jaxWsServiceListener = new JaxWsModel.ServiceListener() {
+//            public void serviceAdded(String name, String implementationClass) {
+//                getAPIJAXWSSupport().addService(name, implementationClass, isJsr109Supported() && isJavaEE5(WebProject.this));
+//            }
+//
+//            public void serviceRemoved(String name) {
+//                getAPIJAXWSSupport().serviceFromJavaRemoved(name);
+//            }
+//        };
+//        jaxWsModel.addServiceListener(jaxWsServiceListener);
+//    }
     
     public boolean isJavaEE5(Project project) {
         return J2eeModule.JAVA_EE_5.equals(getAPIWebModule().getJ2eePlatformVersion());
@@ -1317,20 +1229,6 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             }
         }
         return jsr109Supported;
-    }
-   
-    private class JaxWsListener extends FileChangeAdapter {
-        public void fileChanged(FileEvent fe) {
-            try {
-                JaxWsModel newModel = JaxWsModelProvider.getDefault().getJaxWsModel(fe.getFile());
-                if (jaxWsModel!=null && newModel!=null) jaxWsModel.merge(newModel);
-                genFilesHelper.refreshBuildScript(
-                GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                WebProject.class.getResource("resources/build-impl.xsl"), false);
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
-        }
     }
     
     private static final class WebPropertyEvaluatorImpl implements WebPropertyEvaluator {

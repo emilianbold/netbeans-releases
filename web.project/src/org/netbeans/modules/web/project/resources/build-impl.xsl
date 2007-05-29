@@ -34,12 +34,8 @@ introduced by support for multiple source roots. -jglick
                 xmlns:webproject2="http://www.netbeans.org/ns/web-project/2"
                 xmlns:webproject3="http://www.netbeans.org/ns/web-project/3"
                 xmlns:projdeps="http://www.netbeans.org/ns/ant-project-references/1"
-                xmlns:jaxws="http://www.netbeans.org/ns/jax-ws/1"
                 exclude-result-prefixes="xalan p projdeps">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
-    <xsl:param name = "jax_ws_uri">jax-ws.xml</xsl:param>
-    <xsl:param name = "jaxws" select="document($jax_ws_uri)"/>
-    <xsl:param name="jaxwsversion">jaxws20lib</xsl:param>
     
     <xsl:template match="/">
         
@@ -276,6 +272,10 @@ introduced by support for multiple source roots. -jglick
                         <xsl:attribute name="name">debug</xsl:attribute>
                         <xsl:attribute name="default">${javac.debug}</xsl:attribute>
                     </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">jaxwsendorsed</xsl:attribute>
+                        <xsl:attribute name="default">${jaxws.endorsed.dir}</xsl:attribute>
+                    </attribute>
                     <element>
                         <xsl:attribute name="name">customize</xsl:attribute>
                         <xsl:attribute name="optional">true</xsl:attribute>
@@ -299,12 +299,7 @@ introduced by support for multiple source roots. -jglick
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>
-                            <xsl:variable name="isJSR109">
-                                <xsl:value-of select="$jaxws/jaxws:jax-ws/jaxws:jsr109"/>
-                            </xsl:variable>
-                            <xsl:if test="($jaxws/*/*/*/jaxws:wsdl-url) or ($isJSR109 = 'false' and $jaxws/jaxws:jax-ws/jaxws:services/jaxws:service)">
-                                <compilerarg line="-Djava.endorsed.dirs=&apos;${{jaxws.endorsed.dir}}&apos;"/>
-                            </xsl:if>
+                            <compilerarg line="-Djava.endorsed.dirs=&apos;@{{jaxwsendorsed}}&apos;"/>
                             <compilerarg line="${{javac.compilerargs}}"/>
                             <customize/>
                         </javac>
@@ -540,262 +535,7 @@ introduced by support for multiple source roots. -jglick
                 <xsl:attribute name="depends">init, deps-module-jar, deps-ear-jar</xsl:attribute>
                 <xsl:attribute name="unless">no.deps</xsl:attribute>
             </target>
-            
-            <!-- WS from java - support for WSDL generation -->
-            <xsl:if test="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service">
-                <target name="wsgen-init" depends="init">
-                    <mkdir dir="${{build.generated.dir}}/wsgen/service"/>
-                    <mkdir dir="${{build.classes.dir.real}}"/>
-                    <taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
-                        <classpath path="${{j2ee.platform.wsgen.classpath}}"/>
-                    </taskdef>
-                </target>
-            </xsl:if>
-            <xsl:for-each select="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service">
-                <xsl:if test="not(jaxws:from-wsdl)">
-                    <xsl:variable name="wsname" select="@name"/>
-                    <xsl:variable name="seiclass" select="jaxws:implementation-class"/>
-                    <target name="wsgen-{$wsname}" depends="wsgen-init, compile">
-                        <wsgen
-                            sourcedestdir="${{build.generated.dir}}/wsgen/service"
-                            resourcedestdir="${{build.generated.dir}}/wsgen/service"
-                            keep="false"
-                            genwsdl="true"
-                            sei="{$seiclass}"
-                        >
-                            <classpath path="${{java.home}}/../lib/tools.jar:${{build.classes.dir.real}}:${{j2ee.platform.wsgen.classpath}}:${{javac.classpath}}"/>
-                        </wsgen>
-                    </target>
-                </xsl:if>
-            </xsl:for-each>
-            <!-- END WS from Java -->
-            
-            <!-- START: Invoke wsgen if web service is not JSR 109 and not from wsdl-->
-            <xsl:if test="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service">
-                <xsl:variable name="isJSR109">
-                    <xsl:value-of select="$jaxws/jaxws:jax-ws/jaxws:jsr109"/>
-                </xsl:variable>
-                <xsl:if test="$isJSR109 = 'false'">
-                    <target name="wsgen-init-nonJSR109" depends="init, -do-compile">
-                        <mkdir dir="${{build.generated.dir}}/wsgen/service"/>
-                        <mkdir dir="${{build.generated.dir}}/wsgen/binaries"/>
-                        <mkdir dir="${{build.classes.dir.real}}"/>
-                        <taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
-                            <classpath path="${{java.home}}/../lib/tools.jar:${{build.classes.dir.real}}:${{j2ee.platform.wsgen.classpath}}:${{javac.classpath}}"/>
-                        </taskdef>
-                    </target>
-                    <xsl:for-each select="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service">
-                        <xsl:if test="not(jaxws:wsdl-url)">
-                            <xsl:variable name="wsname" select="@name"/>
-                            <xsl:variable name="seiclass" select="jaxws:implementation-class"/>                      
-                            <target name="wsgen-{$wsname}-nonJSR109" depends="wsgen-init-nonJSR109">
-                                <wsgen
-                                    fork="true"
-                                    xendorsed="true"
-                                    sourcedestdir="${{build.generated.dir}}/wsgen/service"
-                                    resourcedestdir="${{build.generated.dir}}/wsgen/service"
-                                    destdir="${{build.generated.dir}}/wsgen/binaries"
-                                    keep="true"
-                                    genwsdl="true"
-                                    sei="{$seiclass}"
-                                >   
-                                    <classpath path="${{java.home}}/../lib/tools.jar:${{build.classes.dir.real}}:${{j2ee.platform.wsgen.classpath}}:${{javac.classpath}}"/>
-                                    <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
-                                </wsgen>
-                            </target>
-                        </xsl:if>
-                    </xsl:for-each>
-                    <xsl:if test="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service">
-                        <target name="wsgen-generate-nonJSR109">
-                            <xsl:attribute name="depends">
-                                <xsl:for-each select="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service[not(jaxws:wsdl-url)]">
-                                    <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
-                                    <xsl:text>wsgen-</xsl:text><xsl:value-of select="@name"/><xsl:text>-nonJSR109</xsl:text>
-                                </xsl:for-each>
-                                <xsl:if test="count($jaxws/jaxws:jax-ws/jaxws:services/jaxws:service[not(jaxws:wsdl-url)]) > 0">
-                                    <xsl:text>, wsgen-service-compile</xsl:text>
-                                </xsl:if>
-                            </xsl:attribute>
-                        </target>
-                    </xsl:if>
-                    <target name="wsgen-service-compile">
-                        <xsl:attribute name="depends">
-                            <xsl:for-each select="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service[not(jaxws:wsdl-url)]">
-                                <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
-                                <xsl:text>wsgen-</xsl:text><xsl:value-of select="@name"/><xsl:text>-nonJSR109</xsl:text>
-                            </xsl:for-each>
-                        </xsl:attribute>
-                        <webproject2:javac srcdir="${{build.generated.dir}}/wsgen/service" classpath="${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir.real}}"/>
-                    </target>                   
-                </xsl:if>
-            </xsl:if>
-            <!-- END: Invoke wsgen if web service is not JSR 109 -->
-            
-            <xsl:if test="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service">
-                <target name="wsgen-generate">
-                    <xsl:attribute name="depends">
-                        <xsl:for-each select="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service">
-                            <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
-                            <xsl:variable name="wsname2">
-                                <xsl:value-of select="@name"/>
-                            </xsl:variable>
-                            <xsl:text>wsgen-</xsl:text><xsl:value-of select="@name"/>
-                        </xsl:for-each>
-                    </xsl:attribute>
-                </target>
-            </xsl:if>
-            
-            <!-- wsimport task initialization -->
-            <xsl:if test="$jaxws/*/*/*/jaxws:wsdl-url">
-                <xsl:variable name="isJSR109">
-                    <xsl:value-of select="$jaxws/jaxws:jax-ws/jaxws:jsr109"/>
-                </xsl:variable>
-                <target name="wsimport-init" depends="init">
-                    <xsl:if test="$jaxws/jaxws:jax-ws/jaxws:clients/jaxws:client">
-                        <mkdir dir="${{build.generated.dir}}/wsimport/client"/>
-                    </xsl:if>
-                    <xsl:if test="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service/jaxws:wsdl-url">
-                        <mkdir dir="${{build.generated.dir}}/wsimport/service"/>
-                    </xsl:if>
-                    <mkdir dir="${{build.generated.dir}}/wsimport/binaries"/>
-                    <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
-                        <classpath path="${{java.home}}/../lib/tools.jar:${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}"/>                       
-                    </taskdef>
-                </target>
-            </xsl:if>
-            <xsl:for-each select="$jaxws/jaxws:jax-ws/jaxws:clients/jaxws:client">
-                <xsl:variable name="wsname" select="@name"/>
-                <xsl:variable name="package_name" select="jaxws:package-name"/>
-                <xsl:variable name="wsdl_url" select="jaxws:local-wsdl-file"/>
-                <xsl:variable name="wsdl_url_actual" select="jaxws:wsdl-url"/>
-                <xsl:variable name="package_path" select = "translate($package_name,'.','/')"/>
-                <xsl:variable name="catalog" select = "jaxws:catalog-file"/>
-                <xsl:variable name="isJSR109">
-                    <xsl:value-of select="$jaxws/jaxws:jax-ws/jaxws:jsr109"/>
-                </xsl:variable>
-                <target name="wsimport-client-check-{$wsname}" depends="wsimport-init">
-                    <condition property="wsimport-client-{$wsname}.notRequired">
-                        <available file="${{build.generated.dir}}/wsimport/client/{$package_path}" type="dir"/>
-                    </condition>
-                </target>
-                <target name="wsimport-client-{$wsname}" depends="wsimport-init,wsimport-client-check-{$wsname}" unless="wsimport-client-{$wsname}.notRequired">
-                    <xsl:variable name="jaxws21_var" select="$jaxwsversion = 'jaxws21lib'"/>
-                    <xsl:variable name="jsr109_var">
-                        <xsl:choose>
-                            <xsl:when test="$isJSR109 = 'false'">
-                                <xsl:value-of select="false()" />    
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:value-of select="true()" />  
-                            </xsl:otherwise>
-                        </xsl:choose>
-                    </xsl:variable>
-                    <xsl:variable name="forceReplace_var" select="jaxws:package-name/@forceReplace"/>
-                    <xsl:variable name="isService_var" select="false()"/>         
-                    <xsl:call-template name="invokeWsimport">
-                        <xsl:with-param name="isService" select="$isService_var"/>          
-                        <xsl:with-param name="forceReplace" select="$forceReplace_var"/>
-                        <xsl:with-param name="isJSR109" select="$jsr109_var"/> 
-                        <xsl:with-param name="isJaxws21" select="$jaxws21_var"/>
-                        <xsl:with-param name="packageName" select="$package_name"/>                         
-                        <xsl:with-param name="wsName" select="$wsname" />
-                        <xsl:with-param name="wsdlUrl" select="$wsdl_url"/>
-                        <xsl:with-param name="wsdlUrlActual" select="$wsdl_url_actual"/>
-                        <xsl:with-param name="Catalog" select="$catalog"/>  
-                    </xsl:call-template>                       
-                    <copy todir="${{build.classes.dir.real}}">
-                        <fileset dir="${{build.generated.dir}}/wsimport/binaries" includes="**/*.xml"/>
-                    </copy>
-                </target>
-                <target name="wsimport-client-clean-{$wsname}" depends="-init-project">
-                    <delete dir="${{build.generated.dir}}/wsimport/client/{$package_path}"/>
-                </target>
-            </xsl:for-each>
-            
-            <xsl:for-each select="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service">
-                <xsl:if test="jaxws:wsdl-url">
-                    <xsl:variable name="wsname" select="@name"/>
-                    <xsl:variable name="package_name" select="jaxws:package-name"/>
-                    <xsl:variable name="wsdl_url" select="jaxws:local-wsdl-file"/>
-                    <xsl:variable name="package_path" select = "translate($package_name,'.','/')"/>
-                    <xsl:variable name="catalog" select = "jaxws:catalog-file"/>
-                    <xsl:variable name="isJSR109">
-                        <xsl:value-of select="$jaxws/jaxws:jax-ws/jaxws:jsr109"/>
-                    </xsl:variable>
-                    <target name="wsimport-service-check-{$wsname}" depends="wsimport-init">
-                        <condition property="wsimport-service-{$wsname}.notRequired">
-                            <available file="${{build.generated.dir}}/wsimport/service/{$package_path}" type="dir"/>
-                        </condition>
-                    </target>
-                    <target name="wsimport-service-{$wsname}" depends="wsimport-init,wsimport-service-check-{$wsname}" unless="wsimport-service-{$wsname}.notRequired">
-                        <xsl:variable name="jaxws21_var" select="$jaxwsversion = 'jaxws21lib'"/>
-                        <xsl:variable name="jsr109_var">
-                            <xsl:choose>
-                                <xsl:when test="$isJSR109 = 'false'">
-                                    <xsl:value-of select="false()" />              
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    <xsl:value-of select="true()" />  
-                                </xsl:otherwise>
-                            </xsl:choose>
-                        </xsl:variable>
-                        <xsl:variable name="forceReplace_var" select="jaxws:package-name/@forceReplace" />
-                        <xsl:variable name="isService_var" select="true()"/>
-                        <xsl:call-template name="invokeWsimport">
-                            <xsl:with-param name="isService" select="$isService_var"/>          
-                            <xsl:with-param name="forceReplace" select="$forceReplace_var"/>
-                            <xsl:with-param name="isJSR109" select="$jsr109_var"/> 
-                            <xsl:with-param name="isJaxws21" select="$jaxws21_var"/>
-                            <xsl:with-param name="packageName" select="$package_name"/>                         
-                            <xsl:with-param name="wsName" select="$wsname" />
-                            <xsl:with-param name="wsdlUrl" select="$wsdl_url"/>
-                            <xsl:with-param name="Catalog" select="$catalog"/>  
-                        </xsl:call-template>
-                        <copy todir="${{build.web.dir.real}}/WEB-INF/wsdl/{$wsname}">
-                            <fileset dir="${{basedir}}/${{conf.dir}}/xml-resources/web-services/{$wsname}/wsdl/" />
-                        </copy>                            
-                    </target>
-                    <target name="wsimport-service-clean-{$wsname}" depends="-init-project">
-                        <delete dir="${{build.generated.dir}}/wsimport/service/{$package_path}"/>
-                    </target>
-                </xsl:if>
-            </xsl:for-each>
-            
-            <!-- wsimport-client-generate and wsimport-client-compile targets -->
-            <xsl:if test="$jaxws/jaxws:jax-ws/jaxws:clients/jaxws:client">
-                <target name="wsimport-client-generate">
-                    <xsl:attribute name="depends">
-                        <xsl:for-each select="$jaxws/jaxws:jax-ws/jaxws:clients/jaxws:client">
-                            <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
-                            <xsl:text>wsimport-client-</xsl:text><xsl:value-of select="@name"/>
-                        </xsl:for-each>
-                    </xsl:attribute>
-                </target>
-                <target name="wsimport-client-compile" depends="-pre-pre-compile">
-                    <webproject2:javac srcdir="${{build.generated.dir}}/wsimport/client" classpath="${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir.real}}"/>
-                </target>
-            </xsl:if>
-            
-            <xsl:if test="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service/jaxws:wsdl-url">
-                <target name="wsimport-service-generate">
-                    <xsl:attribute name="depends">
-                        <xsl:for-each select="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service">
-                            
-                            <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
-                            <xsl:if test="jaxws:wsdl-url">
-                                <xsl:text>wsimport-service-</xsl:text><xsl:value-of select="@name"/>
-                            </xsl:if>
-                            <xsl:if test="not(jaxws:wsdl-url)">
-                                <xsl:text>wsimport-init</xsl:text>
-                            </xsl:if>
-                        </xsl:for-each>
-                    </xsl:attribute>
-                </target>
-                <target name="wsimport-service-compile" depends="-pre-pre-compile">
-                    <webproject2:javac srcdir="${{build.generated.dir}}/wsimport/service" classpath="${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir.real}}"/>
-                </target>
-            </xsl:if>
-            
+  
             <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:web-services/webproject3:web-service|/p:project/p:configuration/webproject3:data/webproject3:web-service-clients/webproject3:web-service-client">
                 <target name="wscompile-init" depends="init">
                     <taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile"
@@ -943,7 +683,7 @@ introduced by support for multiple source roots. -jglick
             </xsl:if>
             
             <target name="-pre-pre-compile">
-                <xsl:attribute name="depends">init,deps-jar<xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:web-service-clients/webproject3:web-service-client">,web-service-client-generate</xsl:if><xsl:if test="$jaxws/jaxws:jax-ws/jaxws:clients/jaxws:client">,wsimport-client-generate</xsl:if><xsl:if test="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service/jaxws:wsdl-url">,wsimport-service-generate</xsl:if>
+                <xsl:attribute name="depends">init,deps-jar<xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:web-service-clients/webproject3:web-service-client">,web-service-client-generate</xsl:if>
                 </xsl:attribute>
                 <mkdir dir="${{build.classes.dir.real}}"/>
             </target>
@@ -1006,7 +746,7 @@ introduced by support for multiple source roots. -jglick
             </target>
             
             <target name="-do-compile">
-                <xsl:attribute name="depends">init, deps-jar, -pre-pre-compile, -pre-compile, -rest-pre-compile, -copy-manifest, -copy-persistence-xml, -copy-webdir, library-inclusion-in-archive,library-inclusion-in-manifest<xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:web-service-clients/webproject3:web-service-client">,web-service-client-compile</xsl:if><xsl:if test="$jaxws/jaxws:jax-ws/jaxws:clients/jaxws:client">,wsimport-client-compile</xsl:if><xsl:if test="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service/jaxws:wsdl-url">,wsimport-service-compile</xsl:if></xsl:attribute>
+                <xsl:attribute name="depends">init, deps-jar, -pre-pre-compile, -pre-compile, -rest-pre-compile, -copy-manifest, -copy-persistence-xml, -copy-webdir, library-inclusion-in-archive,library-inclusion-in-manifest<xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:web-service-clients/webproject3:web-service-client">,web-service-client-compile</xsl:if></xsl:attribute>
                 <xsl:attribute name="if">have.sources</xsl:attribute>
                 
                 <webproject2:javac destdir="${{build.classes.dir.real}}"/>
@@ -1053,20 +793,6 @@ introduced by support for multiple source roots. -jglick
                     </xsl:attribute>
                 </xsl:if>
                 
-                <!--Add the wsgen target for non-JSR 109 services -->
-                <xsl:if test="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service">
-                    <xsl:variable name="isJSR109">
-                        <xsl:value-of select="$jaxws/jaxws:jax-ws/jaxws:jsr109"/>
-                    </xsl:variable>
-                    <xsl:if test="$isJSR109 = 'false'">
-                        <xsl:attribute name="depends">
-                            <xsl:if test="position()!=1"><xsl:text>, </xsl:text>
-                            </xsl:if>
-                            <xsl:text>wsgen-generate-nonJSR109</xsl:text>
-                        </xsl:attribute>
-                    </xsl:if>
-                </xsl:if> 
-                
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
@@ -1082,7 +808,7 @@ introduced by support for multiple source roots. -jglick
             </target>
             
             <target name="-do-compile-single">
-                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile<xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:web-service-clients/webproject3:web-service-client">,web-service-client-compile</xsl:if><xsl:if test="$jaxws/jaxws:jax-ws/jaxws:clients/jaxws:client">,wsimport-client-compile</xsl:if></xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile<xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:web-service-clients/webproject3:web-service-client">,web-service-client-compile</xsl:if></xsl:attribute>
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
                 <webproject2:javac>
                     <customize>
@@ -2183,9 +1909,7 @@ introduced by support for multiple source roots. -jglick
             </xsl:call-template>
         </xsl:if>
     </xsl:template>
-    
-    
-    
+       
     <xsl:template name="copyIterateDirs" >
         <xsl:param name="files" />
         <xsl:param name="target"/>
@@ -2204,71 +1928,4 @@ introduced by support for multiple source roots. -jglick
         </xsl:if>
     </xsl:template>
     
-    
-    <xsl:template name="invokeWsimport">
-        <xsl:param name="isJaxws21" />
-        <xsl:param name="forceReplace"/>
-        <xsl:param name="packageName"/>
-        <xsl:param name="isJSR109"/>
-        <xsl:param name="isService" />
-        <xsl:param name="wsName" />
-        <xsl:param name="wsdlUrl"/>
-        <xsl:param name="wsdlUrlActual"/>
-        <xsl:param name="Catalog"/>
-        <wsimport>
-            <xsl:if test="$isJaxws21 or $isJSR109 = 'false'">
-                <xsl:attribute name="xendorsed">true</xsl:attribute>  
-            </xsl:if>
-            <xsl:if test="$isJSR109 = 'false'">
-                <xsl:attribute name="fork">true</xsl:attribute>  
-            </xsl:if>
-            <xsl:if test="$forceReplace">
-                <xsl:attribute name="package"><xsl:value-of select="$packageName"/></xsl:attribute>
-            </xsl:if>
-            <xsl:variable name="wsType">
-                <xsl:choose>
-                    <xsl:when test="$isService">
-                        <xsl:text>service</xsl:text>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:text>client</xsl:text>
-                    </xsl:otherwise>    
-                </xsl:choose>     
-            </xsl:variable>
-            <xsl:attribute name="verbose">true</xsl:attribute> 
-            <xsl:attribute name="sourcedestdir">${build.generated.dir}/wsimport/<xsl:value-of select="$wsType"/></xsl:attribute>
-            <xsl:attribute name="extension">true</xsl:attribute>
-            <xsl:attribute name="destdir">${build.generated.dir}/wsimport/binaries</xsl:attribute>
-            <xsl:variable name="wsDir">
-                <xsl:choose>
-                    <xsl:when test="$isService">
-                        <xsl:text>web-services</xsl:text>               
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:text>web-service-references</xsl:text> 
-                    </xsl:otherwise>
-                </xsl:choose>  
-            </xsl:variable>
-            <xsl:attribute name="wsdl">${basedir}/${conf.dir}/xml-resources/<xsl:value-of select="$wsDir"/>/<xsl:value-of select="$wsName"/>/wsdl/<xsl:value-of select="$wsdlUrl"/></xsl:attribute>
-            <xsl:if test="$isService = 'false'">
-                <xsl:attribute name="wsdlLocation"><xsl:value-of select="$wsdlUrlActual" /></xsl:attribute>
-            </xsl:if> 
-            <xsl:attribute name="catalog"><xsl:value-of select="$Catalog" /></xsl:attribute>
-            
-            <xsl:if test="jaxws:binding">
-                <binding>
-                    <xsl:attribute name="dir">${conf.dir}/xml-resources/<xsl:value-of select="$wsDir"/>/<xsl:value-of select="$wsName"/>/bindings</xsl:attribute>
-                    <xsl:attribute name="includes">
-                        <xsl:for-each select="jaxws:binding">
-                            <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
-                            <xsl:value-of select="normalize-space(jaxws:file-name)"/>
-                        </xsl:for-each>
-                    </xsl:attribute>
-                </binding>
-            </xsl:if>
-            <xsl:if test="$isJSR109 = 'false'">
-                <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
-            </xsl:if>
-        </wsimport>
-    </xsl:template>   
 </xsl:stylesheet>

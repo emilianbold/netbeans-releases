@@ -408,10 +408,10 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
 
     public String addService(String name, String serviceImpl, String wsdlUrl, String serviceName, String portName, String packageName, boolean isJsr109) {
         // create jax-ws.xml if necessary
-        FileObject fo = project.findJaxWsFileObject();
+        FileObject fo = WSUtils.findJaxWsFileObject(project);
         if (fo==null) {
             try {
-                project.createJaxWsFileObject();
+                WSUtils.createJaxWsFileObject(project);
             } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ex);
             }
@@ -421,10 +421,10 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
 
     public void addService(String serviceName, String serviceImpl, boolean isJsr109) {
         // create jax-ws.xml if necessary
-        FileObject fo = project.findJaxWsFileObject();
+        FileObject fo = WSUtils.findJaxWsFileObject(project);
         if (fo==null) {
             try {
-                project.createJaxWsFileObject();
+                WSUtils.createJaxWsFileObject(project);
             } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ex);
             }
