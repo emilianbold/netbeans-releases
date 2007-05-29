@@ -271,9 +271,18 @@ class DragOperation {
         // dragged to a menu, add inside the menu instead of next to it
         if(targetComponent instanceof JMenu) {
             p("============== doing a new comp to a jmenu");
-            RADVisualContainer targetContainer = (RADVisualContainer) menuEditLayer.formDesigner.getMetaComponent(targetComponent);
-            p("target container = " + targetContainer);
-            boolean added = creator.addPrecreatedComponent(targetContainer, constraints);
+            Point pt2 = SwingUtilities.convertPoint(menuEditLayer.glassLayer, pt, targetComponent);
+            if(pt2.x > targetComponent.getWidth()-30) {
+                p("doing in menu drop");
+                RADVisualContainer targetContainer = (RADVisualContainer) menuEditLayer.formDesigner.getMetaComponent(targetComponent);
+                p("target container = " + targetContainer);
+                boolean added = creator.addPrecreatedComponent(targetContainer, constraints);
+            } else {
+                p("doing above menu drop");
+                RADVisualComponent newRad = creator.getPrecreatedMetaComponent();
+                p("new rad = " + newRad);
+                menuEditLayer.addRadComponentToBefore(newRad, targetComponent);
+            }
         } else {
             /*
             // add the new component to the target's containing menu
