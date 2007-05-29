@@ -295,11 +295,12 @@ public final class NavigationCaseEdge extends PageFlowSceneElement  {
         public void setValue(String val) throws IllegalAccessException,
                 IllegalArgumentException,
                 InvocationTargetException {
-            try {
-                JSFConfigModel model = navCase.getModel();
+            
+            JSFConfigModel model = navCase.getModel();
                 model.startTransaction();
                 super.setValue(val);
                 model.endTransaction();
+            try {
                 model.sync();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);

@@ -194,34 +194,30 @@ public class PageFlowController {
         FacesConfig facesConfig = configModel.getRootComponent();
         NavigationRule navRule = getRuleWithFromViewID(facesConfig, source.getDisplayName());
         NavigationCase navCase = configModel.getFactory().createNavigationCase();
+        if (navRule == null) {
+            navRule = configModel.getFactory().createNavigationRule();
+            FacesModelUtility.setFromViewId(navRule, source.getDisplayName());
+            facesConfig.addNavigationRule(navRule);
+            navRule2String.put(navRule, FacesModelUtility.getFromViewIdFiltered(navRule));
+        } else {
+            caseNum = getNewCaseNumber(navRule);
+        }
+        String caseName = CASE_STRING + Integer.toString(caseNum);
+        
+        if( pinNode != null ){
+            pinNode.setFromOutcome(caseName);
+        }
+        navCase.setFromOutcome(caseName);
+        
+        FacesModelUtility.setToViewId(navCase, target.getDisplayName());
+        navRule.addNavigationCase(navCase);
+        
+        
+        configModel.endTransaction();
         try {
-            if (navRule == null) {
-                navRule = configModel.getFactory().createNavigationRule();
-                FacesModelUtility.setFromViewId(navRule, source.getDisplayName());
-                facesConfig.addNavigationRule(navRule);
-                navRule2String.put(navRule, FacesModelUtility.getFromViewIdFiltered(navRule));
-            } else {
-                caseNum = getNewCaseNumber(navRule);
-            }
-            String caseName = CASE_STRING + Integer.toString(caseNum);
-            
-            if( pinNode != null ){
-                pinNode.setFromOutcome(caseName);
-            }
-            navCase.setFromOutcome(caseName);
-            
-            FacesModelUtility.setToViewId(navCase, target.getDisplayName());
-            navRule.addNavigationCase(navCase);
-        } catch ( Exception e ){
-            Exceptions.printStackTrace(e);
-        } finally {
-            
-            configModel.endTransaction();
-            try {
-                configModel.sync();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            configModel.sync();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
         
         return navCase;
