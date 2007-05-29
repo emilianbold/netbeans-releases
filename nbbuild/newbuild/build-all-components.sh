@@ -44,13 +44,15 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 #UML component
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml -Ddo-not-rebuild-clusters=true -Dnb.clusters.list=nb.cluster.profiler,nb.cluster.harness,nb.cluster.ide,nb.cluster.java,nb.cluster.apisupport,nb.cluster.j2ee,nb.cluster.nb,nb.cluster.platform,nb.cluster.xml,nb.cluster.uml build-nozip > $UML_BUILD_LOG 2>&1
-ERROR_CODE=$?
-
-if [ $ERROR_CODE != 0 ]; then
-    echo "ERROR: $ERROR_CODE - Can't build UML"
-    exit $ERROR_CODE;
-fi
+#ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml -Ddo-not-rebuild-clusters=true -Dnb.clusters.list=nb.cluster.profiler,nb.cluster.harness,nb.cluster.ide,nb.cluster.java,nb.cluster.apisupport,nb.cluster.j2ee,nb.cluster.nb,nb.cluster.platform,nb.cluster.xml,nb.cluster.uml build-nozip > $UML_BUILD_LOG 2>&1
+#ERROR_CODE=$?
+#
+#if [ $ERROR_CODE != 0 ]; then
+#    echo "ERROR: $ERROR_CODE - Can't build UML"
+#    exit $ERROR_CODE;
+#fi
+mkdir nbbuild/netbeans/uml4
+echo "Fake cluster" > nbbuild/netbeans/uml4/readme
 
 #Ruby scripting
 ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f scripting/ruby/build.xml build > $RUBY_BUILD_LOG 2>&1
