@@ -38,7 +38,7 @@ public class Install extends  ModuleInstall {
     public void restored() {
         Logger log = Logger.getLogger("TIMER"); // NOI18N
         log.setUseParentHandlers(false);
-        log.setLevel(Level.FINEST);
+        log.setLevel(Level.FINE);
         log.addHandler(timers);
     }
     
@@ -66,8 +66,9 @@ public class Install extends  ModuleInstall {
             } else if (args[1] instanceof Boolean) { // start/stop logic
                 // XXX - start/stop support
             } else {
+                String txt = message.startsWith("[M]") ? message : "[M] " + message;
                 TimesCollectorPeer.getDefault().reportReference(
-                        key, message, message, args[1]);
+                        key, message, txt, args[1]);
             }
         }
     
