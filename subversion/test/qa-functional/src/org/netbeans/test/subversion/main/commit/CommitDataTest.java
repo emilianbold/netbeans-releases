@@ -457,6 +457,7 @@ public class CommitDataTest extends JellyTestCase {
             for (int i = 0; i < expected.length; i++) {
                 nodeTest = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|" + expected[i]);
                 nodeIDE = (org.openide.nodes.Node) nodeTest.getOpenideNode();
+                stream.print(expected[i] + ": " + nodeIDE.getHtmlDisplayName());
                 assertNull("Wrong status or color of node!!!", nodeIDE.getHtmlDisplayName());
             }
             //verify versioning view
