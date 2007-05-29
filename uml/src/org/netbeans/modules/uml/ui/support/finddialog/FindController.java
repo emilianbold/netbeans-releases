@@ -543,18 +543,10 @@ public class FindController implements IFindController
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.support.finddialog.IFindController#search2(com.embarcadero.describe.structure.IProject, org.netbeans.modules.uml.ui.support.finddialog.IFindResults)
 	 */
-        public void search2(IProject pProject, IFindResults pResults) {
-            try {
-                m_Project = pProject;
-                search(pResults);
-            } catch(Exception ex) {
-//                Frame parent = ProductHelper.getProxyUserInterface().getWindowHandle();
-//                JOptionPane.showMessageDialog(parent,
-//                DefaultFindDialogResource.getString("IDS_ERROR1"),
-//                DefaultFindDialogResource.getString("IDS_PROJNAME2"),
-//                JOptionPane.INFORMATION_MESSAGE);
-//                return;
-            }
+        public void search2(IProject pProject, IFindResults pResults)
+        {
+            m_Project = pProject;
+            search(pResults);
         }
 
 	/* (non-Javadoc)

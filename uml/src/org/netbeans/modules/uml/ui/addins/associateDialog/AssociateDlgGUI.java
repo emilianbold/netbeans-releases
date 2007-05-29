@@ -747,16 +747,17 @@ public class AssociateDlgGUI extends JCenterDialog implements IAssociateDlgGUI
         clearGrid();
         // get the string that the user typed in
         String searchStr = (String) m_FindCombo.getSelectedItem();
-        if (searchStr != null && searchStr.length() > 0)
+        
+        // Save the values of the search combo
+        FindUtilities.saveSearchString("LastAssociateStrings", m_FindCombo); // NOI18N
+        // reset what is in the search combo
+        FindUtilities.populateComboBoxes("LastAssociateStrings", m_FindCombo); // NOI18N
+        FindUtilities.startWaitCursor(getContentPane());
+        // do the search
+        m_Controller.setSearchString(searchStr);
+        FindResults pResults = new FindResults();
+        try
         {
-            // Save the values of the search combo
-            FindUtilities.saveSearchString("LastAssociateStrings", m_FindCombo); // NOI18N
-            // reset what is in the search combo
-            FindUtilities.populateComboBoxes("LastAssociateStrings", m_FindCombo); // NOI18N
-            FindUtilities.startWaitCursor(getContentPane());
-            // do the search
-            m_Controller.setSearchString(searchStr);
-            FindResults pResults = new FindResults();
             m_Controller.search2(m_Project, pResults);
             if (pResults != null)
             {
@@ -768,7 +769,7 @@ public class AssociateDlgGUI extends JCenterDialog implements IAssociateDlgGUI
                     int countD = pDiagrams.size();
                     if (count > 0 || countD > 0)
                     {
-//						// show the results
+                        // show the results
                         ETList < Object > findResults =
                                 FindUtilities.loadResultsIntoArray(pResults);
                         AssociateTableModel model =
@@ -817,22 +818,21 @@ public class AssociateDlgGUI extends JCenterDialog implements IAssociateDlgGUI
                 String str2 = FindUtilities.translateString("IDS_NONEFOUND2"); // NOI18N
                 m_Status.setText(str2);
             }
-            m_FindCombo.setSelectedItem(searchStr);
-            FindUtilities.endWaitCursor(getContentPane());
         }
-        else
+        catch (Exception e)
         {
-            IErrorDialog pTemp = new SwingErrorDialog(this);
-            if (pTemp != null)
-            {
-                String msg = FindUtilities.translateString("IDS_ERROR1"); // NOI18N
-                String title = FindUtilities.translateString("IDS_PROJNAME2"); // NOI18N
-                pTemp.display(
-                        msg,
-                        MessageIconKindEnum.EDIK_ICONINFORMATION,
-                        title);
-            }
+            String msg;
+            
+            if (xPathCheck.isSelected())
+                msg = FindUtilities.translateString("IDS_ERROR1");
+            else
+                msg = FindUtilities.translateString("IDS_NONEFOUND");
+            
+            m_Status.setText(msg);
         }
+        m_FindCombo.setSelectedItem(searchStr);
+        FindUtilities.endWaitCursor(getContentPane());
+        
         update = true;
         m_FindCombo.getEditor().selectAll();
     }

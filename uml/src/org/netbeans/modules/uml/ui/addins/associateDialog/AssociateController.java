@@ -540,18 +540,10 @@ public class AssociateController implements IAssociateController
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.ui.support.finddialog.IFindController#search2(com.embarcadero.describe.structure.IProject, org.netbeans.modules.uml.ui.support.finddialog.IFindResults)
 	 */
-        public void search2(IProject pProject, IAssociateResults pResults) {
-            try {
-                m_Project = pProject;
-                search(pResults);
-            } catch(Exception ex) {
-                Frame parent = ProductHelper.getProxyUserInterface().getWindowHandle();
-                JOptionPane.showMessageDialog(parent,
-                DefaultAssociateDialogResource.getString("IDS_ERROR1"),
-                DefaultAssociateDialogResource.getString("IDS_PROJNAME2"),
-                JOptionPane.INFORMATION_MESSAGE);
-                return;
-            }
+        public void search2(IProject pProject, IAssociateResults pResults)
+        {
+            m_Project = pProject;
+            search(pResults);
         }
 
 	/* (non-Javadoc)
