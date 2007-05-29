@@ -25,8 +25,10 @@ import java.awt.event.ActionListener;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
@@ -125,8 +127,7 @@ public class SvnSearch implements ActionListener, DocumentListener {
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor();
         try { 
             support = new SvnProgressSupport() {
-                protected void perform() {                                                                                    
-                    final Map<Long, ISVNLogMessage> messages = new HashMap<Long, ISVNLogMessage>();
+                protected void perform() {                                                                                                                            
                     ISVNLogMessage[] messageArray= null;
                     try {                        
                         SvnClient client = Subversion.getInstance().getClient(repositoryUrl, this);                         
@@ -141,17 +142,18 @@ public class SvnSearch implements ActionListener, DocumentListener {
                     if(isCanceled()) {
                         return;
                     }    
-
-                    if(messageArray != null) {                    
-                        long timeFrom = ((SVNRevision.DateSpec) revisionFrom).getDate().getTime();                        
-                        for(ISVNLogMessage lm : messageArray) {
-                            if(!messages.containsKey(lm.getRevision().getNumber())) {
-                                if(lm.getDate().getTime() >= timeFrom) {
-                                    messages.put(lm.getRevision().getNumber(), lm);
-                                }                                                                        
-                            }                                
-                        }   
-                    }     
+                                        
+                    if(messageArray == null) {                
+                        return;
+                    }
+                    
+                    final List<ISVNLogMessage> messages = new ArrayList<ISVNLogMessage>();
+                    long timeFrom = ((SVNRevision.DateSpec) revisionFrom).getDate().getTime();                        
+                    for(ISVNLogMessage lm : messageArray) {                        
+                        if(lm.getDate().getTime() >= timeFrom) {
+                            messages.add(lm);
+                        }                                                                        
+                    }   
 
                     if(isCanceled()) {
                         return;
@@ -161,7 +163,7 @@ public class SvnSearch implements ActionListener, DocumentListener {
                         public void run() {
                             panel.listPanel.setVisible(true);
                             panel.noContentPanel.setVisible(false);                     
-                            searchView.setResults(messages.values().toArray(new ISVNLogMessage[messages.values().size()]));      
+                            searchView.setResults(messages.toArray(new ISVNLogMessage[messages.size()]));      
                         }
                     });
                 }                        

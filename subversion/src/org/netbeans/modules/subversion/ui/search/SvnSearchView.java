@@ -132,9 +132,7 @@ class SvnSearchView implements ComponentListener {
         
         private JTextPane textPane = new JTextPane();
         
-        private DateFormat defaultFormat;
-        
-        private int index;
+        private DateFormat defaultFormat;        
 
         public SvnSearchListCellRenderer() {
             selectedStyle = textPane.addStyle("selected", null); // NOI18N
