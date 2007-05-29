@@ -48,5 +48,13 @@ Microsystems, Inc. All Rights Reserved.
             </xml-rule>
         </resolver>       
     </file>    
-        
+    <file>
+        <ext name="xml"/>
+            <resolver mime="text/x-struts+xml">
+            <xml-rule>
+                <doctype public-id="-//Apache Software Foundation//DTD Struts Configuration 1.3//EN"/>
+            </xml-rule>
+        </resolver>       
+    </file>
+
 </MIME-resolver>

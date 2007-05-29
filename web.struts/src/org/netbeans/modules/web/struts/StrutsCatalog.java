@@ -33,18 +33,28 @@ import org.openide.util.Utilities;
  * @author  Petr Pisl
  */
 public class StrutsCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax.EntityResolver {
-
+    
     private static final String STRUTS_ID_1_0 = "-//Apache Software Foundation//DTD Struts Configuration 1.0//EN"; // NOI18N
     private static final String STRUTS_ID_1_1 = "-//Apache Software Foundation//DTD Struts Configuration 1.1//EN"; // NOI18N
     private static final String STRUTS_ID_1_2 = "-//Apache Software Foundation//DTD Struts Configuration 1.2//EN"; // NOI18N
+    private static final String STRUTS_ID_1_3 = "-//Apache Software Foundation//DTD Struts Configuration 1.3//EN"; // NOI18N
     private static final String TILES_ID_1_1 = "-//Apache Software Foundation//DTD Tiles Configuration 1.1//EN"; // NOI18N
+    private static final String TILES_ID_1_3 = "-//Apache Software Foundation//DTD Tiles Configuration 1.3//EN"; // NOI18N
+    private static final String VALIDATOR_ID_1_1 = "-//Apache Software Foundation//DTD Commons Validator Rules Configuration 1.1//EN"; // NOI18N
     private static final String VALIDATOR_ID_1_1_3 = "-//Apache Software Foundation//DTD Commons Validator Rules Configuration 1.1.3//EN"; // NOI18N
-            
+    private static final String VALIDATOR_ID_1_2_0 = "-//Apache Software Foundation//DTD Commons Validator Rules Configuration 1.2.0//EN"; // NOI18N
+    private static final String VALIDATOR_ID_1_3_0 = "-//Apache Software Foundation//DTD Commons Validator Rules Configuration 1.3.0//EN"; // NOI18N
+    
     private static final String URL_STRUTS_1_0 ="nbres:/org/netbeans/modules/web/struts/resources/struts-config_1_0.dtd"; // NOI18N
     private static final String URL_STRUTS_1_1 ="nbres:/org/netbeans/modules/web/struts/resources/struts-config_1_1.dtd"; // NOI18N
     private static final String URL_STRUTS_1_2 ="nbres:/org/netbeans/modules/web/struts/resources/struts-config_1_2.dtd"; // NOI18N
+    private static final String URL_STRUTS_1_3 ="nbres:/org/netbeans/modules/web/struts/resources/struts-config_1_3.dtd"; // NOI18N
     private static final String URL_TILES_1_1 = "nbres:/org/netbeans/modules/web/struts/resources/tiles-config_1_1.dtd"; // NOI18N
+    private static final String URL_TILES_1_3 = "nbres:/org/netbeans/modules/web/struts/resources/tiles-config_1_1.dtd"; // NOI18N
+    private static final String URL_VALIDATOR_1_1 = "nbres:/org/netbeans/modules/web/struts/resources/validator_1_1.dtd"; // NOI18N
     private static final String URL_VALIDATOR_1_1_3 = "nbres:/org/netbeans/modules/web/struts/resources/validator_1_1_3.dtd"; // NOI18N
+    private static final String URL_VALIDATOR_1_2_0 = "nbres:/org/netbeans/modules/web/struts/resources/validator_1_2_0.dtd"; // NOI18N
+    private static final String URL_VALIDATOR_1_3_0 = "nbres:/org/netbeans/modules/web/struts/resources/validator_1_3_0.dtd"; // NOI18N
     
     /** Creates a new instance of StrutsCatalog */
     public StrutsCatalog() {
@@ -59,8 +69,13 @@ public class StrutsCatalog implements CatalogReader, CatalogDescriptor, org.xml.
         list.add(STRUTS_ID_1_0);
         list.add(STRUTS_ID_1_1);
         list.add(STRUTS_ID_1_2);
+        list.add(STRUTS_ID_1_3);
         list.add(TILES_ID_1_1);
+        list.add(TILES_ID_1_3);
+        list.add(VALIDATOR_ID_1_1);
         list.add(VALIDATOR_ID_1_1_3);
+        list.add(VALIDATOR_ID_1_2_0);
+        list.add(VALIDATOR_ID_1_3_0);
         return list.listIterator();
     }
     
@@ -75,10 +90,20 @@ public class StrutsCatalog implements CatalogReader, CatalogDescriptor, org.xml.
             return URL_STRUTS_1_1;
         else if (STRUTS_ID_1_2.equals(publicId))
             return URL_STRUTS_1_2;
+        else if (STRUTS_ID_1_3.equals(publicId))
+            return URL_STRUTS_1_3;
         else if (TILES_ID_1_1.equals(publicId))
             return URL_TILES_1_1;
+        else if (TILES_ID_1_3.equals(publicId))
+            return URL_TILES_1_3;
+        else if (VALIDATOR_ID_1_1.equals(publicId))
+            return URL_VALIDATOR_1_1;
         else if (VALIDATOR_ID_1_1_3.equals(publicId))
             return URL_VALIDATOR_1_1_3;
+        else if (VALIDATOR_ID_1_2_0.equals(publicId))
+            return URL_VALIDATOR_1_2_0;
+        else if (VALIDATOR_ID_1_3_0.equals(publicId))
+            return URL_VALIDATOR_1_3_0;
         else return null;
     }
     
@@ -106,7 +131,7 @@ public class StrutsCatalog implements CatalogReader, CatalogDescriptor, org.xml.
     public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
     }
     
-     /** Unregister the listener.  */
+    /** Unregister the listener.  */
     public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
     }
     
@@ -114,7 +139,7 @@ public class StrutsCatalog implements CatalogReader, CatalogDescriptor, org.xml.
      * @return I18N display name
      */
     public String getDisplayName() {
-        return NbBundle.getMessage (StrutsCatalog.class, "LBL_StrutsCatalog");  //NOI18N
+        return NbBundle.getMessage(StrutsCatalog.class, "LBL_StrutsCatalog");  //NOI18N
     }
     
     /**
@@ -130,26 +155,36 @@ public class StrutsCatalog implements CatalogReader, CatalogDescriptor, org.xml.
      * @return I18N short description
      */
     public String getShortDescription() {
-        return NbBundle.getMessage (StrutsCatalog.class, "DESC_StrutsCatalog");     //NOI18N
+        return NbBundle.getMessage(StrutsCatalog.class, "DESC_StrutsCatalog");     //NOI18N
     }
     
-   /**
+    /**
      * Resolves schema definition file for taglib descriptor (spec.1_1, 1_2, 2_0)
      * @param publicId publicId for resolved entity (null in our case)
      * @param systemId systemId for resolved entity
-     * @return InputSource for publisId, 
-     */    
+     * @return InputSource for publisId,
+     */
     public org.xml.sax.InputSource resolveEntity(String publicId, String systemId) throws org.xml.sax.SAXException, java.io.IOException {
-       if (STRUTS_ID_1_0.equals(publicId)) {
+        if (STRUTS_ID_1_0.equals(publicId)) {
             return new org.xml.sax.InputSource(URL_STRUTS_1_0);
         } else if (STRUTS_ID_1_1.equals(publicId)) {
             return new org.xml.sax.InputSource(URL_STRUTS_1_1);
         } else if (STRUTS_ID_1_2.equals(publicId)) {
             return new org.xml.sax.InputSource(URL_STRUTS_1_2);
+        } else if (STRUTS_ID_1_3.equals(publicId)) {
+            return new org.xml.sax.InputSource(URL_STRUTS_1_3);
         } else if (TILES_ID_1_1.equals(publicId)) {
             return new org.xml.sax.InputSource(URL_TILES_1_1);
+        } else if (TILES_ID_1_3.equals(publicId)) {
+            return new org.xml.sax.InputSource(URL_TILES_1_3);
+        } else if (VALIDATOR_ID_1_1.equals(publicId)) {
+            return new org.xml.sax.InputSource(URL_VALIDATOR_1_1);
         } else if (VALIDATOR_ID_1_1_3.equals(publicId)) {
-            return new org.xml.sax.InputSource(URL_VALIDATOR_1_1_3);    
+            return new org.xml.sax.InputSource(URL_VALIDATOR_1_1_3);
+        } else if (VALIDATOR_ID_1_2_0.equals(publicId)) {
+            return new org.xml.sax.InputSource(URL_VALIDATOR_1_2_0);
+        } else if (VALIDATOR_ID_1_3_0.equals(publicId)) {
+            return new org.xml.sax.InputSource(URL_VALIDATOR_1_3_0);
         } else {
             return null;
         }
@@ -165,7 +200,7 @@ public class StrutsCatalog implements CatalogReader, CatalogDescriptor, org.xml.
     /**
      * Get registered URI for the given publicId or null if not registered.
      * @return null if not registered
-     */ 
+     */
     public String resolvePublic(String publicId) {
         return null;
     }
