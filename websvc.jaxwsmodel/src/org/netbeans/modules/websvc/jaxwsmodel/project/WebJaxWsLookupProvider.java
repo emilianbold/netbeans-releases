@@ -198,7 +198,7 @@ public class WebJaxWsLookupProvider implements LookupProvider {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
                 public Boolean run() throws IOException {
-                    TransformerUtils.transformClients(prj.getProjectDirectory(), styleSheetResource);
+                    TransformerUtils.transformClients(prj.getProjectDirectory(), styleSheetResource, true);
                     return Boolean.TRUE;
                 }
             });
@@ -230,7 +230,7 @@ public class WebJaxWsLookupProvider implements LookupProvider {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
                 public Boolean run() throws IOException {
-                    TransformerUtils.transformClients(prj.getProjectDirectory(), styleSheetResource);
+                    TransformerUtils.transformClients(prj.getProjectDirectory(), styleSheetResource, true);
                     return Boolean.TRUE;
                 }
             });

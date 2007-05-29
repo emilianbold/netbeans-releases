@@ -31,6 +31,9 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.api.jaxws.project.JAXWSVersionProvider;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -47,10 +50,21 @@ public class TransformerUtils {
     /** jaxws-build.xml: build script containing wsimport/wsgen tasks, that is included to build-impl.xml
      */    
     public static final String JAXWS_BUILD_XML_PATH = "nbproject/jaxws-build.xml"; // NOI18N
+
+    static final String JAXWS_20_LIB = "jaxws20lib";
+    static final String JAXWS_VERSION = "jaxwsversion";
     
     /** xsl transformation utility for generating jaxws-build.xml script
     */ 
-    public static void transformClients(final FileObject projectDirectory, final String jaxws_stylesheet_resource) throws java.io.IOException {
+    public static void transformClients(final FileObject projectDirectory,
+                                        final String jaxws_stylesheet_resource) throws java.io.IOException {
+        transformClients(projectDirectory,jaxws_stylesheet_resource,false);
+    }
+    /** xsl transformation utility for generating jaxws-build.xml script
+    */ 
+    public static void transformClients(final FileObject projectDirectory,
+                                        final String jaxws_stylesheet_resource,
+                                        boolean setJaxWsVersion) throws java.io.IOException {
         FileObject jaxws_xml = projectDirectory.getFileObject(JAX_WS_XML_PATH);
         final FileObject jaxWsBuildScriptXml = FileUtil.createData(projectDirectory, JAXWS_BUILD_XML_PATH);
         byte[] projectXmlData;
@@ -75,6 +89,11 @@ public class TransformerUtils {
             StreamSource stylesheetSource = new StreamSource(
                     new ByteArrayInputStream(stylesheetData), stylesheet.toExternalForm());
             Transformer t = tf.newTransformer(stylesheetSource);
+            if (setJaxWsVersion) {
+                if(!isJAXWS21(projectDirectory)) {
+                    t.setParameter(JAXWS_VERSION, JAXWS_20_LIB );
+                }                
+            }
             File jaxws_xml_F = FileUtil.toFile(jaxws_xml);
             assert jaxws_xml_F != null;
             StreamSource jaxWsSource = new StreamSource(
@@ -107,5 +126,18 @@ public class TransformerUtils {
             baos.write(buf, 0, read);
         }
         return baos.toByteArray();
+    }
+    
+    private static boolean isJAXWS21(FileObject projectDirectory){
+        Project project = FileOwnerQuery.getOwner(projectDirectory);
+        if(project != null){
+            JAXWSVersionProvider jvp = project.getLookup().lookup(JAXWSVersionProvider.class);
+            if(jvp != null &&
+                    jvp.getJAXWSVersion().equals(JAXWSVersionProvider.JAXWS20)){
+                return false;
+            }
+        }
+        // Defaultly return true
+        return true;
     }
 }

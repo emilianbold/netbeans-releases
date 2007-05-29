@@ -23,7 +23,7 @@ Microsystems, Inc. All Rights Reserved.
                 xmlns:xalan="http://xml.apache.org/xslt"
                 xmlns:jaxws="http://www.netbeans.org/ns/jax-ws/1"> 
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
-    <xsl:param name="jaxwsversion">jaxws20lib</xsl:param>
+    <xsl:param name="jaxwsversion">jaxws21lib</xsl:param>
     <xsl:template match="/">
         
         <project>
