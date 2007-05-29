@@ -34,6 +34,7 @@ import org.jdesktop.layout.Baseline;
 import org.jdesktop.layout.LayoutStyle;
 
 import org.netbeans.core.spi.multiview.*;
+import org.netbeans.modules.form.InPlaceEditLayer.FinishListener;
 import org.netbeans.modules.form.menu.MenuEditLayer;
 import org.netbeans.modules.form.palette.PaletteItem;
 import org.openide.DialogDisplayer;
@@ -1500,12 +1501,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
         editedProperty = property;
 
-        if (textEditLayer == null) {
-            textEditLayer = new InPlaceEditLayer();
-            textEditLayer.setVisible(false);
-            textEditLayer.addFinishListener(getFinnishListener());
-            layeredPane.add(textEditLayer, new Integer(2001));
-        }
+        getInPlaceEditLayer();
         try {
             textEditLayer.setEditedComponent(comp, editText);
         }
@@ -1754,6 +1750,16 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             MultiViewFactory.NOOP_CLOSE_ACTION);
     }
 
+    public InPlaceEditLayer getInPlaceEditLayer() {
+        if (textEditLayer == null) {
+            textEditLayer = new InPlaceEditLayer();
+            textEditLayer.setVisible(false);
+            textEditLayer.addFinishListener(getFinnishListener());
+            layeredPane.add(textEditLayer, new Integer(2001));
+        }
+        return textEditLayer;
+    }
+    
     MenuEditLayer getMenuEditLayer() {
         if(menuEditLayer == null) {
             menuEditLayer = new MenuEditLayer(this);

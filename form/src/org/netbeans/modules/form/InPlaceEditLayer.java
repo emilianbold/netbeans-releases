@@ -36,7 +36,7 @@ import java.util.ArrayList;
  *
  * @author Tomas Pavek
  */
-class InPlaceEditLayer extends JPanel
+public class InPlaceEditLayer extends JPanel
 {
     private boolean layerEditing = true;
 
@@ -547,7 +547,7 @@ class InPlaceEditLayer extends JPanel
 
     // -------------
 
-    interface FinishListener extends java.util.EventListener {
+    public interface FinishListener extends java.util.EventListener {
         public void editingFinished(boolean changed);
     }
 

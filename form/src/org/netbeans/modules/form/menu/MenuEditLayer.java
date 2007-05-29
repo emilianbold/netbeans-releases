@@ -259,6 +259,7 @@ public class MenuEditLayer extends JPanel {
         // close all popup frames
         this.setVisible(false);
         glassLayer.removeKeyListener(keyboardMenuNavigator);
+        keyboardMenuNavigator.unconfigure();
         keyboardMenuNavigator = null;
     }
     

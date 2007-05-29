@@ -22,6 +22,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.form.InPlaceEditLayer;
+import org.netbeans.modules.form.RADComponent;
 import org.netbeans.modules.form.RADVisualComponent;
 import org.netbeans.modules.form.RADVisualContainer;
 
@@ -35,10 +38,22 @@ public class KeyboardMenuNavigator implements KeyListener {
     RADVisualContainer menuBarRAD;
     RADVisualContainer currentMenuRAD;
     RADVisualComponent selectedRADComponent;
+    private boolean isEditing = false;
+    KeyboardFinishListener listener;
     
     public KeyboardMenuNavigator(MenuEditLayer menuEditLayer) {
         this.menuEditLayer = menuEditLayer;
+        configure();
     }
+    
+    public void configure() {
+        listener = new KeyboardFinishListener();
+        menuEditLayer.formDesigner.getInPlaceEditLayer().addFinishListener(listener);
+    }
+    public void unconfigure() {
+        menuEditLayer.formDesigner.getInPlaceEditLayer().removeFinishListener(listener);
+    }
+    
     public void keyPressed(KeyEvent e) {
         //p("pressed: ");
         if(e.getKeyCode() == KeyEvent.VK_DOWN) {
@@ -52,6 +67,10 @@ public class KeyboardMenuNavigator implements KeyListener {
         }
         if(e.getKeyCode() == KeyEvent.VK_RIGHT) {
             selectOffsetMenu(+1);
+        }
+        
+        if(e.getKeyCode() == KeyEvent.VK_SPACE) {
+            startEditing();
         }
     }
     public void keyReleased(KeyEvent e) {
@@ -135,5 +154,19 @@ public class KeyboardMenuNavigator implements KeyListener {
             return currentMenuRAD;
         }
         return getTopLevelMenu(currentMenuRAD.getParentContainer());
+    }
+    
+    private void startEditing() {
+        isEditing = true;
+        menuEditLayer.formDesigner.startInPlaceEditing(selectedRADComponent);
+    }
+    
+    private class KeyboardFinishListener implements InPlaceEditLayer.FinishListener {
+        public void editingFinished(boolean changed) {
+            //System.out.println("finished editing");
+            if(menuEditLayer.isVisible()) {
+                menuEditLayer.glassLayer.requestFocusInWindow();
+            }
+        }
     }
 }
