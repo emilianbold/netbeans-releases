@@ -82,7 +82,7 @@ public class Pin extends PageFlowSceneElement{
     
     @Override
     public String toString() {
-        return new String("PinNode[pagename=" + pageNode.getDisplayName() + " isDefault=" + isDefault() +"] ");
+        return new String("Pin[pagename=" + pageNode.getDisplayName() + " isDefault=" + isDefault() +"] ");
     }
     
     
