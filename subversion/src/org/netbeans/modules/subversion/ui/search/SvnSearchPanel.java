@@ -45,9 +45,10 @@ public class SvnSearchPanel extends javax.swing.JPanel {
 
         dateFromTextField.setText(org.openide.util.NbBundle.getMessage(SvnSearchPanel.class, "SvnSearchPanel.dateFromTextField.text")); // NOI18N
 
-        listButton.setText(org.openide.util.NbBundle.getMessage(SvnSearchPanel.class, "SvnSearchPanel.listButton.text_1")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(listButton, org.openide.util.NbBundle.getMessage(SvnSearchPanel.class, "SvnSearchPanel.listButton.text_1")); // NOI18N
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(SvnSearchPanel.class, "SvnSearchPanel.jLabel1.text_1")); // NOI18N
+        jLabel1.setLabelFor(dateFromTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SvnSearchPanel.class, "SvnSearchPanel.jLabel1.text_1")); // NOI18N
 
         jLabel2.setText(org.openide.util.NbBundle.getMessage(SvnSearchPanel.class, "SvnSearchPanel.jLabel2.text_1")); // NOI18N
 
