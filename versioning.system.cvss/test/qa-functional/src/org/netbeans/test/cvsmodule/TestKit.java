@@ -403,7 +403,7 @@ public class TestKit {
     
     public static void showStatusLabels() {
         JMenuBarOperator mbo = new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar());
-        JMenuItemOperator mo = mbo.showMenuItem("View|Show CVS Status Labels");
+        JMenuItemOperator mo = mbo.showMenuItem("View|Show Versioning Labels");
         JCheckBoxMenuItemOperator cbmio = new JCheckBoxMenuItemOperator((JCheckBoxMenuItem) mo.getSource());
         if (!cbmio.getState())
             cbmio.push();
