@@ -80,7 +80,7 @@ public class DesignTimeDataSourceServiceImpl implements DesignTimeDataSourceServ
 
         if (notFound) {
             try {
-                jmp.createDatasource(req.getResourceName(), req.getUrl(),
+                jmp.getConfigSupport().createDatasource(req.getResourceName(), req.getUrl(),
                         req.getUsername(), req.getPassword(), req.getDriverClassName());
             } catch (ConfigurationException e) {
                 // TODO: give some feedback to the user
