@@ -58,6 +58,11 @@ public class VWPContentModel extends PageContentModel{
     private String pageName;
     
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.web.jsf.navigation");
+//    
+//    static {
+//        LOGGER.setLevel(Level.ALL);
+//    }
+        
     
     /** Creates a new instance of VWPContentModel
      * @param facesModel can not be null
@@ -80,10 +85,6 @@ public class VWPContentModel extends PageContentModel{
         destroyListeners();
     }
     
-    
-    
-    
-    
     public VWPContentModel() {
     }
     
@@ -102,24 +103,29 @@ public class VWPContentModel extends PageContentModel{
     
     private FacesModelSetListener msl;
     public void initListeners() {
-        
+        LOGGER.entering("VWPContentModel", "initListeners()");
         if( msl == null ){
+            LOGGER.finest("Adding model listener for Page: " + pageName);
             msl = new FacesModelSetListener(this);
             facesModel.getOwner().addModelSetListener(msl);
             DesignBean designBean = facesModel.getRootBean();
             
         }
+        LOGGER.exiting("VWPContentModel", "initListeners()");
     }
     
     public void destroyListeners() {
         
-        if ( facesModel != null ) {
+        LOGGER.entering("VWPContentModel", "destroyListeners()");
+        if ( facesModel != null ) {            
+            LOGGER.finest("Removing model listener for Page: " + pageName);
             ModelSet set = facesModel.getOwner();
             if( set != null && msl != null ) {
                 set.removeModelSetListener(msl);
                 msl = null;
             }
         }
+        LOGGER.exiting("VWPContentModel", "destroyListeners()");
     }
     
     
@@ -475,7 +481,7 @@ public class VWPContentModel extends PageContentModel{
         if( actions == null ){
             actions = new VWPContentActions(this);
         }
-        return actions.getVWPContentModelActions();
+        return (actions != null) ? actions.getVWPContentModelActions() : null;
     }
     
     public VWPContentActions getActionsFactory(){
