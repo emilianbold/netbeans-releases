@@ -172,6 +172,8 @@ class DragOperation {
         case INTER_MENU_DRAG: completeInterMenuDrag(pt); break ;
         }
         
+        menuEditLayer.repaint();
+        
     }
     
     void fastEnd() {
