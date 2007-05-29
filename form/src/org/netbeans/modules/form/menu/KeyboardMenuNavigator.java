@@ -92,7 +92,9 @@ public class KeyboardMenuNavigator implements KeyListener {
         if(index+offset >=0 && index+offset < currentMenuRAD.getSubComponents().length) {
             selectedRADComponent = currentMenuRAD.getSubComponent(index+offset);
         } else {
-            selectedRADComponent = currentMenuRAD.getSubComponent(index);
+            if(index >= 0) {
+                selectedRADComponent = currentMenuRAD.getSubComponent(index);
+            }
         }
         
         JComponent item = (JComponent) menuEditLayer.formDesigner.getComponent(selectedRADComponent);
