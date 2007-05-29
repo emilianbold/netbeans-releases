@@ -752,12 +752,14 @@ public class FindDialogUI extends JCenterDialog
             }
             catch (Exception ex)
             {
-                String noneStr = FindUtilities.translateString("IDS_NONEFOUND");
-                m_Status.setText(noneStr);
-//                JOptionPane.showMessageDialog(this,
-//                        DefaultFindDialogResource.getString("IDS_ERROR1"),
-//                        DefaultFindDialogResource.getString("IDS_PROJNAME2"),
-//                        JOptionPane.INFORMATION_MESSAGE);
+                String msg;
+                
+                if (m_XpathCheck.isSelected())  
+                    msg = FindUtilities.translateString("IDS_ERROR1");
+                else
+                    msg = FindUtilities.translateString("IDS_NONEFOUND");
+
+                m_Status.setText(msg);
             }
             finally
             {
@@ -778,54 +780,53 @@ public class FindDialogUI extends JCenterDialog
         FindUtilities.saveSearchString("LastSearchStrings", m_FindCombo);
         // reset what is in the search combo
         FindUtilities.populateComboBoxes("LastSearchStrings", m_FindCombo);
-        if (searchStr != null && searchStr.length() > 0)
+        
+        boolean continueFlag = true;
+        int count = m_ProjectList.getSelectedIndex();
+        if (count == -1)
         {
-            boolean continueFlag = true;
-            int count = m_ProjectList.getSelectedIndex();
-            if (count == -1)
+            continueFlag = false;
+            String msg = FindUtilities.translateString("IDS_ERROR2");
+            String title = FindUtilities.translateString("IDS_PROJNAME2");
+            IErrorDialog pTemp = new SwingErrorDialog(this);
+            if (pTemp != null)
             {
-                continueFlag = false;
-                String msg = FindUtilities.translateString("IDS_ERROR2");
-                String title = FindUtilities.translateString("IDS_PROJNAME2");
-                IErrorDialog pTemp = new SwingErrorDialog(this);
-                if (pTemp != null)
-                {
-                    pTemp.display(msg, MessageIconKindEnum.EDIK_ICONINFORMATION, title);
-                }
+                pTemp.display(msg, MessageIconKindEnum.EDIK_ICONINFORMATION, title);
             }
-            
-            if (continueFlag)
+        }
+        
+        if (continueFlag)
+        {
+            // do the search
+            m_Controller.setSearchString(searchStr);
+            m_Controller.clearProjectList();
+            FindUtilities.loadProjectListOfController(m_ProjectList, m_Controller);
+            FindResults pResults = new FindResults();
+            m_Controller.search(pResults);
+            if (pResults != null)
             {
-                // do the search
-                m_Controller.setSearchString(searchStr);
-                m_Controller.clearProjectList();
-                FindUtilities.loadProjectListOfController(m_ProjectList, m_Controller);
-                FindResults pResults = new FindResults();
-                m_Controller.search(pResults);
-                if (pResults != null)
+                ETList<IElement> pElements = pResults.getElements();
+                ETList<IProxyDiagram> pDiagrams = pResults.getDiagrams();
+                if ( (pElements != null) && (pDiagrams != null))
                 {
-                    ETList<IElement> pElements = pResults.getElements();
-                    ETList<IProxyDiagram> pDiagrams = pResults.getDiagrams();
-                    if ( (pElements != null) && (pDiagrams != null))
+                    // show the results
+                    ETList< Object > findResults = FindUtilities.loadResultsIntoArray(pResults);
+                    FindTableModel model = new FindTableModel(this, findResults);
+                    m_ResultsTable.setModel(model);
+                    
+                    int countD = pDiagrams.size();
+                    if (pElements.size() > 0 || countD > 0)
                     {
-                        // show the results
-                        ETList< Object > findResults = FindUtilities.loadResultsIntoArray(pResults);
-                        FindTableModel model = new FindTableModel(this, findResults);
-                        m_ResultsTable.setModel(model);
-                        
-                        int countD = pDiagrams.size();
-                        if (pElements.size() > 0 || countD > 0)
-                        {
-                            long totalC = pElements.size() + countD;
-                            String strMsg = totalC + " ";
-                            strMsg += FindUtilities.translateString("IDS_NUMFOUND");
-                            m_Status.setText(strMsg);
-                            //
-                            // This is special code to aid in the automating testing.  We had no way to access
-                            // the information in the grid from the automated scripts and/or VisualTest, so
-                            // if a flag is set in the registry, we will dump the results of the grid to a
-                            // specified file
-                            //
+                        long totalC = pElements.size() + countD;
+                        String strMsg = totalC + " ";
+                        strMsg += FindUtilities.translateString("IDS_NUMFOUND");
+                        m_Status.setText(strMsg);
+                        //
+                        // This is special code to aid in the automating testing.  We had no way to access
+                        // the information in the grid from the automated scripts and/or VisualTest, so
+                        // if a flag is set in the registry, we will dump the results of the grid to a
+                        // specified file
+                        //
                             /* TODO
                             if( GETDEBUGFLAG_RELEASE(_T("DumpGridResults"), 0))
                             {
@@ -836,34 +837,29 @@ public class FindDialogUI extends JCenterDialog
                                  }
                              }
                              */
-                        }
-                        else
-                        {
-                            String noneStr = FindUtilities.translateString("IDS_NONEFOUND");
-                            m_Status.setText(noneStr);
-                        }
                     }
                     else
                     {
-                        String canStr = FindUtilities.translateString("IDS_CANCELLED");
-                        m_Status.setText(canStr);
+                        String noneStr = FindUtilities.translateString("IDS_NONEFOUND");
+                        m_Status.setText(noneStr);
                     }
                 }
                 else
                 {
-                    String str2 = FindUtilities.translateString("IDS_NONEFOUND2");
-                    m_Status.setText(str2);
+                    String canStr = FindUtilities.translateString("IDS_CANCELLED");
+                    m_Status.setText(canStr);
                 }
-                
             }
-            update = false;
-            m_FindCombo.setSelectedItem(searchStr);
+            else
+            {
+                String str2 = FindUtilities.translateString("IDS_NONEFOUND2");
+                m_Status.setText(str2);
+            }
+            
         }
-        else
-        {
-            m_Status.setText(NbBundle.getMessage(
-                    DefaultFindDialogResource.class,"IDS_ERROR1"));
-        }
+        update = false;
+        m_FindCombo.setSelectedItem(searchStr);
+        
         update = true;
         m_FindCombo.getEditor().selectAll();
     }
