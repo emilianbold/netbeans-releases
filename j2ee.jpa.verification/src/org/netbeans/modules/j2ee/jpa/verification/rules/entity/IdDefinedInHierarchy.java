@@ -26,10 +26,14 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.jpa.model.JPAHelper;
 import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule;
+import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
+import org.netbeans.modules.j2ee.jpa.verification.fixes.CreateId;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 
 /**
@@ -69,8 +73,10 @@ public class IdDefinedInHierarchy extends JPAClassRule {
             }
             
         } while (javaClass != null);
+        Fix fix = new CreateId(ctx.getFileObject(), ElementHandle.create(subject),
+                ((JPAProblemContext)ctx).getAccessType());
         
         return new ErrorDescription[]{createProblem(subject, ctx, 
-                NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_NoIdDefinedInHierarchy"))};
+                NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_NoIdDefinedInHierarchy"),fix)};
     }
 }

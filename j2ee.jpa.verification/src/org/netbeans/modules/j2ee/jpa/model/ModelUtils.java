@@ -16,11 +16,17 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
+import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Embeddable;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.MappedSuperclass;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -31,6 +37,15 @@ public class ModelUtils {
     public static Entity getEntity(EntityMappingsMetadata metadata, TypeElement clazz){
         for (Entity entity: metadata.getRoot().getEntity()){
             if (clazz.getQualifiedName().contentEquals(entity.getClass2())){
+                return entity;
+            }
+        }
+        return null;
+    }
+    
+    public static Entity getEntity(EntityMappingsMetadata metadata, String qualifiedClassName){
+        for (Entity entity: metadata.getRoot().getEntity()){
+            if (qualifiedClassName.equals(entity.getClass2())){
                 return entity;
             }
         }
@@ -112,6 +127,12 @@ public class ModelUtils {
                 fieldName.substring(1);
     }
     
+    public static String getMutatorName(String fieldName){
+        return "set" //NOI18N
+                + Character.toString(fieldName.charAt(0)).toUpperCase() +
+                fieldName.substring(1);
+    }
+    
     public static String getFieldNameFromAccessor(String accessorName){
         if (!accessorName.startsWith("get")){ //NOI18N
             throw new IllegalArgumentException("accessor name must start with 'get'");
@@ -128,5 +149,34 @@ public class ModelUtils {
         }
         
         return null;
+    }
+    
+    public static PersistenceScope getDefaultPersistenceScope(Project project){
+        
+        PersistenceScopes scopes = PersistenceScopes.getPersistenceScopes(project);
+        
+        if (scopes == null){
+            return null; // project of this type doesn't provide a list of persistence scopes
+        }
+        
+        //TODO: a workaround for 102643, remove it when the issue is fixed
+        if (scopes.getPersistenceScopes().length == 0){
+            return null;
+        }
+        
+        return scopes.getPersistenceScopes()[0];
+    }
+    
+    public static MetadataModel<EntityMappingsMetadata> getModel(FileObject sourceFile){
+        Project project = FileOwnerQuery.getOwner(sourceFile);
+        
+        if (project == null){
+            return null; // the source file doesn't belong to any project, skip all checks
+        }
+        
+        PersistenceScope scope = ModelUtils.getDefaultPersistenceScope(project);
+        MetadataModel<EntityMappingsMetadata> emModel = scope.getEntityMappingsModel(null);
+        
+        return emModel;
     }
 }

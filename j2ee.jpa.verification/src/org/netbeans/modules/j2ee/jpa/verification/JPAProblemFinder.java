@@ -89,27 +89,12 @@ public abstract class JPAProblemFinder {
             cancelled = false;
             problemsFound.clear();
             createPersistenceScopesListener(file, info.getDocument());
-            Project project = FileOwnerQuery.getOwner(file);
+            MetadataModel<EntityMappingsMetadata> emModel = ModelUtils.getModel(file);
             
-            if (project == null){
-                return; // the source file doesn't belong to any project, skip all checks
+            if (emModel == null){
+                return; // File doesn't belong to any project or project doesn't support JPA
             }
             
-            PersistenceScopes scopes = PersistenceScopes.getPersistenceScopes(project);
-            
-            if (scopes == null){
-                return; // project of this type doesn't provide a list of persistence scopes
-            }
-            
-            //TODO: a workaround for 102643, remove it when the issue is fixed
-            if (scopes.getPersistenceScopes().length == 0){
-                return;
-            }
-            
-            PersistenceScope scope = scopes.getPersistenceScopes()[0];
-            // end of workround for 102643
-            
-            MetadataModel<EntityMappingsMetadata> emModel = scope.getEntityMappingsModel(null);
             emModel.runReadActionWhenReady(new MetadataModelAction<EntityMappingsMetadata, Void>() {
                 public Void run(EntityMappingsMetadata metadata) {
                     for (Tree tree : info.getCompilationUnit().getTypeDecls()){
