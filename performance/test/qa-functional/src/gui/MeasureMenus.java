@@ -41,7 +41,7 @@ public class MeasureMenus  {
         suite.addTest(new MainMenu("testBuildMenu", "Build main menu"));
         suite.addTest(new MainMenu("testRunMenu", "Run main menu"));
         suite.addTest(new MainMenu("testRefactoringMenu", "Refactor main menu"));
-        suite.addTest(new MainMenu("testVersioningMenu", "CVS main menu"));
+        suite.addTest(new MainMenu("testVersioningMenu", "Versioning main menu"));
         suite.addTest(new MainMenu("testProfileMenu", "Profile main menu"));
         suite.addTest(new MainMenu("testWindowMenu", "Window main menu"));
         suite.addTest(new MainMenu("testHelpMenu", "Help main menu"));
@@ -85,14 +85,14 @@ public class MeasureMenus  {
         
         suite.addTest(new ToolsMenu("testJavaToolsMenu", "Tools main menu for Java node"));
         suite.addTest(new ToolsMenu("testXmlToolsMenu", "Tools main menu for XML node"));
-        suite.addTest(new ToolsMenu("testTxtToolsMenu", "Tools main menu for text node"));
+        suite.addTest(new ToolsMenu("testTxtToolsMenu", "Tools main menu for Txt node"));
 
         suite.addTest(new SourceEditorPopupMenu("testPopupInTxt", "Plain text Editor popup"));
         suite.addTest(new SourceEditorPopupMenu("testPopupInXml", "XML Editor popup"));
         suite.addTest(new SourceEditorPopupMenu("testPopupOnMethod", "Java Editor Method popup"));
         suite.addTest(new SourceEditorPopupMenu("testPopupOnClassName", "Java Editor Class Name popup"));
         
-        suite.addTest(new RuntimeViewPopupMenu("testServerRegistryPopupMenuRuntime", "Servers node popup in Runtime View"));
+        suite.addTest(new RuntimeViewPopupMenu("testServerRegistryPopupMenuRuntime", "Servers node popup in Services View"));
 //TODO no tomcat - see issue 101104        suite.addTest(new RuntimeViewPopupMenu("testTomcatPopupMenuRuntime", "Bundled Tomcat node popup in Runtime View"));
         
         suite.addTest(new FormInspectorNodePopupMenu("testFormNodePopupMenuInspector", "Form Inspector node popup"));
