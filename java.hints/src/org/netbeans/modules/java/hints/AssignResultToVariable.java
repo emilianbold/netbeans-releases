@@ -53,6 +53,7 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -252,7 +253,7 @@ public class AssignResultToVariable extends AbstractHint {
     }
 
     static String guessName(CompilationInfo info, TreePath tp) {
-        String name = adjustName(SuspiciousNamesCombination.getName((ExpressionTree) tp.getLeaf()));
+        String name = Utilities.getName((ExpressionTree) tp.getLeaf());
         
         if (name == null) {
             return "name";
