@@ -644,7 +644,7 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="NewProjectFile.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.NewFile$WithSubMenu"/>
                     </file>
-                    <attr boolvalue="true" name="NewProjectFile.instance/FileSystemAction.instance" />
+                    <attr boolvalue="true" name="NewProjectFile.instance/FindAction.instance" />
                 </folder>
             </folder>
         </folder>

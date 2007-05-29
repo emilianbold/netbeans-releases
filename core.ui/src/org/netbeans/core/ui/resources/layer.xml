@@ -440,11 +440,7 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="NewTemplateAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.NewTemplateAction"/>
                     </file>
-                    <attr boolvalue="true" name="NewTemplateAction.instance/FileSystemAction.instance"/>
-                    <file name="FileSystemAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction"/>
-                    </file>
-                    <attr boolvalue="true" name="FileSystemAction.instance/FindAction.instance"/>
+                    <attr boolvalue="true" name="NewTemplateAction.instance/FindAction.instance"/>
                     <file name="FindAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.FindAction"/>
                     </file>
@@ -480,7 +476,15 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="Separator3.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>
-                    <attr boolvalue="true" name="Separator3.instance/ToolsAction.instance"/>
+                    <attr boolvalue="true" name="Separator3.instance/FileSystemAction.instance"/>
+                    <file name="FileSystemAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction"/>
+                    </file>
+                    <attr boolvalue="true" name="FileSystemAction.instance/Separator4.instance"/>
+                    <file name="Separator4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr boolvalue="true" name="Separator4.instance/ToolsAction.instance"/>
                     <file name="ToolsAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction"/>
                     </file>
