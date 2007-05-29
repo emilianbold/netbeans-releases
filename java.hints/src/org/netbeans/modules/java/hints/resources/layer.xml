@@ -55,6 +55,24 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>                    
                     <file name="org-netbeans-modules-java-hints-AddOverrideAnnotation.instance" />
                 </folder>
+                
+                <folder name="braces">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>                    
+                    
+                    <file name="BracesFor.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.Braces.createFor" />
+                    </file>
+                    <file name="BracesWhile.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.Braces.createWhile" />
+                    </file>
+                    <file name="BracesDoWhile.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.Braces.createDoWhile" />
+                    </file>
+                    <file name="BracesIf.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.Braces.createIf" />
+                    </file>
+                </folder>
+                
 
                 <!--
                 <folder name="typos">
