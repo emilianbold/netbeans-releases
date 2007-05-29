@@ -65,5 +65,6 @@
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.BindingAndServiceNewType" url="CSH/generate_binding_service_port.html"/>
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.view.ImportSchemaCustomizer" url="CSH/add_import.html"/>
         <mapID target="org.netbeans.modules.xml.wsdl.ui.view.ImportWSDLCreator" url="CSH/add_import.html"/>
+	<mapID target="org.netbeans.modules.xml.wsdl.ui.api.property.ElementOrTypePropertyEditor" url="CSH/element_or_type.html"/>
 
 </map>
