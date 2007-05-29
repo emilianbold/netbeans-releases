@@ -37,7 +37,7 @@ Microsystems, Inc. All Rights Reserved.
             
             
             <!-- WS from java - support for WSDL generation -->
-            <xsl:if test="/jaxws:jax-ws/jaxws:services/jaxws:service">
+            <xsl:if test="/jaxws:jax-ws/jaxws:services/jaxws:service">  
                 <target name="wsgen-init" depends="init">
                     <mkdir dir="${{build.generated.dir}}/wsgen/service"/>
                     <mkdir dir="${{build.classes.dir.real}}"/>
@@ -46,8 +46,8 @@ Microsystems, Inc. All Rights Reserved.
                     </taskdef>
                 </target>
             </xsl:if>
-            <xsl:for-each select="jaxws:jax-ws/jaxws:services/jaxws:service">
-                <xsl:if test="not(jaxws:from-wsdl)">
+            <xsl:for-each select="/jaxws:jax-ws/jaxws:services/jaxws:service">
+                <xsl:if test="not(jaxws:wsdl-url)">
                     <xsl:variable name="wsname" select="@name"/>
                     <xsl:variable name="seiclass" select="jaxws:implementation-class"/>
                     <target name="wsgen-{$wsname}" depends="wsgen-init, compile">
