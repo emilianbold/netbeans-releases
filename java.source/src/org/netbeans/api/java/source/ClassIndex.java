@@ -19,6 +19,8 @@
 
 package org.netbeans.api.java.source;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
@@ -40,7 +42,6 @@ import org.netbeans.modules.java.source.usages.ClassIndexImplListener;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerEvent;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerListener;
-import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.ResultConvertor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -171,6 +172,9 @@ public final class ClassIndex {
         this.sourcePath = sourcePath;
         final ClassIndexManager manager = ClassIndexManager.getDefault();
         manager.addClassIndexManagerListener(WeakListeners.create(ClassIndexManagerListener.class, (ClassIndexManagerListener) this.spiListener, manager));
+        this.bootPath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.bootPath));
+        this.classPath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.classPath));
+        this.sourcePath.addPropertyChangeListener(WeakListeners.propertyChange(spiListener, this.sourcePath));
         this.sourceIndeces = new HashSet<ClassIndexImpl>();        
         this.oldSources = new HashSet<URL>();
         createQueriesForRoots (this.sourcePath, true, this.sourceIndeces, oldSources);
@@ -418,7 +422,7 @@ public final class ClassIndex {
         return result;
     }           
     
-    private class SPIListener implements ClassIndexImplListener, ClassIndexManagerListener {
+    private class SPIListener implements ClassIndexImplListener, ClassIndexManagerListener, PropertyChangeListener {
         
         public void typesAdded (final ClassIndexImplEvent event) {
             assert event != null;
@@ -503,6 +507,35 @@ public final class ClassIndex {
             return result;
         }
         
+        private boolean containsNewRoot (final ClassPath cp, final Set<? extends URL> roots, final List<? super URL> newRoots, final boolean translate) throws IOException {
+            final List<ClassPath.Entry> entries = cp.entries();
+            final GlobalSourcePath gsp = GlobalSourcePath.getDefault();
+            final ClassIndexManager mgr = ClassIndexManager.getDefault();
+            boolean result = false;
+            for (ClassPath.Entry entry : entries) {
+                URL url = entry.getURL();
+                URL[] srcRoots = null;
+                if (translate) {
+                    srcRoots = gsp.getSourceRootForBinaryRoot (entry.getURL(), cp, false);
+                }                
+                if (srcRoots == null) {
+                    if (!roots.contains(url) && mgr.getUsagesQuery(url)!=null) {
+                        newRoots.add (url);
+                        result = true;
+                    }
+                }
+                else {
+                    for (URL _url : srcRoots) {
+                        if (!roots.contains(_url) && mgr.getUsagesQuery(_url)!=null) {
+                            newRoots.add (_url);
+                            result = true;
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+        
         private boolean containsRoot (final Set<? extends URL> cp, final Set<? extends URL> roots, final List<? super URL> affectedRoots) {            
             boolean result = false;
             for (URL url : cp) {
@@ -512,6 +545,36 @@ public final class ClassIndex {
                 }
             }
             return result;
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (ClassPath.PROP_ENTRIES.equals (evt.getPropertyName())) {
+                final List<URL> newRoots = new LinkedList<URL>();
+                boolean dirtySource = false;
+                boolean dirtyDeps = false;
+                try {
+                    Object source = evt.getSource();                
+                    if (source == ClassIndex.this.sourcePath) {                        
+                        dirtySource = containsNewRoot(sourcePath, oldSources, newRoots, false);                        
+                    }                
+                    else if (source == ClassIndex.this.classPath) {
+                        dirtyDeps = containsNewRoot(classPath, oldDeps, newRoots, true);                        
+                    }
+                    else if (source == ClassIndex.this.bootPath) {
+                        dirtyDeps = containsNewRoot(bootPath, oldDeps, newRoots, true);
+                    }
+                    
+                    if (dirtySource || dirtyDeps) {                        
+                        ClassIndex.this.reset(dirtySource, dirtyDeps);
+                        final RootsEvent e = new RootsEvent(ClassIndex.this, newRoots);
+                        for (ClassIndexListener l : listeners) {
+                            l.rootsRemoved(e);
+                        }                        
+                    }                    
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
+            }
         }
     }   
 }
