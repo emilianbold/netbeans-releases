@@ -52,7 +52,7 @@ public class AsynchStepTest extends NbTestCase {
             support = JPDASupport.attach
                 ("org.netbeans.api.debugger.jpda.testapps.AsynchStepApp");
             support.waitState (JPDADebugger.STATE_STOPPED);
-            assertEquals("Breakpoint "+lb+" is invalid, message: "+lb.getValidityMessage(), lb.getValidity(), LineBreakpoint.VALIDITY.VALID);
+            assertEquals("Breakpoint "+lb+" is invalid, message: "+lb.getValidityMessage(), LineBreakpoint.VALIDITY.VALID, lb.getValidity());
             dm.removeBreakpoint (lb);
             assertNotNull("No Current Thread.", support.getDebugger ().getCurrentThread());
             assertNotNull("No Current Call Stack Frame.", support.getDebugger ().getCurrentCallStackFrame());
