@@ -709,49 +709,32 @@ searchJava() {
 		    # search java in the common system paths
 		    javaCounter=0
             	    while [ $javaCounter -lt $JAVA_LOCATION_NUMBER ] && [ -z "$LAUNCHER_JAVA_EXE" ] ; do
-		    	argJavaHome=`eval echo "$""JAVA_LOCATION_PATH_$javaCounter"`
+		    	argJavaHome=`eval "echo \"$""JAVA_LOCATION_PATH_$javaCounter\""`
 		    	fileType=`eval echo "$""JAVA_LOCATION_TYPE_$javaCounter"`
 		    	argJavaHome=`resolvePath $fileType "$argJavaHome"`
 
-		    	debug ".. checking location $argJavaHome"
+		    	debug "... next location $argJavaHome"
 			
 			if [ $fileType -eq 0 ] ; then # bundled
 				installJVM  "$argJavaHome"
 	        	fi
 
-                        verifyJVM "$argJavaHome"
-
-			if [ -z "$LAUNCHER_JAVA_EXE" ] ; then				
-
-				# if path ends with "/" then check children
-				tmpArg=`removeEndSlashes "$argJavaHome"`
-				if [ `ifEquals "$argJavaHome" "$tmpArg"` -eq 0 ] ; then					
-					argJavaHome="$tmpArg"
-					if [ -z "$argJavaHome" ] ; then
-						argJavaHome="/"
+			argJavaHome=`escapeString "$argJavaHome"`
+			locations=`ls -d -1 $argJavaHome 2>/dev/null`
+			nextItem="$locations"
+			itemCounter=1
+			while [ -n "$nextItem" ] && [ -z "$LAUNCHER_JAVA_EXE" ] ; do
+				nextItem=`echo "$locations" | sed -n "${itemCounter}p" 2>/dev/null`
+				debug "... next item is $nextItem"				
+				nextItem=`removeEndSlashes "$nextItem"`
+				if [ -n "$nextItem" ] ; then
+					if [ -d "$nextItem" ] || [ -L "$nextItem" ] ; then
+		               			debug "... checking item : $nextItem"
+						verifyJVM "$nextItem"
 					fi
-					# search in all visible child directories
-					
-					if [ -d "$argJavaHome" ] || [ -L "$argJavaHome" ] ; then
-					        debug "... checking all children of $argJavaHome"
-						children=`ls -d -1 "$argJavaHome"/* 2> /dev/null`
-						child="$children"
-						counter=1
-						while [ -n "$child" ] && [ -z "$LAUNCHER_JAVA_EXE" ] ; do
-							child=`echo "$children" | sed -n "${counter}p" 2>/dev/null`
-							counter=`expr "$counter" + 1`		
-							child=`removeEndSlashes "$child"`
-							if [ -n "$child" ] ; then
-								if [ -d "$child" ] || [ -L "$child" ] ; then
-				                			debug "... checking child : $child"
-									verifyJVM "$child"
-								fi
-							fi					
-						done
-						debug "... all children checked"
-					fi
-				fi
-			fi
+				fi					
+				itemCounter=`expr "$itemCounter" + 1`
+			done
 			javaCounter=`expr "$javaCounter" + 1`
             	    done
 		fi
@@ -832,7 +815,7 @@ removeEndSlashes() {
  arg="$1"
  tryRemove=`echo "$arg" | sed 's/\/\/*$//' 2>/dev/null`
  if [ -n "$tryRemove" ] ; then
-	arg="$tryRemove"
+      arg="$tryRemove"
  fi
  echo "$arg"
 }

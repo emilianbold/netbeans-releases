@@ -73,34 +73,33 @@ public class ShLauncher extends CommonLauncher {
      */
     public static final String MIN_JAVA_VERSION_UNIX = "1.5.0_03";
     
-    // if the location ends with "/" then all its children will be checked as well
     private static final String [] JAVA_COMMON_LOCATIONS = {
-        "/usr/java/",
-        "/usr/jdk/",
-        "/usr/j2se/",
-        "/usr/j2sdk/",
+        "/usr/java", "/usr/java/*",        
+        "/usr/jdk",  "/usr/jdk/*",        
+        "/usr/j2se",  "/usr/j2se/*",        
+        "/usr/j2sdk", "/usr/j2sdk/*",
         
-        "/usr/java/jdk/",
-        "/usr/jdk/instances/",
+        "/usr/java/jdk", "/usr/java/jdk/*",        
+        "/usr/jdk/instances", "/usr/jdk/instances/*",
         
-        "/usr/local/java/",
-        "/usr/local/jdk/",
-        "/usr/local/j2se/",
-        "/usr/local/j2sdk/",
+        "/usr/local/java", "/usr/local/java/*",
+        "/usr/local/jdk",  "/usr/local/jdk/*",
+        "/usr/local/j2se", "/usr/local/j2se/*",
+        "/usr/local/j2sdk","/usr/local/j2sdk/*",
         
-        "/opt/java/",
-        "/opt/jdk/",
-        "/opt/j2sdk/",
-        "/opt/j2se/",
+        "/opt/java",  "/opt/java/*",        
+        "/opt/jdk*",  "/opt/jdk/*",        
+        "/opt/j2sdk", "/opt/j2sdk/*",        
+        "/opt/j2se",  "/opt/j2se/*",
         
-        "/usr/lib/",
-        "/usr/lib/jvm/",
-        "/usr/lib/jdk/",
+        "/usr/lib/jvm",
+        "/usr/lib/jvm/*",
+        "/usr/lib/jdk*",        
 
-        "/export/jdk/",
-        "/export/java/",
-        "/export/j2se/",
-        "/export/j2sdk/"
+        "/export/jdk",   "/export/jdk/*",        
+        "/export/java",  "/export/java/*",        
+        "/export/j2se",  "/export/j2se/*",        
+        "/export/j2sdk", "/export/j2sdk/*"
     };
     
     public ShLauncher(LauncherProperties props) {
