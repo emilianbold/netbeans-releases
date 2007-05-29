@@ -401,7 +401,7 @@ private void bProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
                 return false;
             }
             UpdateUnitProvider p = getSettingsTableModel ().getUpdateUnitProvider (rows [0]);
-            return p.getProviderURL () != null;
+            return p != null && p.getProviderURL () != null;
         }
         
         private void enableDisableRemove () {

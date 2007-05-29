@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.autoupdate.ui.wizards;
 
+import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -46,6 +47,7 @@ public abstract class OperationWizardModel {
     private JButton originalNext = null;
     private JButton originalFinish = null;
     private boolean reconized = false;
+    static Dimension PREFFERED_DIMENSION = new Dimension (500, 550);
     
     abstract OperationType getOperation ();
     abstract OperationContainer getContainer ();

@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.modules.autoupdate.ui.UninstallUnitWizard;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;

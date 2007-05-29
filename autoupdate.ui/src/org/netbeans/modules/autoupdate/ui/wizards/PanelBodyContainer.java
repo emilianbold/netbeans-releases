@@ -20,7 +20,9 @@
 package org.netbeans.modules.autoupdate.ui.wizards;
 
 import java.awt.BorderLayout;
+import java.awt.Rectangle;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 /**
  *
@@ -29,16 +31,21 @@ import javax.swing.JPanel;
 public class PanelBodyContainer extends javax.swing.JPanel {
     private String head = null;
     private String message = null;
-    private JPanel customPanel;
+    private JScrollPane customPanel;
     
     /** Creates new form InstallPanelContainer */
     public PanelBodyContainer (String heading, String msg, JPanel bodyPanel) {
         head = heading;
         message = msg;
-        customPanel = bodyPanel;
+        customPanel = new JScrollPane ();
+        customPanel.setBorder (null);
         initComponents ();
         pBodyPanel.add (customPanel, BorderLayout.CENTER);
         writeToHeader (head, message);
+        customPanel.setViewportView (bodyPanel);
+        customPanel.getViewport().scrollRectToVisible (new Rectangle (0, 0, 10, 10));
+        customPanel.getVerticalScrollBar ().setUnitIncrement (10);
+        customPanel.getHorizontalScrollBar ().setUnitIncrement (10);
     }
     
     public void setHeadAndContent (String heading, String content) {
@@ -72,17 +79,15 @@ public class PanelBodyContainer extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(spPanelHeader, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 545, Short.MAX_VALUE)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, pBodyPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 545, Short.MAX_VALUE)
+            .add(pBodyPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 486, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, spPanelHeader, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 486, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(spPanelHeader, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 88, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(spPanelHeader, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 78, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(pBodyPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE)
-                .addContainerGap())
+                .add(pBodyPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     

@@ -36,15 +36,11 @@ public class OperationDescriptionPanel extends javax.swing.JPanel {
         this.tpPrimaryPluginsText = primaryU;
         this.tpDependingTitleText = depending;
         this.tpDependingPluginsText = dependingU;
-        customInitComponents ();
-        if (! hasRequired) {
-            tpDependingTitle.setVisible (false);
-            tpDependingPlugins.setVisible (false);
-        }
+        customInitComponents (hasRequired);
     }
     
     // XXX: cannot be designed by mattise
-    private void customInitComponents () {
+    private void customInitComponents (boolean hasRequired) {
         tpPrimaryTitle = new javax.swing.JTextPane();
         tpPrimaryPlugins = new javax.swing.JTextPane();
         tpDependingTitle = new javax.swing.JTextPane();
@@ -52,7 +48,7 @@ public class OperationDescriptionPanel extends javax.swing.JPanel {
 
         tpPrimaryTitle.setContentType("text/html"); // NOI18N
         tpPrimaryTitle.setEditable(false);
-        tpDependingTitle.setOpaque (false);
+        tpPrimaryTitle.setOpaque (false);
 
         tpPrimaryPlugins.setContentType ("text/html"); // NOI18N
         tpPrimaryPlugins.setEditable(false);
@@ -70,46 +66,61 @@ public class OperationDescriptionPanel extends javax.swing.JPanel {
         tpPrimaryPlugins.setText(tpPrimaryPluginsText);
         tpDependingTitle.setText(tpDependingTitleText);
         tpDependingPlugins.setText(tpDependingPluginsText);
+        boolean hasPrimary = tpPrimaryPluginsText.length () > 0 || tpPrimaryTitleText.length () > 0;
         
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(49, 49, 49)
-                        .add(tpDependingPlugins, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 403, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(tpDependingTitle, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(49, 49, 49)
-                        .add(tpPrimaryPlugins, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 403, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(tpPrimaryTitle, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup (GroupLayout.PREFERRED_SIZE)
-            .add(layout.createSequentialGroup()
-                //.add (tpPrimaryTitle, GroupLayout.PREFERRED_SIZE, tpPrimaryTitle.getPreferredSize ().height, GroupLayout.PREFERRED_SIZE)
-                .add (tpPrimaryTitle, GroupLayout.DEFAULT_SIZE, 40, 40)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add (tpPrimaryPlugins, GroupLayout.PREFERRED_SIZE, tpPrimaryPlugins.getPreferredSize ().height, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add (0, 30, 30)
-                .add (tpDependingTitle, GroupLayout.DEFAULT_SIZE, 80, 80)
-                //.add (tpDependingTitle)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add (tpDependingPlugins, GroupLayout.PREFERRED_SIZE, tpDependingPlugins.getPreferredSize ().height, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                //.add(tpDependingPlugins, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                //.add(90, 90, 90)
-                )
-        );
+        layout.setHorizontalGroup (getHorizontalGroup (layout, hasPrimary, hasRequired));
+        layout.setVerticalGroup (getVerticalGroup (layout, hasPrimary, hasRequired));
     }
+    
+    private GroupLayout.ParallelGroup getVerticalGroup (GroupLayout layout, boolean hasPrimary, boolean hasRequired) {
+        GroupLayout.ParallelGroup res = layout.createParallelGroup (GroupLayout.PREFERRED_SIZE);
+        GroupLayout.SequentialGroup seq = layout.createSequentialGroup ();
+        if (hasPrimary) {
+            seq.add (tpPrimaryTitle, GroupLayout.DEFAULT_SIZE, 40, 40)
+                .addPreferredGap (org.jdesktop.layout.LayoutStyle.RELATED)
+                .add (tpPrimaryPlugins, GroupLayout.PREFERRED_SIZE, tpPrimaryPlugins.getPreferredSize ().height, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap (org.jdesktop.layout.LayoutStyle.RELATED)
+                .add (0, 30, 30);
+        }
+        if (hasRequired) {
+            seq.add (tpDependingTitle, GroupLayout.DEFAULT_SIZE, 80, 80)
+                    .addPreferredGap (org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add (tpDependingPlugins, GroupLayout.PREFERRED_SIZE, tpDependingPlugins.getPreferredSize ().height, GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap (org.jdesktop.layout.LayoutStyle.RELATED);
+        }
+        res.add (seq);
+        return res;
+    }
+    
+    private GroupLayout.ParallelGroup getHorizontalGroup (GroupLayout layout, boolean hasPrimary, boolean hasRequired) {
+        GroupLayout.ParallelGroup res = layout.createParallelGroup (GroupLayout.LEADING);
+        if (hasPrimary) {
+            res.add (GroupLayout.TRAILING, layout.createSequentialGroup ()
+                    .add (layout.createParallelGroup (GroupLayout.TRAILING)
+                    .add (GroupLayout.LEADING, layout.createSequentialGroup ()
+                    .add (49, 49, 49)
+                    .add (tpPrimaryPlugins, GroupLayout.DEFAULT_SIZE, 403, Short.MAX_VALUE))
+                    .add (GroupLayout.LEADING, layout.createSequentialGroup ()
+                    .addContainerGap ()
+                    .add (tpPrimaryTitle, GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)))
+                    .addContainerGap ());
+        }
+        if (hasRequired) {
+            res.add (GroupLayout.TRAILING, layout.createSequentialGroup ()
+                    .add (layout.createParallelGroup (GroupLayout.TRAILING)
+                    .add (GroupLayout.LEADING, layout.createSequentialGroup ()
+                    .add (49, 49, 49)
+                    .add (tpDependingPlugins, GroupLayout.DEFAULT_SIZE, 403, Short.MAX_VALUE))
+                    .add (GroupLayout.LEADING, layout.createSequentialGroup ()
+                    .addContainerGap ()
+                    .add (tpDependingTitle, GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)))
+                    .addContainerGap ());
+        }
+        return res;
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

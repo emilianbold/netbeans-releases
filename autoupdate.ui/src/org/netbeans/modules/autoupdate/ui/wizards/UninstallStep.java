@@ -102,6 +102,7 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
                 default:
                     assert false : "Unknown OperationType " + model.getOperation ();
             }
+            component.setPreferredSize (OperationWizardModel.PREFFERED_DIMENSION);
         }
         return component;
     }

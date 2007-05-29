@@ -20,6 +20,7 @@
 package org.netbeans.modules.autoupdate.ui.wizards;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -122,6 +123,7 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
                         model.hasRequiredUpdateElements ());
                 component = new PanelBodyContainer (head, content, body);
             }
+            component.setPreferredSize (OperationWizardModel.PREFFERED_DIMENSION);
         }
         return component;
     }

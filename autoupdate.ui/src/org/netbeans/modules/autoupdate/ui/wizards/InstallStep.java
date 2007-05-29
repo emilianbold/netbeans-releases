@@ -96,6 +96,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                     }
             });
             component = new PanelBodyContainer (getBundle (HEAD_DOWNLOAD), getBundle (CONTENT_DOWNLOAD), panel);
+            component.setPreferredSize (OperationWizardModel.PREFFERED_DIMENSION);
         }
         return component;
     }

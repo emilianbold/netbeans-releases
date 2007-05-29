@@ -114,6 +114,7 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
         taTitle.setLineWrap(true);
         taTitle.setText(org.openide.util.NbBundle.getMessage(LicenseApprovalPanel.class, "LicenseApprovalPanel_taTitle_Text")); // NOI18N
         taTitle.setWrapStyleWord(true);
+        taTitle.setOpaque(false);
 
         lLicenseFor.setLabelFor(cbLicenseFor);
         org.openide.awt.Mnemonics.setLocalizedText(lLicenseFor, org.openide.util.NbBundle.getMessage(LicenseApprovalPanel.class, "LicenseApprovalPanel_lLicenseFor_Text")); // NOI18N
@@ -150,31 +151,31 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, spLicense, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 524, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, rbAccept, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 524, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, rbAccept, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 475, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, rbDismis, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 475, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, taTitle)
                     .add(layout.createSequentialGroup()
-                        .addContainerGap()
+                        .add(111, 111, 111)
                         .add(lLicenseFor)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(cbLicenseFor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 247, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, taTitle, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 524, Short.MAX_VALUE)
-                    .add(rbDismis, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 524, Short.MAX_VALUE))
+                        .add(cbLicenseFor, 0, 233, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, spLicense, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 475, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(taTitle, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(taTitle, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 45, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lLicenseFor)
-                    .add(cbLicenseFor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(11, 11, 11)
-                .add(spLicense, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE)
+                    .add(cbLicenseFor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(lLicenseFor))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(rbAccept)
+                .add(spLicense, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(rbAccept, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 18, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(rbDismis)
                 .addContainerGap())

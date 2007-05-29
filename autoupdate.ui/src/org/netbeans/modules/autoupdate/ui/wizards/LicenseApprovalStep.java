@@ -55,7 +55,7 @@ public class LicenseApprovalStep implements WizardDescriptor.FinishablePanel<Wiz
     public Component getComponent() {
         if (component == null) {
             panel = new LicenseApprovalPanel (model);
-            panel.addPropertyChangeListener (LicenseApprovalPanel.LICENSE_APPROVED,new PropertyChangeListener () {
+            panel.addPropertyChangeListener (LicenseApprovalPanel.LICENSE_APPROVED, new PropertyChangeListener () {
                     public void propertyChange (PropertyChangeEvent arg0) {
                         isApproved = panel.isApproved ();
                         if (isApproved) {
@@ -67,6 +67,7 @@ public class LicenseApprovalStep implements WizardDescriptor.FinishablePanel<Wiz
                     }
             });
             component = new PanelBodyContainer (getBundle (HEAD), getBundle (CONTENT), panel);
+            component.setPreferredSize (OperationWizardModel.PREFFERED_DIMENSION);
         }
         return component;
     }
