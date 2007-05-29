@@ -20,7 +20,10 @@
 package org.netbeans.modules.j2ee.metadata.model.api.support.annotation;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -44,6 +47,10 @@ import org.netbeans.modules.java.source.usages.RepositoryUpdater;
  * @author Andrei Badea
  */
 public class PersistentObjectManagerMultipleTest extends PersistenceTestCase {
+
+    // XXX should refactor the waiting for added/changed/removed types to an utility class
+
+    private static final int EVENT_TIMEOUT = 10; // seconds
 
     private PersistentObjectManager<ResourceImpl> manager;
 
@@ -83,7 +90,7 @@ public class PersistentObjectManagerMultipleTest extends PersistenceTestCase {
                 "   @Resource(name = \"bar\")" +
                 "   private Object bar;" +
                 "}");
-        addedLatch.await(10, TimeUnit.SECONDS);
+        addedLatch.await(EVENT_TIMEOUT, TimeUnit.SECONDS);
         assertTrue("Should have got a typesAdded event for Department", departmentAdded.get());
         cpi.getClassIndex().removeClassIndexListener(listener);
         SourceUtils.waitScanFinished(); // otherwise the PMO will initialize temporarily
@@ -114,12 +121,43 @@ public class PersistentObjectManagerMultipleTest extends PersistenceTestCase {
                 "   @Resource(name = \"bar\")" +
                 "   private Object bar;" +
                 "}");
-        changedLatch.await(10, TimeUnit.SECONDS);
+        changedLatch.await(EVENT_TIMEOUT, TimeUnit.SECONDS);
         assertTrue("Should have got a typesChanged event for Department", departmentChanged.get());
         cpi.getClassIndex().removeClassIndexListener(listener);
         helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 assertEquals(1, manager.getObjects().size());
+            }
+        });
+        // adding another resource
+        final AtomicBoolean departmentChanged2 = new AtomicBoolean();
+        final CountDownLatch changedLatch2 = new CountDownLatch(1);
+        listener = new ClassIndexAdapter() {
+            public void typesChanged(TypesEvent event) {
+                for (ElementHandle<TypeElement> type : event.getTypes()) {
+                    if ("foo.Department".equals(type.getQualifiedName())) {
+                        departmentChanged2.set(true);
+                        changedLatch2.countDown();
+                    }
+                }
+            }
+        };
+        cpi.getClassIndex().addClassIndexListener(listener);
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Department.java",
+                "package foo;" +
+                "import javax.annotation.*;" +
+                "public class Department {" +
+                "   @Resource(name = \"bar\")" +
+                "   private Object bar;" +
+                "   @Resource(name = \"baz\")" +
+                "   private Object baz;" +
+                "}");
+        changedLatch2.await(EVENT_TIMEOUT, TimeUnit.SECONDS);
+        assertTrue("Should have got a typesChanged event for Department", departmentChanged2.get());
+        cpi.getClassIndex().removeClassIndexListener(listener);
+        helper.runJavaSourceTask(new Runnable() {
+            public void run() {
+                assertEquals(2, manager.getObjects().size());
             }
         });
     }
@@ -136,8 +174,7 @@ public class PersistentObjectManagerMultipleTest extends PersistenceTestCase {
             final List<ResourceImpl> result = new ArrayList<ResourceImpl>();
             TypeElement departmentType = helper.getCompilationController().getElements().getTypeElement("foo.Department");
             for (Element element : departmentType.getEnclosedElements()) {
-                String elementName = element.getSimpleName().toString();
-                if ("foo".equals(elementName) || "bar".equals(elementName)) {
+                if (isResource(element)) {
                     result.add(new ResourceImpl(helper, departmentType, element));
                 }
             }
@@ -146,6 +183,32 @@ public class PersistentObjectManagerMultipleTest extends PersistenceTestCase {
 
         public List<ResourceImpl> createObjects(TypeElement type) {
             throw new UnsupportedOperationException();
+        }
+
+        public boolean modifyObjects(TypeElement type, List<ResourceImpl> objects) {
+            boolean modified = false;
+            Set<Element> elements = new HashSet<Element>();
+            for (Iterator<ResourceImpl> it = objects.iterator(); it.hasNext();) {
+                ResourceImpl resource = it.next();
+                if (!resource.refresh()) {
+                    it.remove();
+                    modified = true;
+                } else {
+                    elements.add(resource.getAnnotatedElement());
+                }
+            }
+            for (Element element : type.getEnclosedElements()) {
+                if (isResource(element) && !elements.contains(element)) {
+                    objects.add(new ResourceImpl(helper, type, element));
+                    modified = true;
+                }
+            }
+            return modified;
+        }
+
+        private boolean isResource(Element element) {
+            String elementName = element.getSimpleName().toString();
+            return "foo".equals(elementName) || "bar".equals(elementName) || "baz".equals(elementName);
         }
     }
 
@@ -159,11 +222,7 @@ public class PersistentObjectManagerMultipleTest extends PersistenceTestCase {
             resourceElement = ElementHandle.create(element);
         }
 
-        protected boolean sourceElementChanged() {
-            return readPersistentData(getSourceElement());
-        }
-
-        private boolean readPersistentData(TypeElement typeElement) {
+        protected boolean refresh() {
             Element element = resourceElement.resolve(getHelper().getCompilationController());
             if (element == null) {
                 return false;
@@ -173,13 +232,17 @@ public class PersistentObjectManagerMultipleTest extends PersistenceTestCase {
                 return false;
             }
             AnnotationParser parser = AnnotationParser.create(getHelper());
-            parser.expectString("name", parser.defaultValue(typeElement.getSimpleName()));
+            parser.expectString("name", parser.defaultValue(element.getSimpleName()));
             name = parser.parse(annotations.get(0)).get("name", String.class);
             return true;
         }
 
         public String getName() {
             return name;
+        }
+
+        protected Element getAnnotatedElement() {
+            return resourceElement.resolve(getHelper().getCompilationController());
         }
     }
 }

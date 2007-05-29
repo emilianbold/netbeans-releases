@@ -42,26 +42,24 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
     private IdClassImpl idClass;
     private AttributesImpl attributes;
 
-    public EntityImpl(AnnotationModelHelper helper, EntityMappingsImpl root, TypeElement sourceElement) {
-        super(helper, sourceElement);
+    public EntityImpl(AnnotationModelHelper helper, EntityMappingsImpl root, TypeElement typeElement) {
+        super(helper, typeElement);
         this.root = root;
         helper.addJavaContextListener(this);
-        boolean valid = readPersistentData();
+        boolean valid = refresh(typeElement);
         assert valid;
     }
 
-    protected boolean sourceElementChanged() {
-        return readPersistentData();
-    }
-
-    private boolean readPersistentData() {
-        TypeElement sourceElement = getSourceElement();
-        class2 = sourceElement.getQualifiedName().toString();
+    boolean refresh(TypeElement typeElement) {
+        class2 = typeElement.getQualifiedName().toString();
         AnnotationModelHelper helper = getHelper();
-        Map<String, ? extends AnnotationMirror> annByType = helper.getAnnotationsByType(sourceElement.getAnnotationMirrors());
+        Map<String, ? extends AnnotationMirror> annByType = helper.getAnnotationsByType(typeElement.getAnnotationMirrors());
         AnnotationMirror entityAnn = annByType.get("javax.persistence.Entity"); // NOI18N
+        if (entityAnn == null) {
+            return false;
+        }
         AnnotationParser parser = AnnotationParser.create(helper);
-        parser.expectString("name", parser.defaultValue(sourceElement.getSimpleName().toString())); // NOI18N
+        parser.expectString("name", parser.defaultValue(typeElement.getSimpleName().toString())); // NOI18N
         ParseResult parseResult = parser.parse(entityAnn); // NOI18N
         name = parseResult.get("name", String.class); // NOI18N
         // also reading the table element to avoid initializing the whole model
@@ -69,16 +67,16 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
         // over all entities calling getTable().
         // XXX locale?
         table = new TableImpl(helper, annByType.get("javax.persistence.Table"), name.toUpperCase()); // NOI18N
-        return entityAnn != null;
+        return true;
+    }
+
+    EntityMappingsImpl getRoot() {
+        return root;
     }
 
     public void javaContextLeft() {
         attributes = null;
         idClass = null;
-    }
-
-    EntityMappingsImpl getRoot() {
-        return root;
     }
 
     public void setName(String value) {

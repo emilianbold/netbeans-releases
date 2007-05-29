@@ -380,5 +380,15 @@ public class EntityMappingsImpl implements EntityMappings {
             }
             return Collections.emptyList();
         }
+
+        public boolean modifyObjects(TypeElement type, List<EntityImpl> objects) {
+            assert objects.size() == 1;
+            EntityImpl entity = objects.get(0);
+            if (!entity.refresh(type)) {
+                objects.remove(0);
+                return true;
+            }
+            return false;
+        }
     }
 }

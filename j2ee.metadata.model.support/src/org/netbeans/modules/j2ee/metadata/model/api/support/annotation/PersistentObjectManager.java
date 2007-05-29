@@ -42,6 +42,8 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
     // XXX perhaps also initialize temporary when classpath not registered in GPR
     // (since then there would be no events)
 
+    // XXX getObjects() should return Collection<? extends T>
+
     private static final Logger LOGGER = Logger.getLogger(PersistentObjectManager.class.getName());
     private static final boolean NO_EVENTS = Boolean.getBoolean("netbeans.metadata.model.noevents"); // NOI18N
     // XXX for M9 only
@@ -95,7 +97,7 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
             }
             List<T> objects = provider.createInitialObjects();
             LOGGER.log(Level.FINE, "created initial objects {0}", objects); // NOI18N
-            putObjects(objects);
+            addObjects(objects);
             initialized = true;
         }
     }
@@ -120,7 +122,7 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
             }
             List<T> newObjects = provider.createObjects(type);
             LOGGER.log(Level.FINE, "typesAdded: new objects {0}", newObjects); // NOI18N
-            putObjects(newObjects);
+            addObjects(newObjects);
         }
     }
 
@@ -148,17 +150,16 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
             List<T> list = objects.get(typeHandle);
             if (list != null){
                 // we have objects based on this type
-                for (Iterator<T> i = list.iterator(); i.hasNext();) {
-                    T object = i.next();
-                    boolean valid = object.sourceElementChanged();
-                    if (valid) {
-                        // the object changed as the type changed
-                        LOGGER.log(Level.FINE, "typesChanged: changing object {0}", object); // NOI18N
-                    } else {
-                        // as the type changed the object is not valid anymore, removing it
-                        i.remove();
-                        LOGGER.log(Level.FINE, "typesChanged: removing object {0}", object); // NOI18N
-                    }
+                TypeElement type = typeHandle.resolve(helper.getCompilationController());
+                if (type == null) {
+                    LOGGER.log(Level.WARNING, "typesChanged: type {0} has dissapeared", typeHandle); // NOI18N
+                    continue;
+                }
+                List<T> oldNewObjects = new ArrayList<T>(list);
+                boolean modified = provider.modifyObjects(type, oldNewObjects);
+                if (modified) {
+                    LOGGER.log(Level.FINE, "typesChanged: modified objects to {0}", oldNewObjects); // NOI18N
+                    setObjects(typeHandle, oldNewObjects);
                 }
             } else {
                 // we don't have any object based on this type
@@ -169,20 +170,37 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
                 }
                 List<T> newObjects = provider.createObjects(type);
                 LOGGER.log(Level.FINE, "typesChanged: new objects {0}", newObjects); // NOI18N
-                putObjects(newObjects);
+                setObjects(typeHandle, newObjects);
             }
         }
     }
 
-    private void putObjects(List<T> newObjects) {
+    private void addObjects(List<T> newObjects) {
         for (T newObject : newObjects) {
-            List<T> list = objects.get(newObject.getSourceElementHandle());
+            List<T> list = objects.get(newObject.getTypeElementHandle());
             if (list == null) {
-                list = new LinkedList<T>();
-                objects.put(newObject.getSourceElementHandle(), list);
+                list = new ArrayList<T>();
+                objects.put(newObject.getTypeElementHandle(), list);
             }
             list.add(newObject);
         }
+    }
+
+    private void setObjects(ElementHandle<TypeElement> typeHandle, List<T> newObjects) {
+        List<T> list = new ArrayList<T>();
+        for (T object : newObjects) {
+            ElementHandle<TypeElement> sourceHandle = object.getTypeElementHandle();
+            if (sourceHandle.equals(typeHandle)) {
+                list.add(object);
+            } else {
+                LOGGER.log(Level.WARNING, "setObjects: ignoring object with incorrect ElementHandle {0} (expected {1})", new Object[] { sourceHandle, typeHandle }); // NOI18N
+            }
+        }
+        objects.put(typeHandle, list);
+    }
+
+    private List<T> removeObjects(ElementHandle<TypeElement> typeHandle) {
+        return objects.remove(typeHandle);
     }
 
     void rootsChanged() {

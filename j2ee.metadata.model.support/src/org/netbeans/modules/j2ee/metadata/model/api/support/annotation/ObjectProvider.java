@@ -32,5 +32,8 @@ public interface ObjectProvider<T> {
 
     List<T> createObjects(TypeElement type);
 
-    // List<T> modifyObjects(TypeElement type, List<T> oldObjects);
+    /**
+     * @return true if the list of objects was modified, false othwerise.
+     */
+    boolean modifyObjects(TypeElement type, List<T> objects);
 }

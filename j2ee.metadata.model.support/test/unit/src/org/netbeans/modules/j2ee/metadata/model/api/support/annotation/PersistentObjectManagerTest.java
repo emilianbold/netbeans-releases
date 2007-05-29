@@ -50,6 +50,8 @@ import org.openide.filesystems.URLMapper;
  * @author Andrei Badea
  */
 public class PersistentObjectManagerTest extends PersistenceTestCase {
+    
+    private static final int EVENT_TIMEOUT = 10; // seconds
 
     private PersistentObjectManager<EntityImpl> manager;
 
@@ -146,7 +148,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
                 "public class Department {" +
                 "}");
         addressFO.delete();
-        typesLatch.await(10, TimeUnit.SECONDS);
+        typesLatch.await(EVENT_TIMEOUT, TimeUnit.SECONDS);
         assertTrue("Should have got a typesAdded event for Department", departmentAdded.get());
         assertTrue("Should have got a typesRemoved event for Address ", addressRemoved.get());
         assertTrue("Should have got a typesChanged event for Employee", employeeChanged.get());
@@ -196,7 +198,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         };
         cpi.getClassIndex().addClassIndexListener(listener);
         addSourceRoots(Collections.singletonList(src2FO));
-        rootAddedLatch.await(10, TimeUnit.SECONDS);
+        rootAddedLatch.await(EVENT_TIMEOUT, TimeUnit.SECONDS);
         assertTrue("Should have got a rootsAdded event", rootAdded.get());
         cpi.getClassIndex().removeClassIndexListener(listener);
         helper.runJavaSourceTask(new Runnable() {
@@ -232,7 +234,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         };
         cpi.getClassIndex().addClassIndexListener(listener);
         removeSourceRoots(Collections.singletonList(src2FO));
-        rootRemovedLatch.await(10, TimeUnit.SECONDS);
+        rootRemovedLatch.await(EVENT_TIMEOUT, TimeUnit.SECONDS);
         assertTrue("Should have got a rootsRemoved event", rootRemoved.get());
         cpi.getClassIndex().removeClassIndexListener(listener);
         helper.runJavaSourceTask(new Runnable() {
@@ -280,7 +282,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
                 "package foo;" +
                 "public class Department {" +
                 "}");
-        addedLatch.await(10, TimeUnit.SECONDS);
+        addedLatch.await(EVENT_TIMEOUT, TimeUnit.SECONDS);
         assertTrue("Should have got a typesAdded event for Department", departmentAdded.get());
         cpi.getClassIndex().removeClassIndexListener(listener);
         SourceUtils.waitScanFinished(); // otherwise the PMO will initialize temporarily
@@ -309,7 +311,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
                 "@javax.persistence.Entity(name=\"Department\")" +
                 "public class Department {" +
                 "}");
-        changedLatch.await(10, TimeUnit.SECONDS);
+        changedLatch.await(EVENT_TIMEOUT, TimeUnit.SECONDS);
         assertTrue("Should have got a typesChanged event for Department", departmentChanged.get());
         cpi.getClassIndex().removeClassIndexListener(listener);
         helper.runJavaSourceTask(new Runnable() {
@@ -335,7 +337,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
                 "package foo;" +
                 "public class Department {" +
                 "}");
-        changedLatch2.await(10, TimeUnit.SECONDS);
+        changedLatch2.await(EVENT_TIMEOUT, TimeUnit.SECONDS);
         assertTrue("Should have got a typesChanged event for Department", departmentChanged2.get());
         cpi.getClassIndex().removeClassIndexListener(listener);
         helper.runJavaSourceTask(new Runnable() {
@@ -369,6 +371,16 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
             }
             return Collections.emptyList();
         }
+
+        public boolean modifyObjects(TypeElement type, List<EntityImpl> objects) {
+            assert objects.size() == 1;
+            EntityImpl entity = objects.get(0);
+            if (!entity.refresh(type)) {
+                objects.remove(0);
+                return true;
+            }
+            return false;
+        }
     }
 
     private static final class EntityImpl extends PersistentObject {
@@ -377,15 +389,11 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
 
         public EntityImpl(AnnotationModelHelper helper, TypeElement typeElement) {
             super(helper, typeElement);
-            boolean valid = readPersistentData(typeElement);
+            boolean valid = refresh(typeElement);
             assert valid;
         }
 
-        protected boolean sourceElementChanged() {
-            return readPersistentData(getSourceElement());
-        }
-
-        private boolean readPersistentData(TypeElement typeElement) {
+        private boolean refresh(TypeElement typeElement) {
             AnnotationParser parser = AnnotationParser.create(getHelper());
             parser.expectString("name", parser.defaultValue(typeElement.getSimpleName()));
             List<? extends AnnotationMirror> annotations = typeElement.getAnnotationMirrors();

@@ -44,15 +44,15 @@ public class AttributesImpl implements Attributes {
 
     public AttributesImpl(EntityImpl entity) {
         this.entity = entity;
-        TypeElement mainElement = entity.getSourceElement();
-        if (mainElement == null) {
+        TypeElement typeElement = entity.getTypeElement();
+        if (typeElement == null) {
             // entity was removed, we should get an event soon
             // XXX log
             return;
         }
         AnnotationModelHelper helper = entity.getRoot().getHelper();
 
-        List<? extends Element> elements = mainElement.getEnclosedElements();
+        List<? extends Element> elements = typeElement.getEnclosedElements();
         fieldAccess = EntityMappingsUtilities.hasFieldAccess(helper, elements);
 
         // handle this entity's attributes

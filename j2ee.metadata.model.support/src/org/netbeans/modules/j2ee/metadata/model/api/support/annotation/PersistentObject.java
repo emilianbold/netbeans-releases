@@ -29,24 +29,22 @@ import org.netbeans.api.java.source.ElementHandle;
 public abstract class PersistentObject {
 
     private final AnnotationModelHelper helper;
-    private final ElementHandle<TypeElement> sourceElementHandle;
+    private final ElementHandle<TypeElement> typeElementHandle;
 
     public PersistentObject(AnnotationModelHelper helper, TypeElement typeElement) {
         this.helper = helper;
-        sourceElementHandle = ElementHandle.create(typeElement);
+        typeElementHandle = ElementHandle.create(typeElement);
     }
 
     protected final AnnotationModelHelper getHelper() {
         return helper;
     }
 
-    public final ElementHandle<TypeElement> getSourceElementHandle() {
-        return sourceElementHandle;
+    public final ElementHandle<TypeElement> getTypeElementHandle() {
+        return typeElementHandle;
     }
 
-    public final TypeElement getSourceElement() {
-        return sourceElementHandle.resolve(helper.getCompilationController());
+    public final TypeElement getTypeElement() {
+        return typeElementHandle.resolve(helper.getCompilationController());
     }
-
-    protected abstract boolean sourceElementChanged();
 }

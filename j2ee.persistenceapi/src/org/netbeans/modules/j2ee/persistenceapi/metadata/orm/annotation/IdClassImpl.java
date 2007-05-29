@@ -32,14 +32,14 @@ public class IdClassImpl implements IdClass {
 
     public IdClassImpl(EntityImpl entity) {
         this.entity = entity;
-        TypeElement mainElement = entity.getSourceElement();
-        if (mainElement == null) {
+        TypeElement typeElement = entity.getTypeElement();
+        if (typeElement == null) {
             // entity was removed, we should get an event soon
             // XXX log
             return;
         }
         AnnotationModelHelper helper = entity.getRoot().getHelper();
-        AnnotationMirror idClassAnn = helper.getAnnotationsByType(mainElement.getAnnotationMirrors()).get("javax.persistence.IdClass"); // NOI18N
+        AnnotationMirror idClassAnn = helper.getAnnotationsByType(typeElement.getAnnotationMirrors()).get("javax.persistence.IdClass"); // NOI18N
         AnnotationParser parser = AnnotationParser.create(helper);
         parser.expectClass("value", null); // NOI18N
         class2 = parser.parse(idClassAnn).get("value", String.class); // NOI18N
