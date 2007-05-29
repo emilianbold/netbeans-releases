@@ -470,6 +470,6 @@ private void bProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     // End of variables declaration//GEN-END:variables
     
     public static String getBundle (String key) {
-        return NbBundle.getMessage (LocalDownloadSupport.class, key);
+        return NbBundle.getMessage (SettingsTab.class, key);
     }
 }

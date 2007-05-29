@@ -58,8 +58,13 @@ import javax.swing.table.TableModel;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
+import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.modules.ModuleInfo;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -79,7 +84,6 @@ public class UnitTab extends javax.swing.JPanel {
     private RowTabAction enableAction;
     private RowTabAction disableAction;
     private TabAction refreshAction;
-    private LocalDownloadSupport localDownloadSupport;
     
     private RowTabAction removeLocallyDownloaded = new RemoveLocallyDownloadedAction ();
     
@@ -454,10 +458,7 @@ public class UnitTab extends javax.swing.JPanel {
     
     
     private LocalDownloadSupport getLocalDownloadSupport () {
-        if (model instanceof LocallyDownloadedTableModel) {
-            localDownloadSupport = ((LocallyDownloadedTableModel)model).getLocalDownloadSupport ();
-        }
-        return localDownloadSupport;
+        return (model instanceof LocallyDownloadedTableModel) ? ((LocallyDownloadedTableModel)model).getLocalDownloadSupport () : null;
     }
     
     private Task refresh (final boolean force) {
@@ -1231,18 +1232,47 @@ public class UnitTab extends javax.swing.JPanel {
         }
         
         public void performerImpl() {
-            if (getLocalDownloadSupport().selectNbmFiles()) {
-                setWaitingState(true);
+            if (getLocalDownloadSupport().selectNbmFiles()) {                
+                setWaitingState(true);                
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        model.fireUpdataUnitChange();
+                        model.fireUpdataUnitChange();                        
                         setWaitingState(false);                        
                         UnitTab.this.refreshState();
+                        LocallyDownloadedTableModel downloadedTableModel = ((LocallyDownloadedTableModel)model);
+                        List<UpdateUnit> installed = downloadedTableModel.getAlreadyInstalled();
+                        if (!installed.isEmpty())  {
+                            showMessage(installed);
+                        }
                     }
                 });
             }
-        }
+        }                
         
+        void showMessage(List<UpdateUnit> installed) {
+            if (!installed.isEmpty())  {
+                StringBuilder pluginNames = new StringBuilder();
+                for (UpdateUnit updateUnit : installed) {
+                    if (pluginNames.length() > 0) {
+                        pluginNames.append(',').append(' ');//NOI18N
+                    }
+                    List<UpdateElement> elements = updateUnit.getAvailableUpdates();
+                    if (elements.size() > 0) {
+                        pluginNames.append(elements.get(0).getDisplayName());
+                    } else {
+                        ModuleInfo m = ModuleProvider.getInstalledModules().get(updateUnit.getCodeName());
+                        pluginNames.append(m != null ? m.getDisplayName() : updateUnit.getCodeName());
+                    }                    
+                }
+                if (installed.size() == 1) {
+                    pluginNames = new StringBuilder(NbBundle.getMessage(UnitTab.class, "NotificationOneAlreadyInstalled",pluginNames.toString()));//NOI18N
+                } else {
+                    pluginNames = new StringBuilder(NbBundle.getMessage(UnitTab.class, "NotificationMoreAlreadyInstalled",pluginNames.toString()));//NOI18N
+                }                
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(pluginNames.toString(),NotifyDescriptor.INFORMATION_MESSAGE));
+            } 
+        }
+                        
         @Override
         protected boolean refreshUpdateUnits () {
             return false;
@@ -1271,7 +1301,7 @@ public class UnitTab extends javax.swing.JPanel {
             return table.getSelectedRow () > -1;
         }
         
-        public void performerImpl (final Unit unit) {            
+        public void performerImpl (final Unit unit) {
             final Runnable removeUpdates = new Runnable (){
                 public void run() {                                        
                     try {
@@ -1290,7 +1320,7 @@ public class UnitTab extends javax.swing.JPanel {
             RequestProcessor.getDefault ().post (removeUpdates);
             setWaitingState(true);
         }
-        
+                        
         protected String getContextName (Unit u) {
             return "";//NOI18N
         }
@@ -1309,7 +1339,7 @@ public class UnitTab extends javax.swing.JPanel {
         protected boolean refreshUpdateUnits () {
             return false;
         }
-    }
+    }        
     class EnableRenderer extends  DefaultTableCellRenderer {
         @Override
         public Component getTableCellRendererComponent (

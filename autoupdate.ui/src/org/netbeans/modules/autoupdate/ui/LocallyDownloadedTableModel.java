@@ -38,19 +38,19 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
     private OperationContainer<InstallSupport> availableNbmsContainer = Containers.forAvailableNbms();
     private OperationContainer<InstallSupport> updateNbmsContainer = Containers.forUpdateNbms();
     private LocalDownloadSupport localDownloadSupport = null;
+    private List<UpdateUnit> installed = new ArrayList<UpdateUnit>();
         
     /** Creates a new instance of InstalledTableModel */
-    public LocallyDownloadedTableModel (List<UpdateUnit> units, LocalDownloadSupport localDownloadSupport) {
-        setUnits(units);
+    public LocallyDownloadedTableModel (LocalDownloadSupport localDownloadSupport) {        
         this.localDownloadSupport = localDownloadSupport;
     }
     
-    public final void setUnits(List<UpdateUnit> units) {
+    public final void setUnits(final List<UpdateUnit> unused) {
+        List<UpdateUnit> units = getLocalDownloadSupport().getUpdateUnits();
         List<Unit> oldUnits = getUnitData();        
         Map<String, Boolean> checked = codeName2CheckedState(oldUnits);
         setData(makeCategories(units));
         List<Unit> newUnits = getUnitData();
-        
         for (Unit unit : newUnits) {
             Boolean isChecked = checked.get(unit.updateUnit.getCodeName());
             if (isChecked != null) {
@@ -60,9 +60,35 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
             } else if (! unit.isMarked()) {
                 unit.setMarked(true);
             }            
-        }        
+        }   
+        computeInstalled(units, oldUnits);
     }
     
+    List<UpdateUnit> getAlreadyInstalled() {
+        return installed;
+    }
+
+        
+    private void computeInstalled(List<UpdateUnit> units, List<Unit> oldUnits) {
+        installed.clear();
+        installed.addAll(units);
+        List<Unit> newUnits = getUnitData();
+        List<UpdateUnit> newUpdateUnits = new ArrayList<UpdateUnit>();
+        for (Unit unit : newUnits) {
+            newUpdateUnits.add(unit.updateUnit);
+        }
+        installed.removeAll(newUpdateUnits);
+        removeUpdateUnits(installed);        
+    }
+        
+        
+    private void removeUpdateUnits(List<UpdateUnit> units) {
+        for (UpdateUnit updateUnit : units) {
+            getLocalDownloadSupport().remove(updateUnit);
+        }
+    }
+    
+        
     private static Map<String, Boolean> codeName2CheckedState(List<Unit> units) {
         Map<String,Boolean> retval = new HashMap<String, Boolean>();
         for (Unit unit : units) {
@@ -94,13 +120,15 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
             }
             //assert getCategoryAtRow (row).isExpanded ();
             Unit u = getUnitAtRow (row);
-            assert anValue instanceof Boolean : anValue + " must be instanceof Boolean.";
-            boolean beforeMarked = u.isMarked();
-            u.setMarked(!beforeMarked);
-            if (u.isMarked() != beforeMarked) {
-                fireButtonsChange ();
-            } else {
-                assert false : u.getDisplayName();
+            if (u != null) {
+                assert anValue instanceof Boolean : anValue + " must be instanceof Boolean.";
+                boolean beforeMarked = u.isMarked();
+                u.setMarked(!beforeMarked);
+                if (u.isMarked() != beforeMarked) {
+                    fireButtonsChange ();
+                } else {
+                    assert false : u.getDisplayName();
+                }
             }
         }
     }

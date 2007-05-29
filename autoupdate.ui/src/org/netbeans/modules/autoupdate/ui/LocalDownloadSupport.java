@@ -45,7 +45,7 @@ import org.openide.util.NbPreferences;
 
 /**
  *
- * @author Jiri Rechtacek
+ * @author Jiri Rechtacek, Radek Matous
  */
 public class LocalDownloadSupport {
     private static final FileFilter NBM_FILE_FILTER = new NbmFileFilter();

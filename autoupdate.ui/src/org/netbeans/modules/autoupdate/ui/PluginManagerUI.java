@@ -291,7 +291,7 @@ private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:
         installedTable = new UnitTable (new InstalledTableModel (units));
         updateTable = new UnitTable (new UpdateTableModel (units));
         availableTable = new UnitTable (new AvailableTableModel (units));
-        localTable = new UnitTable (new LocallyDownloadedTableModel (units, new LocalDownloadSupport()));
+        localTable = new UnitTable (new LocallyDownloadedTableModel (new LocalDownloadSupport()));
         selectFirstRow (installedTable);
         selectFirstRow (updateTable);
         selectFirstRow (availableTable);
@@ -366,27 +366,27 @@ private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:
             //long terming starvation because in fact impl. of this method calls AutoUpdateCatalogCache.getCatalogURL
             //which is synchronized and may wait until cache is created
             //even more AutoUpdateCatalog.getUpdateItems () can at first start call refresh and thus writeToCache again
-            units = UpdateManager.getDefault ().getUpdateUnits (Utilities.getUnitTypes ());
-            UnitCategoryTableModel installTableModel = ((UnitCategoryTableModel)installedTable.getModel ());
-            UnitCategoryTableModel updateTableModel = ((UnitCategoryTableModel)updateTable.getModel ());
-            UnitCategoryTableModel availableTableModel = ((UnitCategoryTableModel)availableTable.getModel ());
-            UnitCategoryTableModel localTableModel = ((UnitCategoryTableModel)localTable.getModel ());
+            units = UpdateManager.getDefault().getUpdateUnits(Utilities.getUnitTypes());
+            UnitCategoryTableModel installTableModel = ((UnitCategoryTableModel)installedTable.getModel());
+            UnitCategoryTableModel updateTableModel = ((UnitCategoryTableModel)updateTable.getModel());
+            UnitCategoryTableModel availableTableModel = ((UnitCategoryTableModel)availableTable.getModel());
+            LocallyDownloadedTableModel localTableModel = ((LocallyDownloadedTableModel)localTable.getModel());
             
-            updateTableModel.setUnits (units);
-            installTableModel.setUnits (units);
-            availableTableModel.setUnits (units);
-            localTableModel.setUnits(getLocalDownloadSupport().getUpdateUnits());
-            selectFirstRow (installedTable);
-            selectFirstRow (updateTable);
-            selectFirstRow (availableTable);
-            selectFirstRow (localTable);
-            decorateTitle (0, updateTable, NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Update_Title"));
-            decorateTitle (1, availableTable, NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Available_Title"));            
-            decorateTitle (2, localTable, NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Local_Title"));
-            decorateTitle (3, installedTable, NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Installed_Title"));
-            }
+            updateTableModel.setUnits(units);
+            installTableModel.setUnits(units);
+            availableTableModel.setUnits(units);
+            localTableModel.setUnits(units);
+            selectFirstRow(installedTable);
+            selectFirstRow(updateTable);
+            selectFirstRow(availableTable);
+            selectFirstRow(localTable);
+            decorateTitle(0, updateTable, NbBundle.getMessage(PluginManagerUI.class, "PluginManagerUI_UnitTab_Update_Title"));
+            decorateTitle(1, availableTable, NbBundle.getMessage(PluginManagerUI.class, "PluginManagerUI_UnitTab_Available_Title"));
+            decorateTitle(2, localTable, NbBundle.getMessage(PluginManagerUI.class, "PluginManagerUI_UnitTab_Local_Title"));
+            decorateTitle(3, installedTable, NbBundle.getMessage(PluginManagerUI.class, "PluginManagerUI_UnitTab_Installed_Title"));
         }
-
+    }
+        
     private LocalDownloadSupport getLocalDownloadSupport() {
             return  ((LocallyDownloadedTableModel)localTable.getModel()).getLocalDownloadSupport();
     }
