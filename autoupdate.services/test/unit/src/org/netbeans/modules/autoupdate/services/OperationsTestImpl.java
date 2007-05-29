@@ -118,7 +118,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
         
         InstallSupport.Restarter r = null;
         
-        OperationContainer<OperationSupport> container = OperationContainer.createForInstallNativeComponent ();
+        OperationContainer<OperationSupport> container = OperationContainer.createForCustomInstallComponent ();
         OperationContainer.OperationInfo<OperationSupport> info = container.add (installElement);
         assertNotNull (info);
         container.add (info.getRequiredElements ());

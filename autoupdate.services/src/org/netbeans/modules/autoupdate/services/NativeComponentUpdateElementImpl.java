@@ -109,7 +109,7 @@ public class NativeComponentUpdateElementImpl extends UpdateElementImpl {
     }
 
     public UpdateManager.TYPE getType () {
-        return UpdateManager.TYPE.NATIVE_COMPONENT;
+        return UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT;
     }
 
     public boolean isEnabled () {

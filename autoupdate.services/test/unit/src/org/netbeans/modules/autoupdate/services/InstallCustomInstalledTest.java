@@ -19,9 +19,11 @@
 
 package org.netbeans.modules.autoupdate.services;
 
+import java.util.List;
 import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.TestUtils;
 import org.netbeans.api.autoupdate.UpdateElement;
+import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.autoupdate.updateprovider.NativeComponentItem;
@@ -49,6 +51,9 @@ public class InstallCustomInstalledTest extends OperationsTestImpl {
     }
     
     public void testSelf () throws Exception {
+        List<UpdateUnit> units = UpdateManager.getDefault ().getUpdateUnits (UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT);
+        assertNotNull (units);
+        assertFalse (units.isEmpty ());
         UpdateUnit toInstall = UpdateManagerImpl.getInstance ().getUpdateUnit (moduleCodeNameBaseForTest ());
         assertFalse (toInstall + " has available elements.", toInstall.getAvailableUpdates ().isEmpty ());
         UpdateElement toInstallElement = toInstall.getAvailableUpdates ().get (0);

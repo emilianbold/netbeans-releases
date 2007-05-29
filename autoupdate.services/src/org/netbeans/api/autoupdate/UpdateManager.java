@@ -33,7 +33,7 @@ public final class UpdateManager {
     public static enum TYPE {
         MODULE,
         FEATURE,
-        NATIVE_COMPONENT,
+        CUSTOM_HANDLED_COMPONENT,
         LOCALIZATION
     }
         

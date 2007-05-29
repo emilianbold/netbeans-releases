@@ -31,7 +31,7 @@ public class NativeComponentUpdateUnitImpl extends UpdateUnitImpl {
     }
 
     public TYPE getType () {
-        return UpdateManager.TYPE.NATIVE_COMPONENT;
+        return UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT;
     }
 }
 

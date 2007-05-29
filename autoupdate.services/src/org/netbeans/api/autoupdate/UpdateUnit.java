@@ -115,6 +115,10 @@ public final class UpdateUnit {
         return impl.getAvailableLocalizations ();
     }
     
+    public UpdateManager.TYPE getType () {
+        return impl.getType ();
+    }
+    
     public boolean equals(Object obj) {
         if (obj == null)
             return false;

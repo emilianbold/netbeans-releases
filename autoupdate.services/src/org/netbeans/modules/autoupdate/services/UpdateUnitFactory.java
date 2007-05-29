@@ -219,7 +219,7 @@ public class UpdateUnitFactory {
             case FEATURE :
                 unitImpl = new FeatureUpdateUnitImpl (element.getCodeName ());
                 break;
-            case NATIVE_COMPONENT :
+            case CUSTOM_HANDLED_COMPONENT :
                 unitImpl = new NativeComponentUpdateUnitImpl (element.getCodeName ());
                 break;
             case LOCALIZATION :

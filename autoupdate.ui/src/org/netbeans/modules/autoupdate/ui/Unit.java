@@ -194,6 +194,17 @@ public abstract class Unit {
     }
     
     public static int compareSimpleFormatDates (Unit u1, Unit u2) {
+        
+        if (u1.getRelevantElement ().getDate () == null) {
+            if (u2.getRelevantElement ().getDate () == null) {
+                return 0;
+            } else {
+                return -1;
+            }
+        } else if (u2.getRelevantElement ().getDate () == null) {
+            return 1;
+        }
+        
         Date d1;
         Date d2;
         try {

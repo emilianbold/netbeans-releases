@@ -96,11 +96,14 @@ public class NativeComponentItem extends UpdateItemImpl {
     }
     
     public UpdateLicenseImpl getUpdateLicenseImpl () {
+        assert false : "Invalid call getUpdateLicenseImpl() on NativeComponentItem.";
         return this.licenseImpl;
     }
     
     public String getAgreement () {
-        return licenseImpl.getAgreement ();
+        assert false : "Invalid call getAgreement() on NativeComponentItem.";
+        return "";
+        //return licenseImpl.getAgreement ();
     }
 
     public String getCategory () {

@@ -21,9 +21,7 @@ package org.netbeans.modules.autoupdate.ui.wizards;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import javax.swing.JButton;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.InstallSupport.Installer;
 import org.netbeans.api.autoupdate.OperationContainer;

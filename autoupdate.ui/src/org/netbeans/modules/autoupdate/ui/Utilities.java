@@ -310,9 +310,9 @@ public class Utilities {
 
     public static UpdateManager.TYPE[] getUnitTypes () {
         if (modulesOnly ()) {
-            return new UpdateManager.TYPE [] {UpdateManager.TYPE.MODULE};
+            return new UpdateManager.TYPE [] { UpdateManager.TYPE.MODULE };
         } else {
-            return new UpdateManager.TYPE[0];
+            return new UpdateManager.TYPE []  { UpdateManager.TYPE.FEATURE, UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT };
         }
     }
     

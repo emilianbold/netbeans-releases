@@ -21,7 +21,6 @@ package org.netbeans.modules.autoupdate.ui;
 
 import java.awt.Component;
 import java.awt.KeyboardFocusManager;
-import java.awt.Window;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;

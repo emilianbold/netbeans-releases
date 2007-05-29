@@ -139,10 +139,10 @@ public final class UpdateItem {
                                     Boolean isGlobal,
                                     String targetCluster,
                                     CustomInstaller installer,
-                                    UpdateLicense license
+                                    UpdateLicense license // XXX: useless now
                                     ) {
         NativeComponentItem item = new NativeComponentItem (false, codeName, specificationVersion, downloadSize, dependencies,
-                displayName, description, needsRestart, isGlobal, targetCluster, installer, null, license.impl);
+                displayName, description, needsRestart, isGlobal, targetCluster, installer, null, null);
         return new UpdateItem (item);
     }
     
