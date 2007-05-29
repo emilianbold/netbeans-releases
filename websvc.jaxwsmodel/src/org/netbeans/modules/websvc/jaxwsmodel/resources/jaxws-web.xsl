@@ -37,14 +37,16 @@ Microsystems, Inc. All Rights Reserved.
             
             
             <!-- WS from java - support for WSDL generation -->
-            <xsl:if test="/jaxws:jax-ws/jaxws:services/jaxws:service">  
-                <target name="wsgen-init" depends="init">
-                    <mkdir dir="${{build.generated.dir}}/wsgen/service"/>
-                    <mkdir dir="${{build.classes.dir.real}}"/>
-                    <taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
-                        <classpath path="${{j2ee.platform.wsgen.classpath}}"/>
-                    </taskdef>
-                </target>
+            <xsl:if test="/jaxws:jax-ws/jaxws:services/jaxws:service">
+                <xsl:if test="count(/jaxws:jax-ws/jaxws:services/jaxws:service[not(jaxws:wsdl-url)]) > 0">
+                    <target name="wsgen-init" depends="init">
+                        <mkdir dir="${{build.generated.dir}}/wsgen/service"/>
+                        <mkdir dir="${{build.classes.dir.real}}"/>
+                        <taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
+                            <classpath path="${{j2ee.platform.wsgen.classpath}}"/>
+                        </taskdef>
+                    </target>
+                </xsl:if>
             </xsl:if>
             <xsl:for-each select="/jaxws:jax-ws/jaxws:services/jaxws:service">
                 <xsl:if test="not(jaxws:wsdl-url)">
@@ -71,14 +73,16 @@ Microsystems, Inc. All Rights Reserved.
                     <xsl:value-of select="/jaxws:jax-ws/jaxws:jsr109"/>
                 </xsl:variable>
                 <xsl:if test="$isJSR109 = 'false'">
-                    <target name="wsgen-init-nonJSR109" depends="init, -do-compile">
-                        <mkdir dir="${{build.generated.dir}}/wsgen/service"/>
-                        <mkdir dir="${{build.generated.dir}}/wsgen/binaries"/>
-                        <mkdir dir="${{build.classes.dir.real}}"/>
-                        <taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
-                            <classpath path="${{java.home}}/../lib/tools.jar:${{build.classes.dir.real}}:${{j2ee.platform.wsgen.classpath}}:${{javac.classpath}}"/>
-                        </taskdef>
-                    </target>
+                    <xsl:if test="count(/jaxws:jax-ws/jaxws:services/jaxws:service[not(jaxws:wsdl-url)]) > 0">
+                        <target name="wsgen-init-nonJSR109" depends="init, -do-compile">
+                            <mkdir dir="${{build.generated.dir}}/wsgen/service"/>
+                            <mkdir dir="${{build.generated.dir}}/wsgen/binaries"/>
+                            <mkdir dir="${{build.classes.dir.real}}"/>
+                            <taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
+                                <classpath path="${{java.home}}/../lib/tools.jar:${{build.classes.dir.real}}:${{j2ee.platform.wsgen.classpath}}:${{javac.classpath}}"/>
+                            </taskdef>
+                        </target>
+                    </xsl:if>
                     <xsl:for-each select="/jaxws:jax-ws/jaxws:services/jaxws:service">
                         <xsl:if test="not(jaxws:wsdl-url)">
                             <xsl:variable name="wsname" select="@name"/>
@@ -100,28 +104,17 @@ Microsystems, Inc. All Rights Reserved.
                             </target>
                         </xsl:if>
                     </xsl:for-each>
-                    <xsl:if test="/jaxws:jax-ws/jaxws:services/jaxws:service">
-                        <target name="wsgen-generate-nonJSR109">
+                    <xsl:if test="count(/jaxws:jax-ws/jaxws:services/jaxws:service[not(jaxws:wsdl-url)]) > 0">   
+                        <target name="wsgen-service-compile">
                             <xsl:attribute name="depends">
                                 <xsl:for-each select="/jaxws:jax-ws/jaxws:services/jaxws:service[not(jaxws:wsdl-url)]">
                                     <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
                                     <xsl:text>wsgen-</xsl:text><xsl:value-of select="@name"/><xsl:text>-nonJSR109</xsl:text>
                                 </xsl:for-each>
-                                <xsl:if test="count(/jaxws:jax-ws/jaxws:services/jaxws:service[not(jaxws:wsdl-url)]) > 0">
-                                    <xsl:text>, wsgen-service-compile</xsl:text>
-                                </xsl:if>
                             </xsl:attribute>
+                            <webproject2:javac srcdir="${{build.generated.dir}}/wsgen/service" classpath="${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir.real}}"/>
                         </target>
                     </xsl:if>
-                    <target name="wsgen-service-compile">
-                        <xsl:attribute name="depends">
-                            <xsl:for-each select="/jaxws:jax-ws/jaxws:services/jaxws:service[not(jaxws:wsdl-url)]">
-                                <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
-                                <xsl:text>wsgen-</xsl:text><xsl:value-of select="@name"/><xsl:text>-nonJSR109</xsl:text>
-                            </xsl:for-each>
-                        </xsl:attribute>
-                        <webproject2:javac srcdir="${{build.generated.dir}}/wsgen/service" classpath="${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir.real}}"/>
-                    </target>                   
                 </xsl:if>
             </xsl:if>
             <!-- END: Invoke wsgen if web service is not JSR 109 -->
@@ -284,21 +277,6 @@ Microsystems, Inc. All Rights Reserved.
                 </target>
             </xsl:if>
             <!-- END: wsimport-client-generate and wsimport-client-compile targets -->
-            
-            <!--Add the wsgen target for non-JSR 109 services -->
-            <xsl:if test="/jaxws:jax-ws/jaxws:services/jaxws:service">
-                <target name="wsimport-service-post-compile">    
-                    <xsl:variable name="isJSR109">
-                        <xsl:value-of select="/jaxws:jax-ws/jaxws:jsr109"/>
-                    </xsl:variable>
-                    <xsl:if test="$isJSR109 = 'false'">
-                        <xsl:attribute name="depends">
-                            <xsl:text>wsgen-generate-nonJSR109</xsl:text>
-                        </xsl:attribute>
-                    </xsl:if>
-                </target>
-            </xsl:if>
-            
         </project>        
     </xsl:template>
     
