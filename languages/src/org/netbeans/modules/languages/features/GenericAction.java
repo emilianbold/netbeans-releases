@@ -93,7 +93,7 @@ public class GenericAction extends BaseAction {
             return super.isEnabled();
         }
         Object result = em.getValue (new Object[] {node, comp});
-        return ((Boolean)result).booleanValue();
+        return result != null && ((Boolean)result).booleanValue();
     }
     
 }
