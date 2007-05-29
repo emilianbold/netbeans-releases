@@ -245,7 +245,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 
         menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackChange")) { // NOI18N
             {
-                setEnabled(!(drev.getFile().exists() && drev.getChangedPath().getAction() == 'D') );
+                setEnabled(drev == null || !(drev.getFile().exists() && drev.getChangedPath().getAction() == 'D') );
             }
             public void actionPerformed(ActionEvent e) {
                 revertModifications(selection);
