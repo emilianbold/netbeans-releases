@@ -26,20 +26,40 @@ import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 public abstract class DDTextFieldEditorModel extends TextItemEditorModel {
 
     private final String nameProperty;
+    private final String attrProperty;
 
     public DDTextFieldEditorModel(final XmlMultiViewDataSynchronizer synchronizer, final String np) {
         super(synchronizer, true, true);
         this.nameProperty = np;
+        this.attrProperty = null;
+    }
+    
+    public DDTextFieldEditorModel(final XmlMultiViewDataSynchronizer synchronizer, final String np, String ap) {
+        super(synchronizer, true, true);
+        this.nameProperty = np;
+        this.attrProperty = ap;
     }
 
     protected abstract CommonDDBean getBean();
 
     protected String getValue() {
-        return (String) getBean().getValue(nameProperty);
+        if(attrProperty == null) {
+            return (String) getBean().getValue(nameProperty);
+        } else if(nameProperty == null) {
+            return (String) getBean().getAttributeValue(attrProperty);
+        } else {
+            return (String) getBean().getAttributeValue(nameProperty, attrProperty);
+        }
     }
 
     protected void setValue(String value) {
-        getBean().setValue(nameProperty, value);
+        if(attrProperty == null) {
+            getBean().setValue(nameProperty, value);
+        } else if(nameProperty == null) {
+            getBean().setAttributeValue(attrProperty, value);
+        } else {
+            getBean().setAttributeValue(nameProperty, attrProperty, value);
+        }
     }
 
 }

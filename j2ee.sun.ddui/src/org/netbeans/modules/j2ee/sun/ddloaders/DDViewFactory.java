@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.SecurityRoleMappingMultiViewElement;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ServiceRefMultiViewElement;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.EjbMultiViewElement;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.ServletMultiViewElement;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebOverviewMultiViewElement;
@@ -47,6 +48,7 @@ public abstract class DDViewFactory implements Serializable {
     public static final String SERVLET = "Servlet"; // NOI18N
     public static final String EJB = "EJB"; // NOI18N
     public static final String SECURITY = "Security"; // NOI18N
+    public static final String WSCLIENT = "WSClient"; // NOI18N
     
     private static transient Map<DDType, DDViewFactory> factoryMap = new HashMap<DDType, DDViewFactory>();
     
@@ -72,6 +74,8 @@ public abstract class DDViewFactory implements Serializable {
     public MultiViewElement createElement(SunDescriptorDataObject dataObject, final String name) {
         if(name.equals(SECURITY)) {
             return new SecurityRoleMappingMultiViewElement(dataObject);
+        } else if(name.equals(WSCLIENT)) {
+            return new ServiceRefMultiViewElement(dataObject);
         }
         return null;
     }
@@ -94,9 +98,12 @@ public abstract class DDViewFactory implements Serializable {
         public DesignMultiViewDesc[] getMultiViewDesc(SunDescriptorDataObject dataObject) {
             // TODO complete set of sun-web.xml multiview panels.
             return new DDView[] { 
+                 
                 new DDView(dataObject, OVERVIEW),
                 new DDView(dataObject, SERVLET),
+                new DDView(dataObject,WSCLIENT),
                 new DDView(dataObject, SECURITY) 
+             
             };
         }
 
@@ -173,10 +180,10 @@ public abstract class DDViewFactory implements Serializable {
         
         public DesignMultiViewDesc[] getMultiViewDesc(SunDescriptorDataObject dataObject) {
             // TODO complete set of sun-application-client.xml multiview panels.
-//            return new DDView[] { 
+            return new DDView[] { 
 //                new DDView(dataObject, JWS)
-//            };
-            return new DDView[0];
+                new DDView(dataObject,WSCLIENT),
+            };
         }
 
         public MultiViewElement createElement(SunDescriptorDataObject dataObject, final String name) {
