@@ -760,13 +760,6 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         if(metacomp != null && metacomp.getBeanClass().getName().equals(javax.swing.JMenu.class.getName())) {
             formDesigner.openMenu(metacomp);
         }
-        // this clause may be dead now
-        if(metacomp instanceof RADMenuComponent) {
-            formDesigner.openMenu(metacomp);
-            //System.out.println("real = : " + ((RADMenuComponent)metacomp).getBeanInstance());
-            //final JMenu menu = (JMenu) ((RADMenuComponent)metacomp).getBeanInstance();
-        }
-        //System.out.println("is vis : " + (metacomp instanceof RADVisualComponent));
         if (!(metacomp instanceof RADVisualComponent))
             return;
 
