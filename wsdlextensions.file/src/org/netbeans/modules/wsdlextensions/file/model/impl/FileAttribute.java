@@ -28,6 +28,9 @@ public enum FileAttribute implements Attribute {
     FILE_ADDRESS_FILEDIRECTORY_PROPERTY("fileDirectory"),
     FILE_ADDRESS_RELATIVEPATH_PROPERTY("relativePath"),
     FILE_ADDRESS_PATHRELATIVETO_PROPERTY("pathRelativeTo"),
+    FILE_ADDRESS_LOCK_NAME("lockName"),
+    FILE_ADDRESS_WORK_AREA("workArea"),
+    FILE_ADDRESS_SEQ_NAME("seqName"),
     
     FILE_MESSAGE_FILETYPE_PROPERTY("fileType"),
     FILE_MESSAGE_ENCODINGSTYLE_PROPERTY("encodingStyle"),
@@ -51,6 +54,7 @@ public enum FileAttribute implements Attribute {
     FILE_MESSAGE_ARCHIVE_DIR_IS_RELATIVE("archiveDirIsRelative"),
     FILE_MESSAGE_STAGE_DIR_IS_RELATIVE("stageDirIsRelative");
     
+
     private String name;
     private Class type;
     private Class subtype;

@@ -53,6 +53,9 @@
         <wsdlElement name="ServicePort">
             <extensionElement name="address" >
                 <extensionAttr name="fileDirectory"  defaultValue="C:\Temp"/>
+                <extensionAttr name="lockName"  defaultValue="filebc.lck"/>
+                <extensionAttr name="workArea"  defaultValue="filebc_tmp"/>
+                <extensionAttr name="seqName"  defaultValue="filebc.seq"/>
             </extensionElement>
         </wsdlElement>
     </template>

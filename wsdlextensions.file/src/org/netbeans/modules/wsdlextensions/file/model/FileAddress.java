@@ -27,6 +27,9 @@ public interface FileAddress extends FileComponent {
     public static final String ATTR_FILE_ADDRESS = "fileDirectory";
     public static final String ATTR_FILE_RELATIVE_PATH = "relativePath";
     public static final String ATTR_FILE_PATH_RELATIVE_TO = "pathRelativeTo";
+    public static final String ATTR_FILE_LOCK_NAME = "lockName";
+    public static final String ATTR_FILE_WORK_AREA = "workArea";
+    public static final String ATTR_FILE_SEQ_NAME = "seqName";
     
     public void setRelativePath(boolean val);
     public boolean getRelativePath();
@@ -34,4 +37,11 @@ public interface FileAddress extends FileComponent {
     public String getFileDirectory();
     public void setPathRelativeTo(String val);
     public String getPathRelativeTo();
+
+    public void setLockName(String val);
+    public String getLockName();
+    public void setWorkArea(String val);
+    public String getWorkArea();
+    public void setSeqName(String val);
+    public String getSeqName();
 }

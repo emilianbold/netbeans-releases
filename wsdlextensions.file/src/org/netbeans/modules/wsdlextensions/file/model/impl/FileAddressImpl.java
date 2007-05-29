@@ -66,5 +66,29 @@ public class FileAddressImpl extends FileComponentImpl implements FileAddress {
     public String getPathRelativeTo() {
         return getAttribute(FileAttribute.FILE_ADDRESS_PATHRELATIVETO_PROPERTY);
     }
+
+    public void setLockName(String val) {
+        setAttribute(ATTR_FILE_LOCK_NAME, FileAttribute.FILE_ADDRESS_LOCK_NAME, val);
+    }
+
+    public String getLockName() {
+        return getAttribute(FileAttribute.FILE_ADDRESS_LOCK_NAME);
+    }
+
+    public void setWorkArea(String val) {
+        setAttribute(ATTR_FILE_WORK_AREA, FileAttribute.FILE_ADDRESS_WORK_AREA, val);
+    }
+
+    public String getWorkArea() {
+        return getAttribute(FileAttribute.FILE_ADDRESS_WORK_AREA);
+    }
+
+    public void setSeqName(String val) {
+        setAttribute(ATTR_FILE_SEQ_NAME, FileAttribute.FILE_ADDRESS_SEQ_NAME, val);
+    }
+
+    public String getSeqName() {
+        return getAttribute(FileAttribute.FILE_ADDRESS_SEQ_NAME);
+    }
     
 }
