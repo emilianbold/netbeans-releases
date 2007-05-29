@@ -207,11 +207,26 @@ class DragOperation {
             return;
         }
         
+        if(tcomp instanceof JMenu) {
+            JMenu menu = (JMenu) tcomp;
+            p("on a jmenu. could be in or above");
+            Point pt2 = SwingUtilities.convertPoint(menuEditLayer.glassLayer, pt, tcomp);
+            p("converted point = " + pt2);
+            if(pt2.x > menu.getWidth()-30) {
+                p("doing in menu drop");
+                menuEditLayer.moveRadComponentInto(payloadComponent, menu);
+            } else {
+                p("doing above menu drop");
+                menuEditLayer.moveRadComponentToBefore(payloadComponent, targetComponent);
+            }
+            payloadComponent = null;
+            targetComponent = null;
+            return;
+        }
         
         menuEditLayer.moveRadComponentToBefore(payloadComponent, targetComponent);
         payloadComponent = null;
         targetComponent = null;
-        
     }
     
     private void completePickAndPlopFromPalette(Point pt) {

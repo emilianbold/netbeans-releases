@@ -450,6 +450,38 @@ public class MenuEditLayer extends JPanel {
         
     }
     
+    void moveRadComponentInto(JComponent payload, JMenu targetMenu) {
+        try {
+            if(payload == targetMenu) {
+                p("can't move onto self");
+                return;
+            }
+            JComponent payloadParent = getMenuParent(payload);
+            p("payload parent = " + payloadParent);
+            RADVisualComponent payloadRad = (RADVisualComponent) formDesigner.getMetaComponent(payload);
+            p("payload rad = " + payloadRad);
+            RADVisualContainer payloadParentRad = (RADVisualContainer) formDesigner.getMetaComponent(payloadParent);
+            p("payload parent rad = " + payloadParentRad);
+            //skip if no payload rad, which probably means this is a new component from the palette
+            if(payloadRad != null) {
+                int index = payloadParentRad.getIndexOf(payloadRad);
+                payloadParentRad.remove(payloadRad);
+                FormModelEvent fme = formDesigner.getFormModel().fireComponentRemoved(payloadRad, payloadParentRad, index, false);
+            }
+            RADVisualContainer targetMenuRad = (RADVisualContainer) formDesigner.getMetaComponent(targetMenu);
+            p("target menu rad = " + targetMenuRad);
+            //add inside the target menu
+            p("=== inserting at end of a menu ===");
+            //add to end of the toplevel menu
+            targetMenuRad.add(payloadRad, -1);
+            targetMenuRad.getLayoutSupport().addComponents(new RADVisualComponent[] { payloadRad }, null, -1);
+            FormModelEvent fme2 = formDesigner.getFormModel().fireComponentAdded(payloadRad, false);
+            return;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }        
+    }
+    
     void moveRadComponentToBefore(JComponent payload, JComponent target) {
         try {
             if(payload == target) {
