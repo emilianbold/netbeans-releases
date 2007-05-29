@@ -23,7 +23,6 @@ import org.netbeans.api.java.source.CompilationInfo;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
-import org.netbeans.modules.java.hints.errors.CreateElement.CreateMethodFix;
 import org.netbeans.spi.editor.hints.Fix;
 
 

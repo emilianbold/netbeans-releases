@@ -68,6 +68,7 @@ import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageProvider;
+import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
@@ -452,12 +453,8 @@ public class HintsTestBase extends NbTestCase {
             
             assertFile(dump, golden, diff, new WhitespaceIgnoringDiff());
         } finally {
-            //discard changes in the file:
-            JavaEditorSupport s = (JavaEditorSupport) ec;
-            
             SourceUtilsTestUtil2.ignoreCompileRequests();
-            
-            s.close(false);
+            LifecycleManager.getDefault().saveAll();
         }
     }
     

@@ -25,7 +25,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.text.Document;
-import org.netbeans.modules.java.hints.errors.CreateElement.CreateFieldFix;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
