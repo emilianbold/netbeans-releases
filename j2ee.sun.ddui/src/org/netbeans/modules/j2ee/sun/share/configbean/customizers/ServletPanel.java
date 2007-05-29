@@ -16,12 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * ServletRefCustomizer.java
- *
- * Created on September 4, 2003, 5:28 PM
- */
-
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers;
 
 import java.awt.Dimension;
@@ -29,11 +23,9 @@ import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
-import org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.sun.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.DDTextFieldEditorModel;
-import org.netbeans.modules.j2ee.sun.ddloaders.multiview.TextItemEditorModel;
 import org.netbeans.modules.xml.multiview.ItemEditorHelper;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 
@@ -50,7 +42,8 @@ public class ServletPanel extends SectionNodeInnerPanel {
 	private static final ResourceBundle customizerBundle = ResourceBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.Bundle");	// NOI18N
     
-//	private ServletRef theBean;
+    public static final String ATTR_CLASSNAME = "ClassName";
+    
     private SunDescriptorDataObject dataObject;
     private Servlet servlet;
     private ASDDVersion version;
@@ -94,13 +87,10 @@ public class ServletPanel extends SectionNodeInnerPanel {
 //            }
 //        }));
         XmlMultiViewDataSynchronizer synchronizer = dataObject.getModelSynchronizer();
-//        addRefreshable(new ItemEditorHelper(jTxtName, new ServletTextFieldEditorModel(synchronizer, Servlet.SERVLET_NAME)));
-        addRefreshable(new ItemEditorHelper(jTxtName, new ServletNameEditorModel(synchronizer)));
+        addRefreshable(new ItemEditorHelper(jTxtName, new ServletTextFieldEditorModel(synchronizer, Servlet.SERVLET_NAME)));
 //        // TODO need to fill run-as field.
-//        addRefreshable(new ItemEditorHelper(jTxtPrincipalName, new ServletTextFieldEditorModel(synchronizer, Servlet.PRINCIPAL_NAME)));
-        addRefreshable(new ItemEditorHelper(jTxtPrincipalName, new PrincipalNameEditorModel(synchronizer)));
-//        addRefreshable(new ItemEditorHelper(jTxtClassName, new ServletTextFieldEditorModel(synchronizer, Servlet.PRINCIPALNAMECLASSNAME)));
-        addRefreshable(new ItemEditorHelper(jTxtClassName, new ClassNameEditorModel(synchronizer)));
+        addRefreshable(new ItemEditorHelper(jTxtPrincipalName, new ServletTextFieldEditorModel(synchronizer, Servlet.PRINCIPAL_NAME)));
+        addRefreshable(new ItemEditorHelper(jTxtClassName, new ServletTextFieldEditorModel(synchronizer, Servlet.PRINCIPAL_NAME, ATTR_CLASSNAME)));
 	}
 
 	/** This method is called from within the constructor to
@@ -112,6 +102,7 @@ public class ServletPanel extends SectionNodeInnerPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        jPnlServlet = new javax.swing.JPanel();
         jLblName = new javax.swing.JLabel();
         jTxtName = new javax.swing.JTextField();
         jLblRoleUsageDescription = new javax.swing.JLabel();
@@ -126,20 +117,23 @@ public class ServletPanel extends SectionNodeInnerPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
+        jPnlServlet.setOpaque(false);
+        jPnlServlet.setLayout(new java.awt.GridBagLayout());
+
         jLblName.setLabelFor(jTxtName);
         jLblName.setText(customizerBundle.getString("LBL_ServletName_1")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.ipady = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        add(jLblName, gridBagConstraints);
+        jPnlServlet.add(jLblName, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
-        add(jTxtName, gridBagConstraints);
+        jPnlServlet.add(jTxtName, gridBagConstraints);
         jTxtName.getAccessibleContext().setAccessibleName(customizerBundle.getString("ACSN_ServletName")); // NOI18N
         jTxtName.getAccessibleContext().setAccessibleDescription(customizerBundle.getString("ACSD_ServletName")); // NOI18N
 
@@ -150,7 +144,7 @@ public class ServletPanel extends SectionNodeInnerPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
-        add(jLblRoleUsageDescription, gridBagConstraints);
+        jPnlServlet.add(jLblRoleUsageDescription, gridBagConstraints);
 
         jLblRunAsRoleName.setLabelFor(jTxtRunAsRoleName);
         jLblRunAsRoleName.setText(customizerBundle.getString("LBL_RunAsRole_1")); // NOI18N
@@ -159,7 +153,7 @@ public class ServletPanel extends SectionNodeInnerPanel {
         gridBagConstraints.ipady = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
-        add(jLblRunAsRoleName, gridBagConstraints);
+        jPnlServlet.add(jLblRunAsRoleName, gridBagConstraints);
 
         jTxtRunAsRoleName.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -168,7 +162,7 @@ public class ServletPanel extends SectionNodeInnerPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
-        add(jTxtRunAsRoleName, gridBagConstraints);
+        jPnlServlet.add(jTxtRunAsRoleName, gridBagConstraints);
         jTxtRunAsRoleName.getAccessibleContext().setAccessibleName(customizerBundle.getString("ACSN_RunAsRole")); // NOI18N
         jTxtRunAsRoleName.getAccessibleContext().setAccessibleDescription(customizerBundle.getString("ACSD_RunAsRole")); // NOI18N
 
@@ -179,14 +173,14 @@ public class ServletPanel extends SectionNodeInnerPanel {
         gridBagConstraints.ipady = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
-        add(jLblPrincipalName, gridBagConstraints);
+        jPnlServlet.add(jLblPrincipalName, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
-        add(jTxtPrincipalName, gridBagConstraints);
+        jPnlServlet.add(jTxtPrincipalName, gridBagConstraints);
         jTxtPrincipalName.getAccessibleContext().setAccessibleName(customizerBundle.getString("ACSN_PrincipalName")); // NOI18N
         jTxtPrincipalName.getAccessibleContext().setAccessibleDescription(customizerBundle.getString("ACSD_PrincipalName")); // NOI18N
 
@@ -197,7 +191,7 @@ public class ServletPanel extends SectionNodeInnerPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
-        add(jLblClassNameUsageDesc, gridBagConstraints);
+        jPnlServlet.add(jLblClassNameUsageDesc, gridBagConstraints);
 
         jLblClassName.setLabelFor(jTxtClassName);
         jLblClassName.setText(customizerBundle.getString("LBL_ClassName_1")); // NOI18N
@@ -206,14 +200,14 @@ public class ServletPanel extends SectionNodeInnerPanel {
         gridBagConstraints.ipady = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
-        add(jLblClassName, gridBagConstraints);
+        jPnlServlet.add(jLblClassName, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
-        add(jTxtClassName, gridBagConstraints);
+        jPnlServlet.add(jTxtClassName, gridBagConstraints);
         jTxtClassName.getAccessibleContext().setAccessibleName(customizerBundle.getString("ACSN_ClassName")); // NOI18N
         jTxtClassName.getAccessibleContext().setAccessibleDescription(customizerBundle.getString("ACSD_ClassName")); // NOI18N
 
@@ -223,9 +217,17 @@ public class ServletPanel extends SectionNodeInnerPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
-        add(jLblEndpointHelp, gridBagConstraints);
+        jPnlServlet.add(jLblEndpointHelp, gridBagConstraints);
         jLblEndpointHelp.getAccessibleContext().setAccessibleName(customizerBundle.getString("ACSN_EndpointHelp")); // NOI18N
         jLblEndpointHelp.getAccessibleContext().setAccessibleDescription(customizerBundle.getString("ACSD_EndpointHelp")); // NOI18N
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
+        add(jPnlServlet, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -236,6 +238,7 @@ public class ServletPanel extends SectionNodeInnerPanel {
     private javax.swing.JLabel jLblPrincipalName;
     private javax.swing.JLabel jLblRoleUsageDescription;
     private javax.swing.JLabel jLblRunAsRoleName;
+    private javax.swing.JPanel jPnlServlet;
     private javax.swing.JTextField jTxtClassName;
     private javax.swing.JTextField jTxtName;
     private javax.swing.JTextField jTxtPrincipalName;
@@ -338,65 +341,15 @@ public class ServletPanel extends SectionNodeInnerPanel {
         return null;
     }
     
-    private class ServletNameEditorModel extends TextItemEditorModel {
-
-        public ServletNameEditorModel(XmlMultiViewDataSynchronizer synchronizer) {
-            super(synchronizer, true, true);
-        }
-
-        protected String getValue() {
-            return servlet.getServletName();
-        }
-
-        protected void setValue(String value) {
-            servlet.setServletName(value);
-        }
-    }
-    
-    private class PrincipalNameEditorModel extends TextItemEditorModel {
-
-        public PrincipalNameEditorModel(XmlMultiViewDataSynchronizer synchronizer) {
-            super(synchronizer, true, true);
-        }
-
-        protected String getValue() {
-            return servlet.getPrincipalName();
-        }
-
-        protected void setValue(String value) {
-            servlet.setPrincipalName(value);
-        }
-    }
-    private class ClassNameEditorModel extends TextItemEditorModel {
-
-        public ClassNameEditorModel(XmlMultiViewDataSynchronizer synchronizer) {
-            super(synchronizer, true, true);
-        }
-
-        protected String getValue() {
-            try {
-                return servlet.getPrincipalNameClassName();
-            } catch(VersionNotSupportedException ex) {
-//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            }
-            return null;
-        }
-
-        protected void setValue(String value) {
-            try {
-                servlet.setPrincipalNameClassName(value);
-            } catch(VersionNotSupportedException ex) {
-//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            }
-        }
-    }
-    
-    
-    // Model classes for handling updates to the fields
+    // Model class for handling updates to the text fields
     private class ServletTextFieldEditorModel extends DDTextFieldEditorModel {
 
         public ServletTextFieldEditorModel(XmlMultiViewDataSynchronizer synchronizer, String propertyName) {
             super(synchronizer, propertyName);
+        }
+        
+        public ServletTextFieldEditorModel(XmlMultiViewDataSynchronizer synchronizer, String propertyName, String attributeName) {
+            super(synchronizer, propertyName, attributeName);
         }
 
         protected CommonDDBean getBean() {
