@@ -296,10 +296,9 @@ public class WSDLDesignMultiViewElement extends TopComponent
                     mToolbar.addSeparator();
                     graphComponent.addToolbarActions(mToolbar);
 
-                    // vlv: print // and search
+                    // vlv: print
                     mToolbar.addSeparator();
                     mToolbar.add(PrintManagerAccess.getManager().getPreviewAction());
-//                  mToolbar.add(SearchManagerAccess.getManager().getSearchAction());
 
                     mToolbar.addSeparator();
                     mToolbar.add(new ValidateAction(model));

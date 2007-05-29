@@ -52,6 +52,8 @@ import org.netbeans.modules.xml.xam.ui.category.CategoryPane;
 import org.netbeans.modules.xml.xam.ui.category.DefaultCategoryPane;
 import org.netbeans.modules.xml.xam.ui.multiview.ActivatedNodesMediator;
 import org.netbeans.modules.xml.xam.ui.multiview.CookieProxyLookup;
+import org.netbeans.modules.xml.xam.ui.search.api.SearchManager;
+import org.netbeans.modules.xml.xam.ui.search.api.SearchManagerAccess;
 import org.openide.actions.FindAction;
 import org.openide.awt.UndoRedo;
 import org.openide.explorer.ExplorerManager;
@@ -96,7 +98,7 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
     }
 
     private void initialize() {
-	manager = new ExplorerManager();
+    manager = new ExplorerManager();
         // Install our own actions.
         CallbackSystemAction globalFindAction = SystemAction.get(FindAction.class);
         Object mapKey = globalFindAction.getActionMapKey();
@@ -157,7 +159,7 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
     }
 
     public ExplorerManager getExplorerManager() {
-	return manager;
+    return manager;
     }
 
     @Override
@@ -183,7 +185,7 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
 
     @Override
     public UndoRedo getUndoRedo() {
-	return mObj.getWSDLEditorSupport().getUndoManager();
+    return mObj.getWSDLEditorSupport().getUndoManager();
     }
 
     @Override
@@ -210,14 +212,14 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
     @Override
     public void componentActivated() {
         super.componentActivated();
-	ExplorerUtils.activateActions(manager, true);
+    ExplorerUtils.activateActions(manager, true);
         mObj.getWSDLEditorSupport().syncModel();
         updateGroupVisibility();
     }
     
     @Override
     public void componentDeactivated() {
-	ExplorerUtils.activateActions(manager, false);
+    ExplorerUtils.activateActions(manager, false);
         super.componentDeactivated();
         updateGroupVisibility();
     }
@@ -246,7 +248,7 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
     
     @Override
     public HelpCtx getHelpCtx() {
-	return new HelpCtx(WSDLTreeViewMultiViewDesc.class);
+    return new HelpCtx(WSDLTreeViewMultiViewDesc.class);
     }
 
     private static Boolean groupVisible = null;
@@ -364,6 +366,13 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
                 if (categoryPane != null) {
                     mToolbar.addSeparator();
                     categoryPane.populateToolbar(mToolbar);
+                }
+                // vlv: search
+                mToolbar.addSeparator();
+                SearchManager manager = SearchManagerAccess.getManager();
+
+                if (manager != null) {
+                  mToolbar.add(manager.getSearchAction());
                 }
                 mToolbar.addSeparator();
                 mToolbar.add(new ValidateAction(model));
