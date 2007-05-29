@@ -24,28 +24,19 @@
 
 package org.netbeans.modules.java.navigation.actions;
 
-import java.awt.Container;
-import java.awt.Point;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.List;
+import java.awt.Toolkit;
 import javax.lang.model.element.Element;
-import javax.swing.JEditorPane;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.UiUtils;
 import org.openide.awt.*;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.*;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.*;
-import org.openide.text.PositionBounds;
 import org.openide.util.*;
 
 import javax.swing.*;
 import java.awt.event.*;
-import org.openide.windows.TopComponent;
 
 /**
  * An action that opens editor and jumps to the element given in constructor.
@@ -57,15 +48,29 @@ public final class OpenAction extends AbstractAction {
     
     private ElementHandle<? extends Element> elementHandle;   
     private FileObject fileObject;
+    private String displayName;
       
     public OpenAction( ElementHandle<? extends Element> elementHandle, FileObject fileObject ) {
+        this( elementHandle, fileObject, null );
+    }
+    
+    public OpenAction( ElementHandle<? extends Element> elementHandle, FileObject fileObject, String displayName ) {
         this.elementHandle = elementHandle;
         this.fileObject = fileObject;
+        this.displayName = displayName;
         putValue ( Action.NAME, NbBundle.getMessage ( OpenAction.class, "LBL_Goto" ) ); //NOI18N
     }
     
     public void actionPerformed (ActionEvent ev) {
-        UiUtils.open(fileObject, elementHandle);
+        if( null == fileObject ) {
+            Toolkit.getDefaultToolkit().beep();
+            if( null != displayName ) {
+                StatusDisplayer.getDefault().setStatusText(
+                        NbBundle.getMessage(OpenAction.class, "MSG_NoSource", displayName) );  //NOI18N
+            }
+        } else {
+            UiUtils.open(fileObject, elementHandle);
+        }
         // find source
 //        boolean isSourceAvailable = false;
 //        repo.beginTrans(false);
