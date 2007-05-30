@@ -26,10 +26,13 @@ package org.netbeans.test.utilities.search;
 
 import java.util.Hashtable;
 import java.util.Iterator;
+import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jemmy.ComponentChooser;
-import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JMenuItemOperator;
+import org.netbeans.jemmy.operators.JMenuOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
@@ -40,7 +43,11 @@ import org.netbeans.test.utilities.testcase.Utilities;
  * Some search tests
  * @author Max Sauer
  */
-public class BasicSearchTest extends NbTestCase {
+public class BasicSearchTest extends JellyTestCase {
+    
+    public String DATA_PROJECT_NAME = "UtilitiesTestProject";
+    
+    
     
     /** path to sample files */
     private static final String TEST_PACKAGE_PATH =
@@ -56,15 +63,19 @@ public class BasicSearchTest extends NbTestCase {
      * @return created suite
      */
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite(BasicSearchTest.class);
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new BasicSearchTest("testSearchForClass"));
+        suite.addTest(new BasicSearchTest("testRememberSearchesInsideComboBox"));
         return suite;
     }
-    
+    public static void main(java.lang.String[] args) {
+        // run whole suite
+        junit.textui.TestRunner.run(suite());
+        // run only selected test case
+        //junit.textui.TestRunner.run(new DesktopAppTest("test1"));
+    }
     public void testSearchForClass() {
-        NbDialogOperator ndo = Utilities.getFindDialog();
-        JTabbedPaneOperator jtpo = new JTabbedPaneOperator(ndo, 0);
-        jtpo.selectPage(0);
-        
+        NbDialogOperator ndo = Utilities.getFindDialogMainMenu();        
         JComboBoxOperator jcbo = new JComboBoxOperator(ndo,
                 new JComboBoxOperator.JComboBoxFinder());
         jcbo.enterText("class"); //enter 'class' in search comboBox and press [Enter]
@@ -84,32 +95,28 @@ public class BasicSearchTest extends NbTestCase {
     public void testRememberSearchesInsideComboBox() {
         //setup ten searches
         for (int i = 0; i < 10; i++) {
-            NbDialogOperator ndo = Utilities.getFindDialog();
-            JTabbedPaneOperator jtpo = new JTabbedPaneOperator(ndo, 0);
-            jtpo.selectPage(0);
-            
+            NbDialogOperator ndo = Utilities.getFindDialogMainMenu();
             JComboBoxOperator jcbo = new JComboBoxOperator(ndo,
                     new JComboBoxOperator.JComboBoxFinder());
             jcbo.enterText("a" + i);
             Utilities.takeANap(500);
         }
         //check
-        NbDialogOperator ndo = Utilities.getFindDialog();
-        JTabbedPaneOperator jtpo = new JTabbedPaneOperator(ndo, 0);
-        jtpo.selectPage(0);
+        NbDialogOperator ndo = Utilities.getFindDialogMainMenu();
         
         JComboBoxOperator jcbo = new JComboBoxOperator(ndo,
                 new JComboBoxOperator.JComboBoxFinder());
-                
+        
         for (int i = 0; i < jcbo.getItemCount() - 1; i++) {
             assertEquals("Found " + jcbo.getItemAt(i).toString() +" in search combo" +
                     "expected" + new Integer(9-i).toString() + ".",
                     jcbo.getItemAt(i).toString(), "a" + new Integer(9-i).toString());
         }
-        assertEquals("Expected 'class', found: " + 
+        
+        assertEquals("Expected 'class', found: " +
                 jcbo.getItemAt(jcbo.getItemCount()-1),
                 jcbo.getItemAt(jcbo.getItemCount()-1),  "class");
-
+        
     }
     
     

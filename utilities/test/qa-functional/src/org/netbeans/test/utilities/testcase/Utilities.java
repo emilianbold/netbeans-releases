@@ -22,13 +22,20 @@ package org.netbeans.test.utilities.testcase;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JMenuOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.actions.SaveAllAction;
@@ -37,11 +44,11 @@ import org.openide.actions.SaveAllAction;
  * Utilities|Search helper class
  * @author Max Sauer
  */
-public class Utilities {
+public class Utilities{
     
     /** Find Dialog label */
     public  static final String FIND_DIALOG = Bundle.getString(
-            "org.netbeans.modules.search.Bundle", "TEXT_TITLE_CUSTOMIZE");
+            "org.netbeans.modules.search.Bundle", "LBL_FindInProjects");
     
     
     /** name of sample project */
@@ -78,7 +85,10 @@ public class Utilities {
     // default timeout for actions in miliseconds
     public static final int ACTION_TIMEOUT = 1000;
     
+    //set NB as main window
+    public static MainWindowOperator mwo = MainWindowOperator.getDefault();
     
+   
     /**
      * Saves all opened files
      */
@@ -98,7 +108,7 @@ public class Utilities {
     }
     
     /**
-     * Deletes a node (file, package)
+     * Deletes a node (file, package, project)
      * using pop-up menu
      */
     public static void deleteNode(String path) {
@@ -130,15 +140,40 @@ public class Utilities {
         }
         path.delete();
     }
+     /** delete projects */
+    public static boolean deleteProject(String projectName, String path) throws InterruptedException {
+        //Project Deleting
+        ProjectsTabOperator pto = new ProjectsTabOperator();
+        ProjectRootNode prn = pto.getProjectRootNode(projectName);
+        prn.select();
+        
+        DeleteAction delProject = new DeleteAction();
+        delProject.perform();
+        
+        NbDialogOperator ndo = new NbDialogOperator("Delete Project");
+        JCheckBoxOperator cbo = new JCheckBoxOperator(ndo);
+        cbo.changeSelection(true);
+        ndo.yes();
+        
+        Thread.sleep(10000);
+        //check if project was really deleted from disc
+        File f = new File(path + projectName);
+        System.out.println("adresar:"+f);
+        if (f.exists()) {           
+            return false;
+        } else {            
+            return true;
+        }
+    }
     
     /**
      * Opens a file from TEST_PROJECT_NAME
      * @param Filename the file to be opened
      */
-    public static Node openFile(String path) {
+    public static Node openFile(String path, String projectName) {
         Node pn = new ProjectsTabOperator().getProjectRootNode(
-                Utilities.TEST_PROJECT_NAME);
-        pn.select();
+                projectName);
+        pn.select();        
         Node n = new Node(pn, path);
         n.select();
         new OpenAction().perform();
@@ -173,18 +208,62 @@ public class Utilities {
             new JCheckBoxOperator(ndo, i).setSelected(true);
         }
     }
-    
-    public static NbDialogOperator getFindDialog() {
-        Node pn = new ProjectsTabOperator().getProjectRootNode(
-                Utilities.TEST_PROJECT_NAME);
-        pn.select();
-        Node n = new Node(pn, Utilities.SRC_PACKAGES_PATH);
-        n.select();
-        Utilities.takeANap(1000);
-        Utilities.pushFindPopup(n);
+    /** Select wanted Project node in ProjectTab */
+    public static NbDialogOperator getFindDialog(String projectName) {
         
+        Node pn = new ProjectsTabOperator().getProjectRootNode(projectName);
+        pn.select();
+        Utilities.takeANap(1000);
+        Utilities.pushFindPopup(pn);
         return new NbDialogOperator(FIND_DIALOG);
     }
+    
+    /**
+     * Invoke Find in Project Dialog from main menu
+     */
+    public static NbDialogOperator getFindDialogMainMenu() {
+        mwo.menuBar().pushMenuNoBlock("Edit|" + FIND_DIALOG + "...");
+         return new NbDialogOperator(FIND_DIALOG);
+    }
+    
+    
+//    public static NbDialogOperator getFindDialog() {
+//        Node pn = new ProjectsTabOperator().getProjectRootNode(
+//                Utilities.TEST_PROJECT_NAME);
+//        pn.select();
+//        Node n = new Node(pn, Utilities.SRC_PACKAGES_PATH);
+//        n.select();
+//        Utilities.takeANap(1000);
+//        Utilities.pushFindPopup(n);
+//        
+//        return new NbDialogOperator(FIND_DIALOG);
+//    }
+    
+    /** 
+     * This method create new Java Application project
+     */
+    
+    public static String createNewProject(String projectName, String dataProjectName, String workdirpath){
+        NewProjectWizardOperator nfwo = NewProjectWizardOperator.invoke();
+        nfwo.selectCategory(projectName);
+        nfwo.selectProject("Java Application");
+        nfwo.next();
+        
+        JTextFieldOperator tfo_name = new JTextFieldOperator(nfwo, 0);
+        tfo_name.clearText();
+        tfo_name.typeText(dataProjectName);
+        
+        JTextFieldOperator tfo1_location = new JTextFieldOperator(nfwo, 1);
+        
+        tfo1_location.clearText();
+        tfo1_location.typeText(workdirpath);
+        
+        JButtonOperator bo = new JButtonOperator(nfwo, "Finish");
+        //bo.getSource().requestFocus();
+        bo.push();
+        return dataProjectName;
+    }
+    
     
     /**
      * Sleeps for waitTimeout miliseconds to avoid incorrect test failures.
