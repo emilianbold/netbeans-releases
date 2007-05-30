@@ -760,11 +760,16 @@ public class UnitTab extends javax.swing.JPanel {
         }
         
         public void performerImpl () {
+            boolean wizardFinished = false; 
+            final Map<String, Boolean> state = UnitCategoryTableModel.captureState(model.getUnitData());            
             UninstallUnitWizard wizard = new UninstallUnitWizard ();
             try {
-                wizard.invokeWizard ();
+                wizardFinished = wizard.invokeWizard ();
             } finally {
                 Containers.forUninstall ().removeAll ();
+                if (!wizardFinished) {
+                    UnitCategoryTableModel.restoreState(model.getUnitData(), state, model.isMarkedAsDefault());
+                }
             }
         }
     }
@@ -775,12 +780,17 @@ public class UnitTab extends javax.swing.JPanel {
         }
         
         public void performerImpl () {
+            boolean wizardFinished = false; 
+            final Map<String, Boolean> state = UnitCategoryTableModel.captureState(model.getUnitData());            
             OperationContainer<InstallSupport> cont = Containers.forUpdate ();
             try {
-                new InstallUnitWizard ().invokeWizard (cont);
+                wizardFinished = new InstallUnitWizard ().invokeWizard (cont);
             } finally {
                 cont.removeAll ();
-            }
+                if (!wizardFinished) {
+                    UnitCategoryTableModel.restoreState(model.getUnitData(), state, model.isMarkedAsDefault());
+                }                
+            }            
         }
     }
     
@@ -790,11 +800,16 @@ public class UnitTab extends javax.swing.JPanel {
         }
         
         public void performerImpl () {
+            boolean wizardFinished = false; 
+            final Map<String, Boolean> state = UnitCategoryTableModel.captureState(model.getUnitData());            
             OperationContainer<InstallSupport> cont = Containers.forAvailable ();
             try {
-                new InstallUnitWizard ().invokeWizard (cont);
+                wizardFinished = new InstallUnitWizard ().invokeWizard (cont);
             } finally {
                 cont.removeAll ();
+                if (!wizardFinished) {
+                    UnitCategoryTableModel.restoreState(model.getUnitData(), state, model.isMarkedAsDefault());
+                }                
             }
         }
     }
@@ -807,27 +822,34 @@ public class UnitTab extends javax.swing.JPanel {
             int available = Containers.forAvailableNbms ().listAll ().size ();
             int updates = Containers.forUpdateNbms ().listAll ().size ();
             OperationContainer<InstallSupport> cont = (updates > available) ? Containers.forUpdateNbms () : Containers.forAvailableNbms ();
+            boolean wizardFinished = false; 
+            final Map<String, Boolean> state = UnitCategoryTableModel.captureState(model.getUnitData());            
             
             try {
                 //nonsense condition - but wizard can't do both operations at once NOW
-                new InstallUnitWizard ().invokeWizard (cont);
+                wizardFinished = new InstallUnitWizard ().invokeWizard (cont);
             } finally {
                 cont.removeAll ();
-                List<UnitCategory> categories = model.data;
-                LocalDownloadSupport lDSupport = getLocalDownloadSupport ();
-                for (Iterator<UnitCategory> categoryIt = categories.iterator (); categoryIt.hasNext ();) {
-                    UnitCategory unitCategory = categoryIt.next ();
-                    List<Unit> units = unitCategory.getUnits ();
-                    for (Iterator<Unit> it = units.iterator (); it.hasNext ();) {
-                        Unit unit = it.next ();
-                        if (unit.updateUnit.getInstalled () != null) {
-                            lDSupport.remove (unit.updateUnit);
+                if (wizardFinished) {
+                    List<UnitCategory> categories = model.data;
+                    LocalDownloadSupport lDSupport = getLocalDownloadSupport ();
+                    for (Iterator<UnitCategory> categoryIt = categories.iterator (); categoryIt.hasNext ();) {
+                        UnitCategory unitCategory = categoryIt.next ();
+                        List<Unit> units = unitCategory.getUnits ();
+                        for (Iterator<Unit> it = units.iterator (); it.hasNext ();) {
+                            Unit unit = it.next ();
+                            if (unit.updateUnit.getInstalled () != null) {
+                                lDSupport.remove (unit.updateUnit);
+                            }
                         }
                     }
+                    model.setData (categories);
+                    refresh (false);
+                } else {
+                    if (!wizardFinished) {
+                        UnitCategoryTableModel.restoreState(model.getUnitData(), state, model.isMarkedAsDefault());
+                    }                    
                 }
-                model.setData (categories);
-                refresh (false);
-                //fireUpdataUnitChange();
             }
         }
         protected boolean refreshUpdateUnrefits () {
@@ -1227,11 +1249,10 @@ public class UnitTab extends javax.swing.JPanel {
         }
         
         public void performerImpl() {
-            if (getLocalDownloadSupport().selectNbmFiles()) {                
-                setUp(); 
-                setWaitingState(true);
+            if (getLocalDownloadSupport().selectNbmFiles()) {
+                setUp();                 
                 final Map<String, Boolean> state = UnitCategoryTableModel.captureState(model.getUnitData());                
-                Utilities.startAsWorkerThread(new Runnable() {
+                final Runnable addUpdates = new Runnable(){
                     public void run() {
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
@@ -1243,11 +1264,14 @@ public class UnitTab extends javax.swing.JPanel {
                                     showMessage(installed);
                                 }
                                 refreshState();
-                                setWaitingState(false);                                
+                                setWaitingState(false);
                             }
                         });
                     }
-                }, 250);
+
+                };                
+                setWaitingState(true);
+                Utilities.startAsWorkerThread(addUpdates, 250);
             }
         }                
         
@@ -1320,8 +1344,8 @@ public class UnitTab extends javax.swing.JPanel {
                     }
                 }
             };
-            RequestProcessor.getDefault ().post (removeUpdates);
             setWaitingState(true);
+            Utilities.startAsWorkerThread(removeUpdates, 250);
         }
                         
         protected String getContextName (Unit u) {

@@ -37,7 +37,7 @@ public class InstallUnitWizard {
     /** Creates a new instance of InstallUnitWizard */
     public InstallUnitWizard () {}
     
-    public void invokeWizard (OperationContainer<InstallSupport> container) {
+    public boolean invokeWizard (OperationContainer<InstallSupport> container) {
         assert container != null : "The OperationContainer<InstallSupport> must exist!";
         InstallUnitWizardModel model = new InstallUnitWizardModel (container);
         WizardDescriptor.Iterator<WizardDescriptor> iterator = new InstallUnitWizardIterator (model);
@@ -53,9 +53,7 @@ public class InstallUnitWizard {
         dialog.setVisible (true);
         dialog.toFront ();
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
-        if (!cancelled) {
-            //System.out.println("======== was cancelled ====================");
-        }
+        return !cancelled;
     }
     
 }

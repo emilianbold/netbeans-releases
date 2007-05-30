@@ -99,7 +99,11 @@ public class SettingsTab extends javax.swing.JPanel {
     @Override
     public void addNotify () {
         super.addNotify ();
-        getSettingsTableModel ().refreshModel ();
+        Utilities.startAsWorkerThread(new Runnable() {
+            public void run() {
+                getSettingsTableModel ().refreshModel ();
+            }
+        });        
         addListener ();
     }
     

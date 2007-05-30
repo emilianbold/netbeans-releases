@@ -37,15 +37,15 @@ public class UninstallUnitWizard {
     /** Creates a new instance of InstallUnitWizard */
     public UninstallUnitWizard () {}
     
-    public void invokeWizard () {
-        invokeWizardImpl (true, null);
+    public boolean invokeWizard () {
+        return invokeWizardImpl (true, null);
     }
     
-    public void invokeWizard (boolean doEnable) {
-        invokeWizardImpl (null, doEnable ? Boolean.TRUE : Boolean.FALSE);
+    public boolean invokeWizard (boolean doEnable) {
+        return invokeWizardImpl (null, doEnable ? Boolean.TRUE : Boolean.FALSE);
     }
     
-    private void invokeWizardImpl (Boolean doUninstall, Boolean doEnable) {
+    private boolean invokeWizardImpl (Boolean doUninstall, Boolean doEnable) {
         assert doUninstall != null || doEnable != null : "At least one action is enabled";
         assert ! (doUninstall != null && doEnable != null) : "Only once action is enabled";
         assert doUninstall == null || Containers.forUninstall () != null : "The OperationContainer<OperationSupport> forUninstall must exist!";
@@ -67,9 +67,7 @@ public class UninstallUnitWizard {
         dialog.setVisible (true);
         dialog.toFront ();
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
-        if (!cancelled) {
-            //System.out.println("======== was cancelled ====================");
-        }
+        return !cancelled;
     }
     
 }
