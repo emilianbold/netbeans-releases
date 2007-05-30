@@ -1072,10 +1072,7 @@ public class PropertyEditorEventsSink
                   m_PropertyEditor.resetGridSettings();
                }
             }
-            if (name.equals("DefaultFilter"))
-            {
-               m_PropertyEditor.resetGridFilter();
-            }
+            //kris richards - DefaultFilter pref expunged
          }
       }
    }

@@ -677,22 +677,8 @@ public IStrings getValidValue(IPropertyElement elem){
    */
 	private boolean isFullyQualified()
 	{
-		boolean retVal = false;
-		
-		ICoreProduct prod = ProductRetriever.retrieveProduct();
-		if (prod != null)
-		{
-			IPreferenceManager2 prefMan = prod.getPreferenceManager();
-			if (prefMan != null)
-			{
-				String value = prefMan.getPreferenceValue("PropertyEditor", "DisplayTypeFSN");
-				if (value != null && value.equals("PSK_YES"))
-				{
-					retVal = true;
-				}
-			}
-		}
-		return retVal;
+		//kris richards - "DisplayTypeFSN" pref removed. Set to true
+		return true;
 	}
 	
 	/**

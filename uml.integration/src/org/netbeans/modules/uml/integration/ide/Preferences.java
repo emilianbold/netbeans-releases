@@ -69,10 +69,6 @@ public class Preferences {
 
     public static final String PROMPT_SAVE_WKS =
                                 "Workspace|ProjectSave";
-    public static final String PROMPT_WKS_LOC =
-                                "Workspace|PromptForTargetWS";
-    public static final String PROMPT_PRJ_LOC =
-                                "Workspace|ProjectLocationQuery";
     public static final String DEFAULT_WKS_LOC =
                                 "Integrations|NewProject|DefaultWSLocation";
     public static final String DEFAULT_ELEM_NAME =
@@ -227,8 +223,6 @@ public class Preferences {
 
             reconnectLinks = getBooleanPreference(RECONNECT_LINKS);
             promptSaveWorkspace = getBooleanPreference(PROMPT_SAVE_WKS);
-            promptWksLocation = getBooleanPreference(PROMPT_WKS_LOC);
-            promptProjectLocation = getBooleanPreference(PROMPT_PRJ_LOC);
             createNewDiagram = getBooleanPreference(QUERY_NEW_DIAGRAM);
 
             defaultWorkspaceLocation = getPreference(DEFAULT_WKS_LOC);
@@ -336,7 +330,7 @@ public class Preferences {
      *         choose a location for the new Describe project.
      */
     public static boolean isPromptProjectLocation() {
-        return promptProjectLocation;
+        throw new UnsupportedOperationException ("This pref is no long valid.");
     }
 
     /**
@@ -357,7 +351,7 @@ public class Preferences {
      *         choose a location for the new Describe workspace.
      */
     public static boolean isPromptWksLocation() {
-        return promptWksLocation;
+        throw new UnsupportedOperationException ("This pref is no long valid.");
     }
 
     /**
@@ -464,9 +458,7 @@ public class Preferences {
      *             PSK_NO.
      */
     public static void setPromptWksLocation(boolean state) {
-        promptWksLocation = state;
-        String val = (state)? PSK_YES : PSK_NO;
-        setPreference(PROMPT_WKS_LOC, val);
+        throw new UnsupportedOperationException ("This pref is no long valid.");
     }
 
     /**
@@ -608,8 +600,6 @@ public class Preferences {
     // Individual preference properties
     private static boolean createNewDiagram;
     private static boolean promptSaveWorkspace;
-    private static boolean promptWksLocation;
-    private static boolean promptProjectLocation;
     private static boolean reconnectLinks;
 //    private static boolean useGenericsForCollections;
 

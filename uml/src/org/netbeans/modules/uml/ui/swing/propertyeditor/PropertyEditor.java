@@ -392,23 +392,16 @@ public class PropertyEditor extends JPanel implements IPropertyEditor, ActionLis
 	 *
 	 * @return void
 	 */
-	private void setFilterComboBoxValue()
-	{
-		if (m_FilterCombo != null)
-		{
-			ICoreProduct prod = CoreProductManager.instance().getCoreProduct();
-         if (prod != null)
-         {
-            IPreferenceManager2 pMan = prod.getPreferenceManager();
-            if (pMan != null)
-            {
-               String filter = pMan.getTranslatedPreferenceValue("PropertyEditor", "DefaultFilter"); //$NON-NLS-1$ //$NON-NLS-2$
-               //ETSystem.out.println("Setting the default selection to " + filter);
-               m_FilterCombo.setSelectedItem(filter);
+	private void setFilterComboBoxValue() {
+            if (m_FilterCombo != null) {
+                
+                //kris richards - "DefaultFilter" pref expunged. Set to "PSK_DATA"
+                String filter = "PSK_DATA";
+                m_FilterCombo.setSelectedItem(filter);
+                
+                
             }
-         }
-		}
-	}
+        }
 	
 
 	/**
@@ -1594,57 +1587,42 @@ public class PropertyEditor extends JPanel implements IPropertyEditor, ActionLis
 	 * @return HRESULT
 	 *
 	 */
-	private void filterPropertyElement(IPropertyElement pEle)
-	{
-		// check the preference to see if we should filter or not
-		ICoreProduct prod = CoreProductManager.instance().getCoreProduct();
-		IPreferenceManager2 pMan = prod.getPreferenceManager();
-		if (pMan != null)
-		{
-			String filter = pMan.getPreferenceValue("PropertyEditor", "LanguageFilter"); //$NON-NLS-1$ //$NON-NLS-2$
-			if (filter.equals("PSK_YES")) //$NON-NLS-1$
-			{
-				// this guy does the filtering
-				IPropertyDefinitionFilter pFilter = new PropertyDefinitionFilter();
-				// get the element from the property element
-				Object pDisp = pEle.getElement();
-				if (pDisp instanceof IElement)
-				{
-					IElement pModEle = (IElement)pDisp;
-					// from the element we should be able to tell what language it is
-					ILanguage lang = getActiveLanguage(pModEle);
-					if (lang != null)
-					{
-						pFilter.filterPropertyElement(pEle);
-					}
-					else
-					{
-						// if the element is new, it may not have a language just yet, so
-						// get the top most property element's model element and use that
-						// as the guy to figure out the language filter
-						Object pTop = getTopModelElement(pEle);
-						if (pTop instanceof IElement)
-						{
-							IElement parentEle = (IElement)pTop;
-							pFilter.filterPropertyElementBasedOnModelElement(pEle, parentEle);
-						}
-					}
-				}
-				else
-				{
-					// there is not a model element on the property element, so
-					// get the top most property element's model element and use that
-					// as the guy to figure out the language filter
-					Object pTop = getTopModelElement(pEle);
-					if (pTop instanceof IElement)
-					{
-						IElement parentEle = (IElement)pTop;
-						pFilter.filterPropertyElementBasedOnModelElement(pEle, parentEle);
-					}
-				}
-			}
-		}
-	}
+	private void filterPropertyElement(IPropertyElement pEle) {
+            // check the preference to see if we should filter or not
+            //kris richards - "LanguageFilter" pref expunged. Set to true. Condition removed.
+            
+            // this guy does the filtering
+            IPropertyDefinitionFilter pFilter = new PropertyDefinitionFilter();
+            // get the element from the property element
+            Object pDisp = pEle.getElement();
+            if (pDisp instanceof IElement) {
+                IElement pModEle = (IElement)pDisp;
+                // from the element we should be able to tell what language it is
+                ILanguage lang = getActiveLanguage(pModEle);
+                if (lang != null) {
+                    pFilter.filterPropertyElement(pEle);
+                } else {
+                    // if the element is new, it may not have a language just yet, so
+                    // get the top most property element's model element and use that
+                    // as the guy to figure out the language filter
+                    Object pTop = getTopModelElement(pEle);
+                    if (pTop instanceof IElement) {
+                        IElement parentEle = (IElement)pTop;
+                        pFilter.filterPropertyElementBasedOnModelElement(pEle, parentEle);
+                    }
+                }
+            } else {
+                // there is not a model element on the property element, so
+                // get the top most property element's model element and use that
+                // as the guy to figure out the language filter
+                Object pTop = getTopModelElement(pEle);
+                if (pTop instanceof IElement) {
+                    IElement parentEle = (IElement)pTop;
+                    pFilter.filterPropertyElementBasedOnModelElement(pEle, parentEle);
+                }
+            }
+            
+        }
 
 	/**
 	 * Retrieves a model elements associated language.  If the model element
@@ -2057,18 +2035,8 @@ public class PropertyEditor extends JPanel implements IPropertyEditor, ActionLis
 	 */
 	private boolean getDataTypePreference()
 	{
-		boolean retPref = false;
-		
-		IPreferenceManager2 prefMan = CoreProductManager.instance().getCoreProduct().getPreferenceManager();
-		if (prefMan != null)
-		{
-			String value = prefMan.getPreferenceValue("PropertyEditor", "DisplayTypeFSN"); //$NON-NLS-1$ //$NON-NLS-2$
-			if (value.equals("PSK_YES")) //$NON-NLS-1$
-			{
-				retPref = true;
-			}
-		}
-		return retPref;
+		//kris richards - "DisplayTypeFSN" pref removed. Set to true
+            return true;
 	}
 
 	/**

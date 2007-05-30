@@ -229,8 +229,7 @@ public class PreferenceAccessor implements IPreferenceAccessor{
 	 *
 	 */
 	public String getDefaultEditorFilter() {
-		String value = getPreferenceValue("", "PropertyEditor", "DefaultFilter");
-		return value;
+            throw new UnsupportedOperationException ("This pref is no long valid.");
 	}
 
 	/**
@@ -242,21 +241,8 @@ public class PreferenceAccessor implements IPreferenceAccessor{
 	 *
 	 */
 	public int getDefaultEditorSelect() {
-		int val = 10;
-		String value = getPreferenceValue("", "PropertyEditor", "MaxSelect");
-
-		// cvc - CR 6293191
-		// if prefs are not read in properly, this value will be an 
-		//  empty string and throw a NumberFormatException, so need
-		//  to have a default in case the config default isn't available
-		if (value == null || value.equals(""))
-			value = "2";
-		
-		if (value.length() > 0)
-		{
-			val = Integer.valueOf(value).intValue();
-		}
-		return val;
+            //kris richards - MaxSelect pref expunged
+            throw new UnsupportedOperationException ("MaxSelect pref is no long valid.");
 	}
 
 	/**
