@@ -46,7 +46,7 @@ import org.netbeans.modules.form.palette.PaletteUtils;
 class DragOperation {
     private static final boolean DEBUG = false;
     private MenuEditLayer menuEditLayer;
-    private JMenuItem dragComponent;
+    private JComponent dragComponent;
     private boolean started = false;
     private JComponent targetComponent;
     private enum Op { PICK_AND_PLOP_FROM_PALETTE, INTER_MENU_DRAG, NO_MENUBAR };
@@ -63,18 +63,50 @@ class DragOperation {
         op = Op.INTER_MENU_DRAG;
         p("starting an inner menu drag for: " + item + " at " + pt);
         started = true;
-        dragComponent = new JMenuItem();
-        dragComponent.setText(item.getText());
-        dragComponent.setIcon(item.getIcon());
-        dragComponent.setAccelerator(item.getAccelerator());
-        dragComponent.setBorder(MenuEditLayer.DRAG_MENU_BORDER);
-        dragComponent.setMargin(new Insets(1,1,1,1));
-        dragComponent.setBorderPainted(true);
+        
+        
+        dragComponent = (JMenuItem) createDragFeedbackComponent(item);
         dragComponent.setSize(dragComponent.getPreferredSize());
         dragComponent.setLocation(pt);
         menuEditLayer.layers.add(dragComponent, JLayeredPane.DRAG_LAYER);
         menuEditLayer.repaint();
         payloadComponent = item;
+    }
+    
+    private JComponent createDragFeedbackComponent(JMenuItem item) {
+        // get the pre-created component for use as drag feedback
+        PaletteItem paletteItem = PaletteUtils.getSelectedItem();
+        if(paletteItem != null) {
+            MetaComponentCreator creator = menuEditLayer.formDesigner.getFormModel().getComponentCreator();
+            RADVisualComponent precreated = creator.precreateVisualComponent(
+                    paletteItem.getComponentClassSource());
+            if(precreated != null) {
+                p("precreated: " + precreated.getBeanClass());
+                Object comp = precreated.getBeanInstance();
+                if(comp instanceof JComponent) {
+                    if(comp instanceof JMenuItem) {
+                        ((JMenuItem)comp).setBorder(MenuEditLayer.DRAG_MENU_BORDER);
+                        ((JMenuItem)comp).setBorderPainted(true);
+                    }
+                    return (JComponent) comp;
+                }
+            }
+        }
+        
+        JMenuItem dragComponent = null;
+        dragComponent = new JMenuItem();
+        if(item != null) {
+            dragComponent.setText(item.getText());
+            dragComponent.setIcon(item.getIcon());
+            dragComponent.setAccelerator(item.getAccelerator());
+        } else {
+            dragComponent.setText("a new menu item");
+        }
+        dragComponent.setBorder(MenuEditLayer.DRAG_MENU_BORDER);
+        dragComponent.setMargin(new Insets(1,1,1,1));
+        dragComponent.setBorderPainted(true);
+        return dragComponent;
+
     }
     
     // start a pick and plop from the palette operation
@@ -91,11 +123,7 @@ class DragOperation {
         op = Op.PICK_AND_PLOP_FROM_PALETTE;
         p("starting drag op for : " + item.getComponentClassName() + " at " + pt);
         started = true;
-        dragComponent = new JMenuItem();
-        dragComponent.setText("a new menu item");
-        dragComponent.setBorder(MenuEditLayer.DRAG_MENU_BORDER);
-        dragComponent.setMargin(new Insets(1,1,1,1));
-        dragComponent.setBorderPainted(true);
+        dragComponent = createDragFeedbackComponent(null);
         dragComponent.setSize(dragComponent.getPreferredSize());
         dragComponent.setLocation(pt);
         menuEditLayer.layers.add(dragComponent, JLayeredPane.DRAG_LAYER);
