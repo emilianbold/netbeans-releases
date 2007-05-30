@@ -20,7 +20,6 @@
 
 package org.netbeans.modules.vmd.midp.screen.display.property;
 
-import java.awt.event.FocusEvent;
 import org.netbeans.modules.vmd.api.io.PopupUtil;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
@@ -29,10 +28,7 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.FocusListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 
 /**
  * @author David Kaspar
@@ -52,6 +48,7 @@ public class ScreenTextAreaPropertyEditor implements ScreenPropertyEditor {
         PropertyValue value = property.getRelatedComponent ().readProperty(propertyName);
         String string = MidpTypes.getString(value);
         editor.setText(string != null ? string : ""); // NOI18N
+        editor.setCaretPosition (editor.getDocument ().getLength ());
         return editor;
     }
 

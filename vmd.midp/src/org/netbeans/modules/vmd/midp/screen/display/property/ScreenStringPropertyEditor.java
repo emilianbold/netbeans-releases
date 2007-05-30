@@ -66,6 +66,7 @@ public class ScreenStringPropertyEditor implements ScreenPropertyEditor {
         PropertyValue value = relatedComponent.readProperty(propertyName);
         String string = MidpTypes.getString(value);
         editor.setText(string != null ? string : ""); // NOI18N
+        editor.selectAll ();
         
         return editor;
     }

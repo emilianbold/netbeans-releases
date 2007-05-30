@@ -57,6 +57,7 @@ public class ScreenChildStringPropertyEditor implements ScreenPropertyEditor {
         PropertyValue value = property.getRelatedComponent ().readProperty (propertyName);
         String string = MidpTypes.getString (value);
         editor.setText (string != null ? string : ""); // NOI18N
+        editor.selectAll ();
 
         return editor;
     }
