@@ -27,6 +27,9 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
+import org.netbeans.modules.xml.xam.ui.highlight.Highlight;
+import org.netbeans.modules.xml.xam.ui.highlight.HighlightGroup;
+import org.netbeans.modules.xml.xam.ui.highlight.HighlightManager;
 import org.netbeans.modules.bpel.editors.api.BpelEditorConstants;
 import org.netbeans.modules.bpel.editors.api.nodes.FactoryAccess;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
@@ -344,7 +347,7 @@ public class Util {
         }
     }
 
-    // TODO m
+    // TODO m vlv
     public static void goToDesign(final Component component) {
         if ( !(component instanceof BpelEntity)) {
             return;
