@@ -154,41 +154,32 @@ public class AddComponents_SWING extends JellyTestCase {
     /** Run test.
      */
     public void testFormFile() {
-        try {
-            getRef().print(
-            VisualDevelopmentUtil.readFromFile(
-            getDataDir().getAbsolutePath() + File.separatorChar + DATA_PROJECT_NAME +  File.separatorChar + "src" + File.separatorChar + PACKAGE_NAME + File.separatorChar + FILE_NAME + ".form")
-            );
-        } catch (Exception e) {
-            fail("Fail during create reffile: " + e.getMessage());
-        }
-        System.out.println("reffile: " + this.getName()+".ref");
-        try {
-            System.out.println("workdir: " + getWorkDir());
-        } catch (Exception e) {
-            System.out.println("e:" + e.getMessage() );
-        }
-        if (System.getProperty("java.version").startsWith("1.3")) {
-            compareReferenceFiles(this.getName()+".ref",this.getName()+"_13.pass",this.getName()+".diff");
-        } else
-            compareReferenceFiles();
+        compareFileByExt("form");
     }
     
     /** Run test.
      */
     public void testJavaFile() {
+        compareFileByExt("java");
+    }
+    
+    private void compareFileByExt(String fileExt) {
+        String refSourceFilePath = getDataDir().getAbsolutePath() + File.separatorChar
+                + DATA_PROJECT_NAME +  File.separatorChar + "src" + File.separatorChar
+                + PACKAGE_NAME + File.separatorChar + FILE_NAME + "." + fileExt;
+        log("refSourceFilePath:" + refSourceFilePath);
+        
         try {
-            getRef().print(
-            VisualDevelopmentUtil.readFromFile(
-            getDataDir().getAbsolutePath() + File.separatorChar + DATA_PROJECT_NAME +  File.separatorChar + "src" + File.separatorChar + PACKAGE_NAME + File.separatorChar + FILE_NAME + ".java")
-            );
+            getRef().print( VisualDevelopmentUtil.readFromFile(refSourceFilePath) );
         } catch (Exception e) {
-            fail("Fail during create reffile: " + e.getMessage());
+            fail("Fail during creating ref file: " + e.getMessage());
         }
-        if (System.getProperty("java.version").startsWith("1.3")) {
-            compareReferenceFiles(this.getName()+".ref",this.getName()+"_13.pass",this.getName()+".diff");
-        } else
-            compareReferenceFiles();
+        
+        String javaVersionPrefix = VisualDevelopmentUtil.JAVA_VERSION.substring(0,3);
+        String passFileName = this.getName() + "_" + javaVersionPrefix + ".pass";
+        log("passFileName: " + passFileName);
+        
+        compareReferenceFiles(this.getName()+".ref", passFileName, this.getName()+".diff");
     }
     
     public void openDataProject(){
@@ -215,7 +206,7 @@ public class AddComponents_SWING extends JellyTestCase {
         suite.addTest(new AddComponents_SWING("testAddAndCompile"));
         suite.addTest(new AddComponents_SWING("testFormFile"));
         suite.addTest(new AddComponents_SWING("testJavaFile"));
-        suite.addTest(new AddComponents_SWING("testCloseDataProject"));
+        //suite.addTest(new AddComponents_SWING("testCloseDataProject"));
         
         return suite;
     }

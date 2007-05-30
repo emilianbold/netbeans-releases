@@ -82,9 +82,13 @@ public class AddComponents_AWT extends JellyTestCase {
     public void testAddAndCompile() {
         String categoryName = "AWT";
         
+        System.out.println(">>>" + this.getWorkDirPath() + "<<<");
+        
         mainWindow = MainWindowOperator.getDefault();
         pto = new ProjectsTabOperator();
+        sleep(300);
         ProjectRootNode prn = pto.getProjectRootNode(DATA_PROJECT_NAME);
+        sleep(300);
         prn.select();
         formnode = new Node(prn, "Source Packages|" + PACKAGE_NAME + "|" + FILE_NAME);
         formnode.select();
@@ -110,6 +114,7 @@ public class AddComponents_AWT extends JellyTestCase {
         palette.expandAWT();
         String[] componentList = {"Label", "Button", "Text Field", "Text Area", "Checkbox", "Choice", "List", "Scrollbar", "Scroll Pane", "Panel", "Canvas", "Menu Bar", "Popup Menu"};
         for (int i=0;i < componentList.length; i++) {
+            log("Adding " + componentList[i]);
             componentNames.addElement(componentList[i]);
         }
         ComponentInspectorOperator cio = new ComponentInspectorOperator();
@@ -119,7 +124,9 @@ public class AddComponents_AWT extends JellyTestCase {
         // add all beans from Palette Category to form
         Action popupAddFromPaletteAction;
         for(int i = 0; i < componentNames.size(); i++){
-            popupAddFromPaletteAction = new Action(null, "Add From Palette|AWT|" + componentNames.elementAt(i).toString());
+            String itemPath = "Add From Palette|AWT|" + componentNames.elementAt(i).toString();
+            log("Running " + itemPath);
+            popupAddFromPaletteAction = new Action(null, itemPath);
             popupAddFromPaletteAction.perform(inspectorRootNode);
         }
         
@@ -129,54 +136,41 @@ public class AddComponents_AWT extends JellyTestCase {
         Action saveAction;
         saveAction = new Action("File|Save", null);
         saveAction.perform();
-        
     }
-    
     
     /** Run test.
      */
     public void testFormFile() {
-        try {
-            getRef().print(
-                    VisualDevelopmentUtil.readFromFile(
-                    getDataDir().getAbsolutePath() + File.separatorChar + DATA_PROJECT_NAME +  File.separatorChar + "src" + File.separatorChar + PACKAGE_NAME + File.separatorChar + FILE_NAME + ".form")
-                    );
-        } catch (Exception e) {
-            fail("Fail during create reffile: " + e.getMessage());
-        }
-        System.out.println("reffile: " + this.getName()+".ref");
-        try { 
-            System.out.println("workdir: " + getWorkDir());
-        } catch (Exception e) {
-            System.out.println("e:" + e.getMessage() );
-        }
-        if (System.getProperty("java.version").startsWith("1.3")) {
-            System.out.println("XXXX " + this.getName()+"_13.pass");
-            compareReferenceFiles(this.getName()+".ref",this.getName()+"_13.pass",this.getName()+".diff");
-        } else
-            compareReferenceFiles();
+        compareFileByExt("form");
     }
     
     /** Run test.
      */
     public void testJavaFile() {
-        try {
-            getRef().print(
-                    VisualDevelopmentUtil.readFromFile(
-                    getDataDir().getAbsolutePath() + File.separatorChar + DATA_PROJECT_NAME +  File.separatorChar + "src" + File.separatorChar + PACKAGE_NAME + File.separatorChar + FILE_NAME + ".java")
-                    );
-        } catch (Exception e) {
-            fail("Fail during create reffile: " + e.getMessage());
-        }
-        if (System.getProperty("java.version").startsWith("1.3")) {
-            compareReferenceFiles(this.getName()+".ref",this.getName()+"_13.pass",this.getName()+".diff");
-        } else
-            System.out.println("XXX " + this.getName()+".ref");
-        compareReferenceFiles();
+        compareFileByExt("java");
     }
+    
+    private void compareFileByExt(String fileExt) {
+        String refSourceFilePath = getDataDir().getAbsolutePath() + File.separatorChar
+                + DATA_PROJECT_NAME +  File.separatorChar + "src" + File.separatorChar
+                + PACKAGE_NAME + File.separatorChar + FILE_NAME + "." + fileExt;
+        log("refSourceFilePath:" + refSourceFilePath);
+        
+        try {
+            getRef().print( VisualDevelopmentUtil.readFromFile(refSourceFilePath) );
+        } catch (Exception e) {
+            fail("Fail during creating ref file: " + e.getMessage());
+        }
+        
+        String javaVersionPrefix = VisualDevelopmentUtil.JAVA_VERSION.substring(0,3);
+        String passFileName = this.getName() + "_" + javaVersionPrefix + ".pass";
+        log("passFileName: " + passFileName);
+        
+        compareReferenceFiles(this.getName()+".ref", passFileName, this.getName()+".diff");
+    }
+
     /** Run test.
      */
-    
     public void testCloseDataProject(){
         closeDataProject();
         //        EditorWindowOperator ewo = new EditorWindowOperator();
@@ -186,6 +180,7 @@ public class AddComponents_AWT extends JellyTestCase {
     public void closeDataProject(){
         ProjectSupport.closeProject(DATA_PROJECT_NAME);
         log("SampleProject closed.");
+        
     }
     
     
@@ -202,11 +197,11 @@ public class AddComponents_AWT extends JellyTestCase {
         suite.addTest(new AddComponents_AWT("testAddAndCompile"));
         suite.addTest(new AddComponents_AWT("testFormFile"));
         suite.addTest(new AddComponents_AWT("testJavaFile"));
-        suite.addTest(new AddComponents_AWT("testCloseDataProject"));
+        //suite.addTest(new AddComponents_AWT("testCloseDataProject"));
         return suite;
     }
+
     public static void main(String[] args) {
-        System.setProperty("nbjunit.workdir","c:/z");
         junit.textui.TestRunner.run(suite());
     }
 }

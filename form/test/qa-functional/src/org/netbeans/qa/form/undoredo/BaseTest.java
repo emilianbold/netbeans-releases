@@ -1,4 +1,4 @@
-        package org.netbeans.qa.form.undoredo;
+package org.netbeans.qa.form.undoredo;
 /*
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
@@ -49,8 +49,6 @@ public class BaseTest extends JellyTestCase {
     public ProjectsTabOperator pto;
     public Node formnode;
     
-    
-    
     ComponentInspectorOperator inspector;
     FormDesignerOperator formDesigner;
     ComponentPaletteOperator palette;
@@ -63,6 +61,7 @@ public class BaseTest extends JellyTestCase {
     public BaseTest(String testName) {
         super(testName);
     }
+
     /*
      * select tab in PropertySheet
      */
@@ -78,6 +77,7 @@ public class BaseTest extends JellyTestCase {
     public void selectCodeTab(PropertySheetOperator pso){
         selectTab(pso, 3);
     }
+
     //select tab in PropertySheet
     public void selectTab(PropertySheetOperator pso, int index){
         sleep(1000);
@@ -88,9 +88,7 @@ public class BaseTest extends JellyTestCase {
         tbo.push();
     }
     
-    
     public void testScenario() {
-        
         mainWindow = MainWindowOperator.getDefault();
         pto = new ProjectsTabOperator();
         ProjectRootNode prn = pto.getProjectRootNode(DATA_PROJECT_NAME);
@@ -117,20 +115,19 @@ public class BaseTest extends JellyTestCase {
         
         //init property sheet and select the proper "tab"
         PropertySheetOperator pso = cio.properties();
-        //        selectPropertiesTab(pso);
+
+        // selectPropertiesTab(pso);
         new Action(null,"Add From Palette|Swing Containers|Panel").performPopup(new Node(inspector.treeComponents(),"[JFrame]"));
-        //        selectPropertiesTab(pso);
+
+        // selectPropertiesTab(pso);
         new Action(null,"Add From Palette|Swing Containers|Panel").performPopup(new Node(inspector.treeComponents(),"[JFrame]"));
-        
-        
-        
         
         //change properties (color)
         inspector.selectComponent("[JFrame]|JPanel1 [JPanel]");
         selectPropertiesTab(pso);
         
-        //        new ColorProperty(pso, "background").setRGBValue(202,234,223);
-        
+        // new ColorProperty(pso, "background").setRGBValue(202,234,223);
+
         new ColorProperty(new PropertySheetOperator("jPanel1 [JPanel] - Properties"), "background").setColorValue(new Color(202,234,223));
         
         inspector.selectComponent("[JFrame]|JPanel2 [JPanel]");
@@ -144,11 +141,8 @@ public class BaseTest extends JellyTestCase {
         new Action(null,"Add From Palette|Swing Controls|Button").performPopup(new Node(inspector.treeComponents(),"[JFrame]|JPanel2 [JPanel]"));
         
         // cut-paste JButton1 from JPanel1 to JPanel2
-        
         new Action(null,"Cut").performPopup(new Node(inspector.treeComponents(),"[JFrame]|JPanel1 [JPanel]|jButton1 [JButton]"));
         new Action(null,"Paste").performPopup(new Node(inspector.treeComponents(),"[JFrame]|JPanel2 [JPanel]"));
-        
-        
         
         // change properties
         inspector.selectComponent("[JFrame]|JPanel2 [JPanel]|jButton1 [JButton]");
@@ -173,11 +167,7 @@ public class BaseTest extends JellyTestCase {
         sleep(2000);
         
         
-        //new Property(pso, "text").openEditor();
-        
-        
-    
-                
+//        new Property(pso, "text").openEditor();
 //        fceo.advanced();
 //        FormCustomEditorAdvancedOperator fceao = new FormCustomEditorAdvancedOperator();
 //        fceao.setGeneratePreInitializationCode(true);
@@ -185,7 +175,7 @@ public class BaseTest extends JellyTestCase {
 //        fceao.setGeneratePostInitializationCode(true);
 //        fceao.setPostInitializationCode("bbb");
 //        fceao.ok();
-        //fceo.ok();
+//        fceo.ok();
         
         // event
         selectEventsTab(pso);
@@ -193,9 +183,7 @@ public class BaseTest extends JellyTestCase {
         Property prop = new Property(pso, "actionPerformed");
         prop.setValue("myAction");
         
-        
-        //   selectPropertiesTab(pso);
-        
+        //selectPropertiesTab(pso);
         
         for (int i=0;i<1;i++) {
             // section undo testing
@@ -217,21 +205,17 @@ public class BaseTest extends JellyTestCase {
             // check if aaa, bbb are not in editor
             assertTrue("check i// assertTrun Editor 10a",!checkEditor("aaa,bbb"));
             
-            
             //now it's not possible to check, in editore, there is different code (no on the same row)
             assertTrue("check in Editor 9a",checkEditor("jPanel2.add(jButton1),jPanel2.add(jButton2)"));
             
             undo(1);
             //check if panel order was changed
             assertTrue("check in Editor 9b",!checkEditor("jPanel2.add(jButton2),jPanel2.add(jButton1)"));
-            
-            
             assertTrue("check in Editor 8b",checkEditor("<html>"));
             
             undo(2);
             
             assertTrue("check in Editor 8a",!checkEditor("<html>"));
-            
             
             //check if both buttons are in panel2
             assertTrue("check in Editor 7a",checkEditor("jPanel2.add(jButton1"));
@@ -260,8 +244,6 @@ public class BaseTest extends JellyTestCase {
             undo(1);
             //check background if is not set on panel1
             assertTrue("check in Editor 1a",!checkEditor("jPanel1.setBackground"));
-            
-            
             undo(1);
             
             //check if panel2 disappeared from jframe
@@ -270,10 +252,8 @@ public class BaseTest extends JellyTestCase {
             undo(1);
             //check if panel1 disappeared from jframe
             assertTrue("check in Editor 0b",!checkEditor("jPanel1"));
-            
-            
+
             //redo
-            
             redo(1);
             //check if panel1 is in jframe
             assertTrue("check in Editor R01a",checkEditor("jPanel1"));
@@ -320,23 +300,15 @@ public class BaseTest extends JellyTestCase {
             redo(1);
             //check if action "myAction" was added in editor
             assertTrue("check in Editor 11b",checkEditor("private void myAction"));
-            
-            
-            
-        
         }
         
-          undo(11);
-        
-        
-        
-        
-                Action saveAction;
-                saveAction = new Action("File|Save", null);
-                saveAction.perform();
+        undo(11);
+
+        Action saveAction;
+        saveAction = new Action("File|Save", null);
+        saveAction.perform();
         
     }
-    
     
     /** Run test.
      */
@@ -374,21 +346,13 @@ public class BaseTest extends JellyTestCase {
         ewo = new EditorWindowOperator();
         ewo.closeDiscard();
         
-        
         log("Test finished");
-        
-        
     }
+
     /** Run test.
      */
-    
-    
-    
     void undo(int n) {
         //first switch to FormEditor tab
-/*OpenAction openAction = new OpenAction();
-openAction.perform(formnode);
- */
         MainWindowOperator mainWindow = MainWindowOperator.getDefault();
         
         OpenAction openAction = new OpenAction();
@@ -420,7 +384,6 @@ openAction.perform(formnode);
     void sleep(int ms) {
         try {Thread.sleep(ms);} catch (Exception e) {}
     }
-    
     
     boolean checkEditor(String regexp) {
         /*editor = ewo.getEditor("clear_JFrame");
@@ -458,6 +421,7 @@ openAction.perform(formnode);
         System.out.println("Result: " + result);
         return result;
     }
+
     /** Test could be executed internaly in Forte without Tonga
      * @param args arguments from command line
      */
@@ -465,6 +429,7 @@ openAction.perform(formnode);
         System.setProperty("nbjunit.workdir","c:/z");
         junit.textui.TestRunner.run(suite());
     }
+
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new BaseTest("testScenario"));
@@ -472,10 +437,5 @@ openAction.perform(formnode);
         //suite.addTest(new BaseTest("testJavaFile"));
         return suite;
     }
-   /* public static junit.framework.Test suite() {
-        return new NbTestSuite(BaseTest.class);
-    }
-    */
-    
 }
 

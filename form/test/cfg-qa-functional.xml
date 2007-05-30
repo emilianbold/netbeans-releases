@@ -20,12 +20,12 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="Form config">
 
-<!-- Jiri Vagner -->
-   <testbag testattribs="issues" executor="ide" name="testbag_Fail">
+   <testbag testattribs="issues" executor="ide" name="testbag_issues">
         <testset dir="qa-functional/src">
             <patternset>               
                 <include name="org/netbeans/qa/form/visualDevelopment/MenuAndPopupMenuTest.class"/>
                 <include name="org/netbeans/qa/form/issues/*.class"/>
+                <include name="org/netbeans/qa/form/undoredo/BaseTest.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -38,8 +38,15 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
+   <testbag testattribs="validation, jv" executor="ide" name="testbag_binding">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/qa/form/binding/SimpleBeansBinding.class"/>
+            </patternset>
+        </testset>
+    </testbag>
 
-   <testbag testattribs="validation, full" executor="ide" name="testbag_Beans">
+   <testbag testattribs="validation" executor="ide" name="testbag_beans">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/beans/*.*"/>
@@ -47,7 +54,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-   <testbag testattribs="validation, full,jv" executor="ide" name="testbag_Options">
+   <testbag testattribs="validation" executor="ide" name="testbag_options">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/options/*.*"/>
@@ -55,39 +62,34 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-   <testbag testattribs="jv" executor="ide" name="testbag_visual_development">
+   <testbag testattribs="validation" executor="ide" name="testbag_visualdevelopment">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/visualDevelopment/FormGenerateCodeTest.class"/>
-                <include name="org/netbeans/qa/form/visualDevelopment/MenuAndPopupMenuTest.class"/>
+<!-- issues <include name="org/netbeans/qa/form/visualDevelopment/MenuAndPopupMenuTest.class"/> -->
+                <include name="org/netbeans/qa/form/visualDevelopment/AddComponents_AWT.class"/>
+                <include name="org/netbeans/qa/form/visualDevelopment/AddComponents_SWING.class"/>
             </patternset>
         </testset>
     </testbag>
 
-<!--  Jiri Vagner  -->
-
-<!-- Marek G. -->
-   <testbag testattribs="validation, full" executor="ide" name="testbag_OpenForms">
+   <testbag testattribs="validation" executor="ide" name="testbag_openforms">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/OpenForm.class"/>
             </patternset>
         </testset>
     </testbag>
-<!--  Marek G.  -->
 
-<!-- Marek G. -->
-   <testbag testattribs="validation, full" executor="ide" name="testbag_visual_development">
+    <testbag testattribs="validation" executor="ide" name="testbag_undoredo">
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="org/netbeans/qa/form/visualDevelopment/*.*"/>                
+<!--                <include name="org/netbeans/qa/form/undoredo/BaseTest.class"/> -->
             </patternset>
         </testset>
     </testbag>
-<!-- Marek G. -->    
 
-<!-- Jana Maleckova -->
-   <testbag testattribs="validation, full" executor="ide" name="testbag_openTempl_defaultPack">
+   <testbag testattribs="validation" executor="ide" name="testbag_opentempl_defaultpack">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/OpenTempl_defaultPack.*"/>                
@@ -95,76 +97,15 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="validation" executor="ide" name="testbag_editor_BasicTest">
+    <testbag testattribs="validation" executor="ide" name="testbag_editor_basictest">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/test/editor/formatting/BasicTest.*"/>                
             </patternset>
         </testset>
     </testbag>
-<!-- Jana Maleckova -->   
 
-<!-- no tests
-    <testbag testattribs="validation, full" executor="ide" name="testbag_compatibility">
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="org/netbeans/qa/form/compatibility/*.*"/>		
-            </patternset>
-        </testset>
-    </testbag>
--->    
-
-<!-- no tests
-    <testbag testattribs="validation, full" executor="ide" name="testbag_palette">
-        <testset dir="qa-functional/src">
-            <patternset>
-		    <include name="org/netbeans/qa/form/palette/PaletteTests.class"/>
-            </patternset>
-        </testset>
-    </testbag>
--->
-
-<!-- dont work 
-    <testbag testattribs="validation, full" executor="ide" name="testbag_undo_redo">
-        <testset dir="qa-functional/src">
-            <patternset>
-		    <include name="org/netbeans/qa/form/undoredo/BaseTest.class"/> 
-            </patternset>
-        </testset>
-    </testbag>
- -->    
-    
-    <testbag testattribs="validation, full" executor="ide" name="testbag_palette">
-        <testset dir="qa-functional/src">
-            <patternset>
-                <!--                                
-                <include name="org/netbeans/qa/form/palette/AddBeans.class"/>                
-                <include name="org/netbeans/qa/form/visualDevelopment/*.*"/>			                
-                <include name="org/netbeans/qa/form/palette/SwitchCategories.class"/>
-                -->
-                <include name="org/netbeans/qa/form/undoredo/BaseTest.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-
-    <testbag testattribs="undo" executor="ide" name="testbag_palette">
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="org/netbeans/qa/form/undoredo/BaseTest.class"/>
-                <include name="undoredo/StressTest.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="stresstest" executor="ide" name="testbag_palette">
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="undoredo/StressTest.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-
-    <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true" />
+    <executor name="code" antfile="build-qa-functional.xml" target="runcodetest"/>
+    <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
     <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true" />
 </mconfig>
