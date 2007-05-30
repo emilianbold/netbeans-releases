@@ -20,6 +20,7 @@ package org.netbeans.modules.versioning.spi;
 
 import org.netbeans.modules.versioning.Utils;
 import org.netbeans.modules.versioning.FlatFolder;
+import org.netbeans.modules.versioning.VersioningManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ProjectUtils;
@@ -200,10 +201,18 @@ public final class VCSContext {
     private static void addProjectFiles(Collection<File> rootFiles, Collection<File> rootFilesExclusions, Project project) {
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+        List<File> unversionedFiles = new ArrayList<File>(sourceGroups.length);
+        Set<VersioningSystem> projectOwners = new HashSet<VersioningSystem>(2);
         for (int j = 0; j < sourceGroups.length; j++) {
             SourceGroup sourceGroup = sourceGroups[j];
             FileObject srcRootFo = sourceGroup.getRootFolder();
             File rootFile = FileUtil.toFile(srcRootFo);
+            VersioningSystem owner = VersioningManager.getInstance().getOwner(rootFile);
+            if (owner == null) {
+                unversionedFiles.add(rootFile);
+            } else {
+                projectOwners.add(owner);
+            }
             rootFiles.add(rootFile);
             FileObject [] rootChildren = srcRootFo.getChildren();
             for (int i = 0; i < rootChildren.length; i++) {
@@ -214,6 +223,9 @@ public final class VCSContext {
                     rootFilesExclusions.add(child);
                 }
             }
+        }
+        if (projectOwners.size() == 1 && projectOwners.iterator().next() != null) {
+            rootFiles.removeAll(unversionedFiles);
         }
     }
     
