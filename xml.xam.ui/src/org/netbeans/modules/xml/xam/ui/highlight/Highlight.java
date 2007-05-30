@@ -26,7 +26,7 @@ import org.netbeans.modules.xml.xam.Component;
  *
  * @author Nathan Fiedler
  */
-public abstract class Highlight {
+public class Highlight {
     /** The type for a search result highlight. */
     public static final String SEARCH_RESULT = "searchResult";
     /** The type for the parent of a search result highlight. */
