@@ -58,11 +58,11 @@ import org.openidex.search.SearchType;
  * @author  Marian Petras
  * @see SearchTypePanel
  */
-final class SearchPanel extends JPanel
-                        implements PropertyChangeListener,
-                                   FocusListener,
-                                   ChangeListener,
-                                   ActionListener {
+public final class SearchPanel extends JPanel
+                               implements PropertyChangeListener,
+                                          FocusListener,
+                                          ChangeListener,
+                                          ActionListener {
     
     /** Return status code - returned if Cancel button has been pressed. */
     public static final int RET_CANCEL = 0;
