@@ -1236,13 +1236,14 @@ public class UnitTab extends javax.swing.JPanel {
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
                                 cleanUp();
-                                setWaitingState(false);
                                 UnitCategoryTableModel.restoreState(model.getUnitData(), state, model.isMarkedAsDefault());
                                 LocallyDownloadedTableModel downloadedTableModel = ((LocallyDownloadedTableModel)model);
                                 List<UpdateUnit> installed = downloadedTableModel.getAlreadyInstalled();
                                 if (!installed.isEmpty())  {
                                     showMessage(installed);
                                 }
+                                refreshState();
+                                setWaitingState(false);                                
                             }
                         });
                     }
@@ -1312,6 +1313,7 @@ public class UnitTab extends javax.swing.JPanel {
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
                                 cleanUp();
+                                refreshState();
                                 setWaitingState(false);
                             }
                         });
@@ -1333,6 +1335,11 @@ public class UnitTab extends javax.swing.JPanel {
         
         @Override
         protected boolean isVisible (Unit u) {
+            return false;
+        }
+
+        @Override
+        public boolean isSynchronous() {
             return false;
         }        
     }        
