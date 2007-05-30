@@ -125,7 +125,8 @@ public class InstalledTableModel extends UnitCategoryTableModel {
     }
 
     public int getColumnCount() {
-        return 4;
+        //TODO: get rid of Active column in InstallTab for default view
+        return (true/*Utilities.modulesOnly()*/) ? 4 : 3;
     }
     
     public Class getColumnClass(int c) {
