@@ -30,6 +30,7 @@ import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import org.openide.util.Utilities;
 
 
 /**
@@ -251,8 +252,11 @@ abstract class CompletionLayoutPopup {
         showRetainedPreferredSize = newPrefSize.equals(origPrefSize);
 
         PopupFactory factory = PopupFactory.getSharedInstance();
-        popup = factory.getPopup(layout.getEditorComponent(), contComp,
-                popupBounds.x, popupBounds.y);
+        // Lightweight completion popups don't work well on the Mac - trying
+        // to click on its scrollbars etc. will cause the window to be hidden,
+        // so force a heavyweight parent by passing in owner==null. (#96717)
+        JTextComponent owner = Utilities.isMac() ? null : layout.getEditorComponent();
+        popup = factory.getPopup(owner, contComp, popupBounds.x, popupBounds.y);
         popup.show();
 
         this.popupBounds = popupBounds;
