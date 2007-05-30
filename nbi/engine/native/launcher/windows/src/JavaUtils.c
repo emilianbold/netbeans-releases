@@ -263,7 +263,7 @@ void getJavaProperties(WCHAR * location, LauncherProperties * props, JavaPropert
         HANDLE hWrite;
         CreatePipe(&hRead, &hWrite, NULL, 0);
         // Start the child process.        
-        executeCommand(props, command, NULL, JAVA_VERIFICATION_PROCESS_TIMEOUT, hWrite, hWrite, JAVA_VERIFICATION_PROCESS_PRIORITY);
+        executeCommand(props, command, NULL, JAVA_VERIFICATION_PROCESS_TIMEOUT, hWrite, INVALID_HANDLE_VALUE, JAVA_VERIFICATION_PROCESS_PRIORITY);
         if(props->status!= ERROR_ON_EXECUTE_PROCESS && props->status!= ERROR_PROCESS_TIMEOUT) {
             char * output = readHandle(hRead);
             writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "           output :\n", 0);
