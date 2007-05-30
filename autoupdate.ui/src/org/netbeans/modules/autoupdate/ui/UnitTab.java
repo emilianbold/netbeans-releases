@@ -84,8 +84,8 @@ public class UnitTab extends javax.swing.JPanel {
     private String filter = "";
     private PluginManagerUI manager = null;
     private PopupActionSupport popupActionsSupport;
-    private RowTabAction enableAction;
-    private RowTabAction disableAction;
+    private RowTabAction activateAction;
+    private RowTabAction deactivateAction;
     private TabAction refreshAction;
     
     private RowTabAction removeLocallyDownloaded = new RemoveLocallyDownloadedAction ();
@@ -207,33 +207,33 @@ public class UnitTab extends javax.swing.JPanel {
         case INSTALLED :
             setTabActionDescription ("UnitTab_lTabActionDescription_Text_INSTALLED");
             {
-                RowTabAction selectCategoryAction = new SelectCategoryAction ();
-                RowTabAction deselectCategoryAction = new DeselectCategoryAction ();
-                RowTabAction selectAllAction = new SelectAllAction ();
-                RowTabAction deselectAllAction = new DeselectAllAction ();
-                RowTabAction enableCategoryAction = new EnableCategoryAction ();
-                RowTabAction disableCategoryAction = new DisableCategoryAction ();
+                RowTabAction checkCategoryAction = new CheckCategoryAction ();
+                RowTabAction uncheckCategoryAction = new UncheckCategoryAction ();
+                RowTabAction checkAllAction = new CheckAllAction ();
+                RowTabAction uncheckAllAction = new UncheckAllAction ();
+                RowTabAction activateCategoryAction = new ActivateCategoryAction ();
+                RowTabAction deactivateCategoryAction = new DeactivateCategoryAction ();
                 
-                enableAction = new EnableAction ();
-                disableAction = new DisableAction ();
+                activateAction = new ActivateAction ();
+                deactivateAction = new DeactivateAction ();
                 
                 forPopup = new TabAction[] {
-                    enableAction, disableAction,enableCategoryAction,disableCategoryAction,
-                    selectCategoryAction, deselectCategoryAction,
-                    selectAllAction, deselectAllAction
+                    activateAction, deactivateAction,activateCategoryAction,deactivateCategoryAction,
+                    checkCategoryAction, uncheckCategoryAction,
+                    checkAllAction, uncheckAllAction
                 };
             }
             bTabAction.setAction (new UninstallAction ());
-            addToToolbar (refreshAction = new RefreshAction ());
+            addToToolbar (refreshAction = new ReloadAction ());
             table.setEnableRenderer (new EnableRenderer ());
             break;
         case UPDATE :
             setTabActionDescription ("UnitTab_lTabActionDescription_Text_UPDATE");
             {
-                RowTabAction selectCategoryAction = new SelectCategoryAction ();
-                RowTabAction deselectCategoryAction = new DeselectCategoryAction ();
-                RowTabAction selectAllAction = new SelectAllAction ();
-                RowTabAction deselectAllAction = new DeselectAllAction ();
+                RowTabAction selectCategoryAction = new CheckCategoryAction ();
+                RowTabAction deselectCategoryAction = new UncheckCategoryAction ();
+                RowTabAction selectAllAction = new CheckAllAction ();
+                RowTabAction deselectAllAction = new UncheckAllAction ();
                 
                 forPopup = new TabAction[] {
                     selectCategoryAction, deselectCategoryAction,
@@ -241,15 +241,15 @@ public class UnitTab extends javax.swing.JPanel {
                 };
             }
             bTabAction.setAction (new UpdateAction ());
-            addToToolbar (refreshAction = new RefreshAction ());
+            addToToolbar (refreshAction = new ReloadAction ());
             break;
         case AVAILABLE :
             setTabActionDescription ("UnitTab_lTabActionDescription_Text_AVAILABLE");
             {
-                RowTabAction selectCategoryAction = new SelectCategoryAction ();
-                RowTabAction deselectCategoryAction = new DeselectCategoryAction ();
-                RowTabAction selectAllAction = new SelectAllAction ();
-                RowTabAction deselectAllAction = new DeselectAllAction ();
+                RowTabAction selectCategoryAction = new CheckCategoryAction ();
+                RowTabAction deselectCategoryAction = new UncheckCategoryAction ();
+                RowTabAction selectAllAction = new CheckAllAction ();
+                RowTabAction deselectAllAction = new UncheckAllAction ();
                 
                 forPopup = new TabAction[] {
                     selectCategoryAction, deselectCategoryAction,
@@ -257,7 +257,7 @@ public class UnitTab extends javax.swing.JPanel {
                 };
             }
             bTabAction.setAction (new AvailableAction ());
-            addToToolbar (refreshAction = new RefreshAction ());
+            addToToolbar (refreshAction = new ReloadAction ());
             break;
         case LOCAL :
             setTabActionDescription ("UnitTab_lTabActionDescription_Text_LOCAL");
@@ -465,7 +465,7 @@ public class UnitTab extends javax.swing.JPanel {
         return (model instanceof LocallyDownloadedTableModel) ? ((LocallyDownloadedTableModel)model).getLocalDownloadSupport () : null;
     }
     
-    private Task refresh (final boolean force) {
+    private Task reloadTask (final boolean force) {
         final Runnable checkUpdates = new Runnable (){
             public void run () {
                 manager.initTask.waitFinished ();                
@@ -573,13 +573,13 @@ public class UnitTab extends javax.swing.JPanel {
         private void maybeShowPopup (MouseEvent e) {
             if (e.isPopupTrigger ()) {
                 showPopup(e.getPoint(), e.getComponent());
-            } else if (org.openide.awt.MouseUtils.isDoubleClick (e) && model.getType ().equals (UnitCategoryTableModel.Type.INSTALLED)) {
-                if (enableAction.isEnabled ()) {
-                    enableAction.performAction ();
-                } else if (disableAction.isEnabled ()) {
-                    disableAction.performAction ();
+            } /*else if (org.openide.awt.MouseUtils.isDoubleClick (e) && model.getType ().equals (UnitCategoryTableModel.Type.INSTALLED)) {
+                if (activateAction.isEnabled ()) {
+                    activateAction.performAction ();
+                } else if (deactivateAction.isEnabled ()) {
+                    deactivateAction.performAction ();
                 }
-            }
+            }*/
         }
     }
     
@@ -639,7 +639,11 @@ public class UnitTab extends javax.swing.JPanel {
             return name;
         }
         
-        protected String getActionCategory () {
+        public String getActionCategory () {                    
+            return (Utilities.modulesOnly ()) ? getActionCategoryImpl() : "";//NOI18N
+        }
+        
+        protected String getActionCategoryImpl () {            
             return actionCategory;
         }
         
@@ -772,7 +776,7 @@ public class UnitTab extends javax.swing.JPanel {
             int row = UnitTab.this.getSelectedRow();
             if(row > 0) { 
                 Point e = table.getCellRect(row, 1, enabled).getLocation();
-                showPopup(e, SwingUtilities.getWindowAncestor(UnitTab.this));
+                showPopup(e, table);
             }
         }
     }
@@ -867,7 +871,7 @@ public class UnitTab extends javax.swing.JPanel {
                         }
                     }
                     model.setData (categories);
-                    refresh (false);
+                    reloadTask (false);
                 } else {
                     if (!wizardFinished) {
                         UnitCategoryTableModel.restoreState(model.getUnitData(), state, model.isMarkedAsDefault());
@@ -880,12 +884,12 @@ public class UnitTab extends javax.swing.JPanel {
         }
     }
     
-    private class SelectCategoryAction extends RowTabAction {
-        protected SelectCategoryAction (String nameKey,KeyStroke stroke, String actionCategoryKey) {
+    private class CheckCategoryAction extends RowTabAction {
+        protected CheckCategoryAction (String nameKey,KeyStroke stroke, String actionCategoryKey) {
             super (nameKey, stroke, actionCategoryKey);
         }
-        public SelectCategoryAction () {
-            super ("UnitTab_SelectCategoryAction", KeyStroke.getKeyStroke (KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK), "Select");
+        public CheckCategoryAction () {
+            super ("UnitTab_CheckCategoryAction", /*KeyStroke.getKeyStroke (KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK),*/ "Check");
         }
         protected boolean isEnabled (Unit u) {
             boolean retval = false;
@@ -902,7 +906,7 @@ public class UnitTab extends javax.swing.JPanel {
             return retval;
         }
         protected String getContextName (Unit u) {
-            return getActionName () + " " + u.getCategoryName ();
+            return getActionName () + " \"" + u.getCategoryName ()+"\"";//NOI18N
         }
         public void performerImpl (Unit u) {
             String category = u.getCategoryName ();
@@ -929,9 +933,9 @@ public class UnitTab extends javax.swing.JPanel {
         }
     }
     
-    private class EnableAction extends RowTabAction {
-        public EnableAction () {
-            super ("UnitTab_EnableAction", KeyStroke.getKeyStroke (KeyEvent.VK_E, KeyEvent.CTRL_DOWN_MASK), "EnableDisable");
+    private class ActivateAction extends RowTabAction {
+        public ActivateAction () {
+            super ("UnitTab_ActivateAction", /*KeyStroke.getKeyStroke (KeyEvent.VK_E, KeyEvent.CTRL_DOWN_MASK),*/ "EnableDisable");
         }
         
         protected boolean isEnabled (Unit u) {
@@ -945,9 +949,9 @@ public class UnitTab extends javax.swing.JPanel {
             return  retval;
         }
         protected String getContextName (Unit u) {
-            if ((u != null) && (u instanceof Unit.Installed)) {
+            /*if ((u != null) && (u instanceof Unit.Installed)) {
                 return getActionName ()+ " " + u.getDisplayName ();
-            }
+            }*/
             return getActionName ();
         }
         public void performerImpl (Unit u) {
@@ -964,13 +968,13 @@ public class UnitTab extends javax.swing.JPanel {
         
         @Override
         protected boolean isVisible (Unit u) {
-            return  ((u != null) && (u instanceof Unit.Installed));
+            return  isEnabled();
         }
     }
     
-    private class EnableCategoryAction extends RowTabAction {
-        public EnableCategoryAction () {
-            super ("UnitTab_EnableCategoryAction", KeyStroke.getKeyStroke (KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK), "EnableDisableCategory");
+    private class ActivateCategoryAction extends RowTabAction {
+        public ActivateCategoryAction () {
+            super ("UnitTab_ActivateCategoryAction", /*KeyStroke.getKeyStroke (KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK),*/ "EnableDisable");
         }
         
         protected boolean isEnabled (Unit uu) {
@@ -993,7 +997,7 @@ public class UnitTab extends javax.swing.JPanel {
         }
         protected String getContextName (Unit u) {
             if ((u != null) && (u instanceof Unit.Installed)) {
-                return getActionName ()+ " " + u.getCategoryName ();
+                return getActionName ()+ " \"" + u.getCategoryName () + "\"";
             }
             return getActionName ();
         }
@@ -1023,16 +1027,16 @@ public class UnitTab extends javax.swing.JPanel {
         @Override
         protected boolean isVisible (Unit u) {
             if (Utilities.modulesOnly ()) {
-                return  ((u != null) && (u instanceof Unit.Installed));
+                return  isEnabled();
             }
             return false;
         }
     }
     
     
-    private class DisableAction extends RowTabAction {
-        public DisableAction () {
-            super ("UnitTab_DisableAction", KeyStroke.getKeyStroke (KeyEvent.VK_D, KeyEvent.CTRL_DOWN_MASK), "EnableDisable");
+    private class DeactivateAction extends RowTabAction {
+        public DeactivateAction () {
+            super ("UnitTab_DeactivateAction", /*KeyStroke.getKeyStroke (KeyEvent.VK_D, KeyEvent.CTRL_DOWN_MASK),*/ "EnableDisable");
         }
         
         protected boolean isEnabled (Unit u) {
@@ -1046,9 +1050,9 @@ public class UnitTab extends javax.swing.JPanel {
             return  retval;
         }
         protected String getContextName (Unit u) {
-            if ((u != null) && (u instanceof Unit.Installed)) {
+            /*if ((u != null) && (u instanceof Unit.Installed)) {
                 return getActionName ()+ " " + u.getDisplayName ();
-            }
+            }*/
             return getActionName ();
         }
         public void performerImpl (Unit u) {
@@ -1065,13 +1069,13 @@ public class UnitTab extends javax.swing.JPanel {
         
         @Override
         protected boolean isVisible (Unit u) {
-            return  ((u != null) && (u instanceof Unit.Installed));
+            return  isEnabled();
         }
     }
     
-    private class DisableCategoryAction extends RowTabAction {
-        public DisableCategoryAction () {
-            super ("UnitTab_DisableCategoryAction", KeyStroke.getKeyStroke (KeyEvent.VK_G, KeyEvent.CTRL_DOWN_MASK), "EnableDisableCategory");
+    private class DeactivateCategoryAction extends RowTabAction {
+        public DeactivateCategoryAction () {
+            super ("UnitTab_DeactivateCategoryAction", /*KeyStroke.getKeyStroke (KeyEvent.VK_G, KeyEvent.CTRL_DOWN_MASK),*/ "EnableDisable");
         }
         
         protected boolean isEnabled (Unit uu) {
@@ -1094,7 +1098,7 @@ public class UnitTab extends javax.swing.JPanel {
         }
         protected String getContextName (Unit u) {
             if ((u != null) && (u instanceof Unit.Installed)) {
-                return getActionName ()+ " " + u.getCategoryName ();
+                return getActionName ()+ " \"" + u.getCategoryName () + "\"";//NOI18N
             }
             return getActionName ();
         }
@@ -1123,15 +1127,15 @@ public class UnitTab extends javax.swing.JPanel {
         @Override
         protected boolean isVisible (Unit u) {
             if (Utilities.modulesOnly ()) {
-                return  ((u != null) && (u instanceof Unit.Installed));
+                return  isEnabled();
             }
             return false;
         }
     }
     
-    private class DeselectCategoryAction extends SelectCategoryAction {
-        public DeselectCategoryAction () {
-            super ("UnitTab_DeselectCategoryAction", KeyStroke.getKeyStroke (KeyEvent.VK_D, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK), "Deselect");
+    private class UncheckCategoryAction extends RowTabAction {
+        public UncheckCategoryAction () {
+            super ("UnitTab_UncheckCategoryAction", /*KeyStroke.getKeyStroke (KeyEvent.VK_D, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK),*/ "Uncheck");
         }
         @Override
         public void postRefresh() {
@@ -1176,11 +1180,15 @@ public class UnitTab extends javax.swing.JPanel {
                 return super.isVisible (u);
             }
             return false;
-        }        
+        }
+
+        protected String getContextName(Unit u) {
+            return getActionName() + " \"" + u.getCategoryName()+"\""; //NOI18N           
+        }
     }
-    private class SelectAllAction extends RowTabAction {
-        public SelectAllAction () {
-            super ("UnitTab_SelectAllAction", KeyStroke.getKeyStroke (KeyEvent.VK_A, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK),"Select");
+    private class CheckAllAction extends RowTabAction {
+        public CheckAllAction () {
+            super ("UnitTab_CheckAllAction", /*KeyStroke.getKeyStroke (KeyEvent.VK_A, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK),*/"Check");
         }
         
         public void performerImpl (Unit uu) {
@@ -1205,9 +1213,9 @@ public class UnitTab extends javax.swing.JPanel {
         }        
     }
     
-    private class DeselectAllAction extends RowTabAction {
-        public DeselectAllAction () {
-            super ("UnitTab_DeselectAllAction", KeyStroke.getKeyStroke (KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK), "Deselect");
+    private class UncheckAllAction extends RowTabAction {
+        public UncheckAllAction () {
+            super ("UnitTab_UncheckAllAction", /*KeyStroke.getKeyStroke (KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK), */"Uncheck");
         }
         public void performerImpl (Unit uu) {
             int count = model.getRowCount ();
@@ -1232,9 +1240,9 @@ public class UnitTab extends javax.swing.JPanel {
         }        
     }
     
-    private class RefreshAction extends TabAction {
-        Task refreshTask = null;
-        public RefreshAction () {
+    private class ReloadAction extends TabAction {
+        Task reloadTask = null;
+        public ReloadAction () {
             super ("UnitTab_RefreshAction", KeyStroke.getKeyStroke (KeyEvent.VK_R, KeyEvent.CTRL_DOWN_MASK), null);
             String picture = "newUpdates.gif";//NOI18N
             String tooltip = NbBundle.getMessage (UnitTab.class, "UnitTab_Tooltip_RefreshAction");//NOI18N
@@ -1249,7 +1257,7 @@ public class UnitTab extends javax.swing.JPanel {
         
         public void performerImpl () {
             setEnabled (false);
-            refreshTask = refresh (true);
+            reloadTask = reloadTask (true);
         }
 
         @Override
@@ -1404,14 +1412,14 @@ public class UnitTab extends javax.swing.JPanel {
                 Unit u = model.getUnitAtRow (row);
                 Boolean state = (Boolean)value;
                 if (state.booleanValue ()) {
-                    if (disableAction.isEnabled (u)) {
+                    if (deactivateAction.isEnabled (u)) {
                         renderComponent.setIcon (new javax.swing.ImageIcon (getClass ().getResource ("/org/netbeans/modules/autoupdate/ui/resources/active.png"))); // NOI18N
                     } else {
                         renderComponent.setIcon (new javax.swing.ImageIcon (getClass ().getResource ("/org/netbeans/modules/autoupdate/ui/resources/active2.png"))); // NOI18N
                     }
                     
                 } else {
-                    if (enableAction.isEnabled (u)) {
+                    if (activateAction.isEnabled (u)) {
                         renderComponent.setIcon (new javax.swing.ImageIcon (getClass ().getResource ("/org/netbeans/modules/autoupdate/ui/resources/inactive.png"))); // NOI18N
                     } else {
                         renderComponent.setIcon (new javax.swing.ImageIcon (getClass ().getResource ("/org/netbeans/modules/autoupdate/ui/resources/inactive2.png"))); // NOI18N

@@ -55,14 +55,14 @@ public class InstalledTableModel extends UnitCategoryTableModel {
         setData(Utilities.makeInstalledCategories (units));
     }
 
-    public String getToolTipText(int row, int col) { 
+    /*public String getToolTipText(int row, int col) { 
         Unit.Installed u = (Unit.Installed)getUnitAtRow(row);
         boolean isEnabled = u.getRelevantElement ().isEnabled ();
         OperationContainer<OperationSupport> container = isEnabled ? Containers.forDisable() : Containers.forEnable();
         return (col > 0 && u != null && u.isOperationAllowed(u.updateUnit, u.getRelevantElement(), container)) ? 
             NbBundle.getMessage(UnitCategoryTableModel.class, "UnitTab_TooltipOthers_Text_INSTALLED", (String)getValueAt(row, 1)) //NOI18N
                 : super.getToolTipText(row, col);
-    }
+    }*/
     
     @Override
     public void setValueAt (Object anValue, int row, int col) {

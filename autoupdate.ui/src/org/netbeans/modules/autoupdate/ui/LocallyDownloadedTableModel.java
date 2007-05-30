@@ -156,7 +156,7 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
     }
     
     public int getColumnCount() {
-        return 3;
+        return 2;
     }
 
     public Class getColumnClass(int c) {
