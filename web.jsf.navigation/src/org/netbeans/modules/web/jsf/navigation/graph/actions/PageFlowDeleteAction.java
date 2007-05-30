@@ -12,12 +12,10 @@ package org.netbeans.modules.web.jsf.navigation.graph.actions;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.web.jsf.navigation.NavigationCaseEdge;
@@ -34,9 +32,9 @@ public class PageFlowDeleteAction extends AbstractAction{
     private PageFlowScene scene;
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowDeleteAction");
     //    private final static Logger LOG = Logger.getLogger("org.netbeans.modules.web.jsf.navigation.graph.actions.PageFlowDeleteAction");
-//    static {
-//        LOG.setLevel(Level.FINEST);
-//    }
+    //    static {
+    //        LOG.setLevel(Level.FINEST);
+    //    }
     
     
     /** Creates a new instance of PageFlowDeleteAction
@@ -75,6 +73,7 @@ public class PageFlowDeleteAction extends AbstractAction{
                 "Nodes: " + scene.getNodes() + "\n" +
                 "Edges: " + scene.getEdges()+ "\n" +
                 "Pins: " + scene.getPins());
+        
         /*When deleteing only one item. */
         if (selectedObjects.size() == 1){
             Object myObj = selectedObjects.toArray()[0];
@@ -85,19 +84,30 @@ public class PageFlowDeleteAction extends AbstractAction{
             }
         }
         
+        Set<NavigationCaseEdge> selectedEdges = new HashSet<NavigationCaseEdge>();
+        Set<PageFlowSceneElement> selectedNonEdges = new HashSet<PageFlowSceneElement>();
+        
         /* When deleting multiple objects, make sure delete all the links first. */
+        Set<Object> nonEdgeSelectedObjects = new HashSet<Object>();
         for( Object selectedObj : selectedObjects ){
-            if( scene.isEdge(selectedObj) ){
-                assert !scene.isPin(selectedObj);
-                deleteNodesList.add((PageFlowSceneElement)selectedObj);
+            if( selectedObj instanceof PageFlowSceneElement ){
+                if( scene.isEdge(selectedObj) ){
+                    assert !scene.isPin(selectedObj);                    
+                    selectedEdges.add((NavigationCaseEdge)selectedObj);
+                } else {
+                    assert scene.isNode(selectedObj) || scene.isPin(selectedObj);                    
+                    selectedNonEdges.add((PageFlowSceneElement)selectedObj);
+                }
             }
         }
         
-        for( Object selectedObj : selectedObjects ){
-            if( selectedObj instanceof PageFlowSceneElement && (!scene.isEdge(selectedObj) ) ) {
-                deleteNodesList.add((PageFlowSceneElement)selectedObj);
-            }
-        }
+        /* I can not call deleteNodes on them separate because I need to guarentee that the edges are always deleted before anything else. */
+        deleteNodesList.addAll(selectedEdges);
+        deleteNodesList.addAll(selectedNonEdges);
+        
+//        for( Object selectedObj : nonEdgeSelectedObjects ){
+//            deleteNodesList.add((PageFlowSceneElement)selectedObj);
+//        }
         deleteNodes(deleteNodesList);
         
     }
