@@ -25,5 +25,5 @@
     <icon32 urlvalue="org/netbeans/modules/xml/wsdl/ui/view/grapheditor/palette/resources/palette_partnerlinktype.png" />
     <description localizing-bundle="org.netbeans.modules.xml.wsdl.ui.view.grapheditor.palette.resources.Bundle"
     display-name-key="NAME_PARTNERLINKTYPE_PALETTE_ITEM"
-    tooltip-key="TTP_PALETTE_ITEM" />
+    tooltip-key="TTP_PARTNERLINKTYPE" />
 </editor_palette_item>

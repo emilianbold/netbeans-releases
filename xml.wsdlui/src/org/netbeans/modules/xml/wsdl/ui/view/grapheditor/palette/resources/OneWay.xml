@@ -25,5 +25,5 @@
     <icon32 urlvalue="org/netbeans/modules/xml/wsdl/ui/view/grapheditor/palette/resources/oneway.png" />
     <description localizing-bundle="org.netbeans.modules.xml.wsdl.ui.view.grapheditor.palette.resources.Bundle"
     display-name-key="NAME_ONEWAY_PALETTE_ITEM"
-    tooltip-key="TTP_PALETTE_ITEM" />
+    tooltip-key="TTP_ONEWAY_OPERATION" />
 </editor_palette_item>
