@@ -90,6 +90,7 @@ public class EjbJarProjectProperties {
     // Properties stored in the PROJECT.PROPERTIES    
     /** root of external web module sources (full path), ".." if the sources are within project folder */
     public static final String SOURCE_ROOT = "source.root"; // NOI18N
+    public static final String SOURCE_ENCODING="source.encoding"; // NOI18N
     public static final String BUILD_FILE = "buildfile"; // NOI18N
     public static final String LIBRARIES_DIR = "lib.dir"; //NOI18N
     public static final String DIST_DIR = "dist.dir"; // NOI18N
