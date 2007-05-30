@@ -27,6 +27,7 @@ import org.netbeans.modules.subversion.Diagnostics;
 import org.netbeans.modules.subversion.OutputLogger;
 import org.netbeans.modules.subversion.Subversion;
 import org.openide.util.Cancellable;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.TaskListener;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -42,16 +43,18 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
     private volatile boolean canceled;
     
     private ProgressHandle progressHandle = null;    
-    private String displayName = ""; // NOI18N
-    private String originalDisplayName = ""; // NOI18N
+    private String displayName = "";            // NOI18N
+    private String originalDisplayName = "";    // NOI18N
     private OutputLogger logger;
     private SVNUrl repositoryRoot;
     private RequestProcessor.Task task;
     
     public RequestProcessor.Task start(RequestProcessor rp, SVNUrl repositoryRoot, String displayName) {
-        setDisplayName(displayName);
+        setDisplayName(displayName);        
         this.repositoryRoot = repositoryRoot;
-        task = rp.post(this);   
+        startProgress();         
+        setProgressQueued();                
+        task = rp.post(this);
         task.addTaskListener(new TaskListener() {
             public void taskFinished(org.openide.util.Task task) {
                 delegate = null;
@@ -65,8 +68,8 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
         logger = null;
     }
 
-    public void run() {        
-        startProgress();
+    public void run() {                
+        setProgress();
         performIntern();
     }
 
@@ -100,6 +103,7 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
         if(delegate != null) {
             delegate.cancel();
         }        
+        getProgressHandle().finish();
         canceled = true;
         return true;
     }
@@ -113,17 +117,27 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
             originalDisplayName = displayName;
         }
         this.displayName = displayName;
-        if(progressHandle!=null) {
-            progressHandle.progress(displayName);
+        setProgress();
+    }
+
+    private void setProgressQueued() {
+        if(progressHandle != null) {            
+            progressHandle.progress(NbBundle.getMessage(SvnProgressSupport.class,  "LBL_Queued", displayName));
         }
     }
 
+    private void setProgress() {
+        if(progressHandle != null) {            
+            progressHandle.progress(displayName);
+        }
+    }
+    
     protected String getDisplayName() {
         return displayName;
     }
 
     protected ProgressHandle getProgressHandle() {
-        if(progressHandle==null) {
+        if(progressHandle == null) {
             progressHandle = ProgressHandleFactory.createHandle(displayName, this);
         }
         return progressHandle;
