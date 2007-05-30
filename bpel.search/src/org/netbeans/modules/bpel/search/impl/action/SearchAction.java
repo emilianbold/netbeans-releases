@@ -84,7 +84,12 @@ public final class SearchAction extends NodeAction {
     if (model != null) {
       return model;
     }
-    ModelCookie cookie = getDataObject(node).getCookie(ModelCookie.class);
+    DataObject data = getDataObject(node);
+
+    if (data == null) {
+      return null;
+    }
+    ModelCookie cookie = data.getCookie(ModelCookie.class);
 
     if (cookie == null) {
       return null;
