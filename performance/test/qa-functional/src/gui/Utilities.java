@@ -547,6 +547,9 @@ public class Utilities {
     public static void initLog(PerformanceTestCase testCase) {
         test = testCase;
     }
+    public static void closeLog() {
+        test = null;
+    }
     private static void log(String logMessage) {
         System.out.println("Utilities::"+logMessage);
         if( test != null  ) { test.log("Utilities::"+logMessage); }
