@@ -64,7 +64,7 @@ public class MidpSetter implements Setter {
     }
 
     public static MidpSetter createConstructor (TypeID constructorRelatedTypeID, Versionable versionable) {
-        return new MidpSetter (constructorRelatedTypeID, " = new " + MidpTypes.getOptimalizedFQNClassName (constructorRelatedTypeID), versionable);
+        return new MidpSetter (constructorRelatedTypeID, " = new " + MidpTypes.getSimpleClassName (constructorRelatedTypeID), versionable);
     }
 
     public static MidpSetter createFactoryMethod (TypeID constructorRelatedTypeID, String classCast, String className, String methodName, Versionable versionable) {
