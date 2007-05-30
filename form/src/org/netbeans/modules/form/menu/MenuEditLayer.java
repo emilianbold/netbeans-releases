@@ -90,6 +90,7 @@ public class MenuEditLayer extends JPanel {
     private KeyboardMenuNavigator keyboardMenuNavigator;
     private Map<RADVisualContainer,FormModelListener> formModelListeners;
     private DragOperation dragop;
+    private FormModelListener menuBarFormListener;
     
     
     /** Creates a new instance of MenuEditLayer */
@@ -107,7 +108,6 @@ public class MenuEditLayer extends JPanel {
         this.add(layers,"Center");
         
         dragop = new DragOperation(this);
-        
         
         glassLayer = new JComponent() {
             public void paintComponent(Graphics g) {
@@ -170,6 +170,7 @@ public class MenuEditLayer extends JPanel {
         this.setVisible(true);
         this.requestFocus();
         configureGlassLayer();
+        configureFormListeners();
         //dragop = new DragOperation(this);
         //dragop.start(item,)
     }
@@ -191,6 +192,7 @@ public class MenuEditLayer extends JPanel {
     
     public void openMenu(RADComponent metacomp, Component comp) {
         configureGlassLayer();
+        configureFormListeners();
         //reset the layers
         JMenu menu = (JMenu) comp;
         currentMenu = menu;
@@ -203,6 +205,26 @@ public class MenuEditLayer extends JPanel {
         }
     }
     
+    
+    public void hideMenuLayer() {
+        // tear down each menu and menu item
+        unconfigureFormListeners();
+        for(JMenu m : menuPopupUIMap.keySet()) {
+            unconfigureMenu(m);
+        }
+        if(dragop.isStarted()) {
+            dragop.fastEnd();
+        }
+        menuPopupUIMap.clear();
+        menuitemListenerMap.clear();
+        // close all popup frames
+        this.setVisible(false);
+        if(keyboardMenuNavigator != null) {
+            glassLayer.removeKeyListener(keyboardMenuNavigator);
+            keyboardMenuNavigator.unconfigure();
+            keyboardMenuNavigator = null;
+        }
+    }
     
     //josh: all this key listener stuff should go into a separate class
     private void registerKeyListeners() {
@@ -222,6 +244,36 @@ public class MenuEditLayer extends JPanel {
         }
     }
     
+    private void configureFormListeners() {
+        
+        if(menuBarFormListener == null) {
+            menuBarFormListener = new FormModelListener() {
+                public void formChanged(FormModelEvent[] events) {
+                    if(events != null) {
+                        for(FormModelEvent evt : events) {
+                            // if this is a menubar delete event
+                            if(evt.getChangeType() == evt.COMPONENT_REMOVED) {
+                                if(evt.getComponent() != null && 
+                                        JMenuBar.class.isAssignableFrom(evt.getComponent().getBeanClass())) {
+                                    hideMenuLayer();
+                                }
+                            }
+                        }
+                    }
+                }                
+            };
+            formDesigner.getFormModel().addFormModelListener(menuBarFormListener);
+        }
+    }    
+    
+    private void unconfigureFormListeners() {
+        if(menuBarFormListener != null) {
+            formDesigner.getFormModel().removeFormModelListener(menuBarFormListener);
+        }
+        menuBarFormListener = null;
+    }    
+
+
     void showMenuPopup(final JMenu menu) {
         // if already created then just make it visible
         if(hackedPopupFactory.containerMap.containsKey(menu)) {
@@ -243,22 +295,6 @@ public class MenuEditLayer extends JPanel {
         return false;
     }
     
-    public void hideMenuLayer() {
-        // tear down each menu and menu item
-        for(JMenu m : menuPopupUIMap.keySet()) {
-            unconfigureMenu(m);
-        }
-        if(dragop.isStarted()) {
-            dragop.fastEnd();
-        }
-        menuPopupUIMap.clear();
-        menuitemListenerMap.clear();
-        // close all popup frames
-        this.setVisible(false);
-        glassLayer.removeKeyListener(keyboardMenuNavigator);
-        keyboardMenuNavigator.unconfigure();
-        keyboardMenuNavigator = null;
-    }
     
     
     void configureMenu(final JComponent parent, final JMenu menu) {
@@ -539,7 +575,7 @@ public class MenuEditLayer extends JPanel {
             ex.printStackTrace();
         }
     }
-        
+
     //listens to see if this particular menu has been changed
     private void registerForm(final RADVisualContainer metacomp, final JMenu menu) {
         // don't double register
