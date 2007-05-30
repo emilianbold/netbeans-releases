@@ -1201,35 +1201,9 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             });
         }
     }
-
-    
-//    private void attachServiceListener(JaxWsModel jaxWsModel) {
-//        jaxWsServiceListener = new JaxWsModel.ServiceListener() {
-//            public void serviceAdded(String name, String implementationClass) {
-//                getAPIJAXWSSupport().addService(name, implementationClass, isJsr109Supported() && isJavaEE5(WebProject.this));
-//            }
-//
-//            public void serviceRemoved(String name) {
-//                getAPIJAXWSSupport().serviceFromJavaRemoved(name);
-//            }
-//        };
-//        jaxWsModel.addServiceListener(jaxWsServiceListener);
-//    }
     
     public boolean isJavaEE5(Project project) {
         return J2eeModule.JAVA_EE_5.equals(getAPIWebModule().getJ2eePlatformVersion());
-    }
-    
-    private boolean isJsr109Supported() {
-        boolean jsr109Supported = true;
-        String serverInstance = evaluator().getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
-        if (serverInstance != null) {
-            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstance);
-            if (j2eePlatform != null) {
-                jsr109Supported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_JSR109);
-            }
-        }
-        return jsr109Supported;
     }
     
     private static final class WebPropertyEvaluatorImpl implements WebPropertyEvaluator {
