@@ -58,8 +58,6 @@ import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbEnterpriseReferenceContai
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModelProvider;
 import org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportFactory;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportFactory;
 import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportFactory;
@@ -79,9 +77,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -150,10 +146,6 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     private final EjbJarProjectClassPathExtender classpathExtender; 
     private PropertyChangeListener j2eePlatformListener;
     private PropertyChangeListener evalListener;
-    private JaxWsModel jaxWsModel;
-    private JaxWsListener jaxWsListener;
-    private FileObject jaxWsFo;
-    private JaxWsModel.ServiceListener jaxWsServiceListener;
     private AntBuildExtender buildExtender;
     
     // TODO: AB: replace the code in EjbJarProjectProperties.setNewServerInstanceValue with this 
@@ -336,7 +328,6 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 new EjbJarProjectOperations(this),
                 new EjbJarPersistenceProvider(this, evaluator(), cpProvider),
                 new EjbJAXWSMetadataFinder(this),
-                getJaxWsModel(),
                 new EjbJarEMGenStrategyResolver(),
                 new EjbJarJPASupport(this),
                 new EjbJarServerStatusProvider(this),
@@ -859,12 +850,6 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 evaluator().removePropertyChangeListener(evalListener);
             }
             
-            // remove file change listener from jax-ws.xml
-            if (jaxWsFo!=null) jaxWsFo.removeFileChangeListener(jaxWsListener);
-            
-            // remove ServiceListener from jaxWsModel            
-            if (jaxWsModel!=null) jaxWsModel.removeServiceListener(jaxWsServiceListener);
-            
             // Probably unnecessary, but just in case:
             try {
                 ProjectManager.getDefault().saveProject(EjbJarProject.this);
@@ -1039,123 +1024,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         }
     }
 
-    /** copy jax-ws.xml from resource to nbproject directory,
-     *  generate JaxWsModel,
-     *  add FileChangeListener to jax-ws.xml file object
-     */
-    public void createJaxWsFileObject() throws IOException {
-        FileObject projectDir = helper.getProjectDirectory();
-        WSUtils.retrieveJaxWsFromResource(projectDir);
-        
-        jaxWsFo = findJaxWsFileObject(projectDir);
-        if (jaxWsFo!=null) {
-            jaxWsListener = new JaxWsListener();
-            jaxWsFo.addFileChangeListener(jaxWsListener);
-         
-            if (jaxWsModel!=null) {
-                jaxWsModel.setJaxWsFile(jaxWsFo);
-            } else {
-                jaxWsModel = JaxWsModelProvider.getDefault().getJaxWsModel(jaxWsFo);
-                if (jaxWsModel!=null) {
-                    attachServiceListener(jaxWsModel);
-                }
-            }
-        }
-    }
-    
-    public FileObject findJaxWsFileObject() {
-        return findJaxWsFileObject(helper.getProjectDirectory());
-    }
-    
-    private FileObject findJaxWsFileObject(FileObject projectDir) {
-        return projectDir.getFileObject("nbproject/jax-ws.xml");
-    }
 
-    private JaxWsModel getJaxWsModel() {
-        if (jaxWsModel==null)
-            try {
-                final FileObject projectDir = helper.getProjectDirectory();
-                jaxWsFo = findJaxWsFileObject(projectDir);
-                if (jaxWsFo==null) {
-                    // create jaxWsModel from the resource
-                    jaxWsModel = JaxWsModelProvider.getDefault().getJaxWsModel(
-                            WSUtils.class.getResourceAsStream("/org/netbeans/modules/websvc/jaxwsmodel/resources/jax-ws.xml"));//NOI18N
-                    jaxWsModel.setJaxWsFile(projectDir);
-                } else {
-                    jaxWsListener = new JaxWsListener();
-                    try {
-                        jaxWsModel = JaxWsModelProvider.getDefault().getJaxWsModel(jaxWsFo);
-                        jaxWsFo.addFileChangeListener(jaxWsListener);
-                    } catch (RuntimeException ex) {
-                        // create jaxWsModel from the resource
-                        jaxWsModel = JaxWsModelProvider.getDefault().getJaxWsModel(
-                                WSUtils.class.getResourceAsStream("/org/netbeans/modules/websvc/jaxwsmodel/resources/jax-ws.xml"));//NOI18N
-                        jaxWsModel.setJaxWsFile(projectDir);
-                        final FileObject oldJaxWsFo = jaxWsFo;
-                        jaxWsFo=null;
-                        final RuntimeException exception = ex;
-                        RequestProcessor.getDefault().post(new Runnable() {
-                            public void run() {
-                                try {
-                                    jaxWsFo = WSUtils.backupAndGenerateJaxWs(projectDir, oldJaxWsFo, exception);
-                                    if (jaxWsFo!=null) {
-                                        jaxWsModel.setJaxWsFile(jaxWsFo);
-                                        jaxWsFo.addFileChangeListener(jaxWsListener);
-                                    }
-                                } catch (IOException ex) {
-                                    ErrorManager.getDefault().log(ex.getLocalizedMessage());
-                                }
-                            }
-                        });
-                    }
-                }
-                if (jaxWsModel!=null) {
-                    attachServiceListener(jaxWsModel);
-                }
-            } catch (IOException ex) {
-                ErrorManager.getDefault().log(ex.getLocalizedMessage());
-            }
-        return jaxWsModel;
-    }
-    
-    private void attachServiceListener(JaxWsModel jaxWsModel) {
-        jaxWsServiceListener = new JaxWsModel.ServiceListener() {
-            public void serviceAdded(String name, String implementationClass) {
-                getAPIJAXWSSupport().addService(name, implementationClass, isJsr109Supported());
-            }
-
-            public void serviceRemoved(String name) {
-                getAPIJAXWSSupport().serviceFromJavaRemoved(name);
-            }
-        };
-        jaxWsModel.addServiceListener(jaxWsServiceListener);
-    }
-
-    private boolean isJsr109Supported() {
-        boolean jsr109Supported = true;
-        String serverInstance = evaluator().getProperty(EjbJarProjectProperties.J2EE_SERVER_INSTANCE);
-        if (serverInstance != null) {
-            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstance);
-            if (j2eePlatform != null) {
-                jsr109Supported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_JSR109);
-            }
-        }
-        return jsr109Supported;
-    }
-    
-    private class JaxWsListener extends FileChangeAdapter {
-        public void fileChanged(FileEvent fe) {
-            try {
-                JaxWsModel newModel = JaxWsModelProvider.getDefault().getJaxWsModel(fe.getFile());
-                if (jaxWsModel!=null && newModel!=null) jaxWsModel.merge(newModel);
-                    genFilesHelper.refreshBuildScript(
-                    GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                    EjbJarProject.class.getResource("resources/build-impl.xsl"), false);                
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
-        }
-    }
 
     private class EjbExtenderImplementation implements AntBuildExtenderImplementation {
         //add targets here as required by the external plugins..
