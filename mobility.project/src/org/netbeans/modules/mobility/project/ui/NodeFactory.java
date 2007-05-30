@@ -441,6 +441,7 @@ class ProjCfgNode extends ActionNode implements AntProjectListener, PropertyChan
             {
                 if (MULTI_TYPE.equals(flavor.getSubType ())) {
                     Node nodes[]=NodeTransfer.nodes(tr,NodeTransfer.DND_COPY_OR_MOVE);
+                    if (nodes == null) return null;
                     for (Node node : nodes)
                     {
                         J2MEProject project=node.getLookup().lookup(J2MEProject.class);
@@ -571,6 +572,7 @@ class ResourcesNode extends ActionNode
                 
                  if (MULTI_TYPE.equals(flavor.getSubType ())) {
                     Node nodes[]=NodeTransfer.nodes(tr,NodeTransfer.DND_COPY_OR_MOVE);
+                    if (nodes == null) return null;
                     for (Node node : nodes)
                     {
                         if (node != null && node.getValue("resource") != null )
