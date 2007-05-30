@@ -22,7 +22,9 @@ package org.netbeans.modules.autoupdate.ui;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -87,6 +89,7 @@ public class UnitTab extends javax.swing.JPanel {
     private TabAction refreshAction;
     
     private RowTabAction removeLocallyDownloaded = new RemoveLocallyDownloadedAction ();
+    private PopupAction popupAction = new PopupAction();
     
     
     private static final RequestProcessor RP = new RequestProcessor ();
@@ -569,20 +572,26 @@ public class UnitTab extends javax.swing.JPanel {
         
         private void maybeShowPopup (MouseEvent e) {
             if (e.isPopupTrigger ()) {
-                int row = UnitTab.this.table.rowAtPoint (e.getPoint ());
-                if (row >= 0) {
-                    table.getSelectionModel().setSelectionInterval(row, row);
-                    JPopupMenu popup = createPopup();
-                    if (popup != null && popup.getComponentCount() > 0) {
-                        popup.show(e.getComponent(),e.getX(), e.getY());
-                    } 
-                }
+                showPopup(e.getPoint(), e.getComponent());
             } else if (org.openide.awt.MouseUtils.isDoubleClick (e) && model.getType ().equals (UnitCategoryTableModel.Type.INSTALLED)) {
                 if (enableAction.isEnabled ()) {
                     enableAction.performAction ();
                 } else if (disableAction.isEnabled ()) {
                     disableAction.performAction ();
                 }
+            }
+        }
+    }
+    
+    
+    private void showPopup(Point e, Component invoker) {
+        int row = UnitTab.this.table.rowAtPoint(e);
+        if (row >= 0) {
+            table.getSelectionModel().setSelectionInterval(row, row);
+            final JPopupMenu popup = popupActionsSupport.createPopup();
+            if (popup != null && popup.getComponentCount() > 0) {                
+                popup.show(invoker,e.x, e.y);
+                    
             }
         }
     }
@@ -752,6 +761,20 @@ public class UnitTab extends javax.swing.JPanel {
         public abstract void performerImpl (Unit u);
         protected abstract boolean isEnabled (Unit u);
         protected abstract String getContextName (Unit u);
+    }
+
+    private class PopupAction extends TabAction {
+        public PopupAction () {
+            super ("UnitTab_PopUpAction", KeyStroke.getKeyStroke (KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK), null);
+        }
+
+        public void performerImpl() {
+            int row = UnitTab.this.getSelectedRow();
+            if(row > 0) { 
+                Point e = table.getCellRect(row, 1, enabled).getLocation();
+                showPopup(e, SwingUtilities.getWindowAncestor(UnitTab.this));
+            }
+        }
     }
     
     private class UninstallAction extends TabAction {
