@@ -107,6 +107,11 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
             Vector row = super.createRow();
             row.set(TYPE_COLUMN, type);
             
+            // init default boolean value
+            if (type.equals(BOOLEAN_TYPE)) {
+                row.set(VALUE_COLUMN, Boolean.FALSE.toString()); 
+            }
+            
             return row;
         } else {
             return null;
