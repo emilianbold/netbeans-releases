@@ -67,6 +67,7 @@ public class UninstallUnitWizard {
         dialog.setVisible (true);
         dialog.toFront ();
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
+        //TODO: must be fixed to return true if the wizard was properly finished
         return !cancelled;
     }
     

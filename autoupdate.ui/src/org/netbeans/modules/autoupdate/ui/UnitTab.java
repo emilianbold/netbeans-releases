@@ -794,11 +794,14 @@ public class UnitTab extends javax.swing.JPanel {
                 wizardFinished = wizard.invokeWizard ();
             } finally {
                 Containers.forUninstall ().removeAll ();
+                super.cleanUp();
                 if (!wizardFinished) {
                     UnitCategoryTableModel.restoreState(model.getUnitData(), state, model.isMarkedAsDefault());
                 }
             }
         }
+        public void cleanUp() {            
+        }                        
     }
     
     private class UpdateAction extends TabAction {
@@ -814,11 +817,14 @@ public class UnitTab extends javax.swing.JPanel {
                 wizardFinished = new InstallUnitWizard ().invokeWizard (cont);
             } finally {
                 cont.removeAll ();
+                super.cleanUp();
                 if (!wizardFinished) {
                     UnitCategoryTableModel.restoreState(model.getUnitData(), state, model.isMarkedAsDefault());
                 }                
             }            
         }
+        public void cleanUp() {            
+        }                
     }
     
     private class AvailableAction extends TabAction {
@@ -834,54 +840,41 @@ public class UnitTab extends javax.swing.JPanel {
                 wizardFinished = new InstallUnitWizard ().invokeWizard (cont);
             } finally {
                 cont.removeAll ();
+                super.cleanUp();
                 if (!wizardFinished) {
                     UnitCategoryTableModel.restoreState(model.getUnitData(), state, model.isMarkedAsDefault());
                 }                
             }
         }
+
+        @Override
+        public void cleanUp() {}        
     }
     
     private class LocalUpdateAction extends TabAction {
-        public LocalUpdateAction () {
-            super ("UnitTab_bTabAction_Name_LOCAL", null);
+        public LocalUpdateAction() {
+            super("UnitTab_bTabAction_Name_LOCAL", null);
         }
-        public void performerImpl () {
-            int available = Containers.forAvailableNbms ().listAll ().size ();
-            int updates = Containers.forUpdateNbms ().listAll ().size ();
-            OperationContainer<InstallSupport> cont = (updates > available) ? Containers.forUpdateNbms () : Containers.forAvailableNbms ();
-            boolean wizardFinished = false; 
-            final Map<String, Boolean> state = UnitCategoryTableModel.captureState(model.getUnitData());            
+        public void performerImpl() {
+            int available = Containers.forAvailableNbms().listAll().size();
+            int updates = Containers.forUpdateNbms().listAll().size();
+            OperationContainer<InstallSupport> cont = (updates > available) ? Containers.forUpdateNbms() : Containers.forAvailableNbms();
+            boolean wizardFinished = false;
+            final Map<String, Boolean> state = UnitCategoryTableModel.captureState(model.getUnitData());
             
             try {
                 //nonsense condition - but wizard can't do both operations at once NOW
-                wizardFinished = new InstallUnitWizard ().invokeWizard (cont);
+                wizardFinished = new InstallUnitWizard().invokeWizard(cont);
             } finally {
-                cont.removeAll ();
-                if (wizardFinished) {
-                    List<UnitCategory> categories = model.data;
-                    LocalDownloadSupport lDSupport = getLocalDownloadSupport ();
-                    for (Iterator<UnitCategory> categoryIt = categories.iterator (); categoryIt.hasNext ();) {
-                        UnitCategory unitCategory = categoryIt.next ();
-                        List<Unit> units = unitCategory.getUnits ();
-                        for (Iterator<Unit> it = units.iterator (); it.hasNext ();) {
-                            Unit unit = it.next ();
-                            if (unit.updateUnit.getInstalled () != null) {
-                                lDSupport.remove (unit.updateUnit);
-                            }
-                        }
-                    }
-                    model.setData (categories);
-                    reloadTask (false);
-                } else {
-                    if (!wizardFinished) {
-                        UnitCategoryTableModel.restoreState(model.getUnitData(), state, model.isMarkedAsDefault());
-                    }                    
+                cont.removeAll();
+                super.cleanUp(); 
+                if (!wizardFinished) {
+                    UnitCategoryTableModel.restoreState(model.getUnitData(), state, model.isMarkedAsDefault());
                 }
+                
             }
         }
-        protected boolean refreshUpdateUnrefits () {
-            return false;
-        }
+        public void cleanUp() {}
     }
     
     private class CheckCategoryAction extends RowTabAction {
