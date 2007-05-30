@@ -19,11 +19,10 @@
 package org.netbeans.modules.xslt.project.nodes;
 
 import java.awt.Image;
-import org.netbeans.modules.xslt.core.xsltmap.TransformationType;
-import org.netbeans.modules.xslt.core.xsltmap.TransformationUC;
+import org.netbeans.modules.xslt.tmap.model.xsltmap.TransformationType;
+import org.netbeans.modules.xslt.tmap.model.xsltmap.TransformationUC;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
 /**

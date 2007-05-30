@@ -18,17 +18,14 @@
  */
 package org.netbeans.modules.xslt.project.nodes;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.xslt.core.xsltmap.TransformationDesc;
-import org.netbeans.modules.xslt.core.xsltmap.TransformationType;
-import org.netbeans.modules.xslt.core.xsltmap.TransformationUC;
-import org.netbeans.modules.xslt.core.xsltmap.XsltMapModel;
-import org.netbeans.modules.xslt.core.xsltmap.XsltMapPropertyChangeListener;
-import org.openide.ErrorManager;
+import org.netbeans.modules.xslt.tmap.model.xsltmap.TransformationDesc;
+import org.netbeans.modules.xslt.tmap.model.xsltmap.TransformationType;
+import org.netbeans.modules.xslt.tmap.model.xsltmap.TransformationUC;
+import org.netbeans.modules.xslt.tmap.model.xsltmap.XsltMapPropertyChangeListener;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 

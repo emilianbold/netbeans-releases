@@ -20,9 +20,9 @@ package org.netbeans.modules.xslt.project.nodes;
 
 import java.awt.Image;
 import javax.xml.namespace.QName;
-import org.netbeans.modules.xslt.core.xsltmap.TransformationDesc;
-import org.netbeans.modules.xslt.core.xsltmap.TransformationDescType;
 import org.netbeans.modules.xslt.project.XsltproConstants;
+import org.netbeans.modules.xslt.tmap.model.xsltmap.TransformationDesc;
+import org.netbeans.modules.xslt.tmap.model.xsltmap.TransformationDescType;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;

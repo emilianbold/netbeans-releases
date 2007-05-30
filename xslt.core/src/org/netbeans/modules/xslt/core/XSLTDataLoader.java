@@ -19,6 +19,10 @@
 package org.netbeans.modules.xslt.core;
 
 import java.io.IOException;
+import org.netbeans.spi.project.support.ant.AntBasedProjectType;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.xslt.tmap.util.Util;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -40,6 +44,7 @@ import org.openide.util.NbBundle;
 public class XSLTDataLoader extends UniFileLoader {
     private static final long serialVersionUID = 1L;
 
+    private static final String XSLT_PROJECT_TYPE = "org.netbeans.modules.xslt.project"; // NOI18N
     public static final String MIME_TYPE = "application/xslt+xml";
     static final String PRIMARY_EXTENSION = "xsl";                 // NOI18N
     static final String PRIMARY_EXTENSION2 = "xslt";              // NOI18N
@@ -109,9 +114,12 @@ public class XSLTDataLoader extends UniFileLoader {
                 if (extension.equals(PRIMARY_EXTENSION)
                     || extension.equals(PRIMARY_EXTENSION2)) 
                 {
-                    isContext = fo.getParent().getFileObject(TRANSFORM_MAP_FILE) != null;
-                } 
+                    FileObject projectSource = Util.getProjectSource(Util.getProject(fo));
+                    isContext = projectSource != null 
+                            && projectSource.getFileObject(TRANSFORM_MAP_FILE) != null;
+                }
             }
+            
             
 // TODO r
 //            if (isContext) {

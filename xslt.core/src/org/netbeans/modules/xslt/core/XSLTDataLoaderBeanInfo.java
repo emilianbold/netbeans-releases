@@ -19,20 +19,28 @@
 package org.netbeans.modules.xslt.core;
 
 import java.awt.Image;
+import java.beans.BeanDescriptor;
 import java.beans.BeanInfo;
+import java.beans.EventSetDescriptor;
 import java.beans.Introspector;
 import java.beans.SimpleBeanInfo;
 import java.beans.IntrospectionException;
+import java.beans.MethodDescriptor;
+import java.beans.PropertyDescriptor;
+import org.openide.ErrorManager;
 import org.openide.loaders.DataLoader;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
+ * Loader BeanInfo adding metadata missing in org.openide.loaders.MultiFileLoaderBeanInfo.
  *
  * @author Vitaly Bychkov
  * @version 1.0
  */
 public class XSLTDataLoaderBeanInfo extends SimpleBeanInfo {
 
+    private static final String LOADER_DESC = "LBL_loader_desc";    // NOI18N
     public static final String PATH_TO_IMAGE = 
         "org/netbeans/modules/xslt/core/resources/xslt_file.gif";   // NOI18N
 
@@ -40,10 +48,9 @@ public class XSLTDataLoaderBeanInfo extends SimpleBeanInfo {
     public BeanInfo[] getAdditionalBeanInfo() {
         try {
             return new BeanInfo[] {Introspector.getBeanInfo(DataLoader.class)};
-        } catch (IntrospectionException e) {
-//            ErrorManager.getDefault().notify(ie);
-//            return null;
-            throw new AssertionError(e);
+        } catch (IntrospectionException ex) {
+            ErrorManager.getDefault().notify(ex);
+            return null;
         }
     }
 
@@ -54,5 +61,51 @@ public class XSLTDataLoaderBeanInfo extends SimpleBeanInfo {
             return null;
         }
 
+    }
+    
+    /** {@inheritDoc} */
+    public BeanDescriptor getBeanDescriptor() {
+        BeanDescriptor beanDescriptor = 
+            new BeanDescriptor ( XSLTDataLoader.class , null );
+        beanDescriptor.setDisplayName ( NbBundle.getMessage( XSLTDataLoaderBeanInfo.class, 
+                XSLTDataLoader.LOADER_NAME) );
+        beanDescriptor.setShortDescription ( NbBundle.getMessage(XSLTDataLoaderBeanInfo.class, 
+                LOADER_DESC) );
+        
+        return beanDescriptor;
+    }
+    
+    /** {@inheritDoc} */
+    public PropertyDescriptor[] getPropertyDescriptors() {
+        // Make extensions into a r/o property.
+        // It will only contain the XSLT MIME type.
+        // Customizations should be done on the resolver object, not on the extension list.
+        // Does not work to just use additional bean info from UniFileLoader and return one extensions
+        // property with no setter--Introspector cleverly (!&#$@&) keeps your display name
+        // and everything and adds back in the setter from the superclass.
+        // So bypass UniFileLoader in the beaninfo search.
+        try {
+            PropertyDescriptor extensions = new PropertyDescriptor(
+				"extensions", XSLTDataLoader.class, "getExtensions", null);// NOI18N
+            extensions.setDisplayName(
+				NbBundle.getMessage(XSLTDataLoader.class, "PROP_extensions"));
+            extensions.setShortDescription(
+				NbBundle.getMessage(XSLTDataLoader.class, "HINT_extensions"));
+            extensions.setExpert(true);
+            return new PropertyDescriptor[] {extensions};
+        } catch (IntrospectionException ie) {
+            ErrorManager.getDefault().notify(ie);
+            return null;
+        }
+    }
+    
+    /** {@inheritDoc} */
+    public MethodDescriptor[] getMethodDescriptors() {
+        return new MethodDescriptor[0];
+    }
+    
+    /** {@inheritDoc} */
+    public EventSetDescriptor[] getEventSetDescriptors() {
+        return new EventSetDescriptor[0];
     }
 }

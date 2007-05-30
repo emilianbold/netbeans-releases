@@ -40,13 +40,13 @@ import java.lang.reflect.Method;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.xslt.core.xsltmap.TransformationDescType;
+import org.netbeans.modules.xslt.tmap.model.xsltmap.TransformationDescType;
 
 import org.netbeans.modules.xslt.project.XsltproConstants;
 import org.netbeans.modules.xslt.project.anttasks.jbi.ServiceEntry;
-import org.netbeans.modules.xslt.core.xsltmap.XmlUtil;
-import org.netbeans.modules.xslt.core.xsltmap.XsltMapConst;
-import org.netbeans.modules.xslt.core.xsltmap.util.Util;
+import org.netbeans.modules.xslt.tmap.model.xsltmap.XmlUtil;
+import org.netbeans.modules.xslt.tmap.model.xsltmap.XsltMapConst;
+import org.netbeans.modules.xslt.tmap.util.Util;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -58,13 +58,13 @@ import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-import org.netbeans.modules.xslt.core.transformmap.api.Invokes;
-import org.netbeans.modules.xslt.core.transformmap.api.Operation;
-import org.netbeans.modules.xslt.core.transformmap.api.PartnerLinkTypeReference;
-import org.netbeans.modules.xslt.core.transformmap.api.Service;
-import org.netbeans.modules.xslt.core.transformmap.api.TMapModel;
-import org.netbeans.modules.xslt.core.transformmap.api.WSDLReference;
-import org.netbeans.modules.xslt.core.transformmap.impl.TMapComponents;
+import org.netbeans.modules.xslt.tmap.model.api.Invokes;
+import org.netbeans.modules.xslt.tmap.model.api.Operation;
+import org.netbeans.modules.xslt.tmap.model.api.PartnerLinkTypeReference;
+import org.netbeans.modules.xslt.tmap.model.api.Service;
+import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
+import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
+import org.netbeans.modules.xslt.tmap.model.impl.TMapComponents;
 import org.netbeans.modules.xslt.project.CommandlineXsltProjectXmlCatalogProvider;
 
 /**
