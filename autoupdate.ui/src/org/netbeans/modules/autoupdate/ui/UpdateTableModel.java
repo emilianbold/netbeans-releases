@@ -20,11 +20,15 @@
 package org.netbeans.modules.autoupdate.ui;
 
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import javax.swing.table.JTableHeader;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
+import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
+import org.netbeans.api.autoupdate.OperationSupport;
+import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -37,6 +41,7 @@ import org.openide.util.NbBundle;
 public class UpdateTableModel extends UnitCategoryTableModel {
     //just prevents from gc, do not delete
     private OperationContainer<InstallSupport> container = Containers.forUpdate ();
+    private OperationContainer<OperationSupport> containerCustom = Containers.forCustomInstall ();
     
     /** Creates a new instance of UpdateTableModel */
     public UpdateTableModel (List<UpdateUnit> units) {
@@ -213,8 +218,22 @@ public class UpdateTableModel extends UnitCategoryTableModel {
         };
     }
     
-    public OperationContainer getContainer () {
-        return container;
+    @SuppressWarnings ("unchecked")
+    public int getDownloadSize () {
+        int res = 0;
+        assert container != null || containerCustom != null: "OperationContainer found when asking for download size.";
+        Set<OperationInfo> infos = new HashSet<OperationInfo> ();
+        infos.addAll (container.listAll ());
+        infos.addAll (containerCustom.listAll ());
+        Set<UpdateElement> elements = new HashSet<UpdateElement> ();
+        for (OperationInfo info : infos) {
+            elements.add (info.getUpdateElement ());
+            elements.addAll (info.getRequiredElements ());
+        }
+        for (UpdateElement el : elements) {
+            res += el.getDownloadSize ();
+        }
+        return res;
     }
     
     private String getBundle (String key) {

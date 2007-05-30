@@ -33,6 +33,7 @@ import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.UpdateElement;
+import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.openide.modules.SpecificationVersion;
 
@@ -323,13 +324,27 @@ public abstract class Unit {
         }
         
         public boolean isMarked () {
-            OperationContainer<InstallSupport> container = (isNbms) ? Containers.forUpdateNbms () : Containers.forUpdate ();
+            OperationContainer container = null;
+            if (isNbms) {
+                container = Containers.forUpdateNbms ();
+            } else if (UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT == updateUnit.getType ()) {
+                container = Containers.forCustomInstall ();
+            } else {
+                container = Containers.forUpdate ();
+            }
             return container.contains (updateEl);
         }
         
         public void setMarked (boolean marked) {
             assert marked != isMarked ();
-            OperationContainer<InstallSupport> container = (isNbms) ? Containers.forUpdateNbms () : Containers.forUpdate ();
+            OperationContainer container = null;
+            if (isNbms) {
+                container = Containers.forUpdateNbms ();
+            } else if (UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT == updateUnit.getType ()) {
+                container = Containers.forCustomInstall ();
+            } else {
+                container = Containers.forUpdate ();
+            }
             if (marked) {
                 container.add (updateUnit, updateEl);
             } else {
@@ -403,14 +418,27 @@ public abstract class Unit {
         }
         
         public boolean isMarked () {
-            OperationContainer<InstallSupport> container = (isNbms) ? Containers.forAvailableNbms () : Containers.forAvailable ();
+            OperationContainer container = null;
+            if (isNbms) {
+                container = Containers.forUpdateNbms ();
+            } else if (UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT == updateUnit.getType ()) {
+                container = Containers.forCustomInstall ();
+            } else {
+                container = Containers.forAvailable ();
+            }
             return container.contains (updateEl);
         }
         
         public void setMarked (boolean marked) {
             assert marked != isMarked ();
-            OperationContainer<InstallSupport> container = (isNbms) ? Containers.forAvailableNbms () : Containers.forAvailable ();
-            
+            OperationContainer container = null;
+            if (isNbms) {
+                container = Containers.forUpdateNbms ();
+            } else if (UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT == updateUnit.getType ()) {
+                container = Containers.forCustomInstall ();
+            } else {
+                container = Containers.forAvailable ();
+            }
             if (marked) {
                 container.add (updateUnit, updateEl);
             } else {

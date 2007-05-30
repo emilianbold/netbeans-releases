@@ -19,9 +19,9 @@
 
 package org.netbeans.modules.autoupdate.ui;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.table.JTableHeader;
 import org.netbeans.api.autoupdate.OperationContainer;
@@ -35,6 +35,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jiri Rechtacek, Radek Matous
  */
+
 public class InstalledTableModel extends UnitCategoryTableModel {
     static final String STATE_ENABLED = NbBundle.getMessage(UpdateTableModel.class,"InstalledTableModel_State_Enabled");
     static final String STATE_DISABLED = NbBundle.getMessage(UpdateTableModel.class,"InstalledTableModel_State_Disabled");
@@ -227,11 +228,10 @@ public class InstalledTableModel extends UnitCategoryTableModel {
         };
     }
 
-
-    public OperationContainer getContainer() {
-        return uninstallContainer;
+    public int getDownloadSize () {
+        // no need to download anything in Installed tab
+        return 0;
     }
-    
     private String getBundle (String key) {
         return NbBundle.getMessage (this.getClass (), key);
     }

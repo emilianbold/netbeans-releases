@@ -20,6 +20,8 @@
 package org.netbeans.modules.autoupdate.ui;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -248,7 +250,12 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
         };
     }
 
-    public OperationContainer getContainer() {
+    public int getDownloadSize () {
+        // no need to download anything in Locally Downloaded tab
+        return 0;
+    }
+    
+    private OperationContainer getContainer() {
         int available = Containers.forAvailableNbms().listAll().size();
         int updates = Containers.forUpdateNbms().listAll().size();        
         return (updates > available) ? Containers.forUpdateNbms() : Containers.forAvailableNbms();

@@ -1148,14 +1148,11 @@ public class UnitTab extends javax.swing.JPanel {
             
             if (Utilities.modulesOnly ()) {
                 String category = u.getCategoryName ();
-                OperationContainer container =  model.getContainer ();
-                if (container != null && container.listAll ().size () > 0) {
-                    List<Unit> units = model.getUnitData ();
-                    for (Unit uu : units) {
-                        if (uu != null && category.equals (uu.getCategoryName ()) && uu.isMarked ()) {
-                            retval = true;
-                            break;
-                        }
+                List<Unit> units = model.getUnitData ();
+                for (Unit uu : units) {
+                    if (uu != null && category.equals (uu.getCategoryName ()) && uu.isMarked ()) {
+                        retval = true;
+                        break;
                     }
                 }
             }

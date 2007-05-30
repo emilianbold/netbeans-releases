@@ -24,21 +24,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.JTableHeader;
-import org.netbeans.api.autoupdate.OperationContainer;
-import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
-import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.openide.util.NbBundle;
-import static org.netbeans.modules.autoupdate.ui.Utilities.LIBRARIES_CATEGORY;
-import static org.netbeans.modules.autoupdate.ui.Utilities.BRIDGES_CATEGORY;
-import static org.netbeans.modules.autoupdate.ui.Utilities.UNSORTED_CATEGORY;
+
 /**
  *
  * @author Jiri Rechtacek, Radek Matous
@@ -99,7 +92,7 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
     public abstract Class getColumnClass (int c);
     public abstract Type getType ();
     public abstract boolean isSortAllowed (Object columnIdentifier);
-    public abstract OperationContainer getContainer ();
+    public abstract int getDownloadSize ();
     protected abstract Comparator<Unit> getComparator (final Object columnIdentifier, final boolean sortAscending);
     public abstract void setUnits (List<UpdateUnit> units);
     public String getToolTipText (int row, int col) {
@@ -453,23 +446,9 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
         return false;
     }
     
+    @Override
     public boolean isCellEditable (int row, int col) {
         return col == 0 && Boolean.class.equals (getColumnClass (col));
     }
     
-    public int getDownloadSize () {
-        int res = 0;
-        OperationContainer container = getContainer ();
-        assert container != null : "OperationContainer found when asking for download size.";
-        List<OperationInfo> infos = container.listAll ();
-        Set<UpdateElement> elements = new HashSet<UpdateElement> ();
-        for (OperationInfo info : infos) {
-            elements.add (info.getUpdateElement ());
-            elements.addAll (info.getRequiredElements ());
-        }
-        for (UpdateElement el : elements) {
-            res += el.getDownloadSize ();
-        }
-        return res;
-    }
 }
