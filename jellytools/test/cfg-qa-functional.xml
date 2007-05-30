@@ -130,6 +130,7 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="**/NewJspFileNameStepOperatorTest.class"/>
+                <include name="**/NavigatorOperatorTest.class"/>
                 <include name="**/NewProjectNameLocationStepOperatorTest.class/testWebApplication"/>
                 <include name="**/J2eeServerNodeTest.class"/>
                 <include name="**/J2eeServerNodeTest.class/testProperties" expectedFail="Fails because of redundant menu items (#76102)"/>
