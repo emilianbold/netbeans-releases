@@ -308,9 +308,11 @@ class DragOperation {
         Component[] popups = menuEditLayer.layers.getComponentsInLayer(JLayeredPane.DEFAULT_LAYER);
         for(Component popup : popups) {
             //p("looking at popup: " + popup);
-            Point pt2 = SwingUtilities.convertPoint(menuEditLayer, pt, popup);
-            JComponent child = (JComponent) javax.swing.SwingUtilities.getDeepestComponentAt(popup, pt2.x, pt2.y);
-            if(child != null) return child;
+            if(popup.isVisible()) {
+                Point pt2 = SwingUtilities.convertPoint(menuEditLayer, pt, popup);
+                JComponent child = (JComponent) javax.swing.SwingUtilities.getDeepestComponentAt(popup, pt2.x, pt2.y);
+                if(child != null) return child;
+            }
         }
         return null;
     }

@@ -100,8 +100,7 @@ class VisualDesignerPopupFactory extends PopupFactory {
     }
     
     private void setLocationFromMenu(final JMenu menu, final JPanel cont) {
-        Point pt = menu.getLocationOnScreen();
-        SwingUtilities.convertPointFromScreen(pt,canvas);
+        Point pt = SwingUtilities.convertPoint(menu, new Point(0,0), canvas);
         
         JComponent parent = canvas.getMenuParent(menu);
         if(parent instanceof JMenu) {

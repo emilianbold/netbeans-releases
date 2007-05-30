@@ -229,10 +229,7 @@ public class MenuEditLayer extends JPanel {
         } else {
             JPopupMenu popup = menu.getPopupMenu();
             popup.show(menu,0,menu.getHeight());
-            //popup.setVisible(true);
         }
-        //menu.getPopupMenu().setVisible(true);
-        //menu.doClick();
         this.validate();
     }
     
@@ -310,7 +307,7 @@ public class MenuEditLayer extends JPanel {
         if(popup != null) {
             for(Component c : popup.getComponents()) {
                 if(c instanceof JMenu) {
-                    //unconfigureMenu((JMenu)c);
+                    unconfigureMenu((JMenu)c);
                 } else {
                     unconfigureMenuItem((JComponent) c);
                 }
@@ -321,6 +318,7 @@ public class MenuEditLayer extends JPanel {
                 menu.getPopupMenu().setVisible(false);
             }
             popup.setVisible(false);
+            //layers.remove(popup);
         }
     }
     
@@ -505,7 +503,7 @@ public class MenuEditLayer extends JPanel {
 
             p("=== removing ===");
             //skip if no payload rad, which probably means this is a new component from the palette
-            if(payloadRad != null) {
+            if(payloadRad != null && payloadParentRad != null) {
                 int index = payloadParentRad.getIndexOf(payloadRad);
                 payloadParentRad.remove(payloadRad);
                 FormModelEvent fme = formDesigner.getFormModel().fireComponentRemoved(payloadRad, payloadParentRad, index, false);
@@ -583,19 +581,21 @@ public class MenuEditLayer extends JPanel {
     }
     
     private void rebuildOnScreenMenu(RADVisualContainer menuRAD) {
-        //p("rebuild called");
+        p("** rebuildOnScreenMenu() called");
         JMenu menu = (JMenu) formDesigner.getComponent(menuRAD);
         if(hackedPopupFactory.containerMap.containsKey(menu)) {
             JPanel popupContainer = hackedPopupFactory.containerMap.get(menu);
-            
-            popupContainer.removeAll();
+            p("looking over components left");
             for(Component c : popupContainer.getComponents()) {
+                p("found comp: " + c);
                 if(c instanceof JMenu) {
                     unconfigureMenu((JMenu)c);
                 } else {
                     unconfigureMenuItem((JComponent)c);
                 }
             }
+            p("removing all from container");
+            popupContainer.removeAll();
             // rebuild it
             for(RADVisualComponent child : menuRAD.getSubComponents()) {
                 JComponent jchild = (JComponent) formDesigner.getComponent(child);
