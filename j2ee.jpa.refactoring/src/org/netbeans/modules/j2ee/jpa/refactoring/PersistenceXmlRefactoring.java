@@ -107,7 +107,7 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
         if (sourceFO == null){
             return null;
         }
-
+        
         final TreePathHandle[] result = new TreePathHandle[1];
         JavaSource source = JavaSource.forFileObject(sourceFO);
         
@@ -126,36 +126,12 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
         return result[0];
     }
     
-    protected final boolean isClass(){
-        final boolean[] result = new boolean[1];
-        
-        JavaSource source = JavaSource.forFileObject(getRefactoringSource());
-        try{
-            source.runUserActionTask(new CancellableTask<CompilationController>(){
-                
-                public void cancel() {
-                }
-                
-                public void run(CompilationController info) throws Exception {
-                    info.toPhase(JavaSource.Phase.RESOLVED);
-                    TreePathHandle treePathHandle = resolveTreePathHandle();
-                    Element element = treePathHandle.resolveElement(info);
-                    result[0] = element.getKind() == ElementKind.CLASS;
-                }
-            }, true);
-        } catch(IOException ex){
-            Exceptions.printStackTrace(ex);
-        }
-        
-        return result[0];
-    }
-    
     /**
-     * Checks whether the object being refactored should be handled by 
-     * this refactoring. Override in subclasses as appropriated, the 
+     * Checks whether the object being refactored should be handled by
+     * this refactoring. Override in subclasses as appropriated, the
      * default implementation returns true if the refactored object
      * is a class.
-     * 
+     *
      * @return true if the refactoring source represents a class that
      * should be handled by persistence.xml refactorings.
      */
@@ -173,8 +149,12 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
                 public void run(CompilationController info) throws Exception {
                     info.toPhase(JavaSource.Phase.RESOLVED);
                     TreePathHandle treePathHandle = resolveTreePathHandle();
-                    Element element = treePathHandle.resolveElement(info);
-                    result[0] = element.getKind() == ElementKind.CLASS;
+                    if (treePathHandle == null){
+                        result[0] = false;
+                    } else {
+                        Element element = treePathHandle.resolveElement(info);
+                        result[0] = element.getKind() == ElementKind.CLASS;
+                    }
                 }
             }, true);
         } catch(IOException ex){
