@@ -320,95 +320,78 @@ public class SearchDirectoriesPage extends JCenterDialog
 
       //Save button should allow user to save existing directories.
       saveBtn.addActionListener(new ActionListener() {
-         public void actionPerformed(ActionEvent e)
-         {
-            JFileChooser chooser = new JFileChooser();
-//				chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
-//					 public boolean accept(File file) {
-//						  return file.isDirectory() ||
-//								file.toString().toLowerCase().endsWith(".cfg");
-//					 }
-//
-//					 public String getDescription() {
-//						  return "Config Files";
-//					 }
-//				});
-				chooser.addChoosableFileFilter(new FileFilter()
-				{
-					 public boolean accept(File file) {
-						  return file.isDirectory() ||
-								file.toString().toLowerCase().endsWith(".cfg");
-					 }
-
-					 public String getDescription() {
-						  return "Config Files(*.cfg)";
-					 }
-				});
-
-            int result = chooser.showSaveDialog(m_ThisDialog);
-            if (result == JFileChooser.APPROVE_OPTION)
-            {
-               File file = chooser.getSelectedFile();
-               if (file != null)
-               {
-                  //dirList.add(file.getCanonicalPath());
-                  String fileName = "";
-                  try
-                  {
-							fileName = file.getCanonicalPath();
-							if (!fileName.toLowerCase().endsWith(".cfg"))
-							{
-								fileName += ".cfg";
-							}
-                  }
-                  catch(Exception ex)
-                  {
+          public void actionPerformed(ActionEvent e) {
+              JFileChooser chooser = new JFileChooser();
+              //				chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+              //					 public boolean accept(File file) {
+              //						  return file.isDirectory() ||
+              //								file.toString().toLowerCase().endsWith(".cfg");
+              //					 }
+              //
+              //					 public String getDescription() {
+              //						  return "Config Files";
+              //					 }
+              //				});
+              chooser.addChoosableFileFilter(new FileFilter() {
+                  public boolean accept(File file) {
+                      return file.isDirectory() ||
+                              file.toString().toLowerCase().endsWith(".cfg");
                   }
                   
-						IStrings pDirectories = getBaseDirectories();
-						if(pDirectories != null)
-						{
-							try
-							{
-								FileWriter fileWriter = new FileWriter(fileName);
-								BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-								
-								int count = pDirectories.getCount();
-	   						for(int index = 0; index < count; index++)
-								{
-									String curDir = pDirectories.item(index);
-	      
-									bufferedWriter.write(curDir);
-									bufferedWriter.newLine();
-								}
-								bufferedWriter.flush();
-								bufferedWriter.close();
-							}
-							catch(Exception ex)
-							{
-							}
-
-							IQuestionDialog pQuestionDialog = new SwingQuestionDialogImpl();
-							if(pQuestionDialog != null)
-							{
-								String question = PFMessages.getString("IDS_PROMPT_TO_SET_SEARCHDIRS");
-								String title = PFMessages.getString("IDS_PROMPT_TO_SET_SEARCHDIRS_TITLE");
-								QuestionResponse nResult = pQuestionDialog.displaySimpleQuestionDialog(MessageDialogKindEnum.SQDK_YESNO,
-																															 MessageIconKindEnum.EDIK_ICONQUESTION,
-																															 question,
-																															 SimpleQuestionDialogResultKind.SQDRK_RESULT_YES,
-																															 null,
-																															 title);
-
-								if(nResult != null && nResult.getResult() == SimpleQuestionDialogResultKind.SQDRK_RESULT_YES)
-								{
-									setSourceFolderPreference(fileName);
-								}
-							}
-						}
-               }
-            }
-         }
+                  public String getDescription() {
+                      return "Config Files(*.cfg)";
+                  }
+              });
+              
+              int result = chooser.showSaveDialog(m_ThisDialog);
+              if (result == JFileChooser.APPROVE_OPTION) {
+                  File file = chooser.getSelectedFile();
+                  if (file != null) {
+                      //dirList.add(file.getCanonicalPath());
+                      String fileName = "";
+                      try {
+                          fileName = file.getCanonicalPath();
+                          if (!fileName.toLowerCase().endsWith(".cfg")) {
+                              fileName += ".cfg";
+                          }
+                      } catch(Exception ex) {
+                      }
+                      
+                      IStrings pDirectories = getBaseDirectories();
+                      if(pDirectories != null) {
+                          try {
+                              FileWriter fileWriter = new FileWriter(fileName);
+                              BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+                              
+                              int count = pDirectories.getCount();
+                              for(int index = 0; index < count; index++) {
+                                  String curDir = pDirectories.item(index);
+                                  
+                                  bufferedWriter.write(curDir);
+                                  bufferedWriter.newLine();
+                              }
+                              bufferedWriter.flush();
+                              bufferedWriter.close();
+                          } catch(Exception ex) {
+                          }
+                          
+                          IQuestionDialog pQuestionDialog = new SwingQuestionDialogImpl();
+                          if(pQuestionDialog != null) {
+                              String question = PFMessages.getString("IDS_PROMPT_TO_SET_SEARCHDIRS");
+                              String title = PFMessages.getString("IDS_PROMPT_TO_SET_SEARCHDIRS_TITLE");
+                              QuestionResponse nResult = pQuestionDialog.displaySimpleQuestionDialog(MessageDialogKindEnum.SQDK_YESNO,
+                                      MessageIconKindEnum.EDIK_ICONQUESTION,
+                                      question,
+                                      SimpleQuestionDialogResultKind.SQDRK_RESULT_YES,
+                                      null,
+                                      title);
+                              
+                              
+                          }
+                      }
+                  }
+              }
+          }
       });
       
 
@@ -535,25 +518,6 @@ public class SearchDirectoriesPage extends JCenterDialog
 
       getContentPane().add(panel, BorderLayout.CENTER);
    }
-   
-   protected void setSourceFolderPreference(String fileName)
-	{
-		ICoreProduct pProduct = ProductRetriever.retrieveProduct();
-   
-		if(pProduct != null)
-		{
-			IPreferenceManager2 pPrefManager = pProduct.getPreferenceManager();
-      
-			if(pPrefManager != null)
-			{
-				pPrefManager.setPreferenceValue/*2*/(
-                                    "Default", 
-                                    "ReverseEngineering|OperationElements", 
-                                    "OPRE_SearchDirectoriesFile", 
-                                    fileName);
-			}
-		}
-	}
 	
 	protected void copyCacheToGUI()
 	{

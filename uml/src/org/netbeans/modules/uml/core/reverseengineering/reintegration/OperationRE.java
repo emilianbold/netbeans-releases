@@ -747,30 +747,26 @@ public class OperationRE implements IOperationRE
                retVal = findOperationOfSameName(cpClassifier, methodName);
 
             // If we did not find the operation on the classifier ...
-            if (retVal == null)
-            {
-               IDataType cpDataType = (cpClassifier instanceof IDataType) ? (IDataType)cpClassifier : null;
-               // String createOperation = ProductHelper.getPreferenceValue("ReverseEngineering", "CreateOperation");
-               String createOperation = ProductHelper.getPreferenceValue("ReverseEngineering|OperationElements", "CreateOperation");
-
-               // ... and the classifier is an IDataType or the preference is to create new operations,
-               // create a new method
-               if (cpDataType != null || "PSK_YES".equals(createOperation))
-               {
-                  // Create the Operation
-                  retVal = cpClassifier.createOperation("", methodName);
-                  if (retVal != null)
-                  {
-                     // Add the operation to the classifier before processing the parameter,
-                     // because the parameters need to be resolved via the containing project.
-                     cpClassifier.addOperation(retVal);
-                     // Fill in the parameters for the new operation
-                     if (cpREOperation != null)
+            if (retVal == null) {
+                IDataType cpDataType = (cpClassifier instanceof IDataType) ? (IDataType)cpClassifier : null;
+                
+                //kris richards - CreateOperation pref deleted. Set to true.
+                // ... and the classifier is an IDataType or the preference is to create new operations,
+                // create a new method
+                
+                // Create the Operation
+                retVal = cpClassifier.createOperation("", methodName);
+                if (retVal != null) {
+                    // Add the operation to the classifier before processing the parameter,
+                    // because the parameters need to be resolved via the containing project.
+                    cpClassifier.addOperation(retVal);
+                    // Fill in the parameters for the new operation
+                    if (cpREOperation != null)
                         copyREOperationParameters(cpREOperation, retVal);
-                     else
+                    else
                         copyREArgumentsAsParameters(pEvent, retVal);
-                  }
-               }
+                }
+                
             }
          }
       }

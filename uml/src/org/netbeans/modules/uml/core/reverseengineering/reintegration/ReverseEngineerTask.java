@@ -85,11 +85,9 @@ public class ReverseEngineerTask extends AbstractNBTask
     {
         setLogLevel(SUMMARY);
         setTaskName(getBundleMessage("IDS_RE_TITLE"));
-        
-        String prefVal = ProductHelper.getPreferenceManager()
-            .getPreferenceValue("Default", "ReverseEngineering", "REShowOutput"); // NOI18N
-        
-        setDisplayOutput(prefVal.equals("PSK_YES"));
+
+        //kris richards - "REShowOutput" pref expunged
+        setDisplayOutput(true);
         
         progressContribs = new ProgressContributor[SUBTASK_TOT];
         int i = 0;

@@ -162,153 +162,51 @@ public class OpParserOptions implements IOpParserOptions
     /**
      * Load the class loader with all the source files indicated by the input elements
      */
-    protected boolean initializeClassLoader(ETList<IElement> inElements)
-    {
+    protected boolean initializeClassLoader(ETList<IElement> inElements) {
         m_ClassLoader = new REClassLoader();
         
         ICompositeClassLocator cpCompositeLocator = new CompositeClassLocator();
         
         // Initialize the Project Class Locator
         addProjectLocators(inElements, cpCompositeLocator);
-      
-        boolean bCanceled = addFileSystemLocator(inElements, cpCompositeLocator);
         
-        if (!bCanceled)
-        {
-           // Prepare the loader
-           ETList<IElement> els = getAllSourceFileArtifacts(inElements);
-           if (els != null)
-           {
-               for (int i = 0, count = els.size(); i < count; ++i)
-               {    
-                   IElement el = els.get(i);
-                   if (!(el instanceof ISourceFileArtifact)) continue;
+        //kris richards - OPRE_SearchDirectoriesFile pref expunged. Set to "".
+        //kris richards - OPRE_ShowBaseDirDialog pref deleted.
+        // therefore no condition necessary
+        
+        // Prepare the loader
+        ETList<IElement> els = getAllSourceFileArtifacts(inElements);
+        if (els != null) {
+            for (int i = 0, count = els.size(); i < count; ++i) {
+                IElement el = els.get(i);
+                if (!(el instanceof ISourceFileArtifact)) continue;
                 
-                   ISourceFileArtifact sf = (ISourceFileArtifact) el;
+                ISourceFileArtifact sf = (ISourceFileArtifact) el;
                 
-                   // Get the associated language
-                   ILanguage lang = sf.getLanguage();
-                   if (lang != null)
-                   {
-                       IStrings libraryNames = lang.getLibraryNames();
-                       if (libraryNames != null)
-                       {
-                           for (int j = 0, lnc = libraryNames.size(); j < lnc; ++j)
-                           {
-                               String libraryName = libraryNames.get(j);
-                               if (libraryName == null || libraryName.length() == 0)
-                                   continue;
+                // Get the associated language
+                ILanguage lang = sf.getLanguage();
+                if (lang != null) {
+                    IStrings libraryNames = lang.getLibraryNames();
+                    if (libraryNames != null) {
+                        for (int j = 0, lnc = libraryNames.size(); j < lnc; ++j) {
+                            String libraryName = libraryNames.get(j);
+                            if (libraryName == null || libraryName.length() == 0)
+                                continue;
                             
-                               String def = lang.getLibraryDefinition(libraryName);
-                               if (def != null && def.length() > 0)
-                                   addLookupLibrary(m_ClassLoader, def);
-                           }
-                       }
-                   }
-               }
-            
-               m_ClassLoader.setClassLocator(cpCompositeLocator);
-               setClassLoader(m_ClassLoader);
-           }
-        }
-        return bCanceled;
-    }
-    
-    public boolean addFileSystemLocator(ETList<IElement> inElements, ICompositeClassLocator compLocator)
-    {
-       boolean bCanceled = false;
-       
-       Hashtable<String, IProject> projMap = getProjects(inElements);
-       ETPairT<IStrings, Boolean> result = getBaseDirectories(projMap);
-       IStrings baseDirs = result.getParamOne();
-       bCanceled = result.getParamTwo().booleanValue();
-       
-       if (baseDirs != null)
-       {
-          IFileSystemClassLocator fileSystemLocator = new FileSystemClassLocator();
-          int count = baseDirs.getCount();
-          for (int i=0; i<count; i++)
-          {
-             String userDir = baseDirs.item(i);
-             if (userDir != null && userDir.length() > 0)
-             {
-                fileSystemLocator.addBaseDirectory(userDir);
-             }
-          }
-          compLocator.addLocator(fileSystemLocator);
-       }
-       
-       return bCanceled;
-    }
-
-    public ETPairT<IStrings, Boolean> getBaseDirectories(Hashtable<String, IProject> projMap) {
-        IStrings strs = null;
-        boolean cancel = false;
-        
-        String settingFileName = getPreference("OPRE_SearchDirectoriesFile");
-        IREOperationWizard wizard = new REOperationWizard();
-        if (settingFileName != null && settingFileName.length() > 0 && (new File(settingFileName)).exists()) {
-            wizard.addSettingsFile(settingFileName);
-        } else {
-            //Enumeration keys = projMap.keys();
-            Enumeration elems = projMap.elements();
-            while (elems.hasMoreElements()) {
-                IProject proj = (IProject)elems.nextElement();
-                if(proj != null) {
-                    // If we ever want to support other languages like C++ we need
-                    // to remove the dependency on Java Project constructs
-//               Project umlProj = ProjectUtil.findNetBeansProjectForModel(proj);
-                    Project umlProj=null;
-                    
-                    String filename = proj.getFileName();
-                    if((filename != null) && (filename.length() > 0)) {
-                        FileObject fo = FileUtil.toFileObject(new File(filename));
-                        umlProj = FileOwnerQuery.getOwner(fo);
-                    }
-                    
-                    if (umlProj!=null) {
-                        IAssociatedProjectSourceRoots provider = (IAssociatedProjectSourceRoots)umlProj.getLookup().lookup(IAssociatedProjectSourceRoots.class);
-                        if(provider != null) {
-                            File[] roots = provider.getCompileDependencies();
-                            //Kris Richards - hack. The roots comes back as null 
-                            //when a fwd engineer is followed by a rev engineer and 
-                            //the a seq diag rev eng is requested.
-                            if (roots != null)
-                                for(File root : roots) {
-                                    String absName = root.getAbsolutePath();
-                                    if(absName.endsWith("jar") == false) {
-                                        wizard.addLookupDirectory(absName);
-                                    }
-                                }
+                            String def = lang.getLibraryDefinition(libraryName);
+                            if (def != null && def.length() > 0)
+                                addLookupLibrary(m_ClassLoader, def);
                         }
                     }
                 }
             }
+            
+            m_ClassLoader.setClassLocator(cpCompositeLocator);
+            setClassLoader(m_ClassLoader);
         }
         
-        cancel = wizard.display(null);
-        strs = wizard.getBaseDirectories();
-        
-        return new ETPairT<IStrings, Boolean> (strs, Boolean.valueOf(cancel));
+        return false;
     }
-
-   public String getPreference(String prefName)
-   {
-      String retVal = null;
-      ICoreProduct prod = ProductRetriever.retrieveProduct();
-      if (prod != null)
-      {
-         IPreferenceManager2 prefMan = prod.getPreferenceManager();
-         if (prefMan != null)
-         {
-            retVal = prefMan.getPreferenceValue(
-                "Default", 
-                "ReverseEngineering|OperationElements|OPRE_SearchDirectoriesFile", 
-                prefName);
-         }
-      }
-      return retVal;
-   }
 
    public void addProjectLocators(ETList<IElement> inElements, ICompositeClassLocator compLocator)
    {
