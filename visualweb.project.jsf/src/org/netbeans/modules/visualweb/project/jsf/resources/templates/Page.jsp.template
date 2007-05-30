@@ -3,7 +3,7 @@
     <jsp:directive.page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8"/>
     <f:view>
         <ui:page binding="#{__NAME__.page1}" id="page1">
-            <ui:html binding="#{__NAME__.html1}" id="page1">
+            <ui:html binding="#{__NAME__.html1}" id="html1">
                 <ui:head binding="#{__NAME__.head1}" id="head1">
                     <ui:link binding="#{__NAME__.link1}" id="link1" url="/resources/stylesheet.css"/>
                 </ui:head>

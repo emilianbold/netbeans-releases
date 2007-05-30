@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.visualweb.insync.faces;
 
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.insync.InSyncServiceProvider;
 import org.netbeans.modules.visualweb.insync.Util;
@@ -38,6 +39,7 @@ import javax.faces.component.UIComponent;
 import javax.faces.component.UIForm;
 import javax.faces.component.UIViewRoot;
 import javax.faces.context.FacesContext;
+import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
 
@@ -273,7 +275,13 @@ public class FacesPageUnit extends FacesUnit implements PropertyChangeListener {
         pgunit.getNamespacePrefix(URI_JSF_HTML, "h");
 
         // We require JSP 1.2
-        pgunit.ensureAttributeValue(root, "version", "1.2");
+        String projectVersion = JsfProjectUtils.getProjectVersion(model.getProject());
+        if(projectVersion.equals(J2eeModule.J2EE_13) ||
+                projectVersion.equals(J2eeModule.J2EE_14)) {
+            pgunit.ensureAttributeValue(root, "version", "1.2");            
+        } else if(projectVersion.equals(J2eeModule.JAVA_EE_5)) {
+            pgunit.ensureAttributeValue(root, "version", "2.1");
+        }
 
         // Get or create (as first child) a JSP page directive element to control page type and
         // source charset encoding. Use the page' xml encoding if available, else use our default
