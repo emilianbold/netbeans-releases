@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools;
@@ -66,8 +66,8 @@ public class SearchResultsOperatorTest extends JellyTestCase {
         System.out.println("### "+getName()+" ###");
         if(searchResultsOper == null) {
             FindInFilesOperator fifo = FindInFilesOperator.invoke(new ProjectsTabOperator().getProjectRootNode("SampleProject"));
-            fifo.setFullTextSubstring("sample", false, false);
-            searchResultsOper = fifo.search();
+            fifo.txtText().setText("sample");
+            searchResultsOper = fifo.find();
         }
     }
     

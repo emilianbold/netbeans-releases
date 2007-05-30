@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.actions;
@@ -47,7 +47,6 @@ public class FindInFilesActionTest extends JellyTestCase {
         suite.addTest(new FindInFilesActionTest("testPerformPopup"));
         suite.addTest(new FindInFilesActionTest("testPerformMenu"));
         suite.addTest(new FindInFilesActionTest("testPerformAPI"));
-        suite.addTest(new FindInFilesActionTest("testPerformShortcut"));
         return suite;
     }
     
@@ -95,22 +94,4 @@ public class FindInFilesActionTest extends JellyTestCase {
         new FindInFilesAction().performAPI();
         new FindInFilesOperator().close();
     }
-    
-    /** Test of performShortcut method. */
-    public void testPerformShortcut() {
-        new FindInFilesAction().performShortcut();
-        new FindInFilesOperator().close();
-        Node node = new ProjectsTabOperator().getProjectRootNode("SampleProject");  // NOI18N
-        new FindInFilesAction().performShortcut(node);
-        new FindInFilesOperator().close();
-        // On some linux it may happen autorepeat is activated and it 
-        // opens dialog multiple times. So, we need to close all modal dialogs.
-        // See issue http://www.netbeans.org/issues/show_bug.cgi?id=56672.
-        closeAllModal();
-        try {
-            new FindInFilesAction().performShortcut(new ProjectsTabOperator());
-            fail("Should throw UnsupportedOperationException");
-        } catch (UnsupportedOperationException e) {}
-    }
-    
 }
