@@ -80,6 +80,7 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="**/EditorOperatorTest.class"/>
+                <include name="**/EditorOperatorTest.class/testGetAnnotations" expectedFail="Error annotation not shown until editor re-focused (#97218)"/>
                 <include name="**/EditorWindowOperatorTest.class"/>
                 <include name="**/FavoritesOperatorTest.class"/>
                 <include name="**/FilesTabOperatorTest.class"/>
