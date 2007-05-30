@@ -31,6 +31,7 @@ import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
@@ -240,25 +241,25 @@ public class PreInstallSummaryPanel extends ErrorMessagePanel {
                 final Map<File, Long> spaceMap =
                         new HashMap<File, Long>();
                 
+                LogManager.log("Available roots : " + StringUtils.asString(roots));
+                
                 for (Product product: toInstall) {
-                    File root = FileUtils.getRoot(
-                            product.getInstallationLocation(), roots);
+                    final File installLocation = product.getInstallationLocation();                    
+                    final File root = FileUtils.getRoot(installLocation, roots);
+                    final long productSize = product.getRequiredDiskSpace();
+                    
+                    LogManager.log("    [" + root + "] <- " + installLocation);
                     
                     if ( root != null ) {
                         Long size = spaceMap.get(root);
-                        if (size != null) {
-                            size = Long.valueOf(size.longValue() +
-                                    product.getRequiredDiskSpace());
-                        } else {
-                            size = Long.valueOf(product.getRequiredDiskSpace());
-                        }
-                        
+                        size = Long.valueOf(
+                                (size != null ? size.longValue() : 0L) +
+                                productSize);                        
                         spaceMap.put(root, size);                        
                     } else {
                         return StringUtils.format(
                                 panel.getProperty(ERROR_NON_EXISTENT_ROOT_PROPERTY),
-                                product,
-                                product.getInstallationLocation());
+                                product, installLocation);
                     }
                 }
                 
