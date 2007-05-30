@@ -47,10 +47,9 @@ import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.jemmy.operators.Operator;
-import org.netbeans.jemmy.operators.Operator.StringComparator;
 
 import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.performance.test.utilities.PerformanceTestCase;
 
 import org.netbeans.progress.module.Controller;
 import org.netbeans.progress.spi.InternalHandle;
@@ -67,7 +66,7 @@ public class Utilities {
     public static final String SOURCE_PACKAGES = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir");
     public static final String TEST_PACKAGES = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_test.src.dir");
     public static final String WEB_PAGES = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.Bundle", "LBL_Node_DocBase");
-    
+    private static PerformanceTestCase test = null;
     /** Creates a new instance of Utilities */
     public Utilities() {
     }
@@ -426,20 +425,21 @@ public class Utilities {
         TreePath path = null;
         
         // create exactly (full match) and case sensitively comparing comparator
-        Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(false, false);
-        StringComparator previousComparator = rto.tree().getComparator();
-        rto.setComparator(comparator);
+//        Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(false, false);
+//        StringComparator previousComparator = rto.tree().getComparator();
+//        rto.setComparator(comparator);
         JTreeOperator runtimeTree = rto.tree();
         long oldTimeout = runtimeTree.getTimeouts().getTimeout("JTreeOperator.WaitNextNodeTimeout");
         runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", 60000);
         try {
+            log("Looking path = Servers|Sun Java System Application Server");
             path = runtimeTree.findPath("Servers|Sun Java System Application Server"); // NOI18N
         } catch (Exception exc) {
             exc.printStackTrace(System.err);
-            throw new Error("Cannot find Application Server Node");
+            throw new Error("Cannot find Application Server Node: "+exc.getMessage());
         }
         runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", oldTimeout);
-        rto.setComparator(previousComparator);
+//        rto.setComparator(previousComparator);
         return new Node(rto.tree(),path);
     }
     
@@ -465,7 +465,7 @@ public class Utilities {
         asNode.select();
         
         String serverIDEName = asNode.getText();
-        
+        log("ServerNode name = "+serverIDEName);
         JPopupMenuOperator popup = asNode.callPopup();
         if (popup == null) {
             throw new Error("Cannot get context menu for Application server node ");
@@ -487,7 +487,7 @@ public class Utilities {
         InternalHandle task = waitServerTaskHandle(model,taskName+" "+serverIDEName);
         long taskTimestamp = task.getTimeStampStarted();
         
-        System.err.println("task started at : "+taskTimestamp);
+        log("task started at : "+taskTimestamp);
         int i=0;
         while(i<12000) { // max 12000*50=600000=10 min
             i++;
@@ -507,7 +507,7 @@ public class Utilities {
             InternalHandle[] handles =  model.getHandles();
             InternalHandle  serverTask = getServerTaskHandle(handles,serverIDEName);
             if(serverTask != null) {
-                System.err.println("Returning task handle");
+                log("Returning task handle");
                 return serverTask;
             }
             
@@ -523,13 +523,13 @@ public class Utilities {
     
     private static InternalHandle getServerTaskHandle(InternalHandle[] handles, String taskName) {
         if(handles.length == 0)  {
-            System.err.println("Empty tasks queue");
+            log("Empty tasks queue");
             return null;
         }
         
         for (InternalHandle internalHandle : handles) {
             if(internalHandle.getDisplayName().equals(taskName)) {
-                System.err.println("Expected task found...");
+                log("Expected task found...");
                 return internalHandle;
             }
         }
@@ -543,6 +543,13 @@ public class Utilities {
         ProjectSupport.waitScanFinished();
         new QueueTool().waitEmpty(1000);
         ProjectSupport.waitScanFinished();
+    }
+    public static void initLog(PerformanceTestCase testCase) {
+        test = testCase;
+    }
+    private static void log(String logMessage) {
+        System.out.println("Utilities::"+logMessage);
+        if( test != null  ) { test.log("Utilities::"+logMessage); }
     }
     
 }
