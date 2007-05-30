@@ -1332,6 +1332,10 @@ public class UnitTab extends javax.swing.JPanel {
                 public void run() {                                        
                     try {
                         setUp();
+                        if (unit.isMarked()) {
+                            //this removes it from container
+                            unit.setMarked(false);
+                        }
                         getLocalDownloadSupport().remove(unit.updateUnit);
                     } finally {
                         SwingUtilities.invokeLater(new Runnable() {
