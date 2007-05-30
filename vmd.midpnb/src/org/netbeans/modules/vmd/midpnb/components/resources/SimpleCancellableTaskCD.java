@@ -27,8 +27,6 @@ import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.inspector.common.FolderPositionControllerFactory;
 import org.netbeans.modules.vmd.api.model.*;
-import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
-import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
 import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
@@ -37,14 +35,11 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.inspector.controllers.ResourcePC;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorJavaString;
-
+import org.netbeans.modules.vmd.midp.screen.ResourceSRItemPresenter;
 import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScreenCD;
 
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.midp.screen.ResourceSRItemPresenter;
 
 
 /**
@@ -75,21 +70,21 @@ public class SimpleCancellableTaskCD extends ComponentDescriptor {
     }
 
     public void postInitialize (DesignComponent component) {
-        component.writeProperty (PROP_CODE, MidpTypes.createJavaCodeValue ("")); // NOI18N
+        component.writeProperty (PROP_CODE, MidpTypes.createJavaCodeValue ("// write task-execution user code here")); // NOI18N
         MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY);
     }
 
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
-            new PropertyDescriptor (PROP_CODE, MidpTypes.TYPEID_JAVA_CODE, PropertyValue.createNull(), false, true, MidpVersionable.MIDP_2)
+            new PropertyDescriptor (PROP_CODE, MidpTypes.TYPEID_JAVA_CODE, PropertyValue.createNull(), false, true, MidpVersionable.MIDP_2, false, false)
         );
     }
 
-     private static DefaultPropertiesPresenter createPropertiesPresenter() {
-        return new DefaultPropertiesPresenter (DesignEventFilterResolver.THIS_COMPONENT)
-                .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-                     .addProperty("Executable Code", PropertyEditorJavaString.createInstance(TYPEID), PROP_CODE);
-    }
+//     private static DefaultPropertiesPresenter createPropertiesPresenter() {
+//        return new DefaultPropertiesPresenter (DesignEventFilterResolver.THIS_COMPONENT)
+//                .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
+//                     .addProperty("Executable Code", PropertyEditorJavaString.createInstance(TYPEID), PROP_CODE);
+//    }
 
     private static Presenter createSetterPresenter () {
         return new CodeSetterPresenter ()
@@ -101,7 +96,7 @@ public class SimpleCancellableTaskCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
             // properties
-            createPropertiesPresenter(),
+//            createPropertiesPresenter(),
             // setter
             createSetterPresenter (),
             MidpCodePresenterSupport.createAddImportPresenter (),
@@ -129,10 +124,19 @@ public class SimpleCancellableTaskCD extends ComponentDescriptor {
             CodeWriter writer = section.getWriter ();
             writer.write ("new org.netbeans.microedition.util.Executable() {\n"); // NOI18N
             writer.write ("public void execute () throws Exception {\n"); // NOI18N
+            writer.commit ();
+
+            section.switchToEditable (component.getComponentID () + "-execute");
+            writer = section.getWriter ();
             String code = MidpTypes.getJavaCode (component.readProperty (PROP_CODE));
-            writer.write (code);
-            if (! code.endsWith ("\n")) // NOI18N
+            if (code != null)
+                writer.write (code);
+            if (code == null  ||  ! code.endsWith ("\n")) // NOI18N
                 writer.write ("\n"); // NOI18N
+            writer.commit ();
+
+            section.switchToGuarded ();
+            writer = section.getWriter ();
             writer.write ("}\n"); // NOI18N
             writer.write ("}"); // NOI18N
         }
