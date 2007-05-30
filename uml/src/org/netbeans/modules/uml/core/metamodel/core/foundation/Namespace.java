@@ -216,8 +216,8 @@ public class Namespace extends NamedElement implements INamespace{
 	 *
 	 */
 	private void deleteNotifiableElements() {
-		buildNotifyList();
 
+            //kris richards - removed call to deleted method buildNotifyList. (pref issue; see UMLOptionsDialog wiki)
 		String query = "UML:Element.ownedElement/";
 		if (s_MetaTypes.size() > 0)
 		{
@@ -268,44 +268,6 @@ public class Namespace extends NamedElement implements INamespace{
 	 * @return HRESULT
 	 *
 	 */
-	private void buildNotifyList()	
-	{
-		if (s_MetaTypes.size() == 0)
-		{
-			ICoreProduct prod = ProductRetriever.retrieveProduct();
-			if (prod != null)
-			{
-				// Now check preferences to see if we contain any elements that need to be
-				// notified that they are deleted as well.
-				IPreferenceManager2 prefMan = prod.getPreferenceManager();
-				if (prefMan != null)
-				{
-					IPropertyElement pElement = prefMan.getPreferenceElement( "NotifiedElements" , "NotifiedElements" );
-					if (pElement != null)
-					{
-						Vector subEles = pElement.getSubElements();
-						if (subEles != null && subEles.size() > 0)
-						{
-							int count = subEles.size();
-							
-							// the name of the sub elements should be meta type names. This is how we will 
-							// dynamically query for those names.
-							for (int i=0; i<count; i++)
-							{
-								IPropertyElement actualEle = (IPropertyElement)subEles.elementAt(i);
-								String metaTypeName = actualEle.getName();
-								if (metaTypeName.length() > 0)
-								{
-									String actualType = "UML:" + metaTypeName;
-									s_MetaTypes.add(actualType);
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
 
 	/**
 	 *
