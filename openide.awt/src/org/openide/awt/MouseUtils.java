@@ -20,6 +20,7 @@ package org.openide.awt;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.lang.ref.WeakReference;
 
 import javax.swing.SwingUtilities;
 
@@ -37,7 +38,8 @@ public class MouseUtils extends Object {
     private static int tempy = 0;
     private static long temph = 0;
     private static int tempm = 0;
-    private static MouseEvent tempe;
+    // #105082: prevent leak, remember only through weak ref
+    private static WeakReference<MouseEvent> tempe;
 
     /** Determines if the event is originated from the right mouse button
     * @param e the MouseEvent
@@ -86,10 +88,10 @@ public class MouseUtils extends Object {
 
         //System.out.println ("When:: "+h); // NOI18N
         // same position at short time
-        if ((tempx == x) && (tempy == y) && ((h - temph) < DOUBLE_CLICK_DELTA) && (
+        if ((tempx == x) && (tempy == y) && ((h - temph) < DOUBLE_CLICK_DELTA) &&
             // Without this, calling isDoubleClick() twice on the same
             // mouse event will return true the second time!
-            e != tempe) && (m == tempm)) {
+            (tempe != null && e != tempe.get()) && (m == tempm)) {
             // OK forget all
             tempx = 0;
             tempy = 0;
@@ -104,7 +106,7 @@ public class MouseUtils extends Object {
             tempy = y;
             temph = h;
             tempm = m;
-            tempe = e;
+            tempe = new WeakReference<MouseEvent>(e);
 
             return false;
         }
