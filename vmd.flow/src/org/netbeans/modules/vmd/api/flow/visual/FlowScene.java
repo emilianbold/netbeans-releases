@@ -565,7 +565,7 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
         public ConnectorState isAcceptable (final Widget widget, Point point, final Transferable transferable) {
             if (widget == null)
                 return ConnectorState.REJECT_AND_STOP;
-            final ConnectorState[] ret  = new ConnectorState[] { ConnectorState.REJECT_AND_STOP };
+            final ConnectorState[] ret  = new ConnectorState[] { ConnectorState.REJECT };
             document.getTransactionManager ().readAccess (new Runnable() {
                 public void run () {
                     if (widget == FlowScene.this) {
@@ -657,7 +657,7 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
             document.getTransactionManager ().readAccess (new Runnable() {
                 public void run () {
                     target = (FlowDescriptor) findObject (targetWidget);
-                    ret[0] = getBehaviour (source).isConnectionTarget (source, target) ? ConnectorState.ACCEPT : ConnectorState.REJECT_AND_STOP;
+                    ret[0] = getBehaviour (source).isConnectionTarget (source, target) ? ConnectorState.ACCEPT : ConnectorState.REJECT;
                 }
             });
             return ret[0];
@@ -738,7 +738,7 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
                         return;
                     FlowEdgeDescriptor edge = (FlowEdgeDescriptor) object;
                     replacement = (FlowDescriptor) findObject (replacementWidget);
-                    ret[0] = getBehaviour (edge).isReplacement (edge, replacement, reconnectingSource) ? ConnectorState.ACCEPT : ConnectorState.REJECT_AND_STOP;
+                    ret[0] = getBehaviour (edge).isReplacement (edge, replacement, reconnectingSource) ? ConnectorState.ACCEPT : ConnectorState.REJECT;
                 }
             });
             return ret[0];
