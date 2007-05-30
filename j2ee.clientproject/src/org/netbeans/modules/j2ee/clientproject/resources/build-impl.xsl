@@ -195,6 +195,7 @@ Microsystems, Inc. All Rights Reserved.
                         </not>
                     </and>
                 </condition>
+                <property name="source.encoding" value="${{file.encoding}}"/>
             </target>
             
             <target name="-post-init">
@@ -274,6 +275,7 @@ Microsystems, Inc. All Rights Reserved.
                             <xsl:attribute name="destdir">@{destdir}</xsl:attribute>
                             <xsl:attribute name="debug">@{debug}</xsl:attribute>
                             <xsl:attribute name="deprecation">${javac.deprecation}</xsl:attribute>
+                            <xsl:attribute name="encoding">${source.encoding}</xsl:attribute>
                             <xsl:if test ="not(/p:project/p:configuration/carproject:data/carproject:explicit-platform/@explicit-source-supported ='false')">                            
                                 <xsl:attribute name="source">${javac.source}</xsl:attribute>
                                 <xsl:attribute name="target">${javac.target}</xsl:attribute>

@@ -19,11 +19,24 @@
 
 package org.netbeans.modules.j2ee.clientproject.ui.customizer;
 
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
+import java.util.logging.Logger;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import javax.swing.plaf.UIResource;
 import org.netbeans.api.queries.CollocationQuery;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
@@ -35,7 +48,8 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
  * @author  Tomas Zezula
  */
 public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Provider {
-    
+    private String originalEncoding;
+    private AppClientProjectProperties uiProperties;
     private File projectFld;
     
     public CustomizerSources( AppClientProjectProperties uiProperties ) {
@@ -91,7 +105,25 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
                 enableSourceLevel ();
             }                                    
         });
+        
         enableSourceLevel ();
+        
+        this.originalEncoding = ((AppClientProject)uiProperties.getProject()).evaluator().getProperty(AppClientProjectProperties.SOURCE_ENCODING);
+        if (this.originalEncoding == null) {
+            this.originalEncoding = FileEncodingQuery.getDefaultEncoding().name();
+        }
+        
+        this.encoding.setModel(new EncodingModel(this.originalEncoding));
+        this.encoding.setRenderer(new EncodingRenderer());
+        
+        
+        this.encoding.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                handleEncodingChange();
+            }
+        });
+        
+        this.uiProperties = uiProperties;
     }
 
     public HelpCtx getHelpCtx() {
@@ -132,7 +164,8 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         jPanel1 = new javax.swing.JPanel();
         jLabel4 = new javax.swing.JLabel();
         sourceLevel = new javax.swing.JComboBox();
-        jPanel2 = new javax.swing.JPanel();
+        jLabel5 = new javax.swing.JLabel();
+        encoding = new javax.swing.JComboBox();
         jLabelConfigFilesFolder = new javax.swing.JLabel();
         jTextFieldConfigFilesFolder = new javax.swing.JTextField();
         configFilesFolderBrowse = new javax.swing.JButton();
@@ -383,14 +416,19 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         jLabel4.setLabelFor(sourceLevel);
         jLabel4.setText(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "TXT_SourceLevel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         jPanel1.add(jLabel4, gridBagConstraints);
 
         sourceLevel.setMinimumSize(this.sourceLevel.getPreferredSize());
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 0.75;
@@ -398,13 +436,26 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         sourceLevel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "AN_SourceLevel")); // NOI18N
         sourceLevel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "AD_SourceLevel")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "TXT_Encoding")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
+        jPanel1.add(jLabel5, gridBagConstraints);
+
+        encoding.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        jPanel1.add(jPanel2, gridBagConstraints);
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        jPanel1.add(encoding, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -468,19 +519,31 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
     }//GEN-LAST:event_configFilesFolderBrowseActionPerformed
     
     
+    private void handleEncodingChange() {
+        Charset enc = (Charset) encoding.getSelectedItem();
+        String encName;
+        if (enc != null) {
+            encName = enc.name();
+        } else {
+            encName = originalEncoding;
+        }
+        this.uiProperties.putAdditionalProperty(AppClientProjectProperties.SOURCE_ENCODING, encName);
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addSourceRoot;
     private javax.swing.JButton addTestRoot;
     private javax.swing.JButton configFilesFolderBrowse;
     private javax.swing.JButton downSourceRoot;
     private javax.swing.JButton downTestRoot;
+    private javax.swing.JComboBox encoding;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabelConfigFilesFolder;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextField jTextFieldConfigFilesFolder;
@@ -496,4 +559,80 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
     private javax.swing.JButton upTestRoot;
     // End of variables declaration//GEN-END:variables
     
+    private static class EncodingRenderer extends JLabel implements ListCellRenderer, UIResource {
+        
+        public EncodingRenderer() {
+            setOpaque(true);
+        }
+        
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            assert value instanceof Charset;
+            setName("ComboBox.listRenderer"); // NOI18N
+            setText(((Charset) value).displayName());
+            setIcon(null);
+            if (isSelected) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());
+            } else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+            return this;
+        }
+        
+        @Override
+        public String getName() {
+            String name = super.getName();
+            return name == null ? "ComboBox.renderer" : name; // NOI18N
+        }
+        
+    }
+    
+    private static class EncodingModel extends DefaultComboBoxModel {
+        
+        public EncodingModel(String originalEncoding) {
+            Charset defEnc = null;
+            for (Charset c : Charset.availableCharsets().values()) {
+                if (c.name().equals(originalEncoding)) {
+                    defEnc = c;
+                }
+                addElement(c);
+            }
+            if (defEnc == null) {
+                //Create artificial Charset to keep the original value
+                //May happen when the project was set up on the platform
+                //which supports more encodings
+                try {
+                    defEnc = new UnknownCharset(originalEncoding);
+                    addElement(defEnc);
+                } catch (java.nio.charset.IllegalCharsetNameException e) {
+                    //The source.encoding property is completely broken
+                    Logger.getLogger(this.getClass().getName()).info("IllegalCharsetName: " + originalEncoding);
+                }
+            }
+            if (defEnc == null) {
+                defEnc = FileEncodingQuery.getDefaultEncoding();
+            }
+            setSelectedItem(defEnc);
+        }
+    }
+    
+    private static class UnknownCharset extends Charset {
+        
+        UnknownCharset(String name) {
+            super(name, new String[0]);
+        }
+        
+        public boolean contains(Charset c) {
+            throw new UnsupportedOperationException();
+        }
+        
+        public CharsetDecoder newDecoder() {
+            throw new UnsupportedOperationException();
+        }
+        
+        public CharsetEncoder newEncoder() {
+            throw new UnsupportedOperationException();
+        }
+    }
 }

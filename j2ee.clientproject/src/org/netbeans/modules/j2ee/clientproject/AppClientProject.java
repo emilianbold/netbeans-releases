@@ -42,6 +42,7 @@ import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.clientproject.classpath.AppClientProjectClassPathExtender;
 import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.clientproject.queries.AppClientProjectEncodingQueryImpl;
 import org.netbeans.modules.j2ee.clientproject.queries.CompiledSourceForBinaryQuery;
 import org.netbeans.modules.j2ee.clientproject.queries.JavadocForBinaryQueryImpl;
 import org.netbeans.modules.j2ee.clientproject.queries.SourceLevelQueryImpl;
@@ -180,7 +181,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
         return helper.getStandardPropertyEvaluator();
     }
     
-    PropertyEvaluator evaluator() {
+    public PropertyEvaluator evaluator() {
         return eval;
     }
     
@@ -235,6 +236,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
             new AppClientSources(this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             new AppClientSharabilityQuery(this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new AppClientFileBuiltQuery(this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
+            new AppClientProjectEncodingQueryImpl(evaluator()), 
             new RecommendedTemplatesImpl(this.updateHelper),
             classpathExtender,
             this, // never cast an externally obtained Project to AppClientProject - use lookup instead

@@ -24,12 +24,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
+import java.nio.charset.Charset;
 import java.util.Stack;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.clientproject.AppClientProject;
 import org.netbeans.modules.j2ee.clientproject.AppClientProjectType;
 import org.netbeans.modules.j2ee.clientproject.AppClientProvider;
@@ -120,6 +122,7 @@ public class AppClientProjectGenerator {
         ep.put(AppClientProjectProperties.SOURCE_ROOT, DEFAULT_SRC_FOLDER); //NOI18N
         ep.setProperty(AppClientProjectProperties.META_INF, "${"+AppClientProjectProperties.SOURCE_ROOT+"}/"+DEFAULT_CONF_FOLDER); //NOI18N
         ep.setProperty(AppClientProjectProperties.SRC_DIR, "${"+AppClientProjectProperties.SOURCE_ROOT+"}/"+DEFAULT_JAVA_FOLDER); //NOI18N
+        
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         
         Project p = ProjectManager.getDefault().findProject(fo);
@@ -253,11 +256,11 @@ public class AppClientProjectGenerator {
     }
     
     /**
-     * Imports an existing Application client project into NetBeans project 
-     * with a flag to specify whether the project contains java source files 
+     * Imports an existing Application client project into NetBeans project
+     * with a flag to specify whether the project contains java source files
      * or was created from an exploded archive.
      * @return the helper object permitting it to be further customized
-     * @param fromJavaSource indicate whether the project is "from" source or an exploded archive    
+     * @param fromJavaSource indicate whether the project is "from" source or an exploded archive
      * @param dir the top-level directory (need not yet exist but if it does it must be empty) - "nbproject" location
      * @param name the name for the project
      * @param sourceFolders top-level location(s) of java sources - must not be null
@@ -269,16 +272,16 @@ public class AppClientProjectGenerator {
      * @throws IOException in case something went wrong
      */
     public static AntProjectHelper importProject(final File dir, final String name,
-            final File[] sourceFolders, final File[] testFolders, final File confFolder, 
+            final File[] sourceFolders, final File[] testFolders, final File confFolder,
             final File libFolder, String j2eeLevel, String serverInstanceID,boolean fromJavaSource) throws IOException {
         AntProjectHelper h = importProject(dir,name,sourceFolders,testFolders,
                 confFolder,libFolder,j2eeLevel,serverInstanceID);
         EditableProperties subEp = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        subEp.setProperty(AppClientProjectProperties.JAVA_SOURCE_BASED,fromJavaSource+""); // NOI18N
+        subEp.setProperty(AppClientProjectProperties.JAVA_SOURCE_BASED,fromJavaSource+""); // NOI18N        
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,subEp);
         Project subP = ProjectManager.getDefault().findProject(h.getProjectDirectory());
         ProjectManager.getDefault().saveProject(subP);
-        return h;    
+        return h;
     }
     private static AntProjectHelper createProject(FileObject dirFO, String name,
             String srcRoot, String testRoot, String configFiles, String libraries,
@@ -295,8 +298,8 @@ public class AppClientProjectGenerator {
         data.appendChild(minant);
         
         //TODO: ma154696: not sure if needed
-//        Element addLibs = doc.createElementNS(AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE, "ejb-module-additional-libraries"); //NOI18N
-//        data.appendChild(addLibs);
+        //        Element addLibs = doc.createElementNS(AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE, "ejb-module-additional-libraries"); //NOI18N
+        //        data.appendChild(addLibs);
         
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         Element sourceRoots = doc.createElementNS(AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
@@ -339,7 +342,7 @@ public class AppClientProjectGenerator {
         
         ep.setProperty("dist.dir", "dist"); // NOI18N
         ep.setComment("dist.dir", new String[] {"# " + NbBundle.getMessage(AppClientProjectGenerator.class, "COMMENT_dist.dir")}, false); // NOI18N
-//        ep.setProperty("dist.jar", "${dist.dir}/" + PropertyUtils.getUsablePropertyName(name) + ".jar"); // NOI18N
+        //        ep.setProperty("dist.jar", "${dist.dir}/" + PropertyUtils.getUsablePropertyName(name) + ".jar"); // NOI18N
         ep.setProperty(AppClientProjectProperties.DIST_JAR, "${"+AppClientProjectProperties.DIST_DIR+"}/" + "${" + AppClientProjectProperties.JAR_NAME + "}"); // NOI18N
         ep.setProperty("javac.classpath", new String[0]); // NOI18N
         ep.setProperty("build.sysclasspath", "ignore"); // NOI18N
@@ -366,7 +369,7 @@ public class AppClientProjectGenerator {
         String sourceLevel = v.toString();
         // #89131: these levels are not actually distinct from 1.5.
         if (sourceLevel.equals("1.6") || sourceLevel.equals("1.7"))
-            sourceLevel = "1.5";       
+            sourceLevel = "1.5";
         ep.setProperty(AppClientProjectProperties.JAVAC_SOURCE, sourceLevel); // NOI18N
         ep.setProperty(AppClientProjectProperties.JAVAC_TARGET, sourceLevel); // NOI18N
         
@@ -426,12 +429,12 @@ public class AppClientProjectGenerator {
         ep.setProperty(AppClientProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID(serverInstanceID));
         ep.setProperty(AppClientProjectProperties.J2EE_PLATFORM, j2eeLevel);
         ep.setProperty("manifest.file", "${" +AppClientProjectProperties.META_INF + "}/" + MANIFEST_FILE); // NOI18N
-
+        
         String mainClassArgs = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, J2eePlatform.TOOL_PROP_MAIN_CLASS_ARGS);
         if (mainClassArgs != null && !mainClassArgs.equals("")) {
             ep.put(AppClientProjectProperties.APPCLIENT_MAINCLASS_ARGS, mainClassArgs);
-        } else if ((mainClassArgs = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, AppClientProjectProperties.CLIENT_NAME)) 
-                        != null) {
+        } else if ((mainClassArgs = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, AppClientProjectProperties.CLIENT_NAME))
+                != null) {
             ep.put(AppClientProjectProperties.CLIENT_NAME, mainClassArgs);
         }
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
@@ -467,9 +470,9 @@ public class AppClientProjectGenerator {
         }
         
         // set j2ee.platform.wsimport.classpath
-        if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIMPORT)) { 
+        if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIMPORT)) {
             File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIMPORT);
-            ep.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH, 
+            ep.setProperty(WebServicesClientConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH,
                     Utils.toClasspathString(wsClasspath));
         }
         //WORKAROUND for --retrieve option in asadmin deploy command
@@ -502,6 +505,10 @@ public class AppClientProjectGenerator {
         if (deployAntPropsFile != null) {
             ep.setProperty(AppClientProjectProperties.DEPLOY_ANT_PROPS_FILE, deployAntPropsFile.getAbsolutePath());
         }
+        
+        // use the default encoding
+        Charset enc = FileEncodingQuery.getDefaultEncoding();
+        ep.setProperty(AppClientProjectProperties.SOURCE_ENCODING, enc.name());
         
         h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
         
@@ -566,7 +573,7 @@ public class AppClientProjectGenerator {
                     // #89131: these levels are not actually distinct from 1.5.
                     String srcLevel = sourceLevel;
                     if (sourceLevel.equals("1.6") || sourceLevel.equals("1.7"))
-                        srcLevel = "1.5";       
+                        srcLevel = "1.5";
                     PlatformUiSupport.storePlatform(ep, updateHelper, finalPlatformName, srcLevel != null ? new SpecificationVersion(srcLevel) : null);
                     helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                     ProjectManager.getDefault().saveProject(ProjectManager.getDefault().findProject(helper.getProjectDirectory()));

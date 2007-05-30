@@ -96,6 +96,7 @@ public class AppClientProjectProperties {
     public static final String J2EE_PLATFORM = "j2ee.platform"; // NOI18N
     
     public static final String SOURCE_ROOT = "source.root"; // NOI18N
+    public static final String SOURCE_ENCODING="source.encoding"; // NOI18N
     public static final String BUILD_FILE = "buildfile"; // NOI18N
     public static final String META_INF = "meta.inf"; // NOI18N
     public static final String SRC_DIR = "src.dir"; // NOI18N
