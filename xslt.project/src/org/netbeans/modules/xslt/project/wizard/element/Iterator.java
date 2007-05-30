@@ -30,17 +30,18 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
-import org.netbeans.modules.xslt.core.transformmap.api.BooleanType;
-import org.netbeans.modules.xslt.core.transformmap.api.Invokes;
-import org.netbeans.modules.xslt.core.transformmap.api.Service;
-import org.netbeans.modules.xslt.core.transformmap.api.TMapComponentFactory;
-import org.netbeans.modules.xslt.core.transformmap.api.TMapModel;
-import org.netbeans.modules.xslt.core.transformmap.api.TransformMap;
-import org.netbeans.modules.xslt.core.transformmap.api.WSDLReference;
+import org.netbeans.modules.xslt.tmap.model.api.BooleanType;
+import org.netbeans.modules.xslt.tmap.model.api.Invokes;
+import org.netbeans.modules.xslt.tmap.model.api.Service;
+import org.netbeans.modules.xslt.tmap.model.api.TMapComponentFactory;
+import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
+import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
+import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
 
 import static org.netbeans.modules.print.ui.PrintUI.*;
 
@@ -120,15 +121,17 @@ public final class Iterator implements TemplateWizard.Iterator {
     
 //    TMapModelFactory tMapModelFactory = Lookup.getDefault().lookup(TMapModelFactory.class);
 //    assert tMapModelFactory != null;
-    FileObject tMapFo = org.netbeans.modules.xslt.core.xsltmap.util.Util.getTMapFo(project);
+    FileObject tMapFo = org.netbeans.modules.xslt.tmap.util.Util.getTMapFo(project);
     if (tMapFo == null) {
-        tMapFo = org.netbeans.modules.xslt.core.xsltmap.util.Util.createDefaultTransformmap(project);
+        tMapFo = org.netbeans.modules.xslt.tmap.util.Util.createDefaultTransformmap(project);
     }
     
     TMapModel tMapModel = 
-            org.netbeans.modules.xslt.core.xsltmap.util.Util.getTMapModel(tMapFo);
+            org.netbeans.modules.xslt.tmap.util.Util.getTMapModel(tMapFo);
 
     configureTMapModel(tMapModel, wizard);
+    ProjectManager.getDefault().saveProject(project);
+    
     if (isRequestTransform(wizard)) {
         file = createXslFile(
                 project, (String) wizard.getProperty(Panel.INPUT_FILE),
@@ -158,7 +161,7 @@ public final class Iterator implements TemplateWizard.Iterator {
       try {
           tMapModel.startTransaction();
           
-          org.netbeans.modules.xslt.core.transformmap.api.Operation tMapOp = 
+          org.netbeans.modules.xslt.tmap.model.api.Operation tMapOp = 
                   setOperation(tMapModel, wizard, componentFactory);
           
           if (tMapOp != null 
@@ -173,7 +176,7 @@ public final class Iterator implements TemplateWizard.Iterator {
       }
   }
 
-  private org.netbeans.modules.xslt.core.transformmap.api.Operation setOperation(
+  private org.netbeans.modules.xslt.tmap.model.api.Operation setOperation(
           TMapModel tMapModel,
           TemplateWizard wizard, 
           TMapComponentFactory componentFactory) 
@@ -233,7 +236,7 @@ public final class Iterator implements TemplateWizard.Iterator {
           root.addService(reqService);
       }
       
-      org.netbeans.modules.xslt.core.transformmap.api.Operation tMapOp =
+      org.netbeans.modules.xslt.tmap.model.api.Operation tMapOp =
               componentFactory.createOperation();
       tMapOp.setOperation(tMapOp.createWSDLReference(wizardInputOperation, Operation.class));
       if (isRequestTransform(wizard)) {
@@ -249,7 +252,7 @@ public final class Iterator implements TemplateWizard.Iterator {
 }
   
   private Invokes setInvokes(
-          org.netbeans.modules.xslt.core.transformmap.api.Operation tMapOp,
+          org.netbeans.modules.xslt.tmap.model.api.Operation tMapOp,
           TemplateWizard wizard, 
           TMapComponentFactory componentFactory,
           boolean isFilterRequestReply) 
@@ -295,40 +298,32 @@ public final class Iterator implements TemplateWizard.Iterator {
     String file,
     boolean transformJBI) throws IOException
   {
-      if (file == null || "".equals(file)) {
-          return null;
-      }
-      
-    String text;
+    if (file == null || "".equals(file)) {
+        return null;
+    }
 
-    if (transformJBI) {
-      text = 
-        "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"" + // NOI18N
-        " version=\"1.0\">" + LS + // NOI18N
-        "    <xsl:template match=\"/\">" + LS + // NOI18N
-        "        <jbi:message xmlns:ns2=\"http://sun.com/EmplOutput\"" + // NOI18N
-        " type=\"ns2:output-msg\" version=\"1.0\"" + // NOI18N
-        " xmlns:jbi=\"http://java.sun.com/xml/ns/jbi/wsdl-11-wrapper\">" + LS + // NOI18N
-        "            <jbi:part>" + LS + // NOI18N
-        "                <xsl:apply-templates/>" + LS + // NOI18N
-        "            </jbi:part>" + LS + // NOI18N
-        "            <jbi:part>" + LS + // NOI18N
-        "                <xsl:apply-templates/>" + LS + // NOI18N
-        "            </jbi:part>" + LS + // NOI18N
-        "        </jbi:message>" + LS + // NOI18N
-        "    </xsl:template>" + LS + // NOI18N
-        "</xsl:stylesheet>" + LS; // NOI18N
+    int extIndex = file.lastIndexOf(XSL)-1; 
+    if (extIndex <= 0) {
+        return null;
     }
-    else {
-      text =
-        "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform" + // NOI18N
-        "\" version=\"1.0\">" + LS + // NOI18N
-        "    <xsl:template match=\"/\">" + LS + // NOI18N
-        "    </xsl:template>" + LS + // NOI18N
-        "</xsl:stylesheet>" + LS; // NOI18N
+    
+    file = file.substring(0, extIndex);
+      
+    if ("".equals(file)) {
+        return null;
     }
-    return Util.createFile(Util.getSrcFolder(project), file, text);
+    
+    return Util.copyFile(
+            Util.getSrcFolder(project), 
+            TEMPLATES_PATH, 
+            transformJBI ? JBI_XSLT_SERVICE : XSLT_SERVICE,
+            file, XSL);
   }
 
+  
+  private static String TEMPLATES_PATH = "Templates/SOA/"; // NOI18N
+  private static String JBI_XSLT_SERVICE = "jbi_xslt.service"; // NOI18N
+  private static String XSLT_SERVICE = "xslt.service"; // NOI18N
+  private static String XSL = "xsl"; // NOI18N
   private Panel<WizardDescriptor> myPanel;
 }

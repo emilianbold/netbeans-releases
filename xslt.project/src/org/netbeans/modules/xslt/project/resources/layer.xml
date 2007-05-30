@@ -37,12 +37,15 @@
         </folder>
 
         <folder name="SOA">
-            <file name="xslt.service">
+            <file name="xslt.service" url="empty_xslt_service.xsl">
                 <attr name="template" boolvalue="true"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.xslt.project.wizard.element.Iterator"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xslt/project/resources/xslt.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.project.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xslt/core/resources/xslt_file.gif"/>
+            </file>
+            <file name="jbi_xslt.service" url="jbi_xslt_service.xsl">
+                <attr name="template" boolvalue="false"/>
             </file>
         </folder>
     </folder>
