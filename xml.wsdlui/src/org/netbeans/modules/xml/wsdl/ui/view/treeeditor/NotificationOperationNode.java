@@ -22,7 +22,7 @@ package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
 
 import java.awt.Image;
 
-import org.netbeans.modules.xml.wsdl.model.Operation;
+import org.netbeans.modules.xml.wsdl.model.NotificationOperation;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -32,7 +32,7 @@ import org.openide.util.Utilities;
  * @author Ritesh Adval
  *
  */
-public class NotificationOperationNode extends OperationNode {
+public class NotificationOperationNode extends OperationNode<NotificationOperation> {
     
     
     /** Icon for the Ip msg button.    */
@@ -40,7 +40,7 @@ public class NotificationOperationNode extends OperationNode {
              ("org/netbeans/modules/xml/wsdl/ui/view/resources/notification_operation.png");
     
    
-    public NotificationOperationNode(Operation wsdlConstruct) {
+    public NotificationOperationNode(NotificationOperation wsdlConstruct) {
         super(wsdlConstruct);
     }
     

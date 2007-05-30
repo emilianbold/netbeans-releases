@@ -65,8 +65,4 @@ public class PropertyAliasFolderNode extends AbstractNode {
             return sysAction;
     }
     
-    public Object getWSDLConstruct() {
-        return null;
-    }
-    
 }

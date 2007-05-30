@@ -64,9 +64,4 @@ public class PropertyNode extends AbstractNode {
 
             return sysAction;
     }
-    
-    public Object getWSDLConstruct() {
-        return mWSDLConstruct;
-    }
-    
 }

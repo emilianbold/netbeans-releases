@@ -43,6 +43,7 @@ public class EmbeddedSchemaNode extends FilterNode {
             for (Object obj : objList) {
                 content.add(obj);
             }
+            content.add(schema);
         }
     }
 
@@ -64,7 +65,7 @@ public class EmbeddedSchemaNode extends FilterNode {
         Types types = model.getDefinitions().getTypes();
         model.startTransaction();
         types.removeExtensibilityElement(component);
-            model.endTransaction();
+        model.endTransaction();
         super.destroy();
     }
     

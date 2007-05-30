@@ -36,6 +36,7 @@ import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.BindingNewType;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.NewType;
+import org.openide.util.datatransfer.PasteType;
 
 /**
  * @author Ritesh Adval
@@ -52,7 +53,6 @@ public class BindingFolderNode extends FolderNode {
         this.setDisplayName(NbBundle.
                     getMessage(BindingFolderNode.class, 
                                "BINDING_FOLDER_NODE_NAME"));
-        this.addNodeListener(new WSDLNodeListener(this));
         BADGE_ICON  = Utilities.loadImage
         ("org/netbeans/modules/xml/wsdl/ui/view/resources/binding_badge.png");
     }
@@ -65,22 +65,21 @@ public class BindingFolderNode extends FolderNode {
         }
         return new NewType[] {};
     }
-    public Object getWSDLConstruct() {
-        return mDef;
-    }
-    public static final class BindingFolderChildren extends GenericWSDLComponentChildren {
+
+    public static final class BindingFolderChildren extends GenericWSDLComponentChildren<Definitions> {
         public BindingFolderChildren(Definitions definitions) {
             super(definitions);
         }
 
         @Override
-        protected Collection getKeys() {
-            Definitions def = (Definitions) getWSDLComponent();
+        public final Collection<Binding> getKeys() {
+            Definitions def = getWSDLComponent();
             return def.getBindings();
         }
     }
+    
     @Override
-    protected void createPasteTypes(Transferable t, List s) {
+    protected void createPasteTypes(Transferable t, List<PasteType> s) {
         super.createPasteTypes(t, s);
     }
 

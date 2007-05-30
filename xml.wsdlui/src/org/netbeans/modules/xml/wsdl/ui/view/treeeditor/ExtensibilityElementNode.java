@@ -32,11 +32,8 @@ import java.util.List;
 
 import javax.swing.Action;
 import javax.xml.namespace.QName;
-import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 
-//import org.netbeans.modules.xml.refactoring.actions.FindUsagesAction;
-//import org.netbeans.modules.xml.refactoring.actions.RefactorAction;
-import org.netbeans.modules.xml.schema.model.Attribute;
+import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.xml.schema.model.Element;
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
@@ -79,7 +76,7 @@ import org.openide.util.actions.SystemAction;
  * To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
-public class ExtensibilityElementNode extends WSDLNamedElementNode{
+public class ExtensibilityElementNode<T extends ExtensibilityElement> extends WSDLNamedElementNode<ExtensibilityElement> {
 
     
     private static final Image ICON  = Utilities.loadImage
@@ -101,7 +98,7 @@ public class ExtensibilityElementNode extends WSDLNamedElementNode{
     private ExtensibilityElementConfigurator mConfigurator;
     
     public ExtensibilityElementNode(ExtensibilityElement wsdlConstruct) {
-        super(new GenericWSDLComponentChildren(wsdlConstruct), wsdlConstruct);
+        super(new GenericWSDLComponentChildren<ExtensibilityElement>(wsdlConstruct), wsdlConstruct);
         mWSDLConstruct = wsdlConstruct;
         QName qName = mWSDLConstruct.getQName();
         //Fix qname, sometimes there is no namespace associated with it.
@@ -284,14 +281,14 @@ public class ExtensibilityElementNode extends WSDLNamedElementNode{
     }
     
     @Override
-    protected void refreshAttributesSheetSet()  {
+    protected void refreshAttributesSheetSet(Sheet sheet)  {
         Sheet.Set defaultSet = null;
         if (mSchemaElement != null) {
             try {
                 Sheet.Set[] sets = PropertyViewFactory.getInstance().getPropertySets(mWSDLConstruct, mQName, mSchemaElement);
                 if (sets != null) {
                     for (Sheet.Set set : sets) {
-                        mSheet.put(set);
+                        sheet.put(set);
                     }
                     if (sets.length > 0)
                         defaultSet = sets[sets.length - 1];
@@ -313,7 +310,7 @@ public class ExtensibilityElementNode extends WSDLNamedElementNode{
                 ErrorManager.getDefault().notify(e);
             }
         } else {
-            super.refreshAttributesSheetSet();
+            super.refreshAttributesSheetSet(sheet);
         }
     }
     

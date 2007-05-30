@@ -49,13 +49,7 @@ public class ExtensibilityElementsFolderNode extends FolderNode {
     
     
     public ExtensibilityElementsFolderNode(Definitions element) {
-        super(new ExtensibilityElementsFolderChildren(element),
-                element, ExtensibilityElement.class);
-        mDef = element;
-        this.setDisplayName(NbBundle.
-                getMessage(ExtensibilityElementsFolderNode.class,
-                "EXTENSIBILITY_ELEMENTS_FOLDER_NODE_NAME"));
-        this.addNodeListener(new WSDLNodeListener(this));
+        this(element, null);
     }
     
     public ExtensibilityElementsFolderNode(Definitions element, Set<String> specialTargetNamespaces) {
@@ -66,7 +60,6 @@ public class ExtensibilityElementsFolderNode extends FolderNode {
         this.setDisplayName(NbBundle.
                 getMessage(ExtensibilityElementsFolderNode.class,
                 "EXTENSIBILITY_ELEMENTS_FOLDER_NODE_NAME"));
-        this.addNodeListener(new WSDLNodeListener(this));
     }
 
     
@@ -84,12 +77,7 @@ public class ExtensibilityElementsFolderNode extends FolderNode {
         return new NewType[] {};
     }
     
-    
-    public Object getWSDLConstruct() {
-        return mDef;
-    }
-    
-    public static final class ExtensibilityElementsFolderChildren extends GenericWSDLComponentChildren {
+    public static final class ExtensibilityElementsFolderChildren extends GenericWSDLComponentChildren<Definitions> {
         private Set<String> specialTargetNS;
         
         public ExtensibilityElementsFolderChildren(Definitions definitions, Set<String> specialTargetNamespaces) {
@@ -97,12 +85,12 @@ public class ExtensibilityElementsFolderNode extends FolderNode {
             specialTargetNS = specialTargetNamespaces;
         }
         public ExtensibilityElementsFolderChildren(Definitions definitions) {
-            super(definitions);
+            this(definitions, null);
         }
         
         @Override
-        protected Collection getKeys() {
-            Definitions def = (Definitions) getWSDLComponent();
+        public final Collection<ExtensibilityElement> getKeys() {
+            Definitions def = getWSDLComponent();
             
             List<ExtensibilityElement> list = def.getExtensibilityElements();
             if (specialTargetNS == null) return list;

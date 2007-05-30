@@ -31,10 +31,8 @@ import javax.xml.namespace.QName;
 
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.ui.commands.NamedPropertyAdapter;
-import org.netbeans.modules.xml.wsdl.ui.model.StringAttribute;
 import org.netbeans.modules.xml.wsdl.ui.view.property.BaseAttributeProperty;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.NewTypesFactory;
-import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.Named;
 import org.openide.ErrorManager;
 import org.openide.nodes.Children;
@@ -48,19 +46,19 @@ import org.openide.util.NbBundle;
  * To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
-public abstract class WSDLNamedElementNode extends WSDLElementContainerNode {
+public abstract class WSDLNamedElementNode<T extends WSDLComponent> extends WSDLElementNode<T> {
     public static final String NAME_PROP = "name";
     
     private NamedPropertyAdapter mPropertyAdapter;
     private String nameAttributeName;
     
     public WSDLNamedElementNode(Children children, 
-            WSDLComponent element, 
+            T element, 
             NewTypesFactory newTypesFactory) {
         super(children, element, newTypesFactory);
     }
     public WSDLNamedElementNode(Children children, 
-            WSDLComponent element) {
+            T element) {
         super(children, element);
     }
     
@@ -85,6 +83,7 @@ public abstract class WSDLNamedElementNode extends WSDLElementContainerNode {
     public void setName(String name) {
         if(this.mPropertyAdapter != null && isEditable()) {
             this.mPropertyAdapter.setName(name);
+            super.setName(name);
         } 
         
     }
@@ -114,7 +113,8 @@ public abstract class WSDLNamedElementNode extends WSDLElementContainerNode {
                         String.class, 
                         "getName", 
                         "setName");
-                attrValueProperty.setName(NbBundle.getMessage(WSDLNamedElementNode.class, "PROP_NAME_NAME"));
+                attrValueProperty.setName(attrName);
+                attrValueProperty.setDisplayName(NbBundle.getMessage(WSDLNamedElementNode.class, "PROP_NAME_NAME"));
                 
             } else {
                 attrValueProperty = super.createAttributeProperty(attrQName);
@@ -129,7 +129,7 @@ public abstract class WSDLNamedElementNode extends WSDLElementContainerNode {
     
 
     
-    @Override
+/*    @Override
     public void valueChanged(ComponentEvent evt) {
         Object source = evt.getSource();
         if(!(source instanceof WSDLComponent)) {
@@ -158,7 +158,7 @@ public abstract class WSDLNamedElementNode extends WSDLElementContainerNode {
         }
         
         super.valueChanged(evt);
-    }
+    }*/
     
     
     

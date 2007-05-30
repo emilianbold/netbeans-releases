@@ -45,7 +45,6 @@ public class PortTypeFolderNode extends FolderNode {
         mDef = element;
         this.setDisplayName(NbBundle.getMessage(MessageFolderNode.class, 
         "PORTTYPE_FOLDER_NODE_NAME"));
-        this.addNodeListener(new WSDLNodeListener(this));
         BADGE_ICON= Utilities.loadImage
         ("org/netbeans/modules/xml/wsdl/ui/view/resources/port_type_badge.png");
     }
@@ -60,18 +59,14 @@ public class PortTypeFolderNode extends FolderNode {
         return new NewType[] {};
     }
     
-    public Object getWSDLConstruct() {
-        return mDef;
-    }
-
-    public static final class PortTypeFolderChildren extends GenericWSDLComponentChildren {
+    public static final class PortTypeFolderChildren extends GenericWSDLComponentChildren<Definitions> {
         public PortTypeFolderChildren(Definitions definitions) {
             super(definitions);
         }
 
         @Override
-        protected Collection getKeys() {
-            Definitions def = (Definitions) getWSDLComponent();
+        public final Collection<PortType> getKeys() {
+            Definitions def = getWSDLComponent();
             return def.getPortTypes();
         }
     }

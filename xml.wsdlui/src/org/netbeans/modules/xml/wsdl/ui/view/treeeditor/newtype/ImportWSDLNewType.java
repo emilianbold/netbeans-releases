@@ -20,9 +20,13 @@
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype;
 
 import java.io.IOException;
+import java.util.Collection;
+
 import org.netbeans.modules.xml.wsdl.model.Definitions;
+import org.netbeans.modules.xml.wsdl.model.Import;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.UIUtilities;
 import org.netbeans.modules.xml.wsdl.ui.view.ImportWSDLCreator;
 import org.openide.DialogDescriptor;
@@ -59,6 +63,9 @@ public class ImportWSDLNewType extends NewType {
         // Create the new import with empty attributes.
         WSDLModel model = component.getModel();
         Definitions def = model.getDefinitions();
+        //Store existing imports, to find which imports got added.
+        Collection<Import> oldImports = def.getImports();
+        
         model.startTransaction();
 
         // Create the new import(s).
@@ -74,5 +81,15 @@ public class ImportWSDLNewType extends NewType {
         // Creator will have created the import(s) by now.
         // In either case, end the transaction.
         model.endTransaction();
+        
+        Import lastAdded = null;
+        Collection<Import> newImports = def.getImports();
+        for (Import imp : newImports) {
+            if (!oldImports.contains(imp)) {
+                lastAdded = imp;
+            }
+        }
+        
+        ActionHelper.selectNode(lastAdded);
     }
 }

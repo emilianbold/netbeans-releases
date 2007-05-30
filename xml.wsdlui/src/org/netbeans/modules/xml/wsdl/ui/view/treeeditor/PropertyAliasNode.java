@@ -66,9 +66,4 @@ public class PropertyAliasNode extends AbstractNode {
 
             return sysAction;
     }
-
-    public Object getWSDLConstruct() {
-        return mWSDLConstruct;
-    }
-    
 }

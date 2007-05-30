@@ -105,7 +105,7 @@ public class TreeEditorView extends JPanel
                 populateRootNode(mModel.getDefinitions());
                 //Initially expand root node and the folder nodes below it.
                 btv.expandNode(mRootNode);
-                Utility.expandNodes(btv, 2, mRootNode);
+                Utility.expandNodes(btv, 1, mRootNode);
                 try {
                     explorerManager.setSelectedNodes(new Node[] {mRootNode});
                 } catch (PropertyVetoException pve) {
@@ -125,9 +125,7 @@ public class TreeEditorView extends JPanel
     private void populateRootNode(Definitions definitions) {
         if (definitions != null) {
             if (mRootNode == null) {
-                TopComponent tc = findParentTopComponent();
-                DefinitionsNode dNode = new DefinitionsNode(
-                        definitions, getExplorerManager(), tc);
+                Node dNode = NodesFactory.getInstance().create(definitions);
                 mRootNode = dNode;
             }
             explorerManager.setRootContext( mRootNode );
@@ -138,21 +136,14 @@ public class TreeEditorView extends JPanel
         if (evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES)) {
             Node[] nodes = (Node[]) evt.getNewValue();
             if (nodes.length > 0) {
-                nodes[0].getChildren().getNodes(true);
-//                getTreeView().expandNode(nodes[0]);
-                //manager.setExploredContextAndSelection()
+                //nodes[0].getChildren().getNodes(true);
                 TopComponent tc = findParentTopComponent();
                 // We cannot assume that we are visible, so check for null.
                 if (tc != null) {
                     tc.setActivatedNodes(nodes);
                 }
             }
-        }/* else if (evt.getPropertyName().equals(ExplorerManager.PROP_EXPLORED_CONTEXT)) {
-            Node node = (Node) evt.getNewValue();
-            if(node != null) {
-            getTreeView().expandNode(node);
-            }
-            }*/
+        }
     }
 
     /**
@@ -217,5 +208,10 @@ public class TreeEditorView extends JPanel
     public boolean requestFocusInWindow() {
         super.requestFocusInWindow();
         return btv.requestFocusInWindow();
+    }
+    
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
     }
 }

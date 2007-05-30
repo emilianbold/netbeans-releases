@@ -48,7 +48,6 @@ public class ServiceFolderNode extends FolderNode {
         this.setDisplayName(NbBundle.
                     getMessage(ServiceFolderNode.class, 
                                "SERVICE_FOLDER_NODE_NAME"));
-        this.addNodeListener(new WSDLNodeListener(this));
     }
 
 
@@ -61,17 +60,14 @@ public class ServiceFolderNode extends FolderNode {
         return new NewType[] {};
     }
     
-    public Object getWSDLConstruct() {
-        return mDef;
-    }
-    public static final class ServiceFolderChildren extends GenericWSDLComponentChildren {
+    public static final class ServiceFolderChildren extends GenericWSDLComponentChildren<Definitions> {
         public ServiceFolderChildren(Definitions definitions) {
             super(definitions);
         }
 
         @Override
-        protected Collection getKeys() {
-            Definitions def = (Definitions) getWSDLComponent();
+        public final Collection<Service> getKeys() {
+            Definitions def = getWSDLComponent();
             return def.getServices();
         }
     }

@@ -24,7 +24,6 @@ import java.beans.FeatureDescriptor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
-import java.util.logging.Logger;
 
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.OperationNode;
@@ -39,9 +38,6 @@ import org.openide.explorer.propertysheet.PropertyEnv;
  */
 public class ParameterOrderPropertyEditor extends PropertyEditorSupport implements ExPropertyEditor, PropertyChangeListener {
 
-    /** The logger */
-    private static final Logger logger = Logger.getLogger(ImportLocationPropertyEditor.class.getName());
-
     /** property name used by propertyChangeEvent */
     protected static final String PROP_NAME = "ParameterOrder";//NOI18N
 
@@ -54,7 +50,7 @@ public class ParameterOrderPropertyEditor extends PropertyEditorSupport implemen
     
     public ParameterOrderPropertyEditor(OperationNode operationNode) {
         this.mOperationNode = operationNode;
-        this.mOperation = (Operation) this.mOperationNode.getWSDLConstruct();
+        this.mOperation = (Operation) mOperationNode.getWSDLComponent();
     }
     
     /**

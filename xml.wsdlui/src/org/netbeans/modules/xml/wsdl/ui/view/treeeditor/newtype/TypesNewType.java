@@ -21,9 +21,10 @@ package org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype;
 
 import java.io.IOException;
 
+import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.openide.ErrorManager;
+import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.NewType;
 
@@ -45,8 +46,10 @@ public class TypesNewType extends NewType {
     public void create() throws IOException {
         WSDLModel model = mDef.getModel();
         model.startTransaction();
-        model.getDefinitions().setTypes(model.getFactory().createTypes());
-            model.endTransaction(); 
+        Types types = model.getFactory().createTypes();
+        model.getDefinitions().setTypes(types);
+        model.endTransaction(); 
+        ActionHelper.selectNode(types);
     }
 
 }

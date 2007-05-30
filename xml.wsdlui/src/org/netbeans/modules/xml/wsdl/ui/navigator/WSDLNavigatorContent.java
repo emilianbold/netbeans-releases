@@ -28,11 +28,13 @@ import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.UIUtilities;
@@ -76,11 +78,14 @@ public class WSDLNavigatorContent extends JPanel
 //        // Present a read-only view of the components.
 //        lookup = Lookups.singleton(new ReadOnlyCookie(true));
 //    }
+    
+    private static WSDLNavigatorContent content;
+    
 
     /**
      * Creates a new instance of WSDLNavigatorContent.
      */
-    public WSDLNavigatorContent() {
+    private WSDLNavigatorContent() {
         setLayout(new BorderLayout());
         explorerManager = new ExplorerManager();
         treeView = new BeanTreeView();
@@ -91,6 +96,17 @@ public class WSDLNavigatorContent extends JPanel
         notAvailableLabel.setBackground(usualWindowBkg != null ? usualWindowBkg : Color.white);
         // to ensure our background color will have effect
         notAvailableLabel.setOpaque(true);
+    }
+    
+    public static WSDLNavigatorContent getDefault() {
+        if (content == null) {
+            synchronized (WSDLNavigatorContent.class) {
+                if (content == null) {
+                    content = new WSDLNavigatorContent();
+                }
+            }
+        }
+        return content;
     }
 
 //    /**

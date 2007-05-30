@@ -22,7 +22,7 @@ package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
 
 import java.awt.Image;
 
-import org.netbeans.modules.xml.wsdl.model.Operation;
+import org.netbeans.modules.xml.wsdl.model.OneWayOperation;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -32,14 +32,14 @@ import org.openide.util.Utilities;
  * @author Ritesh Adval
  *
  */
-public class OneWayOperationNode extends OperationNode {
+public class OneWayOperationNode extends OperationNode<OneWayOperation> {
     
     
     /** Icon for the Ip msg button.    */
     private static Image ICON  = Utilities.loadImage
              ("org/netbeans/modules/xml/wsdl/ui/view/resources/oneway_operation.png");
     
-    public OneWayOperationNode(Operation wsdlConstruct) {
+    public OneWayOperationNode(OneWayOperation wsdlConstruct) {
         super(wsdlConstruct);
     }
     

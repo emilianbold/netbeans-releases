@@ -62,7 +62,7 @@ import org.openide.util.datatransfer.NewType;
  * @author Ritesh Adval
  *
  */
-public class BindingNode extends WSDLExtensibilityElementNode {
+public class BindingNode extends WSDLExtensibilityElementNode<Binding> {
     
     
     private Binding mWSDLConstruct;
@@ -75,7 +75,7 @@ public class BindingNode extends WSDLExtensibilityElementNode {
     private static final String TYPE_PROP = "type";//NOI18N
     
     public BindingNode(Binding wsdlConstruct) {
-        super(new GenericWSDLComponentChildren(wsdlConstruct), wsdlConstruct, new BindingNewTypesFactory());
+        super(new GenericWSDLComponentChildren<Binding>(wsdlConstruct), wsdlConstruct, new BindingNewTypesFactory());
         mWSDLConstruct = wsdlConstruct;
         
         this.mPropertyAdapter = new BindingPropertyAdapter();
@@ -95,36 +95,6 @@ public class BindingNode extends WSDLExtensibilityElementNode {
     @Override
     public Image getOpenedIcon(int type) {
         return ICON;
-    }
-    
-    @Override
-    public void childrenAdded(ComponentEvent evt) {
-/*        if (!isSameAsMyWSDLElement((WSDLComponent) evt.getSource())) {
-            return;
-        }
- 
-        Collection ee = mWSDLConstruct.getExtensibilityElements();
-        if (ee != null && ee.size() > 0) {
-            Cookie cookie = getCookie(ExtensibilityElementCookie.class);
-            if (cookie != null) {
-                getLookupContents().remove(cookie);
-            }
-        }*/
-    }
-    
-    @Override
-    public void childrenDeleted(ComponentEvent evt) {
-/*        if (!isSameAsMyWSDLElement((WSDLComponent) evt.getSource())) {
-            return;
-        }
- 
-        Collection ee = mWSDLConstruct.getExtensibilityElements();
-        if (ee != null && ee.size() > 0) {
-            Cookie cookie = getCookie(ExtensibilityElementCookie.class);
-            if (cookie == null) {
-                getLookupContents().add(cookie);
-            }
-        }*/
     }
     
     @Override
@@ -163,7 +133,8 @@ public class BindingNode extends WSDLExtensibilityElementNode {
     private Node.Property createNameProperty() throws NoSuchMethodException {
         Node.Property attrValueProperty;
         attrValueProperty = new BaseAttributeProperty(mPropertyAdapter, String.class, NAME_PROP);
-        attrValueProperty.setName(NbBundle.getMessage(BindingNode.class, "PROP_NAME_DISPLAYNAME"));
+        attrValueProperty.setName(Binding.NAME_PROPERTY);
+        attrValueProperty.setDisplayName(NbBundle.getMessage(BindingNode.class, "PROP_NAME_DISPLAYNAME"));
         attrValueProperty.setShortDescription(NbBundle.getMessage(BindingNode.class, "BINDINGNODE_NAME_DESCRIPTION"));
         
         return attrValueProperty;
@@ -174,7 +145,8 @@ public class BindingNode extends WSDLExtensibilityElementNode {
         attrValueProperty = new BindingTypeAttributeProperty(mPropertyAdapter,
                 String.class, "getType", "setType");
         
-        attrValueProperty.setName(NbBundle.getMessage(BindingNode.class, "PROP_TYPE_DISPLAYNAME"));
+        attrValueProperty.setName(Binding.TYPE_PROPERTY);
+        attrValueProperty.setDisplayName(NbBundle.getMessage(BindingNode.class, "PROP_TYPE_DISPLAYNAME"));
         attrValueProperty.setShortDescription(NbBundle.getMessage(BindingNode.class, "BINDINGNODE_TYPE_DESCRIPTION"));
         
         return attrValueProperty;
@@ -199,7 +171,7 @@ public class BindingNode extends WSDLExtensibilityElementNode {
         public void setType(String type) {
             if(type != null) {
                 try {
-                    Binding binding = (Binding) getWSDLComponent();
+                    Binding binding = getWSDLComponent();
                     org.netbeans.modules.xml.wsdl.ui.common.QName portTypeQName = org.netbeans.modules.xml.wsdl.ui.common.QName.getQNameFromString(type);
                     if(portTypeQName == null) {
                         binding.getModel().startTransaction();

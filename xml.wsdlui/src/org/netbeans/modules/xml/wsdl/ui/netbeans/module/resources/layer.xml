@@ -201,6 +201,9 @@
         <file name="ws-bpel_varprop.xsd" url="ws-bpel_varprop.xsd">
         <attr name="prefix" stringvalue="vprop"/>
         </file>
+        <file name="wsdl.xsd" url="wsdl.xsd">
+        <attr name="prefix" stringvalue="wsdl"/>
+        </file>
         <folder name="Definitions">
             <file name="partnerLinkType">
             <attr name="xsdFileName" stringvalue="ws-bpel_plnktype"/>

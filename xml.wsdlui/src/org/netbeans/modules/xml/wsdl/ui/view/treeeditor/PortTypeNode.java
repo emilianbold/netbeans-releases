@@ -64,7 +64,7 @@ import org.openide.util.datatransfer.NewType;
  * @author Ritesh Adval
  *
  */
-public class PortTypeNode extends WSDLNamedElementNode {
+public class PortTypeNode extends WSDLNamedElementNode<PortType> {
 
     private PortType mWSDLConstruct;
    
@@ -95,7 +95,7 @@ public class PortTypeNode extends WSDLNamedElementNode {
     };
     
     public PortTypeNode(PortType wsdlConstruct) {
-        super(new GenericWSDLComponentChildren(wsdlConstruct), wsdlConstruct, new PortTypeNewTypesFactory());
+        super(new GenericWSDLComponentChildren<PortType>(wsdlConstruct), wsdlConstruct, new PortTypeNewTypesFactory());
         mWSDLConstruct = wsdlConstruct;
         
         this.mPropertyAdapter = new PortTypePropertyAdapter();
@@ -151,7 +151,8 @@ public class PortTypeNode extends WSDLNamedElementNode {
       private Node.Property createNameProperty() throws NoSuchMethodException {
           Node.Property attrValueProperty;
           attrValueProperty = new BaseAttributeProperty(mPropertyAdapter, String.class, NAME_PROP);
-          attrValueProperty.setName(NbBundle.getMessage(PortTypeNode.class, "PROP_NAME_DISPLAYNAME"));
+          attrValueProperty.setName(PortType.NAME_PROPERTY);
+          attrValueProperty.setDisplayName(NbBundle.getMessage(PortTypeNode.class, "PROP_NAME_DISPLAYNAME"));
           attrValueProperty.setShortDescription(NbBundle.getMessage(PortTypeNode.class, "PORTTYPE_NAME_DESC"));
             
           return attrValueProperty;

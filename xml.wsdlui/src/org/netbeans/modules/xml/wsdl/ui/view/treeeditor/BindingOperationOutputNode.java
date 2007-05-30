@@ -55,7 +55,7 @@ import org.openide.util.datatransfer.NewType;
  * To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
-public class BindingOperationOutputNode extends WSDLExtensibilityElementNode {
+public class BindingOperationOutputNode extends WSDLExtensibilityElementNode<BindingOutput> {
     
     private BindingOutput mWSDLConstruct;
     
@@ -65,7 +65,7 @@ public class BindingOperationOutputNode extends WSDLExtensibilityElementNode {
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/bindingoutput.png");
     
     public BindingOperationOutputNode(BindingOutput wsdlConstruct) {
-        super(new GenericWSDLComponentChildren(wsdlConstruct), wsdlConstruct, new BindingOperationOutputNewTypesFactory());
+        super(new GenericWSDLComponentChildren<BindingOutput>(wsdlConstruct), wsdlConstruct, new BindingOperationOutputNewTypesFactory());
         mWSDLConstruct = wsdlConstruct;
         
         this.mPropertyAdapter = new BindingOperationOutputPropertyAdapter();
@@ -121,7 +121,8 @@ public class BindingOperationOutputNode extends WSDLExtensibilityElementNode {
         Node.Property attrValueProperty;
         attrValueProperty = new BaseAttributeProperty(mPropertyAdapter,
                 String.class, NAME_PROP);
-        attrValueProperty.setName(NbBundle.getMessage(BindingOperationOutputNode.class, "PROP_NAME_DISPLAYNAME"));
+        attrValueProperty.setName(BindingOutput.NAME_PROPERTY);
+        attrValueProperty.setDisplayName(NbBundle.getMessage(BindingOperationOutputNode.class, "PROP_NAME_DISPLAYNAME"));
         attrValueProperty.setShortDescription("Name of the wsdl binding operation output.");
         
         

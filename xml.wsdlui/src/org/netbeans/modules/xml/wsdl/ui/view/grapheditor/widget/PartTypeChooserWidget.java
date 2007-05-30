@@ -41,7 +41,6 @@ import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
-import org.netbeans.modules.xml.wsdl.ui.view.ElementOrType;
 import org.netbeans.modules.xml.wsdl.ui.view.ElementOrTypeChooserEditorPanel;
 import org.netbeans.modules.xml.wsdl.ui.view.ElementOrTypeChooserPanel;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.FilledBorder;
@@ -91,7 +90,7 @@ public class PartTypeChooserWidget extends Widget implements ActionListener {
     public void actionPerformed(ActionEvent event) {
         WSDLModel wsdlModel = part.getModel();
         ModelSource modelSource = wsdlModel.getModelSource();
-        FileObject wsdlFile = (FileObject) modelSource.getLookup().lookup(FileObject.class);
+        FileObject wsdlFile = modelSource.getLookup().lookup(FileObject.class);
         if(wsdlFile != null) {
             Project project = FileOwnerQuery.getOwner(wsdlFile);
             if(project != null) {

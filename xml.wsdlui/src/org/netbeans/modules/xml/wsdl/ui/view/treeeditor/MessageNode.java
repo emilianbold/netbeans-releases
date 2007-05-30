@@ -53,7 +53,7 @@ import org.openide.util.datatransfer.NewType;
  * @author Ritesh Adval
  *
  */
-public class MessageNode extends WSDLExtensibilityElementNode {
+public class MessageNode extends WSDLExtensibilityElementNode<Message> {
     
     Image ICON  = Utilities.loadImage
     ("org/netbeans/modules/xml/wsdl/ui/view/resources/message.png");
@@ -62,7 +62,7 @@ public class MessageNode extends WSDLExtensibilityElementNode {
     private MessagePropertyAdapter mPropertyAdapter;
     
     public MessageNode(Message wsdlConstruct) {
-        super(new GenericWSDLComponentChildren(wsdlConstruct), wsdlConstruct, new MessageNewTypesFactory());
+        super(new GenericWSDLComponentChildren<Message>(wsdlConstruct), wsdlConstruct, new MessageNewTypesFactory());
         
         this.mPropertyAdapter = new MessagePropertyAdapter();
         super.setNamedPropertyAdapter(this.mPropertyAdapter);
@@ -118,7 +118,8 @@ public class MessageNode extends WSDLExtensibilityElementNode {
         Node.Property attrValueProperty;
         attrValueProperty = new BaseAttributeProperty(mPropertyAdapter, 
                 String.class, NAME_PROP);
-        attrValueProperty.setName(NbBundle.getMessage(MessageNode.class, "PROP_NAME_DISPLAYNAME"));
+        attrValueProperty.setName(NAME_PROP);
+        attrValueProperty.setDisplayName(NbBundle.getMessage(MessageNode.class, "PROP_NAME_DISPLAYNAME"));
         attrValueProperty.setShortDescription(NbBundle.getMessage(MessageNode.class, "MESSAGE_NAME_DESC"));
         
         return attrValueProperty;

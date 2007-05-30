@@ -21,7 +21,7 @@ package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
 
 import java.awt.Image;
 
-import org.netbeans.modules.xml.wsdl.model.Operation;
+import org.netbeans.modules.xml.wsdl.model.RequestResponseOperation;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -31,13 +31,13 @@ import org.openide.util.Utilities;
  * @author Ritesh Adval
  *
  */
-public class RequestResponseOperationNode extends OperationNode {
+public class RequestResponseOperationNode extends OperationNode<RequestResponseOperation> {
     
     /** Icon for the Ip msg button.    */
     private static Image ICON  = Utilities.loadImage
              ("org/netbeans/modules/xml/wsdl/ui/view/resources/requestresponse_operation.png");
     
-    public RequestResponseOperationNode(Operation wsdlConstruct) {
+    public RequestResponseOperationNode(RequestResponseOperation wsdlConstruct) {
         super(wsdlConstruct);
     }
     

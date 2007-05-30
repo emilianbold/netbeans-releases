@@ -46,7 +46,6 @@ public class MessageFolderNode extends FolderNode {
         mDef = element;
         this.setDisplayName(NbBundle.getMessage(MessageFolderNode.class, 
                    "MESSAGE_FOLDER_NODE_NAME"));
-        this.addNodeListener(new WSDLNodeListener(this));
     }
 
 
@@ -59,18 +58,14 @@ public class MessageFolderNode extends FolderNode {
         return new NewType[] {};
     }
     
-    public Object getWSDLConstruct() {
-        return mDef;
-    }
-    
-    public static final class MessageFolderChildren extends GenericWSDLComponentChildren {
+    public static final class MessageFolderChildren extends GenericWSDLComponentChildren<Definitions> {
         public MessageFolderChildren(Definitions definitions) {
             super(definitions);
         }
 
         @Override
-        protected Collection getKeys() {
-            Definitions def = (Definitions) getWSDLComponent();
+        public final Collection<Message> getKeys() {
+            Definitions def = getWSDLComponent();
             return def.getMessages();
         }
     }

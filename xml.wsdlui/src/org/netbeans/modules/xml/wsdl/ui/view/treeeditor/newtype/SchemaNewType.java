@@ -25,7 +25,7 @@ import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
-import org.openide.ErrorManager;
+import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.NewType;
 
@@ -49,8 +49,8 @@ public class SchemaNewType extends NewType {
         model.startTransaction();
         WSDLSchema schema = model.getFactory().createWSDLSchema();
         types.addExtensibilityElement(schema);
-            model.endTransaction(); 
-        
+        model.endTransaction(); 
+        ActionHelper.selectNode(schema);
     }
     
     

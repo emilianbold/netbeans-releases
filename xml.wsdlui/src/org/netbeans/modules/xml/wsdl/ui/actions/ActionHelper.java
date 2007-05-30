@@ -25,18 +25,15 @@
  */
 package org.netbeans.modules.xml.wsdl.ui.actions;
 
-import java.beans.PropertyVetoException;
-import javax.swing.SwingUtilities;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.ui.cookies.WSDLDefinitionNodeCookie;
-import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.Utils;
+import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ui.cookies.ViewComponentCookie;
-import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.Node;
 
 /**
  * @author radval
@@ -52,9 +49,10 @@ public class ActionHelper {
      * @param  comp  model component to select.
      */
     public static void selectNode(WSDLComponent comp) {
+        if (comp == null) return;
         DataObject dobj = getDataObject(comp);
         if (dobj != null) {
-            ViewComponentCookie cookie = (ViewComponentCookie) dobj.getCookie(
+            ViewComponentCookie cookie = dobj.getCookie(
                     ViewComponentCookie.class);
             if (cookie != null) {
                 // Do not switch views, use the currently showing view.
@@ -64,11 +62,26 @@ public class ActionHelper {
         }
     }
     
-    public static DataObject getDataObject(WSDLComponent comp) {
+    
+    public static void selectNode(SchemaComponent comp, WSDLModel model) {
+        if (comp == null || model == null) return;
+        DataObject dobj = getDataObject(model);
+        if (dobj != null) {
+            ViewComponentCookie cookie = dobj.getCookie(
+                    ViewComponentCookie.class);
+            if (cookie != null) {
+                // Do not switch views, use the currently showing view.
+                cookie.view(ViewComponentCookie.View.CURRENT, comp,
+                        (Object[]) null);
+            }
+        }
+    }
+    
+    public static DataObject getDataObject(Component comp) {
         try {
-            WSDLModel model = comp.getModel();
+            Model model = comp.getModel();
             if (model != null) {
-                FileObject fobj = (FileObject) model.getModelSource().
+                FileObject fobj = model.getModelSource().
                         getLookup().lookup(FileObject.class);
                 if (fobj != null) {
                     return DataObject.find(fobj);
@@ -80,10 +93,10 @@ public class ActionHelper {
         return null;
     }
 
-    public static DataObject getDataObject(WSDLModel model) {
+    public static DataObject getDataObject(Model model) {
         try {
             if (model != null) {
-                FileObject fobj = (FileObject) model.getModelSource().
+                FileObject fobj = model.getModelSource().
                 getLookup().lookup(FileObject.class);
                 if (fobj != null) {
                     return DataObject.find(fobj);
@@ -94,106 +107,5 @@ public class ActionHelper {
         }
         return null;
     }
-/*	public static void selectNode(Component child, Node parent) {
-		if(child != null && parent != null) {
-			Children children = parent.getChildren();
-			Node[] nodes = children.getNodes();
-			if(nodes != null)
-				for(int i = 0; i < nodes.length; i++) {
-					Node childNode = nodes[i];
-					WSDLElementCookie cookie = (WSDLElementCookie) childNode.getCookie(WSDLElementCookie.class);
-					if(cookie != null && child.equals(cookie.getWSDLComponent())) {
-						selectNode(childNode);
-						break;
-					}
-			}
-		}
-	}*/
 	
-/*	public static void selectNode(Element element, Node parent) {
-		if(element != null && parent != null) {
-			Children children = parent.getChildren();
-			Node[] nodes = children.getNodes();
-			if(nodes != null)
-				for(int i = 0; i < nodes.length; i++) {
-					Node childNode = nodes[i];
-					SchemaElementCookie cookie = (SchemaElementCookie) childNode.getCookie(WSDLElementCookie.class);
-					if(cookie != null && element.equals(cookie.getElement())) {
-						selectNode(childNode);
-						break;
-					}
-			}
-		}
-	}*/
-	
-    public static void selectNode(final Node node) {
-        if(node == null) {
-            return;
-        }
-        
-        WSDLDefinitionNodeCookie cookie = Utils.getWSDLDefinitionNodeCookie(node);
-        if(cookie != null) {
-            final ExplorerManager manager = cookie.getDefinitionsNode().getExplorerManager();
-            
-            Runnable run = new Runnable() {
-                public void run() {
-                    if(manager != null) {
-                            try {
-                                manager.setExploredContextAndSelection(node, new Node[] {node});
-                            } catch(PropertyVetoException ex) {
-                                //ignore this
-                            }
-                        
-                    }
-                }
-            };
-            SwingUtilities.invokeLater(run);
-        }
-    }
-    
-	public static void selectNode(final Node node, final Node parentNode) {
-		if(node == null) {
-			return;
-		}
-		
-		WSDLDefinitionNodeCookie cookie = Utils.getWSDLDefinitionNodeCookie(node);
-		if(cookie != null) {
-			final ExplorerManager manager = cookie.getDefinitionsNode().getExplorerManager();
-			
-			Runnable run = new Runnable() {
-				public void run() {
-					if(manager != null) {
-							try {
-								manager.setExploredContextAndSelection(node, new Node[] {node});
-							} catch(PropertyVetoException ex) {
-								//ignore this
-							}
-						
-					}
-				}
-			};
-			SwingUtilities.invokeLater(run);
-		}
-	}
-
-    public static void selectExploredContext(final Node node) {
-        if(node == null) {
-            return;
-        }
-        WSDLDefinitionNodeCookie cookie = Utils.getWSDLDefinitionNodeCookie(node);
-        if(cookie != null) {
-            final ExplorerManager manager = cookie.getDefinitionsNode().getExplorerManager();
-            
-            Runnable run = new Runnable() {
-                public void run() {
-                    if(manager != null) {
-                        manager.setExploredContext(node);
-                    }
-                }
-            };
-            
-            SwingUtilities.invokeLater(run);
-            
-        }
-    }
 }

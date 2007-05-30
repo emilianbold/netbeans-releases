@@ -209,15 +209,6 @@ public class CollaborationsWidget extends Widget
         return actionWidget;
     }
 
-    public Widget createTextButton(Scene scene, String text) {
-        LabelWidget result = new LabelWidget(scene, text);
-        result.setFont(scene.getDefaultFont());
-        result.setBorder(new ButtonBorder(2, 8, 2, 8));
-        result.setAlignment(LabelWidget.Alignment.LEFT);
-        result.setVerticalAlignment(LabelWidget.VerticalAlignment.CENTER);
-        return result;
-    }
-
     public Object hashKey() {
         return mModel.getDefinitions().getName();
     }

@@ -130,7 +130,7 @@ public class WSDLSourceMultiViewElement extends CloneableEditor implements Multi
     
     @Override
     public UndoRedo getUndoRedo() {
-	return wsdlDataObject.getWSDLEditorSupport().getUndoManager();
+        return wsdlDataObject.getWSDLEditorSupport().getUndoManager();
     }
 
     /**
@@ -184,6 +184,7 @@ public class WSDLSourceMultiViewElement extends CloneableEditor implements Multi
     @Override
     public void componentClosed() {
         super.componentClosed();
+        multiViewObserver = null;
     }
     
     @Override
@@ -273,6 +274,9 @@ public class WSDLSourceMultiViewElement extends CloneableEditor implements Multi
     
     protected boolean isActiveTC()
     {
-        return getRegistry().getActivated() == multiViewObserver.getTopComponent();
+        if (multiViewObserver != null)
+            return getRegistry().getActivated() == multiViewObserver.getTopComponent();
+        
+        return false;
     }
 }

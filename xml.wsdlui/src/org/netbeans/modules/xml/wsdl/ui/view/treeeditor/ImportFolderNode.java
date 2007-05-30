@@ -43,21 +43,16 @@ public class ImportFolderNode extends FolderNode {
         mDef = element;
         this.setDisplayName(NbBundle.getMessage(ImportFolderNode.class, 
         "IMPORT_FOLDER_NODE_NAME"));
-        this.addNodeListener(new WSDLNodeListener(this));
     }
     
-    public Object getWSDLConstruct() {
-        return mDef;
-    }
-    
-    public static final class ImportFolderChildren extends GenericWSDLComponentChildren {
+    public static final class ImportFolderChildren extends GenericWSDLComponentChildren<Definitions> {
         public ImportFolderChildren(Definitions definitions) {
             super(definitions);
         }
         
         @Override
-        protected Collection getKeys() {
-            Definitions def = (Definitions) getWSDLComponent();
+        public final Collection<Import> getKeys() {
+            Definitions def = getWSDLComponent();
             return def.getImports();
         }
     }

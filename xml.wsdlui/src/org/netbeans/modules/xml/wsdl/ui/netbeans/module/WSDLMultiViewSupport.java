@@ -57,7 +57,7 @@ public class WSDLMultiViewSupport implements ViewComponentCookie, ShowCookie,
     /** The data object */
     private WSDLDataObject dobj;
     /** Set of components that are shown in the Partner (design) view. */
-    private static final Class[] DESIGNABLE_COMPONENTS = new Class[] {
+    private final Class[] DESIGNABLE_COMPONENTS = new Class[] {
         org.netbeans.modules.xml.wsdl.model.Message.class,
         // Includes: Notifcation, OneWay, RequestResponse, SolicitResponse
         org.netbeans.modules.xml.wsdl.model.Operation.class,
@@ -261,14 +261,7 @@ public class WSDLMultiViewSupport implements ViewComponentCookie, ShowCookie,
         TopComponent activeTC = TopComponent.getRegistry().getActivated();
         Collection<Component> activeComponents = Collections.emptySet();
         for (Node node : activeTC.getActivatedNodes()) {
-            GetComponentCookie cake = node.getCookie(GetComponentCookie.class);
-            Component component = null;
-            if (cake != null) {
-                component = cake.getComponent();
-            }
-            if (component == null) {
-                component = node.getLookup().lookup(Component.class);
-            }
+            Component component = node.getLookup().lookup(Component.class);
             if (component != null) {
                 if (activeComponents.isEmpty()) {
                     activeComponents = new HashSet<Component>();

@@ -41,7 +41,7 @@ import org.openide.util.datatransfer.NewType;
  *
  * 
  */
-public class TypesNode extends WSDLElementNode {
+public class TypesNode extends WSDLElementNode<Types> {
 
     private static final Image ICON  = Utilities.loadImage
          ("org/netbeans/modules/xml/wsdl/ui/view/resources/schema_folder_badge_var3.png");
@@ -49,7 +49,7 @@ public class TypesNode extends WSDLElementNode {
     protected Types mWSDLConstruct;
     
     public TypesNode(Types wsdlConstruct) {
-        super(new GenericWSDLComponentChildren(wsdlConstruct), wsdlConstruct, new TypesNewTypesFactory());
+        super(new GenericWSDLComponentChildren<Types>(wsdlConstruct), wsdlConstruct, new TypesNewTypesFactory());
         mWSDLConstruct = wsdlConstruct;
         
         this.setDisplayName(NbBundle.getMessage(TypesNode.class, "TYPES_NODE_NAME"));
@@ -75,10 +75,6 @@ public class TypesNode extends WSDLElementNode {
         return folderIcon;
     }
 
-    public Object getWSDLConstruct() {
-        return mWSDLConstruct;
-    }
-    
     @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(TypesNode.class);

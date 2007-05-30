@@ -20,12 +20,7 @@
 
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
 
-import javax.xml.namespace.QName;
-
 import org.netbeans.modules.xml.wsdl.model.Fault;
-import org.netbeans.modules.xml.wsdl.model.Message;
-import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
-import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -36,7 +31,7 @@ import org.openide.util.Utilities;
  * @author Ritesh Adval
  *
  */
-public class OperationFaultNode extends OperationParameterNode {
+public class OperationFaultNode extends OperationParameterNode<Fault> {
     public OperationFaultNode(Fault wsdlConstruct) {
         super(wsdlConstruct);
         ICON  = Utilities.loadImage

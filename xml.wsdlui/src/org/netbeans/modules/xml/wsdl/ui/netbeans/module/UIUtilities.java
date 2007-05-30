@@ -43,6 +43,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
 import org.netbeans.modules.xml.wsdl.ui.validation.ValidationAnnotation;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.FolderNode;
+import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.RefreshableChildren;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.WSDLElementNode;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
@@ -50,6 +51,7 @@ import org.netbeans.modules.xml.xam.ui.customizer.Customizer;
 import org.openide.DialogDescriptor;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.LineCookie;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
@@ -97,10 +99,10 @@ public class UIUtilities {
             if (children == null || children.length < 0) {
                 return selectionPath;
             }
+            
             for (Node n : children) {
-                WSDLElementNode node = n.getCookie(WSDLElementNode.class);
-                if (node != null) {
-                    WSDLComponent scomp = node.getWSDLComponent();
+                WSDLComponent scomp = n.getLookup().lookup(WSDLComponent.class);
+                if (scomp != null) {
                     int idx = path.indexOf(scomp);
                     if (idx >= ii) {
                         subPath = Collections.singletonList(n);
@@ -114,7 +116,7 @@ public class UIUtilities {
                 for (Node n : children) {
                     FolderNode cNode = n.getCookie(FolderNode.class);
                     if (cNode != null && cNode.getChildType().isInstance(comp)) {
-                        Node[] nChildren = n.getChildren().getNodes();
+                        Node[] nChildren =  n.getChildren().getNodes();
                         if (nChildren != null && nChildren.length > 0) {
                             for (Node nChild : nChildren) {
                                 WSDLElementNode node = nChild.getCookie(WSDLElementNode.class);

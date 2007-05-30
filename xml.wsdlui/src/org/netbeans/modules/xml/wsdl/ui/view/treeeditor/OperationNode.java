@@ -74,7 +74,7 @@ import org.openide.util.datatransfer.NewType;
  * @author Ritesh Adval
  *
  */
-public abstract class OperationNode extends WSDLExtensibilityElementNode {
+public abstract class OperationNode<T extends Operation> extends WSDLExtensibilityElementNode<T> {
     
     
     /** Icon for the Ip msg button.    */
@@ -106,8 +106,8 @@ public abstract class OperationNode extends WSDLExtensibilityElementNode {
         SystemAction.get(PropertiesAction.class)
     };
 
-    public OperationNode(Operation wsdlConstruct) {
-        super(new GenericWSDLComponentChildren(wsdlConstruct), wsdlConstruct, new OperationNewTypesFactory());
+    public OperationNode(T wsdlConstruct) {
+        super(new GenericWSDLComponentChildren<Operation>(wsdlConstruct), wsdlConstruct, new OperationNewTypesFactory());
         mWSDLConstruct = wsdlConstruct;
         
         
@@ -134,10 +134,6 @@ public abstract class OperationNode extends WSDLExtensibilityElementNode {
     @Override
     public Action[] getActions(boolean context) {
         return ACTIONS;
-    }
-    
-    public Object getWSDLConstruct() {
-        return mWSDLConstruct;
     }
     
     @Override
@@ -175,7 +171,8 @@ public abstract class OperationNode extends WSDLExtensibilityElementNode {
       private Node.Property createNameProperty() throws NoSuchMethodException {
           Node.Property attrValueProperty;
           attrValueProperty = new BaseAttributeProperty(mPropertyAdapter, String.class, NAME_PROP);
-          attrValueProperty.setName(NbBundle.getMessage(OperationNode.class, "PROP_NAME_DISPLAYNAME"));
+          attrValueProperty.setName(Operation.NAME_PROPERTY);
+          attrValueProperty.setDisplayName(NbBundle.getMessage(OperationNode.class, "PROP_NAME_DISPLAYNAME"));
           attrValueProperty.setShortDescription(NbBundle.getMessage(OperationNode.class, "OPERATION_NAME_DESC"));
           return attrValueProperty;
       }
@@ -183,7 +180,8 @@ public abstract class OperationNode extends WSDLExtensibilityElementNode {
       private Node.Property createParameterOrderProperty() throws NoSuchMethodException {
           Node.Property attrValueProperty;
           attrValueProperty = new ParameterOrderProperty(this, mPropertyAdapter, String.class, "parameterOrder");  //NOI18N 
-          attrValueProperty.setName(NbBundle.getMessage(OperationNode.class, "PROP_PARAMETER_ORDER_DISPLAYNAME"));
+          attrValueProperty.setName(Operation.PARAMETER_ORDER_PROPERTY);
+          attrValueProperty.setDisplayName(NbBundle.getMessage(OperationNode.class, "PROP_PARAMETER_ORDER_DISPLAYNAME"));
           attrValueProperty.setShortDescription(NbBundle.getMessage(OperationNode.class, "OPERATION_PARAM_ORDER_DESC"));
                 
           return attrValueProperty;

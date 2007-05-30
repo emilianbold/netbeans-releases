@@ -22,13 +22,23 @@ package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.netbeans.modules.xml.schema.model.Schema;
+import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.schema.ui.nodes.SchemaNodeFactory;
+import org.netbeans.modules.xml.schema.ui.nodes.categorized.CategorizedSchemaNodeFactory;
 import org.netbeans.modules.xml.wsdl.model.Import;
+import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
+import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
+import org.netbeans.modules.xml.wsdl.ui.cookies.DataObjectCookieDelegate;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.InstanceContent;
 
 
 
@@ -66,45 +76,53 @@ public class XSDImportNode extends ImportNode {
 
     @Override
     protected void updateDisplayName() {
-        Import imp = (Import) getWSDLComponent();
+        Import imp = getWSDLComponent();
         setDisplayName(imp.getLocation());
     }
 
-    public static class XSDImportNodeChildren extends GenericWSDLComponentChildren {
+    public static class XSDImportNodeChildren extends RefreshableChildren {
 
-        private Import mWsdlConstruct;
-
+        private Import imp;
         public XSDImportNodeChildren(Import wsdlConstruct) {
-            super(wsdlConstruct);
-            this.mWsdlConstruct = wsdlConstruct;
+            super();
+            imp = wsdlConstruct;
         }
 
         @Override
         protected Node[] createNodes(Object key) {
             if (key instanceof Schema) {
                 Schema schema = (Schema) key;
-                NodesFactory factory = NodesFactory.getInstance();
-                Node node = factory.create(schema);
-                node.setDisplayName(this.mWsdlConstruct.getNamespace());
+                SchemaModel model = schema.getModel();
+                SchemaNodeFactory factory = new CategorizedSchemaNodeFactory(
+                        model, Lookup.EMPTY);
+                Node node = factory.createRootNode();
+                
+                //To enable save, when schema nodes are selected, get the save cookie.
+                List<Object> list = new ArrayList<Object>();
+                list.add(new DataObjectCookieDelegate(ActionHelper.getDataObject(imp)));
+                node.setDisplayName(imp.getNamespace());
+                node = new ReadOnlyNode(node, new InstanceContent(), list);
                 return new Node[] { node };
+            } else if (key instanceof WSDLComponent) {
+                Node node = NodesFactory.getInstance().create((WSDLComponent) key);
+                if (node != null)
+                    return new Node[]{node};
             }
-            return super.createNodes(key);
+            return null;
         }
 
         @Override
-        @SuppressWarnings("unchecked")
-        protected Collection getKeys() {
+        public final Collection getKeys() {
             ArrayList keys = new ArrayList();
-            List list = mWsdlConstruct.getModel().findSchemas(mWsdlConstruct.getNamespace());
+            List list = imp.getModel().findSchemas(imp.getNamespace());
             if (list != null && list.size() > 0) {
                 Schema schema = (Schema) list.get(0);
                 if (schema != null) {
                     keys.add(schema);
                 }
             }
-            keys.addAll(super.getKeys());
+            keys.addAll(imp.getChildren());
             return keys;
         }
-
     }
 }

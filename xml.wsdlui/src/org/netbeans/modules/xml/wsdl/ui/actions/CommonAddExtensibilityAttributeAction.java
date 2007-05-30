@@ -28,7 +28,6 @@ package org.netbeans.modules.xml.wsdl.ui.actions;
 import java.awt.Dialog;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -38,15 +37,18 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.xml.namespace.QName;
 
+import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
+import org.netbeans.modules.xml.wsdl.model.Import;
+import org.netbeans.modules.xml.wsdl.model.OperationParameter;
+import org.netbeans.modules.xml.wsdl.model.Part;
+import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.ui.common.Constants;
-import org.netbeans.modules.xml.wsdl.ui.cookies.WSDLElementCookie;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.AttributePanel;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -74,10 +76,11 @@ public class CommonAddExtensibilityAttributeAction extends CommonNodeAction {
         this.setIcon(ICON);
         this.putValue(Action.SHORT_DESCRIPTION, this.getName());
     }
+    
 
     @Override
-    protected Class[] cookieClasses() {
-        return new Class[] {WSDLElementCookie.class};
+    protected Class<?>[] cookieClasses() {
+        return new Class[] {Import.class, OperationParameter.class, Part.class, PortType.class, ExtensibilityElement.class};
     }
 
     @Override
@@ -89,9 +92,8 @@ public class CommonAddExtensibilityAttributeAction extends CommonNodeAction {
     protected void performAction(Node[] activatedNodes) {
         if(activatedNodes.length != 0) {
             Node node = activatedNodes[0];
-            WSDLElementCookie cookie = (WSDLElementCookie) node.getCookie(WSDLElementCookie.class);
-            if(cookie != null) {
-                WSDLComponent wsdlComponent = cookie.getWSDLComponent();
+            WSDLComponent wsdlComponent = node.getLookup().lookup(WSDLComponent.class);
+            if(wsdlComponent != null) {
                 Vector namespaces = getNamespaces(wsdlComponent);
 
                 final AttributePanel panel = new AttributePanel(isNamespaceRequired(), namespaces, wsdlComponent);
@@ -122,7 +124,7 @@ public class CommonAddExtensibilityAttributeAction extends CommonNodeAction {
                     String namespace = panel.getNamespace();
 
                     QName attrQName = new QName(namespace, name);
-                    WSDLComponent element = cookie.getWSDLComponent();
+                    WSDLComponent element = wsdlComponent;
                     element.getModel().startTransaction();
 
                     if(Utility.getNamespacePrefix(namespace, wsdlComponent) == null) {
@@ -203,8 +205,6 @@ public class CommonAddExtensibilityAttributeAction extends CommonNodeAction {
 
         return new Vector<String>(namespaceSet);
     }
-
-
 }
 
 

@@ -61,7 +61,7 @@ import org.openide.util.datatransfer.NewType;
  * To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
-public class PortNode extends WSDLExtensibilityElementNode {
+public class PortNode extends WSDLExtensibilityElementNode<Port> {
     
     
     private Port mWSDLConstruct;
@@ -73,7 +73,7 @@ public class PortNode extends WSDLExtensibilityElementNode {
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/serviceport.png");
     
     public PortNode(Port wsdlConstruct) {
-        super(new GenericWSDLComponentChildren(wsdlConstruct), wsdlConstruct, new ServicePortNewTypesFactory());
+        super(new GenericWSDLComponentChildren<Port>(wsdlConstruct), wsdlConstruct, new ServicePortNewTypesFactory());
         mWSDLConstruct = wsdlConstruct;
         
         
@@ -135,7 +135,8 @@ public class PortNode extends WSDLExtensibilityElementNode {
         attrValueProperty = new BaseAttributeProperty(mPropertyAdapter,
                 String.class,
                 NAME_PROP);
-        attrValueProperty.setName(NbBundle.getMessage(PortNode.class, "PROP_NAME_DISPLAYNAME"));
+        attrValueProperty.setName(Port.NAME_PROPERTY);
+        attrValueProperty.setDisplayName(NbBundle.getMessage(PortNode.class, "PROP_NAME_DISPLAYNAME"));
         attrValueProperty.setShortDescription(NbBundle.getMessage(PortNode.class, "PORT_NAME_DESC"));
         
         return attrValueProperty;
@@ -148,7 +149,8 @@ public class PortNode extends WSDLExtensibilityElementNode {
                 "getBinding",
                 "setBinding");
         
-        attrValueProperty.setName(NbBundle.getMessage(PortNode.class, "PROP_BINDING_DISPLAYNAME"));
+        attrValueProperty.setName(Port.BINDING_PROPERTY);
+        attrValueProperty.setDisplayName(NbBundle.getMessage(PortNode.class, "PROP_BINDING_DISPLAYNAME"));
         attrValueProperty.setShortDescription(NbBundle.getMessage(PortNode.class, "PORT_BINDING_DESC"));
         
         return attrValueProperty;

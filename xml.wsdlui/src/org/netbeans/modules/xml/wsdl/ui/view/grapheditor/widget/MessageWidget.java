@@ -102,7 +102,6 @@ public class MessageWidget extends AbstractWidget<Message>
     public MessageWidget(Scene scene, Message message, Lookup lookup) {
         super(scene, message, lookup);
         setMinimumSize(new Dimension(WidgetConstants.MESSAGE_MINIMUM_WIDTH, 0));
-        partHitPointWidget = new PartHitPointWidget(scene);
         
         boolean expanded = ExpanderWidget.isExpanded(this, EXPANDED_DEFAULT);
         expanderWidget = new ExpanderWidget(scene, this, expanded);
@@ -314,6 +313,9 @@ public class MessageWidget extends AbstractWidget<Message>
             contentWidget.addChild(0, table);
         }
         
+        if (partHitPointWidget != null) {
+            partHitPointWidget = new PartHitPointWidget(getScene());
+        }
         
         if (!newPosition.equals(oldPosition)) {
             if (newPosition.column == 0) {
@@ -633,11 +635,12 @@ public class MessageWidget extends AbstractWidget<Message>
     private static class PartHitPointWidget extends LabelWidget {
         public PartHitPointWidget(Scene scene) {
             super(scene, " ");
-            setBorder(new HitPointBorder());
+            setBorder(hitPointBorder);
             setFont(scene.getDefaultFont());
         }
     }
     
+    private static HitPointBorder hitPointBorder = new HitPointBorder();
     
     private static class HitPointBorder implements Border {
         public Insets getInsets() {

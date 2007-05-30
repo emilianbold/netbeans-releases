@@ -32,7 +32,7 @@ import org.openide.util.Utilities;
  *
  * 
  */
-public class OperationOutputNode extends OperationParameterNode {
+public class OperationOutputNode extends OperationParameterNode<Output> {
 
     public OperationOutputNode(Output wsdlConstruct) {
         super(wsdlConstruct);

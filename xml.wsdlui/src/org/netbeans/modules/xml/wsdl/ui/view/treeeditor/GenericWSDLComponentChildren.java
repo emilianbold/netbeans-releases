@@ -19,29 +19,50 @@
 
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
-import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
-import org.netbeans.modules.xml.xam.Component;
 import org.openide.nodes.Node;
 
-public class GenericWSDLComponentChildren extends WSDLElementChildren {
-    public GenericWSDLComponentChildren(WSDLComponent element) {
-        super(element);
+public class GenericWSDLComponentChildren<T extends WSDLComponent> extends RefreshableChildren {
+    
+    T component;
+    
+    public GenericWSDLComponentChildren(T element) {
+        super();
+        component = element;
     }
+
+    T getWSDLComponent() {
+        return component;
+    }
+    
     @Override
     protected Node[] createNodes(Object key) {
-        if (key instanceof WSDLSchema) {
-            Node node = NodesFactory.getInstance().create((Component) key);
+        if (key instanceof WSDLComponent) {
+            Node node = NodesFactory.getInstance().create(WSDLComponent.class.cast(key));
             if(node != null) {
                 return new Node[] {node};
             }
         }
-        if (key instanceof Component) {
-            Node node = NodesFactory.getInstance().create((Component) key);
-            if(node != null) {
-                return new Node[] {node};
+        return null;
+    }
+    
+    @Override
+    public Collection<? extends WSDLComponent> getKeys() {
+        if(component != null) {
+            ArrayList<WSDLComponent> keys = new ArrayList<WSDLComponent>();
+
+            List<WSDLComponent> children = component.getChildren();
+            if(children != null) {
+                keys.addAll(children);
             }
+            return keys;
         }
-       return new Node[] {};
+
+        return Collections.emptyList();
     }
 }

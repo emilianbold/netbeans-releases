@@ -29,6 +29,7 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
+import org.openide.windows.TopComponent.Registry;
 
 /**
  * An implementation of NavigatorPanel for WSDL navigator.
@@ -37,7 +38,6 @@ import org.openide.windows.TopComponent;
  * @author Nathan Fiedler
  */
 public class WSDLNavigatorPanel implements LookupListener, NavigatorPanel {
-    private WSDLNavigatorContent navigator;
     private Lookup.Result selection;
 
     /**
@@ -57,10 +57,7 @@ public class WSDLNavigatorPanel implements LookupListener, NavigatorPanel {
     }
 
     public JComponent getComponent() {
-        if (navigator == null) {
-            navigator = new WSDLNavigatorContent();
-        }
-        return navigator;
+        return WSDLNavigatorContent.getDefault();
     }
 
     public Lookup getLookup() {
@@ -68,18 +65,17 @@ public class WSDLNavigatorPanel implements LookupListener, NavigatorPanel {
     }
 
     public void panelActivated(Lookup context) {
-        getComponent();
-        TopComponent.getRegistry().addPropertyChangeListener(navigator);
-        selection = context.lookup(new Lookup.Template(DataObject.class));
+        TopComponent.getRegistry().addPropertyChangeListener(WSDLNavigatorContent.getDefault());
+        selection = context.lookup(new Lookup.Template<DataObject>(DataObject.class));
         selection.addLookupListener(this);
         resultChanged(null);
         // hack to init selection if any
-        navigator.propertyChange(new PropertyChangeEvent(this,
-                TopComponent.getRegistry().PROP_ACTIVATED_NODES, false, true));
+        WSDLNavigatorContent.getDefault().propertyChange(new PropertyChangeEvent(this,
+                Registry.PROP_ACTIVATED_NODES, false, true));
     }
 
     public void panelDeactivated() {
-        TopComponent.getRegistry().removePropertyChangeListener(navigator);
+        TopComponent.getRegistry().removePropertyChangeListener(WSDLNavigatorContent.getDefault());
         selection.removeLookupListener(this);
         selection = null;
         // If we set navigator to null its parent tc ref goes away.
@@ -90,7 +86,7 @@ public class WSDLNavigatorPanel implements LookupListener, NavigatorPanel {
         Collection selected = selection.allInstances();
         if (selected.size() == 1) {
             DataObject dobj = (DataObject) selected.iterator().next();
-            navigator.navigate(dobj);
+            WSDLNavigatorContent.getDefault().navigate(dobj);
         }
     }
 }

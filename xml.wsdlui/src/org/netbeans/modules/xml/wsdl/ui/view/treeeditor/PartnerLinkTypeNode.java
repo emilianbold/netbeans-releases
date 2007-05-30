@@ -31,7 +31,7 @@ import org.openide.util.NbBundle;
  *
  * @author  Nathan Fiedler
  */
-public class PartnerLinkTypeNode extends ExtensibilityElementNode {
+public class PartnerLinkTypeNode extends ExtensibilityElementNode<PartnerLinkType> {
     /** The partner link type component. */
     private PartnerLinkType partnerLinkType;
 

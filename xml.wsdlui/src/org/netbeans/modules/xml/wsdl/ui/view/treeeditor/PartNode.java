@@ -21,6 +21,7 @@
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -69,7 +70,7 @@ import org.openide.util.actions.SystemAction;
  *
  *
  */
-public class PartNode extends WSDLNamedElementNode {
+public class PartNode extends WSDLNamedElementNode<Part> {
     
     private Image ICON  = Utilities.loadImage
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/part.png");
@@ -101,8 +102,7 @@ public class PartNode extends WSDLNamedElementNode {
     };
 
     public PartNode(Part wsdlConstruct) {
-        super( new GenericWSDLComponentChildren(wsdlConstruct), wsdlConstruct);
-        //super( Children.LEAF, wsdlConstruct, dataObject);
+        super( new GenericWSDLComponentChildren<Part>(wsdlConstruct), wsdlConstruct);
         mWSDLConstruct = wsdlConstruct;
         
         this.mPropertyAdapter = new PartPropertyAdapter();
@@ -110,7 +110,8 @@ public class PartNode extends WSDLNamedElementNode {
         ElementOrTypeProvider provider = new PartElementOrTypeProvider(wsdlConstruct, mPropertyAdapter);
         try {
             mElementOrTypeProperty = new ElementOrTypeAttributeProperty(provider);
-            mElementOrTypeProperty.setName(NbBundle.getMessage(PartNode.class, "PART_ELEMENT_OR_TYPE"));
+            mElementOrTypeProperty.setName(Part.ELEMENT_PROPERTY + Part.TYPE_PROPERTY);
+            mElementOrTypeProperty.setDisplayName(NbBundle.getMessage(PartNode.class, "PART_ELEMENT_OR_TYPE"));
             mElementOrTypeProperty.setShortDescription(NbBundle.getMessage(PartNode.class, "PART_ELEMENT_OR_TYPE_SD"));
         } catch(Exception ex) {
             mLogger.log(Level.SEVERE, "failed to create property sheet for "+ getWSDLComponent(), ex);
@@ -118,6 +119,18 @@ public class PartNode extends WSDLNamedElementNode {
         }
     }
     
+    @Override
+    public void propertyChange(PropertyChangeEvent event) {
+        if (event.getSource() == getWSDLComponent() && isValid()) {
+            String propertyName = event.getPropertyName();
+            if (propertyName.equals(Part.ELEMENT_PROPERTY) || propertyName.equals(Part.TYPE_PROPERTY)) {
+                firePropertyChange(propertyName, event.getOldValue(),
+                        event.getNewValue());
+            } else {
+                super.propertyChange(event);
+            }
+        }
+    }
     
     @Override
     public Image getIcon(int type) {
@@ -132,10 +145,6 @@ public class PartNode extends WSDLNamedElementNode {
     @Override
     public Action[] getActions(boolean context) {
         return ACTIONS;
-    }
-    
-    public Object getWSDLConstruct() {
-        return mWSDLConstruct;
     }
     
     @Override
@@ -176,7 +185,8 @@ public class PartNode extends WSDLNamedElementNode {
                 String.class, NAME_PROP);
         
         
-        attrValueProperty.setName(NbBundle.getMessage(PartNode.class, "PROP_NAME_DISPLAYNAME"));
+        attrValueProperty.setName(Part.NAME_PROPERTY);
+        attrValueProperty.setDisplayName(NbBundle.getMessage(PartNode.class, "PROP_NAME_DISPLAYNAME"));
         attrValueProperty.setShortDescription(NbBundle.getMessage(PartNode.class, "PART_NAME_DESC"));
         
         return attrValueProperty;

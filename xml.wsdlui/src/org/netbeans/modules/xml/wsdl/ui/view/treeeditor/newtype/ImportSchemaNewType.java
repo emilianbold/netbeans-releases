@@ -22,6 +22,7 @@ package org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype;
 import java.io.IOException;
 import java.util.Collection;
 
+import org.netbeans.modules.xml.schema.model.Import;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
@@ -29,6 +30,7 @@ import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
+import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.UIUtilities;
 import org.netbeans.modules.xml.wsdl.ui.view.ImportSchemaCustomizer;
 import org.openide.DialogDescriptor;
@@ -62,6 +64,7 @@ public class ImportSchemaNewType extends NewType {
 
     @Override
     public void create() throws IOException {
+        
         // Create the new import with empty attributes.
         WSDLModel model = component.getModel();
         Definitions def = model.getDefinitions();
@@ -91,6 +94,8 @@ public class ImportSchemaNewType extends NewType {
             schema.setTargetNamespace(model.getDefinitions().getTargetNamespace());
         }
 
+        Collection<Import> oldImports = schema.getImports();
+        
         // The customizer will create the new import(s).
         // Note this happens during the transaction, which is unforunate
         // but supposedly unavoidable.
@@ -114,5 +119,16 @@ public class ImportSchemaNewType extends NewType {
         }
         // In either case, end the transaction.
         model.endTransaction();
+        
+        Collection<Import> newImports = schema.getImports();
+        Import lastAdded = null;
+        for (Import imp : newImports) {
+            if (!oldImports.contains(imp)) {
+                lastAdded = imp;
+            }
+        }
+        
+        ActionHelper.selectNode(lastAdded, model);
+        
     }
 }

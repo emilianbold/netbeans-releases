@@ -34,11 +34,11 @@ import org.netbeans.modules.xml.wsdl.model.Output;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.BindingOperationView;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.NewType;
@@ -86,6 +86,7 @@ public class BindingOperationNewType extends NewType {
             }
         }
         if (selectedOperations != null && selectedOperations.length > 0) {
+            WSDLComponent lastAdded = null;
             WSDLModel document = binding.getModel();
             document.startTransaction();
             for (Operation operation : selectedOperations) {
@@ -123,8 +124,10 @@ public class BindingOperationNewType extends NewType {
             		}
             	}
             	binding.addBindingOperation(bindingOperation);
+                lastAdded = bindingOperation;
             }
-                document.endTransaction();
+            document.endTransaction();
+            ActionHelper.selectNode(lastAdded);
         }
     }
 	

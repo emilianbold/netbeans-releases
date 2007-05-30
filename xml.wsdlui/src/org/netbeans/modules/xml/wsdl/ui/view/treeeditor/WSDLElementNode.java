@@ -42,6 +42,7 @@ import javax.xml.namespace.QName;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.xml.refactoring.ui.ReferenceableProvider;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
+import org.netbeans.modules.xml.wsdl.model.Documentation;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
@@ -50,7 +51,6 @@ import org.netbeans.modules.xml.wsdl.ui.commands.OtherAttributePropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.commands.XMLAttributePropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.cookies.DataObjectCookieDelegate;
 import org.netbeans.modules.xml.wsdl.ui.cookies.WSDLAttributeCookie;
-import org.netbeans.modules.xml.wsdl.ui.cookies.WSDLElementCookie;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.UIUtilities;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.DesignGotoType;
@@ -73,6 +73,7 @@ import org.netbeans.modules.xml.xam.ui.actions.GotoType;
 import org.netbeans.modules.xml.xam.ui.actions.SourceGotoType;
 import org.netbeans.modules.xml.xam.ui.actions.SuperGotoType;
 import org.netbeans.modules.xml.xam.ui.cookies.CountChildrenCookie;
+import org.netbeans.modules.xml.xam.ui.cookies.GetComponentCookie;
 import org.netbeans.modules.xml.xam.ui.cookies.GotoCookie;
 import org.netbeans.modules.xml.xam.ui.customizer.Customizer;
 import org.netbeans.modules.xml.xam.ui.customizer.CustomizerProvider;
@@ -108,29 +109,30 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author radval
  */
-public abstract class WSDLElementNode extends AbstractNode
+public abstract class WSDLElementNode<T extends WSDLComponent> extends AbstractNode
         implements ComponentListener, ReferenceableProvider, Highlighted,
-        CountChildrenCookie, PropertyChangeListener, GotoCookie {
+        GetComponentCookie, CountChildrenCookie, PropertyChangeListener, GotoCookie {
     
     protected static final Logger mLogger = Logger.getLogger(WSDLElementNode.class.getName());
     
-    private WSDLComponent mElement;
+    private T mElement;
     /** Customizer soft reference; */
     private Reference<Customizer> customizerReference;
     private NewTypesFactory mNewTypesFactory;
     
     public static final String WSDL_NAMESPACE = "http://schemas.xmlsoap.org/wsdl/";//NOI18N
     private InstanceContent mLookupContents;
-    protected Sheet mSheet;
+  //  protected Sheet mSheet;
     private PropertyChangeListener weakModelListener;
     private ComponentListener weakComponentListener;
+    //private NodeListener weakNodeListener;
     /** Used for the highlighting API. */
     private Set<Component> referenceSet;
     /** Ordered list of highlights applied to this node. */
     private List<Highlight> highlights;
     
     /** cached so that during destroy all listeners can be cleaned up, nullified in destroy*/
-    private WSDLModel wsdlmodel;
+    private WeakReference<WSDLModel> wsdlmodel;
     
     private static final SystemAction[] ACTIONS = new SystemAction[] {
         SystemAction.get(CutAction.class),
@@ -157,12 +159,12 @@ public abstract class WSDLElementNode extends AbstractNode
         new SuperGotoType(),
     };
     
-    public WSDLElementNode(Children children, WSDLComponent element, NewTypesFactory newTypesFactory) {
+    public WSDLElementNode(Children children, T element, NewTypesFactory newTypesFactory) {
         this(children, element);
         this.mNewTypesFactory = newTypesFactory;
     }
 
-    public WSDLElementNode(Children children, WSDLComponent element) {
+    public WSDLElementNode(Children children, T element) {
         this(children, element, new InstanceContent());
     }
 
@@ -173,7 +175,7 @@ public abstract class WSDLElementNode extends AbstractNode
      * @param  element   WSDL component.
      * @param  contents  Lookup contents.
      */
-    private WSDLElementNode(Children children, WSDLComponent element,
+    private WSDLElementNode(Children children, T element,
             InstanceContent contents) {
         super(children, new AbstractLookup(contents));
         mElement = element;
@@ -184,7 +186,6 @@ public abstract class WSDLElementNode extends AbstractNode
         // lookup, as they provide cookies needed elsewhere, and we want
         // this node to provide them, not the currently selected node.
         contents.add(this);
-        contents.add(new WSDLElementCookie(mElement));
         // Include the data object in order for the Navigator to
         // show the structure of the current document.
         DataObject dobj = ActionHelper.getDataObject(element.getModel());
@@ -194,16 +195,21 @@ public abstract class WSDLElementNode extends AbstractNode
         contents.add(new DataObjectCookieDelegate(dobj));
         contents.add(element);
         
-        wsdlmodel = element.getModel();
+        wsdlmodel = new WeakReference<WSDLModel>(element.getModel());
         
         weakModelListener = WeakListeners.propertyChange(this, wsdlmodel);
-        wsdlmodel.addPropertyChangeListener(weakModelListener);
+        wsdlmodel.get().addPropertyChangeListener(weakModelListener);
         weakComponentListener = WeakListeners.create(ComponentListener.class, this, wsdlmodel);
-        wsdlmodel.addComponentListener(weakComponentListener);
-        addNodeListener(new WSDLNodeListener(this));
-        mSheet = new Sheet();
+        wsdlmodel.get().addComponentListener(weakComponentListener);
+        
+//        weakNodeListener = WeakListeners.create(NodeListener.class, new WSDLNodeListener(this), this);
+//        addNodeListener(weakNodeListener);
+        
+        //mSheet = super.createSheet();
         // Let the node try to update its display name.
         updateDisplayName();
+        //Update the documentation.
+        updateDocumentation();
         
         referenceSet = Collections.singleton((Component) element);
         highlights = new LinkedList<Highlight>();
@@ -236,14 +242,15 @@ public abstract class WSDLElementNode extends AbstractNode
     @Override
     public void destroy() throws IOException {
         //get the stored model.
-        if (wsdlmodel != null) {
+        if (wsdlmodel != null && wsdlmodel.get() != null) {
             //remove the xml element listener when node is destroyed
-            wsdlmodel.removePropertyChangeListener(weakModelListener);
-            wsdlmodel.removeComponentListener(weakComponentListener);
+            wsdlmodel.get().removePropertyChangeListener(weakModelListener);
+            wsdlmodel.get().removeComponentListener(weakComponentListener);
             //remove reference for WSDLModel
             wsdlmodel = null;
         }
         
+        //removeNodeListener(weakNodeListener);
         WSDLModel model = getWSDLComponent() != null ? getWSDLComponent().getModel() : null;
         if (model != null) {
             //if we can get the model from wsdlcomponent, then delete the wsdlcomponent from model and appropriately select the node.
@@ -328,7 +335,7 @@ public abstract class WSDLElementNode extends AbstractNode
         return isEditable();
     }
     
-    public WSDLComponent getWSDLComponent() {
+    public T getWSDLComponent() {
         return this.mElement;
     }
     
@@ -398,47 +405,61 @@ public abstract class WSDLElementNode extends AbstractNode
     }
 
     public void childrenAdded(ComponentEvent evt) {
-    }
-
-    public void childrenDeleted(ComponentEvent evt) {
-    }
-
-    public void valueChanged(ComponentEvent evt) {
         if (!isSameAsMyWSDLElement((Component) evt.getSource())) {
             return;
         }
-        updateDisplayName();
-        refreshSheet();
-        //fire a propertysets change so that property sheet can be refreshed
-        firePropertySetsChange(new Node.PropertySet[] {}, getPropertySets());
+        Children children = getChildren();
+        if (children instanceof RefreshableChildren) {
+            ((RefreshableChildren) getChildren()).refreshChildren();
+        }
+    }
+
+    public void childrenDeleted(ComponentEvent evt) {
+        if (!isSameAsMyWSDLElement((Component) evt.getSource())) {
+            return;
+        }
+        Children children = getChildren();
+        if (children instanceof RefreshableChildren) {
+            ((RefreshableChildren) getChildren()).refreshChildren();
+        }
+    }
+
+    public void valueChanged(ComponentEvent evt) {
     }
 
     public void propertyChange(PropertyChangeEvent event) {
-        if (isValid() && event.getSource() == mElement) {
+        if (event.getSource() == mElement && isValid()) {
+            updateDisplayName();
+            String propName = event.getPropertyName();
+            QName qname = null;
             try {
-                updateDisplayName();
-                String propName = event.getPropertyName();
-                Sheet.Set propertySet = getSheet().get(Sheet.PROPERTIES);
-                if (propertySet != null) {
-                    if (propertySet.get(propName) != null) {
-                        firePropertyChange(propName, event.getOldValue(),
-                                event.getNewValue());
-                    } else {
-                        ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL,
-                                propName + " property is not defined in " +
-                                getTypeDisplayName());
-                    }
-                }
-            } catch (IllegalStateException ise) {
-                // Component is not in the model.
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ise);
-            } catch (NullPointerException npe) {
-                // Does not reproduce reliably, but catch and log regardless.
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, npe);
+                qname = QName.valueOf(propName);
+            } catch (IllegalArgumentException e) {
+                qname = new QName(WSDL_NAMESPACE, propName);
+            }
+
+            if (qname.getNamespaceURI() == null) {
+                qname = new QName(WSDL_NAMESPACE, propName);
+            } else {
+                refreshOtherAttributesSheetSet(getSheet());
+            }
+
+            Set<QName> attributes = mElement.getAttributeMap().keySet();
+
+            if (attributes.contains(qname)) {
+                firePropertyChange(propName, event.getOldValue(),
+                        event.getNewValue());
             }
         }
     }
 
+    private void updateDocumentation() {
+        Documentation doc = mElement.getDocumentation();
+        if (doc != null) {
+            setShortDescription(doc.getContentFragment());
+        }
+    }
+    
     /**
      * Determines if this node represents a component that is contained
      * in a valid (non-null) model.
@@ -473,18 +494,21 @@ public abstract class WSDLElementNode extends AbstractNode
 
     @Override
     protected final Sheet createSheet() {
-        refreshSheet();
-        return mSheet;
+        super.createSheet();
+        Sheet sheet = Sheet.createDefault();
+        createOtherPropertiesSheetSet(sheet);
+        refreshSheet(sheet);
+        return sheet;
     }
 
     protected InstanceContent getLookupContents() {
         return mLookupContents;
     }
 
-    private final void refreshSheet() {
+    private final void refreshSheet(Sheet sheet) {
         if (getWSDLComponent() != null && !getWSDLComponent().isInDocumentModel()) return; 
-        refreshAttributesSheetSet();
-        refreshOtherAttributesSheetSet();
+        refreshAttributesSheetSet(sheet);
+        refreshOtherAttributesSheetSet(sheet);
         Cookie cookie = getCookie(WSDLAttributeCookie.class);
         if (hasOtherAttributesProperties()) {
             mLookupContents.add(new WSDLAttributeCookie("attribute", getWSDLComponent()));//NOI18N
@@ -514,8 +538,8 @@ public abstract class WSDLElementNode extends AbstractNode
     
     
     
-    protected void refreshAttributesSheetSet()  {
-        Sheet.Set ss = createPropertiesSheetSet();
+    protected void refreshAttributesSheetSet(Sheet sheet)  {
+        Sheet.Set ss = sheet.get(Sheet.PROPERTIES);
 
         try {
             AbstractDocumentComponent adc = (AbstractDocumentComponent) getWSDLComponent();
@@ -558,21 +582,18 @@ public abstract class WSDLElementNode extends AbstractNode
         
     }
     
-    protected org.openide.nodes.Sheet.Set createOtherPropertiesSheetSet() {
+    protected void createOtherPropertiesSheetSet(Sheet sheet) {
+        
         String otherAttributeSetName = NbBundle.getMessage(DefinitionsNode.class, "PROP_SHEET_CATEGORY_Other_Attributes");
-        mSheet.remove(otherAttributeSetName);
+       // getSheet().remove(otherAttributeSetName);
         Sheet.Set otherAttributesSheetSet = new Sheet.Set();
         otherAttributesSheetSet.setName(otherAttributeSetName);
         otherAttributesSheetSet.setDisplayName(otherAttributeSetName);
-        mSheet.put(otherAttributesSheetSet);
-        return otherAttributesSheetSet;
+        sheet.put(otherAttributesSheetSet);
     }
-
-    protected Sheet.Set createPropertiesSheetSet() {
-        mSheet.remove(Sheet.PROPERTIES);
-        Sheet.Set ss = Sheet.createPropertiesSet();
-        mSheet.put(ss);
-        return ss;
+    
+    protected Sheet.Set getOtherPropertiesSheetSet(Sheet sheet) {
+        return sheet.get(NbBundle.getMessage(DefinitionsNode.class, "PROP_SHEET_CATEGORY_Other_Attributes"));
     }
 
     //
@@ -636,7 +657,8 @@ public abstract class WSDLElementNode extends AbstractNode
     protected Node.Property getOtherAttributeNodeProperty(QName attrQName, 
             OtherAttributePropertyAdapter propertyAdapter) throws NoSuchMethodException {
         Node.Property attrValueProperty = new BaseAttributeProperty(propertyAdapter, String.class, CommonAttributePropertyAdapter.VALUE);
-        attrValueProperty.setName(Utility.fromQNameToString(attrQName));
+        attrValueProperty.setName(attrQName.toString());
+        attrValueProperty.setDisplayName(Utility.fromQNameToString(attrQName));
         String desc = getAttributeShortDescription(attrQName);
         if(desc != null && !(desc.trim().length() == 0)) {
             attrValueProperty.setShortDescription(desc);
@@ -656,8 +678,8 @@ public abstract class WSDLElementNode extends AbstractNode
         return attrName;
     }
     
-    protected void refreshOtherAttributesSheetSet() {
-        Sheet.Set otherAttributesSheetSet = createOtherPropertiesSheetSet();
+    protected void refreshOtherAttributesSheetSet(Sheet sheet) {
+        Sheet.Set otherAttributesSheetSet = getOtherPropertiesSheetSet(sheet);
         addOtherAttributesProperties(otherAttributesSheetSet);
     }
      
@@ -682,21 +704,36 @@ public abstract class WSDLElementNode extends AbstractNode
                 Entry<QName, String> entry = it.next();
                 QName attrQName = entry.getKey();
                 String ns = attrQName.getNamespaceURI();
-                //if attribute are from non wsdl namespace
-                //in that case we will have a namspace
-                //for wsdl namspace attribute ns is empty string
-                if(ns != null && !ns.trim().equals("") && !ns.equals(WSDL_NAMESPACE)) {
-                    //String value = entry.getValue();
-                    OtherAttributePropertyAdapter propertyAdapter = new OtherAttributePropertyAdapter(attrQName, 
-                            getWSDLComponent());
-                    //attributes
-                    Node.Property attrValueProperty;
-                    try {
-                        attrValueProperty = getOtherAttributeNodeProperty(attrQName, propertyAdapter);
-                        ss.put(attrValueProperty);
-                    } catch (NoSuchMethodException e) {
-                        ErrorManager.getDefault().notify(e);
+                if (ss.get(attrQName.toString()) == null) {
+                    //if attribute are from non wsdl namespace
+                    //in that case we will have a namspace
+                    //for wsdl namspace attribute ns is empty string
+                    if(ns != null && !ns.trim().equals("") && !ns.equals(WSDL_NAMESPACE)) {
+                        //String value = entry.getValue();
+                        OtherAttributePropertyAdapter propertyAdapter = new OtherAttributePropertyAdapter(attrQName, 
+                                getWSDLComponent());
+                        //attributes
+                        Node.Property attrValueProperty;
+                        try {
+                            attrValueProperty = getOtherAttributeNodeProperty(attrQName, propertyAdapter);
+                            ss.put(attrValueProperty);
+                        } catch (NoSuchMethodException e) {
+                            ErrorManager.getDefault().notify(e);
+                        }
                     }
+                }
+            }
+            //remove unused properties
+            Set<QName> set = attributesMap.keySet();
+            for (Property prop : ss.getProperties()) {
+                QName qname = null;
+                try {
+                    qname = QName.valueOf(prop.getName());
+                } catch (IllegalArgumentException e) {
+
+                }
+                if (qname != null && !set.contains(qname)) {
+                    ss.remove(prop.getName());
                 }
             }
         }
@@ -810,6 +847,14 @@ public abstract class WSDLElementNode extends AbstractNode
     *
     */
    public abstract String getTypeDisplayName();
+
+    public Component getComponent() {
+        return mElement;
+    }
+
+   public Class<? extends Component> getComponentType() {
+       return mElement.getClass();
+   }
 
    
 }

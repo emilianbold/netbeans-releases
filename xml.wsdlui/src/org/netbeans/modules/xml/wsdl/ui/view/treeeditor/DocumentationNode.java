@@ -30,14 +30,13 @@ import java.beans.PropertyChangeEvent;
 import java.util.logging.Level;
 
 import javax.swing.Action;
-import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 
-//import org.netbeans.modules.xml.refactoring.actions.FindUsagesAction;
-//import org.netbeans.modules.xml.refactoring.actions.RefactorAction;
+import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.xml.wsdl.model.Documentation;
 import org.netbeans.modules.xml.wsdl.ui.api.property.PropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.commands.CommonAttributePropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.view.property.BaseAttributeProperty;
+import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.ui.actions.GoToAction;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
@@ -59,7 +58,7 @@ import org.openide.util.actions.SystemAction;
  * To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
-public class DocumentationNode extends WSDLElementNode {
+public class DocumentationNode extends WSDLElementNode<Documentation> {
 
     protected Documentation mWSDLConstruct;
     
@@ -87,7 +86,7 @@ public class DocumentationNode extends WSDLElementNode {
     public DocumentationNode(Documentation wsdlConstruct) {
         super(Children.LEAF, wsdlConstruct);
         mWSDLConstruct = wsdlConstruct;
-        this.setDisplayName(NbBundle.getMessage(TypesNode.class, "DOCUMENTATION_NODE_NAME"));
+        this.setDisplayName(NbBundle.getMessage(DocumentationNode.class, "DOCUMENTATION_NODE_NAME"));
         
         this.mPropertyAdapter = new DocumentationPropertyAdapter();
     }
@@ -103,24 +102,40 @@ public class DocumentationNode extends WSDLElementNode {
         return ICON;
     }
 
-    public Object getWSDLConstruct() {
-        return mWSDLConstruct;
-    }
-
     @Override
     public Action[] getActions(boolean context) {
         return ACTIONS;
     }
     
     @Override
-    protected void refreshAttributesSheetSet() {
-        Sheet.Set ss = createPropertiesSheetSet();
+    public void propertyChange(PropertyChangeEvent event) {
+        if (event.getSource() == mWSDLConstruct && isValid()) {
+            if (event.getPropertyName().equals(Documentation.CONTENT_PROPERTY)) {
+                updateShortDescriptionOfParent();
+            } else {
+                super.propertyChange(event);
+            }
+        }
+    }
+    
+    
+    
+    private void updateShortDescriptionOfParent() {
+        Node parentNode = getParentNode();
+        parentNode.setShortDescription(mWSDLConstruct.getTextContent());
+    }
+
+
+    @Override
+    protected void refreshAttributesSheetSet(Sheet sheet) {
+        Sheet.Set ss = sheet.get(Sheet.PROPERTIES);
         try {
             //value
             Node.Property nameProperty = new BaseAttributeProperty(mPropertyAdapter, String.class, CommonAttributePropertyAdapter.VALUE);
             
             
-            nameProperty.setName(NbBundle.getMessage(DocumentationNode.class, "DOC_NODE_Documentation_text"));
+            nameProperty.setName(Documentation.CONTENT_PROPERTY);
+            nameProperty.setDisplayName(NbBundle.getMessage(DocumentationNode.class, "DOC_NODE_Documentation_text"));
             nameProperty.setShortDescription(NbBundle.getMessage(DocumentationNode.class, "DOC_NODE_Documentation_text"));
             ss.put(nameProperty);
             
@@ -129,13 +144,7 @@ public class DocumentationNode extends WSDLElementNode {
             mLogger.log(Level.SEVERE, "failed to create property sheet for "+ mWSDLConstruct, ex);
         }
     }
-    
-    public void nodeValueChanged(PropertyChangeEvent evt) {
-//        fire a propertysets change so that property sheet
-        //can be refreshed
-        this.firePropertySetsChange(new Node.PropertySet[] {}, this.getPropertySets());
-    }
-    
+
     public class DocumentationPropertyAdapter extends PropertyAdapter {
         
         public DocumentationPropertyAdapter() {

@@ -60,7 +60,7 @@ import org.openide.util.actions.SystemAction;
  *@author skini
  *
  */
-public abstract class OperationParameterNode extends WSDLNamedElementNode implements ComponentListener {
+public abstract class OperationParameterNode<T extends OperationParameter> extends WSDLNamedElementNode<OperationParameter> implements ComponentListener {
     
     protected OperationParameter mWSDLConstruct;
     
@@ -89,7 +89,7 @@ public abstract class OperationParameterNode extends WSDLNamedElementNode implem
     };
 
     public OperationParameterNode(OperationParameter wsdlConstruct) {
-        super(new GenericWSDLComponentChildren(wsdlConstruct), wsdlConstruct);
+        super(new GenericWSDLComponentChildren<OperationParameter>(wsdlConstruct), wsdlConstruct);
         mWSDLConstruct = wsdlConstruct;
         this.mPropertyAdapter = new OperationInputOutputFaultPropertyAdapter(wsdlConstruct);
         super.setNamedPropertyAdapter(this.mPropertyAdapter);
@@ -111,10 +111,6 @@ public abstract class OperationParameterNode extends WSDLNamedElementNode implem
         return ACTIONS;
     }
     
-    
-    public Object getWSDLConstruct() {
-        return mWSDLConstruct;
-    }
     
     @Override
     protected Node.Property createAttributeProperty(QName attrQName) {
@@ -154,7 +150,8 @@ public abstract class OperationParameterNode extends WSDLNamedElementNode implem
         attrValueProperty = new BaseAttributeProperty(mPropertyAdapter, String.class, NAME_PROP);
         
         
-        attrValueProperty.setName(NbBundle.getMessage(OperationParameterNode.class, "PROP_NAME_DISPLAYNAME"));
+        attrValueProperty.setName(OperationParameter.NAME_PROPERTY);
+        attrValueProperty.setDisplayName(NbBundle.getMessage(OperationParameterNode.class, "PROP_NAME_DISPLAYNAME"));
         attrValueProperty.setShortDescription(NbBundle.getMessage(OperationParameterNode.class, "OPERATION_PARAMETER_NAME_DESC"));
         
         return attrValueProperty;
@@ -164,7 +161,8 @@ public abstract class OperationParameterNode extends WSDLNamedElementNode implem
         Node.Property attrValueProperty;
         attrValueProperty = new MessageAttributeProperty(mPropertyAdapter, mWSDLConstruct, String.class, "getMessage", "setMessage"); 
         
-        attrValueProperty.setName(NbBundle.getMessage(OperationParameterNode.class, "PROP_MESSAGE_DISPLAYNAME"));
+        attrValueProperty.setName(OperationParameter.MESSAGE_PROPERTY);
+        attrValueProperty.setDisplayName(NbBundle.getMessage(OperationParameterNode.class, "PROP_MESSAGE_DISPLAYNAME"));
         attrValueProperty.setShortDescription(NbBundle.getMessage(OperationParameterNode.class, "OPERATIONPARAMETER_MESSAGE_DESC"));
         
         return attrValueProperty;

@@ -33,6 +33,7 @@ import java.util.logging.Level;
 
 import javax.xml.namespace.QName;
 
+import org.netbeans.modules.xml.wsdl.model.Port;
 import org.netbeans.modules.xml.wsdl.model.Service;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -56,7 +57,7 @@ import org.openide.util.datatransfer.NewType;
  * @author Ritesh Adval
  *
  **/
-public class ServiceNode extends WSDLExtensibilityElementNode {
+public class ServiceNode extends WSDLExtensibilityElementNode<Service> {
     
     protected Service mWSDLConstruct;
     
@@ -67,7 +68,7 @@ public class ServiceNode extends WSDLExtensibilityElementNode {
     private ServicePropertyAdapter mPropertyAdapter;
     
     public ServiceNode(Service wsdlConstruct) {
-        super(new GenericWSDLComponentChildren(wsdlConstruct), wsdlConstruct, new ServiceNewTypesFactory());
+        super(new GenericWSDLComponentChildren<Service>(wsdlConstruct), wsdlConstruct, new ServiceNewTypesFactory());
         mWSDLConstruct = wsdlConstruct;
         
         
@@ -125,7 +126,8 @@ public class ServiceNode extends WSDLExtensibilityElementNode {
         attrValueProperty = new BaseAttributeProperty(mPropertyAdapter,
                 String.class,
                 NAME_PROP);
-        attrValueProperty.setName(NbBundle.getMessage(ServiceNode.class, "PROP_NAME_DISPLAYNAME"));
+        attrValueProperty.setName(Service.NAME_PROPERTY);
+        attrValueProperty.setDisplayName(NbBundle.getMessage(ServiceNode.class, "PROP_NAME_DISPLAYNAME"));
         attrValueProperty.setShortDescription(NbBundle.getMessage(ServiceNode.class, "SERVICE_NAME_DESC"));
         
         return attrValueProperty;

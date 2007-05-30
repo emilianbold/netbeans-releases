@@ -22,6 +22,8 @@ package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
 
 import java.awt.Image;
 import java.beans.PropertyEditor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.logging.Level;
 
 import javax.swing.Action;
@@ -40,11 +42,16 @@ import org.openide.actions.NewAction;
 import org.openide.actions.PasteAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.ProxyLookup;
 
 
 /**
@@ -53,9 +60,10 @@ import org.openide.util.actions.SystemAction;
  *
  * @version 
  */
-public class ImportNode extends WSDLElementContainerNode {
+public class ImportNode extends WSDLElementNode<Import> {
     
     private static final String NAMESPACE_PROP = "namespace";//NOI18N
+    private Import mWSDLConstruct;
             
     Image ICON  = Utilities.loadImage
      ("org/netbeans/modules/xml/wsdl/ui/view/resources/import-include-redefine.png");
@@ -81,6 +89,7 @@ public class ImportNode extends WSDLElementContainerNode {
     public ImportNode(Children children,
                       Import wsdlConstruct) {
         super(children, wsdlConstruct);
+        mWSDLConstruct = wsdlConstruct;
         this.mPropertyAdapter = new ImportPropertyAdapter();
     }
     
@@ -101,15 +110,16 @@ public class ImportNode extends WSDLElementContainerNode {
     }
 
     @Override
-    protected void refreshAttributesSheetSet()  {
-        Sheet.Set ss = createPropertiesSheetSet();
+    protected void refreshAttributesSheetSet(Sheet sheet)  {
+        Sheet.Set ss = sheet.get(Sheet.PROPERTIES);
         
         try {
             //namespace
             Node.Property namespaceProperty = new BaseAttributeProperty(mPropertyAdapter, 
                                                                         String.class, 
                                                                         NAMESPACE_PROP);
-            namespaceProperty.setName(NbBundle.getMessage(ImportNode.class, "PROP_NAMESPACE_DISPLAYNAME"));
+            namespaceProperty.setName(Import.NAMESPACE_URI_PROPERTY);
+            namespaceProperty.setDisplayName(NbBundle.getMessage(ImportNode.class, "PROP_NAMESPACE_DISPLAYNAME"));
             namespaceProperty.setShortDescription(NbBundle.getMessage(ImportNode.class, "NAMESPACE_DESC"));
             ss.put(namespaceProperty);
             
@@ -118,55 +128,55 @@ public class ImportNode extends WSDLElementContainerNode {
                     String.class, 
                     "getLocation", 
                     "setLocation");//NOI18N
-            locationProperty.setName(NbBundle.getMessage(ImportNode.class, "PROP_LOCATION_DISPLAYNAME"));
+            locationProperty.setName(Import.LOCATION_PROPERTY);
+            locationProperty.setDisplayName(NbBundle.getMessage(ImportNode.class, "PROP_LOCATION_DISPLAYNAME"));
             locationProperty.setShortDescription(NbBundle.getMessage(ImportNode.class, "LOCATION_DESC"));
             ss.put(locationProperty);
             
 
             
         } catch(Exception ex) {
-            mLogger.log(Level.SEVERE, "failed to create property sheet for "+ getWSDLComponent(), ex);
+            mLogger.log(Level.SEVERE, "failed to create property sheet for "+ mWSDLConstruct, ex);
         }
     }
 
     @Override
     protected void updateDisplayName() {
-        setDisplayName(((Import) getWSDLComponent()).getNamespace());
+        setDisplayName(mWSDLConstruct.getNamespace());
     }
     
     public class ImportPropertyAdapter extends PropertyAdapter {
-        Import wsdlConstruct;
+        
         public ImportPropertyAdapter() {
             super(getWSDLComponent());
-            wsdlConstruct = (Import) getWSDLComponent();
         }
         
         public void setLocation(String location) {
-            wsdlConstruct.getModel().startTransaction();
-            wsdlConstruct.setLocation(location);
-            wsdlConstruct.getModel().endTransaction();
+            getWSDLComponent().getModel().startTransaction();
+            (getWSDLComponent()).setLocation(location);
+                getWSDLComponent().getModel().endTransaction();
          }
          
          public String getLocation() {
-             if(wsdlConstruct.getLocation() == null) {
+             if(mWSDLConstruct.getLocation() == null) {
                  return "";
              }
              
-             return wsdlConstruct.getLocation();
+             return mWSDLConstruct.getLocation();
          }
          
          public void setNamespace(String namespace) {
              getWSDLComponent().getModel().startTransaction();
-             ((Import) getWSDLComponent()).setNamespace(namespace);
+             (getWSDLComponent()).setNamespace(namespace);
                  getWSDLComponent().getModel().endTransaction();
          }
          
          public String getNamespace() {
-             if(wsdlConstruct.getNamespace() == null) {
+             if(mWSDLConstruct.getNamespace() == null) {
                  return "";
              }
              
-             return wsdlConstruct.getNamespace();
+             return mWSDLConstruct.getNamespace();
          } 
          
     }
@@ -181,7 +191,7 @@ public class ImportNode extends WSDLElementContainerNode {
 
         @Override
         public PropertyEditor getPropertyEditor() {
-            return new ImportLocationPropertyEditor((Import) getWSDLComponent());
+            return new ImportLocationPropertyEditor(mWSDLConstruct);
         }
     }
 
@@ -189,5 +199,183 @@ public class ImportNode extends WSDLElementContainerNode {
     public String getTypeDisplayName() {
         return NbBundle.getMessage(ImportNode.class, "LBL_UnrecognizedImport_TypeDisplayName");
     }
+    
+    
+    public static class ReadOnlyNode extends FilterNode {
+        
+        public ReadOnlyNode(Node original, InstanceContent content, List objList) {
+            super(original, new ReadOnlyChildren(original, objList), new ProxyLookup(new Lookup[] {new AbstractLookup(content), original.getLookup()}));
+            if (objList != null) {
+                for (Object obj : objList) {
+                    content.add(obj);
+                }
+            }
+        }
+        
+        @Override
+       public javax.swing.Action[] getActions(boolean context) {
+            return new javax.swing.Action[] {};
+        }
+        
+         
+       @Override
+       public PropertySet[] getPropertySets () {
+           PropertySet[] propertySet = super.getPropertySets();
+           for(int i = 0; i < propertySet.length; i++) {
+               PropertySet pSet = propertySet[i];
+               ReadOnlyPropertySet rpSet = new ReadOnlyPropertySet(pSet);
+               propertySet[i] = rpSet;
+           }
+           return propertySet;
+       }
+       
+       @Override
+       public boolean canRename()
+       {
+           return false;
+       }
+       
+       @Override
+       public boolean canDestroy()
+       {
+           return false;
+       }
+       
+       @Override
+       public boolean canCut()
+       {
+           return false;
+       }
+       
+       @Override
+       public boolean canCopy()
+       {
+           return false;
+       }
+       
+       @Override
+       public boolean hasCustomizer()
+       {
+           return false;
+       }
+    }
+    
+    
+    public static class ReadOnlyChildren extends FilterNode.Children {
+       
+        private List objList;
+
+        public ReadOnlyChildren(Node node, List objList) {
+            super(node);
+            this.objList = objList;
+        }
+        
+        @Override
+        protected Node copyNode(Node node) {
+            return new ReadOnlyNode(node, new InstanceContent(), objList);
+        }
+   } 
+   
+   public static class ReadOnlyProperty extends Node.Property {
+           
+       private Node.Property mDelegate;
+           
+       public ReadOnlyProperty(Node.Property delegate) {
+           super(delegate.getClass());
+           this.mDelegate = delegate;
+           this.setDisplayName(this.mDelegate.getDisplayName());
+           this.setName(this.mDelegate.getName());
+           this.setShortDescription(this.mDelegate.getShortDescription());
+           this.setExpert(this.mDelegate.isExpert());
+           this.setHidden(this.mDelegate.isHidden());
+           this.setPreferred(this.mDelegate.isPreferred());
+           
+       }
+       
+       @Override
+       public boolean equals(Object property) {
+           return this.mDelegate.equals(property);
+       }
+       
+       @Override
+       public String getHtmlDisplayName() {
+           return this.mDelegate.getHtmlDisplayName();
+       }
+       
+       @Override
+       public PropertyEditor getPropertyEditor() {
+           return this.mDelegate.getPropertyEditor();
+       }
+       
+       @Override
+       public Class getValueType() {
+           return this.mDelegate.getValueType();
+       }
+       
+       @Override
+       public int hashCode() {
+           return this.mDelegate.hashCode();
+       }
+       
+       @Override
+       public boolean isDefaultValue() {
+           return this.mDelegate.isDefaultValue();
+       }
+       
+       @Override
+       public void restoreDefaultValue() throws IllegalAccessException,
+               InvocationTargetException {
+           this.mDelegate.restoreDefaultValue();
+       }
+       
+       @Override
+       public boolean supportsDefaultValue() {
+           return this.mDelegate.supportsDefaultValue();
+       }
+       
+       @Override
+       public boolean canRead() {
+           return true;
+       }
+       
+       @Override
+       public boolean canWrite() {
+           return false;
+       }
+       
+       @Override
+       public Object getValue() throws IllegalAccessException,
+               InvocationTargetException {
+           return mDelegate.getValue();
+       }
+       
+       @Override
+       public void setValue(Object val) throws IllegalAccessException,
+               IllegalArgumentException, InvocationTargetException {
+           //do nothing
+       }
+   }
+   
+   public static class ReadOnlyPropertySet extends Node.PropertySet {
+           
+       private Node.PropertySet mDelegate;
+       
+       public ReadOnlyPropertySet(Node.PropertySet delegate) {
+           super(delegate.getName(), delegate.getDisplayName(), delegate.getShortDescription());
+           this.mDelegate = delegate;
+       }
+       
+       @Override
+       public Property[] getProperties() {
+           Property[] properties = this.mDelegate.getProperties();
+           for(int i = 0; i < properties.length; i++) {
+               Property p = properties[i];
+               ReadOnlyProperty rp = new ReadOnlyProperty(p);
+               properties[i] = rp;
+           }
+           
+           return properties;
+       }    
+   }
 
 }

@@ -22,6 +22,7 @@ package org.netbeans.modules.xml.wsdl.ui.netbeans.module;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.Iterator;
 import javax.swing.AbstractAction;
@@ -86,6 +87,8 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
     private transient MultiViewElementCallback multiViewObserver;
     private transient javax.swing.JLabel errorLabel = new javax.swing.JLabel();
     private transient JToolBar mToolbar;
+    private ActivatedNodesMediator nodesMediator;
+    private CookieProxyLookup cpl;
 
     public WSDLTreeViewMultiViewElement() {
         super();
@@ -98,7 +101,7 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
     }
 
     private void initialize() {
-    manager = new ExplorerManager();
+        manager = new ExplorerManager();
         // Install our own actions.
         CallbackSystemAction globalFindAction = SystemAction.get(FindAction.class);
         Object mapKey = globalFindAction.getActionMapKey();
@@ -120,7 +123,7 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
 
         //show cookie
         ShowCookie showCookie = new ShowCookie() {
-            
+
             public void show(ResultItem resultItem) {
                 Component component = resultItem.getComponents();
                 if (categoryPane != null && component instanceof DocumentComponent) {
@@ -130,34 +133,48 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
         };
 
         Node delegate = mObj.getNodeDelegate();
-        ActivatedNodesMediator nodesMediator =
-                new ActivatedNodesMediator(delegate);
+        nodesMediator = new ActivatedNodesMediator(delegate);
         nodesMediator.setExplorerManager(this);
-        CookieProxyLookup cpl = new CookieProxyLookup(new Lookup[] {
-            Lookups.fixed(new Object[] {
-                // Need ActionMap in lookup so our actions are used.
-                map,
-                // Need the data object registered in the lookup so that the
-                // projectui code will close our open editor windows when the
-                // project is closed.
-                mObj,
-                // The Show Cookie in lookup to show the component
-                showCookie
-            }),
-            nodesMediator.getLookup(),
-            // The Node delegate Lookup must be the last one in the list
-            // for the CookieProxyLookup to work properly.
-            delegate.getLookup(),
+        cpl = new CookieProxyLookup(new Lookup[] {
+                Lookups.fixed(new Object[] {
+                        // Need ActionMap in lookup so our actions are used.
+                        map,
+                        // Need the data object registered in the lookup so that the
+                        // projectui code will close our open editor windows when the
+                        // project is closed.
+                        mObj,
+                        // The Show Cookie in lookup to show the component
+                        showCookie
+                }),
+                nodesMediator.getLookup(),
+                // The Node delegate Lookup must be the last one in the list
+                // for the CookieProxyLookup to work properly.
+                delegate.getLookup(),
         }, delegate);
         associateLookup(cpl);
         addPropertyChangeListener(ACTIVATED_NODES, nodesMediator);
         addPropertyChangeListener(ACTIVATED_NODES, cpl);
 
         setLayout(new BorderLayout());
-
-        initUI();
     }
 
+    
+    private void cleanup() {
+        try {
+            manager.setSelectedNodes(new Node[0]);
+        } catch (PropertyVetoException e) {
+        }
+        removePropertyChangeListener(ACTIVATED_NODES, nodesMediator);
+        removePropertyChangeListener(ACTIVATED_NODES, cpl);
+        nodesMediator = null;
+        cpl = null;
+        
+        //TODO: try to clean the category.
+        categoryPane = null;
+        mToolbar.removeAll();
+        mToolbar = null;
+        removeAll();
+    }
     public ExplorerManager getExplorerManager() {
     return manager;
     }
@@ -202,24 +219,26 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
     @Override
     public void componentClosed() {
         super.componentClosed();
+        cleanup();
     }
     
     @Override
     public void componentOpened() {
         super.componentOpened();
+        initUI();
     }
     
     @Override
     public void componentActivated() {
         super.componentActivated();
-    ExplorerUtils.activateActions(manager, true);
+        ExplorerUtils.activateActions(manager, true);
         mObj.getWSDLEditorSupport().syncModel();
         updateGroupVisibility();
     }
     
     @Override
     public void componentDeactivated() {
-    ExplorerUtils.activateActions(manager, false);
+        ExplorerUtils.activateActions(manager, false);
         super.componentDeactivated();
         updateGroupVisibility();
     }
@@ -248,7 +267,7 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
     
     @Override
     public HelpCtx getHelpCtx() {
-    return new HelpCtx(WSDLTreeViewMultiViewDesc.class);
+        return new HelpCtx(WSDLTreeViewMultiViewDesc.class);
     }
 
     private static Boolean groupVisible = null;

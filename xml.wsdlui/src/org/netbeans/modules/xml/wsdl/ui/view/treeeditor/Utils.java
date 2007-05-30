@@ -32,11 +32,9 @@ import org.netbeans.modules.xml.schema.model.AnyAttribute;
 import org.netbeans.modules.xml.schema.model.Attribute;
 import org.netbeans.modules.xml.schema.model.Element;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
-import org.netbeans.modules.xml.wsdl.ui.cookies.WSDLDefinitionNodeCookie;
 import org.netbeans.modules.xml.wsdl.ui.schema.visitor.AbstractXSDVisitor;
 import org.netbeans.modules.xml.wsdl.ui.schema.visitor.SchemaElementAttributeFinderVisitor;
 import org.netbeans.modules.xml.xam.Nameable;
-import org.openide.nodes.Node;
 import org.w3c.dom.NamedNodeMap;
 
 
@@ -48,22 +46,6 @@ import org.w3c.dom.NamedNodeMap;
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
 public class Utils {
-	
-	public static WSDLDefinitionNodeCookie getWSDLDefinitionNodeCookie(Node node) {
-		Node parent = node;
-		if(parent != null) {
-			while(parent != null) {
-				WSDLDefinitionNodeCookie cookie = (WSDLDefinitionNodeCookie) parent.getCookie(WSDLDefinitionNodeCookie.class);
-				if(cookie != null) {
-					return cookie;
-				} else {
-					parent = parent.getParentNode();
-				}
-			}
-		}
-		
-		return null;
-	}
 	
 	public static boolean isMissingAttributes(WSDLComponent element, Element schemaElement) {
 		boolean result = false;

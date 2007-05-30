@@ -64,11 +64,4 @@ public class PropertyFolderNode extends AbstractNode {
 
             return sysAction;
     }
-
-    
-    public Object getWSDLConstruct() {
-        return null;
-    }
-    
-    
 }

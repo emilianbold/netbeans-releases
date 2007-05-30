@@ -96,7 +96,7 @@ public class ExtensibilityElementPropertyAdapter extends PropertyAdapter {
     }
     
     public boolean supportsDefaultValue() {
-        return supportsDefaultValue || isOptional;
+        return supportsDefaultValue;
     }
     
     public void setOptional(boolean bool) {

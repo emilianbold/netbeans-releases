@@ -63,13 +63,13 @@ import org.openide.util.datatransfer.NewType;
  * To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
-public class BindingOperationNode extends WSDLExtensibilityElementNode {
+public class BindingOperationNode extends WSDLExtensibilityElementNode<BindingOperation> {
     private  BindingOperation mWSDLConstruct;
     private BindingOperationPropertyAdapter mPropertyAdapter;
     private Image ICON;
 
     public BindingOperationNode(BindingOperation wsdlConstruct) {
-        super(new GenericWSDLComponentChildren(wsdlConstruct), wsdlConstruct, new BindingOperationNewTypesFactory());
+        super(new GenericWSDLComponentChildren<BindingOperation>(wsdlConstruct), wsdlConstruct, new BindingOperationNewTypesFactory());
         mWSDLConstruct = wsdlConstruct;
         // Must set the icon to something to honor getIcon() contract.
         ICON = Utilities.loadImage(
@@ -152,7 +152,8 @@ public class BindingOperationNode extends WSDLExtensibilityElementNode {
       private Node.Property createNameProperty() throws NoSuchMethodException {
           Node.Property attrValueProperty;
           attrValueProperty = new BaseAttributeProperty(mPropertyAdapter, String.class, NAME_PROP);
-          attrValueProperty.setName(NbBundle.getMessage(BindingOperationNode.class, "PROP_NAME_DISPLAYNAME"));
+          attrValueProperty.setName(BindingOperation.NAME_PROPERTY);
+          attrValueProperty.setDisplayName(NbBundle.getMessage(BindingOperationNode.class, "PROP_NAME_DISPLAYNAME"));
           attrValueProperty.setShortDescription(NbBundle.getMessage(BindingOperationNode.class, "BINDINGOPERATION_NAME_DESCRIPTION"));
                 
           return attrValueProperty;

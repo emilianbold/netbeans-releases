@@ -34,6 +34,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 
+import javax.swing.SwingUtilities;
 import javax.xml.namespace.QName;
 
 import org.netbeans.modules.xml.schema.model.All;
@@ -69,6 +70,7 @@ import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.actions.NameGenerator;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.schema.visitor.AbstractXSDVisitor;
@@ -501,9 +503,19 @@ public class ExtensibilityElementCreatorVisitor extends AbstractXSDVisitor {
     private void addExtensibilityElement(WSDLComponent parent, ExtensibilityElement child) {
         boolean inTransaction = Utility.startTransaction(mModel);
         
+        final ExtensibilityElement element = child;
         parent.addExtensibilityElement(child);
         
         Utility.endTransaction(mModel, inTransaction);
+        Runnable runnable = new Runnable() {
+        
+            public void run() {
+                ActionHelper.selectNode(element);
+            }
+        
+        };
+        SwingUtilities.invokeLater(runnable);
+        
     }
     
     private void addAttributeToExtensibilityElement(ExtensibilityElement exElement, String attrName, String attrVal) {

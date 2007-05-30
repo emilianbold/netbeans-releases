@@ -55,7 +55,7 @@ import org.openide.util.datatransfer.NewType;
  * To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
-public class BindingOperationInputNode extends WSDLExtensibilityElementNode {
+public class BindingOperationInputNode extends WSDLExtensibilityElementNode<BindingInput> {
     
     private BindingInput mWSDLConstruct;
     
@@ -65,7 +65,7 @@ public class BindingOperationInputNode extends WSDLExtensibilityElementNode {
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/bindinginput.png");
     
     public BindingOperationInputNode(BindingInput wsdlConstruct) {
-        super(new GenericWSDLComponentChildren(wsdlConstruct), wsdlConstruct, new BindingOperationInputNewTypesFactory());
+        super(new GenericWSDLComponentChildren<BindingInput>(wsdlConstruct), wsdlConstruct, new BindingOperationInputNewTypesFactory());
         mWSDLConstruct = wsdlConstruct;
         
         
@@ -124,7 +124,8 @@ public class BindingOperationInputNode extends WSDLExtensibilityElementNode {
         Node.Property attrValueProperty;
         attrValueProperty = new BaseAttributeProperty(mPropertyAdapter,
                 String.class, NAME_PROP);
-        attrValueProperty.setName(NbBundle.getMessage(BindingOperationInputNode.class, "PROP_NAME_DISPLAYNAME"));
+        attrValueProperty.setName(BindingInput.NAME_PROPERTY);
+        attrValueProperty.setDisplayName(NbBundle.getMessage(BindingOperationInputNode.class, "PROP_NAME_DISPLAYNAME"));
         attrValueProperty.setShortDescription(NbBundle.getMessage(BindingOperationInputNode.class, "BINDINGOPERATIONINPUT_NAME_DESCRIPTION"));
         
         
@@ -141,7 +142,7 @@ public class BindingOperationInputNode extends WSDLExtensibilityElementNode {
         
         public void setName(String name) {
             getWSDLComponent().getModel().startTransaction();
-            ((BindingInput) getWSDLComponent()).setName(name);
+            getWSDLComponent().setName(name);
                 getWSDLComponent().getModel().endTransaction();
         }
         

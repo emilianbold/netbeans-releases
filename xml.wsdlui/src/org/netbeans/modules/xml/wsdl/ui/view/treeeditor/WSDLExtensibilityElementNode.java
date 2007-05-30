@@ -36,17 +36,17 @@ import org.openide.nodes.Children;
  * To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
-public abstract class WSDLExtensibilityElementNode extends WSDLNamedElementNode {
+public abstract class WSDLExtensibilityElementNode<T extends WSDLComponent> extends WSDLNamedElementNode<T> {
     
     public WSDLExtensibilityElementNode(Children children, 
-                                        WSDLComponent element, 
+                                        T element, 
                                         NewTypesFactory newTypesFactory) {
         
         super(children, element, newTypesFactory);
     }
     
     public WSDLExtensibilityElementNode(Children children, 
-            WSDLComponent element) {
+            T element) {
         
         super(children, element);
     }
