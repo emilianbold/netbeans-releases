@@ -683,6 +683,7 @@ Microsystems, Inc. All Rights Reserved.
                         <pathelement path="${{netbeans.home}}/../platform7/modules/org-openide-text.jar"/>
                         <pathelement path="${{netbeans.home}}/../platform7/modules/org-openide-loaders.jar"/>
                         <pathelement path="${{netbeans.home}}/../platform7/modules/org-openide-nodes.jar"/>
+                        <pathelement path="${{netbeans.home}}/../platform7/modules/org-netbeans-modules-editor-mimelookup.jar"/>
                         <pathelement path="${{netbeans.home}}/../platform7/core/org-openide-filesystems.jar"/>
                     </classpath>
                     <!-- 
@@ -728,6 +729,7 @@ Microsystems, Inc. All Rights Reserved.
                         <pathelement path="${{netbeans.home}}/../platform7/modules/org-openide-text.jar"/>
                         <pathelement path="${{netbeans.home}}/../platform7/modules/org-openide-loaders.jar"/>
                         <pathelement path="${{netbeans.home}}/../platform7/modules/org-openide-nodes.jar"/>
+                        <pathelement path="${{netbeans.home}}/../platform7/modules/org-netbeans-modules-editor-mimelookup.jar"/>
                         <pathelement path="${{netbeans.home}}/../platform7/core/org-openide-filesystems.jar"/>
                     </classpath>
                     <!-- 

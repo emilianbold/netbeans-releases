@@ -57,8 +57,7 @@
             <classpath>
                 <path refid="cp"/>
                 <pathelement location="${compapp.external}/xmlunit1.0.jar"/>
-                <pathelement location="${compapp.external}/httpunit-1.6.2.jar"/> 
-                <pathelement location="${compapp.external}/wsdl4j-1_5_2/wsdl4j.jar"/>
+                <pathelement location="${compapp.external}/httpunit-1.6.2.jar"/>                 
                 <pathelement location="${netbeans.dest.dir}/${nb.cluster.java.dir}/modules/ext/junit-3.8.2.jar"/>
                 <pathelement location="${netbeans.dest.dir}/${nb.cluster.java.dir}/modules/ext/jaxrpc16/saaj-api.jar"/>
                 <pathelement location="${netbeans.dest.dir}/${nb.cluster.java.dir}/modules/ext/jaxrpc16/saaj-impl.jar"/>
