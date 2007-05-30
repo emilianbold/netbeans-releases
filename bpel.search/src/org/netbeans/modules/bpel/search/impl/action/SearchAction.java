@@ -24,7 +24,6 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.actions.NodeAction;
 
 import org.netbeans.modules.xml.xam.Model;

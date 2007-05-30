@@ -18,9 +18,7 @@
  */
 package org.netbeans.modules.bpel.search.impl.action;
 
-import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Component;
-
 import org.netbeans.modules.xml.xam.ui.search.api.SearchTarget;
 
 import static org.netbeans.modules.print.ui.PrintUI.*;
@@ -74,7 +72,8 @@ final class Target implements SearchTarget {
     new Target(org.netbeans.modules.bpel.model.api.PartnerLink.class),
     new Target(org.netbeans.modules.bpel.model.api.PartnerLinkContainer.class),
     new Target(org.netbeans.modules.bpel.model.api.PatternedCorrelation.class),
-    new Target(org.netbeans.modules.bpel.model.api.PatternedCorrelationContainer.class),
+    new Target(
+      org.netbeans.modules.bpel.model.api.PatternedCorrelationContainer.class),
     new Target(org.netbeans.modules.bpel.model.api.Pick.class),
     new Target(org.netbeans.modules.bpel.model.api.Process.class),
     new Target(org.netbeans.modules.bpel.model.api.Receive.class),
@@ -105,7 +104,8 @@ final class Target implements SearchTarget {
     new Target(org.netbeans.modules.xml.wsdl.model.BindingInput.class),
     new Target(org.netbeans.modules.xml.wsdl.model.BindingOperation.class),
     new Target(org.netbeans.modules.xml.wsdl.model.BindingOutput.class),
-    new Target(org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty.class),
+    new Target(
+      org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty.class),
     new Target(org.netbeans.modules.xml.wsdl.model.Definitions.class),
     new Target(org.netbeans.modules.xml.wsdl.model.Documentation.class),
     new Target(org.netbeans.modules.xml.wsdl.model.ExtensibilityElement.class),
@@ -119,10 +119,12 @@ final class Target implements SearchTarget {
     new Target(org.netbeans.modules.xml.wsdl.model.OperationParameter.class),
     new Target(org.netbeans.modules.xml.wsdl.model.Output.class),
     new Target(org.netbeans.modules.xml.wsdl.model.Part.class),
-    new Target(org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType.class),
+    new Target(
+      org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType.class),
     new Target(org.netbeans.modules.xml.wsdl.model.Port.class),
     new Target(org.netbeans.modules.xml.wsdl.model.PortType.class),
-    new Target(org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias.class),
+    new Target(
+      org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias.class),
     new Target(org.netbeans.modules.xml.wsdl.model.extensions.bpel.Query.class),
     new Target(org.netbeans.modules.xml.wsdl.model.RequestResponseOperation.class),
     new Target(org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role.class),
@@ -131,9 +133,75 @@ final class Target implements SearchTarget {
     new Target(org.netbeans.modules.xml.wsdl.model.Types.class),
   };
 
-  // todo a
   static final SearchTarget [] SCHEMA = new SearchTarget [] {
     new Target(Component.class),
+    new Target(org.netbeans.modules.xml.schema.model.Annotation.class),
+    new Target(org.netbeans.modules.xml.schema.model.AnyAttribute.class),
+    new Target(org.netbeans.modules.xml.schema.model.AnyElement.class),
+    new Target(org.netbeans.modules.xml.schema.model.AppInfo.class),
+    new Target(org.netbeans.modules.xml.schema.model.Attribute.class),
+    new Target(org.netbeans.modules.xml.schema.model.BoundaryFacet.class),
+    new Target(org.netbeans.modules.xml.schema.model.Choice.class),
+    new Target(org.netbeans.modules.xml.schema.model.ComplexContent.class),
+    new Target(org.netbeans.modules.xml.schema.model.ComplexContentDefinition.class),
+    new Target(
+      org.netbeans.modules.xml.schema.model.ComplexContentRestriction.class),
+    new Target(org.netbeans.modules.xml.schema.model.ComplexExtension.class),
+    new Target(
+      org.netbeans.modules.xml.schema.model.ComplexExtensionDefinition.class),
+    new Target(org.netbeans.modules.xml.schema.model.ComplexType.class),
+    new Target(org.netbeans.modules.xml.schema.model.ComplexTypeDefinition.class),
+    new Target(org.netbeans.modules.xml.schema.model.Constraint.class),
+    new Target(org.netbeans.modules.xml.schema.model.Documentation.class),
+    new Target(org.netbeans.modules.xml.schema.model.Element.class),
+    new Target(org.netbeans.modules.xml.schema.model.Enumeration.class),
+    new Target(org.netbeans.modules.xml.schema.model.Extension.class),
+    new Target(org.netbeans.modules.xml.schema.model.Field.class),
+    new Target(org.netbeans.modules.xml.schema.model.FractionDigits.class),
+    new Target(org.netbeans.modules.xml.schema.model.GlobalAttribute.class),
+    new Target(org.netbeans.modules.xml.schema.model.GlobalAttributeGroup.class),
+    new Target(org.netbeans.modules.xml.schema.model.GlobalComplexType.class),
+    new Target(org.netbeans.modules.xml.schema.model.GlobalElement.class),
+    new Target(org.netbeans.modules.xml.schema.model.GlobalGroup.class),
+    new Target(org.netbeans.modules.xml.schema.model.GlobalSimpleType.class),
+    new Target(org.netbeans.modules.xml.schema.model.GlobalType.class),
+    new Target(org.netbeans.modules.xml.schema.model.Import.class),
+    new Target(org.netbeans.modules.xml.schema.model.Include.class),
+    new Target(org.netbeans.modules.xml.schema.model.Key.class),
+    new Target(org.netbeans.modules.xml.schema.model.Length.class),
+    new Target(org.netbeans.modules.xml.schema.model.LengthFacet.class),
+    new Target(org.netbeans.modules.xml.schema.model.List.class),
+    new Target(org.netbeans.modules.xml.schema.model.LocalAttribute.class),
+    new Target(org.netbeans.modules.xml.schema.model.LocalAttributeContainer.class),
+    new Target(org.netbeans.modules.xml.schema.model.LocalComplexType.class),
+    new Target(org.netbeans.modules.xml.schema.model.LocalElement.class),
+    new Target(org.netbeans.modules.xml.schema.model.LocalGroupDefinition.class),
+    new Target(org.netbeans.modules.xml.schema.model.LocalSimpleType.class),
+    new Target(org.netbeans.modules.xml.schema.model.LocalType.class),
+    new Target(org.netbeans.modules.xml.schema.model.MaxExclusive.class),
+    new Target(org.netbeans.modules.xml.schema.model.MaxInclusive.class),
+    new Target(org.netbeans.modules.xml.schema.model.MaxLength.class),
+    new Target(org.netbeans.modules.xml.schema.model.MinExclusive.class),
+    new Target(org.netbeans.modules.xml.schema.model.MinInclusive.class),
+    new Target(org.netbeans.modules.xml.schema.model.MinLength.class),
+    new Target(org.netbeans.modules.xml.schema.model.Notation.class),
+    new Target(org.netbeans.modules.xml.schema.model.Pattern.class),
+    new Target(org.netbeans.modules.xml.schema.model.Redefine.class),
+    new Target(org.netbeans.modules.xml.schema.model.Schema.class),
+    new Target(org.netbeans.modules.xml.schema.model.Selector.class),
+    new Target(org.netbeans.modules.xml.schema.model.Sequence.class),
+    new Target(org.netbeans.modules.xml.schema.model.SequenceDefinition.class),
+    new Target(org.netbeans.modules.xml.schema.model.SimpleContent.class),
+    new Target(org.netbeans.modules.xml.schema.model.SimpleContentDefinition.class),
+    new Target(org.netbeans.modules.xml.schema.model.SimpleContentRestriction.class),
+    new Target(org.netbeans.modules.xml.schema.model.SimpleExtension.class),
+    new Target(org.netbeans.modules.xml.schema.model.SimpleRestriction.class),
+    new Target(org.netbeans.modules.xml.schema.model.SimpleType.class),
+    new Target(org.netbeans.modules.xml.schema.model.SimpleTypeDefinition.class),
+    new Target(org.netbeans.modules.xml.schema.model.SimpleTypeRestriction.class),
+    new Target(org.netbeans.modules.xml.schema.model.TotalDigits.class),
+    new Target(org.netbeans.modules.xml.schema.model.Union.class),
+    new Target(org.netbeans.modules.xml.schema.model.Unique.class),
   };
 
   private Target(Class<? extends Component> clazz) {

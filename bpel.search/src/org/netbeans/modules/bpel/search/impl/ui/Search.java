@@ -49,7 +49,11 @@ import org.netbeans.modules.xml.xam.ui.search.spi.SearchEngine;
 public final class Search extends PrintUI {
 
   /**{@inheritDoc}*/
-  public Component getUIComponent(List<SearchEngine> engines, Object source, SearchTarget [] targets) {
+  public Component getUIComponent(
+    List<SearchEngine> engines,
+    Object source,
+    SearchTarget [] targets)
+  {
     mySource = source;
     myTargets = targets;
     mySearchEngine = engines.get(0);

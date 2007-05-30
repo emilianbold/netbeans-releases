@@ -66,7 +66,8 @@ public final class Construct extends Engine {
     if ( !(component instanceof DocumentComponent)) {
       return false;
     }
-    NamedNodeMap attributes = ((DocumentComponent) component).getPeer().getAttributes();
+    NamedNodeMap attributes = ((DocumentComponent) component).
+      getPeer().getAttributes();
 
     for (int i=0; i < attributes.getLength(); i++) {
       Node attribute = attributes.item(i);

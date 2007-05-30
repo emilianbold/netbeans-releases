@@ -48,7 +48,12 @@ public final class Manager implements SearchManager {
   }
 
   /**{@inheritDoc}*/
-  public Component getUI(Object source, SearchTarget [] targets, JComponent parent, boolean advanced) {
+  public Component getUI(
+    Object source,
+    SearchTarget [] targets,
+    JComponent parent,
+    boolean advanced)
+  {
     List<SearchEngine> engines = getEngines(source);
 //out("Set engines: " + engines);
     
