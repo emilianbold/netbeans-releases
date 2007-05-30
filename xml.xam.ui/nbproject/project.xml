@@ -144,6 +144,7 @@
             <friend-packages>
                 <friend>org.netbeans.modules.bpel.core</friend>
                 <friend>org.netbeans.modules.bpel.editors</friend>
+                <friend>org.netbeans.modules.bpel.editors.api</friend>
                 <friend>org.netbeans.modules.bpel.search</friend>
                 <friend>org.netbeans.modules.bpel.xpath</friend>
                 <friend>org.netbeans.modules.xml.schema.abe</friend>
