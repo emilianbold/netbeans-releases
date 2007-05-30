@@ -51,6 +51,7 @@ public final class TextFieldInplaceEditorProvider implements InplaceEditorProvid
         if (! editor.isEnabled (widget))
             return null;
         JTextField field = new JTextField (editor.getText (widget));
+        field.selectAll ();
         Scene scene = widget.getScene();
         double zoomFactor = scene.getZoomFactor ();
         if (zoomFactor > 1.0) {
