@@ -55,15 +55,11 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
     private JComponent [] createItems() {
         Node [] nodes = getActivatedNodes();
         if (nodes.length > 0) {
-            VersioningSystem owner = VersioningManager.getInstance().getOwner(toFile(nodes[0]));
-            for (int i = 1; i < nodes.length; i++) {
-                Node node = nodes[i];
-                VersioningSystem vs = VersioningManager.getInstance().getOwner(toFile(node));
-                if (vs != owner) {
-                    return new JComponent[0];
-                }
+            VersioningSystem owner = getOwner(nodes);
+            if (owner == null) {
+                return new JComponent[0];
             }
-            VersioningSystem localHistory = VersioningManager.getInstance().getLocalHistory(toFile(nodes[0]));
+            VersioningSystem localHistory = getLocalHistory(nodes);
             List<JComponent> popups = new ArrayList<JComponent>();            
             if (owner != null) {
                 JMenu menu = createVersioningSystemPopup(owner, nodes);
@@ -98,6 +94,34 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
         return new JComponent[0];
     }
 
+    private VersioningSystem getLocalHistory(Node [] nodes) {
+        VCSContext ctx = VCSContext.forNodes(nodes);
+        VersioningSystem owner = null;
+        for (File file : ctx.getRootFiles()) {
+            VersioningSystem fileOwner = VersioningManager.getInstance().getLocalHistory(file);
+            if (owner != null) {
+                if (fileOwner != null && fileOwner != owner) return null;
+            } else {
+                owner = fileOwner;
+            }
+        }
+        return owner;
+    }
+
+    private VersioningSystem getOwner(Node [] nodes) {
+        VCSContext ctx = VCSContext.forNodes(nodes);
+        VersioningSystem owner = null;
+        for (File file : ctx.getRootFiles()) {
+            VersioningSystem fileOwner = VersioningManager.getInstance().getOwner(file);
+            if (owner != null) {
+                if (fileOwner != null && fileOwner != owner) return null;
+            } else {
+                owner = fileOwner;
+            }
+        }
+        return owner;
+    }
+    
     private JComponent [] createVersioningSystemItems(VersioningSystem owner, Node[] nodes) {
         VCSAnnotator an = owner.getVCSAnnotator();
         if (an == null) return null;
@@ -140,11 +164,6 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
 
     private Node[] getActivatedNodes() {
         return TopComponent.getRegistry().getActivatedNodes();
-    }
-
-    private File toFile(Node node) {
-        VCSContext ctx = VCSContext.forNodes(new Node [] { node });
-        return ctx.getRootFiles().iterator().next();
     }
 
     private class DynamicDummyItem extends JMenuItem implements DynamicMenuContent {
