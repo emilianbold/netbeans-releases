@@ -25,6 +25,7 @@ import org.netbeans.modules.visualweb.project.jsf.libraries.LibraryDefinition;
 import org.netbeans.modules.visualweb.project.jsf.libraries.J2SELibraryDefinition;
 import org.netbeans.modules.visualweb.project.jsf.libraries.ComponentLibraryDefinition;
 import org.netbeans.modules.visualweb.project.jsf.libraries.JsfProjectLibrary;
+import org.netbeans.modules.visualweb.api.j2ee.common.RequestedEjbResource;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -71,6 +72,7 @@ import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
+import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -473,6 +475,62 @@ public class JsfProjectUtils {
         }
 
         return "faces/" + pageName;
+    }
+
+    public static String setDataSourceReference(Project project, String resourceName) {
+        String[] propertyNames = new String[] {
+            "ResRefName", // NOI18N
+            "Description", // NOI18N
+            "ResType", // NOI18N
+            "ResAuth" }; // NOI18N
+        Object[] propertyValues = new Object[] {
+            resourceName,
+            "Visual Web generated DataSource Reference", // NOI18N
+            "javax.sql.DataSource", // NOI18N
+            "Container" }; // NOI18N
+
+        return addWebAppBean(project, "ResourceRef", propertyNames, propertyValues, "ResRefName"); // NOI18N
+    }
+
+    public static String setEjbReference(Project project, RequestedEjbResource ejbResource) {
+        String[] propertyNames = new String[] {
+            "EjbRefName", // NOI18N
+            "EjbRefType", // NOI18N
+            "Home", // NOI18N
+            "Remote" }; // NOI18N
+        Object[] propertyValues = new Object[] {
+            ejbResource.getEjbRefName(),
+            ejbResource.getEjbRefType(),
+            ejbResource.getHome(),
+            ejbResource.getRemote() };
+
+        return addWebAppBean(project, "EjbRef", propertyNames, propertyValues, "EjbRefName"); // NOI18N
+    }
+
+    public static String addWebAppBean(Project project, String beanName, String[] propertyNames, Object[] propertyValues, String keyProperty) {
+        if (project == null)
+            return null;
+
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        if (wm != null) {
+            try {
+                FileObject dd = wm.getDeploymentDescriptor();
+                WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
+                if (ddRoot != null) {
+                    ddRoot.addBean(beanName, propertyNames, propertyValues, keyProperty); // NOI18N
+                    ddRoot.write(dd);
+                }
+            } catch (ClassNotFoundException e) {
+                // This should really not happen
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            } catch (NameAlreadyUsedException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            } catch (IOException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
+        }
+
+        return (String) propertyValues[0];
     }
 
     /**
