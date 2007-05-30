@@ -41,6 +41,8 @@ public class EnvironmentVariablesEditor extends SimpleTabularDataEditor {
     protected String getStringForRowData(CompositeData rowData) {
         Collection rowValues = rowData.values();
         
+        // Mask out password
+        
         List<String> visibleRowValues = new ArrayList<String>();
         visibleRowValues.addAll(rowValues);
         
@@ -50,11 +52,69 @@ public class EnvironmentVariablesEditor extends SimpleTabularDataEditor {
         if (type.equals(EnvironmentVariablesCustomEditor.PASSWORD_TYPE)) {
             String password = (String) visibleRowValues.get(
                     EnvironmentVariablesCustomEditor.VALUE_COLUMN);
-            password = password.replaceAll(".", "*");
+            password = password.replaceAll(".", "*"); // NOI18N
             visibleRowValues.set(
                     EnvironmentVariablesCustomEditor.VALUE_COLUMN, password);
         }
         
         return visibleRowValues.toString();
+    }
+    
+    @Override
+    protected void validateRowData(String[] rowData) throws Exception {
+        if (rowData == null || rowData.length != 3) {
+            throw new RuntimeException("Illegal row data: "  + rowData);
+        }
+        
+        String type = rowData[1];
+        if (! type.equals(EnvironmentVariablesCustomEditor.STRING_TYPE) &&
+                type.equalsIgnoreCase(EnvironmentVariablesCustomEditor.STRING_TYPE)) {
+            type = rowData[1] = EnvironmentVariablesCustomEditor.STRING_TYPE;
+        } else if (! type.equals(EnvironmentVariablesCustomEditor.NUMBER_TYPE) &&
+                type.equalsIgnoreCase(EnvironmentVariablesCustomEditor.NUMBER_TYPE)) {
+            type = rowData[1] = EnvironmentVariablesCustomEditor.NUMBER_TYPE;
+        } else if (! type.equals(EnvironmentVariablesCustomEditor.BOOLEAN_TYPE) &&
+                type.equalsIgnoreCase(EnvironmentVariablesCustomEditor.BOOLEAN_TYPE)) {
+            type = rowData[1] = EnvironmentVariablesCustomEditor.BOOLEAN_TYPE;
+        } else if (! type.equals(EnvironmentVariablesCustomEditor.PASSWORD_TYPE) &&
+                type.equalsIgnoreCase(EnvironmentVariablesCustomEditor.PASSWORD_TYPE)) {
+            type = rowData[1] = EnvironmentVariablesCustomEditor.PASSWORD_TYPE;
+        }
+                
+        if (! type.equals(EnvironmentVariablesCustomEditor.STRING_TYPE) &&
+                ! type.equals(EnvironmentVariablesCustomEditor.NUMBER_TYPE) &&
+                ! type.equals(EnvironmentVariablesCustomEditor.BOOLEAN_TYPE) &&
+                ! type.equals(EnvironmentVariablesCustomEditor.PASSWORD_TYPE)) {
+            throw new RuntimeException("Illegal environment variable type: " + type + 
+                    ". The only supported types are: STRING, NUMBER, BOOLEAN and PASSWORD.");
+        }        
+        
+        String value = rowData[2]; 
+        if (type.equals(EnvironmentVariablesCustomEditor.BOOLEAN_TYPE)) {
+            if (!value.equalsIgnoreCase(Boolean.TRUE.toString()) && 
+                    !value.equalsIgnoreCase(Boolean.FALSE.toString()) ) {
+                if (value.equals("0")) { // NOI18N
+                    rowData[2] = Boolean.FALSE.toString();
+                } else if (value.equals("1")) { // NOI18N
+                    rowData[2] = Boolean.TRUE.toString();
+                } else {
+                    throw new RuntimeException("Illegal boolean value: " + value);
+                }
+            }
+        }
+        
+        if (type.equals(EnvironmentVariablesCustomEditor.NUMBER_TYPE)) {
+            try {                
+                Double.parseDouble(value);
+            } catch (Exception e) {
+                throw new RuntimeException("Invalid number: " + value);
+            }
+        }
+        
+        if (type.equals(EnvironmentVariablesCustomEditor.PASSWORD_TYPE)) {
+            if (!value.matches("^\\*+$")) {
+                throw new RuntimeException("Password is in clear text. Please use the custom editor to set password.");
+            }
+        }
     }
 }

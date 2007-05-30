@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -31,6 +31,8 @@ import java.util.Vector;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.CompositeDataSupport;
 import javax.management.openmbean.CompositeType;
+import javax.management.openmbean.KeyAlreadyExistsException;
+import javax.management.openmbean.OpenDataException;
 import javax.management.openmbean.OpenType;
 import javax.management.openmbean.TabularData;
 import javax.management.openmbean.TabularDataSupport;
@@ -46,6 +48,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import org.openide.DialogDisplayer;
 
@@ -63,33 +66,35 @@ public class SimpleTabularDataCustomEditor extends JPanel
     
     private JTable table;
     
+    private TableCellRenderer headerCellRenderer;
+    
     /** Number of index columns in the tabular data type. */
-    protected int indexColumnCount;
+    private int indexColumnCount;
     
     // all the keys are at the beginning of the array
-    protected String[] columnNames;
+    private String[] columnNames;
     
-    protected String[] columnDescriptions;
-    protected OpenType[] columnTypes;
+    private String[] columnDescriptions;
+    private OpenType[] columnTypes;
     
-    protected TabularType tabularType;
+    private TabularType tabularType;
     private TabularData tabularData;
     
     private JButton addRowButton, deleteRowButton;
     
     private static String ADD_ROW = NbBundle.getMessage(SimpleTabularDataCustomEditor.class, "AddRowLabel");
     private static String DELETE_ROW = NbBundle.getMessage(SimpleTabularDataCustomEditor.class, "DeleteRowLabel");
-    
-    
-    public SimpleTabularDataCustomEditor(SimpleTabularDataEditor editor) {
         
-        tabularData = (TabularData) editor.getValue();
         
+    public SimpleTabularDataCustomEditor(SimpleTabularDataEditor editor) {        
+        headerCellRenderer = createTableHeaderRenderer(); 
+        
+        tabularData = (TabularData) editor.getValue();        
         initComponents(tabularData);
-        
-//        HelpCtx.setHelpIDString(this, SimpleTabularDataCustomEditor.class.getName());
-//        getAccessibleContext().setAccessibleDescription(
-//            NbBundle.getBundle(SimpleTabularDataCustomEditor.class).getString("ACSD_SimpleTabularDataCustomEditor"));
+    }
+    
+    protected TableCellRenderer createTableHeaderRenderer() {
+        return new TabularDataTableHeaderRenderer();   
     }
     
     public Object getPropertyValue() throws IllegalStateException {
@@ -111,20 +116,28 @@ public class SimpleTabularDataCustomEditor extends JPanel
                 
                 // Ignore rows with null keys
                 boolean nullKeyRow = false;
-                //System.out.println("indexCoumnCount is " + indexColumnCount + " first value is " + itemValues[0]);
                 for (int i = 0; i < indexColumnCount; i++) {
-                    if (itemValues[i] == null) {
+                    if (itemValues[i] == null ||
+                            // the following check is not really required by tabular data
+                            ((String)itemValues[i]).trim().length() == 0) {
                         nullKeyRow = true;
                         break;
                     }
-                }                
+                }
                 if (!nullKeyRow) {
                     CompositeData rowData =
                             new CompositeDataSupport(rowType, columnNames, itemValues);
                     ret.put(rowData);
                 }
             }
-        } catch (Exception e) {
+        } catch (KeyAlreadyExistsException e) {
+            e.printStackTrace();
+            
+            NotifyDescriptor d = new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+            
+            ret = tabularData;  // if anything wrong, just return the old value
+        } catch (OpenDataException e) {
             e.printStackTrace();
             
             NotifyDescriptor d = new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE);
@@ -142,7 +155,7 @@ public class SimpleTabularDataCustomEditor extends JPanel
     }
     
     protected JTable createTable(DefaultTableModel tableModel) {
-         JTable table = new JTable(tableModel) {           
+        JTable table = new JTable(tableModel) {
             public Class getColumnClass(int column) {
                 OpenType columnType = columnTypes[column];
                 String className = columnType.getClassName();
@@ -160,22 +173,21 @@ public class SimpleTabularDataCustomEditor extends JPanel
         
         return table;
     }
-    
-    protected int getColumnCount() {
-        return columnNames.length;
+        
+    protected void configureTableColumns(JTable table) {
+        for (int i = 0; i < columnNames.length; i++) {
+            TableColumn col = table.getColumnModel().getColumn(i);
+            col.setHeaderRenderer(headerCellRenderer);
+        }
     }
     
     private void initComponents(TabularData tabularData) {
         DefaultTableModel tableModel = initTableModel(tabularData);
         
         table = createTable(tableModel);
-               
         table.getTableHeader().setReorderingAllowed(false);
         
-        for (int i = 0; i < getColumnCount(); i++) {
-            TableColumn col = table.getColumnModel().getColumn(i);
-            col.setHeaderRenderer(new MyTableHeaderRenderer());
-        }
+        configureTableColumns(table);
         
         table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
@@ -208,7 +220,7 @@ public class SimpleTabularDataCustomEditor extends JPanel
         table.getParent().setBackground(Color.white);
     }
     
-    protected DefaultTableModel initTableModel(TabularData tabularData) {
+    private DefaultTableModel initTableModel(TabularData tabularData) {
         
         tabularType = tabularData.getTabularType();
         CompositeType rowType = tabularType.getRowType();
@@ -253,13 +265,17 @@ public class SimpleTabularDataCustomEditor extends JPanel
             columnIdentifiers.addElement(columnNames[i]);
         }
         
-        DefaultTableModel tableModel = new DefaultTableModel();
+        DefaultTableModel tableModel = createTableModel();
         tableModel.setDataVector(dataVector, columnIdentifiers);
         
         return tableModel;
     }
     
-    protected Vector createNewRow() {
+    protected DefaultTableModel createTableModel() {
+        return new DefaultTableModel();
+    }
+    
+    protected Vector createRow() {
         Vector row = new Vector();
         for (int i = 0; i < columnNames.length; i++) {
             row.addElement(null);
@@ -267,7 +283,7 @@ public class SimpleTabularDataCustomEditor extends JPanel
         return row;
     }
     
-    private void addNewRow(Vector row) {        
+    private void addRow(Vector row) {
         Vector dataVector = getDataVector();
         dataVector.addElement(row);
         table.addNotify();
@@ -286,10 +302,10 @@ public class SimpleTabularDataCustomEditor extends JPanel
         table.addNotify();
         
         table.getSelectionModel().clearSelection();
-//        if (rowIndices.length > 0) {
-//            int newSelectedRowIndex = rowIndices[0] - 1;
-//            table.getSelectionModel().setSelectionInterval(newSelectedRowIndex, newSelectedRowIndex);
-//        }
+        //        if (rowIndices.length > 0) {
+        //            int newSelectedRowIndex = rowIndices[0] - 1;
+        //            table.getSelectionModel().setSelectionInterval(newSelectedRowIndex, newSelectedRowIndex);
+        //        }
     }
     
     private Vector getDataVector() {
@@ -300,21 +316,21 @@ public class SimpleTabularDataCustomEditor extends JPanel
         if (table.isEditing()) {
             table.getCellEditor().stopCellEditing();
         }
-         
+        
         JButton source = (JButton) event.getSource();
         String actionCommand = source.getActionCommand();
         
         if (actionCommand.equals(ADD_ROW)) {
-            Vector row = createNewRow();
+            Vector row = createRow();
             if (row != null) {
-                addNewRow(row);
+                addRow(row);
             }
         } else if (actionCommand.equals(DELETE_ROW)) {
             deleteSelectedRows();
         }
-    }
+    }    
     
-    public class MyTableHeaderRenderer extends DefaultTableCellRenderer {
+    class TabularDataTableHeaderRenderer extends DefaultTableCellRenderer {
         // This method is called each time a column header
         // using this renderer needs to be rendered.
         public Component getTableCellRendererComponent(JTable table, Object value,
@@ -327,13 +343,17 @@ public class SimpleTabularDataCustomEditor extends JPanel
                     setFont(header.getFont());
                 }
             }
-            String myValue = (value == null) ? "" : 
+            String myValue = (value == null) ? "" :
                 "<html><body><b>" + value.toString().toUpperCase() + "</b></body></html>";
             setText(myValue);
-            setToolTipText(columnDescriptions[colIndex]);
+            setToolTipText(columnDescriptions[getColumnIndex(colIndex)]); 
             setBorder(UIManager.getBorder("TableHeader.cellBorder"));
             setHorizontalAlignment(JLabel.CENTER);
             return this;
+        }
+        
+        protected int getColumnIndex(int column) {
+            return column;
         }
     }
 }
