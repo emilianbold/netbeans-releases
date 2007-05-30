@@ -18,13 +18,20 @@
  */
 package org.netbeans.modules.visualweb.designer.markup;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
+import java.lang.reflect.Field;
+import org.apache.xerces.dom.AttrImpl;
+import org.apache.xerces.dom.AttrNSImpl;
 import org.apache.xerces.dom.CoreDocumentImpl;
+import org.apache.xerces.dom.DOMMessageFormatter;
 
 import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xerces.xni.NamespaceContext;
+import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -485,4 +492,83 @@ public abstract class AbstractRaveDocument extends DocumentImpl /*implements Par
     protected abstract Element createStylesheetLinkElement(CoreDocumentImpl document, String namespaceURI, String qualifiedName);
 
     protected abstract Text createTextNode(CoreDocumentImpl document, String data);
+    
+    @Override
+    public Attr createAttribute(String name) throws DOMException {
+        if (errorChecking && !isXMLName(name,/*xml11Version*/isXml11Version())) {
+            String msg =
+                DOMMessageFormatter.formatMessage(
+                    DOMMessageFormatter.DOM_DOMAIN,
+                    "INVALID_CHARACTER_ERR",
+                    null);
+            throw new DOMException(DOMException.INVALID_CHARACTER_ERR, msg);
+        }
+        return new Fix105085AttrImpl(this, name);
+    }
+
+    @Override
+    public Attr createAttributeNS(String namespaceUri, String qualifiedName) throws DOMException {
+        return new Fix105085AttrNSImpl(this, namespaceUri, qualifiedName);
+    }
+
+    @Override
+    public Attr createAttributeNS(String namespaceUri, String qualifiedName, String localPart) throws DOMException {
+        return new Fix105085AttrNSImpl(this, namespaceUri, qualifiedName, localPart);
+    }
+
+    private boolean isXml11Version() {
+        try {
+            Field field = CoreDocumentImpl.class.getDeclaredField("xml11Version"); // NOI18N
+            field.setAccessible(true);
+            return field.getBoolean(this);
+        } catch (IllegalArgumentException ex) {
+            log(ex);
+        } catch (IllegalAccessException ex) {
+            log(ex);
+        } catch (NoSuchFieldException ex) {
+            log(ex);
+        } catch (SecurityException ex) {
+            log(ex);
+        }
+        return false;
+    }
+    
+    private static class Fix105085AttrImpl extends AttrImpl {
+        public Fix105085AttrImpl(CoreDocumentImpl doc, String name) {
+            super(doc, name);
+        }
+        
+        @Override
+        public void setValue(String value) {
+            super.setValue(value);
+            // XXX #105085 Not storing the cached node, and forcing it to recreate each time.
+            textNode = null;
+        }
+    } // End of FixAttrImpl.
+    
+    private static class Fix105085AttrNSImpl extends AttrNSImpl {
+        public Fix105085AttrNSImpl(CoreDocumentImpl doc, String namespaceUri, String qualifiedName) {
+            super(doc, namespaceUri, qualifiedName);
+        }
+        
+        public Fix105085AttrNSImpl(CoreDocumentImpl doc, String namespaceUri, String qualifiedName, String localPart) {
+            super(doc, namespaceUri, qualifiedName, localPart);
+        }
+        
+        @Override
+        public void setValue(String value) {
+            super.setValue(value);
+            // XXX #105085 Not storing the cached node, and forcing it to recreate each time.
+            textNode = null;
+        }
+    } // End of FixAttrNSImpl.
+    
+    private static void log(Exception ex) {
+        Logger logger = getLogger();
+        logger.log(Level.INFO, null, ex);
+    }
+    
+    private static Logger getLogger() {
+        return Logger.getLogger(CoreDocumentImpl.class.getName());
+    }
 }
