@@ -342,8 +342,6 @@ public class ConfigStringTranslator implements IConfigStringTranslator {
             addToMap("PSK_VERSION_PACKAGE_ELEMENTS", "IDS_STRING304");
             addToMap("PSK_VERSION_USECASE_ELEMENTS", "IDS_STRING305");
             addToMap("PSK_VERSION_ACTOR_ELEMENTS", "IDS_STRING306");
-            addToMap("PSK_SHOWWORKSPACENODE", "IDS_STRING309");
-            addToMap("PSK_SHOWWORKSPACENODE_HLP", "IDS_STRING310");
             addToMap("PSK_VERSION_PROJECT_ELEMENTS", "IDS_STRING311");
             addToMap("PSK_VERSIONEDFILENAME", "IDS_STRING312");
             addToMap("PSK_ELEMENT", "IDS_STRING313");

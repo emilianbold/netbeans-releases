@@ -705,14 +705,12 @@ public class ProjectTreeSwingModel extends ProductProjectTreeModel
 		return ProjectTreeResources.getString("ProjectTreeSwingModel.ProjectTree_Name"); //$NON-NLS-1$
 	}
 
-	public void setProjectTree(JTree tree)
-	{
-		// Initialize based on perferences.
-		String perfValue = ProductHelper.getPreferenceValue("Workspace",  //$NON-NLS-1$
-															"ShowWorkspaceNode"); //$NON-NLS-1$
-		tree.setRootVisible(perfValue.equals("PSK_YES") ); //$NON-NLS-1$
-		tree.setShowsRootHandles(perfValue.equals("PSK_YES") == false); //$NON-NLS-1$
-	}
+	public void setProjectTree(JTree tree) {
+            // Initialize based on perferences.
+            //kris richards - ShowWorkspaceNode pref expunged. set to false.
+            tree.setRootVisible(false ); //$NON-NLS-1$
+            tree.setShowsRootHandles(true); //$NON-NLS-1$
+        }
 
 	public IProjectTreeItem addWorkspace(ITreeItem pParent, IWorkspace space)
 	{

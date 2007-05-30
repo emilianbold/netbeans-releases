@@ -2716,34 +2716,11 @@ public class JProjectTree extends ApplicationView implements IProjectTreeControl
 
    protected class PreferenceManagerEventHandler extends PreferenceManagerEventsAdapter
    {
+       //kris richards - this will probably never get called since the pref no 
+       //ShowWorkspaceNode pref expunged. set to false.
       public void onPreferenceChange(String name, IPropertyElement pElement,
       IResultCell cell)
-      {
-         try
-         {
-            if (name != null && name.equals("ShowWorkspaceNode"))
-            {
-               //this will only affect the project tree.
-               ISwingProjectTreeModel model = getProjectModel();
-               //if (model instanceof DesignCenterSwingModel)
-               if((model != null) && ("DesignCenter".equals(model.getModelName()) == true))
-               {
-                  //do nothing
-               }
-               else
-               {
-                  String perfValue = ProductHelper.getPreferenceValue("Workspace",  //$NON-NLS-1$
-                  "ShowWorkspaceNode"); //$NON-NLS-1$
-                  m_Tree.setRootVisible(perfValue.equals("PSK_YES")); //$NON-NLS-1$
-                  m_Tree.setShowsRootHandles(perfValue.equals("PSK_YES") == false); //$NON-NLS-1$
-                  m_Tree.updateUI();
-               }
-            }
-         }
-         catch(Exception e)
-         {
-         }
-      }
+      { }
 
       public void onPreferencesChange(IPropertyElement[] pElements,
       IResultCell cell)
