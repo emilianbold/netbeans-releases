@@ -380,7 +380,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
             if( configuration.getGenerateDataBinding()) {
                 off.write( "import org.netbeans.microedition.databinding.DataSet;\n" );
                 off.write( "import org.netbeans.microedition.databinding.DataBindingException;\n" );
-                off.write( "import org.netbeans.microedition.databinding.DataSource;\n" );
+//                off.write( "import org.netbeans.microedition.databinding.DataSource;\n" );
                 off.write( "\n" );
                 off.write( "public class " + name + " implements DataSet {\n" );
             } else {
@@ -721,7 +721,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
                                             String typeName = e.getType().getJavaTypeName();
                                             if( typeName == null ) typeName = e.getType().getName() == null ? e.getName().getLocalPart() : e.getType().getName().getLocalPart();
                                             if( !isArray ) {
-                                                off.write( "return " + typeName.replace( '.', '_' ) + "_fromObject((Object[]) resultObj );\n" );
+                                                off.write( "return " + typeName.replace( '.', '_' ) + "_fromObject((Object[])((Object[]) resultObj )[0] );\n" );
                                             } else {
                                                 off.write( "return " + typeName.replace( '.', '_' ) + "_ArrayfromObject((Object [])((Object[]) resultObj));\n" );
                                             }
