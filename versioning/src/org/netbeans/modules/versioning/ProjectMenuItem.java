@@ -55,10 +55,11 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
     private JComponent [] createItems() {
         Node [] nodes = getActivatedNodes();
         if (nodes.length > 0) {
-            VersioningSystem owner = getOwner(nodes);
-            if (owner == null) {
+            Set<VersioningSystem> owners = getOwners(nodes);
+            if (owners.size() != 1) {
                 return new JComponent[0];
             }
+            VersioningSystem owner = owners.iterator().next();
             VersioningSystem localHistory = getLocalHistory(nodes);
             List<JComponent> popups = new ArrayList<JComponent>();            
             if (owner != null) {
@@ -108,18 +109,14 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
         return owner;
     }
 
-    private VersioningSystem getOwner(Node [] nodes) {
+    private Set<VersioningSystem> getOwners(Node [] nodes) {
         VCSContext ctx = VCSContext.forNodes(nodes);
-        VersioningSystem owner = null;
+        Set<VersioningSystem> owners = new HashSet<VersioningSystem>(2);
         for (File file : ctx.getRootFiles()) {
             VersioningSystem fileOwner = VersioningManager.getInstance().getOwner(file);
-            if (owner != null) {
-                if (fileOwner != null && fileOwner != owner) return null;
-            } else {
-                owner = fileOwner;
-            }
+            owners.add(fileOwner);
         }
-        return owner;
+        return owners;
     }
     
     private JComponent [] createVersioningSystemItems(VersioningSystem owner, Node[] nodes) {
