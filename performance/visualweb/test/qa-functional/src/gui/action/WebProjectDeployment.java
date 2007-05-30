@@ -64,9 +64,11 @@ public class WebProjectDeployment extends org.netbeans.performance.test.utilitie
     
     public void initialize() {
         log("::initialize");
+        VWPUtilities.initLog(this);
         String asName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.j2ee.sun.ide.dm.Bundle", "FACTORY_DISPLAYNAME");
         log("Applications server node name from bundle is: "+asName+" ??"); 
         long start = System.currentTimeMillis();
+        
         VWPUtilities.startApplicationServer();
         long stop = System.currentTimeMillis();
         
