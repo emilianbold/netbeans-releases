@@ -107,7 +107,8 @@
                 <friend>org.netbeans.modules.bpel.editors</friend>
                 <friend>org.netbeans.modules.soa.ui</friend>
                 <friend>org.netbeans.modules.xslt.core</friend>
-				<friend>org.netbeans.modules.xslt.mapper</friend>
+                <friend>org.netbeans.modules.xslt.tmap</friend>
+                <friend>org.netbeans.modules.xslt.mapper</friend>
                 <package>org.netbeans.modules.xml.axi</package>
                 <package>org.netbeans.modules.xml.axi.datatype</package>
                 <package>org.netbeans.modules.xml.axi.visitor</package>

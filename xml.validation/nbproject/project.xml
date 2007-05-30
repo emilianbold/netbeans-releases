@@ -102,7 +102,8 @@
                 <friend>org.netbeans.modules.bpel.core</friend>
                 <friend>org.netbeans.modules.bpel.editors</friend>
                 <friend>org.netbeans.modules.xslt.core</friend>
-				<friend>org.netbeans.modules.script.core</friend>
+                <friend>org.netbeans.modules.xslt.tmap</friend>
+                <friend>org.netbeans.modules.script.core</friend>
                 <friend>org.netbeans.modules.xml.schema.core</friend>
                 <friend>org.netbeans.modules.xml.wsdlui</friend>
                 <package>org.netbeans.modules.xml.validation</package>
