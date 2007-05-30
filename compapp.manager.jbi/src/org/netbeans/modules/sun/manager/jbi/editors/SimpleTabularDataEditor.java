@@ -44,20 +44,27 @@ public class SimpleTabularDataEditor extends PropertyEditorSupport {
         Object value = getValue();
         StringBuilder sb = new StringBuilder();
         
-        if (value instanceof TabularData) {
+        if (value != null ) {
+            assert value instanceof TabularData;
+            
             TabularData tabularData = (TabularData)value;
             tabularType = tabularData.getTabularType();
             
             sb.append("{"); // NOI18N
             for (Object rowDataObj : tabularData.values()) {
                 CompositeData rowData = (CompositeData) rowDataObj;
-                Collection rowValues = rowData.values();
+                String rowValues = getStringForRowData(rowData);
                 sb.append(rowValues);
             }
-            sb.append("}"); // NOI18N
+            sb.append("}"); //NOI18N
         }
         
         return sb.toString();
+    }
+    
+    protected String getStringForRowData(CompositeData rowData) {
+        Collection rowValues = rowData.values();
+        return rowValues.toString();
     }
     
     @Override

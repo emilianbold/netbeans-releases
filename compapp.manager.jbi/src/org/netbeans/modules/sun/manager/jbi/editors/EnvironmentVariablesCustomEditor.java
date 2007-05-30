@@ -22,7 +22,13 @@ import java.awt.Color;
 import java.awt.Component;
 import java.io.Serializable;
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
+import javax.management.openmbean.CompositeData;
+import javax.management.openmbean.CompositeType;
+import javax.management.openmbean.OpenType;
+import javax.management.openmbean.TabularData;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -47,6 +53,15 @@ import org.openide.NotifyDescriptor;
  * @author jqian
  */
 public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEditor {
+    
+    public static final String STRING_TYPE = "STRING";
+    public static final String NUMBER_TYPE = "NUMBER";
+    public static final String BOOLEAN_TYPE = "BOOLEAN";
+    public static final String PASSWORD_TYPE = "PASSWORD";
+    
+    public static final int NAME_COLUMN = 0;
+    public static final int TYPE_COLUMN = 1;
+    public static final int VALUE_COLUMN = 2;
     
     private static TableCellRenderer booleanRenderer = new BooleanRenderer();
     private static TableCellRenderer doubleRenderer = new DoubleRenderer();
@@ -76,7 +91,7 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
             String type = typeSelectionPanel.getTypeChoice();
             Vector row = super.createNewRow();
-            row.add(type);
+            row.set(TYPE_COLUMN, type);
             
             return row;
         } else {
@@ -98,7 +113,7 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
                             boolean hasFocus,
                             int row, int column) {
                         
-                        if (column == 0) {
+                        if (column != 2) {
                             // Highlight key columns
                             if (value != null) {
                                 value = "<html><body><b>" + value + "</b></body></html>";
@@ -113,21 +128,23 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
                             try {
                                 DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
                                 Vector rowData = (Vector) tableModel.getDataVector().get(row);
-                                type = (String) rowData.get(column + 1);
+                                type = (String) rowData.get(column - 1);
                             } catch (Exception e) {
                             }
                             
-                            if (type.equalsIgnoreCase("Boolean")) {
-                                return booleanRenderer.getTableCellRendererComponent(
-                                        table, value, isSelected, hasFocus, row, column);
-                            } else if (type.equalsIgnoreCase("Password")) {
-                                return passwordRenderer.getTableCellRendererComponent(
-                                        table, value, isSelected, hasFocus, row, column);
-                            } else if (type.equalsIgnoreCase("Number")) {
-                                return doubleRenderer.getTableCellRendererComponent(
-                                        table, value, isSelected, hasFocus, row, column);
-                            } else if (type.equalsIgnoreCase("String")) {
-                                return stringRenderer.getTableCellRendererComponent(
+                            TableCellRenderer renderer = null;
+                            if (type.equals(BOOLEAN_TYPE)) {
+                                renderer = booleanRenderer;
+                            } else if (type.equals(PASSWORD_TYPE)) {
+                                renderer = passwordRenderer;
+                            } else if (type.equals(NUMBER_TYPE)) {
+                                renderer = doubleRenderer;
+                            } else if (type.equals(STRING_TYPE)) {
+                                renderer = stringRenderer;
+                            } 
+                            
+                            if (renderer != null) {
+                                return renderer.getTableCellRendererComponent(
                                         table, value, isSelected, hasFocus, row, column);
                             } else {
                                 throw new RuntimeException("Unknown type: " + type);
@@ -139,24 +156,24 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
             }
             
             public TableCellEditor getCellEditor(int row, int column) {
-                if (column == 0) {
+                if (column != 2) {
                     return stringEditor;
                 } else {
                     String type = null;
                     try {
                         DefaultTableModel tableModel = (DefaultTableModel) getModel();
                         Vector rowData = (Vector) tableModel.getDataVector().get(row);
-                        type = (String) rowData.get(column + 1);
+                        type = (String) rowData.get(column - 1);
                     } catch (Exception e) {
                     }
                     
-                    if (type.equalsIgnoreCase("Boolean")) {
+                    if (type.equals(BOOLEAN_TYPE)) {
                         return booleanEditor;
-                    } else if (type.equalsIgnoreCase("Password")) {
+                    } else if (type.equals(PASSWORD_TYPE)) {
                         return passwordEditor;
-                    } else if (type.equalsIgnoreCase("Number")) {
+                    } else if (type.equals(NUMBER_TYPE)) {
                         return doubleEditor;
-                    } else if (type.equalsIgnoreCase("String")) {
+                    } else if (type.equals(STRING_TYPE)) {
                         return stringEditor;
                     } else {
                         throw new RuntimeException("Unknown type: " + type);
@@ -233,7 +250,8 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
                 setForeground(table.getForeground());
                 setBackground(table.getBackground());
             }
-            setSelected((value != null && ((Boolean)value).booleanValue()));
+                
+            setSelected((value != null && value.toString().equalsIgnoreCase("true")));            
             
             return this;
         }
@@ -368,6 +386,11 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
         public BooleanEditor() {
             super(new JCheckBox());
             JCheckBox checkBox = (JCheckBox)getComponent();
+        }
+        
+        public Object getCellEditorValue() {
+            Boolean b = (Boolean) super.getCellEditorValue();            
+            return b ? "true" : "false";
         }
     }
     

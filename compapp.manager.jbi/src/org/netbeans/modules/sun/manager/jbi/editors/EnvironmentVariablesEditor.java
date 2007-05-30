@@ -18,6 +18,11 @@
  */
 package org.netbeans.modules.sun.manager.jbi.editors;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import javax.management.openmbean.CompositeData;
+
 /**
  *
  * @author jqian
@@ -30,5 +35,26 @@ public class EnvironmentVariablesEditor extends SimpleTabularDataEditor {
     @Override
     public java.awt.Component getCustomEditor() {
         return new EnvironmentVariablesCustomEditor(this);
+    }
+    
+    @Override
+    protected String getStringForRowData(CompositeData rowData) {
+        Collection rowValues = rowData.values();
+        
+        List<String> visibleRowValues = new ArrayList<String>();
+        visibleRowValues.addAll(rowValues);
+        
+        String type = (String) visibleRowValues.get(
+                EnvironmentVariablesCustomEditor.TYPE_COLUMN);
+        
+        if (type.equals(EnvironmentVariablesCustomEditor.PASSWORD_TYPE)) {
+            String password = (String) visibleRowValues.get(
+                    EnvironmentVariablesCustomEditor.VALUE_COLUMN);
+            password = password.replaceAll(".", "*");
+            visibleRowValues.set(
+                    EnvironmentVariablesCustomEditor.VALUE_COLUMN, password);
+        }
+        
+        return visibleRowValues.toString();
     }
 }

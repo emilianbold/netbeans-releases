@@ -64,15 +64,15 @@ public class SimpleTabularDataCustomEditor extends JPanel
     private JTable table;
     
     /** Number of index columns in the tabular data type. */
-    private int indexColumnCount;
+    protected int indexColumnCount;
     
     // all the keys are at the beginning of the array
-    private String[] columnNames;
+    protected String[] columnNames;
     
-    private String[] columnDescriptions;
-    private OpenType[] columnTypes;
+    protected String[] columnDescriptions;
+    protected OpenType[] columnTypes;
     
-    private TabularType tabularType;
+    protected TabularType tabularType;
     private TabularData tabularData;
     
     private JButton addRowButton, deleteRowButton;
@@ -161,15 +161,18 @@ public class SimpleTabularDataCustomEditor extends JPanel
         return table;
     }
     
+    protected int getColumnCount() {
+        return columnNames.length;
+    }
+    
     private void initComponents(TabularData tabularData) {
         DefaultTableModel tableModel = initTableModel(tabularData);
         
         table = createTable(tableModel);
-       
-        
+               
         table.getTableHeader().setReorderingAllowed(false);
         
-        for (int i = 0; i < columnNames.length; i++) {
+        for (int i = 0; i < getColumnCount(); i++) {
             TableColumn col = table.getColumnModel().getColumn(i);
             col.setHeaderRenderer(new MyTableHeaderRenderer());
         }
@@ -205,7 +208,7 @@ public class SimpleTabularDataCustomEditor extends JPanel
         table.getParent().setBackground(Color.white);
     }
     
-    private DefaultTableModel initTableModel(TabularData tabularData) {
+    protected DefaultTableModel initTableModel(TabularData tabularData) {
         
         tabularType = tabularData.getTabularType();
         CompositeType rowType = tabularType.getRowType();
@@ -294,6 +297,10 @@ public class SimpleTabularDataCustomEditor extends JPanel
     }
     
     public void actionPerformed(ActionEvent event) {
+        if (table.isEditing()) {
+            table.getCellEditor().stopCellEditing();
+        }
+         
         JButton source = (JButton) event.getSource();
         String actionCommand = source.getActionCommand();
         
