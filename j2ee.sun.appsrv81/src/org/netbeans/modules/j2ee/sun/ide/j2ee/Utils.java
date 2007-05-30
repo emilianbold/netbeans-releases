@@ -197,7 +197,7 @@ public class Utils {
         }
     }
     
-    public static void registerIndvResources(ServerInterface mejb, java.io.File primaryFile) {
+    public static void registerIndvResources(ServerInterface mejb, java.io.File primaryFile) throws Exception {
         Resources resources = getResourceGraph(primaryFile);
         Object retVal = null;
         // identify JDBC Connection Pools
