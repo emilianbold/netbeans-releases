@@ -19,6 +19,7 @@
 package org.netbeans.modules.sun.manager.jbi.editors;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import javax.management.openmbean.CompositeData;
@@ -63,7 +64,8 @@ public class EnvironmentVariablesEditor extends SimpleTabularDataEditor {
     @Override
     protected void validateRowData(String[] rowData) throws Exception {
         if (rowData == null || rowData.length != 3) {
-            throw new RuntimeException("Illegal row data: "  + rowData);
+            throw new RuntimeException("Illegal environment variable: "  + Arrays.toString(rowData) +
+                    ". The format should be [<name>, <type>, <value>].");
         }
         
         String type = rowData[1];
