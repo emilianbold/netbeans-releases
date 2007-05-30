@@ -93,7 +93,9 @@ public class ResourceCategoryPanel extends JPanel {
             add (filler, constraints);
 
             ResourceItemPanel item = new ResourceItemPanel (presenter.getRelatedComponent ()); // TODO - cache ResourceItemPanels
+            
             item.reload ();
+            
             add (item, constraints);
         }
     }

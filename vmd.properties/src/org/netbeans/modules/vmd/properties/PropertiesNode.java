@@ -21,14 +21,12 @@
 package org.netbeans.modules.vmd.properties;
 
 import java.lang.ref.WeakReference;
-import org.netbeans.modules.vmd.api.io.DataObjectContext;
+import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
-import org.openide.util.Lookup;
-
 
 /**
  *
@@ -37,13 +35,13 @@ import org.openide.util.Lookup;
 public class PropertiesNode extends AbstractNode{
     
     private WeakReference<DesignComponent> component;
-    private WeakReference<DataObjectContext> context;
+    private WeakReference<DataEditorView> view;
     private String displayName;
     
-    public PropertiesNode(DataObjectContext context, DesignComponent component, Lookup lookup) {
-        super(Children.LEAF, lookup);
+    public PropertiesNode(DataEditorView view, DesignComponent component) {
+        super(Children.LEAF, view.getContext().getDataObject().getLookup());
         this.component = new WeakReference<DesignComponent>(component);
-        this.context = new WeakReference<DataObjectContext>(context);
+        this.view = new WeakReference<DataEditorView>(view);
     }
     
     public DesignComponent getComponent() {
@@ -53,7 +51,7 @@ public class PropertiesNode extends AbstractNode{
     public Sheet createSheet() {
         if(component.get() == null)
             super.createSheet();
-        return PropertiesNodesManager.getDefault(context.get()).getSheet(component.get());
+        return PropertiesNodesManager.getDefault(view.get()).getSheet(component.get());
     }
     
     public String getDisplayName() {

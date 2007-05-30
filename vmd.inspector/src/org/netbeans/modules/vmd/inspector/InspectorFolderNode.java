@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.vmd.inspector;
 
+import java.io.IOException;
 import org.netbeans.modules.vmd.api.inspector.InspectorFolder;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
@@ -27,8 +28,22 @@ import org.openide.nodes.AbstractNode;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DnDConstants;
 import java.lang.ref.WeakReference;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
+import org.netbeans.modules.vmd.api.model.ComponentProducer;
+import org.netbeans.modules.vmd.api.model.common.AbstractAcceptPresenter;
+import org.netbeans.modules.vmd.api.model.common.DesignComponentDataFlavor;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
+import org.openide.nodes.Node;
+import org.openide.nodes.NodeTransfer;
+import org.openide.util.datatransfer.PasteType;
 
 
 /**
@@ -42,6 +57,8 @@ final class InspectorFolderNode extends AbstractNode {
     private Long componentID;
     private WeakReference<DesignComponent> component;
     private InspectorFolder folder;
+    private Transferable transferable;
+    private PasteType pasteType;
     
     InspectorFolderNode(DataObjectContext context) {
         super(new InspectorChildren(), context.getDataObject().getLookup());
@@ -81,7 +98,7 @@ final class InspectorFolderNode extends AbstractNode {
     
     public void setName(final String name) {
         if (name == null)
-            throw new IllegalArgumentException("Argument name cant be null");//NOI18N
+            throw new IllegalArgumentException("Argument name cant be null"); //NOI18N
         
         if(component == null || component.get() == null)
             return;
@@ -107,26 +124,103 @@ final class InspectorFolderNode extends AbstractNode {
             document.getTransactionManager().readAccess(new Runnable() {
                 public void run() {
                     component = new WeakReference<DesignComponent>(document.getComponentByUID(componentID));
+                    transferable = new NodeTransferable(component.get());
                 }
             });
         }
         ((InspectorChildren) getChildren()).setKeys(folderWrapper.getChildrenNodes());
     }
+    
+    protected void createPasteTypes(Transferable t, java.util.List s) {
+        PasteType paste = getDropType(t, DnDConstants.ACTION_COPY, -1 );
+        if( null != paste )
+            s.add( paste );
+    }
+    
+    public PasteType getDropType(final Transferable t, final int action, int index) {
+        final Node dropNode = NodeTransfer.node( t, DnDConstants.ACTION_COPY_OR_MOVE + NodeTransfer.CLIPBOARD_CUT );
+        if (!(dropNode instanceof InspectorFolderNode))
+            return null;
+         
+        final InspectorFolderNode ifn = ((InspectorFolderNode) dropNode);
+        ifn.getComponent().getDocument().getTransactionManager().readAccess(new Runnable() {
+            public void run() {
+         
+                final DesignComponent ifnc = ifn.getComponent();
+                Map<AbstractAcceptPresenter, ComponentProducer> presentersMap = new HashMap<AbstractAcceptPresenter,ComponentProducer>();
+                if (component == null)
+                    return;
+                for ( AbstractAcceptPresenter presenter : component.get().getPresenters(AbstractAcceptPresenter.class) ){
+                    ComponentProducer producer = DocumentSupport.getComponentProducer(ifnc.getDocument(), ifnc.getType());
+                    presentersMap.put(presenter, producer);
+                }
+                for (final AbstractAcceptPresenter presenter : presentersMap.keySet()) {
+                    final Transferable trans = new NodeTransferable(ifnc);
+                    if (presenter.getKind() == AbstractAcceptPresenter.Kind.TRANSFERABLE &&  presenter.isAcceptable(trans)) {
+                        pasteType = new PasteType() {
+                            public Transferable paste() throws IOException {
+                                ifnc.getDocument().getTransactionManager().writeAccess(new Runnable() {
+                                    public void run() {
+                                         presenter.accept(trans);
+                                    }
+                                });
+                                return t;
+                            }
+                        };
+                        return;
+                    } else
+                        pasteType = null;
+                }
+            }
+        });
 
+        return pasteType;
+    }
+
+    public Transferable drag() throws IOException {
+        return transferable;
+    }
+    
+    public boolean canCut() {
+        return true;
+    }
+
+    public boolean canDestroy() {
+        return false;
+    }
+    
+    DesignComponent getComponent() {
+        return component.get();
+    }
+    
     void terminate() {
         componentID = null;
         component = null;
         folder = null;
     }
     
-    DesignComponent getComponent() {
-        return component.get();
-    }
-    /*
-    public Sheet createSheet() {
-        if(component != null && component.get() != null)
-            return PropertiesSupport.getSheet(context.get(), component.get());
-        return super.createSheet();
-    }
-    */
+    private class NodeTransferable implements Transferable {
+        
+        private DesignComponentDataFlavor dataFlavor;
+        private WeakReference<DesignComponent> component;
+        
+        public NodeTransferable(DesignComponent component) {
+            assert (component != null);
+            dataFlavor = new DesignComponentDataFlavor(component);
+            this.component = new WeakReference<DesignComponent>(component);
+        }
+        
+        public DataFlavor[] getTransferDataFlavors() {
+            return new DataFlavor[]{dataFlavor};
+        }
+        
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
+            return false;
+        }
+        
+        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+            return component.get();
+        }
+    };
+    
 }

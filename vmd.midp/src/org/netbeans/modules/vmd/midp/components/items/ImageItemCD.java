@@ -27,7 +27,7 @@ import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
-import org.netbeans.modules.vmd.midp.components.MidpResourcesAcceptTypePresenter;
+import org.netbeans.modules.vmd.midp.components.MidpAcceptProducerKindPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
@@ -103,18 +103,60 @@ public class ImageItemCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
                 // properties
+                
+                // properties
+                
+                // properties
+                
+                // properties
+                
+                // properties
+                
+                // properties
+                
+                // properties
+                
+                // properties
+                
+                // properties
+                
+                // properties
+                
+                // properties
+                
+                // properties
+                
+                // properties
+                
+                // properties
+                
+                // properties
+                
+                // properties
                 createPropertiesPresenter(),
                 // code
                 createSetterPresenter(),
                 // delete
                 DeleteDependencyPresenter.createNullableComponentReferencePresenter (PROP_IMAGE),
                 // screen
-                new ImageItemDisplayPresenter(),
-                FileAcceptPresenter.createImage(ImageItemCD.PROP_IMAGE, ImageCD.TYPEID, "jpg","gif","png"), //NOI18N
-                //accept
-                new MidpResourcesAcceptTypePresenter().addType(ImageCD.TYPEID, PROP_IMAGE),
+                new ImageItemDisplayPresenter(),FileAcceptPresenter.create(ImageItemCD.PROP_IMAGE, ImageCD.TYPEID, "jpg","gif","png"),new MidpAcceptProducerKindPresenter().addType(ImageCD.TYPEID, PROP_IMAGE),
                 // screen
                 new ImageItemInjectorPresenter ()
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         );
     }
     

@@ -122,7 +122,7 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
                 //FileAcceptPresenter.createImage(PROP_SVG_IMAGE, SVGImageCD.TYPEID, "svg"), //NOI18N
                 new SVGFileAcceptPresenter(),
                 //accept
-                new MidpResourcesAcceptTypePresenter().addType(SVGImageCD.TYPEID, PROP_SVG_IMAGE),
+                new MidpAcceptProducerKindPresenter().addType(SVGImageCD.TYPEID, PROP_SVG_IMAGE),
                 // code
                 createSetterPresenter(),
                 MidpCodePresenterSupport.createAddImportPresenter(),

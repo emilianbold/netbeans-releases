@@ -40,6 +40,7 @@ import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.general.FileAcceptPresenter;
+import org.netbeans.modules.vmd.midp.components.MidpAcceptTrensferableKindPresenter;
 import org.netbeans.modules.vmd.midp.inspector.controllers.ComponentsCategoryPC;
 import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
@@ -121,9 +122,8 @@ public final class ChoiceElementCD extends ComponentDescriptor {
                 }
             },
             // screen
-            new ChoiceElementDisplayPresenter(),
-            //accept
-            FileAcceptPresenter.createImage(ImageCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "png", "gif") //NOI18N
+            new ChoiceElementDisplayPresenter(),FileAcceptPresenter.create(ImageCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "png", "gif"),MidpAcceptTrensferableKindPresenter.createFontAcceptPresenter()
+        
         );
     }
 

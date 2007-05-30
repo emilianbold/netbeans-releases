@@ -49,6 +49,7 @@ import org.netbeans.modules.vmd.midp.screen.display.DisplayableDisplayPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.injector.TickerInjectorPresenter;
 
 import java.util.*;
+import org.netbeans.modules.vmd.midp.components.MidpAcceptTrensferableKindPresenter;
 
 /**
  * @author David Kaspar
@@ -132,8 +133,7 @@ public final class DisplayableCD extends ComponentDescriptor {
             // action
             EditDependencyPresenter.createEditablePresenter(),    
             // accept
-            new DisplayableAccept.DisplayableCommandsAcceptPresenter (),
-            new MidpResourcesAcceptTypePresenter().addType(TickerCD.TYPEID, PROP_TICKER),
+            new DisplayableAccept.DisplayableCommandsAcceptPresenter (),new MidpAcceptProducerKindPresenter().addType(TickerCD.TYPEID, PROP_TICKER),
 //            new DisplayableAccept.DisplayableCommandsEventHandlerAcceptPresenter (),
             // flow
             new FlowInfoNodePresenter (),
@@ -155,7 +155,8 @@ public final class DisplayableCD extends ComponentDescriptor {
             // screen
             new DisplayableDisplayPresenter(),
             new DisplayableResourceCategoriesPresenter(),
-            new TickerInjectorPresenter ()
+            new TickerInjectorPresenter (),MidpAcceptTrensferableKindPresenter.createTickerAcceptPresenter()
+
         );
     }
     

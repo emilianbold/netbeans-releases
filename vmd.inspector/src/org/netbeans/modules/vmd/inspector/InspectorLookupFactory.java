@@ -60,7 +60,7 @@ public class InspectorLookupFactory implements DataEditorViewLookupFactory {
                 ic = InspectorPanel.getInstance().getInstanceContent();
                 ic.add(context.getDataObject().getLookup());
             }
-            PropertiesSupport.addInstanceContent(context, ic);
+            PropertiesSupport.addInstanceContent(view, ic);
         }
         return null;
     }

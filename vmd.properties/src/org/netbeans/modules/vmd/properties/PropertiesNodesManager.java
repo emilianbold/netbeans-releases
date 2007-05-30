@@ -21,7 +21,6 @@ package org.netbeans.modules.vmd.properties;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.properties.*;
 import java.util.Collection;
 import java.util.Collections;
@@ -33,7 +32,6 @@ import java.util.WeakHashMap;
 import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyDescriptor;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
 import org.netbeans.modules.vmd.api.properties.GroupPropertyEditor;
@@ -46,30 +44,27 @@ import org.openide.util.lookup.InstanceContent;
 /**
  * @author Karol Harezlak
  */
-public final class PropertiesNodesManager implements ActiveDocumentSupport.Listener {
+public final class PropertiesNodesManager {
     
-    
-    private static final WeakHashMap<DataObjectContext, PropertiesNodesManager> INSTANCES = new WeakHashMap<DataObjectContext, PropertiesNodesManager>();
+    private static final WeakHashMap<DataEditorView, PropertiesNodesManager> INSTANCES = new WeakHashMap<DataEditorView, PropertiesNodesManager>();
     
     private WeakHashMap<DataEditorView, InstanceContent> icMap;
     private Collection<InstanceContent> ics;
     private WeakHashMap<InstanceContent, WeakSet<Node>> nodesToRemoveMap;
-    private WeakReference<DataObjectContext> context;
+    private WeakReference<DataEditorView> view;
     private WeakHashMap<DesignComponent, WeakSet<DefaultPropertySupport>> propertySupportMap;
-
-    public synchronized static PropertiesNodesManager getDefault(DataObjectContext context) {
-        if (INSTANCES.get(context) == null) {
-            PropertiesNodesManager manager = new PropertiesNodesManager(context);
-            ActiveDocumentSupport.getDefault().addActiveDocumentListener(manager);
-            INSTANCES.put(context, manager);
+    
+    public synchronized static PropertiesNodesManager getDefault(DataEditorView view) {
+        if (INSTANCES.get(view) == null) {
+            PropertiesNodesManager manager = new PropertiesNodesManager(view);
+            INSTANCES.put(view, manager);
         }
-        return INSTANCES.get(context);
-        
+        return INSTANCES.get(view);
     }
     
-    private PropertiesNodesManager(DataObjectContext context) {
+    private PropertiesNodesManager(DataEditorView view) {
         nodesToRemoveMap = new WeakHashMap<InstanceContent, WeakSet<Node>>();
-        this.context = new WeakReference<DataObjectContext>(context);
+        this.view = new WeakReference<DataEditorView>(view);
         icMap = new WeakHashMap<DataEditorView, InstanceContent>();
         ics = new HashSet();
         propertySupportMap = new WeakHashMap<DesignComponent, WeakSet<DefaultPropertySupport>>();
@@ -107,7 +102,7 @@ public final class PropertiesNodesManager implements ActiveDocumentSupport.Liste
         for (InstanceContent ic : tempIcs) {
             for(DesignComponent component : components) {
                 Set<Node> nodesToRemove = nodesToRemoveMap.get(ic);
-                PropertiesNode node = new PropertiesNode(context.get(), component, context.get().getDataObject().getLookup());
+                PropertiesNode node = new PropertiesNode(view, component);
                 ic.add(node);
                 nodesToRemove.add(node);
             }
@@ -138,7 +133,7 @@ public final class PropertiesNodesManager implements ActiveDocumentSupport.Liste
         }
     };
     
-   
+    
     public Sheet createSheet(final DesignComponent component) {
         final Sheet sheet = new Sheet();
         component.getDocument().getTransactionManager().readAccess(new Runnable() {
@@ -190,7 +185,7 @@ public final class PropertiesNodesManager implements ActiveDocumentSupport.Liste
     }
     
     public void updatePropertyEditorsValues(DataEditorView view, Collection<DesignComponent> components) {
-         if (components == null)
+        if (components == null)
             return;
         Collection<InstanceContent> tempIcs = new HashSet<InstanceContent>();
         tempIcs.addAll(ics);
@@ -207,12 +202,7 @@ public final class PropertiesNodesManager implements ActiveDocumentSupport.Liste
         }
     }
     
-    public void activeDocumentChanged(DesignDocument deactivatedDocument, DesignDocument activatedDocument) {
-        changeLookup(null, Collections.<DesignComponent>emptySet());
-    }
-    
-    public void activeComponentsChanged(Collection<DesignComponent> activeComponents) {
-    }
+   
     
 }
 

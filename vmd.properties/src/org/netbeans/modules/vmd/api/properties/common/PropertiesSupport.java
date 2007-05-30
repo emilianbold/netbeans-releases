@@ -35,7 +35,6 @@ import org.openide.util.HelpCtx;
 import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.vmd.api.io.ActiveViewSupport;
 import org.netbeans.modules.vmd.api.io.DataEditorView;
-import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.properties.PropertiesNodesManager;
 import org.openide.util.lookup.InstanceContent;
 
@@ -48,12 +47,8 @@ public final class PropertiesSupport {
     private PropertiesSupport() {
     }
     
-    public static void addInstanceContent(DataObjectContext context, DataEditorView view, InstanceContent ic) {
-        PropertiesNodesManager.getDefault(context).add(view, ic);
-    }
-    
-    public static void addInstanceContent(DataObjectContext context, InstanceContent ic) {
-        PropertiesNodesManager.getDefault(context).add(ic);
+    public static void addInstanceContent(DataEditorView view, InstanceContent ic) {
+        PropertiesNodesManager.getDefault(view).add(ic);
     }
     
     //multi selection not supported
@@ -64,7 +59,7 @@ public final class PropertiesSupport {
             Debug.warning("Calling PropertiesSupport.showPropertyEditorForCurrentComponent form write transaction may generate problems"); //NOI18N
         DataEditorView view = ActiveViewSupport.getDefault().getActiveView();
         assert (view != null);
-        Sheet sheet = PropertiesNodesManager.getDefault(view.getContext()).getSheet(component);
+        Sheet sheet = PropertiesNodesManager.getDefault(view).getSheet(component);
         for (PropertySet propertySet : sheet.toArray()) {
             for (Property property : propertySet.getProperties()) {
                 if(propertyName.equals(property.getName())) {

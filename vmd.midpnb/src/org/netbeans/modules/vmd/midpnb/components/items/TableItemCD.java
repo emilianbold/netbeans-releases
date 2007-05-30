@@ -46,7 +46,8 @@ import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
-import org.netbeans.modules.vmd.midp.components.MidpResourcesAcceptTypePresenter;
+import org.netbeans.modules.vmd.midp.components.MidpAcceptProducerKindPresenter;
+import org.netbeans.modules.vmd.midp.components.MidpAcceptTrensferableKindPresenter;
 import org.netbeans.modules.vmd.midp.screen.DisplayableResourceCategoriesPresenter;
 import org.netbeans.modules.vmd.midpnb.screen.display.TableItemDisplayPresenter;
 
@@ -138,8 +139,8 @@ public class TableItemCD extends ComponentDescriptor {
             // screen
             new DisplayableResourceCategoriesPresenter(),
             new TableItemDisplayPresenter(),
-            //accept
-            new MidpResourcesAcceptTypePresenter().addType(SimpleTableModelCD.TYPEID, PROP_MODEL)
+            new MidpAcceptProducerKindPresenter().addType(SimpleTableModelCD.TYPEID, PROP_MODEL),
+            new MidpAcceptTrensferableKindPresenter().addType(FontCD.TYPEID, PROP_TITLE_FONT)
         );
     }
 }

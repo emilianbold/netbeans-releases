@@ -20,6 +20,7 @@
 package org.netbeans.modules.vmd.inspector;
 
 import java.awt.Image;
+import java.awt.dnd.DnDConstants;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -44,6 +45,7 @@ final class InspectorBeanTreeView extends BeanTreeView {
         final JPopupMenu popupMenu = new JPopupMenu();
         Image collapseImage = Utilities.loadImage ("org/netbeans/modules/vmd/inspector/resources/collapse-all.png"); //NOI18N
         Image expandImage = Utilities.loadImage ("org/netbeans/modules/vmd/inspector/resources/expand-all.png"); //NOI18N
+        this.setAllowedDragActions(DnDConstants.ACTION_COPY_OR_MOVE);
         
         popupMenu.add( new MenuAction(NbBundle.getMessage(InspectorBeanTreeView.class, "CTL_InspectorExpandAction" ), expandImage) { //NOI18N
             public void actionPerformed(ActionEvent e) {

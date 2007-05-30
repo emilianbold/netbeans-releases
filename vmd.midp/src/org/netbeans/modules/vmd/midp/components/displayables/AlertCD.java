@@ -41,8 +41,9 @@ import org.netbeans.modules.vmd.midp.flow.FlowAlertViaPinOrderPresenter;
 
 import java.util.*;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
-import org.netbeans.modules.vmd.midp.components.MidpResourcesAcceptTypePresenter;
+import org.netbeans.modules.vmd.midp.components.MidpAcceptProducerKindPresenter;
 import org.netbeans.modules.vmd.midp.general.FileAcceptPresenter;
+import org.netbeans.modules.vmd.midp.components.MidpAcceptTrensferableKindPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.AlertDisplayPresenter;
 
 /**
@@ -137,10 +138,8 @@ public final class AlertCD extends ComponentDescriptor {
             // flow
             new FlowAlertViaPinOrderPresenter (),
             // screen
-            new AlertDisplayPresenter(),
-            //accept
-            new MidpResourcesAcceptTypePresenter().addType(ImageCD.TYPEID, PROP_IMAGE),
-            FileAcceptPresenter.createImage(ImageCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "png", "gif")
+            new AlertDisplayPresenter(),new MidpAcceptProducerKindPresenter().addType(ImageCD.TYPEID, PROP_IMAGE),FileAcceptPresenter.create(ImageCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "png", "gif"),MidpAcceptTrensferableKindPresenter.createImageAcceptPresenter()
+        
         );
     }
 

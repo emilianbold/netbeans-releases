@@ -49,6 +49,7 @@ import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenterForwarder;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteAction;
 import org.netbeans.modules.vmd.midp.general.FileAcceptPresenter;
+import org.netbeans.modules.vmd.midp.components.MidpAcceptTrensferableKindPresenter;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midp.screen.display.ListElementEventSourceDisplayPresenter;
 
@@ -109,6 +110,68 @@ public final class ListElementEventSourceCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // info
+            
+            // info
+            
+            // info
+            
+            // info
+            
+            // info
+            
+            // info
+            
+            // info
+            
+            // info
+            
+            // info
+            
+            // info
+            
+            // info
+            
+            // info
+            
+            // info
+            
+            // info
+            
+            // info
+            
+            // info
+            
+            // info
+            
+            // info
+            
+            // info
+            
+            // info
+            
+            // info
+            
+            // info
+            
+            // info
+            
+            // info
+            
+            // info
+            
+            // info
+            
+            // info
+            
+            // info
+            
+            // info
+            
+            // info
+            
+            // info
+            
+            // info
             InfoPresenter.create (ElementSupport.createListElementInfoResolver ()),
             // properties
             createPropertiesPresenter (),
@@ -156,9 +219,7 @@ public final class ListElementEventSourceCD extends ComponentDescriptor {
                 }
             },
             // screen
-            new ListElementEventSourceDisplayPresenter(),
-            //accept
-            FileAcceptPresenter.createImage(ImageCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "png", "gif") //NOI18N
+            new ListElementEventSourceDisplayPresenter(),FileAcceptPresenter.create(ImageCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "png", "gif"),MidpAcceptTrensferableKindPresenter.createFontAcceptPresenter(),MidpAcceptTrensferableKindPresenter.createImageAcceptPresenter()
         );
     }
 

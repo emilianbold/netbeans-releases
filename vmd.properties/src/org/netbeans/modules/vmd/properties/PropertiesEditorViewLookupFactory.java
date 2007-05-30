@@ -45,7 +45,7 @@ public class PropertiesEditorViewLookupFactory implements DataEditorViewLookupFa
             PropertiesManager.register();
             InstanceContent ic = new InstanceContent();
             ic.add(context.getDataObject().getLookup());
-            PropertiesSupport.addInstanceContent(context,view, ic);
+            PropertiesSupport.addInstanceContent(view, ic);
             return Collections.singleton(new AbstractLookup(ic));
         }
         return null;

@@ -20,6 +20,7 @@
 
 package org.netbeans.modules.vmd.screen.resource;
 
+import java.awt.dnd.DragGestureEvent;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
@@ -34,29 +35,47 @@ import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DragGestureListener;
+import java.awt.dnd.DragSource;
+import java.awt.dnd.InvalidDnDOperationException;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import org.netbeans.modules.vmd.api.model.common.DesignComponentDataFlavor;
 
 /**
  * @author breh
  */
 public class ResourceItemPanel extends JLabel implements MouseListener {
     
-    private static Border SELECTED_RESOURCE_BORDER = new LineBorder (MainPanel.SELECT_COLOR, 2, false);
-    private static Border HOVER_RESOURCE_BORDER = new LineBorder (MainPanel.HOVER_COLOR, 2, false);
-    private static Border RESOURCE_BORDER = new EmptyBorder (2, 2, 2, 2);
-
+    private static Border SELECTED_RESOURCE_BORDER = new LineBorder(MainPanel.SELECT_COLOR, 2, false);
+    private static Border HOVER_RESOURCE_BORDER = new LineBorder(MainPanel.HOVER_COLOR, 2, false);
+    private static Border RESOURCE_BORDER = new EmptyBorder(2, 2, 2, 2);
+    
     private DesignComponent component;
     private boolean selected;
     private boolean hovered;
-
+    private DragSource dragSource;
+    private DragListener listener;
+    
     public ResourceItemPanel(DesignComponent component) {
         this.component = component;
-        setOpaque (false);
-        setBackground (Color.WHITE);
+        setOpaque(false);
+        setBackground(Color.WHITE);
         addMouseListener(this);
+        dragSource = new DragSource();
+        listener =  new DragListener();
+        initDragAndDrop();
+    }
+    
+    protected void initDragAndDrop() {
+        dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_COPY_OR_MOVE, listener);
     }
     
     // called from AWT and document transaction
@@ -68,10 +87,10 @@ public class ResourceItemPanel extends JLabel implements MouseListener {
         InfoPresenter.NameType nameType = itemPresenter.getNameType();
         Image image = infoPresenter.getIcon(InfoPresenter.IconType.COLOR_16x16);
         setIcon(image != null ? new ImageIcon(image) : null);
-
-        selected = component.getDocument ().getSelectedComponents ().contains (component);
-        resolveBorder ();
-
+        
+        selected = component.getDocument().getSelectedComponents().contains(component);
+        resolveBorder();
+        
         setText(infoPresenter.getDisplayName(nameType));
     }
     
@@ -80,11 +99,10 @@ public class ResourceItemPanel extends JLabel implements MouseListener {
     }
     
     public void mouseClicked(final MouseEvent e) {
-        // TODO selection should be implemented so it happens on mousePressed and confirmed by mouse released
-        doSelect (e);
+        doSelect(e);
     }
-
-    private void doSelect (final MouseEvent e) {
+    
+    private void doSelect(final MouseEvent e) {
         final DesignDocument doc = component.getDocument();
         final Collection<DesignComponent> newSelection = new ArrayList<DesignComponent> ();
         doc.getTransactionManager().writeAccess(new Runnable() {
@@ -105,7 +123,7 @@ public class ResourceItemPanel extends JLabel implements MouseListener {
             }
         });
     }
-
+    
     public void mousePressed(MouseEvent e) {
         if (e.isPopupTrigger ()) {
             doSelect (e);
@@ -122,19 +140,57 @@ public class ResourceItemPanel extends JLabel implements MouseListener {
     
     public void mouseEntered(MouseEvent e) {
         hovered = true;
-        resolveBorder ();
-    }
-
-    public void mouseExited(MouseEvent e) {
-        hovered = false;
-        resolveBorder ();
+        resolveBorder();
     }
     
-    private void resolveBorder () {
+    public void mouseExited(MouseEvent e) {
+        hovered = false;
+        resolveBorder();
+    }
+    
+    private void resolveBorder() {
         if (hovered)
-            setBorder (HOVER_RESOURCE_BORDER);
+            setBorder(HOVER_RESOURCE_BORDER);
         else
             setBorder(selected ? SELECTED_RESOURCE_BORDER : RESOURCE_BORDER);
+    }
+    
+    private class DragListener implements DragGestureListener {
+        
+        public void dragGestureRecognized(DragGestureEvent dgEvent) {
+            final ScreenFlavor flavor = new ScreenFlavor(component);
+            try {
+                dgEvent.startDrag(null , flavor);
+            } catch (InvalidDnDOperationException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    public class ScreenFlavor implements Transferable {
+        private DataFlavor dataFlavor;
+        private DesignComponent component;
+        
+        public ScreenFlavor(DesignComponent component) {
+            dataFlavor = new DesignComponentDataFlavor(component);
+            this.component = component;
+        }
+        
+        public DataFlavor[] getTransferDataFlavors() {
+            return new DataFlavor[]{dataFlavor};
+        }
+        
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
+            boolean result = false;
+            if (dataFlavor.equals(flavor)) {
+                result = true;
+            }
+            return result;
+        }
+        
+        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+            return component;
+        }
     }
 
 }

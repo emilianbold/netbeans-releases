@@ -64,7 +64,7 @@ public abstract class FileAcceptPresenter extends AbstractAcceptPresenter {
     private Map<String, TypeID> extensionsMap;
     private Map<String, String> propertyNamesMap;
     
-    public static final FileAcceptPresenter createImage(String propertyName, TypeID typeID, String... fileExtensions) {
+    public static final FileAcceptPresenter create(String propertyName, TypeID typeID, String... fileExtensions) {
         FileAcceptPresenter presenter = new FileAcceptPresenter() {
             public Result accept(Transferable transferable) {
                 Result result = super.accept(transferable);

@@ -56,6 +56,7 @@ import org.netbeans.modules.vmd.midp.components.items.ImageItemCD;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.netbeans.modules.vmd.midp.general.FileAcceptPresenter;
 
+
 /**
  * @author David Kaspar
  */
@@ -128,8 +129,7 @@ public final class FormCD extends ComponentDescriptor {
                 DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_ITEM_STATE_LISTENER),
                 // screen
                 new FormDisplayPresenter(),
-                new FormResourceCategoriesPresenter(),
-                new ImageItemAcceptPresenter().addFileExtensions(FormCD.PROP_ITEMS, ImageItemCD.TYPEID, "jpg", "gif", "png") //NOI1
+                new FormResourceCategoriesPresenter()
                 );
     }
     
