@@ -19,6 +19,7 @@ package org.netbeans.modules.java.hints;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.IfTree;
@@ -189,7 +190,8 @@ public class Braces extends AbstractHint {
         if ( statement != null && 
              statement.getKind() != Tree.Kind.EMPTY_STATEMENT && 
              statement.getKind() != Tree.Kind.BLOCK &&
-             statement.getKind() != Tree.Kind.ERRONEOUS ) {
+             statement.getKind() != Tree.Kind.ERRONEOUS &&
+             !isErrorneousExpression( statement ) ) {
             return ErrorDescriptionFactory.createErrorDescription(
                         getSeverity().toEditorSeverity(), 
                         getDisplayName(), 
@@ -211,14 +213,16 @@ public class Braces extends AbstractHint {
         if ( thenSt != null && 
              thenSt.getKind() != Tree.Kind.EMPTY_STATEMENT && 
              thenSt.getKind() != Tree.Kind.BLOCK &&
-             thenSt.getKind() != Tree.Kind.ERRONEOUS ) {
+             thenSt.getKind() != Tree.Kind.ERRONEOUS &&
+             !isErrorneousExpression( thenSt )) {
             fixThen = true;
         }
         
         if ( elseSt != null && 
              elseSt.getKind() != Tree.Kind.EMPTY_STATEMENT && 
              elseSt.getKind() != Tree.Kind.BLOCK &&
-             elseSt.getKind() != Tree.Kind.ERRONEOUS ) {
+             elseSt.getKind() != Tree.Kind.ERRONEOUS &&
+             !isErrorneousExpression( elseSt )) {
             fixElse = true;
         }
         
@@ -252,6 +256,15 @@ public class Braces extends AbstractHint {
         }
                 
         return result;
+    }
+    
+    private boolean isErrorneousExpression(StatementTree statement) {
+        if ( statement instanceof ExpressionStatementTree ) {
+            if ( ((ExpressionStatementTree)statement).getExpression().getKind() == Kind.ERRONEOUS ) {
+                return true;
+            }
+        }
+        return false;
     }
     
     private static class BracesFix implements Fix, CancellableTask<WorkingCopy> {
@@ -340,5 +353,7 @@ public class Braces extends AbstractHint {
         }
                 
     }
+
+    
     
 }
