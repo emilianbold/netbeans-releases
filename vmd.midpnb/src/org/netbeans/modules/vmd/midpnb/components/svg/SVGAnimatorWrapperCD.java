@@ -42,6 +42,7 @@ import java.util.List;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.general.FileAcceptPresenter;
+import org.netbeans.modules.vmd.midpnb.general.SVGFileAcceptPresenter;
 import org.netbeans.modules.vmd.midpnb.screen.display.SVGAnimatorWrapperDisplayPresenter;
 
 /**
@@ -118,7 +119,8 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
                 // properties
                 createPropertiesPresenter(),
                 // accept
-                FileAcceptPresenter.createImage(PROP_SVG_IMAGE, SVGImageCD.TYPEID, "svg"), //NOI18N
+                //FileAcceptPresenter.createImage(PROP_SVG_IMAGE, SVGImageCD.TYPEID, "svg"), //NOI18N
+                new SVGFileAcceptPresenter(),
                 //accept
                 new MidpResourcesAcceptTypePresenter().addType(SVGImageCD.TYPEID, PROP_SVG_IMAGE),
                 // code

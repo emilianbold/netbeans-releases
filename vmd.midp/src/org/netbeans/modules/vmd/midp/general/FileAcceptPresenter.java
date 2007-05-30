@@ -19,13 +19,16 @@
 
 package org.netbeans.modules.vmd.midp.general;
 
+import java.io.FileNotFoundException;
 import org.netbeans.modules.vmd.api.model.ComponentProducer.Result;
 import org.netbeans.modules.vmd.api.model.common.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -64,11 +67,11 @@ public abstract class FileAcceptPresenter extends AbstractAcceptPresenter {
     public static final FileAcceptPresenter createImage(String propertyName, TypeID typeID, String... fileExtensions) {
         FileAcceptPresenter presenter = new FileAcceptPresenter() {
             public Result accept(Transferable transferable) {
-                Result ir = super.accept(transferable);
-                DesignComponent image = ir.getComponents().iterator().next();
+                Result result = super.accept(transferable);
+                DesignComponent image = result.getComponents().iterator().next();
                 image.writeProperty(ImageCD.PROP_RESOURCE_PATH , MidpTypes.createStringValue(getFilePath(transferable)));
                 MidpDocumentSupport.getCategoryComponent(getComponent().getDocument(), ResourcesCategoryCD.TYPEID).addComponent(image);
-                return new Result(image);
+                return result;
             }
         };
         return presenter.addFileExtensions(propertyName, typeID, fileExtensions);
@@ -178,12 +181,38 @@ public abstract class FileAcceptPresenter extends AbstractAcceptPresenter {
                 Set<FileObject> foldersToScan = getFoldersToScan();
                 for (FileObject f : foldersToScan) {
                     DataObject rootDataObject = DataObject.find(f);
-                    String filePath = createFilePath(rootDataObject, rootDataObject, FileUtil.toFileObject(file));  
+                    String filePath = createFilePath(rootDataObject, rootDataObject, FileUtil.toFileObject(file));
                     if (filePath != null)
                         return filePath;
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();
+            }
+        }
+        return ""; //NOI18N
+    }
+    
+    protected InputStream getInputStream(Transferable transferable) {
+        for (DataFlavor df : transferable.getTransferDataFlavors()) {
+            if (df != df.javaFileListFlavor) {
+                continue;
+            }
+            java.util.List<java.io.File> list = null;
+            try {
+                list = (java.util.List<java.io.File>) transferable.getTransferData(df.javaFileListFlavor);
+            } catch (java.awt.datatransfer.UnsupportedFlavorException ex) {
+                org.openide.util.Exceptions.printStackTrace(ex);
+            } catch (java.io.IOException ex) {
+                org.openide.util.Exceptions.printStackTrace(ex);
+            }
+            if (list == null && list.size() <= 0) {
+                continue;
+            }
+            try {
+                File file = list.iterator().next();
+                return new FileInputStream(file);
+            } catch (FileNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
         return null;
@@ -232,7 +261,7 @@ public abstract class FileAcceptPresenter extends AbstractAcceptPresenter {
             if (filePath != null)
                 return filePath;
             if (nodeDataObject.files().contains(childFileObject))
-               return childFileObject.getPath().replaceAll(rootDataObject.getPrimaryFile().getPath(),""); //NOI18N
+                return childFileObject.getPath().replaceAll(rootDataObject.getPrimaryFile().getPath(),""); //NOI18N
         }
         return null;
     }

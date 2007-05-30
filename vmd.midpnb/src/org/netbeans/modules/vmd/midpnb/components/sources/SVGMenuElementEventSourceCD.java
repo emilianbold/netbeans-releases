@@ -93,6 +93,15 @@ public class SVGMenuElementEventSourceCD extends ComponentDescriptor {
             createPropertiesPresenter (),
             // inspector
 //            InspectorPositionPresenter.create(new ComponentsCategoryPC(MidpInspectorSupport.TYPEID_ELEMENTS)),
+            // delete
+            DeleteDependencyPresenter.createDependentOnParentComponentPresenter(),
+            new DeletePresenter () {
+                protected void delete () {
+                    DesignComponent component = getComponent ();
+                    DesignComponent menu = component.getParentComponent();
+                    ArraySupport.remove (menu, SVGMenuCD.PROP_ELEMENTS, component);
+                }
+            },
             // flow
             new FlowEventSourcePinPresenter () { // TODO - move this anonymous class to vmd.midpnb.flow package
                 protected DesignComponent getComponentForAttachingPin () {
