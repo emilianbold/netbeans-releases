@@ -23,6 +23,7 @@ import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntBuildExtender;
+import org.netbeans.modules.websvc.api.jaxws.project.WebServiceNotifier;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModelProvider;
@@ -61,9 +62,25 @@ public class WebJaxWsLookupProvider implements LookupProvider {
         ProjectOpenedHook openhook = new ProjectOpenedHook() {
             private FileChangeListener jaxWsListener;
             private FileChangeListener jaxWsCreationListener;
-            
+            private JaxWsModel.ServiceListener serviceListener;
             protected void projectOpened() {
-                if (jaxWsModel!=null) { 
+                if (jaxWsModel!=null) {
+                    serviceListener = new JaxWsModel.ServiceListener() {
+                        public void serviceAdded(String name, String implementationClass) {
+                            WebServiceNotifier servicesNotifier = prj.getLookup().lookup(WebServiceNotifier.class);
+                            if (servicesNotifier!=null) {
+                                servicesNotifier.servicaAdded(name, implementationClass);
+                            }
+                        }
+
+                        public void serviceRemoved(String name) {
+                            WebServiceNotifier servicesNotifier = prj.getLookup().lookup(WebServiceNotifier.class);
+                            if (servicesNotifier!=null) {
+                                servicesNotifier.servicaRemoved(name);
+                            }
+                        }
+                    };
+                    jaxWsModel.addServiceListener(serviceListener);
                     AntBuildExtender ext = prj.getLookup().lookup(AntBuildExtender.class);
                     if (ext != null) {
                         FileObject jaxws_build = prj.getProjectDirectory().getFileObject(TransformerUtils.JAXWS_BUILD_XML_PATH);
@@ -133,6 +150,7 @@ public class WebJaxWsLookupProvider implements LookupProvider {
                     if (jaxws_fo!=null)
                         jaxws_fo.removeFileChangeListener(jaxWsListener);
                 }
+                if (jaxWsModel!=null) jaxWsModel.removeServiceListener(serviceListener);
                 
             }
             
