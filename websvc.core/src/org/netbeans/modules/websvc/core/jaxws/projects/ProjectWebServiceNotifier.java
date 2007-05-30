@@ -18,16 +18,23 @@
  */
 package org.netbeans.modules.websvc.core.jaxws.projects;
 
+import java.io.IOException;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.WebServiceNotifier;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 
 /**
  *
  * @author mkuchtiak
  */
 public class ProjectWebServiceNotifier implements WebServiceNotifier {
-
+    private static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance"; //NOI18N
+    
     private Project proj;
     public ProjectWebServiceNotifier(Project proj) {
         this.proj=proj;
@@ -36,13 +43,33 @@ public class ProjectWebServiceNotifier implements WebServiceNotifier {
     /** Notifies that web service was added */
     public void servicaAdded(String serviceName, String implementationClass) {
         JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(proj.getProjectDirectory());
-        if (jaxWsSupport!=null) jaxWsSupport.addService(serviceName, implementationClass, true);
+        if (jaxWsSupport!=null) jaxWsSupport.addService(serviceName, implementationClass, isJsr109Supported());
     }
 
     /** Notifies that web service was removed */
     public void servicaRemoved(String serviceName) {
         JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(proj.getProjectDirectory());
-        if (jaxWsSupport!=null) jaxWsSupport.removeService(serviceName);
+        if (jaxWsSupport!=null) jaxWsSupport.serviceFromJavaRemoved(serviceName);
+    }
+
+    private boolean isJsr109Supported() {
+        boolean jsr109Supported = true;
+        EditableProperties projectProperties = null;
+        try {
+            projectProperties = WSUtils.getEditableProperties(proj, AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        } catch (IOException ex) {
+            
+        }
+        if (projectProperties!=null) {
+            String serverInstance = projectProperties.getProperty(J2EE_SERVER_INSTANCE);
+            if (serverInstance != null) {
+                J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstance);
+                if (j2eePlatform != null) {
+                    jsr109Supported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_JSR109);
+                }
+            }
+        }
+        return jsr109Supported;
     }
 
 }
