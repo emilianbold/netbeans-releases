@@ -43,8 +43,8 @@ public class FileBuilder
    private RandomAccessFile raOldFile;
    private RandomAccessFile raNewFile;
    private PositionMapper posMapper = null;
-   private long originalTopPos = 0;
-   private long originalBottomPos = 0;
+    //private long originalTopPos = 0;
+    //private long originalBottomPos = 0;
    
    public FileBuilder(String newFilename, String oldFilename)
    {
@@ -71,8 +71,8 @@ public class FileBuilder
          {
             //Open files for random access
             raOldFile = new RandomAccessFile(oldFile, "rw");    // for read only
-            originalTopPos = this.getSrcTopPosition();
-            originalBottomPos = this.getSrcBottomPosition();
+            //originalTopPos = this.getSrcTopPosition();
+            //originalBottomPos = this.getSrcBottomPosition();
          }
          
          if (newFile != null)
@@ -120,8 +120,6 @@ public class FileBuilder
       long newElemStartPos = getElemStartPosition(newElem);
       long newElemEndPos = getElemEndPosition(newElem);
       
-      System.out.println("\n--oldElem = "+oldElem+"\noldElemStartPos = "+oldElemStartPos+"\noldElemEndPos = "+oldElemEndPos+"\n--newElem = "+newElem+"\nnewElemStartPos = "+newElemStartPos+"\nnewElemEndPos = "+newElemEndPos);
-
       byte[] replacingBuffer = null;
       int numOfBytesReplaced = 0;
       
@@ -328,20 +326,13 @@ public class FileBuilder
       }
    }
    
-    /**
-     *  client calls this method to indicate that text fragment representing
-     *  newElem in new file should be added to the old file
-     */
-    public void add(ElementDescriptor newElem, ElementDescriptor oldParentElem) {
-	add(newElem);
-    }
 
    /**
     *  client calls this method to indicate that text fragment representing
     *  newElem in new file should be added to the old file
     * @param newElem
     */
-   public void add(ElementDescriptor newElem)
+   public void add(ElementDescriptor newElem, ElementDescriptor oldParentElem)
    {
       if (newElem == null)
          return;
@@ -365,7 +356,7 @@ public class FileBuilder
             
             if ( raOldFile != null)
             {
-               long addPos = getInsertPosition(newElem);
+               long addPos = getInsertPosition(newElem, oldParentElem);
                if (addPos != -1)
                {
                   // in old src file, save bytes from the 'addPos' till the end of
@@ -464,110 +455,28 @@ public class FileBuilder
       }
    }
    
-   private long getInsertPosition(ElementDescriptor elem)
+   private long getInsertPosition(ElementDescriptor elem, ElementDescriptor container)
          throws IOException
    {
       String modelElemType = elem.getModelElemType();
       long insertPos = -1;
       if ("Attribute".equals(modelElemType))
       {
-         insertPos = posMapper.getMappedPositionFor(originalTopPos);
+         insertPos = posMapper.getMappedPositionFor(getSrcTopPosition(container));
       }
-      else if ("Operation".equals(modelElemType))
+      else  //if ("Operation".equals(modelElemType))
       {
-         insertPos = posMapper.getMappedPositionFor(this.originalBottomPos);
-      }
+         insertPos = posMapper.getMappedPositionFor(container.getEndPos());
+      } 
       return insertPos;
    }
    
-   // Returns the position of the byte left next to the last right brace '}'.
-   // In case it is not found, the position of the byte right next to the first
-   // non-white-space character is returned.
-   private long getSrcBottomPosition() throws IOException
-   {
-      int bufferSize = 2;
-      long offset = 0;
-      long fileLen = raOldFile == null ? -1 : raOldFile.length();
-      if (fileLen > 0)
-      {
-         //find the last right brace in the file
-         byte byteBuffer[] = new byte[bufferSize];
-         int i = 0;
-         boolean done = false;
-         boolean closeBracketFound = false;
-         char aChar = ' ';
-         while (!done)
-         {
-            offset = fileLen - (bufferSize*++i);
-            if ( offset >= 0)
-            {
-               raOldFile.seek(offset);
-               // read up to 'bufferSize' bytes of data starting from the
-               // 'offset' postion
-               int bytesRead = raOldFile.read(byteBuffer);
-               if ( bytesRead > 0) // sonmething is read
-               {
-                  // convert byte buffer to a string
-                  String dataStr = new String(byteBuffer, 0, bytesRead);
-                  // find the 1st non white space
-                  for (int j = bytesRead-1; j >= 0 ; j--)
-                  {
-                     aChar = dataStr.charAt(j);
-                     if (!Character.isWhitespace(aChar))
-                     {
-                        closeBracketFound = (aChar == '}');
-                        done = true;
-                        break;
-                     }
-                  }
-               }
-            }
-         }
-         offset = (closeBracketFound ? offset : raOldFile.getFilePointer());
-      }
-      return offset;
-   }
    
    // Returns the position of the byte right next to the first left brace '{'.
    // In case, the left brace is not found, 0 is returned.
-   private long getSrcTopPosition() throws IOException
+   private long getSrcTopPosition(ElementDescriptor container) throws IOException
    {
-      int bufferSize = 2;
-      long offset = 0;
-      long fileLen = raOldFile == null ? -1 : raOldFile.length();
-      if (fileLen > 0)
-      {
-         //find the first left brace in the file
-         byte byteBuffer[] = new byte[bufferSize];
-         char aChar = ' ';
-         boolean done = false;
-         raOldFile.seek(offset);  // start reading from the top
-         while (!done)
-         {
-            if (raOldFile.getFilePointer() < fileLen)
-            {
-               int bytesRead = raOldFile.read(byteBuffer);
-               if ( bytesRead > 0) // sonmething is read
-               {
-                  // convert byte buffer to a string
-                  String dataStr = new String(byteBuffer, 0, bytesRead);
-                  // find the 1st left brace
-                  for (int j = 0; j < dataStr.length() ; j++)
-                  {
-                     aChar = dataStr.charAt(j);
-                     if (aChar == '{')
-                     {
-                        offset = raOldFile.getFilePointer();
-                        done = true;
-                        break;
-                     }
-                  }
-               }
-            }
-         }
-         offset = (offset == fileLen ? 0 : offset);
-      }
-      return offset;
+       return container.getPosition("Body Start") + 1;
    }
    
    

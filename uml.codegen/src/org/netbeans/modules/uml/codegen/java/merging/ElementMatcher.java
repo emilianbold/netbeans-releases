@@ -69,6 +69,8 @@ public class ElementMatcher {
 	    elems = Merger.getAttributes(scopingType);
 	} else if (elem instanceof IOperation) {
 	    elems = Merger.getOperations(scopingType);
+	} else if (elem instanceof IClassifier) {
+	    elems = Merger.getSubTypes(scopingType);
 	}
 	if (elems != null) {
 	    Iterator iter = elems.iterator();
