@@ -807,6 +807,9 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         java.util.List<String> workingIds = null;
         RADVisualContainer parent = null;
 
+ 	//outside of a frame, there are no selected components so just return null
+ 	if(selectedComps.size() == 0) return null;
+
         for (Iterator it = selectedComps.iterator(); it.hasNext(); ) {
             RADComponent metacomp = (RADComponent) it.next();
             if (!(metacomp instanceof RADVisualComponent)) continue;
