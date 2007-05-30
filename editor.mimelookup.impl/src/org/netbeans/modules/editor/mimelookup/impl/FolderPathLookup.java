@@ -24,16 +24,17 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.InstanceDataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -50,9 +51,7 @@ public final class FolderPathLookup extends AbstractLookup {
     private CompoundFolderChildren children;
     private PCL listener = new PCL();
 
-    private final String LOCK = new String("InstanceProviderLookup.LOCK"); //NOI18N
-    
-    private final InstanceConvertor CONVERTOR = new InstanceConvertor();
+//    private final InstanceConvertor CONVERTOR = new InstanceConvertor();
     
     /** Creates a new instance of InstanceProviderLookup */
     public FolderPathLookup(String [] paths) {
@@ -71,7 +70,7 @@ public final class FolderPathLookup extends AbstractLookup {
     }
 
     private void rebuild() {
-        List<String> instanceFiles = new ArrayList<String>();
+        List<ICItem> instanceFiles = new ArrayList<ICItem>();
         
         for (FileObject file : children.getChildren()) {
             if (!file.isValid()) {
@@ -83,7 +82,7 @@ public final class FolderPathLookup extends AbstractLookup {
                 DataObject d = DataObject.find(file);
                 InstanceCookie instanceCookie = d.getCookie(InstanceCookie.class);
                 if (instanceCookie != null) {
-                    instanceFiles.add(file.getPath());
+                    instanceFiles.add(new ICItem(d, instanceCookie));
                 }
             } catch (Exception e) {
                 LOG.log(Level.WARNING, "Can't create DataObject", e); //NOI18N
@@ -97,7 +96,7 @@ public final class FolderPathLookup extends AbstractLookup {
 //        }
 //        System.out.println("} End of Setting instanceFiles for FolderPathLookup@" + System.identityHashCode(this) + " -----------------------------");
         
-        content.set(instanceFiles, CONVERTOR);
+        content.setPairs(instanceFiles);
     }
     
     private class PCL implements PropertyChangeListener {
@@ -106,68 +105,296 @@ public final class FolderPathLookup extends AbstractLookup {
         }
     } // End of PCL class
     
-    private static final class InstanceConvertor implements InstanceContent.Convertor<String,Object> {
-        private Map<String,Reference<Class<?>>> types = new HashMap<String,Reference<Class<?>>>();
+    
+    // XXX: this is basically a copy of FolderLookup.ICItem, see #104705
+    
+    /** Item that delegates to <code>InstanceCookie</code>. Item which 
+     * the internal lookup data structure is made from. */
+    private static final class ICItem extends AbstractLookup.Pair {
+        static final long serialVersionUID = 10L;
         
-        public Class<?> type(String filePath) {
-            synchronized (types) {
-                Reference<Class<?>> ref = types.get(filePath);
-                Class<?> type = ref == null ? null : (Class) ref.get();
-                if (type == null) {
+        static final ThreadLocal<ICItem> DANGEROUS = new ThreadLocal<ICItem> ();
+
+        /** error manager for ICItem */
+        private static final Logger ERR = Logger.getLogger(ICItem.class.getName());
+
+        /** when deserialized only primary file is stored */
+        private FileObject fo;
+        
+        private transient InstanceCookie ic;
+        /** source data object */
+        private transient DataObject obj;
+        /** reference to created object */
+        private transient Reference<Object> ref;
+
+        /** Constructs new item. */
+        public ICItem (DataObject obj, InstanceCookie ic) {
+            this.ic = ic;
+            this.obj = obj;
+            this.fo = obj.getPrimaryFile();
+            
+            if (ERR.isLoggable(Level.FINE)) ERR.fine("New ICItem: " + obj); // NOI18N
+        }
+        
+        /** Initializes the item
+         */
+        public void init () {
+            if (ic != null) return;
+
+            ICItem prev = DANGEROUS.get ();
+            try {
+                DANGEROUS.set (this);
+                if (obj == null) {
                     try {
-                        type = getInstanceCookie(filePath).instanceClass();
-                        types.put(filePath, new WeakReference<Class<?>>(type));
-                    } catch (Exception e) {
-                        LOG.log(Level.WARNING, "Can't determine instance class from '" + filePath + "'", e); //NOI18N
-                        return DeadMarker.class; // Something nobody will ever find
+                        obj = DataObject.find(fo);
+                    } catch (DataObjectNotFoundException donfe) {
+                        ic = new BrokenInstance("No DataObject for " + fo.getPath(), donfe); // NOI18N
+                        return;
                     }
                 }
-                
-                return type;
+
+                ic = obj.getCookie (InstanceCookie.class);
+                if (ic == null) {
+                    ic = new BrokenInstance("No cookie for " + fo.getPath(), null); // NOI18N
+                }
+            } finally {
+                DANGEROUS.set (prev);
+            }
+        }
+            
+        /**
+         * Fake instance cookie.
+         * Used in case a file had an instance in a previous session but now does not
+         * (or the data object could not even be created correctly).
+         */
+        private static final class BrokenInstance implements InstanceCookie.Of {
+            private final String message;
+            private final Exception ex;
+            public BrokenInstance(String message, Exception ex) {
+                this.message = message;
+                this.ex = ex;
+            }
+            public String instanceName() {
+                return "java.lang.Object"; // NOI18N
+            }
+            private ClassNotFoundException die() {
+                if (ex != null) {
+                    return new ClassNotFoundException(message, ex);
+                } else {
+                    return new ClassNotFoundException(message);
+                }
+            }
+            public Class instanceClass() throws IOException, ClassNotFoundException {
+                throw die();
+            }
+            public Object instanceCreate() throws IOException, ClassNotFoundException {
+                throw die();
+            }
+            public boolean instanceOf(Class type) {
+                return false;
             }
         }
 
-        public String id(String filePath) {
-            return filePath;
-        }
 
-        public String displayName(String filePath) {
+        /** The class of the result item.
+         * @return the class of the item
+         */
+        protected boolean instanceOf (Class clazz) {
+            init ();
+            
+            if (ERR.isLoggable(Level.FINE)) ERR.fine("instanceOf: " + clazz.getName() + " obj: " + obj); // NOI18N
+            
+            if (ic instanceof InstanceCookie.Of) {
+                // special handling for special cookies
+                InstanceCookie.Of of = (InstanceCookie.Of)ic;
+                boolean res = of.instanceOf (clazz);
+                if (ERR.isLoggable(Level.FINE)) ERR.fine("  of: " + res); // NOI18N
+                return res;
+            }
+
+            // handling of normal instance cookies
             try {
-                return getInstanceCookie(filePath).instanceName();
-            } catch (Exception e) {
-                LOG.log(Level.WARNING, "Can't determine instance name from '" + filePath + "'", e); //NOI18N
-                return DeadMarker.class.getName();
+                boolean res = clazz.isAssignableFrom (ic.instanceClass ());
+                if (ERR.isLoggable(Level.FINE)) ERR.fine("  plain: " + res); // NOI18N
+                return res;
+            } catch (ClassNotFoundException ex) {
+                exception(ex, fo);
+            } catch (IOException ex) {
+                exception(ex, fo);
             }
+            return false;
         }
 
-        public Object convert(String filePath) {
+        /** The class of the result item.
+         * @return the instance of the object or null if it cannot be created
+         */
+        public Object getInstance() {
+            init ();
+            
             try {
-                return getInstanceCookie(filePath).instanceCreate();
-            } catch (Exception e) {
-                LOG.log(Level.WARNING, "Can't create instance from '" + filePath + "'", e); //NOI18N
-                return DeadMarker.THIS;
+                Object obj = ic.instanceCreate();
+                if (ERR.isLoggable(Level.FINE)) ERR.fine("  getInstance: " + obj + " for " + this.obj); // NOI18N
+                ref = new WeakReference<Object> (obj);
+                return obj;
+            } catch (ClassNotFoundException ex) {
+                exception(ex, fo);
+            } catch (IOException ex) {
+                exception(ex, fo);
             }
+            return null;
         }
-        
-        private InstanceCookie getInstanceCookie(String filePath) throws IOException {
-            FileObject file = Repository.getDefault().getDefaultFileSystem().findResource(filePath);
-            if (file == null) {
-                // Should not occure
-                throw new IOException("The file does not exist '" + filePath + "'"); //NOI18N
+
+        /** Hash code is the <code>InstanceCookie</code>'s code. */
+        public int hashCode () {
+            init ();
+            
+            return System.identityHashCode (ic);
+        }
+
+        /** Two items are equal if they point to the same cookie. */
+        public boolean equals (Object obj) {
+            if (obj instanceof ICItem) {
+                ICItem i = (ICItem)obj;
+                i.init ();
+                init ();
+                return ic == i.ic;
+            }
+            return false;
+        }
+
+        /** An identity of the item.
+         * @return string representing the item, that can be used for
+         *   persistance purposes to locate the same item next time */
+        public String getId() {
+            init ();
+
+            if (obj == null) {
+                // Deser problems.
+                return "<broken: " + fo.getPath() + ">"; // NOI18N
             }
             
-            DataObject d = DataObject.find(file);
-            InstanceCookie cookie = d.getCookie(InstanceCookie.class);
-            if (cookie != null) {
-                return cookie;
-            } else {
-                // Should not occure
-                throw new IOException("Can't find InstanceCookie for '" + filePath + "'"); //NOI18N
-            }
+            return obj.getName();
         }
-    } // End of InstanceConvertor class
+
+        /** Display name is extracted from name of the objects node. */
+        public String getDisplayName () {
+            init ();
+            
+            if (obj == null) {
+                // Deser problems.
+                return "<broken: " + fo.getPath() + ">"; // NOI18N
+            }
+            
+            return obj.getNodeDelegate ().getDisplayName ();
+        }
+
+        /** Method that can test whether an instance of a class has been created
+         * by this item.
+         *
+         * @param obj the instance
+         * @return if the item has already create an instance and it is the same
+         *  as obj.
+         */
+        protected boolean creatorOf(Object obj) {
+            Reference w = ref;
+            if (w != null && w.get () == obj) {
+                return true;
+            }
+            if (this.obj instanceof InstanceDataObject) {
+                try {
+                    Method m = InstanceDataObject.class.getDeclaredMethod("creatorOf", Object.class); //NOI18N
+                    return (Boolean) m.invoke(this.obj, obj);
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
+            return false;
+        }
+
+        /** The class of this item.
+         * @return the correct class
+         */
+        public Class getType() {
+            init ();
+            
+            try {
+                return ic.instanceClass ();
+            } catch (IOException ex) {
+                // ok, no class available
+            } catch (ClassNotFoundException ex) {
+                // ok, no class available
+            }
+            return Object.class;
+        }
+
+        private static void exception(Exception e, FileObject fo) {
+            Exceptions.attachMessage(e, "Bad file: " + fo); // NOI18N
+            LOG.log(Level.WARNING, null, e);
+        }
+    } // End of ICItem class.
     
-    private static final class DeadMarker {
-        public static final DeadMarker THIS = new DeadMarker();
-    } // End of DeadMarker class
+//    private static final class InstanceConvertor implements InstanceContent.Convertor<String,Object> {
+//        private Map<String,Reference<Class<?>>> types = new HashMap<String,Reference<Class<?>>>();
+//        
+//        public Class<?> type(String filePath) {
+//            synchronized (types) {
+//                Reference<Class<?>> ref = types.get(filePath);
+//                Class<?> type = ref == null ? null : (Class) ref.get();
+//                if (type == null) {
+//                    try {
+//                        type = getInstanceCookie(filePath).instanceClass();
+//                        types.put(filePath, new WeakReference<Class<?>>(type));
+//                    } catch (Exception e) {
+//                        LOG.log(Level.WARNING, "Can't determine instance class from '" + filePath + "'", e); //NOI18N
+//                        return DeadMarker.class; // Something nobody will ever find
+//                    }
+//                }
+//                
+//                return type;
+//            }
+//        }
+//
+//        public String id(String filePath) {
+//            return filePath;
+//        }
+//
+//        public String displayName(String filePath) {
+//            try {
+//                return getInstanceCookie(filePath).instanceName();
+//            } catch (Exception e) {
+//                LOG.log(Level.WARNING, "Can't determine instance name from '" + filePath + "'", e); //NOI18N
+//                return DeadMarker.class.getName();
+//            }
+//        }
+//
+//        public Object convert(String filePath) {
+//            try {
+//                return getInstanceCookie(filePath).instanceCreate();
+//            } catch (Exception e) {
+//                LOG.log(Level.WARNING, "Can't create instance from '" + filePath + "'", e); //NOI18N
+//                return DeadMarker.THIS;
+//            }
+//        }
+//        
+//        private InstanceCookie getInstanceCookie(String filePath) throws IOException {
+//            FileObject file = Repository.getDefault().getDefaultFileSystem().findResource(filePath);
+//            if (file == null) {
+//                // Should not occure
+//                throw new IOException("The file does not exist '" + filePath + "'"); //NOI18N
+//            }
+//            
+//            DataObject d = DataObject.find(file);
+//            InstanceCookie cookie = d.getCookie(InstanceCookie.class);
+//            if (cookie != null) {
+//                return cookie;
+//            } else {
+//                // Should not occure
+//                throw new IOException("Can't find InstanceCookie for '" + filePath + "'"); //NOI18N
+//            }
+//        }
+//    } // End of InstanceConvertor class
+//    
+//    private static final class DeadMarker {
+//        public static final DeadMarker THIS = new DeadMarker();
+//    } // End of DeadMarker class
 }

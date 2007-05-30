@@ -96,4 +96,19 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
+
+    <folder name="Tmp">
+        <folder name="PathFolderLookupTest">
+            <folder name="testInstanceOf">
+                <file name="ifaceA-impl.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.editor.mimelookup.impl.FolderPathLookupTest$IfaceA"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.mimelookup.impl.FolderPathLookupTest.createIfacesImpl"/>
+                </file>
+                <file name="ifaceB-impl.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.editor.mimelookup.impl.FolderPathLookupTest$IfaceB"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.mimelookup.impl.FolderPathLookupTest.createIfacesImpl"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>

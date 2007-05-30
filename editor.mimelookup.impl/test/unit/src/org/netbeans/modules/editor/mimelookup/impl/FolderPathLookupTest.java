@@ -19,9 +19,11 @@
 
 package org.netbeans.modules.editor.mimelookup.impl;
 
+import java.net.URL;
 import java.util.Collection;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -126,6 +128,53 @@ public class FolderPathLookupTest extends NbTestCase {
         
         instances = lr.allInstances();
         assertEquals("Wrong number of instances", 0, instances.size());
+    }
+
+    // IZ #104705
+    public void testInstaceOf() throws Exception {
+        EditorTestLookup.setLookup(
+            new URL[] { getClass().getResource("test-layer.xml") }, 
+            getWorkDir(), 
+            new Object[] {},
+            getClass().getClassLoader()
+        );
+        
+        Lookup lookup = new FolderPathLookup(new String [] { "Tmp/PathFolderLookupTest/testInstanceOf" });
+        
+        // Check IfaceA instances, it should not pick up the one with
+        // instanceOf == ...$IfaceB
+        Collection instances = lookup.lookupAll(IfaceA.class);
+        assertEquals("Wrong number of IfaceA instances", 1, instances.size());
+        
+        Object instance = instances.iterator().next();
+        assertTrue("Wrong instance", instance instanceof ImplAB);
+        assertEquals("Wrong instance file", 
+            "Tmp/PathFolderLookupTest/testInstanceOf/ifaceA-impl.instance", 
+            ((ImplAB) instance).fileObject.getPath());
+    }
+
+    public static Object createIfacesImpl(FileObject fo) {
+        return new ImplAB(fo);
+    }
+    
+    public static interface IfaceA {
+        void methodA();
+    }
+    
+    public static interface IfaceB {
+        void methodB();
+    }
+    
+    private static final class ImplAB implements IfaceA, IfaceB {
+        public FileObject fileObject;
+        public ImplAB(FileObject fo) {
+            this.fileObject = fo;
+        }
+        public void methodA() {
+        }
+
+        public void methodB() {
+        }
     }
     
     private static final class L implements LookupListener {
