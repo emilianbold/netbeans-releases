@@ -46,17 +46,20 @@ public class UnitTable extends JTable {
     public UnitTable (TableModel model) {
         super (model);
         this.model = (UnitCategoryTableModel) model;
-        /*if (this.model.getType().equals(UnitCategoryTableModel.Type.INSTALLED)) {
-            TableColumn enabledColumn = getColumnModel().getColumn(1);
-            JComboBox stateCombo = new JComboBox(new String[] {InstalledTableModel.STATE_ENABLED, InstalledTableModel.STATE_DISABLED});
-            enabledColumn.setCellEditor(new DefaultCellEditor(stateCombo));
-        }*/
         setShowGrid (false);
         setColumnsSize ();
-        //setFillsViewportHeight(true);
+        //setFillsViewportHeight(true);        
         setIntercellSpacing (new Dimension (0, 0));
         revalidate ();
     }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        ////instead of setFillsViewportHeight(true);        
+        getParent().setBackground(getBackground());
+    }
+    
     @Override
     public String getToolTipText (MouseEvent e) {
         String tip = null;
