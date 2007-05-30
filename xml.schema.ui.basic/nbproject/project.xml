@@ -128,6 +128,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.xml.text</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.13</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.xml.wsdl.model</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -280,7 +289,7 @@
                 <friend>org.netbeans.modules.xml.schema.ui.analysis</friend>
                 <friend>org.netbeans.modules.xml.wsdlui</friend>
                 <friend>org.netbeans.modules.xslt.project</friend>
-				<package>org.netbeans.modules.xml.schema.ui.basic</package>
+                <package>org.netbeans.modules.xml.schema.ui.basic</package>
                 <package>org.netbeans.modules.xml.schema.ui.basic.spi</package>
                 <package>org.netbeans.modules.xml.schema.ui.nodes</package>
                 <package>org.netbeans.modules.xml.schema.ui.nodes.categorized</package>

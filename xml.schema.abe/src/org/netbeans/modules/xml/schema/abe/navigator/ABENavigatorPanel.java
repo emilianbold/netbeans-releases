@@ -19,25 +19,22 @@
 
 package org.netbeans.modules.xml.schema.abe.navigator;
 
-import java.util.Collection;
-import javax.swing.JComponent;
-import org.netbeans.spi.navigator.NavigatorPanel;
-import org.openide.loaders.DataObject;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
+import org.netbeans.modules.xml.text.navigator.base.AbstractXMLNavigatorContent;
+import org.netbeans.modules.xml.text.navigator.base.AbstractXMLNavigatorPanel;
 import org.openide.util.NbBundle;
-import org.openide.windows.TopComponent;
+
 
 /**
  * An implementation of NavigatorPanel for ABE view.
  *
  * @author Chris Webster
  */
-public class ABENavigatorPanel implements LookupListener, NavigatorPanel {
-    private NavigatorContent navigator;
-    private Lookup.Result selection;
-    private DataObject dobj;
+public class ABENavigatorPanel extends AbstractXMLNavigatorPanel {
+   
+    
+    public ABENavigatorPanel(){
+        
+    }
 
     public String getDisplayHint() {
         return NbBundle.getMessage(ABENavigatorPanel.class,
@@ -49,43 +46,10 @@ public class ABENavigatorPanel implements LookupListener, NavigatorPanel {
                 "LBL_NavigatorPanel_Name");
     }
 
-    public JComponent getComponent() {
+   protected  AbstractXMLNavigatorContent getNavigatorUI() {
 	if (navigator == null) {
 	    navigator = new NavigatorContent();
 	}
 	return navigator;
-    }
-
-    public Lookup getLookup() {
-        return null;
-    }
-
-    public void panelActivated(Lookup context) {
-	getComponent();
-		TopComponent.getRegistry().addPropertyChangeListener(navigator);
-        selection = context.lookup(new Lookup.Template(DataObject.class));
-        selection.addLookupListener(this);
-        resultChanged(null);
-    }
-
-    public void panelDeactivated() {
-		TopComponent.getRegistry().removePropertyChangeListener(navigator);
-        selection.removeLookupListener(this);
-        selection = null;
-        navigator = null;
-	dobj = null;
-    }
-
-    public void resultChanged(LookupEvent ev) {
-        if(selection == null)
-            return;        
-        Collection selected = selection.allInstances();
-        if (selected.size() == 1) {
-	    DataObject olddobj = dobj;
-            dobj = (DataObject) selected.iterator().next();
-	    if (olddobj != dobj) {
-		navigator.show(dobj);
-	    }
-        }
     }
 }

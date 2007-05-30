@@ -19,13 +19,10 @@
 
 package org.netbeans.modules.xml.text.navigator;
 
-import java.util.Collection;
 import javax.swing.JComponent;
-import org.netbeans.spi.navigator.NavigatorPanel;
-import org.openide.loaders.DataObject;
+import org.netbeans.modules.xml.text.navigator.base.AbstractXMLNavigatorContent;
+import org.netbeans.modules.xml.text.navigator.base.AbstractXMLNavigatorPanel;
 import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 
 /** An implementation of NavigatorPanel for XML navigator.
@@ -33,18 +30,9 @@ import org.openide.util.NbBundle;
  * @author Marek Fukala
  * @version 1.0
  */
-public class XMLNavigatorPanel implements NavigatorPanel {
+public class XMLNavigatorPanel extends AbstractXMLNavigatorPanel {
 
-    private NavigatorContent navigator = NavigatorContent.getDefault();
-    
-    private Lookup.Result selection;
-    private final LookupListener selectionListener = new LookupListener() {
-        public void resultChanged(LookupEvent ev) {
-            if(selection != null)
-                navigate(selection.allInstances());
-        }
-    };
-    
+      
     /** public no arg constructor needed for system to instantiate the provider. */
     public XMLNavigatorPanel() {
     }
@@ -64,27 +52,12 @@ public class XMLNavigatorPanel implements NavigatorPanel {
     public Lookup getLookup() {
         return null;
     }
-    
-    public void panelActivated(Lookup context) {
-        selection = context.lookup(new Lookup.Template(DataObject.class));
-        selection.addLookupListener(selectionListener);
-        selectionListener.resultChanged(null);
+    protected  AbstractXMLNavigatorContent getNavigatorUI() {
+	if (navigator == null) {
+	    navigator = NavigatorContent.getDefault();
+	}
+	return navigator;
     }
-    
-    public void panelDeactivated() {
-        if(selection != null) {
-            selection.removeLookupListener(selectionListener);
-            selection = null;
-        }
-        if(navigator != null)
-            navigator.release(); //hide the UI
-    }
-    
-    public void navigate(Collection/*<DataObject>*/ selectedFiles) {
-        if(selectedFiles.size() == 1) {
-            DataObject d = (DataObject) selectedFiles.iterator().next();
-            navigator.navigate(d);
-        }
-    }
+
     
 }

@@ -30,7 +30,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
@@ -53,7 +52,6 @@ import javax.swing.ToolTipManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.DefaultTreeSelectionModel;
 import javax.swing.tree.TreeModel;
@@ -61,20 +59,19 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.EditorUI;
-import org.netbeans.editor.ext.ExtEditorUI;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.structure.api.DocumentElement;
 import org.netbeans.modules.editor.structure.api.DocumentModel;
 import org.netbeans.modules.editor.structure.api.DocumentModelException;
+import org.netbeans.modules.xml.text.navigator.base.AbstractXMLNavigatorContent;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
-import org.openide.cookies.EditorCookie.Observable;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.text.CloneableEditorSupport;
+import org.openide.nodes.NodeEvent;
+import org.openide.nodes.NodeMemberEvent;
+import org.openide.nodes.NodeReorderEvent;
 import org.openide.text.DataEditorSupport;
-import org.openide.util.Lookup.Template;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.UserQuestionException;
@@ -87,7 +84,7 @@ import org.openide.windows.TopComponent;
  * @author Marek Fukala
  * @version 1.0
  */
-public class NavigatorContent extends JPanel implements PropertyChangeListener  {
+public class NavigatorContent extends AbstractXMLNavigatorContent   {
     
     private static final boolean DEBUG = false;
     private static NavigatorContent navigatorContentInstance = null;
@@ -579,6 +576,6 @@ public class NavigatorContent extends JPanel implements PropertyChangeListener  
         public static final String CONTENT_FILTER = "content";
         
     }
-    
+        
 }
 

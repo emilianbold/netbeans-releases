@@ -23,13 +23,11 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import javax.swing.JPanel;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -44,34 +42,30 @@ import org.netbeans.modules.xml.schema.ui.nodes.ReadOnlyCookie;
 import org.netbeans.modules.xml.schema.ui.nodes.categorized.CategorizedSchemaNodeFactory;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.view.BeanTreeView;
-import org.openide.explorer.view.TreeView;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
+import org.netbeans.modules.xml.text.navigator.base.AbstractXMLNavigatorContent;
 
 /**
  * XML Schema Navigator component containing a tree of schema components.
  *
  * @author  Nathan Fiedler
  */
-public class SchemaNavigatorContent extends JPanel
-        implements ExplorerManager.Provider, Runnable, PropertyChangeListener {
+public class SchemaNavigatorContent extends AbstractXMLNavigatorContent  implements Runnable{
     /** silence compiler warnings */
     private static final long serialVersionUID = 1L;
     /** The lookup for our component tree. */
     private static Lookup lookup;
-    /** Explorer manager for the tree view. */
-    private ExplorerManager explorerManager;
-    /** Our schema component node tree view. */
-    private TreeView treeView;
     /** Indicates that the tree view is not in the component hierarchy. */
     private boolean treeInHierarchy;
     /** indicator that currently listening to topcomponent.registry.activatednodes **/
     private boolean listeningOnActivatedNodes = false;
+    /** Explorer root node **/
+    private Node explorerRoot;
     private final javax.swing.JLabel notAvailableLabel = new javax.swing.JLabel(
             NbBundle.getMessage(SchemaNavigatorContent.class, "MSG_NotAvailable")); //NOI18N
     
@@ -84,10 +78,8 @@ public class SchemaNavigatorContent extends JPanel
      * Creates a new instance of SchemaNavigatorContent.
      */
     public SchemaNavigatorContent() {
+        super();
         setLayout(new BorderLayout());
-        explorerManager = new ExplorerManager();
-        treeView = new BeanTreeView();
-        explorerManager.addPropertyChangeListener(this);
         //initialize the notAvailableLabel
         notAvailableLabel.setHorizontalAlignment(SwingConstants.CENTER);
         notAvailableLabel.setEnabled(false);
@@ -171,7 +163,6 @@ public class SchemaNavigatorContent extends JPanel
         return null;
     }
     
-    
     /**
      * Show the data object in the navigator.
      *
@@ -191,6 +182,7 @@ public class SchemaNavigatorContent extends JPanel
     }
     
     public void run() {
+        getExplorerManager().setRootContext(explorerRoot);
         expandDefaultNodes();
         selectActivatedNodes();
     }
@@ -271,8 +263,7 @@ public class SchemaNavigatorContent extends JPanel
         add(treeView, BorderLayout.CENTER);
         SchemaNodeFactory factory = new CategorizedSchemaNodeFactory(
                 model, lookup);
-        Node node = factory.createRootNode();
-        getExplorerManager().setRootContext(node);
+        explorerRoot = factory.createRootNode();
         // Expand the default nodes.
         EventQueue.invokeLater(this);
         revalidate();

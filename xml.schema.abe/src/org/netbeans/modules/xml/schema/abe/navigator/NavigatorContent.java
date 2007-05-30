@@ -21,11 +21,8 @@ package org.netbeans.modules.xml.schema.abe.navigator;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -42,6 +39,7 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
+import org.netbeans.modules.xml.text.navigator.base.AbstractXMLNavigatorContent;
 
 /**
  * Navigator component containing a tree of abe components along with
@@ -49,14 +47,9 @@ import org.openide.windows.TopComponent;
  *
  * @author  Chris Webster
  */
-public class NavigatorContent extends JPanel
-    implements ExplorerManager.Provider, PropertyChangeListener {
+public class NavigatorContent extends AbstractXMLNavigatorContent {
     /** silence compiler warnings */
     private static final long serialVersionUID = 1L;
-    /** Explorer manager for the tree view. */
-    private final ExplorerManager explorerManager;
-    /** Our schema component node tree view. */
-    private final BeanTreeView treeView;
     private final javax.swing.JLabel notAvailableLabel = new javax.swing.JLabel(
             NbBundle.getMessage(NavigatorContent.class, "MSG_NotAvailable")); //NOI18N
     
@@ -65,11 +58,9 @@ public class NavigatorContent extends JPanel
      */
     public NavigatorContent() {
 	setLayout(new BorderLayout());
-	explorerManager = new ExplorerManager();
 	treeView = new BeanTreeView();
 	treeView.setRootVisible(false);
 	explorerManager.addPropertyChangeListener(this);
-        
         //initialize the notAvailableLabel
         notAvailableLabel.setHorizontalAlignment(SwingConstants.CENTER);
         notAvailableLabel.setEnabled(false);
@@ -79,11 +70,7 @@ public class NavigatorContent extends JPanel
         notAvailableLabel.setOpaque(true);        
     }
     
-    public ExplorerManager getExplorerManager() {
-	return explorerManager;
-    }
-    
-    public void show(DataObject dobj) {
+    public void navigate(DataObject dobj) {
         AXIModel model = getAXIModel(dobj);
         if (model == null || model.getState() != Model.State.VALID) {
             showError();
@@ -110,13 +97,19 @@ public class NavigatorContent extends JPanel
 	}
     }
     
-    private void show(AXIComponent component) {
+    private void show(final AXIComponent component) {
         remove(notAvailableLabel);
+        if (!treeView.isShowing())
         add(treeView, BorderLayout.CENTER);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                treeView.setRootVisible(false);
 	AXINodeVisitor nv = new AXINodeVisitor();
 	Node n = nv.getNode(component);
-	getExplorerManager().setRootContext(n);
+        getExplorerManager().setRootContext(n);
         redraw();
+        }
+    });
     }
     
     // TODO add explorer manager listener to trigger navigation in
