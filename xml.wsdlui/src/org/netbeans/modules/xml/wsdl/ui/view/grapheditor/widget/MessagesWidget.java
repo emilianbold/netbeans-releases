@@ -93,7 +93,7 @@ public class MessagesWidget extends Widget implements
         super(scene);
         this.model = model;
 
-        setLayout(LayoutFactory.createVerticalLayout(SerialAlignment.CENTER, WidgetConstants.GAP_BETWEEN_HEADER_AND_CONTENT));
+        setLayout(LayoutFactory.createVerticalFlowLayout(SerialAlignment.CENTER, WidgetConstants.GAP_BETWEEN_HEADER_AND_CONTENT));
         setOpaque(true);
         setBorder(new EmptyBorder(20, 20, 20, 20));
         
@@ -108,7 +108,7 @@ public class MessagesWidget extends Widget implements
         addMessageButton.setActionListener(this);
         
         buttons = new Widget(scene);
-        buttons.setLayout(LayoutFactory.createHorizontalLayout(
+        buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, 8));
         buttons.addChild(addMessageButton);
         
@@ -124,7 +124,7 @@ public class MessagesWidget extends Widget implements
         messageHitPoint.setMinimumSize(new Dimension(WidgetConstants.MESSAGE_MINIMUM_WIDTH, 25));
         
         contentWidget = new Widget(scene);
-        contentWidget.setLayout(LayoutFactory.createVerticalLayout(
+        contentWidget.setLayout(LayoutFactory.createVerticalFlowLayout(
                 SerialAlignment.JUSTIFY, WidgetConstants.GAP_BETWEEN_CHILD_WIDGETS));
         addChild(contentWidget);
 

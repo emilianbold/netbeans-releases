@@ -71,8 +71,8 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.widget.LabelWidget.Alignment;
 import org.netbeans.api.visual.widget.LabelWidget.VerticalAlignment;
-import org.netbeans.modules.visual.border.DashedBorder;
-import org.netbeans.modules.visual.util.GeomUtil;
+
+
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Input;
@@ -111,7 +111,7 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
     private ButtonWidget showComboBoxBtnWidget;
     private Widget nameHolderWidget;
     private Border enabledBorder = BorderFactory.createCompositeBorder(new Border[] {BorderFactory.createLineBorder(1, Color.BLACK), WidgetConstants.GRADIENT_BLUE_WHITE_BORDER});
-    private Border disabledBorder = BorderFactory.createCompositeBorder(new Border[] {new DashedBorder(Color.GRAY, 10, 5), WidgetConstants.GRADIENT_GRAY_WHITE_BORDER});
+    private Border disabledBorder = BorderFactory.createCompositeBorder(new Border[] {BorderFactory.createDashedBorder(Color.GRAY, 10, 5), WidgetConstants.GRADIENT_GRAY_WHITE_BORDER});
     private Border importedBorder = BorderFactory.createCompositeBorder(new Border[] {BorderFactory.createLineBorder(1, Color.BLACK), WidgetConstants.GRADIENT_GREEN_WHITE_BORDER});
     private Border border;
     
@@ -145,7 +145,7 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
     }
 
     private void init() {
-        setLayout(LayoutFactory.createVerticalLayout());
+        setLayout(LayoutFactory.createVerticalFlowLayout());
         
         mHotspot = new RectangleWidget(getScene(), 12, 70);
         mHotspot.setThickness(4);
@@ -894,7 +894,7 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
 
             Rectangle rectangle = widget.getScene ().convertSceneToView (widget.convertLocalToScene (widget.getPreferredBounds ()));
 
-            Point center = GeomUtil.center (rectangle);
+            Point center = new Point (rectangle.x + rectangle.width / 2, rectangle.y + rectangle.height / 2);
             Dimension size = editor.getMinimumSize ();
             if (rectangle.width > size.width)
                 size.width = rectangle.width;
@@ -1037,7 +1037,7 @@ public class PortTypeWidget extends AbstractWidget<PortType> implements DnDHandl
     public class PortTypeLayout implements Layout {
 
         private Layout osjLayout = null;
-        private Layout fLayout = LayoutFactory.createFillLayout();
+        private Layout fLayout = LayoutFactory.createOverlayLayout();
         
         public PortTypeLayout() {
             osjLayout = new OneSideJustifiedLayout(true);

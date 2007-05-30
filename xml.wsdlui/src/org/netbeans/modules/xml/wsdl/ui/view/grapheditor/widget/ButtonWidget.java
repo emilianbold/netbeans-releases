@@ -72,7 +72,7 @@ public class ButtonWidget extends Widget {
     public ButtonWidget(Scene scene, Image icon, String text) {
         super(scene);
         
-        setLayout(LayoutFactory.createHorizontalLayout(LayoutFactory
+        setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory
                 .SerialAlignment.CENTER, 4));
         setIconAndText(icon, text);
         

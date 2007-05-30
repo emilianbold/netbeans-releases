@@ -93,7 +93,7 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
 
     private void init() {
         setMinimumSize(new Dimension(MINIMUM_WIDTH, 0));
-        setLayout(LayoutFactory.createVerticalLayout(SerialAlignment.CENTER, GAP));
+        setLayout(LayoutFactory.createVerticalFlowLayout(SerialAlignment.CENTER, GAP));
         setOpaque(true);
         updateContent();
         if (getWSDLComponent() != null)
@@ -284,7 +284,7 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
         
         public RoleWidgetLayout(int gap) {
             mGap = gap;
-            vertLayout = LayoutFactory.createVerticalLayout(SerialAlignment.CENTER, gap);
+            vertLayout = LayoutFactory.createVerticalFlowLayout(SerialAlignment.CENTER, gap);
         }
         
         public void justify(Widget widget) {

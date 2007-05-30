@@ -61,7 +61,7 @@ public class ImageLabelWidget extends Widget {
     {
         super(scene);
         
-        setLayout(LayoutFactory.createHorizontalLayout(
+        setLayout(LayoutFactory.createHorizontalFlowLayout(
                 SerialAlignment.CENTER, hgap));
         
         Font font = scene.getDefaultFont();

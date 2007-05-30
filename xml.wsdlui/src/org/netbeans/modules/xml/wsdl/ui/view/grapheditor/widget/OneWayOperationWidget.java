@@ -63,7 +63,7 @@ public class OneWayOperationWidget extends OperationWidget<OneWayOperation> {
                 getWSDLComponent().getInput(), getLookup());
 
         Widget verticalWidget = new Widget(getScene());
-        verticalWidget.setLayout(LayoutFactory.createVerticalLayout());
+        verticalWidget.setLayout(LayoutFactory.createVerticalFlowLayout());
         verticalWidget.addChild(inputWidget);
         
         Widget horizontalWidget = new Widget(scene);
@@ -72,7 +72,7 @@ public class OneWayOperationWidget extends OperationWidget<OneWayOperation> {
         horizontalWidget.addChild(mOperationRectangleWidget);
         
         
-        setLayout(LayoutFactory.createVerticalLayout());
+        setLayout(LayoutFactory.createVerticalFlowLayout());
         addChild(getLabel());
         addChild(horizontalWidget);
     }

@@ -75,7 +75,7 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
 
     private void init() {
         setBorder(WidgetConstants.OUTER_BORDER);
-        setLayout(LayoutFactory.createVerticalLayout());
+        setLayout(LayoutFactory.createVerticalFlowLayout());
         Widget actionsWidget = createActionsWidget();
         mHeaderWidget = new HeaderWidget(getScene(), expander);
         mHeaderWidget.setLayout(new LeftRightLayout(32));
@@ -168,7 +168,7 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
     
     private Widget createActionsWidget() {
         Widget actionsHolderWidget = new Widget(getScene());
-        actionsHolderWidget.setLayout(LayoutFactory.createHorizontalLayout(SerialAlignment.JUSTIFY, 8));
+        actionsHolderWidget.setLayout(LayoutFactory.createHorizontalFlowLayout(SerialAlignment.JUSTIFY, 8));
         
         expander = new ExpanderWidget(getScene(), this,
                 ExpanderWidget.isExpanded(this, EXPANDED_DEFAULT));

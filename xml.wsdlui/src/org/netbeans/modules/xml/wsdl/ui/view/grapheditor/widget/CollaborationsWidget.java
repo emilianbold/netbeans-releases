@@ -105,7 +105,7 @@ public class CollaborationsWidget extends Widget
                 "LBL_CollaborationsWidget_ThereAreNoPartnerLinkTypes"));
         stubWidget.setMinimumSize(new Dimension(WidgetConstants.PARTNERLLINKTYPE_MINIMUM_WIDTH, 0));
         setOpaque(true);
-        setLayout(LayoutFactory.createVerticalLayout(SerialAlignment.CENTER, WidgetConstants.GAP_BETWEEN_HEADER_AND_CONTENT));
+        setLayout(LayoutFactory.createVerticalFlowLayout(SerialAlignment.CENTER, WidgetConstants.GAP_BETWEEN_HEADER_AND_CONTENT));
         setBorder(new EmptyBorder(20, 20, 40, 20));
         
         mHeaderWidget = new Widget(scene);
@@ -119,7 +119,7 @@ public class CollaborationsWidget extends Widget
         
         mCollaborationContentWidget = new Widget(scene);
         addChild(mCollaborationContentWidget);
-        mCollaborationContentWidget.setLayout(LayoutFactory.createVerticalLayout(
+        mCollaborationContentWidget.setLayout(LayoutFactory.createVerticalFlowLayout(
                 SerialAlignment.JUSTIFY, WidgetConstants.GAP_BETWEEN_CHILD_WIDGETS));
         getActions().addAction(((PartnerScene) scene).getDnDAction());
         getActions().addAction(ActionFactory.createPopupMenuAction(this));
@@ -130,7 +130,7 @@ public class CollaborationsWidget extends Widget
 
     private Widget createActionWidget(Scene scene) {
         Widget actionWidget = new Widget(scene);
-        actionWidget.setLayout(LayoutFactory.createHorizontalLayout(
+        actionWidget.setLayout(LayoutFactory.createHorizontalFlowLayout(
                 SerialAlignment.JUSTIFY, 8));
 
         // Auto-create button.

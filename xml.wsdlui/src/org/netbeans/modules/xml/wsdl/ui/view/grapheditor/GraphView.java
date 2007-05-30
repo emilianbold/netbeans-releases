@@ -104,7 +104,7 @@ public class GraphView extends JPanel {
         // Note that the arrangement of collaborationsWidget and
         // messagesWidget is also controlled by the View actions below.
         contentWidget = new Widget(scene);
-        contentWidget.setLayout(LayoutFactory.createVerticalLayout(SerialAlignment.JUSTIFY, 0));
+        contentWidget.setLayout(LayoutFactory.createVerticalFlowLayout(SerialAlignment.JUSTIFY, 0));
         contentWidget.addChild(collaborationsWidget);
         
         middleWidget = new Widget(scene);

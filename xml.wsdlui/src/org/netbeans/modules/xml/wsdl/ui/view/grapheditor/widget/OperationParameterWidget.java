@@ -96,7 +96,7 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
         super(scene, parameter, lookup);
 
         mParameter = parameter;
-        setLayout(LayoutFactory.createVerticalLayout(SerialAlignment.JUSTIFY, 1));
+        setLayout(LayoutFactory.createVerticalFlowLayout(SerialAlignment.JUSTIFY, 1));
         mParameterMessage = new LabelWidget (scene);
         mParameterMessage.setBackground (Color.WHITE);
         if (parameter.getMessage() != null &&

@@ -81,6 +81,9 @@ implements ExPropertyEditor, PropertyChangeListener {
         FeatureDescriptor desc = env.getFeatureDescriptor();
         // make this is not editable  
         desc.setValue("canEditAsText", Boolean.FALSE); // NOI18N
+        //add help id
+        desc.setValue(ExPropertyEditor.PROPERTY_HELP_ID, "org.netbeans.modules.xml.wsdl.ui.api.property.ElementOrTypePropertyEditor");
+        
     }
     
     
@@ -103,7 +106,7 @@ implements ExPropertyEditor, PropertyChangeListener {
     public Component getCustomEditor () {
         WSDLModel model = mElementOrTypeProvider.getModel();
         ModelSource modelSource = model.getModelSource();
-        FileObject wsdlFile = (FileObject) modelSource.getLookup().lookup(FileObject.class);
+        FileObject wsdlFile = modelSource.getLookup().lookup(FileObject.class);
         if(wsdlFile != null) {
             Project project = FileOwnerQuery.getOwner(wsdlFile);
             if(project != null) {

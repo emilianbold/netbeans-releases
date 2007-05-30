@@ -67,7 +67,7 @@ public class SolicitResponseOperationWidget
                 getWSDLComponent().getOutput(), lookup);
 
         verticalWidget = new Widget(scene);
-        verticalWidget.setLayout(LayoutFactory.createVerticalLayout(SerialAlignment.JUSTIFY, 3));
+        verticalWidget.setLayout(LayoutFactory.createVerticalFlowLayout(SerialAlignment.JUSTIFY, 3));
         verticalWidget.addChild(outputWidget);
         verticalWidget.addChild(inputWidget);
 
@@ -76,7 +76,7 @@ public class SolicitResponseOperationWidget
         horizontalWidget.addChild(verticalWidget);
         horizontalWidget.addChild(mOperationRectangleWidget);
         
-        setLayout(LayoutFactory.createVerticalLayout());
+        setLayout(LayoutFactory.createVerticalFlowLayout());
         addChild(getLabel());
         addChild(horizontalWidget);
     }

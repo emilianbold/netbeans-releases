@@ -66,7 +66,7 @@ public class NotificationOperationWidget
         horizontalWidget.addChild(outputWidget);
         horizontalWidget.addChild(mOperationRectangleWidget);
         
-        setLayout(LayoutFactory.createVerticalLayout());
+        setLayout(LayoutFactory.createVerticalFlowLayout());
         addChild(getLabel());
         addChild(horizontalWidget);
     }

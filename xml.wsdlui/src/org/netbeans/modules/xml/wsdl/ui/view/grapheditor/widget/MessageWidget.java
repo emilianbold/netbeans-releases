@@ -61,7 +61,7 @@ import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.visual.action.TextFieldInplaceEditorProvider;
+import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.TextFieldInplaceEditorProvider;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
@@ -108,7 +108,7 @@ public class MessageWidget extends AbstractWidget<Message>
         expanderWidget = new ExpanderWidget(scene, this, expanded);
         
         contentWidget = new Widget(scene);
-        contentWidget.setLayout(LayoutFactory.createVerticalLayout());
+        contentWidget.setLayout(LayoutFactory.createVerticalFlowLayout());
 
         addPartButton = new ButtonWidget(scene, NbBundle.getMessage(
                 MessageWidget.class, 
@@ -122,14 +122,14 @@ public class MessageWidget extends AbstractWidget<Message>
         
         buttons = new Widget(scene);
         buttons.setBorder(BUTTONS_BORDER);
-        buttons.setLayout(LayoutFactory.createHorizontalLayout(
+        buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
                 SerialAlignment.LEFT_TOP, 8));
         buttons.addChild(addPartButton);
         buttons.addChild(removePartButton);
         
         setBorder(WidgetConstants.OUTER_BORDER);
         setOpaque(true);
-        setLayout(LayoutFactory.createVerticalLayout());
+        setLayout(LayoutFactory.createVerticalFlowLayout());
         
         createContent();
         addChild(contentWidget);
@@ -425,7 +425,7 @@ public class MessageWidget extends AbstractWidget<Message>
         Widget result = new Widget(scene);
         result.addChild(createPartsTableHeader(scene));
         result.setBorder(TABLE_BORDER);
-        result.setLayout(LayoutFactory.createVerticalLayout(SerialAlignment
+        result.setLayout(LayoutFactory.createVerticalFlowLayout(SerialAlignment
                 .JUSTIFY, 0));
         return result;
     }
