@@ -19,6 +19,7 @@
 package org.netbeans.modules.bpel.editors.api.utils;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -267,27 +268,6 @@ public class Util {
       return null;
     }
 
-    // vlv
-    public static String getComponentType(Component component) {
-      String type = null;
-      
-      if (component instanceof BpelEntity) {
-        type = ((BpelEntity) component).getElementType().getName();
-      }
-      else if (component instanceof SchemaComponent) {
-        type = ((SchemaComponent) component).getComponentType().getName();
-      }
-      if (type == null) {
-        return null;
-      }
-      int k = type.lastIndexOf("."); // NOI18N
-
-      if (k == -1) {
-        return type;
-      }
-      return type.substring(k + 1);
-    }
-
     /**
      * This method don't aware about bpelModel lock
      * @param entity BpelEntity 
@@ -347,10 +327,22 @@ public class Util {
         }
     }
 
-    // TODO m vlv
     public static void goToDesign(final Component component) {
+        // vlv
         if ( !(component instanceof BpelEntity)) {
-            return;
+          HighlightManager manager = HighlightManager.getDefault();
+          List<HighlightGroup> groups = manager.getHighlightGroups(HighlightGroup.SEARCH);
+
+          if (groups != null) {
+            for (HighlightGroup group : groups) {
+              manager.removeHighlightGroup(group);
+            }
+          }
+          HighlightGroup group = new HighlightGroup(HighlightGroup.SEARCH);
+          Highlight highlight = new Highlight(component, Highlight.SEARCH_RESULT);
+          group.addHighlight(highlight);
+          manager.addHighlightGroup(group);
+          return;
         }
         final BpelEntity bpelEntity = (BpelEntity) component;
         FileObject fo = Util.getFileObjectByModel(bpelEntity.getBpelModel());
