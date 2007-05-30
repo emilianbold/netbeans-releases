@@ -494,7 +494,7 @@ public class MultiPartHandler {
       InputStream partInput;
       if (content.equals("x-application/gzip")) { // NOI18N
           // sending from NetBeans UI Gestures Collector
-          partInput = new GZIPInputStream(in.getInputStream());
+          partInput = in.getInputStream();
       } else {
           /** input stream containing file data */
           partInput = new MultipartInputStream(in, boundary);
