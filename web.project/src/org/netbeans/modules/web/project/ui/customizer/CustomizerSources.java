@@ -19,18 +19,31 @@
 
 package org.netbeans.modules.web.project.ui.customizer;
 
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
+import java.util.logging.Logger;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JTable;
+import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import javax.swing.plaf.UIResource;
 import javax.swing.table.TableColumn;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.api.queries.CollocationQuery;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.modules.web.project.WebProject;
 
@@ -39,6 +52,8 @@ import org.netbeans.modules.web.project.WebProject;
  * @author  tom, Radko Najman
  */
 public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Provider {
+    private String originalEncoding;
+    private WebProjectProperties uiProperties;
     
     private File projectFld;
     
@@ -95,8 +110,25 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
             }
         });
         enableSourceLevel();
+        
+        this.originalEncoding = ((WebProject)uiProperties.getProject()).evaluator().getProperty(WebProjectProperties.SOURCE_ENCODING);
+        if (this.originalEncoding == null) {
+            this.originalEncoding = FileEncodingQuery.getDefaultEncoding().name();
+        }
+        
+        this.encoding.setModel(new EncodingModel(this.originalEncoding));
+        this.encoding.setRenderer(new EncodingRenderer());
+        
+        
+        this.encoding.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                handleEncodingChange();
+            }
+        });
+        
         initTableVisualProperties(sourceRoots);
         initTableVisualProperties(testRoots);
+        this.uiProperties = uiProperties;
     }
     
     private void initTableVisualProperties(JTable table) {
@@ -106,7 +138,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         table.setIntercellSpacing(new java.awt.Dimension(0, 0));
         // set the color of the table's JViewport
         table.getParent().setBackground(table.getBackground());
-
+        
         //#88174 - Need horizontal scrollbar for library names
         //ugly but I didn't find a better way how to do it
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -114,7 +146,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         column.setMinWidth(230);
         column.setWidth(230);
         column.setMinWidth(75);
-       
+        
         column = table.getColumnModel().getColumn(1);
         column.setMinWidth(220);
         column.setWidth(220);
@@ -159,14 +191,17 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         removeTestRoot = new javax.swing.JButton();
         upTestRoot = new javax.swing.JButton();
         downTestRoot = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
         jLabelSourceLevel = new javax.swing.JLabel();
         jComboBoxSourceLevel = new javax.swing.JComboBox();
+        jLabel5 = new javax.swing.JLabel();
+        encoding = new javax.swing.JComboBox();
 
         setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setDisplayedMnemonic(NbBundle.getMessage(CustomizerSources.class, "MNE_ProjectFolder").charAt(0));
         jLabel1.setLabelFor(projectLocation);
-        jLabel1.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_ProjectFolder"));
+        jLabel1.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_ProjectFolder")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 12);
@@ -179,45 +214,43 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(projectLocation, gridBagConstraints);
-        projectLocation.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_projectLocation"));
+        projectLocation.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_projectLocation")); // NOI18N
 
         jLabelWebPages.setDisplayedMnemonic(NbBundle.getMessage(CustomizerSources.class, "MNE_WebPages").charAt(0));
         jLabelWebPages.setLabelFor(jTextFieldWebPages);
-        jLabelWebPages.setText(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CTL_WebPagesFolder"));
+        jLabelWebPages.setText(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CTL_WebPagesFolder")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(jLabelWebPages, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(jTextFieldWebPages, gridBagConstraints);
-        jTextFieldWebPages.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_webPagesFolder"));
+        jTextFieldWebPages.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_webPagesFolder")); // NOI18N
 
         jButtonBrowse.setMnemonic(NbBundle.getMessage(CustomizerSources.class, "MNE_WebPagesBrowse").charAt(0));
-        jButtonBrowse.setText(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "LBL_Browse_JButton"));
+        jButtonBrowse.setText(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "LBL_Browse_JButton")); // NOI18N
         jButtonBrowse.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonBrowseActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         add(jButtonBrowse, gridBagConstraints);
-        jButtonBrowse.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_webPagesFolderBrowse"));
+        jButtonBrowse.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_webPagesFolderBrowse")); // NOI18N
 
         sourceRootsPanel.setLayout(new java.awt.GridBagLayout());
 
         jLabel2.setDisplayedMnemonic(NbBundle.getMessage(CustomizerSources.class, "MNE_SourceRoots").charAt(0));
         jLabel2.setLabelFor(sourceRoots);
-        jLabel2.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_SourceRoots"));
+        jLabel2.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_SourceRoots")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -252,7 +285,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
             }
         });
         jScrollPane1.setViewportView(sourceRoots);
-        sourceRoots.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_sourceRoots"));
+        sourceRoots.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_sourceRoots")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -266,7 +299,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         sourceRootsPanel.add(jScrollPane1, gridBagConstraints);
 
         addSourceRoot.setMnemonic(NbBundle.getMessage(CustomizerSources.class, "MNE_AddSourceRoot").charAt(0));
-        addSourceRoot.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_AddSourceRoot"));
+        addSourceRoot.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_AddSourceRoot")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -274,10 +307,10 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         sourceRootsPanel.add(addSourceRoot, gridBagConstraints);
-        addSourceRoot.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_addSourceRoot"));
+        addSourceRoot.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_addSourceRoot")); // NOI18N
 
         removeSourceRoot.setMnemonic(NbBundle.getMessage(CustomizerSources.class, "MNE_RemoveSourceRoot").charAt(0));
-        removeSourceRoot.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_RemoveSourceRoot"));
+        removeSourceRoot.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_RemoveSourceRoot")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -286,10 +319,10 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         sourceRootsPanel.add(removeSourceRoot, gridBagConstraints);
-        removeSourceRoot.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_removeSourceRoot"));
+        removeSourceRoot.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_removeSourceRoot")); // NOI18N
 
         upSourceRoot.setMnemonic(NbBundle.getMessage(CustomizerSources.class, "MNE_UpSourceRoot").charAt(0));
-        upSourceRoot.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_UpSourceRoot"));
+        upSourceRoot.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_UpSourceRoot")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -298,10 +331,10 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         sourceRootsPanel.add(upSourceRoot, gridBagConstraints);
-        upSourceRoot.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_upSourceRoot"));
+        upSourceRoot.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_upSourceRoot")); // NOI18N
 
         downSourceRoot.setMnemonic(NbBundle.getMessage(CustomizerSources.class, "MNE_DownSourceRoot").charAt(0));
-        downSourceRoot.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_DownSourceRoot"));
+        downSourceRoot.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_DownSourceRoot")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -310,7 +343,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         sourceRootsPanel.add(downSourceRoot, gridBagConstraints);
-        downSourceRoot.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_downSourceRoot"));
+        downSourceRoot.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_downSourceRoot")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -326,7 +359,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
 
         jLabel3.setDisplayedMnemonic(NbBundle.getMessage(CustomizerSources.class, "MNE_TestRoots").charAt(0));
         jLabel3.setLabelFor(testRoots);
-        jLabel3.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_TestRoots"));
+        jLabel3.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_TestRoots")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -362,7 +395,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
             }
         });
         jScrollPane2.setViewportView(testRoots);
-        testRoots.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_testRoots"));
+        testRoots.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_testRoots")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -375,7 +408,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         testRootsPanel.add(jScrollPane2, gridBagConstraints);
 
         addTestRoot.setMnemonic(NbBundle.getMessage(CustomizerSources.class, "MNE_AddTestRoot").charAt(0));
-        addTestRoot.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_AddTestRoot"));
+        addTestRoot.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_AddTestRoot")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -384,10 +417,10 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 6, 0);
         testRootsPanel.add(addTestRoot, gridBagConstraints);
-        addTestRoot.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_addTestRoot"));
+        addTestRoot.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_addTestRoot")); // NOI18N
 
         removeTestRoot.setMnemonic(NbBundle.getMessage(CustomizerSources.class, "MNE_RemoveTestRoot").charAt(0));
-        removeTestRoot.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_RemoveTestRoot"));
+        removeTestRoot.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_RemoveTestRoot")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -396,10 +429,10 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
         testRootsPanel.add(removeTestRoot, gridBagConstraints);
-        removeTestRoot.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_removeTestRoot"));
+        removeTestRoot.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_removeTestRoot")); // NOI18N
 
         upTestRoot.setMnemonic(NbBundle.getMessage(CustomizerSources.class, "MNE_UpTestRoot").charAt(0));
-        upTestRoot.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_UpTestRoot"));
+        upTestRoot.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_UpTestRoot")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -408,10 +441,10 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 6, 0);
         testRootsPanel.add(upTestRoot, gridBagConstraints);
-        upTestRoot.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_upTestRoot"));
+        upTestRoot.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_upTestRoot")); // NOI18N
 
         downTestRoot.setMnemonic(NbBundle.getMessage(CustomizerSources.class, "MNE_DownTestRoot").charAt(0));
-        downTestRoot.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_DownTestRoot"));
+        downTestRoot.setText(NbBundle.getMessage(CustomizerSources.class, "CTL_DownTestRoot")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -420,7 +453,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         testRootsPanel.add(downTestRoot, gridBagConstraints);
-        downTestRoot.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_downTestRoot"));
+        downTestRoot.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "AD_CustomizerSources_downTestRoot")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -433,30 +466,60 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(testRootsPanel, gridBagConstraints);
 
+        jPanel1.setLayout(new java.awt.GridBagLayout());
+
         jLabelSourceLevel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "MNE_SourceLevel").charAt(0));
         jLabelSourceLevel.setLabelFor(jComboBoxSourceLevel);
-        jLabelSourceLevel.setText(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "TXT_SourceLevel"));
+        jLabelSourceLevel.setText(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "TXT_SourceLevel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
-        add(jLabelSourceLevel, gridBagConstraints);
-
+        jPanel1.add(jLabelSourceLevel, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 0.75;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        jPanel1.add(jComboBoxSourceLevel, gridBagConstraints);
+        jComboBoxSourceLevel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "AN_SourceLevel")); // NOI18N
+        jComboBoxSourceLevel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "AD_SourceLevel")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "TXT_Encoding")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
+        jPanel1.add(jLabel5, gridBagConstraints);
+
+        encoding.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        jPanel1.add(encoding, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
-        add(jComboBoxSourceLevel, gridBagConstraints);
-        jComboBoxSourceLevel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "AN_SourceLevel"));
-        jComboBoxSourceLevel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "AD_SourceLevel"));
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+        add(jPanel1, gridBagConstraints);
+    }// </editor-fold>//GEN-END:initComponents
     
     private void jButtonBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBrowseActionPerformed
         JFileChooser chooser = new JFileChooser();
@@ -481,19 +544,32 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         }
     }//GEN-LAST:event_jButtonBrowseActionPerformed
     
+    private void handleEncodingChange() {
+        Charset enc = (Charset) encoding.getSelectedItem();
+        String encName;
+        if (enc != null) {
+            encName = enc.name();
+        } else {
+            encName = originalEncoding;
+        }
+        this.uiProperties.putAdditionalProperty(WebProjectProperties.SOURCE_ENCODING, encName);
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addSourceRoot;
     private javax.swing.JButton addTestRoot;
     private javax.swing.JButton downSourceRoot;
     private javax.swing.JButton downTestRoot;
+    private javax.swing.JComboBox encoding;
     private javax.swing.JButton jButtonBrowse;
     private javax.swing.JComboBox jComboBoxSourceLevel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabelSourceLevel;
     private javax.swing.JLabel jLabelWebPages;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextField jTextFieldWebPages;
@@ -508,4 +584,80 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
     private javax.swing.JButton upTestRoot;
     // End of variables declaration//GEN-END:variables
     
+    private static class EncodingRenderer extends JLabel implements ListCellRenderer, UIResource {
+        
+        public EncodingRenderer() {
+            setOpaque(true);
+        }
+        
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            assert value instanceof Charset;
+            setName("ComboBox.listRenderer"); // NOI18N
+            setText(((Charset) value).displayName());
+            setIcon(null);
+            if (isSelected) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());
+            } else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+            return this;
+        }
+        
+        @Override
+        public String getName() {
+            String name = super.getName();
+            return name == null ? "ComboBox.renderer" : name; // NOI18N
+        }
+        
+    }
+    
+    private static class EncodingModel extends DefaultComboBoxModel {
+        
+        public EncodingModel(String originalEncoding) {
+            Charset defEnc = null;
+            for (Charset c : Charset.availableCharsets().values()) {
+                if (c.name().equals(originalEncoding)) {
+                    defEnc = c;
+                }
+                addElement(c);
+            }
+            if (defEnc == null) {
+                //Create artificial Charset to keep the original value
+                //May happen when the project was set up on the platform
+                //which supports more encodings
+                try {
+                    defEnc = new UnknownCharset(originalEncoding);
+                    addElement(defEnc);
+                } catch (java.nio.charset.IllegalCharsetNameException e) {
+                    //The source.encoding property is completely broken
+                    Logger.getLogger(this.getClass().getName()).info("IllegalCharsetName: " + originalEncoding);
+                }
+            }
+            if (defEnc == null) {
+                defEnc = FileEncodingQuery.getDefaultEncoding();
+            }
+            setSelectedItem(defEnc);
+        }
+    }
+    
+    private static class UnknownCharset extends Charset {
+        
+        UnknownCharset(String name) {
+            super(name, new String[0]);
+        }
+        
+        public boolean contains(Charset c) {
+            throw new UnsupportedOperationException();
+        }
+        
+        public CharsetDecoder newDecoder() {
+            throw new UnsupportedOperationException();
+        }
+        
+        public CharsetEncoder newEncoder() {
+            throw new UnsupportedOperationException();
+        }
+    }
 }

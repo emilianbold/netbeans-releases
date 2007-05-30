@@ -201,7 +201,7 @@ introduced by support for multiple source roots. -jglick
                         </not>
                     </and>
                 </condition>
-                
+                <property name="source.encoding" value="${{file.encoding}}"/>
             </target>
             
             <target name="-post-init">
@@ -286,6 +286,7 @@ introduced by support for multiple source roots. -jglick
                             <xsl:attribute name="destdir">@{destdir}</xsl:attribute>
                             <xsl:attribute name="debug">@{debug}</xsl:attribute>
                             <xsl:attribute name="deprecation">${javac.deprecation}</xsl:attribute>
+                            <xsl:attribute name="encoding">${source.encoding}</xsl:attribute>
                             <xsl:if test ="not(/p:project/p:configuration/webproject3:data/webproject3:explicit-platform/@explicit-source-supported ='false')">
                                 <xsl:attribute name="source">${javac.source}</xsl:attribute>
                                 <xsl:attribute name="target">${javac.target}</xsl:attribute>

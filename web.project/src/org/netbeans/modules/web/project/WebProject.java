@@ -301,7 +301,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         return e;
     }
     
-    PropertyEvaluator evaluator() {
+    public PropertyEvaluator evaluator() {
         return eval;
     }
     
@@ -363,6 +363,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             WebProject.this, // never cast an externally obtained Project to WebProject - use lookup instead
             new WebProjectRestSupport(helper),
             new WebProjectLibrariesModifierImpl(this, this.updateHelper, eval, refHelper),
+            new WebProjectEncodingQueryImpl(evaluator())
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-web-project/Lookup"); //NOI18N
     }
