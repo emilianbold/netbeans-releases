@@ -348,8 +348,14 @@ public class MenuEditLayer extends JPanel {
     // returns true if parent really is an ancestor of target
     boolean isAncestor(JMenu target, JMenu parent) {
         Object possibleParent = menuParentMap.get(target);
+        //check if this is the target's parent from the map
         if(parent == possibleParent) {
             return true;
+        } else {
+            // recursively check up the chain to see if this is a further ancestor
+            if(possibleParent instanceof JMenu) {
+                return isAncestor((JMenu)possibleParent, parent);
+            }
         }
         return false;
     }
