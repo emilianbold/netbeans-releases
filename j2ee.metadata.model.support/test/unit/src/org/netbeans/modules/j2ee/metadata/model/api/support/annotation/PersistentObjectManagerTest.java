@@ -44,6 +44,7 @@ import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.test.MockChangeListener;
 
 /**
  *
@@ -80,11 +81,13 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
+        final MockChangeListener changeListener = new MockChangeListener();
         final EntityImpl[] employeeEntity = { null };
         final EntityImpl[] addressEntity = { null };
         helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 manager = helper.createPersistentObjectManager(new EntityProvider(helper));
+                manager.addChangeListener(changeListener);
                 for (EntityImpl entity : manager.getObjects()) {
                     if ("Employee".equals(entity.getName())) {
                         employeeEntity[0] = entity;
@@ -154,6 +157,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         assertTrue("Should have got a typesChanged event for Employee", employeeChanged.get());
         assertTrue("Should have got a typesChanged event for Department", departmentChanged.get());
         cpi.getClassIndex().removeClassIndexListener(listener);
+        changeListener.assertEvent();
         helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 Collection<EntityImpl> entities = manager.getObjects();
@@ -201,6 +205,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         rootAddedLatch.await(EVENT_TIMEOUT, TimeUnit.SECONDS);
         assertTrue("Should have got a rootsAdded event", rootAdded.get());
         cpi.getClassIndex().removeClassIndexListener(listener);
+        changeListener.assertEvent();
         helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 Collection<EntityImpl> entities = manager.getObjects();
@@ -237,6 +242,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         rootRemovedLatch.await(EVENT_TIMEOUT, TimeUnit.SECONDS);
         assertTrue("Should have got a rootsRemoved event", rootRemoved.get());
         cpi.getClassIndex().removeClassIndexListener(listener);
+        changeListener.assertEvent();
         helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 Collection<EntityImpl> entities = manager.getObjects();
@@ -259,9 +265,11 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
+        final MockChangeListener changeListener = new MockChangeListener();
         helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 manager = helper.createPersistentObjectManager(new EntityProvider(helper));
+                manager.addChangeListener(changeListener);
             }
         });
         // adding a class which is not an entity class
@@ -314,6 +322,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         changedLatch.await(EVENT_TIMEOUT, TimeUnit.SECONDS);
         assertTrue("Should have got a typesChanged event for Department", departmentChanged.get());
         cpi.getClassIndex().removeClassIndexListener(listener);
+        changeListener.assertEvent();
         helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 assertEquals(1, manager.getObjects().size());
@@ -340,6 +349,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         changedLatch2.await(EVENT_TIMEOUT, TimeUnit.SECONDS);
         assertTrue("Should have got a typesChanged event for Department", departmentChanged2.get());
         cpi.getClassIndex().removeClassIndexListener(listener);
+        changeListener.assertEvent();
         helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 assertEquals(0, manager.getObjects().size());

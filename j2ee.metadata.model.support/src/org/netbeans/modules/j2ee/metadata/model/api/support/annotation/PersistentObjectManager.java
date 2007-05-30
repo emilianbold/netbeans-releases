@@ -23,15 +23,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
+import org.openide.util.ChangeSupport;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -53,6 +54,8 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
     private final AnnotationModelHelper helper;
     private final ObjectProvider<T> provider;
     private final Map<ElementHandle<TypeElement>, List<T>> objects = new HashMap<ElementHandle<TypeElement>, List<T>>();
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final RequestProcessor rp = new RequestProcessor("PersistentObjectManager", 1); // NOI18N
 
     private boolean initialized = false;
     // not private because used in unit tests
@@ -109,10 +112,11 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
 
     void typesAdded(Iterable<? extends ElementHandle<TypeElement>> typeHandles) {
         // XXX assert not in AMH java context
+        LOGGER.log(Level.FINE, "typesAdded called with {0}", typeHandles); // NOI18N
         if (!initialized) {
+            fireChange();
             return;
         }
-        LOGGER.log(Level.FINE, "typesAdded called with {0}", typeHandles); // NOI18N
         List<TypeElement> types = new ArrayList<TypeElement>();
         for (ElementHandle<TypeElement> typeHandle : typeHandles) {
             TypeElement type = typeHandle.resolve(helper.getCompilationController());
@@ -128,10 +132,11 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
 
     void typesRemoved(Iterable<? extends ElementHandle<TypeElement>> typeHandles) {
         // XXX assert not in AMH java context
+        LOGGER.log(Level.FINE, "typesRemoved called with {0}", typeHandles); // NOI18N
         if (!initialized) {
+            fireChange();
             return;
         }
-        LOGGER.log(Level.FINE, "typesRemoved called with {0}", typeHandles); // NOI18N
         for (ElementHandle<TypeElement> typeHandle : typeHandles) {
             List<T> list = objects.remove(typeHandle);
             if (list != null) {
@@ -142,10 +147,11 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
 
     void typesChanged(Iterable<? extends ElementHandle<TypeElement>> typeHandles) {
         // XXX assert not in AMH java context
+        LOGGER.log(Level.FINE, "typesChanged called with {0}", typeHandles); // NOI18N
         if (!initialized) {
+            fireChange();
             return;
         }
-        LOGGER.log(Level.FINE, "typesChanged called with {0}", typeHandles); // NOI18N
         for (ElementHandle<TypeElement> typeHandle : typeHandles) {
             List<T> list = objects.get(typeHandle);
             if (list != null){
@@ -184,6 +190,7 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
             }
             list.add(newObject);
         }
+        fireChange();
     }
 
     private void setObjects(ElementHandle<TypeElement> typeHandle, List<T> newObjects) {
@@ -196,17 +203,45 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
                 LOGGER.log(Level.WARNING, "setObjects: ignoring object with incorrect ElementHandle {0} (expected {1})", new Object[] { sourceHandle, typeHandle }); // NOI18N
             }
         }
-        objects.put(typeHandle, list);
+        if (list.size() > 0) {
+            objects.put(typeHandle, list);
+        } else {
+            objects.remove(typeHandle);
+        }
+        fireChange();
     }
 
     private List<T> removeObjects(ElementHandle<TypeElement> typeHandle) {
-        return objects.remove(typeHandle);
+        List<T> result = objects.remove(typeHandle);
+        fireChange();
+        return result;
+    }
+
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
+    }
+
+    private void fireChange() {
+        LOGGER.log(Level.FINE, "firing change event"); // NOI18N
+        if (!changeSupport.hasListeners()) {
+            return;
+        }
+        rp.post(new Runnable() {
+            public void run() {
+                changeSupport.fireChange();
+            }
+        });
     }
 
     void rootsChanged() {
         // XXX assert not in AMH java context
         LOGGER.log(Level.FINE, "rootsChanged called"); // NOI18N
         deinitialize();
+        fireChange();
     }
 
     public void javaContextLeft() {
