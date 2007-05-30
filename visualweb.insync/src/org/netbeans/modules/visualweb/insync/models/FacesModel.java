@@ -1031,24 +1031,23 @@ public class FacesModel extends Model {
     
         if (liveUnitWrapper != null) {
             // Only do this if the unit was not busted on sync
-            // update MBM as needed
-            if (!unit.getState().isBusted() && synced)
+            // update MBM as needed and add the xref accessors
+            if (!unit.getState().isBusted() && synced) {
                 ensureManagedBeansEntry();
+                Object newProject = beansUnit.getModel().getProject().getProjectDirectory().getAttribute("NewProject"); //NOI18N
+                if(!(newProject instanceof Boolean && (Boolean)newProject)) {
+                    Object newFile = getFile().getAttribute("NewFile"); //NOI18N
+                    if(newFile instanceof Boolean && (Boolean)newFile) {
+                        FacesModel model = (FacesModel) beansUnit.getModel();
+                        model.addXRefAccessors();
+                    }
+                }
+            }
     
             // on first open, invoke fireContextCreated() to let viewers know of our new context
             if (opened && facesModelSet.hasDesignProjectListeners())
                 facesModelSet.fireContextOpened(getLiveUnit());
         }
-        
-        Object newProject = beansUnit.getModel().getProject().getProjectDirectory().getAttribute("NewProject"); //NOI18N
-        if(!(newProject instanceof Boolean && (Boolean)newProject)) {
-             Object newFile = getFile().getAttribute("NewFile"); //NOI18N
-             if(newFile instanceof Boolean && (Boolean)newFile) {
-                 FacesModel model = (FacesModel) beansUnit.getModel();
-                 model.addXRefAccessors();
-             }
-        }
-        
         if (synced)
             fireModelChanged();
     }

@@ -1026,16 +1026,17 @@ public abstract class ModelSet implements FileChangeListener {
             // but we can only find out once we perform a sync.  If as a result
             // of the sync, the model has no owner, this indicates that sync destroy'ed
             // the model and that it should not be a model after all
+            FileObject file = model.getFile();
             try {
                 //Set an attribute to indicate the file is newly created which is
                 //used to decide the addition of cross referencing accessors
-                model.getFile().setAttribute("NewFile", Boolean.TRUE); //NOI18N
+                file.setAttribute("NewFile", Boolean.TRUE); //NOI18N
                 model.sync();
             }catch(IOException ioe) {
                 assert Trace.trace("insync.model", "Failed to set the attribute: " + model.getFile());  //NOI18N
             }finally {
                 try {
-                    model.getFile().setAttribute("NewFile", null); //NOI18N
+                    file.setAttribute("NewFile", null); //NOI18N
                 }catch(IOException ioe) {
                     assert Trace.trace("insync.model", "Failed to reset the attribute: " + model.getFile());  //NOI18N
                 }
@@ -1043,7 +1044,7 @@ public abstract class ModelSet implements FileChangeListener {
             if (model.isValid()) {
                 model.saveUnits();
             } else {
-                models.remove(fileObject);
+                models.remove(file);
                 model = null;
             }
         }
