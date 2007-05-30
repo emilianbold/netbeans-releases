@@ -43,8 +43,6 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
     // XXX perhaps also initialize temporary when classpath not registered in GPR
     // (since then there would be no events)
 
-    // XXX getObjects() should return Collection<? extends T>
-
     private static final Logger LOGGER = Logger.getLogger(PersistentObjectManager.class.getName());
     private static final boolean NO_EVENTS = Boolean.getBoolean("netbeans.metadata.model.noevents"); // NOI18N
     // XXX for M9 only
