@@ -20,11 +20,13 @@ package org.netbeans.modules.bpel.search.impl.model;
 
 import javax.swing.Icon;
 
-import org.netbeans.modules.bpel.editors.api.utils.Util;
-import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.api.NamedElement;
+import org.netbeans.modules.xml.xam.Component;
 
+import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.editors.api.utils.RefactorUtil;
 import org.netbeans.modules.xml.xam.ui.search.api.SearchElement;
+
+import static org.netbeans.modules.print.ui.PrintUI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -32,28 +34,28 @@ import org.netbeans.modules.xml.xam.ui.search.api.SearchElement;
  */
 final class Element extends SearchElement.Adapter {
 
-  Element(BpelEntity element) {
+  Element(Component component) {
     super(
-      getText(element),
-      getToolTip(element),
-      getIcon(element),
-      getParent(element)); 
+      getText(component),
+      getToolTip(component),
+      getIcon(component),
+      getParent(component)); 
 
-    myElement = element;
+    myComponent = component;
   }
 
   /**{@inheritDoc}*/
   @Override
   public void gotoSource()
   {
-    Util.goToSource(myElement);
+    Util.goToSource(myComponent);
   }
 
   /**{@inheritDoc}*/
   @Override
-  public void selectOnDiagram()
+  public void select()
   {
-    Util.goToDesign(myElement);
+    Util.goToDesign(myComponent);
   }
 
   /**{@inheritDoc}*/
@@ -63,37 +65,26 @@ final class Element extends SearchElement.Adapter {
     if ( !(object instanceof Element)) {
       return false;
     }
-    return ((Element) object).myElement.equals(myElement);
+    return ((Element) object).myComponent.equals(myComponent);
   }
 
   /**{@inheritDoc}*/
   @Override
   public int hashCode()
   {
-    return myElement.hashCode();
+    return myComponent.hashCode();
   }
 
-  private static String getText(BpelEntity element) {
-    String name = getName(element);
-
-    if (name != null) {
-      return name;
-    }
-    return getType(element);
+  private static String getText(Component component) {
+    return RefactorUtil.getHtmlName(component);
   }
 
-  private static String getToolTip(BpelEntity element) {
-    String name = getName(element);
-    String type = getType(element);
-
-    if (name == null) {
-      return type;
-    }
-    return type + " '" + name + "'"; // NOI18N
+  private static String getToolTip(Component component) {
+    return RefactorUtil.getHtmlName(component);
   }
 
-  private static SearchElement getParent(BpelEntity element) {
-    BpelEntity parent = element.getParent();
+  private static SearchElement getParent(Component component) {
+    Component parent = component.getParent();
 
     if (parent == null) {
       return null;
@@ -101,26 +92,9 @@ final class Element extends SearchElement.Adapter {
     return new Element(parent);
   }
 
-  private static String getName(BpelEntity element) {
-    if (element instanceof NamedElement) {
-      return ((NamedElement) element).getName();
-    }
-    return null;
+  private static Icon getIcon(Component component) {
+    return RefactorUtil.getIcon(component);
   }
 
-  private static String getType(BpelEntity element) {
-    String type = element.getElementType().getName();
-    int k = type.lastIndexOf("."); // NOI18N
-
-    if (k == -1) {
-      return type;
-    }
-    return type.substring(k + 1);
-  }
-
-  private static Icon getIcon(BpelEntity element) {
-    return Util.getBasicNodeType(element).getIcon();
-  }
-
-  private BpelEntity myElement;
+  private Component myComponent;
 }

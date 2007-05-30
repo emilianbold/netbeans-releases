@@ -160,7 +160,7 @@ final class Tree extends JTree implements SearchListener {
           DefaultMutableTreeNode node = getSelectedNode();
 
           if (node.isLeaf()) {
-            selectOnDiagram(node);
+            select(node);
           }
         }
       }
@@ -188,7 +188,7 @@ final class Tree extends JTree implements SearchListener {
 
   private void handleAction(int code, int modifiers, DefaultMutableTreeNode node) {
     if (code == KeyEvent.VK_D && isAlt(modifiers)) {
-      selectOnDiagram(node);
+      select(node);
     }
     else if (code == KeyEvent.VK_O && isAlt(modifiers)) {
       gotoSource(node);
@@ -281,12 +281,12 @@ final class Tree extends JTree implements SearchListener {
   private void createAction(JPopupMenu popup, final DefaultMutableTreeNode node) {
     JMenuItem item;
 
-    // select on diagram
-    item = createItem("LBL_Select_on_Diagram"); // NOI18N
+    // select
+    item = createItem("LBL_Select"); // NOI18N
     item.setEnabled( !node.isRoot());
     item.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent event) {
-        selectOnDiagram(node);
+        select(node);
       }
     });
     item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.ALT_MASK));
@@ -348,8 +348,8 @@ final class Tree extends JTree implements SearchListener {
     ((SearchElement) node.getUserObject()).gotoSource();
   }
 
-  private void selectOnDiagram(DefaultMutableTreeNode node) {
-    ((SearchElement) node.getUserObject()).selectOnDiagram();
+  private void select(DefaultMutableTreeNode node) {
+    ((SearchElement) node.getUserObject()).select();
   }
 
   public void previousOccurence(TreeNode node) {

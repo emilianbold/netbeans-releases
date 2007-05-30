@@ -156,7 +156,6 @@ public final class View extends TopComponent implements FocusListener {
 
     // preview
     button = createButton(PrintManagerAccess.getManager().getPreviewAction());
-//todo ?    button.setText(null);
     setSize(button);
     toolBar.add(button);
 

@@ -20,13 +20,16 @@ package org.netbeans.modules.bpel.search.impl.model;
 
 import java.util.List;
 
-import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.api.NamedElement;
+import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.Named;
+
+import org.netbeans.modules.bpel.editors.api.utils.Util;
 
 import org.netbeans.modules.xml.xam.ui.search.api.SearchException;
 import org.netbeans.modules.xml.xam.ui.search.api.SearchMatch;
 import org.netbeans.modules.xml.xam.ui.search.api.SearchOption;
+import org.netbeans.modules.xml.xam.ui.search.api.SearchTarget;
 import org.netbeans.modules.xml.xam.ui.search.spi.SearchEngine;
 
 import static org.netbeans.modules.print.ui.PrintUI.*;
@@ -39,56 +42,53 @@ public final class Engine extends SearchEngine.Adapter {
 
   /**{@inheritDoc}*/
   public void search(SearchOption option) throws SearchException {
-    BpelModel model = (BpelModel) option.getSource();
-    myTarget = ((Target) option.getTarget()).getClazz();
+    myClazz = null;
     myOption = option;
+    myModel = (Model) option.getSource();
+    SearchTarget target = option.getTarget();
+
+    if (target != null) {
+      myClazz = target.getClazz();
+    }
 //out();
     fireSearchStarted(option);
-    search(model.getProcess(), ""); // NOI18N
+    search(Util.getRoot(myModel), ""); // NOI18N
     fireSearchFinished(option);
   }
 
-  /**{@inheritDoc}*/
-  public Object [] getTargets() {
-    return Target.values();
-  }
-
-  private void search(BpelEntity element, String indent) {
-    if (element == null) {
+  private void search(Object object, String indent) {
+    if ( !(object instanceof Component)) {
       return;
     }
-    process(element, indent);
-    List<BpelEntity> children = element.getChildren();
+    Component component = (Component) object;
+    process(component, indent);
+    List children = component.getChildren();
   
-    for (BpelEntity entity : children) {
-      search(entity, indent + "    "); // NOI18N
+    for (Object child : children) {
+      search(child, indent + "    "); // NOI18N
     }
   }
 
-  private void process(BpelEntity element, String indent) {
-//out(indent + " see: " + element);
-    if (checkTarget(element) && checkName(element)) {
+  private void process(Component component, String indent) {
+//out(indent + " see: " + component);
+    if (checkClazz(component) && checkName(component)) {
 //out(indent + "      add.");
-      fireSearchFound(new Element(element));
+      fireSearchFound(new Element(component));
     }
   }
 
-  private boolean checkTarget(Object object) {
-    if (myTarget == null) {
-      return true;
-    }
-    return myTarget.isAssignableFrom(object.getClass());
+  private boolean checkClazz(Object object) {
+    return myClazz.isAssignableFrom(object.getClass());
   }
 
-  private boolean checkName(BpelEntity element) {
+  private boolean checkName(Component component) {
     if (anyName()) {
       return true;
     }
-    if ( !(element instanceof NamedElement)) {
+    if ( !(component instanceof Named)) {
       return false;
     }
-    NamedElement named = (NamedElement) element;
-    return accepts(named.getName());
+    return accepts(((Named) component).getName());
   }
 
   private boolean anyName() {
@@ -109,7 +109,8 @@ public final class Engine extends SearchEngine.Adapter {
 
   /**{@inheritDoc}*/
   public boolean accepts(Object source) {
-    return source instanceof BpelModel;
+//out("accepts: " + (source instanceof Model));
+    return source instanceof Model;
   }
 
   /**{@inheritDoc}*/
@@ -122,6 +123,7 @@ public final class Engine extends SearchEngine.Adapter {
     return i18n(Engine.class, "CTL_Engine_Short_Description"); // NOI18N
   }
 
+  private Model myModel;
   private SearchOption myOption;
-  private Class<? extends BpelEntity> myTarget;
+  private Class<? extends Component> myClazz;
 }

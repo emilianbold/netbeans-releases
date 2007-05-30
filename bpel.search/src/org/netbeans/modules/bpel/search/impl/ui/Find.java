@@ -71,7 +71,7 @@ public final class Find extends SearchControlPanel {
       return;
     }
     for (Object element : myElements) {
-      ((SearchElement) element).highlightOnDiagram(false);
+      ((SearchElement) element).highlight(false);
     }
     myElements = null;
   }
@@ -83,7 +83,7 @@ public final class Find extends SearchControlPanel {
     if ( !(object instanceof SearchElement)) {
       return;
     }
-    ((SearchElement) object).selectOnDiagram();
+    ((SearchElement) object).select();
   }
 
   private void bindAction(JComponent parent) {

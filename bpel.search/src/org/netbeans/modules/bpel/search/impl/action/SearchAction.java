@@ -18,14 +18,24 @@
  */
 package org.netbeans.modules.bpel.search.impl.action;
 
+import java.io.IOException;
+
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.actions.NodeAction;
 
+import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.schema.model.SchemaModel;
+
+import org.netbeans.modules.xml.xam.ui.ModelCookie;
+
 import org.netbeans.modules.xml.xam.ui.search.api.SearchManagerAccess;
+import org.netbeans.modules.xml.xam.ui.search.api.SearchTarget;
 import org.netbeans.modules.bpel.search.impl.util.Util;
 
 import static org.netbeans.modules.print.ui.PrintUI.*;
@@ -43,7 +53,21 @@ public final class SearchAction extends NodeAction {
   }
 
   private static synchronized void performAction(Node node) {
-    SearchManagerAccess.getManager().getUI(getBpelModel(node), null, true);
+    Model model = getModel(node);
+    SearchManagerAccess.getManager().getUI(model, getTargets(model), null, true);
+  }
+
+  private static SearchTarget [] getTargets(Model model) {
+    if (model instanceof BpelModel) {
+      return Target.BPEL;
+    }
+    if (model instanceof WSDLModel) {
+      return Target.WSDL;
+    }
+    if (model instanceof SchemaModel) {
+      return Target.SCHEMA;
+    }
+    return new SearchTarget [] {};
   }
 
   @Override
@@ -52,27 +76,26 @@ public final class SearchAction extends NodeAction {
     if (nodes == null || nodes.length != 1) {
       return false;
     }
-    return getBpelModel(nodes [0]) != null;
+    return getModel(nodes [0]) != null;
   }
 
-  private static BpelModel getBpelModel(Node node) {
-//out();
-//out("GET BPEL MO|DEL !!!!!!");
-//out();
-    DataObject dataObject = getDataObject(node);
+  private static Model getModel(Node node) {
+    Model model = node.getLookup().lookup(BpelModel.class);
 
-    if (dataObject instanceof Lookup.Provider) {
-      Lookup.Provider provider = (Lookup.Provider) dataObject;
-
-      // hot fix for 100277. todo as search provider
-      try {
-        return (BpelModel) provider.getLookup().lookup(BpelModel.class);
-      }
-      catch (IllegalStateException e) {
-        return null;
-      }
+    if (model != null) {
+      return model;
     }
-    return null;
+    ModelCookie cookie = getDataObject(node).getCookie(ModelCookie.class);
+
+    if (cookie == null) {
+      return null;
+    }
+    try {
+      return cookie.getModel();
+    } 
+    catch (IOException e) {
+      return null;
+    }
   }
 
   private static DataObject getDataObject(Node node) {
@@ -122,5 +145,6 @@ public final class SearchAction extends NodeAction {
       performAction(node);
     }
   }
+
   private org.netbeans.modules.bpel.search.impl.ui.Search mySearch;
 }

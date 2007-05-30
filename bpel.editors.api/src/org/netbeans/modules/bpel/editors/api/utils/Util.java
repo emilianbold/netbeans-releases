@@ -80,6 +80,7 @@ import org.netbeans.modules.bpel.model.api.Variable;
 import org.netbeans.modules.bpel.model.api.VariableContainer;
 import org.netbeans.modules.bpel.model.api.Wait;
 import org.netbeans.modules.bpel.model.api.While;
+import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
@@ -99,6 +100,9 @@ import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.w3c.dom.Element;
 
 /**
@@ -194,7 +198,6 @@ public class Util {
         return entityType == null ? NodeType.UNKNOWN_TYPE : entityType;
     }
 
-
     public static boolean isNavigatorShowableNodeType(NodeType nodeType) {
         if (nodeType == null) {
             return false;
@@ -247,31 +250,71 @@ public class Util {
         return basicNode;
     }
 
+    // vlv
+    public static Component getRoot(Model model) {
+      if (model instanceof BpelModel) {
+        return ((BpelModel) model).getProcess();
+      }
+      if (model instanceof SchemaModel) {
+        return ((SchemaModel) model).getSchema();
+      }
+      if (model instanceof WSDLModel) {
+        return ((WSDLModel) model).getDefinitions();
+      }
+      return null;
+    }
+
+    // vlv
+    public static String getComponentType(Component component) {
+      String type = null;
+      
+      if (component instanceof BpelEntity) {
+        type = ((BpelEntity) component).getElementType().getName();
+      }
+      else if (component instanceof SchemaComponent) {
+        type = ((SchemaComponent) component).getComponentType().getName();
+      }
+      if (type == null) {
+        return null;
+      }
+      int k = type.lastIndexOf("."); // NOI18N
+
+      if (k == -1) {
+        return type;
+      }
+      return type.substring(k + 1);
+    }
+
     /**
      * This method don't aware about bpelModel lock
      * @param entity BpelEntity 
      * @return generally used NodeType, if entity or 
      *  enity#getElementType is null then return null
      */
-    public static NodeType getBasicNodeType(BpelEntity entity) {
-//        assert entity != null && entity.getElementType() != null;
-        if (entity == null || entity.getElementType() == null) {
+    public static NodeType getBasicNodeType(Component component) {
+        if ( !(component instanceof BpelEntity)) {
+            // todo m
             return null;
         }
-        return getBasicNodeType(entity.getElementType());
+        BpelEntity bpelEntity = (BpelEntity) component;
+
+        if (bpelEntity == null || bpelEntity.getElementType() == null) {
+            return null;
+        }
+        return getBasicNodeType(bpelEntity.getElementType());
     }
     
     public static void goToSource(Component component) {
         if ( !(component instanceof BpelEntity)) {
+            // todo m
             return;
         }
         BpelEntity bpelEntity = (BpelEntity) component;
-        
         FileObject fo = Util.getFileObjectByModel(bpelEntity.getBpelModel());
+
         if (fo == null) {
             return;
         }
-        
         try {
             DataObject d = DataObject.find(fo);
             LineCookie lc = (LineCookie) d.getCookie(LineCookie.class);
@@ -302,16 +345,15 @@ public class Util {
     }
 
     // TODO m
-    public static void goToDesign(final BpelEntity bpelEntity) {
-        if (bpelEntity == null) {
+    public static void goToDesign(final Component component) {
+        if ( !(component instanceof BpelEntity)) {
             return;
         }
-        
+        final BpelEntity bpelEntity = (BpelEntity) component;
         FileObject fo = Util.getFileObjectByModel(bpelEntity.getBpelModel());
+
         if (fo == null) {
-            return;
-        }
-        
+            return;                                                        }
         try {
             DataObject d = DataObject.find(fo);
             final Lookup lookup = d instanceof Lookup.Provider

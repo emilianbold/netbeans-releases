@@ -39,6 +39,7 @@ import org.netbeans.modules.print.ui.PrintUI;
 import org.netbeans.modules.xml.xam.ui.search.api.SearchException;
 import org.netbeans.modules.xml.xam.ui.search.api.SearchMatch;
 import org.netbeans.modules.xml.xam.ui.search.api.SearchOption;
+import org.netbeans.modules.xml.xam.ui.search.api.SearchTarget;
 import org.netbeans.modules.xml.xam.ui.search.spi.SearchEngine;
 
 /**
@@ -48,8 +49,9 @@ import org.netbeans.modules.xml.xam.ui.search.spi.SearchEngine;
 public final class Search extends PrintUI {
 
   /**{@inheritDoc}*/
-  public Component getUIComponent(List<SearchEngine> engines, Object source) {
+  public Component getUIComponent(List<SearchEngine> engines, Object source, SearchTarget [] targets) {
     mySource = source;
+    myTargets = targets;
     mySearchEngine = engines.get(0);
     mySearchEngine.addSearchListener(new Tree());
     mySearchEngine.addSearchListener(new Progress());
@@ -107,7 +109,7 @@ public final class Search extends PrintUI {
     c.fill = GridBagConstraints.HORIZONTAL;
     c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
     c.weightx = 1.0;
-    myTarget = new JComboBox(mySearchEngine.getTargets());
+    myTarget = new JComboBox(myTargets);
     label.setLabelFor(myTarget);
     panel.add(myTarget, c);
 
@@ -189,7 +191,7 @@ public final class Search extends PrintUI {
     SearchOption option = new SearchOption.Adapter(
       myName.getText().trim(),
       mySource,
-      myTarget.getSelectedItem(),
+      (SearchTarget) myTarget.getSelectedItem(),
       getMatch(),
       myMatchCase.isSelected(),
       false); // use selection
@@ -257,6 +259,7 @@ public final class Search extends PrintUI {
   private JCheckBox myMatchCase;
   private JCheckBox myPatternMatch;
   private JCheckBox myRegularExpression;
+  private SearchTarget [] myTargets;
   private SearchEngine mySearchEngine;
   private DialogDescriptor myDescriptor;
 

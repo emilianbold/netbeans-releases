@@ -30,7 +30,7 @@ final class Element extends SearchElement.Adapter {
   Element(DiagramElement element) {
     super(element.getText(), element.getText(), null, null);
     myElement = element;
-    highlightOnDiagram(true);
+    highlight(true);
   }
 
   /**{@inheritDoc}*/
@@ -42,14 +42,14 @@ final class Element extends SearchElement.Adapter {
 
   /**{@inheritDoc}*/
   @Override
-  public void selectOnDiagram()
+  public void select()
   {
     myElement.select();
   }
 
   /**{@inheritDoc}*/
   @Override
-  public void highlightOnDiagram(boolean highlighted)
+  public void highlight(boolean highlighted)
   {
     myElement.highlight(highlighted);
   }

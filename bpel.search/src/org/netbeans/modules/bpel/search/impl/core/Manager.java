@@ -27,6 +27,7 @@ import javax.swing.JComponent;
 import org.netbeans.modules.xml.xam.ui.search.api.SearchManager;
 import org.netbeans.modules.xml.xam.ui.search.api.SearchMatch;
 import org.netbeans.modules.xml.xam.ui.search.api.SearchPattern;
+import org.netbeans.modules.xml.xam.ui.search.api.SearchTarget;
 import org.netbeans.modules.xml.xam.ui.search.spi.SearchEngine;
 
 import org.netbeans.modules.bpel.search.impl.action.SearchAction;
@@ -47,7 +48,7 @@ public final class Manager implements SearchManager {
   }
 
   /**{@inheritDoc}*/
-  public Component getUI(Object source, JComponent parent, boolean advanced) {
+  public Component getUI(Object source, SearchTarget [] targets, JComponent parent, boolean advanced) {
     List<SearchEngine> engines = getEngines(source);
 //out("Set engines: " + engines);
     
@@ -55,7 +56,7 @@ public final class Manager implements SearchManager {
       return null;
     }
     if (advanced) {
-      return mySearch.getUIComponent(engines, source);
+      return mySearch.getUIComponent(engines, source, targets);
     }
     else {
       return new Find(engines, source, parent);

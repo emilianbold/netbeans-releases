@@ -500,7 +500,7 @@ public class DesignerMultiViewElement extends TopComponent
 
         if (manager != null) {
           Component search =
-            manager.getUI(new DiagramImpl(getDesignView()), this, false);
+            manager.getUI(new DiagramImpl(getDesignView()), null, this, false);
         
           if (search != null) {
             search.setVisible(false);

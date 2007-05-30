@@ -18,7 +18,7 @@
  */
 package org.netbeans.modules.bpel.editors.api;
 
-import org.netbeans.modules.bpel.model.api.BpelEntity;
+import org.netbeans.modules.xml.xam.Component;
 
 public interface DiagramElement {
 
@@ -26,5 +26,5 @@ public interface DiagramElement {
   void gotoSource();
   void select();
   void highlight(boolean highlighted);
-  BpelEntity getBpelEntity();
+  Component getComponent();
 }
