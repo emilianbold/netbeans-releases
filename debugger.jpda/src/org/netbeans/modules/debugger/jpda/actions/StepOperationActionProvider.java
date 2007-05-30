@@ -85,7 +85,8 @@ public class StepOperationActionProvider extends ActionsProviderSupport
         setEnabled (
             ActionsManager.ACTION_STEP_OPERATION,
             getActionsManager().isEnabled(ActionsManager.ACTION_CONTINUE) &&
-            (debugger.getState () == debugger.STATE_STOPPED)
+            (debugger.getState () == debugger.STATE_STOPPED)  &&
+            (debugger.getCurrentThread () != null)
         );
         if (debugger.getState () == debugger.STATE_DISCONNECTED) 
             destroy ();
@@ -116,7 +117,8 @@ public class StepOperationActionProvider extends ActionsProviderSupport
             setEnabled (
                 ActionsManager.ACTION_STEP_OPERATION,
                 enabled &&
-                (debugger.getState () == debugger.STATE_STOPPED)
+                (debugger.getState () == debugger.STATE_STOPPED)  &&
+                (debugger.getCurrentThread () != null)
             );
         }
     }
