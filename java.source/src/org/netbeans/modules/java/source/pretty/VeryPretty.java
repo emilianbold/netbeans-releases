@@ -43,7 +43,15 @@ import com.sun.tools.javac.tree.JCTree.*;
 import com.sun.tools.javac.tree.TreeInfo;
 
 import java.io.*;
+import java.util.EnumSet;
+import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.java.source.query.Query;
+import org.netbeans.modules.java.source.save.CasualDiff;
+import org.netbeans.modules.java.source.save.PositionEstimator;
+import org.netbeans.modules.java.source.save.PositionEstimator.Direction;
 
 
 /** Prints out a tree as an indented Java source program.
@@ -76,6 +84,10 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     public VeryPretty(Context context, CodeStyle cs) {
+        this(context, CodeStyle.getDefault(null), null, null);
+    }
+
+    public VeryPretty(Context context, CodeStyle cs, WorkingCopy workingCopy, CasualDiff diff) {
         this.cs = cs;
         out = new CharBuffer(cs.getRightMargin());
 	names = Name.Table.instance(context);
@@ -87,6 +99,9 @@ public final class VeryPretty extends JCTree.Visitor {
 	widthEstimator = new WidthEstimator(context);
         danglingElseChecker = new DanglingElseChecker();
         prec = TreeInfo.notExpression;
+        this.workingCopy = workingCopy;
+        if (workingCopy != null)
+            origUnit = (JCCompilationUnit) workingCopy.getCompilationUnit();
     }
 
     public String toString() {
@@ -1401,13 +1416,26 @@ public final class VeryPretty extends JCTree.Visitor {
 	}
     }
     
+    static final EnumSet<JavaTokenId> nonRelevant = EnumSet.of(
+            JavaTokenId.LINE_COMMENT,
+            JavaTokenId.BLOCK_COMMENT,
+            JavaTokenId.JAVADOC_COMMENT,
+            JavaTokenId.WHITESPACE
+        );
+    
     private void printStat(JCTree tree) {
 	if(tree==null) print(';');
 	else {
-            CommentSet comment = commentHandler.getComments(tree);
             blankLines(tree, true);
+            CommentSet comment = getComments(tree);
 	    printPrecedingComments(comment);
-	    printExpr(tree, treeinfo.notExpression);
+            if (isTreeMoved(tree)) {
+                int a = TreeInfo.getStartPos(tree);
+                int b = TreeInfo.getEndPos(tree, origUnit.endPositions);
+                print(workingCopy.getText().substring(a, b));
+            } else {
+                printExpr(tree, treeinfo.notExpression);
+            }
 	    int tag = tree.tag;
 	    if(JCTree.APPLY<=tag && tag<=JCTree.MOD_ASG) print(';');
             printTrailingComments(comment);
@@ -1415,6 +1443,52 @@ public final class VeryPretty extends JCTree.Visitor {
 	}
     }
 
+    private CommentSet getComments(JCTree tree) {
+        CommentSet comment = commentHandler.getComments(tree);
+        if (isTreeMoved(tree)) {
+            int a = TreeInfo.getStartPos(tree);
+            int b = TreeInfo.getEndPos(tree, origUnit.endPositions);
+            TokenSequence<JavaTokenId> seq = workingCopy.getTokenHierarchy().tokenSequence();
+            seq.move(a);
+            PositionEstimator.moveToSrcRelevant(seq, Direction.BACKWARD);
+            while (seq.moveNext() && nonRelevant.contains(seq.token().id())) {
+                switch (seq.token().id()) {
+                    case LINE_COMMENT:
+                        commentHandler.addComment(tree, Comment.create(Style.LINE, Query.NOPOS, Query.NOPOS, Query.NOPOS, seq.token().toString()));
+                        break;
+                    case BLOCK_COMMENT:
+                        commentHandler.addComment(tree, Comment.create(Style.BLOCK, Query.NOPOS, Query.NOPOS, Query.NOPOS, seq.token().toString()));
+                        break;
+                    case JAVADOC_COMMENT:
+                        commentHandler.addComment(tree, Comment.create(Style.JAVADOC, Query.NOPOS, Query.NOPOS, Query.NOPOS, seq.token().toString()));
+                        break;
+                    case WHITESPACE:
+                        commentHandler.addComment(tree, Comment.create(Style.WHITESPACE, Query.NOPOS, Query.NOPOS, Query.NOPOS, seq.token().toString()));
+                        break;
+                }
+            }
+            seq.move(b);
+            while (seq.moveNext() && nonRelevant.contains(seq.token().id()) && JavaTokenId.WHITESPACE != seq.token().id()) {
+                switch (seq.token().id()) {
+                    case LINE_COMMENT:
+                        comment.addTrailingComment(Comment.create(Style.LINE, Query.NOPOS, Query.NOPOS, Query.NOPOS, seq.token().toString()));
+                        break;
+                    case BLOCK_COMMENT:
+                        comment.addTrailingComment(Comment.create(Style.BLOCK, Query.NOPOS, Query.NOPOS, Query.NOPOS, seq.token().toString()));
+                        break;
+                    case JAVADOC_COMMENT:
+                        comment.addTrailingComment(Comment.create(Style.JAVADOC, Query.NOPOS, Query.NOPOS, Query.NOPOS, seq.token().toString()));
+                        break;
+                }
+            }
+        }
+        return comment;
+    }
+
+    private boolean isTreeMoved(JCTree tree) {
+        return origUnit != null && TreePath.getPath(origUnit, tree) != null ? true : false;
+    }
+    
     private void printIndentedStat(JCTree tree, BracesGenerationStyle redundantBraces, boolean spaceBeforeLeftBrace, WrapStyle wrapStat) {
 	switch(redundantBraces) {
         case GENERATE:

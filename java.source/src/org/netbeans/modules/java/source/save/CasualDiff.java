@@ -39,6 +39,7 @@ import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Position;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
@@ -72,7 +73,7 @@ public class CasualDiff {
         this.tokenSequence = workingCopy.getTokenHierarchy().tokenSequence();
         this.origText = workingCopy.getText();
         this.context = context;
-        printer = new VeryPretty(context);
+        printer = new VeryPretty(context, CodeStyle.getDefault(null), workingCopy, this);
     }
     
     public com.sun.tools.javac.util.List<Diff> getDiffs() {
