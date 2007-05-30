@@ -153,7 +153,7 @@
             prefix="sjsas"/>
         
         <get
-            src="${openesb.builds.host}/kits/openesb/openesb_as9_beta2/latest/log/"
+            src="${openesb.builds.host}/kits/openesb/main/GlassfishDrop_b48/log"
             dest="${temp.file}"/>
         <openesb-buildnumber 
             file="${temp.file}" 
