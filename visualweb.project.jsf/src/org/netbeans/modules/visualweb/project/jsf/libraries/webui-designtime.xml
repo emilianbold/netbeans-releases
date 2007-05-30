@@ -35,6 +35,7 @@ Microsystems, Inc. All Rights Reserved.
     <volume>
         <type>javadoc</type>
         <resource>jar:nbinst:///docs/webui-doc.zip!/</resource>
+        <resource>jar:nbinst:///docs/webui-tld.zip!/</resource>
         <resource>jar:nbinst:///docs/portlet-doc.zip!/</resource>
     </volume>
 </library>
