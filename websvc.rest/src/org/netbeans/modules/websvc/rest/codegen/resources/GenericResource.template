@@ -1,0 +1,36 @@
+/*
+ *  __NAME__
+ *
+ * Created on __DATE__, __TIME__
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package Templates.Classes;
+
+import com.sun.ws.rest.api.UriTemplate;
+import com.sun.ws.rest.api.UriParam;
+import com.sun.ws.rest.api.HttpMethod;
+import com.sun.ws.rest.api.ProduceMime;
+import com.sun.ws.rest.api.ConsumeMime;
+import com.sun.ws.rest.api.core.HttpContext;
+import java.net.URI;
+import javax.annotation.Resource;
+
+/**
+ * Converter class for GoogleMap
+ *
+ * @author __USER__
+ */
+
+public class Class {
+    @Resource
+    private HttpContext context;
+
+    /** Creates a new instance of __NAME__ */
+    public Class() {
+    }
+
+    
+}

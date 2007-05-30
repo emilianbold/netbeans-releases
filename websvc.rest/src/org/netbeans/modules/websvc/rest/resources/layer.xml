@@ -28,6 +28,7 @@
                       urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/resources/RESTServiceIcon.png"/> 
             </file>
 -->            
+            <file name="GenericResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/GenericResource.template"/>
             <file name="UriResolver.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/UriResolver.template"/>
             <file name="PersistenceService.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/PersistenceService.template"/>
             <file name="GoogleMapResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/GoogleMapResource.template"/>

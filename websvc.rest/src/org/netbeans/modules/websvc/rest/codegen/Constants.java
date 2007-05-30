@@ -25,7 +25,7 @@ import javax.lang.model.element.Modifier;
  *
  * @author PeterLiu
  */
-class Constants {
+public class Constants {
     
     public static final String REST_API_PACKAGE = "com.sun.ws.rest.api.";       //NOI18N
     

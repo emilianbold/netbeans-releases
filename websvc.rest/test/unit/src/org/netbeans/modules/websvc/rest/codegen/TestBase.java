@@ -178,7 +178,7 @@ public abstract class TestBase extends NbTestCase {
         }
     }
     
-    protected void setUpEntitites() throws Exception {
+    protected void setUpSrcDir() throws Exception {
         
         if (System.getProperty(USER_DIR) == null) {
             System.setProperty(USER_DIR, getWorkDir()+"/.netbeans");
@@ -195,8 +195,12 @@ public abstract class TestBase extends NbTestCase {
         entityClassDir.mkdirs();
         entityClassDirFO = FileUtil.toFileObject(new File(getWorkDir(), TESTSRC_ACME));
         genSourceRoot = FileUtil.toFileObject(genSourceDir);
-        copyEntityClasses();
         setSourceClassPath(new FileObject[] { genSourceRoot });
+    }
+    
+    protected void setUpEntities() throws Exception {
+        setUpSrcDir();
+        copyEntityClasses();
     }
     
     private void copyEntityClasses() throws Exception {
@@ -213,7 +217,7 @@ public abstract class TestBase extends NbTestCase {
     public Collection<JavaSource> getEntities() throws Exception {
         if (entities != null) return entities;
         
-        setUpEntitites();
+        setUpEntities();
         
         entities = new ArrayList<JavaSource>();
         for (FileObject child : entityClassDirFO.getChildren()) {
