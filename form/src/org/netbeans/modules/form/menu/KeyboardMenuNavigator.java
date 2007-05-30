@@ -101,20 +101,31 @@ public class KeyboardMenuNavigator implements KeyListener {
         menuEditLayer.setSelectedComponent(item);
     }
     
+    // select the next menu offset from the current one
+    // pass in -1 and + 1 to do prev and next menu items
     private void selectOffsetMenu(int offset) {
-        menuEditLayer.setSelectedComponent(null);
+        
+        //clear the selected component
+        //menuEditLayer.setSelectedComponent(null);
+        
+        //if the current component is a JMenu
         if(menuEditLayer.formDesigner.getComponent(selectedRADComponent) instanceof JMenu) {
-            menuEditLayer.showMenuPopup((JMenu)menuEditLayer.formDesigner.getComponent(selectedRADComponent));
-            currentMenuRAD = (RADVisualContainer) selectedRADComponent;
-            RADVisualComponent firstItemRad = currentMenuRAD.getSubComponent(0);
-            if(firstItemRad != null) {
+            RADVisualContainer menuRAD = (RADVisualContainer) selectedRADComponent;
+            // make it's first element be highlighted
+            if(menuRAD.getSubComponents() != null && 
+                    menuRAD.getSubComponents().length > 0 &&
+                    menuRAD.getSubComponent(0) != null) {
+                RADVisualComponent firstItemRad = menuRAD.getSubComponent(0);
+                // open the menu
+                menuEditLayer.showMenuPopup((JMenu)menuEditLayer.formDesigner.getComponent(selectedRADComponent));
                 menuEditLayer.setSelectedComponent((JComponent) menuEditLayer.formDesigner.getComponent(firstItemRad));
+                currentMenuRAD = menuRAD;
+                return;
             }
-            return;
         }
-        int index = menuBarRAD.getIndexOf(currentMenuRAD);
         
         // if not a toplevel menu
+        int index = menuBarRAD.getIndexOf(currentMenuRAD);
         if(index < 0) {
             // if left then head back up the heirarchy
             if(offset < 0) {
