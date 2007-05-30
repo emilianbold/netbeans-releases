@@ -23,12 +23,11 @@ import org.netbeans.api.visual.anchor.AnchorFactory;
 import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.vmd.VMDPinWidget;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.modules.vmd.api.flow.FlowPinPresenter;
 import org.netbeans.modules.vmd.api.flow.visual.*;
+import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignEventFilter;
-import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.common.AcceptSupport;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 
@@ -118,9 +117,7 @@ public abstract class FlowEventSourcePinPresenter extends FlowPinPresenter {
         public Widget createWidget (FlowPinDescriptor descriptor, FlowScene scene) {
             VMDPinWidget vmdPinWidget = new VMDPinWidget (scene);
             scene.addPinCommonActions (vmdPinWidget);
-            Widget pinNameWidget = vmdPinWidget.getPinNameWidget ();
-            vmdPinWidget.getActions ().addAction (ActionFactory.createForwardKeyEventsAction (pinNameWidget, null));
-            pinNameWidget.getActions ().addAction (scene.createRenameAction ());
+            vmdPinWidget.getActions ().addAction (0, scene.createRenameAction ());
             return vmdPinWidget;
         }
 
