@@ -232,16 +232,16 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="org-netbeans-modules-java-j2seproject">
             <folder name="Lookup">
                 <file name="org.netbeans.modules.websvc.core.jaxws.projects.J2SEWSSupportLookupProvider.instance"/>
-            </folder>            
-        </folder>
-        <!-- Web Service References node in J2SE Project -->
-        <folder name="org-netbeans-modules-java-j2seproject">
+            </folder>
             <folder name="Nodes">
                 <attr name="org-netbeans-modules-java-j2seproject-ui-LibrariesNodeFactory.instance/org-netbeans-modules-websvc-core-jaxws-nodes-WebServicesNodeFactory.instance" boolvalue="true"/>
                 <file name="org-netbeans-modules-websvc-core-jaxws-nodes-WebServicesNodeFactory.instance"/>
             </folder>
         </folder>
         <folder name="org-netbeans-modules-web-project">
+            <folder name="Lookup">
+                <file name="org.netbeans.modules.websvc.core.jaxws.projects.WebWSSupportLookupProvider.instance"/>
+            </folder>  
             <folder name="Nodes">
                 <attr name="org-netbeans-modules-web-project-ui-DocBaseNodeFactory.instance/org-netbeans-modules-websvc-core-jaxws-nodes-WebServicesNodeFactory.instance" boolvalue="true"/>
                 <file name="org-netbeans-modules-websvc-core-jaxws-nodes-WebServicesNodeFactory.instance"/>
