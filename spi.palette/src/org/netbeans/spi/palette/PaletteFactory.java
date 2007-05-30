@@ -22,6 +22,7 @@ package org.netbeans.spi.palette;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.palette.DefaultModel;
 import org.netbeans.modules.palette.DefaultSettings;
 import org.netbeans.modules.palette.Model;
@@ -139,7 +140,11 @@ public final class PaletteFactory {
         Model model = createModel( root );
         Settings settings = new DefaultSettings( model );
         
-        PaletteSwitch.getDefault().startListening();
+        SwingUtilities.invokeLater( new Runnable() {
+            public void run() {
+                PaletteSwitch.getDefault().startListening();
+            }
+        });
         
         return new PaletteController( model, settings );
     }
