@@ -201,6 +201,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../core/sendopts</project>
                 <project>../core/settings</project>
                 <project>../core/startup</project>
+                <project>../core/swing/dirchooser</project>
                 <project>../core/swing/plaf</project>
                 <project>../core/swing/tabcontrol</project>
                 <project>../core/tasklist/api</project>
