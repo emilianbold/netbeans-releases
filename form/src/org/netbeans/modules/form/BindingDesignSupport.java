@@ -48,6 +48,7 @@ public class BindingDesignSupport {
 
     private static Map<Class,Object> classToInstance = new WeakHashMap<Class,Object>();
     private static Object NO_INSTANCE = new Object();
+    private static Binding.Parameter<ModifiableBoolean> INVALID_BINDING = new Binding.Parameter<ModifiableBoolean>(ModifiableBoolean.class, ""); // NOI18N
 
     /**
      * Create binding design support for the given form model.
@@ -737,6 +738,7 @@ public class BindingDesignSupport {
                 binding.addBinding(sub.getSourcePath(), sub.getTargetPath(), subParameters.toArray());
             }
         }
+        binding.setValue(INVALID_BINDING, new ModifiableBoolean());
         context.addBinding(binding);
         try {
             binding.bind();
@@ -750,6 +752,8 @@ public class BindingDesignSupport {
                 message = message.substring(0, index+1) + bindingDef.getTarget().getName() + message.substring(message.lastIndexOf(']')+1);
             }
             System.err.println(message);
+            ModifiableBoolean invalid = binding.getValue(INVALID_BINDING, null);
+            invalid.value = true;
         }
         return binding;
     }
@@ -767,7 +771,13 @@ public class BindingDesignSupport {
 
     private static void removeBinding(Binding binding) {
         BindingContext context = binding.getContext();
-        binding.unbind();
+        if (!(binding.getValue(INVALID_BINDING, null).value)) { // Issue 104960
+            binding.unbind();
+        } else {
+            try {
+                binding.unbind();
+            } catch (NullPointerException npex) {} // ugly implementation detail of binding library
+        }
         context.removeBinding(binding);
     }
 
@@ -819,6 +829,10 @@ public class BindingDesignSupport {
                 }
             }
         }
+    }
+
+    static class ModifiableBoolean {
+        boolean value;
     }
     
 }
