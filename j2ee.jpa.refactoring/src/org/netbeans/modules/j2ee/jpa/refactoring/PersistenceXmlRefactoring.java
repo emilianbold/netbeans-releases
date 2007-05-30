@@ -103,9 +103,13 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
         if (tph != null) {
             return tph;
         }
-        
+        FileObject sourceFO = getRefactoring().getRefactoringSource().lookup(FileObject.class);
+        if (sourceFO == null){
+            return null;
+        }
+
         final TreePathHandle[] result = new TreePathHandle[1];
-        JavaSource source = JavaSource.forFileObject(getRefactoring().getRefactoringSource().lookup(FileObject.class));
+        JavaSource source = JavaSource.forFileObject(sourceFO);
         
         source.runUserActionTask(new CancellableTask<CompilationController>() {
             public void cancel() {
