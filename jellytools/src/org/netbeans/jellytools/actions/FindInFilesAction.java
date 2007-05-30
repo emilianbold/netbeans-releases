@@ -13,57 +13,38 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.actions;
 
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jemmy.operators.ComponentOperator;
 
 /** Used to call "Find" popup menu item, "Edit|Find in Projects" main menu item,
- * "org.netbeans.modules.search.project.ProjectsSearchAction" or Ctrl+Shift+P shortcut.
+ * "org.netbeans.modules.search.FindInFilesAction".
  * @see Action
  * @see ActionNoBlock
  */
- public class FindInFilesAction extends ActionNoBlock {
+public class FindInFilesAction extends ActionNoBlock {
+    // "Edit|Find in Projects..."
     private static final String menu =
-        Bundle.getStringTrimmed("org.netbeans.core.Bundle",
-                                "Menu/Edit") +
-        "|" +
-        Bundle.getStringTrimmed("org.netbeans.modules.search.project.Bundle",
-                                "LBL_SearchProjects");
+            Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Edit") +
+            "|" +
+            Bundle.getStringTrimmed("org.netbeans.modules.search.Bundle", "LBL_Action_FindInProjects");
+    // "Find"
     private static final String popup =
-        Bundle.getStringTrimmed("org.openide.actions.Bundle",
-                                "Find");
+            Bundle.getStringTrimmed("org.openide.actions.Bundle", "Find");
     
     /** Creates new instance. */
     public FindInFilesAction() {
-        super(menu, popup, "org.netbeans.modules.search.project.ProjectsSearchAction");
-    }
-    
-    /** Throws UnsupportedOperationException because FindInFilesAction
-     * doesn't have shortcut representation on every component but only
-     * on nodes. Use {@link #performShortcut(Node)}
-     * or {@link #performShortcut(Node[])} instead.
-     * @param component ComponentOperator instance
-     */
-    public void performShortcut(ComponentOperator component) {
-        throw new UnsupportedOperationException("FindInFilesAction has shortcut representation only on nodes.");
+        super(menu, popup, "org.netbeans.modules.search.FindInFilesAction");
     }
     
     /** Performs action through API. It selects a node first.
-     * @throws UnsupportedOperationException when action does not support API mode */    
+     * @throws UnsupportedOperationException when action does not support API mode */
     public void performAPI() {
         new ProjectsTabOperator().tree().selectRow(0);
         super.performAPI();
-    }
-    
-    /** Performs action through shortcut. It selects a node first.
-     * @throws UnsupportedOperationException if no shortcut is defined */
-    public void performShortcut() {
-        new ProjectsTabOperator().tree().selectRow(0);
-        super.performShortcut();
     }
 }
