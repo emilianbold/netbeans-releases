@@ -21,6 +21,7 @@ package org.netbeans.modules.autoupdate.ui;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import javax.swing.table.JTableHeader;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
@@ -42,7 +43,7 @@ public class UpdateTableModel extends UnitCategoryTableModel {
         setUnits (units);
     }
     
-    public final void setUnits (List<UpdateUnit> units) {
+    public final void setUnits (List<UpdateUnit> units) {        
         setData (Utilities.makeUpdateCategories (units, false));
     }
     

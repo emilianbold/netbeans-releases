@@ -48,27 +48,18 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
     public final void setUnits(final List<UpdateUnit> unused) {
         List<UpdateUnit> units = getLocalDownloadSupport().getUpdateUnits();
         List<Unit> oldUnits = getUnitData();        
-        Map<String, Boolean> checked = codeName2CheckedState(oldUnits);
         setData(makeCategories(units));
-        List<Unit> newUnits = getUnitData();
-        for (Unit unit : newUnits) {
-            Boolean isChecked = checked.get(unit.updateUnit.getCodeName());
-            if (isChecked != null) {
-                if (isChecked.booleanValue() && !unit.isMarked()) {
-                    unit.setMarked(true);
-                }
-            } else if (! unit.isMarked()) {
-                unit.setMarked(true);
-            }            
-        }   
         computeInstalled(units, oldUnits);
+    }
+    
+    protected boolean isMarkedAsDefault() {
+        return true;
     }
     
     List<UpdateUnit> getAlreadyInstalled() {
         return installed;
     }
-
-        
+            
     private void computeInstalled(List<UpdateUnit> units, List<Unit> oldUnits) {
         installed.clear();
         installed.addAll(units);
@@ -89,14 +80,6 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
     }
     
         
-    private static Map<String, Boolean> codeName2CheckedState(List<Unit> units) {
-        Map<String,Boolean> retval = new HashMap<String, Boolean>();
-        for (Unit unit : units) {
-            retval.put(unit.updateUnit.getCodeName(), unit.isMarked());
-        }        
-        return retval;
-    }
-
     private List<UnitCategory> makeCategories(List<UpdateUnit> units) {
         final List<UnitCategory> categories = new ArrayList<UnitCategory>();        
         categories.addAll(Utilities.makeAvailableCategories(units, true));

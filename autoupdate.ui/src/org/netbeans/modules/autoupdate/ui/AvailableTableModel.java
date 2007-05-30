@@ -21,6 +21,7 @@ package org.netbeans.modules.autoupdate.ui;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import javax.swing.table.JTableHeader;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.UpdateUnit;

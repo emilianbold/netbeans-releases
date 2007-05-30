@@ -23,8 +23,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
@@ -65,6 +67,31 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
     
     List<Unit> getUnitData () {
         return new ArrayList<Unit>(unitData);
+    }
+
+    static Map<String, Boolean> captureState(List<Unit> units) {
+        Map<String,Boolean> retval = new HashMap<String, Boolean>();
+        for (Unit unit : units) {
+            retval.put(unit.updateUnit.getCodeName(), unit.isMarked());
+        }        
+        return retval;
+    }
+    
+    static void  restoreState(List<Unit> newUnits, Map<String, Boolean> capturedState, boolean isMarkedAsDefault) {
+        for (Unit unit : newUnits) {
+            Boolean isChecked = capturedState.get(unit.updateUnit.getCodeName());
+            if (isChecked != null) {
+                if (isChecked.booleanValue() && !unit.isMarked()) {
+                    unit.setMarked(true);
+                }
+            } else if (isMarkedAsDefault && !unit.isMarked()) {
+                unit.setMarked(true);
+            }            
+        }           
+    }
+    
+    protected boolean isMarkedAsDefault() {
+        return false;
     }
     
     public abstract Object getValueAt (int row, int col);
