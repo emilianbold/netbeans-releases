@@ -1,7 +1,7 @@
 #!/bin/sh
 
 rm -rf nbbuild/netbeans/ nbrubyide applemenu netbeans.png netbeans.icns conf
-unzip -d nbbuild/ ../../trunk/lastSuccessful/archive/nbbuild/NetBeans-hudson-trunk-*.zip
+unzip -d nbbuild/ ../../trunk/lastSuccessful/archive/nbbuild/dist/zip/netbeans-hudson-trunk-*-full.zip
 
 cp nbbuild/netbeans/nb6.0/netbeans.icns nbbuild/netbeans/nb6.0/netbeans.png .
 
