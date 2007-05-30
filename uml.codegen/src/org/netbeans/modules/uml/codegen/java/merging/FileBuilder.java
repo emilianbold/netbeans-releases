@@ -120,6 +120,8 @@ public class FileBuilder
       long newElemStartPos = getElemStartPosition(newElem);
       long newElemEndPos = getElemEndPosition(newElem);
       
+      System.out.println("\n--oldElem = "+oldElem+"\noldElemStartPos = "+oldElemStartPos+"\noldElemEndPos = "+oldElemEndPos+"\n--newElem = "+newElem+"\nnewElemStartPos = "+newElemStartPos+"\nnewElemEndPos = "+newElemEndPos);
+
       byte[] replacingBuffer = null;
       int numOfBytesReplaced = 0;
       
