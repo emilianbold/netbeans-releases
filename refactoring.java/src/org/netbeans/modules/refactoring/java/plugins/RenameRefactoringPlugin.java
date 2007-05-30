@@ -19,14 +19,16 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
 import javax.lang.model.element.*;
+import javax.lang.model.type.ExecutableType;
+import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ModificationResult.Difference;
@@ -53,8 +55,6 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     private Collection overriddenByMethods = null; // methods that override the method to be renamed
     private Collection overridesMethods = null; // methods that are overridden by the method to be renamed
     private boolean doCheckName = true;
-    private FileObject originalFolder = null;
-    private Set varNames;
     
     private RenameRefactoring refactoring;
     
@@ -160,7 +160,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                         fireProgressListenerStep();
                         if (hiddenField != null) {
                             String msg = new MessageFormat(getString("ERR_Hides")).format(
-                                    new Object[] {SourceUtils.getEnclosingTypeElement(el)}
+                                    new Object[] {SourceUtils.getEnclosingTypeElement(hiddenField)}
                             );
                             preCheckProblem = createProblem(preCheckProblem, false, msg);
                         }
@@ -196,88 +196,106 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         return new MessageFormat(NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_CannotRenameFile")).format(new Object[] {r.getNameExt()});
     }
     
+    private Problem fastCheckProblem;
     public Problem fastCheckParameters() {
         if (treePathHandle == null)
             return null;
-        ElementKind kind = RetoucheUtils.getElementKind(treePathHandle);
+        fastCheckProblem = null;
         
-        String newName = refactoring.getNewName();
-        Problem result = null;
-        String oldName = RetoucheUtils.getSimpleName(treePathHandle);
-        
-        if (oldName.equals(newName)) {
-            boolean nameNotChanged = true;
-            if (kind.isClass()) {
-                //                Object comp = jmiObject.refImmediateComposite();
-                //                if (comp instanceof Resource && isResourceClass((Resource)comp, jmiObject)) {
-                //                    String dobjName = JavaMetamodel.getManager().getDataObject((Resource)comp).getName();
-                //                    nameNotChanged = dobjName.equals(newName);
-                //                }
-            }
-            if (nameNotChanged)
-                return createProblem(result, true, getString("ERR_NameNotChanged"));
-        }
-        
-        if (!Utilities.isJavaIdentifier(newName)) {
-            String s = kind == ElementKind.PACKAGE? getString("ERR_InvalidPackage"):getString("ERR_InvalidIdentifier"); //NOI18N
-            String msg = new MessageFormat(s).format(
-                    new Object[] {newName}
-            );
-            result = createProblem(result, true, msg);
-            return result;
-        }
-        
-        if (kind.isClass()) {
-            if (doCheckName) {
-                String oldfqn = RetoucheUtils.getQualifiedName(treePathHandle);
-                String newFqn = oldfqn.substring(0, oldfqn.lastIndexOf(oldName));
+        JavaSource source = JavaSource.forFileObject(treePathHandle.getFileObject());
+        try {
+            source.runUserActionTask(new CancellableTask<CompilationController>() {
                 
-                String pkgname = oldfqn;
-                int i = pkgname.indexOf('.');
-                if (i>=0)
-                    pkgname = pkgname.substring(0,i);
-                else
-                    pkgname = "";
+                public void cancel() {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
                 
-                String fqn = "".equals(pkgname) ? newName : pkgname + '.' + newName;
-                FileObject fo = treePathHandle.getFileObject();
-                ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-                if (RetoucheUtils.typeExist(treePathHandle, newFqn)) {
-                    String msg = new MessageFormat(getString("ERR_ClassClash")).format(
-                            new Object[] {newName, pkgname}
-                    );
-                    return createProblem(result, true, msg);
+                public void run(CompilationController info) throws Exception {
+                    info.toPhase(JavaSource.Phase.RESOLVED);
+                    TreePath treePath = treePathHandle.resolve(info);
+                    Element element = treePathHandle.resolveElement(info);
+                    ElementKind kind = element.getKind();
+                    
+                    String newName = refactoring.getNewName();
+                    String oldName = element.getSimpleName().toString();
+                    
+                    if (oldName.equals(newName)) {
+                        boolean nameNotChanged = true;
+                        if (kind.isClass()) {
+                            if (!((TypeElement) element).getNestingKind().isNested()) {
+                                nameNotChanged = info.getFileObject().getName().equals(element);
+                            }
+                        }
+                        if (nameNotChanged) {
+                            fastCheckProblem = createProblem(fastCheckProblem, true, getString("ERR_NameNotChanged"));
+                            return;
+                        }
+                        
+                    }
+                    
+                    if (!Utilities.isJavaIdentifier(newName)) {
+                        String s = kind == ElementKind.PACKAGE? getString("ERR_InvalidPackage"):getString("ERR_InvalidIdentifier"); //NOI18N
+                        String msg = new MessageFormat(s).format(
+                                new Object[] {newName}
+                        );
+                        fastCheckProblem = createProblem(fastCheckProblem, true, msg);
+                        return;
+                    }
+                    
+                    if (kind.isClass() && !((TypeElement) element).getNestingKind().isNested()) {
+                        if (doCheckName) {
+                            String oldfqn = RetoucheUtils.getQualifiedName(treePathHandle);
+                            String newFqn = oldfqn.substring(0, oldfqn.lastIndexOf(oldName));
+                            
+                            String pkgname = oldfqn;
+                            int i = pkgname.indexOf('.');
+                            if (i>=0)
+                                pkgname = pkgname.substring(0,i);
+                            else
+                                pkgname = "";
+                            
+                            String fqn = "".equals(pkgname) ? newName : pkgname + '.' + newName;
+                            FileObject fo = treePathHandle.getFileObject();
+                            ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+                            if (RetoucheUtils.typeExist(treePathHandle, newFqn)) {
+                                String msg = new MessageFormat(getString("ERR_ClassClash")).format(
+                                        new Object[] {newName, pkgname}
+                                );
+                                fastCheckProblem = createProblem(fastCheckProblem, true, msg);
+                                return;
+                            }
+                        }
+                        FileObject primFile = treePathHandle.getFileObject();
+                        FileObject folder = primFile.getParent();
+                        FileObject[] children = folder.getChildren();
+                        for (int x = 0; x < children.length; x++) {
+                            if (children[x] != primFile && !children[x].isVirtual() && children[x].getName().equals(newName) && "java".equals(children[x].getExt())) { //NOI18N
+                                String msg = new MessageFormat(getString("ERR_ClassClash")).format(
+                                        new Object[] {newName, folder.getPath()}
+                                );
+                                fastCheckProblem = createProblem(fastCheckProblem, true, msg);
+                                break;
+                            }
+                        } // for
+                    } else if (kind == ElementKind.LOCAL_VARIABLE || kind == ElementKind.PARAMETER) {
+                        String msg = variableClashes(newName,treePath, info);
+                        if (msg != null) {
+                            fastCheckProblem = createProblem(fastCheckProblem, true, msg);
+                            return;
+                        }
+                    } else {
+                        String msg = clashes(element, newName, info);
+                        if (msg != null) {
+                            fastCheckProblem = createProblem(fastCheckProblem, true, msg);
+                            return;
+                        }
+                    }
                 }
-            }
-            FileObject primFile = treePathHandle.getFileObject();
-            FileObject folder = primFile.getParent();
-            FileObject[] children = folder.getChildren();
-            for (int x = 0; x < children.length; x++) {
-                if (children[x] != primFile && !children[x].isVirtual() && children[x].getName().equals(newName) && "java".equals(children[x].getExt())) { //NOI18N
-                    String msg = new MessageFormat(getString("ERR_ClassClash")).format(
-                            new Object[] {newName, folder.getPath()}
-                    );
-                    result = createProblem(result, true, msg);
-                    break;
-                }
-            } // for
-            
-            if (kind == ElementKind.LOCAL_VARIABLE || kind == ElementKind.PARAMETER) {
-                //            String msg = variableClashes(newName,JavaModelUtil.getDeclaringFeature((Variable) jmiObject));
-                //            if (msg != null) {
-                //                result = createProblem(result, true, msg);
-                //                return result;
-                //            }
-            }
-            if (kind.isField() || kind == kind.METHOD) {
-                //            String msg = clashes((Feature) jmiObject, newName);
-                //            if (msg != null) {
-                //                result = createProblem(result, true, msg);
-                //                return result;
-                //            }
-            }
+            }, true);
+        } catch (IOException ioe) {
+            throw (RuntimeException) new RuntimeException().initCause(ioe);
         }
-        return result;
+        return fastCheckProblem;
     }
     
     private Problem checkProblem;
@@ -308,29 +326,11 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                     info.toPhase(JavaSource.Phase.RESOLVED);
                     Element element = treePathHandle.resolveElement(info);
                     
-                    Problem result = null;
-                    
                     fireProgressListenerStep();
                     fireProgressListenerStep();
                     String msg;
                     if (element.getKind() == ElementKind.METHOD) {
-                        //                result = checkMethodForOverriding(m, newName, result);
-                        //                for (Iterator iter = overridesMethods.iterator(); iter.hasNext();) {
-                        //                    m = (Method) iter.next();
-                        //                    msg = clashes(m, newName);
-                        //                    if (msg != null) {
-                        //                        result = createProblem(result, true, msg);
-                        //                    }
-                        //                    result = checkMethodForOverriding(m, newName, result);
-                        //                }
-                        //                for (Iterator iter = overriddenByMethods.iterator(); iter.hasNext();) {
-                        //                    m = (Method) iter.next();
-                        //                    msg = clashes(m, newName);
-                        //                    if (msg != null) {
-                        //                        result = createProblem(result, true, msg);
-                        //                    }
-                        //                    result = checkMethodForOverriding(m, newName, result);
-                        //                }
+                        checkProblem = checkMethodForOverriding((ExecutableElement)element, refactoring.getNewName(), checkProblem, info);
                         fireProgressListenerStep();
                         fireProgressListenerStep();
                     } else if (element.getKind().isField()) {
@@ -342,9 +342,9 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                         fireProgressListenerStep();
                         if (hiddenField != null) {
                             msg = new MessageFormat(getString("ERR_WillHide")).format(
-                                    new Object[] {SourceUtils.getEnclosingTypeElement(element).toString()}
+                                    new Object[] {SourceUtils.getEnclosingTypeElement(hiddenField).toString()}
                             );
-                            result = createProblem(result, false, msg);
+                            checkProblem = createProblem(checkProblem, false, msg);
                         }
                     }
                 }
@@ -359,15 +359,14 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         return checkProblem;
     }
     
-    //    private Problem checkMethodForOverriding(ExecutableElement m, String newName, Problem problem) {
-    //        List argTypes = getParamTypes(m);
-    //        fireProgressListenerStep();
-    //        problem = willBeOverridden(m, newName, argTypes, problem);
-    //        fireProgressListenerStep();
-    //        problem = willOverride(m, newName, argTypes, problem);
-    //        fireProgressListenerStep();
-    //        return problem;
-    //    }
+        private Problem checkMethodForOverriding(ExecutableElement m, String newName, Problem problem, CompilationInfo info) {
+            ElementUtilities ut = info.getElementUtilities();
+            //problem = willBeOverridden(m, newName, argTypes, problem);
+            fireProgressListenerStep();
+            problem = willOverride(m, newName, problem, info);
+            fireProgressListenerStep();
+            return problem;
+        }
     
     private Set<ElementHandle<ExecutableElement>> allMethods;
     
@@ -454,134 +453,8 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         }
         fireProgressListenerStop();
         return null;
-        //        varNames = null;
-        //        CommentRenameFinder docFinder=null;
-        //
-        //        if (newName == null) {
-        //            return new Problem(true, getString("ERR_NameNotSet"));
-        //        }
-        //
-        //        int steps = 9;
-        //        if (overriddenByMethods != null)
-        //            steps += overriddenByMethods.size();
-        //        if (overridesMethods != null)
-        //            steps += overridesMethods.size();
-        //
-        //        JavaMetamodel.getManager().getProgressSupport().addProgressListener(this);
-        //
-        //
-        //        //fireProgressListenerStart(rename.PREPARE, steps);
-        //
-        //        try {
-        //            if (refactoring.isSearchInComments()) {
-        //                docFinder=new CommentRenameFinder((Element)jmiObject,newName);
-        //                elements.addAll(refactoring, docFinder.searchCommentsInResource(((Element)jmiObject).getResource()));
-        //            }
-        //            if (jmiObject instanceof JavaPackage) {
-        //                //fireProgressListenerStep();
-        //
-        //                referencesIterator = ((NamedElement) jmiObject).getReferences().iterator();
-        //                while (referencesIterator.hasNext()) {
-        //                    Element element = (Element) referencesIterator.next();
-        //
-        //                    if (cancelRequest) {
-        //                        return null;
-        //                    }
-        //                    if (refactoring.isSearchInComments()) {
-        //                        elements.addAll(refactoring, docFinder.searchCommentsInResource(element.getResource()));
-        //                    }
-        //                    elements.add(refactoring, new RenamePackageElement(jmiObject, element, newName));
-        //                }
-        //                DataFolder folder = originalFolder!=null ? DataFolder.findFolder(originalFolder) : getFolder(((JavaPackage)jmiObject).getName());
-        //                if (folder != null) {
-        //                    elements.add(refactoring, new RenameDataFolder(folder, newName));
-        //                }
-        //                return null;
-        //            } else {
-        //                //fireProgressListenerStep();
-        //                addElementsForJmiObject(elements, jmiObject, docFinder);
-        //
-        //
-        //                if (overridesMethods != null) {
-        //                    for (Iterator iter = overridesMethods.iterator(); iter.hasNext();) {
-        //                        if (cancelRequest) {
-        //                            return null;
-        //                        }
-        //                        //fireProgressListenerStep();
-        //                        Method m = (Method) iter.next();
-        //                        if (m.getResource().getName().endsWith(".class")) {
-        //                            return resourceNotAvailable(m);
-        //                        }
-        //                        elements.add(refactoring, new RenameDOElement(m));
-        //                        //addElementsForJmiObject(elements, (RefObject) iter.next());
-        //                    }
-        //                }
-        //                if (overriddenByMethods != null) {
-        //                    for (Iterator iter = overriddenByMethods.iterator(); iter.hasNext();) {
-        //                        if (cancelRequest) {
-        //                            return null;
-        //                        }
-        //                        Method m = (Method) iter.next();
-        //                        if (m.getResource().getName().endsWith(".class")) {
-        //                            return resourceNotAvailable(m);
-        //                        }
-        //                        //fireProgressListenerStep();
-        //                        elements.add(refactoring, new RenameDOElement(m));
-        //                        //addElementsForJmiObject(elements, (RefObject) iter.next());
-        //                    }
-        //                }
-        //                return null;
-        //            }
-        //        } finally {
-        //            referencesIterator = null;
-        //            JavaMetamodel.getManager().getProgressSupport().removeProgressListener(this);
-        //        }
     }
-    
-    //    private static Problem resourceNotAvailable(Method m) {
-    //        String resourceName = Utilities.replaceString(m.getResource().getName(), ".class", ".java"); //NOI18N
-    //        return new Problem(true, new MessageFormat(getString("ERR_ResourceUnavailable")).format (new Object[] {m.getName(), resourceName}));
-    //    }
-    //
-    //    private void addElementsForJmiObject(RefactoringElementsBag elements, RefObject refObject, CommentRenameFinder docFinder) {
-    //        elements.add(refactoring, new RenameDOElement(refObject));
-    //        if (refObject instanceof Method) {
-    //            referencesIterator = ((MethodImpl) refObject).findDependencies(true, true, false).iterator();
-    //        } else {
-    //            referencesIterator = ((NamedElement) refObject).getReferences().iterator();
-    //        }
-    //        while (referencesIterator.hasNext()) {
-    //            Element element = (Element) referencesIterator.next();
-    //
-    //            if (cancelRequest) {
-    //                return;
-    //            }
-    //            if (refactoring.isSearchInComments()) {
-    //                elements.addAll(refactoring, docFinder.searchCommentsInResource(element.getResource()));
-    //            }
-    //            String name = newName;
-    //            if (jmiObject instanceof Field) {
-    //                Feature f = JavaModelUtil.getDeclaringFeature(element);
-    //                if (((VariableAccess)element).getParentClass()==null && variableClashes(newName,f)!=null) {
-    //                    ClassDefinition decl = ((Field)jmiObject).getDeclaringClass() ;
-    //                    if (f.getDeclaringClass().equals(decl)) {
-    //                        name = "this." + newName; //NOI18N
-    //                    } else {
-    //                        if (decl instanceof NamedElement)
-    //                            name = ((NamedElement) decl).getName() + ".this." + newName; //NOI18N
-    //                    }
-    //                }
-    //            }
-    //            elements.add(refactoring, new RenameUsageElement(refObject, element, name));
-    //        }
-    //    }
-    //
-    //    private DataFolder getFolder(String name) {
-    //        FileObject fo = RefactoringClassPathImplementation.getDefault().findResource(name.replace('.','/'));
-    //        if (fo == null)
-    //            return null;
-    //        return DataFolder.findFolder(fo);
-    //    }
+
     //
     //    private Collection overriddenBy(Method method, String name, List argTypes) {
     //        if (!CheckUtils.isVirtual(method))
@@ -631,53 +504,6 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     //        return result;
     //    }
     //
-    //    private ClassDefinition findDifferentSubtype(JavaClass baseClass, String name, List argTypes, ClassDefinition subtype) {
-    //        Set supertypes = new HashSet();
-    //        LinkedList subtypes = new LinkedList();
-    //        ClassDefinition jc = baseClass;
-    //
-    //        collectSupertypes(supertypes, subtype);
-    //        addSubtypes(jc, subtypes);
-    //        while (subtypes.size() > 0) {
-    //            jc = (ClassDefinition) subtypes.removeFirst();
-    //            if (jc instanceof UnresolvedClass) {
-    //                continue;
-    //            }
-    //            if (supertypes.contains(jc)) {
-    //                continue;
-    //            } else if (jc.getMethod(name, argTypes, false) != null) {
-    //                return jc;
-    //            }
-    //            addSubtypes(jc, subtypes);
-    //        }
-    //        return null;
-    //    }
-    //
-    //    private void collectSupertypes(Set supertypes, ClassDefinition jc) {
-    //        if (jc == null)
-    //            return;
-    //        supertypes.add(jc);
-    //        collectSupertypes(supertypes, jc.getSuperClass());
-    //        for (Iterator iter = jc.getInterfaces().iterator(); iter.hasNext();) {
-    //            collectSupertypes(supertypes, (ClassDefinition)iter.next());
-    //        }
-    //    }
-    //
-    //    private boolean isStatic(Feature feature) {
-    //        return (feature.getModifiers () & Modifier.STATIC) > 0;
-    //    }
-    //
-    //    private int getAccessLevel(Feature f) {
-    //        int mod = f.getModifiers();
-    //        if ((mod & Modifier.PUBLIC) > 0)
-    //            return 3;
-    //        if ((mod & Modifier.PROTECTED) > 0)
-    //            return 2;
-    //        if ((mod & Modifier.PRIVATE) > 0)
-    //            return 0;
-    //        return 1;
-    //    }
-    //
     //    private Method isOverridden(Method method, String name, List argTypes) {
     //        if (!CheckUtils.isVirtual(method))
     //            return null;
@@ -698,6 +524,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     //        return null;
     //    }
     //
+
     //    private Problem willBeOverridden(Method method, String name, List argTypes, Problem problem) {
     //        int accessLevel = getAccessLevel(method);
     //        if (accessLevel == 0)
@@ -772,82 +599,76 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     //        }
     //    }
     //
-    //    private Problem willOverride(Method method, String name, List argTypes, Problem problem) {
-    //        int accessLevel = getAccessLevel(method);
-    //        boolean isStatic = isStatic(method);
-    //        Method temp = null;
-    //        ClassDefinition jc = method.getDeclaringClass ();
-    //        LinkedList supertypes = new LinkedList ();
-    //
-    //        supertypes.addAll (jc.getInterfaces());
-    //        jc = jc.getSuperClass ();
-    //        if (jc != null)
-    //            supertypes.add (jc);
-    //        while (supertypes.size () > 0) {
-    //            jc = (ClassDefinition) supertypes.removeFirst ();
-    //            if (jc instanceof UnresolvedClass) {
-    //                continue;
-    //            }
-    //            Method m = jc.getMethod (name, argTypes, false);
-    //            if (m != null) {
-    //                if (temp == null)
-    //                    temp = m;
-    //                if ((m.getModifiers() & Modifier.FINAL) > 0) {
-    //                    String msg = new MessageFormat(getString("ERR_WillOverride_final")).format(
-    //                        new Object[] {
-    //                            method.getName(),
-    //                            getDefClassName(method.getDeclaringClass()),
-    //                            m.getName(),
-    //                            getDefClassName(m.getDeclaringClass())
-    //                        }
-    //                    );
-    //                    return createProblem(problem, true, msg);
-    //                }
-    //                if (getAccessLevel(m) > accessLevel) {
-    //                    String msg = new MessageFormat(getString("ERR_WillOverride_access")).format(
-    //                        new Object[] {
-    //                            method.getName(),
-    //                            getDefClassName(method.getDeclaringClass()),
-    //                            m.getName(),
-    //                            getDefClassName(m.getDeclaringClass())
-    //                        }
-    //                    );
-    //                    return createProblem(problem, true, msg);
-    //                }
-    //                if (isStatic != isStatic(m)) {
-    //                    String msg = new MessageFormat(getString("ERR_WillOverride_static")).format(
-    //                        new Object[] {
-    //                            isStatic ? getString("LBL_static") : getString("LBL_instance"),
-    //                            method.getName(),
-    //                            getDefClassName(method.getDeclaringClass()),
-    //                            isStatic(m) ? getString("LBL_static") : getString("LBL_instance"),
-    //                            m.getName(),
-    //                            getDefClassName(m.getDeclaringClass())
-    //                        }
-    //                    );
-    //                    return createProblem(problem, true, msg);
-    //                }
-    //            } else {
-    //                supertypes.addAll (jc.getInterfaces ());
-    //                jc = jc.getSuperClass ();
-    //                if (jc != null)
-    //                    supertypes.add (jc);
-    //            }
-    //        } // while
-    //        if (temp != null) {
-    //            String msg = new MessageFormat(getString("ERR_WillOverride")).format(
-    //                new Object[] {
-    //                    method.getName(),
-    //                    getDefClassName(method.getDeclaringClass()),
-    //                    temp.getName(),
-    //                    getDefClassName(temp.getDeclaringClass())
-    //                }
-    //            );
-    //            return createProblem(problem, false, msg);
-    //        } else {
-    //            return problem;
-    //        }
-    //    }
+    private static int getAccessLevel(Element e) {
+        Set<Modifier> access = e.getModifiers();
+        if (access.contains(Modifier.PUBLIC)) {
+            return 3;
+        } else if (access.contains(Modifier.PROTECTED)) {
+            return 2;
+        } else if (!access.contains(Modifier.PRIVATE)) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+    
+    private Problem willOverride(ExecutableElement method, String name, Problem problem, CompilationInfo info) {
+        boolean isStatic = method.getModifiers().contains(Modifier.STATIC);
+        TypeElement jc = (TypeElement) method.getEnclosingElement();
+        LinkedList supertypes = new LinkedList();
+        
+        ElementUtilities ut = info.getElementUtilities();
+        //TODO:
+        //ExecutableElement m = ut.getOverriddenMethod(method, name);
+        ExecutableElement m = null;
+        if (m!=null) {
+            if (m.getModifiers().contains(Modifier.FINAL)) {
+                String msg = new MessageFormat(getString("ERR_WillOverride_final")).format(
+                        new Object[] {
+                    method.getSimpleName(),
+                    method.getEnclosingElement().getSimpleName(),
+                    m.getSimpleName(),
+                    m.getEnclosingElement().getSimpleName()
+                }
+                );
+                return createProblem(problem, true, msg);
+            } else if (getAccessLevel(m) > getAccessLevel(method)) {
+                String msg = new MessageFormat(getString("ERR_WillOverride_access")).format(
+                        new Object[] {
+                    method.getSimpleName(),
+                    method.getEnclosingElement().getSimpleName(),
+                    m.getSimpleName(),
+                    m.getEnclosingElement().getSimpleName()
+                }
+                );
+                return createProblem(problem, true, msg);
+            } else if (m.getModifiers().contains(Modifier.STATIC)!= method.getModifiers().contains(Modifier.STATIC)) {
+                String msg = new MessageFormat(getString("ERR_WillOverride_static")).format(
+                        new Object[] {
+                    isStatic ? getString("LBL_static") : getString("LBL_instance"),
+                    method.getSimpleName(),
+                    method.getEnclosingElement().getSimpleName(),
+                    m.getModifiers().contains(Modifier.STATIC) ? getString("LBL_static") : getString("LBL_instance"),
+                    m.getSimpleName(),
+                    m.getEnclosingElement().getSimpleName()
+                }
+                );
+                return createProblem(problem, true, msg);
+            } else {
+                String msg = new MessageFormat(getString("ERR_WillOverride")).format(
+                        new Object[] {
+                    method.getSimpleName(),
+                    method.getEnclosingElement().getSimpleName(),
+                    m.getSimpleName(),
+                    m.getEnclosingElement().getSimpleName()
+                }
+                );
+                return createProblem(problem, false, msg);
+            }
+        } else {
+            return problem;
+        }
+    }
     //
     //    private Method overrides(Method method, String name, List argTypes, boolean findFinal) {
     //        Method res = null;
@@ -887,391 +708,88 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     //
     private Element hides(Element field, String name, CompilationInfo info) {
         TypeElement jc = SourceUtils.getEnclosingTypeElement(field);
-        Types types = info.getTypes();
         Elements elements = info.getElements();
-        jc =(TypeElement) types.asElement(jc.getSuperclass());
-        while (jc != null) {
-            for (Element el : info.getElements().getAllMembers(jc)) {
-                if (elements.hides(el, field)) {
-                    return el;
+        ElementUtilities utils = info.getElementUtilities();
+        for (Element el:elements.getAllMembers(jc)) {
+//TODO:
+//            if (utils.willHide(el, field, name)) {
+//                return el;
+//            }
+            if (el.getKind().isField()) {
+                if (el.getSimpleName().toString().equals(name)) {
+                    if (!el.getEnclosingElement().equals(field.getEnclosingElement())) {
+                        return el;
+                    }
                 }
             }
-            jc =(TypeElement) types.asElement(jc.getSuperclass());
+        };
+        return null;
+    }
+    
+    private String variableClashes(String newName, TreePath tp, CompilationInfo info) {
+        LocalVarScanner lookup = new LocalVarScanner(info, newName);
+        TreePath scopeBlok = tp;
+        EnumSet set = EnumSet.of(Tree.Kind.BLOCK, Tree.Kind.FOR_LOOP, Tree.Kind.METHOD);
+        while (!set.contains(scopeBlok.getLeaf().getKind())) {
+            scopeBlok = scopeBlok.getParentPath();
+        }
+        Element var = info.getTrees().getElement(tp);
+        lookup.scan(scopeBlok, var);
+
+        if (lookup.result)
+            return new MessageFormat(getString("ERR_LocVariableClash")).format(
+                new Object[] {newName}
+            );
+        
+        TreePath temp = tp;
+        while (temp.getLeaf().getKind() != Tree.Kind.METHOD) {
+            Scope scope = info.getTrees().getScope(temp);
+            for (Element el:scope.getLocalElements()) {
+                if (el.getSimpleName().toString().equals(newName)) {
+                    return new MessageFormat(getString("ERR_LocVariableClash")).format(
+                            new Object[] {newName}
+                    );
+                }
+            }
+            temp = temp.getParentPath();
         }
         return null;
     }
     
-    //    private String variableClashes(String newName, Feature scope) {
-    //        if (varNames==null)
-    //            varNames=CheckUtils.getAllVariableNames(scope);
-    //        if (varNames.contains(newName)) {
-    //                return new MessageFormat (getString ("ERR_LocVariableClash")).format (
-    //                    new Object[] {newName}
-    //                );
-    //        }
-    //        return null;
-    //    }
-    //
-    //    private String clashes(Feature feature, String newName) {
-    //        ClassDefinition dc = feature.getDeclaringClass ();
-    //        if (feature instanceof TypeParameter) {
-    //            // TODO: any check?
-    //        } else if (feature instanceof JavaClass) {
-    //            if (dc != null) {
-    //                String result = checkInnersForClash(newName, dc);
-    //                if (result != null)
-    //                    return result;
-    //            } else {
-    //                Element composite = (Element) feature.refImmediateComposite();
-    //                if (composite instanceof Resource) {
-    //                    Resource resource = (Resource)composite;
-    //                    DataObject dobj = JavaMetamodel.getManager().getDataObject(resource);
-    //                    FileObject primFile = dobj.getPrimaryFile();
-    //                    FileObject folder = primFile.getParent();
-    //                    FileObject[] children = folder.getChildren();
-    //                    for (int x = 0; x < children.length; x++) {
-    //                        if (children[x] != primFile && !children[x].isVirtual() && children[x].getName().equals(newName) && "java".equals(children[x].getExt())) { //NOI18N
-    //                            return new MessageFormat(getString("ERR_ClassClash")).format(
-    //                                    new Object[] {newName, resource.getPackageName()}
-    //                            );
-    //                        }
-    //                    }
-    //                }
-    //            }
-    //        } else if (feature instanceof Method) {
-    //            List params = getParamTypes ((Method) feature);
-    //            if (dc.getMethod(newName, params, false) != null) {
-    //                return new MessageFormat (getString ("ERR_MethodClash")).format (
-    //                    new Object[] {newName, getDefClassName(dc)}
-    //                );
-    //            } // if
-    //        } else if (feature instanceof Field) {
-    //            if (dc.getField(newName, false) != null) {
-    //                return new MessageFormat (getString ("ERR_FieldClash")).format (
-    //                    new Object[] {newName, getDefClassName(dc)}
-    //                );
-    //            } // if
-    //        }
-    //        return null;
-    //    }
-    //
-    //    private String checkInnersForClash(final String newName, final ClassDefinition dc) {
-    //        Iterator iter = dc.getFeatures ().iterator ();
-    //        while (iter.hasNext ()) {
-    //            Object obj = iter.next();
-    //            if (!(obj instanceof JavaClass))
-    //                continue;
-    //            JavaClass nestedClass = (JavaClass) obj;
-    //            if (nestedClass.getSimpleName ().equals (newName)) {
-    //                return new MessageFormat (getString ("ERR_InnerClassClash")).format (
-    //                    new Object[] {newName, getDefClassName(dc)}
-    //                );
-    //            }
-    //        } // while
-    //        return null;
-    //    }
-    //
-    //    String getElementName(NamedElement elem) {
-    //        if (elem instanceof JavaClass) {
-    //            return ((JavaClass) elem).getSimpleName();
-    //        } else {
-    //            return elem.getName();
-    //        }
-    //    }
-    //
-    //    String getDefClassName(ClassDefinition cd) {
-    //        if (cd instanceof JavaClass) {
-    //            return ((JavaClass) cd).getName();
-    //        } else {
-    //            return "";
-    //        }
-    //    }
-    //
-    //    private List getParamTypes(Method method) {
-    //        List types = new LinkedList ();
-    //        Iterator iter = method.getParameters ().iterator ();
-    //        while (iter.hasNext ())
-    //            types.add (getRealType(((Parameter) iter.next ()).getType ()));
-    //        return types;
-    //    }
-    //
-    //    private static Type getRealType(Type type) {
-    //        if (type instanceof ParameterizedType) {
-    //            return ((ParameterizedType) type).getDefinition();
-    //        }
-    //        return type;
-    //    }
-    //
-    //    /**
-    //     * Tests, if the renamed object should cause resource rename. Checks
-    //     * if the object is java class. Then it checks for resource. If the
-    //     * resource exists and resource name is the same as the name of class
-    //     * is the same as the name of resource, it returns true. In all other
-    //     * cases it returns false.
-    //     *
-    //     * @return  true, if the renamed object should cause resource rename
-    //     */
-    //    static boolean isResourceClass(Resource res, RefObject refObject) { //todo (#pf): try to find out better name for this method.
-    //        if (res == null || !(refObject instanceof JavaClass))
-    //            return false;
-    //        int classCount = 0;
-    //        for (Iterator iter = res.getClassifiers().iterator(); iter.hasNext(); ) {
-    //            if (iter.next() instanceof JavaClass) {
-    //                classCount++;
-    //            }
-    //        }
-    //        if (classCount == 1) {
-    //            return true;
-    //        }
-    //        String relativeResName = res.getName();
-    //        String javaClassName = ((JavaClass) refObject).getSimpleName();
-    //        int begin = relativeResName.lastIndexOf('/') + 1;
-    //        if (begin < 0) begin = 0;
-    //        int end = relativeResName.lastIndexOf('.');
-    //        if (javaClassName.equals(relativeResName.substring(begin, end)))
-    //            return true;
-    //        else
-    //            return false;
-    //    }
-    //
-    //    private void addSubtypes(ClassDefinition cd, List list) {
-    //        if (!(cd instanceof JavaClass)) {
-    //            return;
-    //        }
-    //        JavaClass jc = (JavaClass) cd;
-    //        Collection subtypes = null;
-    //        if (jc.isInterface()) {
-    //            subtypes = jc.getImplementors();
-    //        } else {
-    //            subtypes = jc.getSubClasses();
-    //        }
-    //        list.addAll(subtypes);
-    //    }
-    //
+    private String clashes(Element feature, String newName, CompilationInfo info) {
+        ElementUtilities utils = info.getElementUtilities();
+        TypeElement dc = (TypeElement) feature.getEnclosingElement();
+        ElementKind kind = feature.getKind();
+        if (kind.isClass() || kind.isInterface()) {
+            for (Element current:ElementFilter.typesIn(dc.getEnclosedElements())) {
+                if (current.getSimpleName().toString().equals(newName)) {
+                    return new MessageFormat(getString("ERR_InnerClassClash")).format(
+                            new Object[] {newName, dc.getSimpleName()}
+                    );
+                }
+            }
+        } else if (kind==ElementKind.METHOD) {
+            if (utils.alreadyDefinedIn((CharSequence) newName, (ExecutableType) feature.asType(), dc)) {
+                return new MessageFormat(getString("ERR_MethodClash")).format(
+                        new Object[] {newName, dc.getSimpleName()}
+                );
+            }
+        } else if (kind.isField()) {
+            for (Element current:ElementFilter.fieldsIn(dc.getEnclosedElements())) {
+                if (current.getSimpleName().toString().equals(newName)) {
+                    return new MessageFormat(getString("ERR_FieldClash")).format(
+                            new Object[] {newName, dc.getSimpleName()}
+                    );
+                }
+            }
+        }
+        return null;
+    }
+    
+    
     private static final String getString(String key) {
         return NbBundle.getMessage(RenameRefactoringPlugin.class, key);
     }
-    
-    //    public void start(org.netbeans.modules.javacore.internalapi.ProgressEvent event) {
-    //        fireProgressListenerStart(event.getOperationType(), event.getCount());
-    //    }
-    //
-    //    public void step(org.netbeans.modules.javacore.internalapi.ProgressEvent event) {
-    //        fireProgressListenerStep();
-    //    }
-    //
-    //    public void stop(org.netbeans.modules.javacore.internalapi.ProgressEvent event) {
-    //        fireProgressListenerStop();
-    //    }
-    
-    //    public void setClassPath() {
-    //        if (NbAbstractRefactoring.isElementAvail((Element) jmiObject) == null && (jmiObject instanceof Method)) {
-    //            Collection c = ((MethodImpl) jmiObject).getOverridenMethods();
-    //            if (!c.isEmpty()) {
-    //                setClassPath(c);
-    //                return;
-    //            }
-    //        }
-    //        setClassPath((Element) jmiObject);
-    //    }
-    
-    // RenameDOElement ..........................................................
-    //    private class RenameDOElement extends SimpleRefactoringElementImpl implements ExternalChange {
-    //        private final String text;
-    //        private PositionBounds bounds = null;
-    //        private String oldName = null;
-    //        private Resource res = null;
-    //        private RefObject refObject;
-    //
-    //        public RenameDOElement(RefObject refObject) {
-    //            this.refObject = refObject;
-    //            Object o;
-    //            if (refObject instanceof Resource) {
-    //                o = refObject;
-    //            } else {
-    //                o = refObject.refImmediateComposite();
-    //            }
-    //            if (o instanceof Resource) res = (Resource) o;
-    //            String bundleName = null;
-    //            if (refObject instanceof Resource) {
-    //                bundleName = "LBL_RenameClassDO";          //NOI18N
-    //            } else if (refObject instanceof JavaEnum) {
-    //                bundleName = "LBL_RenameEnum"; // NOI18N
-    //            } else if (refObject instanceof AnnotationType) {
-    //                bundleName = "LBL_RenameAnnotationType"; // NOI18N
-    //            } else if (refObject instanceof TypeParameter) {
-    //                bundleName = "LBL_RenameTypeParameter"; // NOI18N
-    //            } else if (refObject instanceof JavaClass) {
-    //                bundleName = isResourceClass() ? "LBL_RenameClassDO" : "LBL_RenameClass";          //NOI18N
-    //            } else if (refObject instanceof Method) {
-    //                bundleName = "LBL_RenameMethod";          //NOI18N
-    //            } else if (refObject instanceof Field) {
-    //                bundleName ="LBL_RenameField";          //NOI18N
-    //            } else if (refObject instanceof Parameter) {
-    //                bundleName = "LBL_RenameParameter"; // NOI18N
-    //            } else if (refObject instanceof LocalVariable) {
-    //                bundleName = "LBL_RenameLocVariable"; // NOI18N
-    //            } else if (refObject instanceof Attribute) {
-    //                bundleName = "LBL_RenameAttribute"; // NOI18N
-    //            } else {
-    //                assert false:"Invalid type "+refObject.getClass(); // NOI18N
-    //            }
-    //            text = MessageFormat.format(NbBundle.getMessage(RenameRefactoring.class, bundleName), new Object[] {newName});
-    //        }
-    //
-    //        private boolean isResourceClass() {
-    //            return RenameRefactoringPlugin.isResourceClass(res, refObject);
-    //        }
-    //
-    //        public String getDisplayText() {
-    //            return text;
-    //        }
-    //
-    //        public Element getJavaElement() {
-    //            return (Element) refObject;
-    //        }
-    //
-    //        public PositionBounds getPosition() {
-    //            if (bounds == null) {
-    //                if (!(refObject instanceof Resource)) {
-    //                    bounds = JavaMetamodel.getManager().getElementPosition((Element)refObject);
-    //                }
-    //            }
-    //            return bounds;
-    //        }
-    //
-    //        public String getText() {
-    //            return getDisplayText();
-    //        }
-    //
-    //        public void performChange() {
-    //            if (refObject instanceof Resource) {
-    //                 JavaMetamodel.getManager().registerExtChange(this);
-    //            } else {
-    //                NamedElement obj = (NamedElement) refObject;
-    //                if (obj instanceof JavaClass) {
-    //                    oldName = ((JavaClass) obj).getSimpleName();
-    //                    if (isResourceClass()) {
-    //                        JavaMetamodel.getManager().registerExtChange(this);
-    //                    }
-    //                    ((JavaClass) obj).setSimpleName(newName);
-    //                } else {
-    //                    oldName = obj.getName();
-    //                    obj.setName(newName);
-    //                }
-    //            }
-    //        }
-    //
-    //        private void doRename() {
-    //            try {
-    //                DataObject dobj = JavaMetamodel.getManager().getDataObject(res);
-    //                oldName = dobj.getName();
-    //                dobj.rename(newName);
-    //            } catch (DataObjectNotFoundException e) {
-    //                throw (RuntimeException) new RuntimeException().initCause(e);
-    //            } catch (IOException e) {
-    //                throw (RuntimeException) new RuntimeException().initCause(e);
-    //            }
-    //        }
-    //
-    //        public void performExternalChange () {
-    //            doRename();
-    //        }
-    //
-    //        public void undoExternalChange() {
-    //           if (oldName == null) return;
-    //            String temp = newName;
-    //            newName = oldName;
-    //            oldName = temp;
-    //            doRename();
-    //            newName = temp;
-    //        }
-    //
-    //        public FileObject getParentFile() {
-    //            return null;
-    //        }
-    //    } // RenameDOElement
-    //
-    //    // RenamePackageElement ..........................................................
-    //    private class RenamePackageElement extends RenameUsageElement {
-    //        private String oldName = null;
-    //
-    //        public RenamePackageElement(RefObject jmiObject, Element feature, String newName) {
-    //                super(jmiObject, feature, newName);
-    //        }
-    //
-    //        public void performChange() {
-    //            MultipartId mpi = (MultipartId) feature;
-    //            oldName = mpi.getName();
-    //            mpi.setName(newName);
-    //        }
-    //
-    //    } // RenamePackageElement
-    //
-    //    // RenameDataFolder ..........................................................
-    //    private class RenameDataFolder extends SimpleRefactoringElementImpl implements RefactoringElementImplementation, ExternalChange {
-    //        private final String text;
-    //        private PositionBounds bounds;
-    //        private String oldName, newName;
-    //        private DataFolder folder;
-    //
-    //        public RenameDataFolder(DataFolder folder, String name) {
-    //            newName = name;
-    //            this.folder = folder;
-    //            text = MessageFormat.format(NbBundle.getMessage(RenameRefactoring.class, "LBL_RenameFolder"), new Object[] {folder.getName(), newName});
-    //        }
-    //
-    //        public String getDisplayText() {
-    //            return text;
-    //        }
-    //
-    //        public Element getJavaElement() {
-    //            return (Element) jmiObject;
-    //        }
-    //
-    //        public PositionBounds getPosition() {
-    //            if (bounds == null) {
-    //                bounds = JavaMetamodel.getManager().getElementPosition((Element)jmiObject);
-    //            }
-    //            return bounds;
-    //        }
-    //
-    //
-    //        public String getText() {
-    //            return getDisplayText();
-    //        }
-    //
-    //        public void performChange() {
-    //             JavaMetamodel.getManager().registerExtChange(this);
-    //        }
-    //
-    //        private void doRename() {
-    //            oldName = folder.getName();
-    //            try {
-    //                folder.rename(newName);
-    //            } catch (java.io.IOException e) {
-    //                throw (RuntimeException) new RuntimeException().initCause(e);
-    //            }
-    //        }
-    //
-    //        public void performExternalChange () {
-    //            doRename();
-    //        }
-    //
-    //        public void undoExternalChange() {
-    //            if (oldName == null) return;
-    //            String temp = newName;
-    //            newName = oldName;
-    //            oldName = temp;
-    //            doRename();
-    //            newName = temp;
-    //        }
-    //
-    //        public FileObject getParentFile() {
-    //            return null;
-    //        }
-    //
-    //    } // RenameDataFolder
     
     private class FindTask implements CancellableTask<WorkingCopy> {
         

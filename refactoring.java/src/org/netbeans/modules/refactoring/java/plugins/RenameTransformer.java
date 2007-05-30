@@ -66,7 +66,26 @@ public class RenameTransformer extends SearchVisitor {
             return;
         
         if (el.equals(elementToFind) || isMethodMatch(el)) {
-            Tree nju = make.setLabel(tree, newName);
+            String useThis = null;
+
+            if (elementToFind.getKind().isField()) {
+                Scope scope = workingCopy.getTrees().getScope(path);
+                for (Element ele : scope.getLocalElements()) {
+                    if ((ele.getKind() == ElementKind.LOCAL_VARIABLE || ele.getKind() == ElementKind.PARAMETER) && ele.getSimpleName().toString().equals(newName)) {
+                        if (scope.getEnclosingClass().equals(elementToFind.getEnclosingElement())) 
+                            useThis = "this.";
+                        else 
+                            useThis = elementToFind.getEnclosingElement().getSimpleName() + ".this.";
+                        break;
+                    }
+                } 
+            }
+            Tree nju;
+            if (useThis!=null) {
+                nju = make.setLabel(tree, useThis + newName);
+            } else {
+                nju = make.setLabel(tree, newName);
+            }
             workingCopy.rewrite(tree, nju);
         }
     }
