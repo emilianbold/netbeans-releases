@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -86,9 +86,9 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 DEFAULT_ERROR_LOGIC_ACCESS);
         setProperty(ERROR_FSROOTS_PROPERTY,
                 DEFAULT_ERROR_FSROOTS);
-        setProperty(ERROR_NON_EXISTENT_ROOT_PROPERTY, 
+        setProperty(ERROR_NON_EXISTENT_ROOT_PROPERTY,
                 DEFAULT_ERROR_NON_EXISTENT_ROOT);
-        setProperty(ERROR_CANNOT_WRITE_PROPERTY, 
+        setProperty(ERROR_CANNOT_WRITE_PROPERTY,
                 DEFAULT_ERROR_CANNOT_WRITE);
     }
     
@@ -277,25 +277,19 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                         new HashMap<File, Long>();
                 
                 for (Product product: toInstall) {
-                    boolean rootFound = false;
-                    for (File root: roots) {
-                        if (FileUtils.isParent(
-                                root, product.getInstallationLocation())) {
-                            rootFound = true;
-                            
-                            Long size = spaceMap.get(root);
-                            if (size != null) {
-                                size = Long.valueOf(size.longValue() +
-                                        product.getRequiredDiskSpace());
-                            } else {
-                                size = Long.valueOf(product.getRequiredDiskSpace());
-                            }
-                            
-                            spaceMap.put(root, size);
-                        }
-                    }
+                    File root = FileUtils.getRoot(
+                            product.getInstallationLocation(), roots);
                     
-                    if (!rootFound) {
+                    if ( root != null ) {
+                        Long size = spaceMap.get(root);
+                        if (size != null) {
+                            size = Long.valueOf(size.longValue() +
+                                    product.getRequiredDiskSpace());
+                        } else {
+                            size = Long.valueOf(product.getRequiredDiskSpace());
+                        }
+                        spaceMap.put(root, size);                        
+                    } else {
                         return StringUtils.format(
                                 panel.getProperty(ERROR_NON_EXISTENT_ROOT_PROPERTY),
                                 product,
@@ -323,7 +317,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                     }
                 }
                 
-                final List<Product> toUninstall = 
+                final List<Product> toUninstall =
                         Registry.getInstance().getProductsToUninstall();
                 for (Product product: toUninstall) {
                     if (!FileUtils.canWrite(product.getInstallationLocation())) {
@@ -466,7 +460,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             "error.fsroots"; // NOI18N
     public static final String ERROR_NON_EXISTENT_ROOT_PROPERTY =
             "error.non.existent.root"; // NOI18N
-    public static final String ERROR_CANNOT_WRITE_PROPERTY = 
+    public static final String ERROR_CANNOT_WRITE_PROPERTY =
             "error.cannot.write"; // NOI18N
     
     public static final String DEFAULT_TITLE =

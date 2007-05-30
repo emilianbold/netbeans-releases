@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -24,7 +24,6 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -473,6 +472,22 @@ public final class FileUtils {
         }
         
         return (parent != null) && candidate.equals(parent);
+    }
+    
+    public static File getRoot(
+            final File file, 
+            final List<File> roots) {
+        File result = null;
+        for (File root: roots) {
+            if (isParent(root, file)) {
+                if(result == null || 
+                        (result.getAbsolutePath().length() < 
+                        root.getAbsolutePath().length())) {
+                    result = root;
+                }
+            }
+        }
+        return result;
     }
     
     public static long countChildren(
