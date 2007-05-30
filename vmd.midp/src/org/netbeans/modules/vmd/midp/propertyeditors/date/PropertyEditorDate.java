@@ -35,7 +35,9 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.items.DateFieldCD;
@@ -60,7 +62,7 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
     private CustomEditor customEditor;
     private JRadioButton radioButton;
     
-    private DesignComponent component;
+    private long componentID;
     
     private PropertyEditorDate() {
         super();
@@ -83,7 +85,7 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
     
     public void init(DesignComponent component) {
         super.init(component);
-        this.component = component;
+        this.componentID = component.getComponentID();
     }
     
     public JComponent getCustomEditorComponent() {
@@ -161,16 +163,16 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
     
     private int getInputMode() {
         final int[] inputMode = new int[] { DateFieldCD.VALUE_DATE_TIME };
-        if (component != null) {
-            component.getDocument().getTransactionManager().readAccess(new Runnable() {
-                public void run() {
-                    PropertyValue pv = component.readProperty(DateFieldCD.PROP_INPUT_MODE);
-                    if (pv.getKind() == PropertyValue.Kind.VALUE)  {
-                        inputMode[0] = MidpTypes.getInteger(pv);
-                    }
+        final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
+        document.getTransactionManager().readAccess(new Runnable() {
+            public void run() {
+                DesignComponent component = document.getComponentByUID(componentID);
+                PropertyValue pv = component.readProperty(DateFieldCD.PROP_INPUT_MODE);
+                if (pv.getKind() == PropertyValue.Kind.VALUE)  {
+                    inputMode[0] = MidpTypes.getInteger(pv);
                 }
-            });
-        }
+            }
+        });
         return inputMode[0];
     }
     

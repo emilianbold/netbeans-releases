@@ -31,6 +31,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
 import org.netbeans.modules.vmd.midp.codegen.InstanceNameResolver;
 import org.netbeans.modules.vmd.midp.components.points.MethodPointCD;
@@ -45,7 +46,7 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
     
     private TypeID typeID;
     private final CustomEditor customEditor;
-    private DesignComponent component;
+    private long componentID;
     private boolean canWrite;
     
     private PropertyEditorInstanceName(TypeID typeID) {
@@ -83,8 +84,10 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
     
     private String saveValue(final String text) {
         final String[] str = new String[1];
-        component.getDocument().getTransactionManager().readAccess(new Runnable() {
+        final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
+        document.getTransactionManager().readAccess(new Runnable() {
             public void run() {
+                DesignComponent component = document.getComponentByUID(componentID);
                 PropertyValue newInstanceName = InstanceNameResolver.createFromSuggested(component, text);
                 PropertyEditorInstanceName.super.setValue(newInstanceName);
                 str[0] = (String) newInstanceName.getPrimitiveValue();
@@ -101,7 +104,7 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
     }
     
     public void init(DesignComponent component) {
-        this.component = component;
+        this.componentID = component.getComponentID();
     }
     
     public boolean supportsDefaultValue() {
@@ -109,7 +112,7 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
     }
     
     public boolean canWrite() {
-        final DesignDocument document = component.getDocument();
+        final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
         document.getTransactionManager().readAccess(new Runnable() {
             public void run() {
                 if (document.getSelectedComponents().size() > 1)

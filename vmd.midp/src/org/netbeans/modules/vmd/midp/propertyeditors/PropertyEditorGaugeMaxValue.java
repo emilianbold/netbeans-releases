@@ -37,6 +37,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.items.GaugeCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorUserCode;
@@ -56,8 +57,7 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
     private CustomEditor customEditor;
     private JRadioButton radioButton;
     
-    private DesignDocument document;
-    private DesignComponent component;
+    private long componentID;
     
     private PropertyEditorGaugeMaxValue() {
         super();
@@ -80,8 +80,7 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
     
     public void init(DesignComponent component) {
         super.init(component);
-        this.component = component;
-        document = component.getDocument();
+        this.componentID = component.getComponentID();
     }
     
     public JComponent getCustomEditorComponent() {
@@ -142,8 +141,10 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
             if (INDEFINITE_TEXT.equals(text) || INDEFINITE_NUM_TEXT.equals(text)) {
                 super.setValue(MidpTypes.createIntegerValue(GaugeCD.VALUE_INDEFINITE));
                 
+                final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
                 document.getTransactionManager().writeAccess( new Runnable() {
                     public void run() {
+                        DesignComponent component = document.getComponentByUID(componentID);
                         component.writeProperty(GaugeCD.PROP_VALUE, MidpTypes.createIntegerValue(GaugeCD.VALUE_CONTINUOUS_IDLE));
                     }
                 });

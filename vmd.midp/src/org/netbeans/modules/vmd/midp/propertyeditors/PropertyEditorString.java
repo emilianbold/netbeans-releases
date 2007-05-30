@@ -29,6 +29,7 @@ import javax.swing.JScrollPane;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.displayables.TextBoxCD;
 import org.netbeans.modules.vmd.midp.components.items.TextFieldCD;
@@ -52,9 +53,8 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
     private JRadioButton radioButton;
     private int dependance;
     
-    private DesignDocument document;
-    private DesignComponent component;
-
+    private long componentID;
+    
     private PropertyEditorString(int dependance) {
         super();
         this.dependance = dependance;
@@ -89,8 +89,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
     
     public void init(DesignComponent component) {
         super.init(component);
-        this.component = component;
-        document = component.getDocument();
+        this.componentID = component.getComponentID();
     }
     
     public JComponent getCustomEditorComponent() {
@@ -108,7 +107,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
     public boolean isVerticallyResizable() {
         return true;
     }
-
+    
     public String getAsText() {
         String superText = super.getAsText();
         if (superText != null) {
@@ -116,7 +115,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         }
         
         PropertyValue value = (PropertyValue) super.getValue();
-        return (String) value.getPrimitiveValue ();
+        return (String) value.getPrimitiveValue();
     }
     
     public void setText(String text) {
@@ -131,38 +130,40 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         if (isCurrentValueANull() || value == null) {
             customEditor.setText("");
         } else {
-            customEditor.setText((String) value.getPrimitiveValue ());
+            customEditor.setText((String) value.getPrimitiveValue());
         }
         radioButton.setSelected(!isCurrentValueAUserCodeType());
     }
     
     private void saveValue(String text) {
         final int length = text.length();
-//        if (length > 0) {
-            super.setValue(MidpTypes.createStringValue(text));
-            switch (dependance) {
-                case DEPENDENCE_TEXT_BOX:
-                    document.getTransactionManager().writeAccess( new Runnable() {
-                        public void run() {
-                            PropertyValue value = component.readProperty(TextBoxCD.PROP_MAX_SIZE);
-                            if (MidpTypes.getInteger(value) < length) {
-                                component.writeProperty(TextBoxCD.PROP_MAX_SIZE, MidpTypes.createIntegerValue(length));
-                            }
-                        }
-                    });
-                    break;
-                case DEPENDENCE_TEXT_FIELD:
-                    document.getTransactionManager().writeAccess( new Runnable() {
-                        public void run() {
-                            PropertyValue value = component.readProperty(TextFieldCD.PROP_MAX_SIZE);
-                            if (MidpTypes.getInteger(value) < length) {
-                                component.writeProperty(TextFieldCD.PROP_MAX_SIZE, MidpTypes.createIntegerValue(length));
-                            }
-                        }
-                    });
-                    break;
-            }
-  //      }
+        super.setValue(MidpTypes.createStringValue(text));
+        
+        final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
+        switch (dependance) {
+        case DEPENDENCE_TEXT_BOX:
+            document.getTransactionManager().writeAccess( new Runnable() {
+                public void run() {
+                    DesignComponent component = document.getComponentByUID(componentID);
+                    PropertyValue value = component.readProperty(TextBoxCD.PROP_MAX_SIZE);
+                    if (MidpTypes.getInteger(value) < length) {
+                        component.writeProperty(TextBoxCD.PROP_MAX_SIZE, MidpTypes.createIntegerValue(length));
+                    }
+                }
+            });
+            break;
+        case DEPENDENCE_TEXT_FIELD:
+            document.getTransactionManager().writeAccess( new Runnable() {
+                public void run() {
+                    DesignComponent component = document.getComponentByUID(componentID);
+                    PropertyValue value = component.readProperty(TextFieldCD.PROP_MAX_SIZE);
+                    if (MidpTypes.getInteger(value) < length) {
+                        component.writeProperty(TextFieldCD.PROP_MAX_SIZE, MidpTypes.createIntegerValue(length));
+                    }
+                }
+            });
+            break;
+        }
     }
     
     public void customEditorOKButtonPressed() {

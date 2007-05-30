@@ -36,6 +36,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
@@ -56,9 +57,7 @@ import org.openide.util.NbBundle;
  */
 public final class PropertyEditorListSelectCommand extends PropertyEditorUserCode implements PropertyEditorElement {
     
-    private DesignDocument document;
-    private DesignComponent list;
-    private DesignComponent listSelectCommand;
+    private long componentID;
     
     private final List<String> tags = new ArrayList<String>();
     private final Map<String, DesignComponent> values = new TreeMap<String, DesignComponent>();
@@ -67,8 +66,8 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
     private JRadioButton radioButton;
     private TypeID typeID;
     
-    private String noneItem; 
-    private String defaultItem; 
+    private String noneItem;
+    private String defaultItem;
     
     public static PropertyEditorListSelectCommand create() {
         String mnemonic =  NbBundle.getMessage(PropertyEditorListSelectCommand.class, "LBL_SEL_COMMAND_STR");
@@ -168,6 +167,7 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
         values.clear();
         values.put(noneItem, null);
         
+        final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
         document.getTransactionManager().writeAccess( new Runnable() {
             public void run() {
                 Collection<DesignComponent> components = MidpDocumentSupport.getCategoryComponent(document, CommandsCategoryCD.TYPEID).getComponents();
@@ -194,16 +194,12 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
     }
     
     private DesignComponent getListSelectCommand() {
-        if (listSelectCommand == null) {
-            listSelectCommand = MidpDocumentSupport.getSingletonCommand(document, typeID);
-        }
-        return listSelectCommand;
+        return MidpDocumentSupport.getSingletonCommand(ActiveDocumentSupport.getDefault().getActiveDocument(), typeID);
     }
     
     public void init(DesignComponent component) {
         super.init(component);
-        list = component;
-        document = component.getDocument();
+        componentID = component.getComponentID();
     }
     
     private String getComponentDisplayName(DesignComponent component) {
@@ -212,6 +208,7 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
     
     private String getDecodeValue(final PropertyValue value){
         final String[] decodeValue = new String[1];
+        final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
         document.getTransactionManager().readAccess(new Runnable() {
             public void run() {
                 DesignComponent valueComponent = value.getComponent();
@@ -239,9 +236,11 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
     
     private DesignComponent getCommandEvenSource(final String name) {
         final DesignComponent[] itemCommandEvenSource = new DesignComponent[1];
+        final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
         document.getTransactionManager().writeAccess( new Runnable() {
             public void run() {
                 DesignComponent command = values.get(name);
+                DesignComponent list = document.getComponentByUID(componentID);
                 List<PropertyValue> listESValues = list.readProperty(DisplayableCD.PROP_COMMANDS).getArray();
                 for (PropertyValue esValue : listESValues) {
                     DesignComponent existingES = esValue.getComponent();
@@ -281,6 +280,7 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
             }
             
             final PropertyValue[] cmdValue = new PropertyValue[1];
+            final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
             document.getTransactionManager().readAccess(new Runnable() {
                 public void run() {
                     cmdValue[0] = value.getComponent().readProperty(CommandEventSourceCD.PROP_COMMAND);
