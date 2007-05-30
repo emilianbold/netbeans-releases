@@ -160,15 +160,25 @@ public class Utils {
             for (int j=0; j<resourceDirs.length; j++){
                 File resourceDir = resourceDirs[j];
                 File[] resources = null;
-                
-                if(resourceDir != null){
-                    resources = resourceDir.listFiles(new ResourceFileFilter());
-                }
-                
-                if(resources != null){
-                    registerConnectionPools(mejb, resources);
-                    registerDatasources(mejb, resources);
-                    registerOtherResources(resources, sunDm);//Remaining Resources
+                //Temporary flag while moving to single sun-resource file
+                //TODO -- remove/clean up
+                if (System.getProperties().getProperty("resource-redesign") != null){
+                    if(resourceDir != null){
+                        resources = resourceDir.listFiles(new newResourceFileFilter());
+                    }
+                    if(resources != null){
+                        registerSunResources(mejb, resources);
+                    }
+                }else{
+                    if(resourceDir != null){
+                        resources = resourceDir.listFiles(new ResourceFileFilter());
+                    }
+                    
+                    if(resources != null){
+                        registerConnectionPools(mejb, resources);
+                        registerDatasources(mejb, resources);
+                        registerOtherResources(resources, sunDm);//Remaining Resources
+                    }
                 }
             }
         }catch(Exception ex){
@@ -176,6 +186,51 @@ public class Utils {
             System.out.println(errorMsg);
         }
         System.out.println(bundle.getString("Msg_ProjResRegisterFinish")); //NOI18N
+    }
+    
+    private static void registerSunResources(final ServerInterface mejb, final File[] resources) throws Exception {
+        for(int i=0; i<resources.length; i++ ){
+            File resource = resources[i];
+            if((resource != null) && (!resource.isDirectory())){
+                Utils.registerIndvResources(mejb, resource);
+            }
+        }
+    }
+    
+    public static void registerIndvResources(ServerInterface mejb, java.io.File primaryFile) {
+        Resources resources = getResourceGraph(primaryFile);
+        Object retVal = null;
+        // identify JDBC Connection Pools
+        JdbcConnectionPool[] pools = resources.getJdbcConnectionPool();
+        for(int i=0; i<pools.length; i++){           
+            JdbcConnectionPool connectionPoolBean = pools[i];
+            ResourceUtils.register(connectionPoolBean, mejb, true);
+        }
+        // identify JDBC Resources
+        JdbcResource[] dataSources = resources.getJdbcResource();
+        for(int i=0; i<dataSources.length; i++){           
+            JdbcResource datasourceBean = dataSources[i];
+            try{
+                ResourceUtils.register(datasourceBean, mejb, true);
+            }catch(Exception ex){
+                String errorMsg = MessageFormat.format(bundle.getString( "Msg_RegFailure"), new Object[]{ex.getLocalizedMessage()}); //NOI18N
+                System.out.println(errorMsg);
+            }    
+        }
+        
+        // identify Mail Resources
+        MailResource[] mailResources = resources.getMailResource();
+        for(int i=0; i<mailResources.length; i++){           
+            MailResource mailBean = mailResources[i];
+            ResourceUtils.register(mailBean, mejb, true);
+        }
+        
+        // identify JMS Resources
+        JmsResource[] jmsResources = resources.getJmsResource();
+        for(int i=0; i<jmsResources.length; i++){           
+            JmsResource jmsBean = jmsResources[i];
+            ResourceUtils.register(jmsBean, mejb, true);
+        }
     }
     
     private static void registerConnectionPools(final ServerInterface mejb, final File[] resources) throws Exception {
@@ -224,6 +279,13 @@ public class Utils {
         public boolean accept(File f) {
             return f.isDirectory() ||
                     f.getName().toLowerCase(Locale.getDefault()).endsWith(".sun-resource"); //NOI18N
+        }
+    }
+    
+    public static class newResourceFileFilter implements FileFilter {
+        public boolean accept(File f) {
+            return f.isDirectory() ||
+                    f.getName().toLowerCase(Locale.getDefault()).endsWith(".xml"); //NOI18N
         }
     }
     
