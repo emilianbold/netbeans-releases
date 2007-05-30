@@ -120,7 +120,6 @@ public class FileBuilder
       long newElemStartPos = getElemStartPosition(newElem);
       long newElemEndPos = getElemEndPosition(newElem);
       
-      
       byte[] replacingBuffer = null;
       int numOfBytesReplaced = 0;
       
@@ -594,6 +593,12 @@ public class FileBuilder
       if ( commentStartPos > -1 && elem.getLength("Comment") > 0) // commet=nt exists
       {
          startPos = commentStartPos;
+      }
+      long markerStartPos = elem.getPosition("Marker-Comment");
+      if ( markerStartPos > -1 && elem.getLength("Marker-Comment") > 0
+	   && markerStartPos < startPos) 
+      {
+         startPos = markerStartPos;
       }
       return startPos;
    }
