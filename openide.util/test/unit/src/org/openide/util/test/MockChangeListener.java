@@ -48,12 +48,13 @@ public class MockChangeListener implements ChangeListener {
      * Specifies a failure message to use for the next assertion.
      * @return this object, for convenient chaining
      */
-    public MockChangeListener msg(String msg) {
+    public synchronized MockChangeListener msg(String msg) {
         this.msg = msg;
         return this;
     }
 
     private String compose(String msg) {
+        assert Thread.holdsLock(this);
         return this.msg == null ? msg : msg + ": " + this.msg;
     }
 
