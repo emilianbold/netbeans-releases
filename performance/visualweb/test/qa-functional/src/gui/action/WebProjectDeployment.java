@@ -111,5 +111,6 @@ public class WebProjectDeployment extends org.netbeans.performance.test.utilitie
     public void shutdown() {
         log(":: shutdown ");
         VWPUtilities.stopApplicationServer();
+        VWPUtilities.closeLog();
     }
 }
