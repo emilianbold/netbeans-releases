@@ -28,9 +28,11 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import javax.swing.JEditorPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.html.HTMLEditorKit;
+import org.openide.util.NbBundle;
 
 public class ErrorPanel extends JEditorPane {
 
@@ -44,16 +46,17 @@ public class ErrorPanel extends JEditorPane {
         this.designView = designView;
 //        this.timer = new Timer(3000, this);
         
-        setEditorKitForContentType("text/html",new HTMLEditorKit()); // NOI18N
+//        setEditorKitForContentType("text/html",new HTMLEditorKit()); // NOI18N
         setEditable(false);
         setPreferredSize(new Dimension(200, 200));
         setBorder(new EmptyBorder(20, 20, 20, 20));
         setContentType("text/html"); // NOI18N
         setBackground(designView.getBackground());
-        
-        try {
-            setPage(ERROR_MESSAGE);
-        } catch (IOException e) {};
+            setText(NbBundle.getMessage(ErrorPanel.class, "LBL_ErrorPanel_Content"));
+//        try {
+//            setPage(ERROR_MESSAGE);
+//            
+//        } catch (IOException e) {};
     }
 
 
@@ -136,12 +139,14 @@ public class ErrorPanel extends JEditorPane {
 //    }
     
 
-    private static URL ERROR_MESSAGE; // NOI18N
+//    private static URL ERROR_MESSAGE; // NOI18N
+    
     
     static {
-        try {
-            ERROR_MESSAGE = new URL("nbresloc:/org/netbeans/modules/bpel/design/resources/errormessage.html"); // NOI18N
-        } catch (MalformedURLException e) {}
+//        try {
+//            ERROR_MESSAGE = new URL("nbresloc:/org/netbeans/modules/bpel/design/resources/errormessage.html"); // NOI18N
+//            ERROR_MESSAGE = NbBundle.getMessage(ErrorPanel.class, "LBL_ErrorPanel_Content");// NOI18N
+//        } catch (MalformedURLException e) {}
     }
     
     
