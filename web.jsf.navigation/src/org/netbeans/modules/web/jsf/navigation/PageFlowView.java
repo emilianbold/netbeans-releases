@@ -45,7 +45,7 @@ import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.navigation.JSFPageFlowMultiviewDescriptor.PageFlowElement;
-import org.netbeans.modules.web.jsf.navigation.graph.LayoutManager;
+import org.netbeans.modules.web.jsf.navigation.graph.layout.LayoutUtility;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowSceneData;
 import org.netbeans.modules.web.jsf.navigation.graph.SceneSerializer;
@@ -549,7 +549,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     }
     
     public void layoutNodes() {
-        LayoutManager.performGridGraphLayout(scene);
+        LayoutUtility.performLayout(scene, LayoutUtility.LayoutType.GRID_GRAPH);
     }
     
     
