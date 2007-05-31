@@ -22,6 +22,8 @@ package org.netbeans.test.utilities.testcase;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
@@ -33,8 +35,8 @@ import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JMenuOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileUtil;
@@ -49,6 +51,10 @@ public class Utilities{
     /** Find Dialog label */
     public  static final String FIND_DIALOG = Bundle.getString(
             "org.netbeans.modules.search.Bundle", "LBL_FindInProjects");
+    
+    /** Find Dialog label */
+    public  static final String FIND_DIALOG_REPLACE = Bundle.getString(
+            "org.netbeans.modules.search.Bundle", "LBL_ReplaceInProjects");
     
     
     /** name of sample project */
@@ -88,6 +94,10 @@ public class Utilities{
     //set NB as main window
     public static MainWindowOperator mwo = MainWindowOperator.getDefault();
     
+    // Test source code
+    public static EditorOperator editor;
+    public static EditorWindowOperator ewo;
+    public static Node formnode;
    
     /**
      * Saves all opened files
@@ -226,6 +236,10 @@ public class Utilities{
          return new NbDialogOperator(FIND_DIALOG);
     }
     
+    public static NbDialogOperator getFindAndReplaceMainMenu() {
+        mwo.menuBar().pushMenuNoBlock("Edit|" + FIND_DIALOG_REPLACE + "...");
+        return new NbDialogOperator(FIND_DIALOG_REPLACE);
+    }
     
 //    public static NbDialogOperator getFindDialog() {
 //        Node pn = new ProjectsTabOperator().getProjectRootNode(
@@ -264,11 +278,42 @@ public class Utilities{
         return dataProjectName;
     }
     
-    
+    /**
+     * Method which select appropriate radio buttion in scope section
+    */
+    public static void scopeSelection(NbDialogOperator name, String selection){
+        JRadioButtonOperator rbo = new JRadioButtonOperator(name , selection);
+        rbo.setSelected(true);
+    }   
     /**
      * Sleeps for waitTimeout miliseconds to avoid incorrect test failures.
      */
     public static void takeANap(long waitTimeout) {
         new org.netbeans.jemmy.EventTool().waitNoEvent(waitTimeout);
+    }
+    
+    /**
+     * Method which scan java code in editor
+     */
+    public static boolean checkEditor(String regexp) {       
+    
+        editor = ewo.getEditor();
+        takeANap(100);
+        String editortext = editor.getText();
+        
+        java.util.StringTokenizer tokenizer = new java.util.StringTokenizer(regexp,",");
+        int pos = -1;
+        boolean result = true;
+        while(tokenizer.hasMoreTokens()) {
+            String token = tokenizer.nextToken();
+            pos = editortext.indexOf(token,pos);
+            if (pos == -1) {
+                result = false;
+                break;
+            }
+            pos += token.length();
+        }
+        System.out.println("Result: " + result);
+        return result;
     }
 }
