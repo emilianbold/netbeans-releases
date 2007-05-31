@@ -13,14 +13,14 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.modules.web;
 
 import org.netbeans.jellytools.*;
 import java.awt.Component;
-import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
@@ -63,7 +63,7 @@ public class NavigatorOperator extends TopComponentOperator{
         return treeOperator;
     }
     
-    private static final class NavigatorAction extends ActionNoBlock{
+    private static final class NavigatorAction extends Action{
         private static final String navigatorActionName = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window")
                 + "|" +
                 Bundle.getString("org.netbeans.modules.navigator.Bundle", "Menu/Window/Navigator")
