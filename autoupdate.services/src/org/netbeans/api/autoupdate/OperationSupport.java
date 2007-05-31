@@ -56,7 +56,39 @@ public final class OperationSupport {
      
         assert impl != null;
         impl.doOperation(progress, container);
-    }        
+    }
+    
+    public void doCancel () throws OperationException {
+        OperationSupportImpl impl = null;
+        OperationContainerImpl.OperationType type = container.impl.getType();
+        switch (type) {
+        case INSTALL:
+            impl = OperationSupportImpl.forInstall();
+            break;
+        case UNINSTALL:
+            impl = OperationSupportImpl.forUninstall();
+            break;
+        case UPDATE:
+            impl = OperationSupportImpl.forUpdate();
+            break;
+        case ENABLE:
+            impl = OperationSupportImpl.forEnable();
+            break;
+        case DISABLE:
+            impl = OperationSupportImpl.forDisable();
+            break;
+        case CUSTOM_INSTALL:
+            impl = OperationSupportImpl.forCustomInstall ();
+            break;
+        default:
+            assert false : "Unknown OperationSupport for type " + type;
+        }
+     
+        assert impl != null;
+        // finds and deletes possible downloaded files
+        impl.doCancel ();
+    }
+
     //end of API - next just impl details
     private OperationContainer<OperationSupport> container;
     void setContainer(OperationContainer<OperationSupport> c) {container = c;}

@@ -123,7 +123,7 @@ public class CustomHandleStep implements WizardDescriptor.FinishablePanel<Wizard
         if (! isInstall) {
             assert false : "Not supported for uninstall.";
         }
-        final OperationSupport support = model.getCustomInstallContainer ().getSupport (); //XXX: for install only !
+        final OperationSupport support = model.getCustomHandledContainer ().getSupport (); //XXX: for install only !
         assert support != null;
         passed = false;
         

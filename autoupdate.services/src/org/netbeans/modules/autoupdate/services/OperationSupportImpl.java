@@ -64,6 +64,7 @@ public abstract class OperationSupportImpl {
     }
     
     public abstract void doOperation(ProgressHandle progress/*or null*/, OperationContainer<?> container) throws OperationException;
+    public abstract void doCancel () throws OperationException;
     
     /** Creates a new instance of OperationContainer */
     private OperationSupportImpl() {
@@ -101,6 +102,9 @@ public abstract class OperationSupportImpl {
                     progress.finish();
                 }
             }            
+        }
+        public void doCancel () throws OperationException {
+            assert false : "Not supported yet";
         }
         
         private static boolean enable(ModuleManager mm, Set<Module> toRun) throws OperationException {
@@ -149,6 +153,10 @@ public abstract class OperationSupportImpl {
                 }
             }
         }
+        public void doCancel () throws OperationException {
+            assert false : "Not supported yet";
+        }
+        
     }
     private static class ForUninstall extends OperationSupportImpl {
         public void doOperation(ProgressHandle progress,
@@ -205,18 +213,30 @@ public abstract class OperationSupportImpl {
                 }
             }
         }
+        public void doCancel () throws OperationException {
+            assert false : "Not supported yet";
+        }
+        
     }
     private static class ForInstall extends OperationSupportImpl {
         public void doOperation(ProgressHandle progress,
                 OperationContainer container) throws OperationException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+        public void doCancel () throws OperationException {
+            assert false : "Not supported yet";
+        }
+        
     }
     private static class ForUpdate extends OperationSupportImpl {
         public void doOperation(ProgressHandle progress,
                 OperationContainer container) throws OperationException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+        public void doCancel () throws OperationException {
+            assert false : "Not supported yet";
+        }
+        
     }
     
     private static class ForCustomInstall extends OperationSupportImpl {
@@ -247,5 +267,9 @@ public abstract class OperationSupportImpl {
                 }
             }
         }
+        public void doCancel () throws OperationException {
+            assert false : "Not supported yet";
+        }
+        
     }
 }

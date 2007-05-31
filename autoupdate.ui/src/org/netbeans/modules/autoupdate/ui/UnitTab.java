@@ -24,9 +24,6 @@ import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -59,11 +56,10 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableModel;
-import org.netbeans.api.autoupdate.InstallSupport;
-import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
@@ -842,15 +838,13 @@ public class UnitTab extends javax.swing.JPanel {
                 wizardFinished = wizard.invokeWizard ();
             } finally {
                 Containers.forUninstall ().removeAll ();
-                super.after();
+                after();
                 if (!wizardFinished) {
                     UnitCategoryTableModel.restoreState(model.getUnitData(), state, model.isMarkedAsDefault());
                 }
                 refreshState();
             }
         }
-        public void after() {            
-        }                        
     }
     
     private class UpdateAction extends TabAction {
@@ -861,20 +855,16 @@ public class UnitTab extends javax.swing.JPanel {
         public void performerImpl () {
             boolean wizardFinished = false; 
             final Map<String, Boolean> state = UnitCategoryTableModel.captureState(model.getUnitData());            
-            OperationContainer<InstallSupport> cont = Containers.forUpdate ();
             try {
-                wizardFinished = new InstallUnitWizard ().invokeWizard (cont);
+                wizardFinished = new InstallUnitWizard ().invokeWizard (OperationType.UPDATE);
             } finally {
-                cont.removeAll ();
-                super.after();
+                after();
                 if (!wizardFinished) {
                     UnitCategoryTableModel.restoreState(model.getUnitData(), state, model.isMarkedAsDefault());
                 }                
                 refreshState();
             }            
         }
-        public void after() {            
-        }                
     }
     
     private class AvailableAction extends TabAction {
@@ -885,21 +875,16 @@ public class UnitTab extends javax.swing.JPanel {
         public void performerImpl () {
             boolean wizardFinished = false; 
             final Map<String, Boolean> state = UnitCategoryTableModel.captureState(model.getUnitData());            
-            OperationContainer<InstallSupport> cont = Containers.forAvailable ();
             try {
-                wizardFinished = new InstallUnitWizard ().invokeWizard (cont);
+                wizardFinished = new InstallUnitWizard ().invokeWizard (OperationType.INSTALL);
             } finally {
-                cont.removeAll ();
-                super.after();
+                after();
                 if (!wizardFinished) {
                     UnitCategoryTableModel.restoreState(model.getUnitData(), state, model.isMarkedAsDefault());
                 }              
                 refreshState();
             }
         }
-
-        @Override
-        public void after() {}        
     }
     
     private class LocalUpdateAction extends TabAction {
@@ -907,25 +892,19 @@ public class UnitTab extends javax.swing.JPanel {
             super("UnitTab_bTabAction_Name_LOCAL", null);
         }
         public void performerImpl() {
-            int available = Containers.forAvailableNbms().listAll().size();
-            int updates = Containers.forUpdateNbms().listAll().size();
-            OperationContainer<InstallSupport> cont = (updates > available) ? Containers.forUpdateNbms() : Containers.forAvailableNbms();
             boolean wizardFinished = false;
             final Map<String, Boolean> state = UnitCategoryTableModel.captureState(model.getUnitData());
             
             try {
-                //nonsense condition - but wizard can't do both operations at once NOW
-                wizardFinished = new InstallUnitWizard().invokeWizard(cont);
+                wizardFinished = new InstallUnitWizard ().invokeWizard (OperationType.LOCAL_DOWNLOAD);
             } finally {
-                cont.removeAll();
-                super.after(); 
+                after(); 
                 if (!wizardFinished) {
                     UnitCategoryTableModel.restoreState(model.getUnitData(), state, model.isMarkedAsDefault());
                 }
                 refreshState();                
             }
         }
-        public void after() {}
     }
     
     private class CheckCategoryAction extends RowTabAction {

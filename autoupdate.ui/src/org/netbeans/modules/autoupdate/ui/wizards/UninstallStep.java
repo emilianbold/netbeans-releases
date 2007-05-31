@@ -76,7 +76,7 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
     }
     
     public boolean isFinishPanel() {
-        return false;
+        return true;
     }
 
     public PanelBodyContainer getComponent() {
@@ -114,7 +114,8 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
     }
     
     private void handleAction () {
-        OperationSupport support = (OperationSupport) model.getContainer ().getSupport ();
+        assert model.getBaseContainer () != null : "getBaseContainers() returns not null container.";
+        OperationSupport support = (OperationSupport) model.getBaseContainer ().getSupport ();
         assert support != null;
         ProgressHandle handle = null;
         switch (model.getOperation ()) {
@@ -188,7 +189,7 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
     }
 
     public boolean isValid() {
-        return false;
+        return true;
     }
 
     public synchronized void addChangeListener(ChangeListener l) {

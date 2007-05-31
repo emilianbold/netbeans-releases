@@ -20,12 +20,8 @@
 package org.netbeans.modules.autoupdate.ui;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.swing.table.JTableHeader;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
@@ -249,12 +245,6 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
     public int getDownloadSize () {
         // no need to download anything in Locally Downloaded tab
         return 0;
-    }
-    
-    private OperationContainer getContainer() {
-        int available = Containers.forAvailableNbms().listAll().size();
-        int updates = Containers.forUpdateNbms().listAll().size();        
-        return (updates > available) ? Containers.forUpdateNbms() : Containers.forAvailableNbms();
     }
     
     private String getBundle (String key) {

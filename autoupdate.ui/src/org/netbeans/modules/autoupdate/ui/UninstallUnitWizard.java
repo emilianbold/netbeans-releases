@@ -21,6 +21,8 @@ package org.netbeans.modules.autoupdate.ui;
 
 import java.awt.Dialog;
 import java.text.MessageFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel;
 import org.netbeans.modules.autoupdate.ui.wizards.UninstallUnitWizardIterator;
 import org.netbeans.modules.autoupdate.ui.wizards.UninstallUnitWizardModel;
@@ -33,6 +35,8 @@ import org.openide.util.NbBundle;
  * @author Jiri Rechtacek
  */
 public class UninstallUnitWizard {
+    
+    private final Logger log = Logger.getLogger (this.getClass ().getName ());
     
     /** Creates a new instance of InstallUnitWizard */
     public UninstallUnitWizard () {}
@@ -67,7 +71,7 @@ public class UninstallUnitWizard {
         dialog.setVisible (true);
         dialog.toFront ();
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
-        //TODO: must be fixed to return true if the wizard was properly finished
+        log.log (Level.FINE, "InstallUnitWizard returns with value " + wizardDescriptor.getValue ());
         return !cancelled;
     }
     

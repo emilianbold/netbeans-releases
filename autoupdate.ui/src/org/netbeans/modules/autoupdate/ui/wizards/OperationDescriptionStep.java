@@ -77,6 +77,7 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
             String head = null;
             String content = null;
             switch (model.getOperation ()) {
+            case LOCAL_DOWNLOAD :
             case INSTALL :
                 tableTitle = getBundle (TABLE_TITLE_INSTALL);
                 dependenciesTitle = getBundle (DEPENDENCIES_TITLE_INSTALL);

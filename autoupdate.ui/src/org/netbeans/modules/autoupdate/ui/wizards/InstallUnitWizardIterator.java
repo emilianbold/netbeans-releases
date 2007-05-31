@@ -74,7 +74,7 @@ public final class InstallUnitWizardIterator implements WizardDescriptor.Iterato
     }
     
     public boolean hasPrevious () {
-        return index > 0 && ! (current () instanceof InstallStep); //???
+        return index > 0 && ! (current () instanceof InstallStep);
     }
     
     public void nextPanel () {

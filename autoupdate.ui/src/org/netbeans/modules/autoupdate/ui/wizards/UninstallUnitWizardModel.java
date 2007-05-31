@@ -20,6 +20,7 @@
 package org.netbeans.modules.autoupdate.ui.wizards;
 
 import org.netbeans.api.autoupdate.OperationContainer;
+import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.modules.autoupdate.ui.Containers;
 
 /**
@@ -53,18 +54,26 @@ public class UninstallUnitWizardModel extends OperationWizardModel {
         return operationType;
     }
     
-    public OperationContainer getContainer () {
+    public OperationContainer getBaseContainer () {
+        OperationContainer c = null;
         switch (operationType) {
             case UNINSTALL :
-                return Containers.forUninstall ();
+                c = Containers.forUninstall ();
+                break;
             case ENABLE :
-                return Containers.forEnable ();
+                c = Containers.forEnable ();
+                break;
             case DISABLE :
-                return Containers.forDisable ();
+                c = Containers.forDisable ();
+                break;
             default:
                 assert false;
         }
-        return null;
+        return c;
+    }
+    
+    public OperationContainer<OperationSupport> getCustomHandledContainer () {
+        return Containers.forCustomUninstall ();
     }
     
     @Override

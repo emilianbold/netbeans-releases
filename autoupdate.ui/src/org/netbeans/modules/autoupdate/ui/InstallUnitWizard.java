@@ -21,8 +21,9 @@ package org.netbeans.modules.autoupdate.ui;
 
 import java.awt.Dialog;
 import java.text.MessageFormat;
-import org.netbeans.api.autoupdate.InstallSupport;
-import org.netbeans.api.autoupdate.OperationContainer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
 import org.netbeans.modules.autoupdate.ui.wizards.InstallUnitWizardIterator;
 import org.netbeans.modules.autoupdate.ui.wizards.InstallUnitWizardModel;
 import org.openide.DialogDisplayer;
@@ -34,12 +35,14 @@ import org.openide.util.NbBundle;
  * @author Jiri Rechtacek
  */
 public class InstallUnitWizard {
+    
+    private final Logger log = Logger.getLogger (this.getClass ().getName ());
+    
     /** Creates a new instance of InstallUnitWizard */
     public InstallUnitWizard () {}
     
-    public boolean invokeWizard (OperationContainer<InstallSupport> container) {
-        assert container != null : "The OperationContainer<InstallSupport> must exist!";
-        InstallUnitWizardModel model = new InstallUnitWizardModel (container);
+    public boolean invokeWizard (OperationType doOperation) {
+        InstallUnitWizardModel model = new InstallUnitWizardModel (doOperation);
         WizardDescriptor.Iterator<WizardDescriptor> iterator = new InstallUnitWizardIterator (model);
         WizardDescriptor wizardDescriptor = new WizardDescriptor (iterator);
         wizardDescriptor.setModal (true);
@@ -53,7 +56,7 @@ public class InstallUnitWizard {
         dialog.setVisible (true);
         dialog.toFront ();
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
-        //TODO: must be fixed to return true if the wizard was properly finished
+        log.log (Level.FINE, "InstallUnitWizard returns with value " + wizardDescriptor.getValue ());
         return !cancelled;
     }
     

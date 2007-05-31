@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.autoupdate.ui.wizards;
 
-import java.awt.Container;
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,7 +33,6 @@ import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
-import org.netbeans.modules.autoupdate.ui.Containers;
 import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
@@ -54,7 +52,8 @@ public abstract class OperationWizardModel {
     static Dimension PREFFERED_DIMENSION = new Dimension (500, 550);
     
     abstract OperationType getOperation ();
-    abstract OperationContainer getContainer ();
+    abstract OperationContainer getBaseContainer ();
+    abstract OperationContainer<OperationSupport> getCustomHandledContainer ();
     
     public static enum OperationType {
         /** Install <code>UpdateElement</code> */
@@ -68,15 +67,14 @@ public abstract class OperationWizardModel {
         /** Enable <code>UpdateElement</code> */
         ENABLE,
         /** Disable <code>UpdateElement</code> */
-        DISABLE
+        DISABLE,
+        LOCAL_DOWNLOAD
     }
     
     public Set<UpdateElement> getPrimaryUpdateElements () {
         if (primaryElements == null) {
-            assert getContainer () != null;
             primaryElements = new HashSet<UpdateElement> ();
-            List<OperationInfo> l = (List<OperationInfo>) getContainer ().listAll ();
-            for (OperationInfo info : l) {
+            for (OperationInfo<?> info : listAll ()) {
                 primaryElements.add (info.getUpdateElement ());
             }
         }
@@ -91,13 +89,12 @@ public abstract class OperationWizardModel {
         if (requiredElements == null) {
             requiredElements = new HashSet<UpdateElement> ();
             
-            List<OperationInfo> l = (List<OperationInfo>) getContainer ().listAll ();
-            for (OperationInfo info : l) {
+            for (OperationInfo<?> info : listAll ()) {
                 requiredElements.addAll (info.getRequiredElements ());
             }
             
             // add requiredElements to container
-            getContainer ().add (requiredElements);
+            addRequiredElements (requiredElements);
             
         }
         return requiredElements;
@@ -107,19 +104,14 @@ public abstract class OperationWizardModel {
         return ! getBrokenDependencies ().isEmpty ();
     }
     
-    public OperationContainer<OperationSupport> getCustomInstallContainer () {
-        return Containers.forCustomInstall ();
-    }
-    
     public boolean hasCustomComponents () {
-        return ! getCustomInstallContainer ().listAll ().isEmpty ();
+        return ! getCustomHandledContainer ().listAll ().isEmpty ();
     }
     
     public SortedMap<String, Set<String>> getBrokenDependencies () {
         SortedMap<String, Set<String>> brokenDeps = new TreeMap<String, Set<String>> ();
 
-        List<OperationInfo> l = (List<OperationInfo>) getContainer ().listAll ();
-        for (OperationInfo info : l) {
+        for (OperationInfo<?> info : listAll ()) {
             Set<String> broken = info.getBrokenDependencies ();
             if (! broken.isEmpty()) {
                 brokenDeps.put (info.getUpdateElement ().getDisplayName (),
@@ -143,7 +135,7 @@ public abstract class OperationWizardModel {
     // XXX Hack in WizardDescriptor
     public void modifyOptionsForDoClose (WizardDescriptor wd) {
         recognizeButtons (wd);
-        JButton b = getOriginalCancel (wd);
+        JButton b = getOriginalFinish (wd);
         Mnemonics.setLocalizedText (b, getBundle ("InstallUnitWizardModel_Buttons_Close"));
         wd.setOptions (new JButton [] {b});
     }
@@ -161,23 +153,24 @@ public abstract class OperationWizardModel {
         recognizeButtons (wd);
         removeFinish (wd);
         switch (getOperation ()) {
-            case INSTALL :
-                Mnemonics.setLocalizedText (getOriginalNext (wd), getBundle ("InstallUnitWizardModel_Buttons_Install"));
-                break;
-            case UPDATE :
-                Mnemonics.setLocalizedText (getOriginalNext (wd), getBundle ("InstallUnitWizardModel_Buttons_Update"));
-                break;
-            case UNINSTALL :
-                Mnemonics.setLocalizedText (getOriginalNext (wd), getBundle ("UninstallUnitWizardModel_Buttons_Uninstall"));
-                break;
-            case ENABLE :
-                Mnemonics.setLocalizedText (getOriginalNext (wd), getBundle ("UninstallUnitWizardModel_Buttons_TurnOn"));
-                break;
-            case DISABLE :
-                Mnemonics.setLocalizedText (getOriginalNext (wd), getBundle ("UninstallUnitWizardModel_Buttons_TurnOff"));
-                break;
-            default:
-                assert false : "Unknown operationType " + getOperation ();
+        case LOCAL_DOWNLOAD :
+        case INSTALL :
+            Mnemonics.setLocalizedText (getOriginalNext (wd), getBundle ("InstallUnitWizardModel_Buttons_Install"));
+            break;
+        case UPDATE :
+            Mnemonics.setLocalizedText (getOriginalNext (wd), getBundle ("InstallUnitWizardModel_Buttons_Update"));
+            break;
+        case UNINSTALL :
+            Mnemonics.setLocalizedText (getOriginalNext (wd), getBundle ("UninstallUnitWizardModel_Buttons_Uninstall"));
+            break;
+        case ENABLE :
+            Mnemonics.setLocalizedText (getOriginalNext (wd), getBundle ("UninstallUnitWizardModel_Buttons_TurnOn"));
+            break;
+        case DISABLE :
+            Mnemonics.setLocalizedText (getOriginalNext (wd), getBundle ("UninstallUnitWizardModel_Buttons_TurnOff"));
+            break;
+        default:
+            assert false : "Unknown operationType " + getOperation ();
         }
     }
     
@@ -208,6 +201,14 @@ public abstract class OperationWizardModel {
         wd.setOptions (newOptionsL.toArray ());
     }
     
+    @SuppressWarnings("unchecked")
+    public Set<OperationInfo> listAll () {
+        Set<OperationInfo> infos = new HashSet<OperationInfo> ();
+        infos.addAll (getBaseContainer ().listAll ());
+        infos.addAll (getCustomHandledContainer ().listAll ());
+        return infos;
+    }
+    
     private void recognizeButtons (WizardDescriptor wd) {
         if (! reconized) {
             Object [] options = wd.getOptions ();
@@ -231,6 +232,10 @@ public abstract class OperationWizardModel {
         return originalCancel;
     }
     
+    private JButton getOriginalFinish (WizardDescriptor wd) {
+        return originalFinish;
+    }
+    
     private void removeFinish (WizardDescriptor wd) {
         Object [] options = wd.getOptions ();
         List<JButton> newOptionsL = new ArrayList<JButton> ();
@@ -245,6 +250,16 @@ public abstract class OperationWizardModel {
             }
         }
         wd.setOptions (newOptionsL.toArray ());
+    }
+    
+    private void addRequiredElements (Set<UpdateElement> elems) {
+        for (UpdateElement el : elems) {
+            if (UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT == el.getUpdateUnit ().getType ()) {
+                getCustomHandledContainer ().add (el);
+            } else {
+                getBaseContainer ().add (el);
+            }
+        }
     }
     
     private String getBundle (String key) {

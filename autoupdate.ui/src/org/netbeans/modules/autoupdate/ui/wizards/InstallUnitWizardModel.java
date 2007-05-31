@@ -26,6 +26,7 @@ import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.InstallSupport.Installer;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationException;
+import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.modules.autoupdate.ui.Containers;
 
@@ -35,26 +36,41 @@ import org.netbeans.modules.autoupdate.ui.Containers;
  */
 public class InstallUnitWizardModel extends OperationWizardModel {
     private Installer installer = null;
-    private boolean doUpdate;
+    private OperationType doOperation;
     private static Set<String> approvedLicences = new HashSet<String> ();
-    private OperationContainer installContainer;
     private InstallSupport support;
     
     /** Creates a new instance of InstallUnitWizardModel */
-    public InstallUnitWizardModel (OperationContainer container) {
-        this.doUpdate = (container == Containers.forUpdate ()) || (container == Containers.forUpdateNbms());
-        installContainer = container;
-        support = (InstallSupport) installContainer.getSupport();
-        assert support != null;
-        assert doUpdate ? Containers.forUpdate () != null : Containers.forAvailable () != null : "The container must exist!";
+    public InstallUnitWizardModel (OperationType doOperation) {
+        this.doOperation = doOperation;
+        assert getBaseContainer () != null : "The base container for operation " + doOperation + " must exist!";
     }
     
     public OperationType getOperation () {
-        return doUpdate ? OperationWizardModel.OperationType.UPDATE : OperationWizardModel.OperationType.INSTALL;
+        return doOperation;
     }
     
-    public OperationContainer getContainer() {
-        return installContainer;
+    public OperationContainer getBaseContainer () {
+        OperationContainer c = null;
+        switch (getOperation ()) {
+        case INSTALL :
+            c = Containers.forAvailable ();
+            support = Containers.forAvailable ().getSupport ();
+            break;
+        case UPDATE :
+            c = Containers.forUpdate ();
+            support = Containers.forUpdate ().getSupport ();
+            break;
+        case LOCAL_DOWNLOAD :
+            c = Containers.forAvailableNbms ();
+            support = Containers.forAvailableNbms ().getSupport ();
+            break;
+        }
+        return c;
+    }
+    
+    public OperationContainer<OperationSupport> getCustomHandledContainer () {
+        return Containers.forCustomInstall ();
     }
     
     public boolean allLicensesApproved () {
@@ -70,7 +86,7 @@ public class InstallUnitWizardModel extends OperationWizardModel {
         approvedLicences.addAll (licences);
     }
     
-    public InstallSupport getSupport () {
+    public InstallSupport getInstallSupport () {
         return support;
     }
     
@@ -83,10 +99,20 @@ public class InstallUnitWizardModel extends OperationWizardModel {
     }
     
     public void doCleanup () throws OperationException {
-        assert getContainer () != null;
-        InstallSupport supp = getSupport ();
-        if (supp != null) {
-            supp.doCancel ();
+        if (getBaseContainer ().getSupport () instanceof InstallSupport) {
+            InstallSupport isupp = (InstallSupport) getBaseContainer ().getSupport ();
+            if (isupp != null) {
+                isupp.doCancel ();
+            }
+        } else {
+            OperationSupport osupp = (OperationSupport) getBaseContainer ().getSupport ();
+            if (osupp != null) {
+                osupp.doCancel ();
+            }
+        }
+        OperationSupport osupp = getCustomHandledContainer ().getSupport ();
+        if (osupp != null) {
+            osupp.doCancel ();
         }
     }
 

@@ -38,6 +38,7 @@ public class Containers {
     private static Reference<OperationContainer<OperationSupport>> ENABLE;
     private static Reference<OperationContainer<OperationSupport>> DISABLE;
     private static Reference<OperationContainer<OperationSupport>> CUSTOM_INSTALL;
+    private static Reference<OperationContainer<OperationSupport>> CUSTOM_UNINSTALL;
     
     private Containers(){}
     public static void initNotify() {
@@ -113,6 +114,14 @@ public class Containers {
                 CUSTOM_INSTALL = new WeakReference<OperationContainer<OperationSupport>> (OperationContainer.createForCustomInstallComponent ());
             }
             return CUSTOM_INSTALL.get();
+        }        
+    }
+    public static OperationContainer<OperationSupport> forCustomUninstall () {
+        synchronized (Containers.class) {
+            if (CUSTOM_UNINSTALL == null || CUSTOM_UNINSTALL.get () == null) {
+                CUSTOM_UNINSTALL = new WeakReference<OperationContainer<OperationSupport>> (OperationContainer.createForCustomUninstallComponent ());
+            }
+            return CUSTOM_UNINSTALL.get();
         }        
     }
 }

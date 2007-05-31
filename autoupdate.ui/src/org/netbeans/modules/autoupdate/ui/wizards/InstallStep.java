@@ -82,7 +82,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     }
     
     public boolean isFinishPanel() {
-        return false;
+        return true;
     }
 
     public PanelBodyContainer getComponent() {
@@ -124,7 +124,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     
     private Validator handleDownload () {
         validator = null;
-        final InstallSupport support = model.getSupport ();
+        final InstallSupport support = model.getInstallSupport ();
         assert support != null;
         Runnable performDownload = new Runnable () {
             public void run () {
@@ -156,7 +156,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     
     private Installer handleValidation (Validator v) {
         component.setHeadAndContent (getBundle (HEAD_VERIFY), getBundle (CONTENT_VERIFY));
-        final InstallSupport support = model.getSupport ();
+        final InstallSupport support = model.getInstallSupport ();
         assert support != null;
         ProgressHandle handle = ProgressHandleFactory.createHandle (getBundle ("InstallStep_Validate_ValidatingPlugins"));
         JComponent progressComponent = ProgressHandleFactory.createProgressComponent (handle);
@@ -221,7 +221,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     
     private Restarter handleInstall (Installer i) {
         component.setHeadAndContent (getBundle (HEAD_INSTALL), getBundle (CONTENT_INSTALL));
-        InstallSupport support = model.getSupport();
+        InstallSupport support = model.getInstallSupport();
         assert support != null;
         model.modifyOptionsForDisabledCancel (wd);
         
@@ -268,7 +268,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     public void storeSettings (WizardDescriptor wd) {
         assert ! WizardDescriptor.PREVIOUS_OPTION.equals (wd.getValue ()) : "Cannot invoke Back in this case.";
         if (restarter != null) {
-            InstallSupport support = model.getSupport ();
+            InstallSupport support = model.getInstallSupport ();
             assert support != null;
             if (panel.restartNow ()) {
                 try {
@@ -288,11 +288,14 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             } catch (OperationException x) {
                 log.log (Level.INFO, x.getMessage (), x);
             }
+        } else {
+            model.getBaseContainer ().removeAll ();
+            model.getCustomHandledContainer ().removeAll ();
         }
     }
 
     public boolean isValid() {
-        return false;
+        return true;
     }
 
     public synchronized void addChangeListener(ChangeListener l) {

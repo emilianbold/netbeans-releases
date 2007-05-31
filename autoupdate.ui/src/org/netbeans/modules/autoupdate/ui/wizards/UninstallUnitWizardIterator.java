@@ -69,7 +69,7 @@ public final class UninstallUnitWizardIterator implements WizardDescriptor.Itera
     }
     
     public boolean hasPrevious () {
-        return index > 0 /*&& ! (current () instanceof UninstallStep); //???*/;
+        return index > 0 && ! (current () instanceof UninstallStep);
     }
     
     public void nextPanel () {

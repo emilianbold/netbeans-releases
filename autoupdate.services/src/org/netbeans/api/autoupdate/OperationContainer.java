@@ -83,9 +83,8 @@ public final class OperationContainer<Support> {
     }
     
     public static OperationContainer<OperationSupport> createForCustomUninstallComponent () {
-        assert false : "Not supported yet.";
         OperationContainer<OperationSupport> retval =
-                new OperationContainer<OperationSupport> (OperationContainerImpl.createForInstallNativeComponent (), new OperationSupport());
+                new OperationContainer<OperationSupport> (OperationContainerImpl.createForUninstallNativeComponent (), new OperationSupport());
         retval.getSupport ().setContainer (retval);
         return retval;
     }

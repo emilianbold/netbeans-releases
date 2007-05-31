@@ -59,6 +59,9 @@ public final class OperationContainerImpl<Support> {
     public static OperationContainerImpl<OperationSupport> createForInstallNativeComponent () {
         return new OperationContainerImpl<OperationSupport> (OperationType.CUSTOM_INSTALL);
     }
+    public static OperationContainerImpl<OperationSupport> createForUninstallNativeComponent () {
+        return new OperationContainerImpl<OperationSupport> (OperationType.CUSTOM_INSTALL);
+    }
     public OperationInfo<Support> add (UpdateUnit updateUnit, UpdateElement updateElement) throws IllegalArgumentException {
         OperationInfo<Support> retval = null;
         boolean isValid = isValid (updateUnit, updateElement);
@@ -253,7 +256,9 @@ public final class OperationContainerImpl<Support> {
         /** Disable <code>UpdateElement</code> */
         DISABLE,
         /** Install <code>UpdateElement</code> with custom installer. */
-        CUSTOM_INSTALL
+        CUSTOM_INSTALL,
+        /** Uninstall <code>UpdateElement</code> with custom installer. */
+        CUSTOM_UNINSTALL
     }
     private OperationType type;
 }
