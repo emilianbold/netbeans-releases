@@ -22,9 +22,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.form.InPlaceEditLayer;
-import org.netbeans.modules.form.RADComponent;
 import org.netbeans.modules.form.RADVisualComponent;
 import org.netbeans.modules.form.RADVisualContainer;
 
@@ -38,7 +36,6 @@ public class KeyboardMenuNavigator implements KeyListener {
     RADVisualContainer menuBarRAD;
     RADVisualContainer currentMenuRAD;
     RADVisualComponent selectedRADComponent;
-    private boolean isEditing = false;
     KeyboardFinishListener listener;
     
     public KeyboardMenuNavigator(MenuEditLayer menuEditLayer) {
@@ -55,7 +52,6 @@ public class KeyboardMenuNavigator implements KeyListener {
     }
     
     public void keyPressed(KeyEvent e) {
-        //p("pressed: ");
         if(e.getKeyCode() == KeyEvent.VK_DOWN) {
             selectOffsetMenuItem(+1);
         }
@@ -170,7 +166,6 @@ public class KeyboardMenuNavigator implements KeyListener {
     }
     
     private void startEditing() {
-        isEditing = true;
         menuEditLayer.formDesigner.startInPlaceEditing(selectedRADComponent);
     }
     

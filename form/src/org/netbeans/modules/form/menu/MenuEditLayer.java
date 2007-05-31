@@ -67,8 +67,8 @@ public class MenuEditLayer extends JPanel {
             BorderFactory.createMatteBorder(0,0,0,2,Color.RED),
             BorderFactory.createEmptyBorder(2,2,2,0)
             );
-    public static final Border UNSELECTED_BORDER = BorderFactory.createEmptyBorder(2,2,2,2);
-    public static final Border SELECTED_BORDER = BorderFactory.createLineBorder(Color.ORANGE,2);
+    public static final Border UNSELECTED_BORDER = BorderFactory.createEmptyBorder(1,1,1,1);
+    public static final Border SELECTED_BORDER = BorderFactory.createLineBorder(new Color(0xFFA400),1);
     public static final Border DRAG_MENU_BORDER = BorderFactory.createLineBorder(Color.BLACK,1);
     
     /* === private constants === */
@@ -594,7 +594,9 @@ public class MenuEditLayer extends JPanel {
                                 p(" " + evt.getComponent().getName());
                             };
                             if(evt.getChangeType() == evt.COMPONENT_PROPERTY_CHANGED) {
-                                rebuildOnScreenMenu(metacomp);
+                                if(evt.getContainer() == metacomp || evt.getComponent() == metacomp) {
+                                    rebuildOnScreenMenu(metacomp);
+                                }
                             }
                             // if this menu was deleted then make sure it's popup is hidden and removed
                             if(evt.getChangeType() == evt.COMPONENT_REMOVED) {
