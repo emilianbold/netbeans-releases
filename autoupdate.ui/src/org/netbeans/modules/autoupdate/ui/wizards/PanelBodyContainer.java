@@ -23,6 +23,7 @@ import java.awt.BorderLayout;
 import java.awt.Rectangle;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -32,20 +33,31 @@ public class PanelBodyContainer extends javax.swing.JPanel {
     private String head = null;
     private String message = null;
     private JScrollPane customPanel;
+    private JPanel bodyPanel = null;
     
     /** Creates new form InstallPanelContainer */
     public PanelBodyContainer (String heading, String msg, JPanel bodyPanel) {
         head = heading;
         message = msg;
+        this.bodyPanel = bodyPanel;
         customPanel = new JScrollPane ();
         customPanel.setBorder (null);
         initComponents ();
         pBodyPanel.add (customPanel, BorderLayout.CENTER);
         writeToHeader (head, message);
         customPanel.setViewportView (bodyPanel);
-        customPanel.getViewport().scrollRectToVisible (new Rectangle (0, 0, 10, 10));
         customPanel.getVerticalScrollBar ().setUnitIncrement (10);
         customPanel.getHorizontalScrollBar ().setUnitIncrement (10);
+    }
+    
+    @Override
+    public void addNotify () {
+        super.addNotify();
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                bodyPanel.scrollRectToVisible (new Rectangle (0, 0, 10, 10));
+            }
+        });
     }
     
     public void setHeadAndContent (String heading, String content) {
