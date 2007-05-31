@@ -78,6 +78,9 @@ public final class Engine extends SearchEngine.Adapter {
   }
 
   private boolean checkClazz(Object object) {
+    if (myClazz == null) {
+      return true;
+    }
     return myClazz.isAssignableFrom(object.getClass());
   }
 
@@ -109,7 +112,6 @@ public final class Engine extends SearchEngine.Adapter {
 
   /**{@inheritDoc}*/
   public boolean accepts(Object source) {
-//out("accepts: " + (source instanceof Model));
     return source instanceof Model;
   }
 

@@ -136,8 +136,6 @@ final class Target implements SearchTarget {
   static final SearchTarget [] SCHEMA = new SearchTarget [] {
     new Target(Component.class),
     new Target(org.netbeans.modules.xml.schema.model.Annotation.class),
-    new Target(org.netbeans.modules.xml.schema.model.AnyAttribute.class),
-    new Target(org.netbeans.modules.xml.schema.model.AnyElement.class),
     new Target(org.netbeans.modules.xml.schema.model.AppInfo.class),
     new Target(org.netbeans.modules.xml.schema.model.Attribute.class),
     new Target(org.netbeans.modules.xml.schema.model.BoundaryFacet.class),

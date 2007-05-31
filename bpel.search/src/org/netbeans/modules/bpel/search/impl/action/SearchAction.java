@@ -23,6 +23,7 @@ import java.io.IOException;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 
+import org.openide.util.Lookup;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.NodeAction;
 
@@ -79,15 +80,15 @@ public final class SearchAction extends NodeAction {
   }
 
   private static Model getModel(Node node) {
-    Model model = node.getLookup().lookup(BpelModel.class);
-
-    if (model != null) {
-      return model;
-    }
     DataObject data = getDataObject(node);
 
     if (data == null) {
       return null;
+    }
+    Model model = getBpelModel(data);
+
+    if (model != null) {
+      return model;
     }
     ModelCookie cookie = data.getCookie(ModelCookie.class);
 
@@ -100,6 +101,21 @@ public final class SearchAction extends NodeAction {
     catch (IOException e) {
       return null;
     }
+  }
+
+  private static BpelModel getBpelModel(DataObject data) {
+    if (data instanceof Lookup.Provider) {
+      Lookup.Provider provider = (Lookup.Provider) data;
+
+      // hot fix for 100277. todo as search provider
+      try {
+        return (BpelModel) provider.getLookup().lookup(BpelModel.class);
+      }
+      catch (IllegalStateException e) {
+        return null;
+      }
+    }
+    return null;
   }
 
   private static DataObject getDataObject(Node node) {

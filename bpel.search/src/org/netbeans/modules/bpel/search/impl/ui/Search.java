@@ -63,6 +63,11 @@ public final class Search extends PrintUI {
     return getUIComponent();
   }
 
+  @Override
+  protected void updated() {
+    setItems(myTarget, myTargets);
+  }
+
   private JPanel createPanel() {
     JPanel panel = new JPanel(new GridBagLayout());
     GridBagConstraints c = new GridBagConstraints();
@@ -258,8 +263,8 @@ public final class Search extends PrintUI {
 
   private Object mySource;
   private TextField myName;
-  private JComboBox myTarget;
   private JButton mySearchButton;
+  private JComboBox myTarget;
   private JCheckBox myMatchCase;
   private JCheckBox myPatternMatch;
   private JCheckBox myRegularExpression;
