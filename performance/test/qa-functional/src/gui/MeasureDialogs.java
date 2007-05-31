@@ -70,7 +70,7 @@ public class MeasureDialogs  {
         
         suite.addTest(new AddServerInstanceDialog("measureTime", "Add JDBC Driver dialog open"));
         suite.addTest(new NewDatabaseConnectionDialog("measureTime", "New Database Connection dialog open"));
-        suite.addTest(new AddXMLandDTDSchemaCatalog("measureTime", "Add Catalog dialog open"));
+        // no more in IDE suite.addTest(new AddXMLandDTDSchemaCatalog("measureTime", "Add Catalog dialog open"));
         
         suite.addTest(new FindInProjects("measureTime", "Find in Projects dialog open"));
         suite.addTest(new ProjectPropertiesWindow("testJSEProject", "JSE Project Properties window open"));

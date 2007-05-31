@@ -49,8 +49,8 @@ public class FindInProjects extends org.netbeans.performance.test.utilities.Perf
     }
     
     public void initialize(){
-        MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Edit") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.search.project.Bundle","LBL_SearchProjects");
-        TITLE = Bundle.getStringTrimmed("org.netbeans.modules.search.project.Bundle","LBL_Title_SearchProjects");
+        MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Edit") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.search.Bundle","LBL_Action_FindInProjects");
+        TITLE = Bundle.getStringTrimmed("org.netbeans.modules.search.Bundle","LBL_FindInProjects");
     }
     
     public void prepare(){
