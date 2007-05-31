@@ -29,6 +29,7 @@ import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
+import org.netbeans.modules.web.refactoring.WebXmlRefactoring;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
 import org.openide.util.Exceptions;
@@ -40,55 +41,50 @@ import org.openide.util.NbBundle;
  *
  * @author Erno Mononen
  */
-public class WebXmlRename implements RefactoringPlugin{
+public class WebXmlRename extends WebXmlRefactoring{
     
-    private final WebApp webModel;
     private final String oldFqn;
     private final RenameRefactoring rename;
-    private final FileObject webDD;
     
     public WebXmlRename(String oldFqn, RenameRefactoring rename, WebApp webModel, FileObject webDD) {
+        super(webDD, webModel);
         this.oldFqn = oldFqn;
         this.rename = rename;
-        this.webModel = webModel;
-        this.webDD = webDD;
     }
     
     public Problem preCheck() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return null;
     }
     
     
     public Problem checkParameters() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return null;
     }
     
     public Problem fastCheckParameters() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return null;
     }
     
     public void cancelRequest() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return;
     }
     
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         
         String newName = renameClass(oldFqn, rename.getNewName());
         for (Servlet servlet : getServlets(oldFqn)){
-            refactoringElements.add(rename, new ServletRenameElement(oldFqn, newName, webModel, webDD, servlet));
+            refactoringElements.add(rename, new ServletRenameElement(newName, oldFqn, webModel, webDD, servlet));
         }
         
         for (Listener listener : getListeners(oldFqn)){
-            refactoringElements.add(rename, new ListenerRenameElement(oldFqn, newName, webModel, webDD, listener));
+            refactoringElements.add(rename, new ListenerRenameElement(newName, oldFqn,  webModel, webDD, listener));
         }
         
         for (Filter filter : getFilters(oldFqn)){
-            refactoringElements.add(rename, new FilterRenameElement(oldFqn, newName, webModel, webDD, filter));
+            refactoringElements.add(rename, new FilterRenameElement(newName, oldFqn, webModel, webDD, filter));
         }
         
-        
         return null;
-        
     }
     
     public static String renameClass(String originalFullyQualifiedName, String newName){
@@ -96,90 +92,17 @@ public class WebXmlRename implements RefactoringPlugin{
         return (lastDot <= 0) ? newName : originalFullyQualifiedName.substring(0, lastDot + 1) + newName;
     }
     
-    private List<Servlet> getServlets(String clazz){
-        List<Servlet> result = new ArrayList<Servlet>();
-        for(Servlet servlet : webModel.getServlet())
-            if (servlet.getServletClass().equals(clazz)){
-                result.add(servlet);
-            }
-        return result;
-    }
-    
-    private List<Filter> getFilters(String clazz){
-        List<Filter> result = new ArrayList<Filter>();
-        for (Filter filter : webModel.getFilter()){
-            if (filter.getFilterClass().equals(clazz)){
-                result.add(filter);
-            }
-        }
-        return result;
-    }
-    
-    private List<Listener> getListeners(String clazz){
-        List<Listener> result = new ArrayList<Listener>();
-        for (Listener listener : webModel.getListener()){
-            if (listener.getListenerClass().equals(clazz)){
-                result.add(listener);
-            }
-        }
-        return result;
-    }
-    
-    
-    
-    private abstract static class WebRenameElement extends SimpleRefactoringElementImplementation{
+    private abstract static class WebRenameElement extends WebRefactoringElement{
         
-        protected WebApp webApp;
-        protected FileObject webDD;
         protected String oldName;
         protected String newName;
         protected RenameRefactoring rename;
         
         public WebRenameElement(String newName, String oldName, WebApp webApp, FileObject webDD) {
+            super(webApp, webDD);
             this.newName = newName;
             this.oldName = oldName;
-            this.webApp = webApp;
-            this.webDD = webDD;
         }
-        
-        public void performChange() {
-            doChange();
-            try{
-                webApp.write(webDD);
-            }catch(IOException ioe){
-                Exceptions.printStackTrace(ioe);
-            }
-        }
-        
-        protected abstract void doChange();
-        
-        public Lookup getLookup() {
-            return Lookup.EMPTY;
-        }
-        
-        public FileObject getParentFile() {
-            return webDD;
-        }
-        
-        public PositionBounds getPosition() {
-            return null;
-        }
-        
-        public String getText() {
-            return getDisplayText();
-        }
-        
-        @Override
-        public void undoChange() {
-            undo();
-            try{
-                webApp.write(webDD);
-            }catch(IOException ioe){
-                Exceptions.printStackTrace(ioe);
-            }
-        }
-        
-        protected abstract void undo();
     }
     
     private static class ServletRenameElement extends WebRenameElement{
@@ -190,6 +113,7 @@ public class WebXmlRename implements RefactoringPlugin{
             this.servlet = servlet;
         }
         
+        @Override
         protected void doChange() {
             servlet.setServletClass(newName);
         }

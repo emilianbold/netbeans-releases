@@ -26,10 +26,12 @@ import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.refactoring.rename.WebXmlRename;
+import org.netbeans.modules.web.refactoring.safedelete.WebXmlSafeDelete;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -47,6 +49,9 @@ public class WebRefactoringFactory implements RefactoringPluginFactory{
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
 
         FileObject sourceFO = refactoring.getRefactoringSource().lookup(FileObject.class);
+        if (sourceFO == null){
+            return null;
+        }
         FileObject ddFile = WebModule.getWebModule(sourceFO).getDeploymentDescriptor();
         Project project = FileOwnerQuery.getOwner(sourceFO);
         ClassPathProvider classPathProvider = project.getLookup().lookup(ClassPathProvider.class);
@@ -62,6 +67,9 @@ public class WebRefactoringFactory implements RefactoringPluginFactory{
         if (refactoring instanceof RenameRefactoring){
             RenameRefactoring rename = (RenameRefactoring) refactoring;
             return new WebXmlRename(oldFqn, rename, webApp, ddFile);
+        } if (refactoring instanceof SafeDeleteRefactoring){
+            SafeDeleteRefactoring safeDelete = (SafeDeleteRefactoring) refactoring;
+            return new WebXmlSafeDelete(ddFile, webApp, oldFqn, safeDelete);
         }
         
         return null;
