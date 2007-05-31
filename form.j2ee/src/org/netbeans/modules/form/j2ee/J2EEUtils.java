@@ -320,13 +320,22 @@ public class J2EEUtils {
             public String[] run(EntityMappingsMetadata metadata) {
                 Entity[] entity = metadata.getRoot().getEntity();
                 for (int i=0; i<entity.length; i++) {
-                    if (tableName.equals(entity[i].getTable().getName())) {
+                    String name = entity[i].getTable().getName();
+                    name = unquote(name);
+                    if (tableName.equals(name)) {
                         return new String[] {entity[i].getName(), entity[i].getClass2()};
                     }
                 }
                 return null;
             }
         });
+    }
+
+    public static String unquote(String name) {
+        while (name.startsWith("\"") && name.endsWith("\"")) { // NOI18N
+            name = name.substring(1, name.length()-1);
+        }
+        return name;
     }
 
     /**
@@ -854,6 +863,7 @@ public class J2EEUtils {
                         props.add(propName);
                     } else {
                         String columnName = id.getColumn().getName();
+                        columnName = unquote(columnName);
                         columnToProperty.put(columnName, propName);
                     }
                 }
@@ -863,6 +873,7 @@ public class J2EEUtils {
                         props.add(propName);
                     } else {
                         String columnName = basic.getColumn().getName();
+                        columnName = unquote(columnName);
                         columnToProperty.put(columnName, propName);                        
                     }
                 }
