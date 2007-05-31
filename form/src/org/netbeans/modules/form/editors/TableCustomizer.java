@@ -1162,6 +1162,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
             modelBoundChoice.setSelected(true);
         }
         expressionCombo = modelBoundCustomizer.getSubExpressionCombo();
+        expressionCombo.setEnabled(false);
         expressionCombo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ColumnInfo info = columns.get(lastSelectedColumn);
