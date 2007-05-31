@@ -26,9 +26,7 @@ import java.util.*;
 import java.util.HashSet;
 import javax.lang.model.element.*;
 import org.netbeans.api.java.source.*;
-import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.WhereUsedElement;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
@@ -48,17 +46,22 @@ import org.openide.util.NbBundle;
  */
 public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     private WhereUsedQuery refactoring;
+    private TreePathHandle treePathHandle;
     
     /** Creates a new instance of WhereUsedQuery */
     public JavaWhereUsedQueryPlugin(WhereUsedQuery refactoring) {
         this.refactoring = refactoring;
+        this.treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
     }
     
-    private TreePathHandle getSearchHandle() {
-        return refactoring.getRefactoringSource().lookup(TreePathHandle.class);
+    protected JavaSource getJavaSource(Phase p) {
+        switch (p) {
+        default: 
+            return JavaSource.forFileObject(treePathHandle.getFileObject());
+        }
     }
     
-    public Problem preCheck() {
+    protected Problem preCheck(CompilationController info) {
 //        Problem p = isElementAvail(getSearchHandle(), refactoring.getContext().lookup(CompilationInfo.class));
 //        if (p != null)
 //            return p;
@@ -89,7 +92,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
             }
             
             public void run(CompilationController info) throws Exception {
-                info.toPhase(Phase.RESOLVED);
+                info.toPhase(JavaSource.Phase.RESOLVED);
                 final Element el = tph.resolveElement(info);
                 if (el.getKind().isField()) {
                     //get field references from index
@@ -167,7 +170,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     
     //@Override
     public Problem prepare(final RefactoringElementsBag elements) {
-        Set<FileObject> a = getRelevantFiles(getSearchHandle());
+        Set<FileObject> a = getRelevantFiles(treePathHandle);
         fireProgressListenerStart(ProgressEvent.START, a.size());
         processFiles(a, new FindTask(elements));
         fireProgressListenerStop();
@@ -175,15 +178,15 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     }
     
     //@Override
-    public Problem fastCheckParameters() {
-        if (getSearchHandle().getKind() == Tree.Kind.METHOD) {
+    protected Problem fastCheckParameters(CompilationController info) {
+        if (treePathHandle.getKind() == Tree.Kind.METHOD) {
             return checkParametersForMethod(isFindOverridingMethods(), isFindUsages());
         } 
         return null;
     }
     
     //@Override
-    public Problem checkParameters() {
+    protected Problem checkParameters(CompilationController info) {
         return null;
     }
     
@@ -223,19 +226,6 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         return false;
     }
     
-    
-    //    public void start(ProgressEvent event) {
-    //        fireProgressListenerStart(event.getOperationType(), event.getCount());
-    //    }
-    //
-    //    public void step(ProgressEvent event) {
-    //        fireProgressListenerStep();
-    //    }
-    //
-    //    public void stop(ProgressEvent event) {
-    //        fireProgressListenerStop();
-    //    }
-
     private class FindTask implements CancellableTask<WorkingCopy> {
 
         private RefactoringElementsBag elements;
@@ -253,13 +243,13 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         public void run(WorkingCopy compiler) throws IOException {
             if (cancelled)
                 return ;
-            compiler.toPhase(Phase.RESOLVED);
+            compiler.toPhase(JavaSource.Phase.RESOLVED);
             CompilationUnitTree cu = compiler.getCompilationUnit();
             if (cu == null) {
                 ErrorManager.getDefault().log(ErrorManager.ERROR, "compiler.getCompilationUnit() is null " + compiler);
                 return;
             }
-            Element element = getSearchHandle().resolveElement(compiler);
+            Element element = treePathHandle.resolveElement(compiler);
             assert element != null;
             Collection<TreePath> result = new ArrayList();
             if (isFindUsages()) {

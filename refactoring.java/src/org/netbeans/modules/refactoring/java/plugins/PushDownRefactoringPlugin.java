@@ -18,8 +18,6 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -27,16 +25,8 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClassIndex;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ModificationResult.Difference;
-import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
@@ -44,9 +34,7 @@ import org.netbeans.modules.refactoring.java.DiffElement;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.PushDownRefactoring;
 import org.netbeans.modules.refactoring.java.plugins.PushDownTransformer;
-import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -54,9 +42,10 @@ import org.openide.util.NbBundle;
 /**
  * Plugin that implements the core functionality of Push Down refactoring.
  *
- * @author Pavel Flaska, Jan Becicka
+ * @author Pavel Flaska
+ * @author Jan Becicka
  */
-public final class PushDownRefactoringPlugin extends RetoucheRefactoringPlugin {
+public final class PushDownRefactoringPlugin extends JavaRefactoringPlugin {
     
     /** Reference to the parent refactoring instance */
     private final PushDownRefactoring refactoring;
@@ -68,9 +57,15 @@ public final class PushDownRefactoringPlugin extends RetoucheRefactoringPlugin {
         treePathHandle = refactoring.getSourceType();
     }
     
-    protected Problem preCheck(CompilationController cc) throws IOException {
+    protected JavaSource getJavaSource(Phase p) {
         //TODO: wrong classpath
-        JavaSource source=JavaSource.forFileObject(treePathHandle.getFileObject());
+        switch (p) {
+        default: 
+            return JavaSource.forFileObject(treePathHandle.getFileObject());
+        }
+    }
+    
+    protected Problem preCheck(CompilationController cc) throws IOException {
         fireProgressListenerStart(AbstractRefactoring.PRE_CHECK, 4);
         try {
             cc.toPhase(JavaSource.Phase.RESOLVED);
@@ -109,15 +104,12 @@ public final class PushDownRefactoringPlugin extends RetoucheRefactoringPlugin {
         }
     }
 
-    public Problem checkParameters() {
+    protected Problem checkParameters(CompilationController info) {
         return null;
     }
 
-    protected Problem checkParameters(CompilationController javac) throws IOException {
-        throw new UnsupportedOperationException();
-    }
 
-    public Problem fastCheckParameters() {
+    protected Problem fastCheckParameters(CompilationController info) {
         // #1 - check whether there are any members to pull up
         if (refactoring.getMembers().length == 0) {
             return new Problem(true, NbBundle.getMessage(PushDownRefactoringPlugin.class, "ERR_PushDown_NoMembersSelected")); // NOI18N
@@ -138,7 +130,8 @@ public final class PushDownRefactoringPlugin extends RetoucheRefactoringPlugin {
         Set<FileObject> a = getRelevantFiles(treePathHandle);
         fireProgressListenerStart(ProgressEvent.START, a.size());
         if (!a.isEmpty()) {
-            final Collection<ModificationResult> results = processFiles(a, new FindTask(refactoringElements));
+            TransformTask task = new TransformTask(new PushDownTransformer(refactoring.getMembers()), treePathHandle);
+            final Collection<ModificationResult> results = processFiles(a, task);
             refactoringElements.registerTransaction(new RetoucheCommit(results));
             for (ModificationResult result:results) {
                 for (FileObject jfo : result.getModifiedFileObjects()) {
@@ -432,37 +425,4 @@ public final class PushDownRefactoringPlugin extends RetoucheRefactoringPlugin {
 //            traverseAccessedMembers((Element) it.next(), accessedMembers, membersToCheck);
 //        }
 //    }
-    
-    private class FindTask implements CancellableTask<WorkingCopy> {
-        
-        private RefactoringElementsBag elements;
-        
-        public FindTask(RefactoringElementsBag elements) {
-            super();
-            this.elements = elements;
-        }
-        
-        public void cancel() {
-        }
-        
-        public void run(WorkingCopy compiler) throws IOException {
-            compiler.toPhase(JavaSource.Phase.RESOLVED);
-            CompilationUnitTree cu = compiler.getCompilationUnit();
-            if (cu == null) {
-                ErrorManager.getDefault().log(ErrorManager.ERROR, "compiler.getCompilationUnit() is null " + compiler);
-                return;
-            }
-            Element el = treePathHandle.resolveElement(compiler);
-            assert el != null;
-            
-            PushDownTransformer findVisitor = new PushDownTransformer(compiler, refactoring.getMembers());
-            findVisitor.scan(compiler.getCompilationUnit(), el);
-            
-            for (TreePath tree : findVisitor.getUsages()) {
-                ElementGripFactory.getDefault().put(compiler.getFileObject(), tree, compiler);
-            }
-            fireProgressListenerStep();
-        }
-    }
-    
 }

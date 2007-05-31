@@ -33,6 +33,7 @@ import org.netbeans.api.java.source.*;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.java.*;
+import org.netbeans.modules.refactoring.java.plugins.JavaRefactoringPlugin.TransformTask;
 import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.ErrorManager;
@@ -48,6 +49,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
     HashMap<FileObject,ElementHandle> classes;
     Map<FileObject, Set<FileObject>> whoReferences = new HashMap();
     private FileObject[] origFilesToMove;
+    
     public MoveRefactoringPlugin(MoveRefactoring move) {
         this.refactoring = move;
         setup(move.getRefactoringSource().lookupAll(FileObject.class), "", true);
@@ -97,7 +99,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
                     return new Problem(true, msg);
                 }
             }
-            return null;
+            return super.fastCheckParameters();
         }
         if (refactoring instanceof MoveRefactoring) {
             try {
@@ -165,7 +167,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
                 //do nothing
             }
         }
-        return null;
+        return super.fastCheckParameters();
     }
 
     private Set<FileObject> getRelevantFiles() {
@@ -222,7 +224,8 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
         Set<FileObject> a = getRelevantFiles();
         fireProgressListenerStart(ProgressEvent.START, a.size());
         if (!a.isEmpty()) {
-            final Collection<ModificationResult> results = processFiles(a, new UpdateReferences());
+            TransformTask task = new TransformTask(new MoveTransformer(this), null);
+            final Collection<ModificationResult> results = processFiles(a, task);
             elements.registerTransaction(new RetoucheCommit(results));
             for (ModificationResult result:results) {
                 for (FileObject jfo : result.getModifiedFileObjects()) {
@@ -300,29 +303,20 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
         }
         return result;
     }        
-    private class UpdateReferences implements CancellableTask<WorkingCopy> {
 
-        public UpdateReferences() {
-        }
+    protected Problem preCheck(CompilationController javac) throws IOException {
+        return null;
+    }
 
-        public void cancel() {
-        }
+    protected Problem checkParameters(CompilationController javac) throws IOException {
+        return null;
+    }
 
-        public void run(WorkingCopy compiler) throws IOException {
-            compiler.toPhase(JavaSource.Phase.RESOLVED);
-            CompilationUnitTree cu = compiler.getCompilationUnit();
-            if (cu == null) {
-                ErrorManager.getDefault().log(ErrorManager.ERROR, "compiler.getCompilationUnit() is null " + compiler);
-                return;
-            }
-            
-            MoveTransformer findVisitor = new MoveTransformer(compiler, MoveRefactoringPlugin.this);
-            findVisitor.scan(compiler.getCompilationUnit(), null);
+    protected Problem fastCheckParameters(CompilationController javac) throws IOException {
+        return null;
+    }
 
-            for (TreePath tree : findVisitor.getUsages()) {
-                    ElementGripFactory.getDefault().put(compiler.getFileObject(), tree, compiler);
-          }
-            fireProgressListenerStep();
-        }
-    }        
+    protected JavaSource getJavaSource(Phase p) {
+        return null;
+    }
 }    

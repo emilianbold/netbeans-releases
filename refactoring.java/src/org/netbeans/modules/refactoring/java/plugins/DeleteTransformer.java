@@ -21,17 +21,12 @@ package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.*;
 import javax.lang.model.element.*;
-import org.netbeans.api.java.source.WorkingCopy;
 
 /**
  *
  * @author Jan Becicka
  */
 public class DeleteTransformer extends SearchVisitor {
-
-    public DeleteTransformer(WorkingCopy workingCopy) {
-        super(workingCopy);
-    }
 
     @Override
     public Tree visitMethod(MethodTree tree, Element p) {

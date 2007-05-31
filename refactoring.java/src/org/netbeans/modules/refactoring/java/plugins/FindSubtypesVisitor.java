@@ -34,7 +34,7 @@ public class FindSubtypesVisitor extends SearchVisitor {
 
     private boolean recursive;
     public FindSubtypesVisitor(boolean recursive, WorkingCopy workingCopy) {
-        super(workingCopy);
+        setWorkingCopy(workingCopy);
         this.recursive = recursive;
     }
 

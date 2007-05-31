@@ -18,41 +18,20 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Set;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClassIndex;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.ModificationResult;
+import java.util.*;
+import javax.lang.model.element.*;
+import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.ProgressEvent;
-import org.netbeans.modules.refactoring.api.ProgressListener;
-import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.java.DiffElement;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
 import org.netbeans.modules.refactoring.java.plugins.JavaRefactoringPlugin;
-import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -78,12 +57,12 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin implements Pro
         this.treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
     }
     
-    public Problem checkParameters() {
+    public Problem checkParameters(CompilationController info) {
         //TODO:
         return null;
     }
 
-    public Problem fastCheckParameters() {
+    public Problem fastCheckParameters(CompilationController info) {
         //TODO:
         return null;    
     }
@@ -140,7 +119,8 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin implements Pro
         Set<FileObject> a = getRelevantFiles();
         fireProgressListenerStart(ProgressEvent.START, a.size());
         if (!a.isEmpty()) {
-            final Collection<ModificationResult> results = processFiles(a, new FindTask(elements));
+            TransformTask transform = new TransformTask(new ChangeParamsTransformer(refactoring, allMethods), treePathHandle);
+            final Collection<ModificationResult> results = processFiles(a, transform);
             elements.registerTransaction(new RetoucheCommit(results));
             for (ModificationResult result:results) {
                 for (FileObject jfo : result.getModifiedFileObjects()) {
@@ -234,8 +214,15 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin implements Pro
 //        
 //    }
 //    
-    private Problem preCheckProblem;
 
+    protected JavaSource getJavaSource(JavaRefactoringPlugin.Phase p) {
+        switch(p) {
+            case PRECHECK:
+                ClasspathInfo cpInfo = getClasspathInfo(refactoring);
+                return JavaSource.create(cpInfo, treePathHandle.getFileObject());
+        }
+        return null;
+    }
     /**
      * Returns list of problems. For the change method signature, there are two
      * possible warnings - if the method is overriden or if it overrides
@@ -243,40 +230,29 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin implements Pro
      *
      * @return  overrides or overriden problem or both
      */
-    public Problem preCheck() {
-        //TODO: preChecks
-        // fire operation start on the registered progress listeners (4 steps)
-        ClasspathInfo cpInfo = getClasspathInfo(refactoring);
-        JavaSource source = JavaSource.create(cpInfo, treePathHandle.getFileObject());
+    public Problem preCheck(CompilationController info) throws IOException {
         fireProgressListenerStart(refactoring.PRE_CHECK, 4);
-        try {
-            source.runUserActionTask(new CancellableTask<CompilationController>() {
-                
-                public void cancel() {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-                
-                public void run(CompilationController info) throws Exception {
-                    info.toPhase(JavaSource.Phase.RESOLVED);
-                    preCheckProblem = isElementAvail(treePathHandle, info);
-                    if (preCheckProblem != null) {
-                        return;
-                    }
-                    Element el = treePathHandle.resolveElement(info);
-                    if (!(el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR)) {
-                        preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_ChangeParamsWrongType"));
-                        return;
-                    }
-                    
-                    FileObject fo = SourceUtils.getFile(el,info.getClasspathInfo());
-                    if (RetoucheUtils.isFromLibrary(el, info.getClasspathInfo())) { //NOI18N
-                        preCheckProblem = createProblem(preCheckProblem, true, getCannotRefactor(fo));
-                    }
-                    
-                    if (!RetoucheUtils.isElementInOpenProject(fo)) {
-                        preCheckProblem =new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ProjectNotOpened"));
-                        return;
-                    }
+        Problem preCheckProblem = null;
+        info.toPhase(JavaSource.Phase.RESOLVED);
+        preCheckProblem = isElementAvail(treePathHandle, info);
+        if (preCheckProblem != null) {
+            return preCheckProblem;
+        }
+        Element el = treePathHandle.resolveElement(info);
+        if (!(el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR)) {
+            preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_ChangeParamsWrongType"));
+            return preCheckProblem;
+        }
+        
+        FileObject fo = SourceUtils.getFile(el,info.getClasspathInfo());
+        if (RetoucheUtils.isFromLibrary(el, info.getClasspathInfo())) { //NOI18N
+            preCheckProblem = createProblem(preCheckProblem, true, getCannotRefactor(fo));
+        }
+        
+        if (!RetoucheUtils.isElementInOpenProject(fo)) {
+            preCheckProblem =new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ProjectNotOpened"));
+            return preCheckProblem;
+        }
                     
 //                    Collection overridesMethod = null;
 //                    Collection overridenMethod = null;
@@ -319,11 +295,7 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin implements Pro
 //                            result = createProblem(result, false, msg);
 //                        }
 //                    }
-                }
-            }, true);
-        } catch (IOException ioe) {
-            throw (RuntimeException) new RuntimeException().initCause(ioe);
-        }
+        fireProgressListenerStop();
         return preCheckProblem;
     }
     
@@ -906,38 +878,5 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin implements Pro
     public void stop(ProgressEvent event) {
         fireProgressListenerStop();
     }
-    
-
-    private class FindTask implements CancellableTask<WorkingCopy> {
-        
-        private RefactoringElementsBag elements;
-        
-        public FindTask(RefactoringElementsBag elements) {
-            super();
-            this.elements = elements;
-        }
-        
-        public void cancel() {
-        }
-        
-        public void run(WorkingCopy compiler) throws IOException {
-            compiler.toPhase(JavaSource.Phase.RESOLVED);
-            CompilationUnitTree cu = compiler.getCompilationUnit();
-            if (cu == null) {
-                ErrorManager.getDefault().log(ErrorManager.ERROR, "compiler.getCompilationUnit() is null " + compiler);
-                return;
-            }
-            Element el = refactoring.getRefactoringSource().lookup(TreePathHandle.class).resolveElement(compiler);
-            assert el != null;
-            
-            ChangeParamsTransformer findVisitor = new ChangeParamsTransformer(refactoring, compiler, allMethods);
-            findVisitor.scan(compiler.getCompilationUnit(), el);
-            
-            for (TreePath tree : findVisitor.getUsages()) {
-                ElementGripFactory.getDefault().put(compiler.getFileObject(), tree, compiler);
-            }
-            fireProgressListenerStep();
-        }
-    }    
 
 }

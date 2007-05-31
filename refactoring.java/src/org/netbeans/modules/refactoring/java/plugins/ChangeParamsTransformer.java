@@ -27,10 +27,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.*;
-import javax.lang.model.util.Elements;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.ParameterInfo;
 
@@ -41,11 +39,8 @@ import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.Par
 public class ChangeParamsTransformer extends SearchVisitor {
 
     private Set<ElementHandle<ExecutableElement>> allMethods;
-    Elements elements = workingCopy.getElements();
-    
 
-    public ChangeParamsTransformer(ChangeParametersRefactoring refactoring, WorkingCopy workingCopy, Set<ElementHandle<ExecutableElement>> am) {
-        super(workingCopy);
+    public ChangeParamsTransformer(ChangeParametersRefactoring refactoring, Set<ElementHandle<ExecutableElement>> am) {
         this.refactoring = refactoring;
         this.allMethods = am;
     }
@@ -154,7 +149,7 @@ public class ChangeParamsTransformer extends SearchVisitor {
         if ((method.getKind() == ElementKind.METHOD || method.getKind() == ElementKind.CONSTRUCTOR) && allMethods !=null) {
             for (ElementHandle<ExecutableElement> mh: allMethods) {
                 ExecutableElement baseMethod =  mh.resolve(workingCopy);
-                if (baseMethod.equals(method) || elements.overrides((ExecutableElement)method, baseMethod, SourceUtils.getEnclosingTypeElement(baseMethod))) {
+                if (baseMethod.equals(method) || workingCopy.getElements().overrides((ExecutableElement)method, baseMethod, SourceUtils.getEnclosingTypeElement(baseMethod))) {
                     return true;
                 }
             }

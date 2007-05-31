@@ -25,6 +25,7 @@ import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -44,7 +45,6 @@ import org.openide.text.PositionBounds;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.util.lookup.Lookups;
 
 
 /** Plugin that implements the core functionality of Copy Class Refactoring.
@@ -65,11 +65,15 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
     /** Checks pre-conditions of the refactoring.
      * @return Problems found or <code>null</code>.
      */
-    public Problem preCheck() {
+    public Problem preCheck(CompilationController info) {
         return null;
     }
     
-    public Problem fastCheckParameters() {
+    protected JavaSource getJavaSource(Phase p) {
+        return JavaSource.forFileObject(refactoring.getRefactoringSource().lookup(FileObject.class));
+    }
+    
+    public Problem fastCheckParameters(CompilationController info) {
         if (!Utilities.isJavaIdentifier(refactoring.getNewName())) {
             String msg = new MessageFormat(NbBundle.getMessage(CopyClassRefactoringPlugin.class, "ERR_InvalidIdentifier")).format(
                 new Object[] {refactoring.getNewName()}
@@ -94,7 +98,7 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
         return null;
     }
 
-    public Problem checkParameters() {
+    public Problem checkParameters(CompilationController info) {
         return null;
     }
 
@@ -103,7 +107,7 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
         return null;
     }
     
-private class CopyClass extends SimpleRefactoringElementImplementation implements RefactoringElementImplementation{
+    private class CopyClass extends SimpleRefactoringElementImplementation implements RefactoringElementImplementation{
         
         public CopyClass () {
         }

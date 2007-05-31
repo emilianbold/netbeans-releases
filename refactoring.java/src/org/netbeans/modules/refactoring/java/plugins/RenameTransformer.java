@@ -21,13 +21,11 @@ package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
-import java.lang.annotation.ElementType;
 import java.util.Set;
 import javax.lang.model.element.*;
 import javax.lang.model.util.Elements;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.WorkingCopy;
 
 /**
  *
@@ -37,11 +35,8 @@ public class RenameTransformer extends SearchVisitor {
 
     private Set<ElementHandle<ExecutableElement>> allMethods;
     private String newName;
-    Elements elements = workingCopy.getElements();
-    
 
-    public RenameTransformer(String newName, WorkingCopy workingCopy, Set<ElementHandle<ExecutableElement>> am) {
-        super(workingCopy);
+    public RenameTransformer(String newName, Set<ElementHandle<ExecutableElement>> am) {
         this.newName = newName;
         this.allMethods = am;
     }
@@ -129,7 +124,7 @@ public class RenameTransformer extends SearchVisitor {
         if (method.getKind() == ElementKind.METHOD && allMethods !=null) {
             for (ElementHandle<ExecutableElement> mh: allMethods) {
                 ExecutableElement baseMethod =  mh.resolve(workingCopy);
-                if (baseMethod.equals(method) || elements.overrides((ExecutableElement)method, baseMethod, SourceUtils.getEnclosingTypeElement(baseMethod))) {
+                if (baseMethod.equals(method) || workingCopy.getElements().overrides((ExecutableElement)method, baseMethod, SourceUtils.getEnclosingTypeElement(baseMethod))) {
                     return true;
                 }
             }

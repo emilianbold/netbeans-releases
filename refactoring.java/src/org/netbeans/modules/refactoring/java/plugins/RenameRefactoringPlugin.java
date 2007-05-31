@@ -32,22 +32,24 @@ import javax.lang.model.util.Elements;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ModificationResult.Difference;
+import org.netbeans.modules.refactoring.java.plugins.JavaRefactoringPlugin.TransformTask;
 import org.netbeans.modules.refactoring.java.plugins.RetoucheCommit;
 import org.netbeans.modules.refactoring.java.DiffElement;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.plugins.JavaRefactoringPlugin;
-import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
+import org.netbeans.modules.refactoring.java.plugins.JavaRefactoringPlugin.Phase;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
- *
- * @author Jan Becicka, Martin Matula, Pavel Flaska, Daniel Prusa
+ * @author Jan Becicka
+ * @author Martin Matula
+ * @author Pavel Flaska
+ * @author Daniel Prusa
  */
 public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     
@@ -92,103 +94,103 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         }
     }
     
-    private Problem preCheckProblem;
-    public Problem preCheck() {
-        if (treePathHandle == null)
+    protected JavaSource getJavaSource(Phase p) {
+        if (treePathHandle == null) {
             return null;
-        preCheckProblem =null;
-        ClasspathInfo cpInfo = getClasspathInfo(refactoring);
-        JavaSource source = JavaSource.create(cpInfo, treePathHandle.getFileObject());
-        fireProgressListenerStart(refactoring.PRE_CHECK, 4);
-        try {
-            source.runUserActionTask(new CancellableTask<CompilationController>() {
-                
-                public void cancel() {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-                
-                public void run(CompilationController info) throws Exception {
-                    info.toPhase(JavaSource.Phase.RESOLVED);
-                    Element el = treePathHandle.resolveElement(info);
-                    preCheckProblem = isElementAvail(treePathHandle, info);
-                    if (preCheckProblem != null) {
-                        return;
-                    }
-                    FileObject file = SourceUtils.getFile(el, info.getClasspathInfo());
-                    if (FileUtil.getArchiveFile(file)!= null) { //NOI18N
-                        preCheckProblem = createProblem(preCheckProblem, true, getCannotRename(file));
-                        return;
-                    }
-                    
-                    if (!RetoucheUtils.isElementInOpenProject(file)) {
-                        preCheckProblem = new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ProjectNotOpened"));
-                        return;
-                    }
-                    
-                    switch(el.getKind()) {
-                    case METHOD:
-                        fireProgressListenerStep();
-                        fireProgressListenerStep();
-                        overriddenByMethods = RetoucheUtils.getOverridingMethods((ExecutableElement)el, info);
-                        fireProgressListenerStep();
-                        if (!overriddenByMethods.isEmpty()) {
-                            String msg = new MessageFormat(getString("ERR_IsOverridden")).format(
-                                    new Object[] {SourceUtils.getEnclosingTypeElement(el).getSimpleName().toString()});
-                            preCheckProblem = createProblem(preCheckProblem, false, msg);
-                        }
-                        overridesMethods = RetoucheUtils.getOverridenMethods((ExecutableElement)el, info);
-                        fireProgressListenerStep();
-                        if (!overridesMethods.isEmpty()) {
-                            boolean fatal = false;
-                            for (Iterator iter = overridesMethods.iterator();iter.hasNext();) {
-                                ExecutableElement method = (ExecutableElement) iter.next();
-                                if (RetoucheUtils.isFromLibrary(method, info.getClasspathInfo())) {
-                                    fatal = true;
-                                    break;
-                                }
-                            }
-                            String msg = fatal?getString("ERR_Overrides_Fatal"):getString("ERR_Overrides");
-                            preCheckProblem = createProblem(preCheckProblem, fatal, msg);
-                        }
-                        break;
-                    case FIELD:
-                    case ENUM_CONSTANT:
-                        fireProgressListenerStep();
-                        fireProgressListenerStep();
-                        Element hiddenField = hides(el, el.getSimpleName().toString(), info);
-                        fireProgressListenerStep();
-                        fireProgressListenerStep();
-                        if (hiddenField != null) {
-                            String msg = new MessageFormat(getString("ERR_Hides")).format(
-                                    new Object[] {SourceUtils.getEnclosingTypeElement(hiddenField)}
-                            );
-                            preCheckProblem = createProblem(preCheckProblem, false, msg);
-                        }
-                        break;
-                    case PACKAGE:
-                        //TODO: any prechecks?
-                        break;
-                    case LOCAL_VARIABLE:
-                        //TODO: any prechecks for formal parametr or local variable?
-                        break;
-                    case CLASS:
-                    case INTERFACE:
-                    case ANNOTATION_TYPE:
-                    case ENUM:
-                        //TODO: any prechecks for JavaClass?
-                        break;
-                    default:
-                        //                if (!((jmiObject instanceof Resource) && ((Resource)jmiObject).getClassifiers().isEmpty()))
-                        //                    result = createProblem(result, true, NbBundle.getMessage(RenameRefactoring.class, "ERR_RenameWrongType"));
-                    }
-                }
-            }, true);
-        } catch (IOException ioe) {
-            throw (RuntimeException) new RuntimeException().initCause(ioe);
-            
-        } finally {
-            fireProgressListenerStop();
         }
+        switch (p) {
+            case PRECHECK:
+            case CHECKPARAMETERS:    
+                if (treePathHandle==null) {
+                    return null;
+                }
+                ClasspathInfo cpInfo = getClasspathInfo(refactoring);
+                JavaSource source = JavaSource.create(cpInfo, treePathHandle.getFileObject());
+                return source;
+            case FASTCHECKPARAMETERS:
+                return JavaSource.forFileObject(treePathHandle.getFileObject());
+
+        }
+        throw new IllegalStateException();
+    }
+    
+    protected Problem preCheck(CompilationController info) throws IOException {
+        Problem preCheckProblem = null;
+        fireProgressListenerStart(refactoring.PRE_CHECK, 4);
+        info.toPhase(JavaSource.Phase.RESOLVED);
+        Element el = treePathHandle.resolveElement(info);
+        preCheckProblem = isElementAvail(treePathHandle, info);
+        if (preCheckProblem != null) {
+            return preCheckProblem;
+        }
+        FileObject file = SourceUtils.getFile(el, info.getClasspathInfo());
+        if (FileUtil.getArchiveFile(file)!= null) { //NOI18N
+            preCheckProblem = createProblem(preCheckProblem, true, getCannotRename(file));
+            return preCheckProblem;
+        }
+        
+        if (!RetoucheUtils.isElementInOpenProject(file)) {
+            preCheckProblem = new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ProjectNotOpened"));
+            return preCheckProblem;
+        }
+        
+        switch(el.getKind()) {
+        case METHOD:
+            fireProgressListenerStep();
+            fireProgressListenerStep();
+            overriddenByMethods = RetoucheUtils.getOverridingMethods((ExecutableElement)el, info);
+            fireProgressListenerStep();
+            if (!overriddenByMethods.isEmpty()) {
+                String msg = new MessageFormat(getString("ERR_IsOverridden")).format(
+                        new Object[] {SourceUtils.getEnclosingTypeElement(el).getSimpleName().toString()});
+                preCheckProblem = createProblem(preCheckProblem, false, msg);
+            }
+            overridesMethods = RetoucheUtils.getOverridenMethods((ExecutableElement)el, info);
+            fireProgressListenerStep();
+            if (!overridesMethods.isEmpty()) {
+                boolean fatal = false;
+                for (Iterator iter = overridesMethods.iterator();iter.hasNext();) {
+                    ExecutableElement method = (ExecutableElement) iter.next();
+                    if (RetoucheUtils.isFromLibrary(method, info.getClasspathInfo())) {
+                        fatal = true;
+                        break;
+                    }
+                }
+                String msg = fatal?getString("ERR_Overrides_Fatal"):getString("ERR_Overrides");
+                preCheckProblem = createProblem(preCheckProblem, fatal, msg);
+            }
+            break;
+        case FIELD:
+        case ENUM_CONSTANT:
+            fireProgressListenerStep();
+            fireProgressListenerStep();
+            Element hiddenField = hides(el, el.getSimpleName().toString(), info);
+            fireProgressListenerStep();
+            fireProgressListenerStep();
+            if (hiddenField != null) {
+                String msg = new MessageFormat(getString("ERR_Hides")).format(
+                        new Object[] {SourceUtils.getEnclosingTypeElement(hiddenField)}
+                );
+                preCheckProblem = createProblem(preCheckProblem, false, msg);
+            }
+            break;
+        case PACKAGE:
+            //TODO: any prechecks?
+            break;
+        case LOCAL_VARIABLE:
+            //TODO: any prechecks for formal parametr or local variable?
+            break;
+        case CLASS:
+        case INTERFACE:
+        case ANNOTATION_TYPE:
+        case ENUM:
+            //TODO: any prechecks for JavaClass?
+            break;
+        default:
+            //                if (!((jmiObject instanceof Resource) && ((Resource)jmiObject).getClassifiers().isEmpty()))
+            //                    result = createProblem(result, true, NbBundle.getMessage(RenameRefactoring.class, "ERR_RenameWrongType"));
+        }
+        fireProgressListenerStop();
         return preCheckProblem;
     }
     
@@ -196,114 +198,93 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         return new MessageFormat(NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_CannotRenameFile")).format(new Object[] {r.getNameExt()});
     }
     
-    private Problem fastCheckProblem;
-    public Problem fastCheckParameters() {
-        if (treePathHandle == null)
-            return null;
-        fastCheckProblem = null;
+    protected Problem fastCheckParameters(CompilationController info) throws IOException {
+        Problem fastCheckProblem = null;
+        info.toPhase(JavaSource.Phase.RESOLVED);
+        TreePath treePath = treePathHandle.resolve(info);
+        Element element = treePathHandle.resolveElement(info);
+        ElementKind kind = element.getKind();
         
-        JavaSource source = JavaSource.forFileObject(treePathHandle.getFileObject());
-        try {
-            source.runUserActionTask(new CancellableTask<CompilationController>() {
-                
-                public void cancel() {
-                    throw new UnsupportedOperationException("Not supported yet.");
+        String newName = refactoring.getNewName();
+        String oldName = element.getSimpleName().toString();
+        
+        if (oldName.equals(newName)) {
+            boolean nameNotChanged = true;
+            if (kind.isClass()) {
+                if (!((TypeElement) element).getNestingKind().isNested()) {
+                    nameNotChanged = info.getFileObject().getName().equals(element);
                 }
+            }
+            if (nameNotChanged) {
+                fastCheckProblem = createProblem(fastCheckProblem, true, getString("ERR_NameNotChanged"));
+                return fastCheckProblem;
+            }
+            
+        }
+        
+        if (!Utilities.isJavaIdentifier(newName)) {
+            String s = kind == ElementKind.PACKAGE? getString("ERR_InvalidPackage"):getString("ERR_InvalidIdentifier"); //NOI18N
+            String msg = new MessageFormat(s).format(
+                    new Object[] {newName}
+            );
+            fastCheckProblem = createProblem(fastCheckProblem, true, msg);
+            return fastCheckProblem;
+        }
+        
+        if (kind.isClass() && !((TypeElement) element).getNestingKind().isNested()) {
+            if (doCheckName) {
+                String oldfqn = RetoucheUtils.getQualifiedName(treePathHandle);
+                String newFqn = oldfqn.substring(0, oldfqn.lastIndexOf(oldName));
                 
-                public void run(CompilationController info) throws Exception {
-                    info.toPhase(JavaSource.Phase.RESOLVED);
-                    TreePath treePath = treePathHandle.resolve(info);
-                    Element element = treePathHandle.resolveElement(info);
-                    ElementKind kind = element.getKind();
-                    
-                    String newName = refactoring.getNewName();
-                    String oldName = element.getSimpleName().toString();
-                    
-                    if (oldName.equals(newName)) {
-                        boolean nameNotChanged = true;
-                        if (kind.isClass()) {
-                            if (!((TypeElement) element).getNestingKind().isNested()) {
-                                nameNotChanged = info.getFileObject().getName().equals(element);
-                            }
-                        }
-                        if (nameNotChanged) {
-                            fastCheckProblem = createProblem(fastCheckProblem, true, getString("ERR_NameNotChanged"));
-                            return;
-                        }
-                        
-                    }
-                    
-                    if (!Utilities.isJavaIdentifier(newName)) {
-                        String s = kind == ElementKind.PACKAGE? getString("ERR_InvalidPackage"):getString("ERR_InvalidIdentifier"); //NOI18N
-                        String msg = new MessageFormat(s).format(
-                                new Object[] {newName}
-                        );
-                        fastCheckProblem = createProblem(fastCheckProblem, true, msg);
-                        return;
-                    }
-                    
-                    if (kind.isClass() && !((TypeElement) element).getNestingKind().isNested()) {
-                        if (doCheckName) {
-                            String oldfqn = RetoucheUtils.getQualifiedName(treePathHandle);
-                            String newFqn = oldfqn.substring(0, oldfqn.lastIndexOf(oldName));
-                            
-                            String pkgname = oldfqn;
-                            int i = pkgname.indexOf('.');
-                            if (i>=0)
-                                pkgname = pkgname.substring(0,i);
-                            else
-                                pkgname = "";
-                            
-                            String fqn = "".equals(pkgname) ? newName : pkgname + '.' + newName;
-                            FileObject fo = treePathHandle.getFileObject();
-                            ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-                            if (RetoucheUtils.typeExist(treePathHandle, newFqn)) {
-                                String msg = new MessageFormat(getString("ERR_ClassClash")).format(
-                                        new Object[] {newName, pkgname}
-                                );
-                                fastCheckProblem = createProblem(fastCheckProblem, true, msg);
-                                return;
-                            }
-                        }
-                        FileObject primFile = treePathHandle.getFileObject();
-                        FileObject folder = primFile.getParent();
-                        FileObject[] children = folder.getChildren();
-                        for (int x = 0; x < children.length; x++) {
-                            if (children[x] != primFile && !children[x].isVirtual() && children[x].getName().equals(newName) && "java".equals(children[x].getExt())) { //NOI18N
-                                String msg = new MessageFormat(getString("ERR_ClassClash")).format(
-                                        new Object[] {newName, folder.getPath()}
-                                );
-                                fastCheckProblem = createProblem(fastCheckProblem, true, msg);
-                                break;
-                            }
-                        } // for
-                    } else if (kind == ElementKind.LOCAL_VARIABLE || kind == ElementKind.PARAMETER) {
-                        String msg = variableClashes(newName,treePath, info);
-                        if (msg != null) {
-                            fastCheckProblem = createProblem(fastCheckProblem, true, msg);
-                            return;
-                        }
-                    } else {
-                        String msg = clashes(element, newName, info);
-                        if (msg != null) {
-                            fastCheckProblem = createProblem(fastCheckProblem, true, msg);
-                            return;
-                        }
-                    }
+                String pkgname = oldfqn;
+                int i = pkgname.indexOf('.');
+                if (i>=0)
+                    pkgname = pkgname.substring(0,i);
+                else
+                    pkgname = "";
+                
+                String fqn = "".equals(pkgname) ? newName : pkgname + '.' + newName;
+                FileObject fo = treePathHandle.getFileObject();
+                ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+                if (RetoucheUtils.typeExist(treePathHandle, newFqn)) {
+                    String msg = new MessageFormat(getString("ERR_ClassClash")).format(
+                            new Object[] {newName, pkgname}
+                    );
+                    fastCheckProblem = createProblem(fastCheckProblem, true, msg);
+                    return fastCheckProblem;
                 }
-            }, true);
-        } catch (IOException ioe) {
-            throw (RuntimeException) new RuntimeException().initCause(ioe);
+            }
+            FileObject primFile = treePathHandle.getFileObject();
+            FileObject folder = primFile.getParent();
+            FileObject[] children = folder.getChildren();
+            for (int x = 0; x < children.length; x++) {
+                if (children[x] != primFile && !children[x].isVirtual() && children[x].getName().equals(newName) && "java".equals(children[x].getExt())) { //NOI18N
+                    String msg = new MessageFormat(getString("ERR_ClassClash")).format(
+                            new Object[] {newName, folder.getPath()}
+                    );
+                    fastCheckProblem = createProblem(fastCheckProblem, true, msg);
+                    break;
+                }
+            } // for
+        } else if (kind == ElementKind.LOCAL_VARIABLE || kind == ElementKind.PARAMETER) {
+            String msg = variableClashes(newName,treePath, info);
+            if (msg != null) {
+                fastCheckProblem = createProblem(fastCheckProblem, true, msg);
+                return fastCheckProblem;
+            }
+        } else {
+            String msg = clashes(element, newName, info);
+            if (msg != null) {
+                fastCheckProblem = createProblem(fastCheckProblem, true, msg);
+                return fastCheckProblem;
+            }
         }
         return fastCheckProblem;
     }
     
-    private Problem checkProblem;
-    public Problem checkParameters() {
-        if (treePathHandle == null)
-            return null;
+    protected Problem checkParameters(CompilationController info) throws IOException {
         
-        checkProblem = null;
+        Problem checkProblem = null;
         int steps = 0;
         if (overriddenByMethods != null)
             steps += overriddenByMethods.size();
@@ -312,50 +293,31 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         
         fireProgressListenerStart(refactoring.PARAMETERS_CHECK, 8 + 3*steps);
         
-        ClasspathInfo cpInfo = getClasspathInfo(refactoring);
-        JavaSource source = JavaSource.create(cpInfo, treePathHandle.getFileObject());
+        info.toPhase(JavaSource.Phase.RESOLVED);
+        Element element = treePathHandle.resolveElement(info);
         
-        try {
-            source.runUserActionTask(new CancellableTask<CompilationController>() {
-                
-                public void cancel() {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-                
-                public void run(CompilationController info) throws Exception {
-                    info.toPhase(JavaSource.Phase.RESOLVED);
-                    Element element = treePathHandle.resolveElement(info);
-                    
-                    fireProgressListenerStep();
-                    fireProgressListenerStep();
-                    String msg;
-                    if (element.getKind() == ElementKind.METHOD) {
-                        checkProblem = checkMethodForOverriding((ExecutableElement)element, refactoring.getNewName(), checkProblem, info);
-                        fireProgressListenerStep();
-                        fireProgressListenerStep();
-                    } else if (element.getKind().isField()) {
-                        fireProgressListenerStep();
-                        fireProgressListenerStep();
-                        Element hiddenField = hides(element, refactoring.getNewName(), info);
-                        fireProgressListenerStep();
-                        fireProgressListenerStep();
-                        fireProgressListenerStep();
-                        if (hiddenField != null) {
-                            msg = new MessageFormat(getString("ERR_WillHide")).format(
-                                    new Object[] {SourceUtils.getEnclosingTypeElement(hiddenField).toString()}
-                            );
-                            checkProblem = createProblem(checkProblem, false, msg);
-                        }
-                    }
-                }
-            }, true);
-            
-        } catch (IOException ioe) {
-            throw (RuntimeException) new RuntimeException().initCause(ioe);
-            
-        } finally {
-            fireProgressListenerStop();
+        fireProgressListenerStep();
+        fireProgressListenerStep();
+        String msg;
+        if (element.getKind() == ElementKind.METHOD) {
+            checkProblem = checkMethodForOverriding((ExecutableElement)element, refactoring.getNewName(), checkProblem, info);
+            fireProgressListenerStep();
+            fireProgressListenerStep();
+        } else if (element.getKind().isField()) {
+            fireProgressListenerStep();
+            fireProgressListenerStep();
+            Element hiddenField = hides(element, refactoring.getNewName(), info);
+            fireProgressListenerStep();
+            fireProgressListenerStep();
+            fireProgressListenerStep();
+            if (hiddenField != null) {
+                msg = new MessageFormat(getString("ERR_WillHide")).format(
+                        new Object[] {SourceUtils.getEnclosingTypeElement(hiddenField).toString()}
+                );
+                checkProblem = createProblem(checkProblem, false, msg);
+            }
         }
+        fireProgressListenerStop();
         return checkProblem;
     }
     
@@ -436,7 +398,8 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         Set<FileObject> a = getRelevantFiles();
         fireProgressListenerStart(ProgressEvent.START, a.size());
         if (!a.isEmpty()) {
-            final Collection<ModificationResult> results = processFiles(a, new FindTask(elements));
+            TransformTask transform = new TransformTask(new RenameTransformer(refactoring.getNewName(), allMethods), treePathHandle);
+            final Collection<ModificationResult> results = processFiles(a, transform);
             elements.registerTransaction(new RetoucheCommit(results));
             for (ModificationResult result:results) {
                 for (FileObject jfo : result.getModifiedFileObjects()) {
@@ -758,7 +721,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     
     private String clashes(Element feature, String newName, CompilationInfo info) {
         ElementUtilities utils = info.getElementUtilities();
-        TypeElement dc = (TypeElement) feature.getEnclosingElement();
+        Element dc = feature.getEnclosingElement();
         ElementKind kind = feature.getKind();
         if (kind.isClass() || kind.isInterface()) {
             for (Element current:ElementFilter.typesIn(dc.getEnclosedElements())) {
@@ -769,7 +732,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                 }
             }
         } else if (kind==ElementKind.METHOD) {
-            if (utils.alreadyDefinedIn((CharSequence) newName, (ExecutableType) feature.asType(), dc)) {
+            if (utils.alreadyDefinedIn((CharSequence) newName, (ExecutableType) feature.asType(), (TypeElement) dc)) {
                 return new MessageFormat(getString("ERR_MethodClash")).format(
                         new Object[] {newName, dc.getSimpleName()}
                 );
@@ -789,37 +752,5 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     
     private static final String getString(String key) {
         return NbBundle.getMessage(RenameRefactoringPlugin.class, key);
-    }
-    
-    private class FindTask implements CancellableTask<WorkingCopy> {
-        
-        private RefactoringElementsBag elements;
-        
-        public FindTask(RefactoringElementsBag elements) {
-            super();
-            this.elements = elements;
-        }
-        
-        public void cancel() {
-        }
-        
-        public void run(WorkingCopy compiler) throws IOException {
-            compiler.toPhase(JavaSource.Phase.RESOLVED);
-            CompilationUnitTree cu = compiler.getCompilationUnit();
-            if (cu == null) {
-                ErrorManager.getDefault().log(ErrorManager.ERROR, "compiler.getCompilationUnit() is null " + compiler);
-                return;
-            }
-            Element el = treePathHandle.resolveElement(compiler);
-            assert el != null;
-            
-            RenameTransformer findVisitor = new RenameTransformer(refactoring.getNewName(), compiler, allMethods);
-            findVisitor.scan(compiler.getCompilationUnit(), el);
-            
-            for (TreePath tree : findVisitor.getUsages()) {
-                ElementGripFactory.getDefault().put(compiler.getFileObject(), tree, compiler);
-            }
-            fireProgressListenerStep();
-        }
     }
 }

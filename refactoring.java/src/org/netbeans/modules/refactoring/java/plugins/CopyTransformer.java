@@ -34,7 +34,7 @@ public class CopyTransformer extends SearchVisitor {
     private String oldPackage;
 
     public CopyTransformer(WorkingCopy workingCopy, String newName, boolean insertImport, String oldPackage) {
-        super(workingCopy);
+        setWorkingCopy(workingCopy);
         this.newName = newName;
         this.insertImport = insertImport;
         this.oldPackage = oldPackage + ".*";

@@ -31,7 +31,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 public class FindUsagesVisitor extends SearchVisitor {
 
     public FindUsagesVisitor(WorkingCopy workingCopy) {
-        super(workingCopy);
+        setWorkingCopy(workingCopy);
     }
 
     @Override

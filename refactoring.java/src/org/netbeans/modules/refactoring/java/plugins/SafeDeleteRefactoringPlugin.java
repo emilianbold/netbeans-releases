@@ -24,55 +24,28 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import javax.lang.model.element.Element;
+import java.util.*;
 import javax.swing.Action;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.java.DiffElement;
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.RefactoringElement;
-import org.netbeans.modules.refactoring.api.RefactoringSession;
-import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
-import org.netbeans.modules.refactoring.api.WhereUsedQuery;
+import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
-import org.netbeans.modules.refactoring.spi.ProblemDetailsFactory;
-import org.netbeans.modules.refactoring.spi.ProblemDetailsImplementation;
-import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
-import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
+import org.netbeans.modules.refactoring.spi.*;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.java.ui.SafeDeleteUI;
 import org.netbeans.modules.refactoring.java.ui.WhereUsedQueryUI;
 import org.netbeans.modules.refactoring.java.ui.tree.ElementGrip;
-import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
-import org.openide.util.Cancellable;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
 
 
 /**
  * The plugin that carries out Safe Delete refactoring.
- * @author Bharath Ravikumar, Jan Becicka
+ * @author Bharath Ravikumar
+ * @author Jan Becicka
  */
 public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
     private SafeDeleteRefactoring refactoring;
@@ -108,7 +81,8 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
             
             JavaSource javaSource = JavaSource.forFileObject(grips.get(i).getFileObject());
             try {
-                final ModificationResult result = javaSource.runModificationTask(new FindTask(refactoringElements, grips.get(i)));
+                TransformTask task = new TransformTask(new DeleteTransformer(), grips.get(i));
+                final ModificationResult result = javaSource.runModificationTask(task);
                 refactoringElements.registerTransaction(new RetoucheCommit(Collections.singleton(result)));
                 for (FileObject jfo : result.getModifiedFileObjects()) {
                     for (ModificationResult.Difference dif: result.getDifferences(jfo)) {
@@ -254,7 +228,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
                         
                     }
                     public void run(CompilationController co) throws Exception {
-                        co.toPhase(Phase.ELEMENTS_RESOLVED);
+                        co.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                         CompilationUnitTree cut = co.getCompilationUnit();
                         for (Tree t: cut.getTypeDecls()) {
                             TreePathHandle handle = TreePathHandle.create(TreePath.getPath(cut, t), co);
@@ -368,37 +342,20 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
             return null;
         }
     }
-    
-    private class FindTask implements CancellableTask<WorkingCopy> {
 
-        private RefactoringElementsBag elements;
-        private TreePathHandle jmiObject;
+    protected Problem preCheck(CompilationController javac) throws IOException {
+        return null;
+    }
 
-        public FindTask(RefactoringElementsBag elements, TreePathHandle element) {
-            super();
-            this.elements = elements;
-            this.jmiObject = element;
-        }
+    protected Problem checkParameters(CompilationController javac) throws IOException {
+        return null;
+    }
 
-        public void cancel() {
-        }
+    protected Problem fastCheckParameters(CompilationController javac) throws IOException {
+        return null;
+    }
 
-        public void run(WorkingCopy compiler) throws IOException {
-            compiler.toPhase(Phase.RESOLVED);
-            CompilationUnitTree cu = compiler.getCompilationUnit();
-            if (cu == null) {
-                ErrorManager.getDefault().log(ErrorManager.ERROR, "compiler.getCompilationUnit() is null " + compiler);
-                return;
-            }
-            Element el = jmiObject.resolveElement(compiler);
-            assert el != null;
-
-            DeleteTransformer findVisitor = new DeleteTransformer(compiler);
-            findVisitor.scan(compiler.getCompilationUnit(), el);
-
-            for (TreePath tree : findVisitor.getUsages()) {
-                ElementGripFactory.getDefault().put(compiler.getFileObject(), tree, compiler);
-            }
-        }
-    }        
+    protected JavaSource getJavaSource(Phase p) {
+        return null;
+    }
 }

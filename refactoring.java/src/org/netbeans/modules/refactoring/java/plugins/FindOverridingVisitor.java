@@ -33,7 +33,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 public class FindOverridingVisitor extends SearchVisitor {
 
     public FindOverridingVisitor(WorkingCopy workingCopy) {
-        super(workingCopy);
+        setWorkingCopy(workingCopy);
     }
 
     @Override

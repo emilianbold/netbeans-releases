@@ -87,7 +87,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Martin Matula, Jan Pokorsky
  */
-public final class ExtractInterfaceRefactoringPlugin extends RetoucheRefactoringPlugin {
+public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlugin {
     
     /** Reference to the parent refactoring instance */
     private final ExtractInterfaceRefactoring refactoring;
@@ -104,14 +104,7 @@ public final class ExtractInterfaceRefactoringPlugin extends RetoucheRefactoring
         this.refactoring = refactoring;
     }
 
-    public Problem checkParameters() {
-        if (refactoring.getMethods().isEmpty() && refactoring.getFields().isEmpty() && refactoring.getImplements().isEmpty()) {
-            return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ExtractInterface_MembersNotAvailable")); // NOI18N);
-        }
-        return super.checkParameters();
-    }
-
-    public Problem fastCheckParameters() {
+    public Problem fastCheckParameters(CompilationController info) {
         Problem result = null;
         
         String newName = refactoring.getInterfaceName();
@@ -146,8 +139,8 @@ public final class ExtractInterfaceRefactoringPlugin extends RetoucheRefactoring
         return null;
     }
     
-    protected FileObject getFileObject() {
-        return refactoring.getSourceType().getFileObject();
+    protected JavaSource getJavaSource(Phase p) {
+        return JavaSource.forFileObject(refactoring.getSourceType().getFileObject());
     }
     
     protected Problem preCheck(CompilationController javac) throws IOException {
@@ -191,6 +184,9 @@ public final class ExtractInterfaceRefactoringPlugin extends RetoucheRefactoring
     }
     
     protected Problem checkParameters(CompilationController javac) throws IOException {
+        if (refactoring.getMethods().isEmpty() && refactoring.getFields().isEmpty() && refactoring.getImplements().isEmpty()) {
+            return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ExtractInterface_MembersNotAvailable")); // NOI18N);
+        }
         // check whether the selected members are public and non-static in case of methods, static in other cases
         // check whether all members belong to the source type
         // XXX check if method params and return type will be accessible after extraction; likely not fatal

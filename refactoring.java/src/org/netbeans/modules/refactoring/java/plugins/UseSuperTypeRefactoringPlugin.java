@@ -18,37 +18,17 @@
  */
 
 package org.netbeans.modules.refactoring.java.plugins;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.ModifiersTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.Set;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
+import java.util.*;
+import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClassIndex;
-import org.netbeans.api.java.source.ClassIndex.SearchKind;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ModificationResult.Difference;
-import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.java.DiffElement;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.UseSuperTypeRefactoring;
 import org.netbeans.modules.refactoring.java.plugins.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -71,8 +51,6 @@ import org.openide.util.NbBundle;
 public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
     
     private final UseSuperTypeRefactoring refactoring;
-    private final RenameRefactoring renameRefactoring = null;
-    private static final float ONE_DOT_FIVE = 1.5f;
     
     /**
      * Creates a new instance of UseSuperTypeRefactoringPlugin
@@ -92,11 +70,17 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
         return null;
     }
     
+    protected JavaSource getJavaSource(Phase p) {
+        switch (p) {
+        default: 
+            return JavaSource.forFileObject(refactoring.getTypeElement().getFileObject());
+        }
+    }
     /**
      *Checks whether the candidate element is a valid Type.
      *@return Problem The problem instance indicating that an invalid element was selected.
      */
-    public org.netbeans.modules.refactoring.api.Problem preCheck() {
+    protected org.netbeans.modules.refactoring.api.Problem preCheck(CompilationController info) {
         //        Element subType = refactoring.getTypeElement();
         //        if(!(subType instanceof JavaClass)){
         //            String errMsg = NbBundle.getMessage(UseSuperTypeRefactoringPlugin.class,
@@ -109,7 +93,7 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
     /**
      * @return A problem indicating that no super type was selected.
      */
-    public org.netbeans.modules.refactoring.api.Problem fastCheckParameters() {
+    public org.netbeans.modules.refactoring.api.Problem fastCheckParameters(CompilationController info) {
         if (refactoring.getTargetSuperType() == null) {
             return new Problem(true, NbBundle.getMessage(UseSuperTypeRefactoringPlugin.class, "ERR_UseSuperTypeNoSuperType"));
         }
@@ -119,7 +103,7 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
     /**
      * A no op. Returns null
      */
-    public org.netbeans.modules.refactoring.api.Problem checkParameters() {
+    public org.netbeans.modules.refactoring.api.Problem checkParameters(CompilationController info) {
         return null;
     }
     
@@ -137,7 +121,7 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
                 }
                 
                 public void run(CompilationController complController) throws IOException {
-                    complController.toPhase(Phase.ELEMENTS_RESOLVED);
+                    complController.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     
                     FileObject fo = subClassHandle.getFileObject();
                     ClasspathInfo classpathInfo = getClasspathInfo(refactoring);
@@ -145,7 +129,7 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
                     ClassIndex clsIndx = classpathInfo.getClassIndex();
                     TypeElement javaClassElement = (TypeElement) subClassHandle.
                             resolveElement(complController);
-                    EnumSet<SearchKind> typeRefSearch = EnumSet.of(ClassIndex.SearchKind.
+                    EnumSet<ClassIndex.SearchKind> typeRefSearch = EnumSet.of(ClassIndex.SearchKind.
                             TYPE_REFERENCES);
                     Set<FileObject> refFileObjSet = clsIndx.getResources(ElementHandle.
                             create(javaClassElement), typeRefSearch,
@@ -220,7 +204,7 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
         private final Element subTypeElement;
         private ReferencesVisitor(WorkingCopy workingCopy, Element subClassElement,
                 Element superClassElement){
-            super(workingCopy);
+            setWorkingCopy(workingCopy);
             this.superTypeElement = superClassElement;
             this.subTypeElement = subClassElement;
         }

@@ -24,7 +24,6 @@ import java.util.Collection;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.modules.refactoring.spi.BackupFacility;
 import org.netbeans.modules.refactoring.spi.Transaction;
-import org.openide.filesystems.FileObject;
 
 /**
  *

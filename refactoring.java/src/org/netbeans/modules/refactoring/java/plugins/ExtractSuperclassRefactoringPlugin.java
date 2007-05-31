@@ -85,7 +85,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Martin Matula, Jan Pokorsky
  */
-public final class ExtractSuperclassRefactoringPlugin extends RetoucheRefactoringPlugin {
+public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlugin {
     /** Reference to the parent refactoring instance */
     private final ExtractSuperclassRefactoring refactoring;
     
@@ -101,8 +101,8 @@ public final class ExtractSuperclassRefactoringPlugin extends RetoucheRefactorin
         this.refactoring = refactoring;
     }
 
-    protected FileObject getFileObject() {
-        return refactoring.getSourceType().getFileObject();
+    protected JavaSource getJavaSource(Phase p) {
+        return JavaSource.forFileObject(refactoring.getSourceType().getFileObject());
     }
 
     protected Problem preCheck(CompilationController javac) throws IOException {
@@ -143,6 +143,10 @@ public final class ExtractSuperclassRefactoringPlugin extends RetoucheRefactorin
             // fire operation end on the registered progress listeners
             fireProgressListenerStop();
         }
+    }
+    
+    protected Problem fastCheckParameters(CompilationController cc) {
+        return null;
     }
     
     public Problem fastCheckParameters() {

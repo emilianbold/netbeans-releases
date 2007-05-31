@@ -18,52 +18,23 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
-import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.BlockTree;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.StatementTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
-import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
+import java.util.*;
 import java.util.Set;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.ElementFilter;
+import javax.lang.model.element.*;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClassIndex;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ModificationResult.Difference;
-import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.TreeUtilities;
-import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.java.DiffElement;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.InnerToOuterRefactoring;
 import org.netbeans.modules.refactoring.java.plugins.JavaRefactoringPlugin;
-import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
+import org.netbeans.modules.refactoring.java.plugins.JavaRefactoringPlugin.TransformTask;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -87,111 +58,101 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
         this.refactoring = refactoring;
         this.treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
     }
-    private Problem preCheckProblem;
-    
-    public Problem preCheck() {
-        //TODO: preChecks
-        // fire operation start on the registered progress listeners (4 steps)
-        ClasspathInfo cpInfo = getClasspathInfo(refactoring);
-        JavaSource source = JavaSource.create(cpInfo, treePathHandle.getFileObject());
-        fireProgressListenerStart(refactoring.PRE_CHECK, 4);
-        try {
-            source.runUserActionTask(new CancellableTask<CompilationController>() {
-                
-                public void cancel() {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-                
-                public void run(CompilationController info) throws Exception {
-                    info.toPhase(JavaSource.Phase.RESOLVED);
-                    Element el = treePathHandle.resolveElement(info);
-                    TreePathHandle sourceType = refactoring.getSourceType();
-                    
-                    if (sourceType == null) {
-                        preCheckProblem = new Problem(true, NbBundle.getMessage(InnerToOuterRefactoringPlugin.class, "ERR_InnerToOuter_MustBeInnerClass")); // NOI18N
-                        return;
-                    }
-                    
-                    // check whether the element is valid
-                    //            Problem result = isElementAvail(sourceType);
-                    //            if (result != null) {
-                    //                // fatal error -> don't continue with further checks
-                    //                return result;
-                    //            }
-                    if (!RetoucheUtils.isElementInOpenProject(RetoucheUtils.getFileObject(sourceType))) {
-                        preCheckProblem = new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ProjectNotOpened"));
-                        return;
-                    }
-                    
-                    
-                    //            // check whether the element is an unresolved class
-                    //            if (sourceType instanceof UnresolvedClass) {
-                    //                // fatal error -> return
-                    //                return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ElementNotAvailable")); // NOI18N
-                    //            }
-                    
-                    refactoring.setClassName(RetoucheUtils.getSimpleName(sourceType));
-                    
-                    // increase progress (step 1)
-                    fireProgressListenerStep();
-                    
-                    // #1 - check if the class is an inner class
-                    //            RefObject declCls = (RefObject) sourceType.refImmediateComposite();
-                    if (el instanceof TypeElement) {
-                        if (!((TypeElement)el).getNestingKind().isNested()) {
-                            // fatal error -> return
-                            preCheckProblem = new Problem(true, NbBundle.getMessage(InnerToOuterRefactoringPlugin.class, "ERR_InnerToOuter_MustBeInnerClass")); // NOI18N
-                            return;
-                        }
-                    } else {
-                        preCheckProblem = new Problem(true, NbBundle.getMessage(InnerToOuterRefactoringPlugin.class, "ERR_InnerToOuter_MustBeInnerClass")); // NOI18N
-                        return;
-                    }
-                    
-                    // increase progress (step 2)
-                    fireProgressListenerStep();
-                    
-                    //            if (Modifier.isStatic(sourceType.getModifiers())) {
-                    //                fireProgressListenerStep();
-                    //            } else {
-                    //                // collect all features of the outer class
-                    //                Set featureSet = new HashSet(), innerFeatures = new HashSet();
-                    //                getFeatureSet((JavaClass) declCls, featureSet, new HashSet());
-                    //                getFeatureSet(sourceType, innerFeatures, new HashSet());
-                    //                featureSet.remove(sourceType);
-                    //
-                    //                // increase progress (step 3)
-                    //                fireProgressListenerStep();
-                    //
-                    //                // check if any features of the outer class are referenced
-                    //                // if so, create refactoring elements for them
-                    //                multipartIds = new ArrayList();
-                    //                Collection outerReferences = traverseForOuterReferences(sourceType, new ArrayList(), multipartIds, featureSet, innerFeatures, (JavaClass) declCls);
-                    //                if (!outerReferences.isEmpty()) {
-                    //                    this.outerReferences = outerReferences;
-                    refactoring.setReferenceName("outer");
-                    //                }
-                    //            }
-                    
-                    // all checks passed -> return null
-                    return;
-                }
-            }, true);
-        } catch (IOException ioe) {
-            throw (RuntimeException) new RuntimeException().initCause(ioe);
-        } finally {
-            // fire operation end on the registered progress listeners
-            fireProgressListenerStop();
+
+    protected JavaSource getJavaSource(Phase p) {
+        switch (p) {
+        case PRECHECK:
+            ClasspathInfo cpInfo = getClasspathInfo(refactoring);
+            return JavaSource.create(cpInfo, treePathHandle.getFileObject());
+        default:
+            return JavaSource.forFileObject(treePathHandle.getFileObject());
         }
+    }
+    
+    protected Problem preCheck(CompilationController info) throws IOException {
+        // fire operation start on the registered progress listeners (4 steps)
+        fireProgressListenerStart(refactoring.PRE_CHECK, 4);
+        Problem preCheckProblem = null;
+        info.toPhase(JavaSource.Phase.RESOLVED);
+        Element el = treePathHandle.resolveElement(info);
+        TreePathHandle sourceType = refactoring.getSourceType();
+        
+        if (sourceType == null) {
+            preCheckProblem = new Problem(true, NbBundle.getMessage(InnerToOuterRefactoringPlugin.class, "ERR_InnerToOuter_MustBeInnerClass")); // NOI18N
+            return preCheckProblem;
+        }
+        
+        // check whether the element is valid
+        //            Problem result = isElementAvail(sourceType);
+        //            if (result != null) {
+        //                // fatal error -> don't continue with further checks
+        //                return result;
+        //            }
+        if (!RetoucheUtils.isElementInOpenProject(RetoucheUtils.getFileObject(sourceType))) {
+            preCheckProblem = new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ProjectNotOpened"));
+            return preCheckProblem;
+        }
+        
+        
+        //            // check whether the element is an unresolved class
+        //            if (sourceType instanceof UnresolvedClass) {
+        //                // fatal error -> return
+        //                return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ElementNotAvailable")); // NOI18N
+        //            }
+        
+        refactoring.setClassName(RetoucheUtils.getSimpleName(sourceType));
+        
+        // increase progress (step 1)
+        fireProgressListenerStep();
+        
+        // #1 - check if the class is an inner class
+        //            RefObject declCls = (RefObject) sourceType.refImmediateComposite();
+        if (el instanceof TypeElement) {
+            if (!((TypeElement)el).getNestingKind().isNested()) {
+                // fatal error -> return
+                preCheckProblem = new Problem(true, NbBundle.getMessage(InnerToOuterRefactoringPlugin.class, "ERR_InnerToOuter_MustBeInnerClass")); // NOI18N
+                return preCheckProblem;
+            }
+        } else {
+            preCheckProblem = new Problem(true, NbBundle.getMessage(InnerToOuterRefactoringPlugin.class, "ERR_InnerToOuter_MustBeInnerClass")); // NOI18N
+            return preCheckProblem;
+        }
+        
+        // increase progress (step 2)
+        fireProgressListenerStep();
+        
+        //            if (Modifier.isStatic(sourceType.getModifiers())) {
+        //                fireProgressListenerStep();
+        //            } else {
+        //                // collect all features of the outer class
+        //                Set featureSet = new HashSet(), innerFeatures = new HashSet();
+        //                getFeatureSet((JavaClass) declCls, featureSet, new HashSet());
+        //                getFeatureSet(sourceType, innerFeatures, new HashSet());
+        //                featureSet.remove(sourceType);
+        //
+        //                // increase progress (step 3)
+        //                fireProgressListenerStep();
+        //
+        //                // check if any features of the outer class are referenced
+        //                // if so, create refactoring elements for them
+        //                multipartIds = new ArrayList();
+        //                Collection outerReferences = traverseForOuterReferences(sourceType, new ArrayList(), multipartIds, featureSet, innerFeatures, (JavaClass) declCls);
+        //                if (!outerReferences.isEmpty()) {
+        //                    this.outerReferences = outerReferences;
+        refactoring.setReferenceName("outer");
+        //                }
+        //            }
+        
+        fireProgressListenerStop();
         return preCheckProblem;
     }
 
-    public Problem checkParameters() {
+    protected Problem checkParameters(CompilationController info) {
         //TODO:
         return null;
     }
 
-    public Problem fastCheckParameters() {
+    protected Problem fastCheckParameters(CompilationController info) {
         //TODO:
         return null;
     }
@@ -215,7 +176,8 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
             Exceptions.printStackTrace(ex);
         }
         if (!a.isEmpty()) {
-            results.addAll(processFiles(a, new FindTask(refactoringElements)));
+            TransformTask transform = new TransformTask(new InnerToOuterTransformer(refactoring), refactoring.getSourceType());
+            results.addAll(processFiles(a, transform));
             refactoringElements.registerTransaction(new RetoucheCommit(results));
             for (ModificationResult result:results) {
                 for (FileObject jfo : result.getModifiedFileObjects()) {
@@ -1051,37 +1013,4 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
 //            return element;
 //        }
 //    }
-    
-    private class FindTask implements CancellableTask<WorkingCopy> {
-        
-        private RefactoringElementsBag elements;
-        
-        public FindTask(RefactoringElementsBag elements) {
-            super();
-            this.elements = elements;
-        }
-        
-        public void cancel() {
-        }
-        
-        public void run(WorkingCopy compiler) throws IOException {
-            compiler.toPhase(JavaSource.Phase.RESOLVED);
-            CompilationUnitTree cu = compiler.getCompilationUnit();
-            if (cu == null) {
-                ErrorManager.getDefault().log(ErrorManager.ERROR, "compiler.getCompilationUnit() is null " + compiler);
-                return;
-            }
-            Element el = refactoring.getSourceType().resolveElement(compiler);
-            assert el != null;
-            
-            InnerToOuterTransformer findVisitor = new InnerToOuterTransformer(compiler, (TypeElement)el, refactoring);
-            findVisitor.scan(compiler.getCompilationUnit(), el);
-            
-            for (TreePath tree : findVisitor.getUsages()) {
-                ElementGripFactory.getDefault().put(compiler.getFileObject(), tree, compiler);
-            }
-            fireProgressListenerStep();
-        }
-    }
-    
 }

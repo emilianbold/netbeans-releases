@@ -20,16 +20,11 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.*;
-import com.sun.source.tree.AssignmentTree;
 import com.sun.source.util.TreePath;
-import java.util.HashSet;
-import java.util.Set;
 import javax.lang.model.element.*;
-import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.java.api.InnerToOuterRefactoring;
-import org.netbeans.modules.refactoring.java.api.MemberInfo;
 
 /**
  *
@@ -45,10 +40,13 @@ public class InnerToOuterTransformer extends SearchVisitor {
         return workingCopy.getTrees().getElement(getCurrentPath());
     }
     
-    public InnerToOuterTransformer(WorkingCopy workingCopy, TypeElement inner, InnerToOuterRefactoring re) {
-        super(workingCopy);
-        this.inner = inner;
+    public InnerToOuterTransformer(InnerToOuterRefactoring re) {
         this.refactoring = re;
+    }
+    
+    public void setWorkingCopy(WorkingCopy wc) {
+        super.setWorkingCopy(wc);
+        this.inner = refactoring.getSourceType().resolveElement(wc);
         outer = SourceUtils.getEnclosingTypeElement(inner);
     }
 

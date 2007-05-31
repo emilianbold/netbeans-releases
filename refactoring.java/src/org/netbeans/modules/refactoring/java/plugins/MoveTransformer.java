@@ -43,10 +43,13 @@ public class MoveTransformer extends SearchVisitor {
     private Set<Element> elementsAlreadyImported = new HashSet();
     
 
-    public MoveTransformer(WorkingCopy workingCopy, MoveRefactoringPlugin move) {
-        super(workingCopy);
-        originalFolder = workingCopy.getFileObject().getParent();
+    public MoveTransformer(MoveRefactoringPlugin move) {
         this.move = move;
+    }
+    
+    public void setWorkingCopy(WorkingCopy copy) {
+        super.setWorkingCopy(copy);
+        originalFolder = workingCopy.getFileObject().getParent();
         isThisFileMoving = move.filesToMove.contains(workingCopy.getFileObject());
     }
     

@@ -35,8 +35,7 @@ import org.netbeans.modules.refactoring.java.api.MemberInfo;
 public class PushDownTransformer extends SearchVisitor {
 
     private MemberInfo[] members;
-    public PushDownTransformer(WorkingCopy workingCopy, MemberInfo members[]) {
-        super(workingCopy);
+    public PushDownTransformer(MemberInfo members[]) {
         this.members = members;
     }
 

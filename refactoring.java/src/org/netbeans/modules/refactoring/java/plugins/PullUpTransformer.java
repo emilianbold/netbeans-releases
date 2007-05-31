@@ -26,6 +26,7 @@ import java.util.Set;
 import javax.lang.model.element.*;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
+import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
 
 /**
  *
@@ -35,10 +36,15 @@ public class PullUpTransformer extends SearchVisitor {
 
     private MemberInfo[] members;
     private Element targetType;
-    public PullUpTransformer(WorkingCopy workingCopy, MemberInfo members[], Element sourceType, Element targetType) {
-        super(workingCopy);
-        this.members = members;
-        this.targetType = targetType;
+    private PullUpRefactoring refactoring;
+    public PullUpTransformer(PullUpRefactoring refactoring) {
+        this.refactoring = refactoring;
+        this.members = refactoring.getMembers();
+    }
+    
+    public void setWorkingCopy(WorkingCopy copy) {
+        super.setWorkingCopy(copy);
+        this.targetType = refactoring.getTargetType().resolve(copy);
     }
 
     @Override
