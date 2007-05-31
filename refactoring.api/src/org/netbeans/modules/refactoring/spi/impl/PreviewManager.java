@@ -105,7 +105,8 @@ public class PreviewManager {
             Pair p = getPair(element);
             UI.setComponentForRefactoringPreview(p.dc.getJComponent());
             p.source.setNewText(newText);
-            p.dc.setLocation(DiffController.DiffPane.Base, DiffController.LocationType.LineNumber, element.getPosition().getBegin().getLine());
+            if(element.getPosition() != null) 
+                p.dc.setLocation(DiffController.DiffPane.Base, DiffController.LocationType.LineNumber, element.getPosition().getBegin().getLine());
         } catch (IOException ioe) {
             throw (RuntimeException) new RuntimeException().initCause(ioe);
         }
