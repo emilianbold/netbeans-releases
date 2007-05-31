@@ -61,7 +61,7 @@
             <directoryPath>/usr/java/include</directoryPath>
             <directoryPath>/usr/java/include/solaris</directoryPath>
           </includeDirectories>
-          <commandLine>-m32 -fPIC -shared -static-libgcc -mimpure-text</commandLine>
+          <commandLine>-m32 -fPIC -shared -static-libgcc -mimpure-text -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE</commandLine>
         </cCompilerTool>
         <ccCompilerTool>
           <developmentMode>0</developmentMode>
@@ -70,7 +70,7 @@
             <directoryPath>/usr/java/include</directoryPath>
             <directoryPath>/usr/java/include/solaris</directoryPath>
           </includeDirectories>
-          <commandLine>-m32 -fPIC -shared -static-libgcc -mimpure-text</commandLine>
+          <commandLine>-m32 -fPIC -shared -static-libgcc -mimpure-text -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE</commandLine>
         </ccCompilerTool>
         <fortranCompilerTool>
         </fortranCompilerTool>

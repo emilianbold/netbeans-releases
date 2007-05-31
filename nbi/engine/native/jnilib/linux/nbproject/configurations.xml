@@ -61,7 +61,7 @@
             <directoryPath>/usr/java/include</directoryPath>
             <directoryPath>/usr/java/include/linux</directoryPath>
           </includeDirectories>
-          <commandLine>-shared -m32 -static-libgcc</commandLine>
+          <commandLine>-shared -m32 -static-libgcc -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE</commandLine>
         </cCompilerTool>
         <ccCompilerTool>
           <developmentMode>0</developmentMode>
@@ -70,7 +70,7 @@
             <directoryPath>/usr/java/include</directoryPath>
             <directoryPath>/usr/java/include/linux</directoryPath>
           </includeDirectories>
-          <commandLine>-shared -m32 -static-libgcc</commandLine>
+          <commandLine>-shared -m32 -static-libgcc -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE</commandLine>
         </ccCompilerTool>
         <fortranCompilerTool>
         </fortranCompilerTool>

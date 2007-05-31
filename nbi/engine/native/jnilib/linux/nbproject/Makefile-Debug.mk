@@ -27,11 +27,12 @@ OBJECTFILES= \
 	build/Debug/GNU-Linux-x86/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/linux/../.unix/src/jni_UnixNativeUtils.o
 
 # C Compiler Flags
-CFLAGS=-shared -m32 -static-libgcc
+CFLAGS=-shared -m32 -static-libgcc -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
 
 # CC Compiler Flags
-CCFLAGS=-shared -m32 -static-libgcc
-CXXFLAGS=-shared -m32 -static-libgcc
+CCFLAGS=-shared -m32 -static-libgcc -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
+CXXFLAGS=-shared -m32 -static-libgcc 
+
 
 # Fortran Compiler Flags
 FFLAGS=

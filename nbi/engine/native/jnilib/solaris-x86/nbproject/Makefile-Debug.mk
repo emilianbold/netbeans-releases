@@ -27,11 +27,11 @@ OBJECTFILES= \
 	build/Debug/GNU-Solaris-Sparc/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/solaris-x86/../.unix/src/jni_UnixNativeUtils.o
 
 # C Compiler Flags
-CFLAGS=-m32 -fPIC -shared -static-libgcc
+CFLAGS=-m32 -fPIC -shared -static-libgcc  -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
 
 # CC Compiler Flags
-CCFLAGS=-m32 -fPIC -shared -static-libgcc
-CXXFLAGS=-m32 -fPIC -shared -static-libgcc
+CCFLAGS=-m32 -fPIC -shared -static-libgcc  -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
+CXXFLAGS=-m32 -fPIC -shared -static-libgcc -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
 
 # Fortran Compiler Flags
 FFLAGS=
