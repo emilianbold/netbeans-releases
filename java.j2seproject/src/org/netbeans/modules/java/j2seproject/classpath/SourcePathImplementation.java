@@ -242,7 +242,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
         evaluator.addPropertyChangeListener (this);
     }
     
-    private synchronized void createListner(String buildDir,
+    private synchronized void createListener(String buildDir,
                                                      String[] paths){
         if (this.fcl == null){
             // Need to keep reference to fcl.
@@ -360,7 +360,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                             result.addAll(getGeneratedSrcRoots(buildDir, 
                                             new String[] {DIR_GEN_BINDINGS}));
                                                     // Listen for any new Source root creation.
-                            createListner(buildDir, 
+                            createListener(buildDir, 
                                                new String[] {DIR_GEN_BINDINGS});
                         } 
                     } catch (MalformedURLException ex) {

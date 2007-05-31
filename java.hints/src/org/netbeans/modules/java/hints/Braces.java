@@ -191,7 +191,7 @@ public class Braces extends AbstractHint {
              statement.getKind() != Tree.Kind.EMPTY_STATEMENT && 
              statement.getKind() != Tree.Kind.BLOCK &&
              statement.getKind() != Tree.Kind.ERRONEOUS &&
-             !isErrorneousExpression( statement ) ) {
+             !isErroneousExpression( statement ) ) {
             return ErrorDescriptionFactory.createErrorDescription(
                         getSeverity().toEditorSeverity(), 
                         getDisplayName(), 
@@ -214,7 +214,7 @@ public class Braces extends AbstractHint {
              thenSt.getKind() != Tree.Kind.EMPTY_STATEMENT && 
              thenSt.getKind() != Tree.Kind.BLOCK &&
              thenSt.getKind() != Tree.Kind.ERRONEOUS &&
-             !isErrorneousExpression( thenSt )) {
+             !isErroneousExpression( thenSt )) {
             fixThen = true;
         }
         
@@ -222,7 +222,7 @@ public class Braces extends AbstractHint {
              elseSt.getKind() != Tree.Kind.EMPTY_STATEMENT && 
              elseSt.getKind() != Tree.Kind.BLOCK &&
              elseSt.getKind() != Tree.Kind.ERRONEOUS &&
-             !isErrorneousExpression( elseSt )) {
+             !isErroneousExpression( elseSt )) {
             fixElse = true;
         }
         
@@ -258,7 +258,7 @@ public class Braces extends AbstractHint {
         return result;
     }
     
-    private boolean isErrorneousExpression(StatementTree statement) {
+    private boolean isErroneousExpression(StatementTree statement) {
         if ( statement instanceof ExpressionStatementTree ) {
             if ( ((ExpressionStatementTree)statement).getExpression().getKind() == Kind.ERRONEOUS ) {
                 return true;
