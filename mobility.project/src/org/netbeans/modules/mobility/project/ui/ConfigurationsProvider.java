@@ -212,7 +212,7 @@ class ConfigurationsProvider
                         
                         if (!multi)
                         {
-                            node=new FNode(node,lookup,null,item);
+                            node=new FNode(node,lookup,actions?null:emptyAction,item);
                             node.setDisplayName(item.getDisplayName());
                         }
                         else
@@ -392,7 +392,7 @@ class ConfigurationsProvider
                         final Lookup lookup = Lookups.fixed( new Object[] {project,conf, item} );
                         Children ch=new Children.Array();
                         ch.add(createPackage(project,conf,path,map,!gray,multi).toArray(new Node[0]));
-                        libNode=new FNode(new ActionNode(ch,lookup,xPath,item.getDisplayName(),null,null),lookup,null,item);
+                        libNode=new FNode(new ActionNode(ch,lookup,xPath,item.getDisplayName(),null,null),lookup,gray?emptyAction:null,item);
                         brokenArray.add(libNode);
 
                     }
