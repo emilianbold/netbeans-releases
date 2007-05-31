@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="web/jsf" default="netbeans" basedir=".">
@@ -23,23 +23,6 @@ Microsystems, Inc. All Rights Reserved.
       
     <target name="netbeans-extra" depends="release"/>
 
-    <target name="release" depends="init">
-        <ant dir="../external" target="unzip"/>
-        
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jsf"/>
-        <copy file="../external/jsf-1.1/commons-beanutils.jar"
-              todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jsf"/>
-        <copy file="../external/jsf-1.1/commons-collections.jar"
-              todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jsf"/>
-        <copy file="../external/jsf-1.1/commons-digester.jar"
-              todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jsf"/>
-        <copy file="../external/jsf-1.1/commons-logging.jar"
-              todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jsf"/>
-        <copy file="../external/jsf-1.1/jsf-api.jar"
-              todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jsf"/>
-        <copy file="../external/jsf-1.1/jsf-impl.jar"
-              todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jsf"/>
-	      
-    </target>
+    <target name="release" depends="init"/>
 
 </project>
