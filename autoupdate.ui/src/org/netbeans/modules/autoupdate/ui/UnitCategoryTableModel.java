@@ -74,17 +74,23 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
         for (Unit unit : newUnits) {
             Boolean isChecked = capturedState.get(unit.updateUnit.getCodeName());
             if (isChecked != null) {
-                if (isChecked.booleanValue() && !unit.isMarked()) {
+                if (isChecked.booleanValue() && !unit.isMarked() && unit.canBeMarked()) {
                     unit.setMarked(true);
+                } else if (!isChecked.booleanValue() && unit.isMarked() && unit.canBeMarked()) {
+                    unit.setMarked(false);
                 }
-            } else if (isMarkedAsDefault && !unit.isMarked()) {
+            } else if (isMarkedAsDefault && !unit.isMarked() && unit.canBeMarked()) {
                 unit.setMarked(true);
             }            
         }           
     }
+
+    public static boolean isMarkedAsDefault(Type type) {
+        return (type.equals(Type.LOCAL) || type.equals(Type.UPDATE)) ? true : false;
+    }
     
-    protected boolean isMarkedAsDefault() {
-        return false;
+    protected final boolean isMarkedAsDefault() {
+        return isMarkedAsDefault(getType());
     }
     
     public abstract Object getValueAt (int row, int col);

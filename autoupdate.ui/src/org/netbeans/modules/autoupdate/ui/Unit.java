@@ -35,6 +35,7 @@ import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.modules.autoupdate.ui.UnitCategoryTableModel.Type;
 import org.openide.modules.SpecificationVersion;
 
 /**
@@ -58,11 +59,20 @@ public abstract class Unit {
         this.categoryName = categoryName;
     }
     
+    public abstract UnitCategoryTableModel.Type getModelType();
+    public void initState() {
+        if (UnitCategoryTableModel.isMarkedAsDefault(getModelType())) {
+            if (!isMarked() && canBeMarked()) {
+                setMarked(true);
+            }
+        }
+    }
+    
     public String getCategoryName () {
         return categoryName;
     }
     
-    public boolean isDefaultOperationAllowed () {
+    public boolean canBeMarked () {
         return true;
     }
     
@@ -247,6 +257,7 @@ public abstract class Unit {
             assert installEl != null : "Installed UpdateUnit " + unit + " has Installed UpdateElement.";
             this.backupEl = unit.getBackup ();
             this.isUninstallAllowed = isOperationAllowed (this.updateUnit, installEl, Containers.forUninstall ());
+            initState();
         }
         
         public boolean isMarked () {
@@ -280,7 +291,7 @@ public abstract class Unit {
             return Unit.compareDisplayVersions (u1, u2);
         }
         
-        public boolean isDefaultOperationAllowed () {
+        public boolean canBeMarked () {
             return isUninstallAllowed ;
         }
         
@@ -304,6 +315,10 @@ public abstract class Unit {
         public int getCompleteSize () {
             return -1;
         }
+
+        public Type getModelType() {
+            return UnitCategoryTableModel.Type.INSTALLED;
+        }
         
     }
     
@@ -321,6 +336,7 @@ public abstract class Unit {
             assert installEl != null : "Updateable UpdateUnit " + unit + " has Installed UpdateElement.";
             this.updateEl = unit.getAvailableUpdates ().get (unit.getAvailableUpdates ().size () - 1);
             assert updateEl != null : "Updateable UpdateUnit " + unit + " has UpdateElement for update.";
+            initState();
         }
         
         public boolean isMarked () {
@@ -401,6 +417,10 @@ public abstract class Unit {
             }
             return size;
         }
+
+        public Type getModelType() {
+            return (isNbms) ? UnitCategoryTableModel.Type.LOCAL : UnitCategoryTableModel.Type.UPDATE;            
+        }
         
     }
     
@@ -415,12 +435,13 @@ public abstract class Unit {
             this.updateUnit = unit;
             this.updateEl = unit.getAvailableUpdates ().get (0);
             assert updateEl != null : "Updateable UpdateUnit " + unit + " has UpdateElement for update.";
+            initState();
         }
         
         public boolean isMarked () {
             OperationContainer container = null;
             if (isNbms) {
-                container = Containers.forUpdateNbms ();
+                container = Containers.forAvailableNbms();
             } else if (UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT == updateUnit.getType ()) {
                 container = Containers.forCustomInstall ();
             } else {
@@ -433,7 +454,7 @@ public abstract class Unit {
             assert marked != isMarked ();
             OperationContainer container = null;
             if (isNbms) {
-                container = Containers.forUpdateNbms ();
+                container = Containers.forAvailableNbms();
             } else if (UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT == updateUnit.getType ()) {
                 container = Containers.forCustomInstall ();
             } else {
@@ -485,7 +506,10 @@ public abstract class Unit {
             }
             return size;
         }
-        
+
+        public Type getModelType() {
+            return (isNbms) ? UnitCategoryTableModel.Type.LOCAL : UnitCategoryTableModel.Type.AVAILABLE;
+        }        
     }
     
 }

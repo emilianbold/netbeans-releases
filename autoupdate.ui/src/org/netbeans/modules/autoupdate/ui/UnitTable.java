@@ -114,7 +114,7 @@ public class UnitTable extends JTable {
                 Math.abs (bgColor.getBlue () - DARKER_COLOR_COMPONENT));
         
         Unit u = model.getUnitAtRow (rowIndex);
-        if (u != null && !u.isDefaultOperationAllowed ()) {
+        if (u != null && !u.canBeMarked ()) {
             c.setForeground (Color.gray);
         } else {
             if (isRowSelected(rowIndex)) {

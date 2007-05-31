@@ -54,10 +54,6 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
         computeInstalled(units, oldUnits);
     }
     
-    protected boolean isMarkedAsDefault() {
-        return true;
-    }
-    
     List<UpdateUnit> getAlreadyInstalled() {
         return installed;
     }

@@ -239,7 +239,7 @@ public class InstalledTableModel extends UnitCategoryTableModel {
     @Override
     public boolean isCellEditable(int row, int col) {
         Unit.Installed u = (Unit.Installed)getUnitAtRow(row);
-        return (col == 0) ? u != null && u.isDefaultOperationAllowed() : super.isCellEditable(row, col);
+        return (col == 0) ? u != null && u.canBeMarked() : super.isCellEditable(row, col);
     }
 
 }
