@@ -23,6 +23,7 @@ import com.sun.source.util.TreePath;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -57,7 +58,7 @@ public class GeneratorUtilsTest extends NbTestCase {
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
     }
 
-    private void writeIntoFile(FileObject file, String what) throws Exception {
+    static void writeIntoFile(FileObject file, String what) throws Exception {
         FileLock lock = file.lock();
         OutputStream out = file.getOutputStream(lock);
         
@@ -67,6 +68,15 @@ public class GeneratorUtilsTest extends NbTestCase {
             out.close();
             lock.releaseLock();
         }
+    }
+    
+    static String readFromFile(FileObject fo) throws Exception {
+        InputStream in = fo.getInputStream();
+        
+        int s = (int)fo.getSize();
+        byte[] arr = new byte[s];
+        assertEquals("All read", s, in.read(arr));
+        return new String(arr);
     }
     
     public void testImplementAllAbstractMethods1() throws Exception {

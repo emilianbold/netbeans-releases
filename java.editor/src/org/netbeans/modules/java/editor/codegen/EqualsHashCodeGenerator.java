@@ -21,6 +21,8 @@ package org.netbeans.modules.java.editor.codegen;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
@@ -28,6 +30,8 @@ import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.Trees;
 import java.awt.Dialog;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,6 +42,7 @@ import java.util.Random;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -47,9 +52,11 @@ import javax.lang.model.util.ElementFilter;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.editor.codegen.ui.ElementNode;
@@ -70,34 +77,184 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         Factory() {            
         }
         
-        public Iterable<? extends CodeGenerator> create(CompilationController controller, TreePath path) throws IOException {
+        public Iterable<? extends CodeGenerator> create(CompilationController cc, TreePath path) throws IOException {
             path = Utilities.getPathElementOfKind(Tree.Kind.CLASS, path);
             if (path == null)
+                return null;
+            cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+            
+            EqualsHashCodeGenerator gen = createEqualsHashCodeGenerator(cc, cc.getTrees().getElement(path));
+            
+            if (gen == null) {
                 return Collections.emptySet();
-            controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-            TypeElement typeElement = (TypeElement)controller.getTrees().getElement(path);
-            if (typeElement.getKind() != ElementKind.CLASS)
-                return Collections.emptySet();
-            List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
-            for (VariableElement variableElement : ElementFilter.fieldsIn(typeElement.getEnclosedElements()))
-                descriptions.add(ElementNode.Description.create(variableElement, null, true, false));
-            if (descriptions.isEmpty())
-                return Collections.emptySet();
-            return Collections.singleton(new EqualsHashCodeGenerator(ElementNode.Description.create(typeElement, descriptions, false, false)));
+            } else {
+                return Collections.singleton(gen);
+            }
         }
     }
 
-    ElementNode.Description description;
+    final ElementNode.Description description;
+    final boolean generateEquals;
+    final boolean generateHashCode;
     
     /** Creates a new instance of EqualsHashCodeGenerator */
-    private EqualsHashCodeGenerator(ElementNode.Description description) {
-        this.description = description;
+    private EqualsHashCodeGenerator(ElementNode.Description description, boolean generateEquals, boolean generateHashCode) {
+        this.description = description;        
+        this.generateEquals = generateEquals;
+        this.generateHashCode = generateHashCode;
+        
     }
 
     public String getDisplayName() {
         return org.openide.util.NbBundle.getMessage(EqualsHashCodeGenerator.class, "LBL_equals_and_hashcode"); //NOI18N
     }
+    
+    static EqualsHashCodeGenerator createEqualsHashCodeGenerator(CompilationController cc, Element el) throws IOException {
+        if (el.getKind() != ElementKind.CLASS)
+            return null;
+        TypeElement typeElement = (TypeElement)el;
+        
+        ExecutableElement[] equalsHashCode = overridesHashCodeAndEquals(cc, typeElement);
+        
+        List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
+        for (VariableElement variableElement : ElementFilter.fieldsIn(typeElement.getEnclosedElements())) {
+            cc.toPhase(JavaSource.Phase.RESOLVED);
+            descriptions.add(ElementNode.Description.create(variableElement, null, true, isUsed(cc, variableElement, equalsHashCode)));
+        }
+        if (descriptions.isEmpty())
+            return null;
+        return new EqualsHashCodeGenerator(
+            ElementNode.Description.create(typeElement, descriptions, false, false),
+            equalsHashCode[0] == null,
+            equalsHashCode[1] == null
+        );
+    }
+    
+    /** Checks whether a field is used inside given methods.
+     */
+    private static boolean isUsed(CompilationInfo cc, VariableElement field, ExecutableElement... methods) {
+        class Used extends TreePathScanner<Void, VariableElement> {
+            boolean found;
+            
+            @Override
+            public Void visitIdentifier(IdentifierTree id, VariableElement what) {
+                if (id.getName().equals(what.getSimpleName())) {
+                    found = true;
+                }
+                
+                return super.visitIdentifier(id, what);
+            }
 
+            @Override
+            public Void visitMemberSelect(MemberSelectTree sel, VariableElement what) {
+                if (sel.getIdentifier().equals(what.getSimpleName())) {
+                    found = true;
+                }
+                return super.visitMemberSelect(sel, what);
+            }
+        }
+        for (ExecutableElement e : methods) {
+            if (e == null) {
+                continue;
+            }
+            Trees tree = cc.getTrees();
+            TreePath path = tree.getPath(e);
+            Used used = new Used();
+            used.scan(path, field);
+            if (used.found) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /** Computes whether a class defines equals and hashcode or not.
+     * @param compilationInfo context 
+     * @param type the class element to check
+     * @return array of two elements [0] is equals, if it exists, [1] is hashCode, if it exists, otherwise the indexes are null
+     */
+    public static ExecutableElement[] overridesHashCodeAndEquals(CompilationInfo compilationInfo, Element type) {
+        ExecutableElement[] ret = new ExecutableElement[2];
+
+        TypeElement el = compilationInfo.getElements().getTypeElement("java.lang.Object"); // NOI18N
+        
+        if (el == null) {
+            return ret;
+        }
+        if (type.getKind() != ElementKind.CLASS) {
+            return ret;
+        }
+        
+        ExecutableElement hashCode = null;
+        ExecutableElement equals = null;
+        
+        for (Element method : el.getEnclosedElements()) {
+            if (method.getKind() == ElementKind.METHOD) {
+                if (method.getSimpleName().contentEquals("equals")) { // NOI18N
+                    assert equals == null;
+                    equals = (ExecutableElement)method;
+                }
+                if (method.getSimpleName().contentEquals("hashCode")) { // NOI18N
+                    assert hashCode == null;
+                    hashCode = (ExecutableElement)method;
+                }
+            }
+        }
+        assert hashCode != null;
+        assert equals != null;
+        
+        TypeElement clazz = (TypeElement)type;
+        for (Element ee : type.getEnclosedElements()) {
+            if (ee.getKind() != ElementKind.METHOD) {
+                continue;
+            }
+            ExecutableElement method = (ExecutableElement)ee;
+            
+            if (compilationInfo.getElements().overrides(method, hashCode, clazz)) {
+                ret[1] = (ExecutableElement)method;
+            }
+            
+            if (compilationInfo.getElements().overrides(method, equals, clazz)) {
+                ret[0] = (ExecutableElement)method;
+            }
+        }
+        
+        return ret;
+    }
+    
+    public static void invokeEqualsHashCode(final TreePathHandle handle, final JTextComponent component) {
+        JavaSource js = JavaSource.forDocument(component.getDocument());
+        if (js != null) {
+            class FillIn implements CancellableTask<CompilationController> {
+                EqualsHashCodeGenerator gen;
+                
+                public void cancel() {
+                }
+
+                public void run(CompilationController cc) throws Exception {
+                    cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    Element e = handle.resolveElement(cc);
+                    
+                    gen = createEqualsHashCodeGenerator(cc, e);
+                }
+                
+                public void invoke() {
+                    if (gen != null) {
+                        gen.invoke(component);
+                    }
+                }
+
+            }
+            FillIn fillIn = new FillIn();
+            try {
+                js.runUserActionTask(fillIn, true);
+                fillIn.invoke();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+    
     public void invoke(JTextComponent component) {
         final EqualsHashCodePanel panel = new EqualsHashCodePanel(description);
         DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_equals_and_hashcode")); //NOI18N
@@ -117,19 +274,24 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
                             path = Utilities.getPathElementOfKind(Tree.Kind.CLASS, path);
                             int idx = 0;
                             SourcePositions sourcePositions = copy.getTrees().getSourcePositions();
-                            for (Tree tree : ((ClassTree)path.getLeaf()).getMembers()) {
-                                if (sourcePositions.getStartPosition(path.getCompilationUnit(), tree) < caretOffset)
-                                    idx++;
-                                else
-                                    break;
-                            }
+                                for (Tree tree : ((ClassTree)path.getLeaf()).getMembers()) {
+                                    if (sourcePositions.getStartPosition(path.getCompilationUnit(), tree) < caretOffset)
+                                        idx++;
+                                    else
+                                        break;
+                                }
                             ArrayList<VariableElement> equalsElements = new ArrayList<VariableElement>();
                             for (ElementHandle<? extends Element> elementHandle : panel.getEqualsVariables())
                                 equalsElements.add((VariableElement)elementHandle.resolve(copy));
                             ArrayList<VariableElement> hashCodeElements = new ArrayList<VariableElement>();
                             for (ElementHandle<? extends Element> elementHandle : panel.getHashCodeVariables())
                                 hashCodeElements.add((VariableElement)elementHandle.resolve(copy));
-                            generateEqualsAndHashCode(copy, path, equalsElements, hashCodeElements, idx);
+                            generateEqualsAndHashCode(
+                                copy, path, 
+                                generateEquals ? equalsElements : null, 
+                                generateHashCode ? hashCodeElements : null, 
+                                idx
+                            );
                         }
                     }).commit();
                 } catch (IOException ex) {
@@ -145,8 +307,12 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         if (te != null) {
             TreeMaker make = wc.getTreeMaker();
             ClassTree nue = (ClassTree)path.getLeaf();
-            nue = make.insertClassMember(nue, index, createHashCodeMethod(wc, hashCodeFields, (DeclaredType)te.asType()));
-            nue = make.insertClassMember(nue, index, createEqualsMethod(wc, equalsFields, (DeclaredType)te.asType()));
+            if (hashCodeFields != null) {
+                nue = make.insertClassMember(nue, index, createHashCodeMethod(wc, hashCodeFields, (DeclaredType)te.asType()));
+            }
+            if (equalsFields != null) {
+                nue = make.insertClassMember(nue, index, createEqualsMethod(wc, equalsFields, (DeclaredType)te.asType()));
+            }
             wc.rewrite(path.getLeaf(), nue);
         }        
     }
