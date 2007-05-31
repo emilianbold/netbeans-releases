@@ -81,7 +81,7 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
     public static WebFormDesignerOperator findWebFormDesignerOperator(String topComponentName, boolean exactlyMatch){
         StringComparator oldOperator = Operator.getDefaultStringComparator();
         if(exactlyMatch) {            
-            Operator.setDefaultStringComparator(new DefaultStringComparator(true, true));            
+            Operator.setDefaultStringComparator(new DefaultStringComparator(false, false));            
         }
         WebFormDesignerOperator webFormDesignerOperator =  new WebFormDesignerOperator(topComponentName);
         Operator.setDefaultStringComparator(oldOperator);
