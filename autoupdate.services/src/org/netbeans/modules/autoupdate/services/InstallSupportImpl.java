@@ -365,13 +365,7 @@ public class InstallSupportImpl {
     }
     
     public void doRestartLater(Restarter restarter) {    
-        List<? extends OperationInfo> ois = support.getContainer().listAll();
-        List<UpdateElement> elems = new ArrayList<UpdateElement>();
-        
-        for (OperationInfo operationInfo : ois) {
-            elems.add(operationInfo.getUpdateElement());
-        }
-        Utilities.writeInstall_Later(new HashMap<UpdateElementImpl, File>(element2Clusters));                
+        Utilities.writeInstall_Later(new HashMap<UpdateElementImpl, File>(element2Clusters));
     }
 
     public String getCertificate(Installer validator, UpdateElement uElement) {

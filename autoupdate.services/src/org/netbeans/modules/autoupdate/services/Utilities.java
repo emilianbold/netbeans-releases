@@ -141,7 +141,7 @@ public class Utilities {
         }                                
     }
     
-    public static void writeInstall_Later(Map<UpdateElementImpl,File> updates) {
+    public static void writeInstall_Later(Map<UpdateElementImpl, File> updates) {
         // loop for all clusters and write if needed
         List<File> clusters = UpdateTracking.clusters(true);
         assert clusters != null : "Clusters cannot be empty."; // NOI18N
@@ -150,12 +150,12 @@ public class Utilities {
         }
     }
     
-    private static void writeToCluster (File cluster, Map<UpdateElementImpl,File> updates) {
+    private static void writeToCluster (File cluster, Map<UpdateElementImpl, File> updates) {
         Document document = XMLUtil.createDocument(UpdateTracking.ELEMENT_MODULES, null, null, null);                
         
         Element root = document.getDocumentElement();
 
-        if (! updates.isEmpty ()) {
+        if (updates.isEmpty ()) {
             return ;
         }
         
