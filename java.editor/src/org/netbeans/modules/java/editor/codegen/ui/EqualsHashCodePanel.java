@@ -19,8 +19,11 @@
 
 package org.netbeans.modules.java.editor.codegen.ui;
 
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.util.List;
 import javax.lang.model.element.Element;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.editor.codegen.EqualsHashCodeGenerator;
@@ -34,42 +37,80 @@ public class EqualsHashCodePanel extends JPanel {
 
     private ElementSelectorPanel equalsSelector;
     private ElementSelectorPanel hashCodeSelector;
+    
+    private JLabel equalsLabel;
+    private JLabel hashCodeLabel;
 
     /** Creates new form EqualsHashCodePanel */
-    public EqualsHashCodePanel(ElementNode.Description description) {
+    public EqualsHashCodePanel(ElementNode.Description description, boolean generateEquals, boolean generateHashCode) {
+        assert generateEquals || generateHashCode;
+        
         initComponents();
-        equalsSelector = new ElementSelectorPanel(description, false);
-        java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 0.5;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
-        add(equalsSelector, gridBagConstraints);
         
-        hashCodeSelector = new ElementSelectorPanel( ElementNode.Description.deepCopy(description), false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 0.5;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
-        add(hashCodeSelector, gridBagConstraints);
+        GridBagConstraints gridBagConstraints;
+
+        if( generateEquals ) {
+            equalsLabel = new JLabel(NbBundle.getMessage(EqualsHashCodeGenerator.class, "LBL_equals_select")); //NOI18N
+
+            gridBagConstraints = new GridBagConstraints();
+            gridBagConstraints.gridx = 0;
+            gridBagConstraints.gridy = 0;
+            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+            gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+            gridBagConstraints.weightx = 0.5;
+            gridBagConstraints.insets = new java.awt.Insets(12, 12, 6, 12);
+            add(equalsLabel, gridBagConstraints);
+
+            equalsSelector = new ElementSelectorPanel(description, false);
+            
+            gridBagConstraints = new GridBagConstraints();
+            gridBagConstraints.gridx = 0;
+            gridBagConstraints.gridy = 1;
+            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+            gridBagConstraints.weightx = 0.5;
+            gridBagConstraints.weighty = 1.0;
+            gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
+            add(equalsSelector, gridBagConstraints);
         
-        equalsLabel.setText(NbBundle.getMessage(EqualsHashCodeGenerator.class, "LBL_equals_select")); //NOI18N
-        equalsLabel.setLabelFor(equalsSelector);
-        hashCodeLabel.setText(NbBundle.getMessage(EqualsHashCodeGenerator.class, "LBL_hashcode_select")); //NOI18N
-        hashCodeLabel.setLabelFor(hashCodeSelector);
+            equalsLabel.setLabelFor(equalsSelector);
+        }
+
+        if( generateHashCode ) {
+            hashCodeLabel = new JLabel(NbBundle.getMessage(EqualsHashCodeGenerator.class, "LBL_hashcode_select")); //NOI18N
+
+            gridBagConstraints = new GridBagConstraints();
+            gridBagConstraints.gridx = 1;
+            gridBagConstraints.gridy = 0;
+            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+            gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+            gridBagConstraints.weightx = 0.5;
+            gridBagConstraints.insets = new java.awt.Insets(12, generateEquals ? 0 : 12, 6, 12);
+            add(hashCodeLabel, gridBagConstraints);
+
+            hashCodeSelector = new ElementSelectorPanel( ElementNode.Description.deepCopy(description), false);
+            gridBagConstraints = new GridBagConstraints();
+            gridBagConstraints.gridx = 1;
+            gridBagConstraints.gridy = 1;
+            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+            gridBagConstraints.weightx = 0.5;
+            gridBagConstraints.weighty = 1.0;
+            gridBagConstraints.insets = new java.awt.Insets(0, generateEquals ? 0 : 12, 0, 12);
+            add(hashCodeSelector, gridBagConstraints);
+        
+            hashCodeLabel.setLabelFor(hashCodeSelector);
+        }
     }
     
     
     public List<ElementHandle<? extends Element>> getEqualsVariables() {
+        if( null == equalsSelector )
+            return null;
         return ((ElementSelectorPanel)equalsSelector).getSelectedElements();
     }
 
     public List<ElementHandle<? extends Element>> getHashCodeVariables() {
+        if( null == hashCodeSelector )
+            return null;
         return ((ElementSelectorPanel)hashCodeSelector).getSelectedElements();
     }
 
@@ -82,34 +123,11 @@ public class EqualsHashCodePanel extends JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        equalsLabel = new javax.swing.JLabel();
-        hashCodeLabel = new javax.swing.JLabel();
-
         setLayout(new java.awt.GridBagLayout());
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 0.5;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 6, 12);
-        add(equalsLabel, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 0.5;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 6, 12);
-        add(hashCodeLabel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel equalsLabel;
-    private javax.swing.JLabel hashCodeLabel;
     // End of variables declaration//GEN-END:variables
     
 }

@@ -106,7 +106,11 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
     }
 
     public String getDisplayName() {
-        return org.openide.util.NbBundle.getMessage(EqualsHashCodeGenerator.class, "LBL_equals_and_hashcode"); //NOI18N
+        if( generateEquals && generateHashCode )
+            return org.openide.util.NbBundle.getMessage(EqualsHashCodeGenerator.class, "LBL_equals_and_hashcode"); //NOI18N
+        if( !generateEquals )
+            return org.openide.util.NbBundle.getMessage(EqualsHashCodeGenerator.class, "LBL_hashcode"); //NOI18N
+        return org.openide.util.NbBundle.getMessage(EqualsHashCodeGenerator.class, "LBL_equals"); //NOI18N
     }
     
     static EqualsHashCodeGenerator createEqualsHashCodeGenerator(CompilationController cc, Element el) throws IOException {
@@ -121,7 +125,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
             cc.toPhase(JavaSource.Phase.RESOLVED);
             descriptions.add(ElementNode.Description.create(variableElement, null, true, isUsed(cc, variableElement, equalsHashCode)));
         }
-        if (descriptions.isEmpty())
+        if (descriptions.isEmpty() || (equalsHashCode[0] != null && equalsHashCode[1] != null))
             return null;
         return new EqualsHashCodeGenerator(
             ElementNode.Description.create(typeElement, descriptions, false, false),
@@ -256,8 +260,13 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
     }
     
     public void invoke(JTextComponent component) {
-        final EqualsHashCodePanel panel = new EqualsHashCodePanel(description);
-        DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_equals_and_hashcode")); //NOI18N
+        final EqualsHashCodePanel panel = new EqualsHashCodePanel(description, generateEquals, generateHashCode);
+        String title = NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_equals_and_hashcode"); //NOI18N
+        if( !generateEquals )
+            title = NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_hashcode"); //NOI18N
+        else if( !generateHashCode )
+            title = NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_equals"); //NOI18N
+        DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, title);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
         dialog.setVisible(true);
         if (dialogDescriptor.getValue() == dialogDescriptor.getDefaultValue()) {
@@ -281,11 +290,15 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
                                         break;
                                 }
                             ArrayList<VariableElement> equalsElements = new ArrayList<VariableElement>();
-                            for (ElementHandle<? extends Element> elementHandle : panel.getEqualsVariables())
-                                equalsElements.add((VariableElement)elementHandle.resolve(copy));
+                            if( generateEquals ) {
+                                for (ElementHandle<? extends Element> elementHandle : panel.getEqualsVariables())
+                                    equalsElements.add((VariableElement)elementHandle.resolve(copy));
+                                }
                             ArrayList<VariableElement> hashCodeElements = new ArrayList<VariableElement>();
-                            for (ElementHandle<? extends Element> elementHandle : panel.getHashCodeVariables())
-                                hashCodeElements.add((VariableElement)elementHandle.resolve(copy));
+                            if( generateHashCode ) {
+                                for (ElementHandle<? extends Element> elementHandle : panel.getHashCodeVariables())
+                                    hashCodeElements.add((VariableElement)elementHandle.resolve(copy));
+                            }
                             generateEqualsAndHashCode(
                                 copy, path, 
                                 generateEquals ? equalsElements : null, 
