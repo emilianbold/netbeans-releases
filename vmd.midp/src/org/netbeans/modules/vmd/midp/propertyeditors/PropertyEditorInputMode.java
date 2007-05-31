@@ -13,16 +13,17 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.vmd.midp.propertyeditors.timezone;
+package org.netbeans.modules.vmd.midp.propertyeditors;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JRadioButton;
@@ -39,23 +40,28 @@ import org.openide.util.NbBundle;
 /**
  *
  * @author Anton Chechel
+ * @version 1.0
  */
-public class PropertyEditorTimeZone extends PropertyEditorUserCode {
+public class PropertyEditorInputMode  extends PropertyEditorUserCode {
+    
+    private static final String[] PREDEFINED_INPUT_MODES = {"UCB_BASIC_LATIN",
+        "UCB_GREEK", "UCB_CYRILLIC", "UCB_ARMENIAN", "UCB_HEBREW", "UCB_ARABIC",
+        "UCB_DEVANAGARI", "UCB_BENGALI", "UCB_THAI", "UCB_HIRAGANA", "UCB_KATAKANA",
+        "UCB_HANGUL_SYLLABLES"};
     
     private List<PropertyEditorElement> elements;
-    private PredefinedEditor predefinedEditor;
     
-    private PropertyEditorTimeZone() {
+    private PropertyEditorInputMode() {
         super();
         
         elements = new ArrayList<PropertyEditorElement>(2);
-        elements.add(predefinedEditor = new PredefinedEditor());
+        elements.add(new PredefinedEditor());
         elements.add(new CustomEditor());
         initElements(elements);
     }
     
-    public static final PropertyEditorTimeZone createInstance() {
-        return new PropertyEditorTimeZone();
+    public static final PropertyEditorInputMode createInstance() {
+        return new PropertyEditorInputMode();
     }
     
     public String getAsText() {
@@ -84,33 +90,34 @@ public class PropertyEditorTimeZone extends PropertyEditorUserCode {
     }
     
     private boolean isPredefined(String str) {
-        return predefinedEditor.isPredefined(str);
+        for (String inputMode : PREDEFINED_INPUT_MODES) {
+            if (inputMode.equals(str)) {
+                return true;
+            }
+        }
+        return false;
     }
     
     private final class PredefinedEditor implements PropertyEditorElement, ActionListener {
         private JRadioButton radioButton;
-        private TimeZoneComboboxModel model;
+        private DefaultComboBoxModel model;
         private JComboBox combobox;
         
         public PredefinedEditor() {
             radioButton = new JRadioButton();
-            Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorTimeZone.class, "LBL_PREDEFINED")); // NOI18N
-            model = new TimeZoneComboboxModel();
+            Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorInputMode.class, "LBL_PREDEFINED")); // NOI18N
+            model = new DefaultComboBoxModel(PREDEFINED_INPUT_MODES);
             combobox = new JComboBox(model);
             combobox.addActionListener(this);
         }
         
-        public boolean isPredefined(String str) {
-            return model.contains(str);
-        }
-        
         public void setPropertyValue(PropertyValue value) {
             if (!isCurrentValueANull() && value != null) {
-                String timeZone;
+                String inputMode;
                 for (int i = 0; i < model.getSize(); i++) {
-                    timeZone = (String) model.getElementAt(i);
-                    if (timeZone.equals((String) value.getPrimitiveValue())) {
-                        model.setSelectedItem(timeZone);
+                    inputMode = (String) model.getElementAt(i);
+                    if (inputMode.equals((String) value.getPrimitiveValue())) {
+                        model.setSelectedItem(inputMode);
                         break;
                     }
                 }
@@ -152,7 +159,7 @@ public class PropertyEditorTimeZone extends PropertyEditorUserCode {
         
         public CustomEditor() {
             radioButton = new JRadioButton();
-            Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorTimeZone.class, "LBL_CUSTOM")); // NOI18N
+            Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorInputMode.class, "LBL_CUSTOM")); // NOI18N
             textField = new JTextField();
             textField.getDocument().addDocumentListener(this);
         }

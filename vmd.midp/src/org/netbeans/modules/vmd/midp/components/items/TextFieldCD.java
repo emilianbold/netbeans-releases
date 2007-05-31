@@ -37,6 +37,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorInputMode;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorNumber;
 import org.netbeans.modules.vmd.midp.screen.display.TextFieldDisplayPresenter;
 
@@ -103,7 +104,7 @@ public class TextFieldCD extends ComponentDescriptor {
             .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
                 .addProperty("Maximum Size", PropertyEditorNumber.createIntegerInstance(), PROP_MAX_SIZE)
                 .addProperty("Text", PropertyEditorString.createInstance(PropertyEditorString.DEPENDENCE_TEXT_FIELD), PROP_TEXT)
-                .addProperty("Initial Input Mode", PropertyEditorString.createInstance(), PROP_INITIAL_INPUT_MODE)
+                .addProperty("Initial Input Mode", PropertyEditorInputMode.createInstance(), PROP_INITIAL_INPUT_MODE)
                 .addProperty("Input Constraints", PropertyEditorConstraints.createInstance(), PROP_CONSTRAINTS);
     }
 

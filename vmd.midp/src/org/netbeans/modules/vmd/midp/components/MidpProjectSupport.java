@@ -142,6 +142,11 @@ public final class MidpProjectSupport {
         Map<FileObject, FileObject> matches = new HashMap<FileObject, FileObject>();
         
         DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(document);
+        // document is not leaded yet
+        if (context == null) {
+            return Collections.EMPTY_MAP;
+        }
+        
         DataObject dataObject = context.getDataObject();
         
         assert (dataObject != null);

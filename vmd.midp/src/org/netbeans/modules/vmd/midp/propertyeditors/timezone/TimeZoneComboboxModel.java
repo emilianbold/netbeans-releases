@@ -46,4 +46,13 @@ class TimeZoneComboboxModel extends DefaultComboBoxModel {
             addElement(id);
         }
     }
+    
+    public boolean contains(String str) {
+        for (int i = 0; i < getSize(); i++) {
+            if (getElementAt(i).equals(str)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
