@@ -37,6 +37,8 @@ public class BaseSectionNode extends SectionNode {
             "org/netbeans/modules/j2ee/sun/ddloaders/resources/SecurityRoleMappingIcon"; // NOI18N
     public static final String ICON_BASE_SERVICE_REF_NODE =
             "org/netbeans/modules/j2ee/sun/ddloaders/resources/ServiceRefIcon"; // NOI18N
+    public static final String ICON_BASE_PORT_INFO_NODE =
+            "org/netbeans/modules/j2ee/sun/ddloaders/resources/ServiceRefIcon"; // NOI18N
     public static final String ICON_EJB_GROUP_NODE =
             "org/netbeans/modules/j2ee/sun/ddloaders/resources/EjbGroupIcon"; // NOI18N
     public static final String ICON_EJB_SESSION_NODE =

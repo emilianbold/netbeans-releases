@@ -32,7 +32,7 @@ import org.openide.nodes.Node;
  * @author Peter Williams
  */
 public class DDSectionNodeView extends SectionNodeView {
-
+    
     protected RootInterface rootDD;
     protected ASDDVersion version;
     
@@ -54,7 +54,7 @@ public class DDSectionNodeView extends SectionNodeView {
             if(--size > 0) {
                 SectionNode [] remainingNodes = new SectionNode[size];
                 System.arraycopy(children, 1, remainingNodes, 0, size);
-
+                
                 Node rootNode = getRoot();
                 rootNode.getChildren().add(remainingNodes);
                 for(int i = 0; i < size; i++) {
@@ -64,14 +64,16 @@ public class DDSectionNodeView extends SectionNodeView {
         }
     }
     
+    @Override
     public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
         super.dataModelPropertyChange(source, propertyName, oldValue, newValue);
     }
-
+    
     public XmlMultiViewDataSynchronizer getModelSynchronizer() {
         return ((SunDescriptorDataObject) getDataObject()).getModelSynchronizer();
     }
-
+    
+    @Override
     public void refreshView() {
         checkChildren();
         super.refreshView();
@@ -81,7 +83,6 @@ public class DDSectionNodeView extends SectionNodeView {
      *  to ensure child nodes are up to date.
      */
     protected void checkChildren() {
-        
     }
-
+    
 }
