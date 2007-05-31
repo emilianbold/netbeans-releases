@@ -468,7 +468,11 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
      * @return the FacesModel for a given FileObject
      */
     public FacesModel getFacesModel(FileObject file) {
-        return (FacesModel) getModel(file);
+        FacesModel model = (FacesModel) getModel(file);
+        if(model != null) {
+            model.sync();
+        }
+        return model;
     }
     
     /**
