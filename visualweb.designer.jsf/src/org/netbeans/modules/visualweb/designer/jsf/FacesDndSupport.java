@@ -3827,37 +3827,49 @@ linkCheckFinished:
             location.y = designer.snapY(location.y, null);
         }
 //        Element[] componentRootElements = webform.pasteComponents(t, parentComponentRootElement, location);
-        Element[] componentRootElements = pasteComponents(t, parentComponentRootElement, location, jsfForm.getUpdateSuspender());
+//        Element[] componentRootElements = pasteComponents(t, parentComponentRootElement, location, jsfForm.getUpdateSuspender());
+        pasteComponents(jsfTopComponent, t, parentComponentRootElement, location, jsfForm.getUpdateSuspender());
 
-//                if ((beans != null) && (beans.length > 0)) {
-//                    selectionTopComp.selectBeans(beans);
-//                }
-        if (componentRootElements.length > 0) {
-//            selectionTopComp.selectComponents(componentRootElements);
-            jsfTopComponent.selectComponents(componentRootElements);
-        }
+////                if ((beans != null) && (beans.length > 0)) {
+////                    selectionTopComp.selectBeans(beans);
+////                }
+//        if (componentRootElements.length > 0) {
+////            selectionTopComp.selectComponents(componentRootElements);
+//            jsfTopComponent.selectComponents(componentRootElements);
+//        }
         return true;
         
     }
 
-    private /*public*/ Element[] pasteComponents(Transferable t, Element parentComponentRootElement, Point location, UpdateSuspender updateSuspender) {
+    private /*public Element[]*/ void pasteComponents(final JsfTopComponent jsfTopComponent, Transferable t, Element parentComponentRootElement, Point location, UpdateSuspender updateSuspender) {
         MarkupDesignBean parent = MarkupUnit.getMarkupDesignBeanForElement(parentComponentRootElement);
-        DesignBean[] designBeans = pasteBeans(t, parent, null, location, /*jsfForm.getUpdateSuspender()*/updateSuspender);
+        final DesignBean[] designBeans = pasteBeans(t, parent, null, location, /*jsfForm.getUpdateSuspender()*/updateSuspender);
         
         if (designBeans == null) {
-            return new Element[0];
+//            return new Element[0];
+            return;
         }
-        
-        List<Element> elements = new ArrayList<Element>();
-        for (DesignBean designBean : designBeans) {
-            if (designBean instanceof MarkupDesignBean) {
-                Element element = JsfSupportUtilities.getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBean);
-                if (element != null) {
-                    elements.add(element);
+
+        // XXX #105306 It needs to be invoked later (see also fireSelectedDesignBean);
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                List<Element> elements = new ArrayList<Element>();
+                for (DesignBean designBean : designBeans) {
+                    if (designBean instanceof MarkupDesignBean) {
+                        Element element = JsfSupportUtilities.getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBean);
+                        if (element != null) {
+                            elements.add(element);
+                        }
+                    }
+                }
+                if (elements.size() > 0) {
+                    jsfTopComponent.selectComponents(elements.toArray(new Element[elements.size()]));
                 }
             }
-        }
-        return elements.toArray(new Element[elements.size()]);
+        });
+//        if (designBeans.length > 0) {
+//            fireSelectedDesignBeanChanged(designBeans);
+//        }
     }
     
 }
