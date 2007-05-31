@@ -29,6 +29,7 @@ import org.netbeans.modules.j2ee.jpa.verification.rules.entity.ConsistentAccessT
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.HasNoArgConstructor;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.IdClassOverridesEqualsAndHashCode;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.IdDefinedInHierarchy;
+import org.netbeans.modules.j2ee.jpa.verification.rules.entity.LegalCombinationOfAnnotations;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.NoIdClassOnEntitySubclass;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.NonFinalClass;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.PersistenceUnitPresent;
@@ -60,6 +61,7 @@ public class JPARulesEngine extends RulesEngine {
         classRules.add(new ConsistentAccessType());
         classRules.add(new ValidAttributes());
         classRules.add(new UniqueEntityName());
+        classRules.add(new LegalCombinationOfAnnotations());
     }
     
     protected Collection<Rule<TypeElement>> getClassRules() {
