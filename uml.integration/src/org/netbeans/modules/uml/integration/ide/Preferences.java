@@ -80,8 +80,6 @@ public class Preferences {
                                 "RoundTrip|Java|USE_GENERICS_DEFAULT";
     public static final String RECONNECT_LINKS =
                                 "Diagrams|ReconnectToNodeBoundary";
-    public static final String LOG_DESCRIBE_MESSAGES =
-                   "LoggingInformation|LogOutputDescribeMessages";
     public static final String CONFIRM_SOURCE_DELETE =
                    "ArtifactDeleteDeletesFile";
 

@@ -42,22 +42,17 @@ import org.netbeans.modules.uml.ui.support.ProductHelper;
  */
 public class Log
 {
+    //kris richards - all LoggingInformation prefs have been expunged and set to empty or false.
+    // Therefore, most methods do nothing effectual (no writing).
     /**
     *  An autoflushing writer to the logfile.
     */
     private static PrintWriter output        = null;
    
-    private static boolean debugFlag         = false;
-    private static boolean entryFlag         = false;
-    private static boolean exitFlag          = false;
-    private static boolean errFlag           = false;
-    private static boolean exceptionFlag     = false;
-    private static boolean describeLogFlag   = false;
     private static boolean initialized       = false;
 
     private static final String LOG_PATH    = "LoggingInformation";
     private static final String PREF_YES    = "PSK_YES";
-    private static String logFileName       = null;
 
     // bit masks used to reveal the MDR event type being passed in
     public final static int MDR_EVENT_MASK_UNKNOWN     = 0;   // 00000000
@@ -89,14 +84,6 @@ public class Log
     */
    public static void reset()
    {
-      initialized = false;
-      debugFlag = false;
-      entryFlag = false;
-      exitFlag = false;
-      errFlag = false;
-      exceptionFlag = false;
-      describeLogFlag = false;
-
       mdrPlannedEventLogFlag = MDR_EVENT_FLAG_RESET;
       mdrCanceledEventLogFlag = MDR_EVENT_FLAG_RESET;
       mdrChangeEventLogFlag = MDR_EVENT_FLAG_RESET;
@@ -160,11 +147,6 @@ public class Log
    {
       if (!initialized)
          init();
-      
-      if (debugFlag)
-      {
-         write(new Date(System.currentTimeMillis()) + " [Debug] " + s);
-      }
    }
    
    /**
@@ -175,12 +157,6 @@ public class Log
     */
    public static void banner(String s)
    {
-      if (initialized() && debugFlag)
-      {
-         write("!--------------------------------------------------------!");
-         write(s);
-         write("!--------------------------------------------------------!");
-      }
    }
    
    /**
@@ -207,10 +183,6 @@ public class Log
       if (!initialized)
          init();
       
-      if (entryFlag)
-      {
-         write(new Date(System.currentTimeMillis()) + " [Entry] " + s);
-      }
    }
    
    /**
@@ -222,10 +194,7 @@ public class Log
     */
    public static void exit(String s)
    {
-      if (exitFlag)
-      {
-         write(new Date(System.currentTimeMillis()) + " [Exit] " + s);
-      }
+
    }
    
    /**
@@ -239,11 +208,7 @@ public class Log
    {
       if (!initialized)
          init();
-      
-      if (errFlag)
-      {
-         write(new Date(System.currentTimeMillis()) + " [Error] " + s);
-      }
+
    }
    
    /**
@@ -254,16 +219,7 @@ public class Log
    {
       if (!initialized)
          init();
-      
-      if (exceptionFlag)
-      {
-         if (output != null)
-         {
-            output.println("<----------------------- START EXCEPTION ----------------------->");
-            t.printStackTrace(output);
-            output.println("<----------------------- END EXCEPTION ----------------------->");
-         }
-      }
+
    }
    
    /**
@@ -288,10 +244,6 @@ public class Log
       {
          if (!initialized)
             init();
-         if (describeLogFlag && output != null)
-         {
-            output.println("[DescribeLog]" + s);
-         }
       } catch (Exception e)
       {
          e.printStackTrace();
@@ -354,21 +306,6 @@ public class Log
       String prefLogMDRChangeInstanceEvent = prefMan.getPreferenceValue(mdrLogPath,"LogMDRInstanceEvents");
       String prefLogMDRChangeTransEvent    = prefMan.getPreferenceValue(mdrLogPath,"LogMDRTransactionEvents");
 
-      String prefLogDes   = prefMan.getPreferenceValue(LOG_PATH,"LogOutputDescribeMessages");
-      String prefLogErr   = prefMan.getPreferenceValue(LOG_PATH,"LogError");
-      String prefLogInfo  = prefMan.getPreferenceValue(LOG_PATH,"LogInformation");
-      String prefLogExp   = prefMan.getPreferenceValue(LOG_PATH,"LogExceptions");
-      String prefLogEnt   = prefMan.getPreferenceValue(LOG_PATH,"LogEntry");
-      String prefLogExt   = prefMan.getPreferenceValue(LOG_PATH,"LogExit");
-      String prefLogFile  = prefMan.getPreferenceValue(LOG_PATH,"LogFile");
-      
-      debugFlag       = PREF_YES.equals(prefLogInfo);
-      entryFlag       = PREF_YES.equals(prefLogEnt);
-      exitFlag        = PREF_YES.equals(prefLogExt);
-      exceptionFlag   = PREF_YES.equals(prefLogExp);
-      errFlag         = PREF_YES.equals(prefLogErr);
-      describeLogFlag = PREF_YES.equals(prefLogDes);
-
       if (PREF_YES.equals(prefLogMDRPlannedAssocEvent))
             mdrPlannedEventLogFlag |= MDR_EVENT_MASK_ASSOCIATE;
       if (PREF_YES.equals(prefLogMDRPlannedAttrEvent))
@@ -401,55 +338,15 @@ public class Log
             mdrChangeEventLogFlag |= MDR_EVENT_MASK_INSTANCE;
       if (PREF_YES.equals(prefLogMDRChangeTransEvent))
             mdrChangeEventLogFlag |= MDR_EVENT_MASK_TRANSACTION;
-      
-      if ((prefLogFile != null) && !prefLogFile.equals(""))
-      {
-         ETSystem.out.println("Log file name = " + prefLogFile);
-         
-         if(prefLogFile.equals(logFileName))
-         {
-            initialized = true;
-            return;
-         }
-         
-         logFileName = prefLogFile;
-         File logfile = new File(prefLogFile);
-         boolean flag = logfile.exists();
-         
-         try
-         {
-            if (output != null)
-            {
-               output.close();
-               output = null;
-            }
-            
-            if (!flag)
-               logfile.createNewFile();
-            
-            FileWriter writer = new FileWriter(logfile) ;
-            // Create an autoflushing PrintWriter instead of a
-            // BufferedWriter
-            output = new PrintWriter(writer, true);
-         } 
-         
-         catch (Exception e)
-         {
-            e.printStackTrace();
-         }
-      }
-      
-      else
-      {
+    
          ETSystem.out.println("Log file not specified");
-         logFileName = null;
          
          if (output != null)
          {
             output.close();
             output = null;
          }
-      }
+      
    }
 
     private static boolean isMDREventEnabled(int mdrEventID)
