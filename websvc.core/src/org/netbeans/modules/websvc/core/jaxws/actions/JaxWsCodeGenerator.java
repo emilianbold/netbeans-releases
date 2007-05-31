@@ -26,6 +26,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -949,14 +950,31 @@ public class JaxWsCodeGenerator {
         ModifiersTree methodModifiers = make.Modifiers(
             Collections.<Modifier>singleton(Modifier.PUBLIC),
             Collections.<AnnotationTree>singletonList(wsRefAnnotation)
-        );
+        );       
         TypeElement typeElement = workingCopy.getElements().getTypeElement(fieldType);
+        
+        // THIS is a workaround for issue 101395
+        // after it is fixed, use the code commented code
+        /*
         return make.Variable(
             methodModifiers,
             fieldName,
             make.Type(typeElement.asType()),
             null
         );
+         */
+        VariableTree var =  make.Variable(
+            methodModifiers,
+            fieldName,
+            make.Type(typeElement.asType()),
+            null
+        );
+        return make.Variable(
+                make.Modifiers(var.getModifiers().getFlags(), var.getModifiers().getAnnotations()),
+                var.getName(),
+                var.getType(),
+                var.getInitializer()
+        );       
     }
     
     private static String findProperServiceFieldName(Set serviceFieldNames) {
