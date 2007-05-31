@@ -576,7 +576,12 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
         
         public void justUndo() {
             super.end();
+            boolean oldValue = AbstractModel.this.inUndoRedo;
+            AbstractModel.this.inUndoRedo = true;
+            AbstractModel.this.getAccess().prepareForUndoRedo();
             super.undo();
+            AbstractModel.this.getAccess().finishUndoRedo();
+            AbstractModel.this.inUndoRedo = oldValue;
     }
     }
     

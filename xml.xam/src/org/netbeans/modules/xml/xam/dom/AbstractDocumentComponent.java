@@ -545,7 +545,7 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
      * To be used when adding newcomponent subtree to this component.
      */
     private void fixupPrefix(C newComponent) {
-        if (getModel().inSync()) return;
+       if (getModel().inSync() || getModel().inUndoRedo()) return;
         
         AbstractDocumentComponent child = (AbstractDocumentComponent) newComponent;
         Element e = child.getPeer();
