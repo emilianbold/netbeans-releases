@@ -18,7 +18,7 @@
  */
 package org.netbeans.modules.vmd.io.javame;
 
-import org.netbeans.api.java.loaders.JavaDataSupport;
+import org.netbeans.modules.java.JavaNode;
 import org.netbeans.modules.mobility.editor.pub.J2MEDataObject;
 import org.netbeans.modules.vmd.api.io.providers.DataObjectInterface;
 import org.netbeans.modules.vmd.api.model.Debug;
@@ -37,14 +37,14 @@ import java.io.IOException;
  */
 public final class MEDesignDataObject extends J2MEDataObject implements DataObjectInterface {
 
-    private FileObject javaFile;
+//    private FileObject javaFile;
     private FileObject designFile;
     private MEDesignEditorSupport editorSupport;
 
     public MEDesignDataObject (FileObject javaFile, FileObject designFile, MultiFileLoader loader) throws DataObjectExistsException {
         super (javaFile, loader);
         ((MEDesignDataLoader) loader).createSecondaryEntry (this, designFile);
-        this.javaFile = javaFile;
+//        this.javaFile = javaFile;
         this.designFile = designFile;
 
         editorSupport = new MEDesignEditorSupport (this);
@@ -54,7 +54,9 @@ public final class MEDesignDataObject extends J2MEDataObject implements DataObje
     }
 
     public Node createNodeDelegate () {
-        return new MEDesignNode (JavaDataSupport.createJavaNode (javaFile));
+        JavaNode javaNode = new JavaNode (this, true);
+        javaNode.setIconBaseWithExtension ("org/netbeans/modules/vmd/io/resources/design.gif"); // NOI18N
+        return new MEDesignNode (javaNode);
     }
 
 //    public void addSaveCookie (SaveCookie save) {

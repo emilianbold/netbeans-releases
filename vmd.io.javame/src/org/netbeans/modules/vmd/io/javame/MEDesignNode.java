@@ -22,18 +22,14 @@ import org.openide.actions.EditAction;
 import org.openide.actions.OpenAction;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
 import javax.swing.*;
-import java.awt.*;
 
 /**
  * @author David Kaspar
  */
 public final class MEDesignNode extends FilterNode {
-
-    private static final Image image = Utilities.loadImage ("org/netbeans/modules/vmd/io/resources/design.gif"); // NOI18N
 
     public MEDesignNode (Node originalNode) {
         super (originalNode);
@@ -53,14 +49,6 @@ public final class MEDesignNode extends FilterNode {
 
     public Action getPreferredAction () {
         return SystemAction.get (OpenAction.class);
-    }
-
-    public Image getIcon (int type) {
-        return image;
-    }
-
-    public Image getOpenedIcon (int type) {
-        return image;
     }
 
 }
