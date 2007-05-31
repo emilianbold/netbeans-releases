@@ -21,16 +21,15 @@ package org.netbeans.modules.j2ee.metadata.model.api.support.annotation;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.modules.j2ee.metadata.model.support.PersistentObjectList;
 import org.openide.util.ChangeSupport;
 import org.openide.util.RequestProcessor;
 
@@ -51,7 +50,7 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
 
     private final AnnotationModelHelper helper;
     private final ObjectProvider<T> provider;
-    private final Map<ElementHandle<TypeElement>, List<T>> objects = new HashMap<ElementHandle<TypeElement>, List<T>>();
+    private final PersistentObjectList<T> objectList = new PersistentObjectList<T>();
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final RequestProcessor rp = new RequestProcessor("PersistentObjectManager", 1); // NOI18N
 
@@ -71,20 +70,22 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
     private PersistentObjectManager(AnnotationModelHelper helper, ObjectProvider<T> provider) {
         this.helper = helper;
         this.provider = provider;
+        objectList.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                fireChange();
+            }
+        });
     }
 
     public Collection<T> getObjects() {
         ensureInitialized();
-        List<T> result = new ArrayList<T>(objects.size() * 2);
-        for (List<T> list : objects.values()) {
-            result.addAll(list);
-        }
+        List<T> result = objectList.get();
         if (LOGGER.isLoggable(Level.FINEST)) {
             LOGGER.log(Level.FINEST, "getObjects returning {0} objects: {1}", new Object[] { result.size(), result}); // NOI18N
         } else {
             LOGGER.log(Level.FINE, "getObjects returning {0} objects", result.size()); // NOI18N
         }
-        return Collections.unmodifiableList(result);
+        return result;
     }
 
     private void ensureInitialized() {
@@ -98,14 +99,14 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
             }
             List<T> objects = provider.createInitialObjects();
             LOGGER.log(Level.FINE, "created initial objects {0}", objects); // NOI18N
-            addObjects(objects);
+            objectList.add(objects);
             initialized = true;
         }
     }
 
     private void deinitialize() {
         initialized = false;
-        objects.clear();
+        objectList.clear();
     }
 
     void typesAdded(Iterable<? extends ElementHandle<TypeElement>> typeHandles) {
@@ -115,7 +116,6 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
             fireChange();
             return;
         }
-        List<TypeElement> types = new ArrayList<TypeElement>();
         for (ElementHandle<TypeElement> typeHandle : typeHandles) {
             TypeElement type = typeHandle.resolve(helper.getCompilationController());
             if (type == null) {
@@ -124,7 +124,7 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
             }
             List<T> newObjects = provider.createObjects(type);
             LOGGER.log(Level.FINE, "typesAdded: new objects {0}", newObjects); // NOI18N
-            addObjects(newObjects);
+            objectList.put(typeHandle, newObjects);
         }
     }
 
@@ -136,7 +136,7 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
             return;
         }
         for (ElementHandle<TypeElement> typeHandle : typeHandles) {
-            List<T> list = objects.remove(typeHandle);
+            List<T> list = objectList.remove(typeHandle);
             if (list != null) {
                 LOGGER.log(Level.FINE, "typesRemoved: removing objects {0}", list); // NOI18N
             }
@@ -151,7 +151,7 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
             return;
         }
         for (ElementHandle<TypeElement> typeHandle : typeHandles) {
-            List<T> list = objects.get(typeHandle);
+            List<T> list = objectList.get(typeHandle);
             if (list != null){
                 // we have objects based on this type
                 TypeElement type = typeHandle.resolve(helper.getCompilationController());
@@ -163,7 +163,7 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
                 boolean modified = provider.modifyObjects(type, oldNewObjects);
                 if (modified) {
                     LOGGER.log(Level.FINE, "typesChanged: modified objects to {0}", oldNewObjects); // NOI18N
-                    setObjects(typeHandle, oldNewObjects);
+                    objectList.put(typeHandle, oldNewObjects);
                 }
             } else {
                 // we don't have any object based on this type
@@ -174,45 +174,9 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
                 }
                 List<T> newObjects = provider.createObjects(type);
                 LOGGER.log(Level.FINE, "typesChanged: new objects {0}", newObjects); // NOI18N
-                setObjects(typeHandle, newObjects);
+                objectList.put(typeHandle, newObjects);
             }
         }
-    }
-
-    private void addObjects(List<T> newObjects) {
-        for (T newObject : newObjects) {
-            List<T> list = objects.get(newObject.getTypeElementHandle());
-            if (list == null) {
-                list = new ArrayList<T>();
-                objects.put(newObject.getTypeElementHandle(), list);
-            }
-            list.add(newObject);
-        }
-        fireChange();
-    }
-
-    private void setObjects(ElementHandle<TypeElement> typeHandle, List<T> newObjects) {
-        List<T> list = new ArrayList<T>();
-        for (T object : newObjects) {
-            ElementHandle<TypeElement> sourceHandle = object.getTypeElementHandle();
-            if (sourceHandle.equals(typeHandle)) {
-                list.add(object);
-            } else {
-                LOGGER.log(Level.WARNING, "setObjects: ignoring object with incorrect ElementHandle {0} (expected {1})", new Object[] { sourceHandle, typeHandle }); // NOI18N
-            }
-        }
-        if (list.size() > 0) {
-            objects.put(typeHandle, list);
-        } else {
-            objects.remove(typeHandle);
-        }
-        fireChange();
-    }
-
-    private List<T> removeObjects(ElementHandle<TypeElement> typeHandle) {
-        List<T> result = objects.remove(typeHandle);
-        fireChange();
-        return result;
     }
 
     public void addChangeListener(ChangeListener listener) {
