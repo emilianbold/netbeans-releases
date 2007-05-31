@@ -550,9 +550,22 @@ void executeMainClass(LauncherProperties * props) {
         
         char * error = readHandle(hErrorRead);
         if(getLengthA(error)>1) {
-            WCHAR * errorW = toWCHAR(error);
-            showMessageW(props, getI18nProperty(props, JAVA_PROCESS_ERROR_PROP), 1, errorW);
-            FREE(errorW);
+            DWORD showMessage = 0;
+            char * ptr = error;
+            while(ptr!=NULL) {
+                if(strstr(ptr, "Picked up ") == NULL && getLengthA(ptr) > 1) { 
+                    showMessage = 1;
+                    break;
+                }
+                ptr = strstr(ptr, "\n");
+                if(ptr!=NULL) ptr++;
+            }
+            
+            if(showMessage) {
+                WCHAR * errorW = toWCHAR(error);
+                showMessageW(props, getI18nProperty(props, JAVA_PROCESS_ERROR_PROP), 1, errorW);
+                FREE(errorW);
+            }
         }
         CloseHandle(hErrorWrite);
         CloseHandle(hErrorRead);
