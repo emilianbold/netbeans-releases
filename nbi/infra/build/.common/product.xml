@@ -94,10 +94,6 @@
             classname="org.netbeans.installer.infra.build.ant.ProductDescriptor" 
             classpath="${custom.tasks.cls}"/>
         <taskdef
-            name="release-package"
-            classname="org.netbeans.installer.infra.build.ant.ReleasePackage"
-            classpath="${custom.tasks.cls}"/>
-        <taskdef
             name="absolutize"
             classname="org.netbeans.installer.infra.build.ant.Absolutize"
             classpath="${custom.tasks.cls}"/>
@@ -109,6 +105,20 @@
             name="n-unzip"
             classname="org.netbeans.installer.infra.build.ant.NativeUnzip"
             classpath="${custom.tasks.cls}"/>
+        
+        <if property="release.to.server" value="true">
+            <taskdef
+                name="release-package-server"
+                classname="org.netbeans.installer.infra.build.ant.ReleasePackage"
+                classpath="${custom.tasks.cls}"/>
+        </if>
+        
+        <if property="release.to.server" value="false">
+            <taskdef 
+                name="release-package-filesystem"
+                classname="org.netbeans.installer.infra.build.ant.registries.AddPackage"
+                classpath="${custom.tasks.cls}"/>
+        </if>
         
         <!-- check whether the engine should be built -->
         <condition property="do.build.engine">
@@ -376,12 +386,12 @@
                 <dirname 
                     property="current.download.${i}.dir" 
                     file="${current.download}"/>
-		<set 
+                <set 
                     property="current.download.dir"
                     source="current.download.${i}.dir"/>
                 <mkdir 
                     dir="${current.download.dir}"/>
-
+                
                 <get 
                     src="${current.uri}" 
                     dest="${current.download}"
@@ -593,12 +603,29 @@
       This target is not intended to be called directly.
     -->
     <target name="-release">
-        <release-package url="${release.url}"
-                         registry="${release.registry}"
-                         uid="${release.parent.uid}"
-                         version="${release.parent.version}"
-                         platforms="${product.platforms}"
-                         archive="${product.dist.file}"/>
+        <if property="release.to.server" value="true">
+            <echo message="Release URL is ${release.url}"/>
+            <echo message="Archive is ${product.dist.file}"/>
+            
+            <release-package-server 
+                url="${release.url}"
+                registry="${release.registry}"
+                uid="${release.parent.uid}"
+                version="${release.parent.version}"
+                platforms="${product.platforms}"
+                archive="${product.dist.file}"/>
+        </if>
+        <if property="release.to.server" value="false">
+            <echo message="Registry root is ${release.registry.dir}"/>
+            <echo message="Archive is ${product.dist.file}"/>
+            
+            <release-package-filesystem
+                root="${release.registry.dir}"
+                uid="${release.parent.uid}"
+                version="${release.parent.version}"
+                platforms="${product.platforms}"
+                archive="${product.dist.file}"/>
+        </if>
     </target>
     
     <!-- ============================================================================

@@ -1,0 +1,85 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development and
+ * Distribution License (the License). You may not use this file except in compliance
+ * with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
+ * http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file and
+ * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
+ * the following below the CDDL Header, with the fields enclosed by brackets []
+ * replaced by your own identifying information:
+ * 
+ *     "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * The Original Software is NetBeans. The Initial Developer of the Original Software
+ * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
+ * Rights Reserved.
+ */
+
+table.download-list {
+    border-collapse:    collapse;
+    width:              80%;
+}
+
+table.download-list th {
+    background-color:   #c7cbd6;
+    font-size:          1em;
+    font-weight:        bold;
+    padding:            6px 5px 6px 5px;
+}
+
+table.download-list th.feature {
+    padding:            6px 5px 6px 10px;
+    text-align:         left;
+    width:              100%;
+}
+
+table.download-list td {
+    font-size:          1em;
+    padding:            4px 5px 4px 5px;
+    text-align:         center;
+}
+
+table.download-list td.feature {
+    padding:            4px 5px 4px 10px;
+    text-align:         left;
+    width:              100%;
+}
+
+table.download-list td.feature small {
+    color:              #a0a0a0;
+    font-size:          0.8em;
+}
+
+table.download-list td.section {
+    padding:            4px 5px 4px 10px;
+    font-weight:        bold;
+    text-align:         left;
+    width:              100%;
+}
+
+table.download-list tr.sizes td {
+    padding:            8px 5px 4px 5px;
+}
+
+.align-center {
+    text-align:         center;
+}
+
+.centered {
+    margin:             0px auto 0px auto;
+}
+
+.fill {
+    width:              100%;
+}
+
+.even {
+    background-color:   #f0f0f0;
+}
+
+a img {
+    border:             0px;
+}

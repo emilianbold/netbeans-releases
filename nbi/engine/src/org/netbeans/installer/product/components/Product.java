@@ -935,6 +935,16 @@ public final class Product extends RegistryNode {
     }
     
     // miscellanea //////////////////////////////////////////////////////////////////
+    public boolean isCompatibleWith(final Platform platform) {
+        for (Platform compatiblePlatform: supportedPlatforms) {
+            if (compatiblePlatform.isCompatibleWith(platform)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
     private void saveLegalArtifacts() throws IOException {
         final Text license = configurationLogic.getLicense();
         if (license != null) {

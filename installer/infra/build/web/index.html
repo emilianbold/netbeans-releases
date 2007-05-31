@@ -1,0 +1,140 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+  The contents of this file are subject to the terms of the Common Development and
+  Distribution License (the License). You may not use this file except in compliance
+  with the License.
+  
+  You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
+  http://www.netbeans.org/cddl.txt.
+  
+  When distributing Covered Code, include this CDDL Header Notice in each file and
+  include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
+  the following below the CDDL Header, with the fields enclosed by brackets []
+  replaced by your own identifying information:
+  
+      "Portions Copyrighted [year] [name of copyright owner]"
+  
+  The Original Software is NetBeans. The Initial Developer of the Original Software
+  is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
+  Rights Reserved.
+-->
+
+<html>
+    <head>
+        <title>NetBeans IDE 6.0 Download</title>
+        <meta name="description" content="NetBeans IDE 6.0 Download"/>
+        
+        <link rel="stylesheet" type="text/css" href="http://www.netbeans.org/netbeans.css" media="screen"/>
+        <link rel="stylesheet" type="text/css" href="css/download.css" media="screen"/>
+        
+        <script type="text/javascript" src="js/download.js"></script>
+        <script type="text/javascript" src="js/components.js"></script>
+    </head>
+    
+    <body class="blue-bg" onkeyup="handle_keyup(event)">
+        <div class="align-center" style="background-color: #CCD2E2;">
+            <div id="fixed-logo">                
+                <div class="float-left"><a href="http://www.netbeans.org/index.html"><img src="http://www.netbeans.org/images/v5/nb-logo2.gif" class="logo-link" width="159" height="60" alt="netbeans.org - go to homepage"  title="NetBeans.org - go to the homepage" border="0"/></a></div>
+            </div>
+        </div>
+        
+        <div id="center-container">
+            <div id="page-border">
+                <div id="fixed-tabs"><img src="http://www.netbeans.org/images/v5/corner-left.png" class="float-left" width="11" height="26" style="_margin-right:-3px;"/><img src="http://www.netbeans.org/images/v5/corner-right.png" class="float-right" width="14" height="26" style="_margin-right:-3px;"/><a href="http://www.netbeans.org/index.html" title=""><img src="http://www.netbeans.org/images/v5/home-off.png" alt="" width="120" height="26" border="0" class="iMenu"></a><a href="http://www.netbeans.org/products/index.html" title="Products"><img src="http://www.netbeans.org/images/v5/products-off.png" alt="Products" width="120" height="26" border="0" class="iMenu"></a><a href="http://www.netbeans.org/catalogue/index.html" title="Plugins"><img src="http://www.netbeans.org/images/v5/catalogue-off.png" alt="Plugins" width="120" height="26" border="0" class="iMenu"></a><a href="http://www.netbeans.org/kb/index.html" title="Docs&nbsp;&amp;&nbsp;Support"><img src="http://www.netbeans.org/images/v5/kb-off.png" alt="Docs&nbsp;&amp;&nbsp;Support" width="120" height="26" border="0" class="iMenu"></a><a href="http://www.netbeans.org/community/index.html" title="Community"><img src="http://www.netbeans.org/images/v5/community-off.png" alt="Community" width="120" height="26" border="0" class="iMenu"></a><a href="http://www.netbeans.org/community/partners/index.html" title="Partners"><img src="http://www.netbeans.org/images/v5/partners-off.png" alt="Partners" width="120" height="26" border="0" class="iMenu"></a></div>
+                <div id="fixed-contentarea">
+                    <div id="navig-breadcrumbs"><a href="http://www.netbeans.org/">HOME</a>  / <a href="http://www.netbeans.org/products/">Products</a> / <a href="http://www.netbeans.org/products/ide/">IDE</a> / Download</div>
+                    <div id="fixed-top-contentbox">
+                        <!-- =============================================== -->
+                        
+                        <table class="top_menu" align="center">
+                            <tr>
+                                <td class="bg">&nbsp;</td>
+                                <td><a href="http://www.netbeans.info/downloads/index.php?rs=21"><img src="img/top_menu_5.5.1.gif"/></a></td>
+                                <td><a href="http://bits.nbextras.org/netbeans/6.0/milestones/6.0m9/latest/installers"><img src="img/top_menu_6.0-m9.gif"/></a></td>
+                                <td><a href="http://bits.nbextras.org/netbeans/6.0/nightly/latest/installers"><img src="img/top_menu_dev_h.gif"/></a></td>
+                                <td class="bg">&nbsp;</td>
+                            </tr>
+                        </table>
+                        
+                        <noscript>
+                            <div class="noscript_warning">
+                                In order to download NetBeans installers, Javascript must be switched on in your 
+                                browser. Please switch it on before proceeding.
+                            </div>
+                            <style type="text/css">
+                                table.components_table {
+                                    display:    none;
+                                }
+                            </style>
+                        </noscript>
+                        
+                        
+                        <table class="components_table" align="center">
+                            <tr>
+                                <th class="left no_border bottom_border_thick wide bottom">NetBeans IDE 6.0 Build {build.number}</th>
+                                <th class="no_border bottom_border_thick wide bottom">Basic</th>
+                                <th class="no_border bottom_border_thick wide bottom">Standard</th>
+                                <th class="no_border bottom_border_thick wide bottom">Full</th>
+                            </tr>
+                            <script type="text/javascript">write_components()</script>
+                            <tr>
+                                <td class="top_border_thick"></td>
+                                <td class="beige left_border_thin bold top_border_thick" id="basic_size"></td>
+                                <td class="left_border_thin bold top_border_thick" id="standard_size"></td>
+                                <td class="beige left_border_thin bold top_border_thick" id="full_size"></td>
+                            </tr>
+                            <tr>
+                                <td class="left wide no_border">
+                                    <select id="platform_select" class="wide" onchange="update()">
+                                        <option value="windows">Windows 2000/XP/Vista</option>
+                                        <option value="linux">Linux (x86/x64)</option>
+                                        <option value="solaris-x86">Solaris 10 (x86/x64)</option>
+                                        <option value="solaris-sparc">Solaris 10 (sparc)</option>
+                                        <option value="macosx-x86">MacOS X (intel)</option>
+                                        <option value="macosx-ppc">MacOS X (powerpc)</option>
+                                    </select>
+                                </td>
+                                <td class="small_pad no_border"><a href="javascript: download('basic')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/></a></td>
+                                <td class="small_pad no_border"><a href="javascript: download('standard')"><img src="img/download_h.gif" style="cursor: pointer; border: 0;"/></a></td>
+                                <td class="small_pad no_border"><a href="javascript: download('full')"><img src="img/download.gif" style="cursor: pointer; border: 0;"/></a></td>
+                            </tr>
+                            <tr>
+                                <td class="left no_border" colspan="4" id="error_message"></td>
+                            </tr>
+                        </table>
+                        <script type="text/javascript">
+                            detect_platform();
+                            update();
+                        </script>
+                        <br><br>
+                        <p style="width: 85%; margin: 0px auto 0px auto">
+                            NetBeans is an open source project. You can build it yourself if you <a href="http://www.netbeans.org/community/sources/">download the sources</a>.
+                        </p>
+                        <br><br>
+                        <div class="align-center">
+                            <a href="http://www.netbeans.org/about/legal/product-licences.html">Legal notice</a> | 
+                            <a href="http://nbi.netbeans.org/docs/install-60-m8.html">Installation Instructions</a>
+                        </div>
+                        <br><br>
+                        <!-- =============================================== -->
+                    </div>
+                </div>
+                
+                <div id="fixed-footer">
+                    <div id="footer-text">
+                        
+                        <div id="footer-navig" class="float-left font-12">
+                            <a href="http://www.cafeshops.com/netbeans/" >Shop</a> &nbsp;
+                            <a href="http://www.netbeans.org/download/sitemaps/www_map.html">SiteMap</a> &nbsp;
+                            <a href="http://www.netbeans.org/about/index.html">About Us</a> &nbsp;
+                            <a href="http://www.netbeans.org/about/contact.html">Contact</a> &nbsp;
+                            
+                            <a href="http://www.netbeans.org/about/legal/index.html">Legal</a> &nbsp;
+                        </div>
+                        <div id="tof" class="float-right">By use of this website, you agree to <a href="http://www.netbeans.org/about/legal/terms-of-use.html">the NetBeans Policies and Term of Use</a></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

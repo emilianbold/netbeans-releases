@@ -732,10 +732,20 @@ public final class FileUtils {
     public static File createTempFile(
             final File parent,
             final boolean create) throws IOException {
-        File file = File.createTempFile("nbi-", ".tmp", parent);
+        return createTempFile(parent, create, false);
+    }
+    
+    public static File createTempFile(
+            final File parent,
+            final boolean create,
+            final boolean directory) throws IOException {
+        final File file = File.createTempFile("nbi-", ".tmp", parent);
         
-        if (!create) {
+        if (!create || directory) {
             file.delete();
+        }
+        if (create && directory) {
+            mkdirs(file);
         }
         
         file.deleteOnExit();

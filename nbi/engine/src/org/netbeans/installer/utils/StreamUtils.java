@@ -87,9 +87,11 @@ public class StreamUtils {
             out.write(
                     buffer, 
                     0, 
-                    (int) (total < max ? length : length - (max - total)));
+                    (int) (total < max ? length : length - (total - max)));
             
-            progress.setPercentage(Progress.COMPLETE * total / max);
+            if (total < max) {
+                progress.setPercentage(Progress.COMPLETE * total / max);
+            }
         }
         progress.setPercentage(Progress.COMPLETE);
         

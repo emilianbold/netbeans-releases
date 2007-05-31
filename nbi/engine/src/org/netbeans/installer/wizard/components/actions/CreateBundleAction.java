@@ -228,6 +228,8 @@ public class CreateBundleAction extends WizardAction {
                 // transfer the configuration logic files
                 final List<ExtendedUri> logicUris = product.getLogicUris();
                 for (int i = 0; i < logicUris.size(); i++) {
+                    final ExtendedUri logicUri = logicUris.get(i);
+                    
                     // check for cancel status
                     if (isCanceled()) return;
                     
@@ -235,11 +237,16 @@ public class CreateBundleAction extends WizardAction {
                     output.putNextEntry(new JarEntry(
                             entryPrefix + "/logic/logic," + (i + 1) + ".jar"));
                     StreamUtils.transferFile(
-                            new File(logicUris.get(i).getLocal()),
+                            new File(logicUri.getLocal()),
                             output);
                     
-                    // delete the downloaded file
-                    FileUtils.deleteFile(new File(logicUris.get(i).getLocal()));
+                    // delete the downloaded file -- we need to delete it only in 
+                    // case it has been really downloaded, i.e. the local URI is
+                    // different from the main remote one and the alternates
+                    if (!logicUri.getLocal().equals(logicUri.getRemote()) &&
+                            !logicUri.getAlternates().contains(logicUri.getLocal())) {
+                        FileUtils.deleteFile(new File(logicUri.getLocal()));
+                    }
                     
                     // correct the local uri, so it gets saved correctly
                     logicUris.get(i).setLocal(
@@ -249,6 +256,8 @@ public class CreateBundleAction extends WizardAction {
                 // transfer the installation data files
                 final List<ExtendedUri> dataUris = product.getDataUris();
                 for (int i = 0; i < dataUris.size(); i++) {
+                    final ExtendedUri dataUri = dataUris.get(i);
+                    
                     // check for cancel status
                     if (isCanceled()) return;
                     
@@ -259,8 +268,13 @@ public class CreateBundleAction extends WizardAction {
                             new File(dataUris.get(i).getLocal()),
                             output);
                     
-                    // delete the downloaded file
-                    FileUtils.deleteFile(new File(dataUris.get(i).getLocal()));
+                    // delete the downloaded file -- we need to delete it only in 
+                    // case it has been really downloaded, i.e. the local URI is
+                    // different from the main remote one and the alternates
+                    if (!dataUri.getLocal().equals(dataUri.getRemote()) &&
+                            !dataUri.getAlternates().contains(dataUri.getLocal())) {
+                        FileUtils.deleteFile(new File(dataUri.getLocal()));
+                    }
                     
                     // correct the local uri, so it gets saved correctly
                     dataUris.get(i).setLocal(new URI(

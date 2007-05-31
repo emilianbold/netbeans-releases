@@ -92,12 +92,20 @@ public class WriteFileList extends Task{
         check(dir,"starting directory");
         check(output,"output file");
         check(mask,"file mask");
-        log("Root directory : " + dir);
-        log("Output file : " + output);
-        log("Mask  : "        + mask);
+        
         File root = new File(dir);
+        if (!root.equals(root.getAbsoluteFile())) {
+            root = new File(getProject().getBaseDir(), dir);
+        }
         File outFile = new File(output);
+        if (!outFile.equals(outFile.getAbsoluteFile())) {
+            outFile = new File(getProject().getBaseDir(), output);
+        }
         FileOutputStream fos = null;
+        
+        log("Root directory : " + root);
+        log("Output file : " + outFile);
+        log("Mask  : "        + mask);
         
         try {
             StringBuilder sb = new StringBuilder();

@@ -69,10 +69,19 @@
     -->
     <target name="-init" depends=".init">
         <!-- define custom ant tasks -->
-        <taskdef
-            name="release-engine"
-            classname="org.netbeans.installer.infra.build.ant.ReleaseEngine"
-            classpath="${custom.tasks.cls}"/>
+        <if property="release.to.server" value="true">
+            <taskdef
+                name="release-engine-server"
+                classname="org.netbeans.installer.infra.build.ant.ReleaseEngine"
+                classpath="${custom.tasks.cls}"/>
+        </if>
+        
+        <if property="release.to.server" value="false">
+            <taskdef 
+                name="release-engine-filesystem"
+                classname="org.netbeans.installer.infra.build.ant.registries.UpdateEngine"
+                classpath="${custom.tasks.cls}"/>
+        </if>
     </target>
     
     <!-- ============================================================================
@@ -195,7 +204,7 @@
     <target name=".build-native" if="do.build.native">
         <antcall target=".build-jni"/>
         <antcall target=".build-launcher"/>
-	<antcall target=".build-cleaner"/>
+        <antcall target=".build-cleaner"/>
     </target>
     
     <!--
@@ -217,7 +226,7 @@
     <target name=".build-launcher" if="do.build.native">
         <!-- does nothing at the moment -->
     </target>
-
+    
     <!--
       Builds the native cleaner for locked files for the given platform.
       
@@ -237,7 +246,7 @@
     <target name=".build-cleaner" if="do.build.native">
         <!-- does nothing at the moment -->
     </target>
-
+    
     
     <!-- ============================================================================
       Release
@@ -256,10 +265,22 @@
       This target is not intended to be called directly.
     -->
     <target name="-release">
-        <echo message="Release URL is ${release.url}"/>
-        <echo message="Archive is ${dist.dir}/${engine.dist.file.name}"/>
-        <release-engine url="${release.url}"
-                        archive="${dist.dir}/${engine.dist.file.name}"/>
+        <if property="release.to.server" value="true">
+            <echo message="Release URL is ${release.url}"/>
+            <echo message="Archive is ${dist.dir}/${engine.dist.file.name}"/>
+            
+            <release-engine-server 
+                url="${release.url}"
+                archive="${dist.dir}/${engine.dist.file.name}"/>
+        </if>
+        <if property="release.to.server" value="false">
+            <echo message="Registry root is ${release.registry.dir}"/>
+            <echo message="Archive is ${dist.dir}/${engine.dist.file.name}"/>
+            
+            <release-engine-filesystem
+                root="${release.registry.dir}"
+                archive="${dist.dir}/${engine.dist.file.name}"/>
+        </if>
     </target>
     
     <!-- ============================================================================

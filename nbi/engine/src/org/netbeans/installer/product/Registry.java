@@ -33,6 +33,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
+import org.netbeans.installer.downloader.DownloadManager;
 import org.netbeans.installer.product.components.Group;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.filters.OrFilter;
@@ -204,10 +205,15 @@ public class Registry {
         progress.setPercentage(Progress.START);
         
         // remove installation data for all the products, if it still exists (should
-        // be removed right upon installation)
+        // be removed right upon installation); we only remove the files if the 
+        // local uri is different from the remote one and is not contained in the 
+        // list of alternate uris -- as we could be useing a locally located remote 
+        // registry
         for (Product product: getProducts()) {
             for (ExtendedUri uri: product.getDataUris()) {
-                if (uri.getLocal() != null) {
+                if ((uri.getLocal() != null) && 
+                        !uri.getLocal().equals(uri.getRemote()) && 
+                        !uri.getAlternates().contains(uri.getLocal())) {
                     try {
                         FileUtils.deleteFile(new File(uri.getLocal()));
                         uri.setLocal(null);

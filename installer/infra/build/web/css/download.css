@@ -1,0 +1,145 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development and
+ * Distribution License (the License). You may not use this file except in compliance
+ * with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
+ * http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file and
+ * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
+ * the following below the CDDL Header, with the fields enclosed by brackets []
+ * replaced by your own identifying information:
+ * 
+ *     "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * The Original Software is NetBeans. The Initial Developer of the Original Software
+ * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
+ * Rights Reserved.
+ */
+
+table.top_menu {
+    margin:             20px auto 0px auto;
+    width:              90%;
+    border-collapse:    collapse;
+}
+
+table.top_menu td {
+    padding:            0px 0px 0px 0px;
+    border-width:       0px;
+}
+
+table.top_menu td img {
+    border-width:       0px;
+}
+
+table.top_menu td.bg {
+    width:              50%;
+    background-image:   url('../img/top_menu.gif');
+}
+
+
+table.components_table {
+    margin:             20px auto 20px auto;
+    width:              90%;
+    border-collapse:    collapse;
+    empty-cells:        show;
+}
+
+table.components_table th {
+    border-top:         2px solid #aca8a1;
+    border-bottom:      2px solid #aca8a1;
+    padding:            4px 10px 4px 10px;
+    text-align:         center;
+    color:              #ff5e08;
+    font-family:        Arial, sans-serif;
+    font-size:          1.2em;
+    font-weight:        bold;
+    cursor:             default;
+}
+
+table.components_table td {
+    border-top:         1px solid #aca8a1;
+    border-bottom:      1px solid #aca8a1;
+    padding:            5px 10px 5px 10px;
+    text-align:         center;
+    font-family:        Verdana, Arial, sans-serif;
+    font-size:          1em;
+    cursor:             default;
+}
+
+table.components_table .left {
+    text-align:         left;
+}
+
+table.components_table .no_border {
+    border-width:       0px;
+}
+
+table.components_table .no_padding {
+    padding:            0px 0px 0px 0px;
+}
+
+table.components_table .left_border_thin {
+    border-left:        1px solid #aca8a1;
+}
+
+table.components_table .top_border_thick {
+    border-top:         2px solid #aca8a1;
+}
+
+table.components_table .bottom_border_thick {
+    border-bottom:      2px solid #aca8a1;
+}
+
+table.components_table .wide {
+    width:              100%;
+}
+
+table.components_table .bottom {
+    vertical-align:     bottom;
+}
+
+table.components_table .beige {
+    background-color:   #fef6e8;
+}
+
+table.components_table .comment {
+    
+}
+
+table.components_table .bold_comment {
+    color:              #ff5e08;
+    font-family:        Arial, sans-serif;
+    font-weight:        bold;
+}
+
+table.components_table .warning {
+    color:              #cc9900;
+}
+
+table.components_table .product_note {
+    color:              #aca8a1;
+    font-size:          0.85em;
+}
+
+
+.pop_up {
+    width:              400px;
+    min-height:         100px;
+    margin-top:         1.2em;
+    margin-left:        30px;
+    padding:            5px 5px 5px 5px;
+    border:             1px solid #cdd1dc;
+    position:           absolute; 
+    z-index:            100;
+    visibility:         hidden;
+    background-color:   #f2f6f9;
+}
+
+.noscript_warning {
+    font-size:          1.2em;
+    color:              #ff0000;
+    font-weight:        bold;
+    margin:             20px 40px 20px 40px;
+}
