@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -85,6 +85,20 @@ public class FileCustomEditorOperator extends NbDialogOperator {
         setFileValue(new File(fileName));
     }
     
+    /** Sets selected file and approve it.
+     * @param file file to be selected.
+     */
+    public void setSelectedFile(File file) {
+        fileChooser().setSelectedFile(file);
+    }
+    
+    /** Sets selected file and approve it.
+     * @param fileName file name to be selected.
+     */
+    public void setSelectedFile(String fileName) {
+        setSelectedFile(new File(fileName));
+    }
+
     /** Performs verification by accessing all sub-components */    
     public void verify() {
         fileChooser();

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -166,7 +166,7 @@ public class ClasspathCustomEditorOperator extends NbDialogOperator {
      * @param directoryPath String directory path to be added */    
     public void addDirectory(String directoryPath) {
         FileCustomEditorOperator editor=addDirectory();
-        editor.setFileValue(directoryPath);
+        editor.setSelectedFile(directoryPath);
         editor.ok();
     }
 
@@ -182,7 +182,7 @@ public class ClasspathCustomEditorOperator extends NbDialogOperator {
      * @param directory File directory to be added */    
     public void addDirectory(File directory) {
         FileCustomEditorOperator editor=addDirectory();
-        editor.setFileValue(directory);
+        editor.setSelectedFile(directory);
         editor.ok();
     }
 
