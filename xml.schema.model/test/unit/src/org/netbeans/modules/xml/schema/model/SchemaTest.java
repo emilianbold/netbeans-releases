@@ -236,13 +236,16 @@ public class SchemaTest extends TestCase {
        
        GlobalElement ge = schema.getModel().getFactory().createGlobalElement();
        ge.setName("newElement");
+       int initialCount = schema.getElements().size();
        model.startTransaction();
        schema.addElement(ge);
+       assertEquals(initialCount+1, schema.getElements().size());
        String text = (( AbstractDocumentModel)model).getAccess().getCurrentDocumentText();
        assertTrue(text.indexOf("newElement") > 0);
        ( (AbstractModel)model).rollbackTransaction();
        text = (( AbstractDocumentModel)model).getAccess().getCurrentDocumentText();
        assertTrue(text.indexOf("newElement") == -1);
+       assertEquals(initialCount, schema.getElements().size());
        assertTrue(text.indexOf("stickAfterRollbackElement") > 0);
        
        um.undo();
@@ -252,5 +255,85 @@ public class SchemaTest extends TestCase {
        um.redo();
        text = (( AbstractDocumentModel)model).getAccess().getCurrentDocumentText();
        assertTrue(text.indexOf("stickAfterRollbackElement") > 0);
+    }
+    
+    public void testDeleteRollback() throws Exception {
+        UndoManager um = new UndoManager();
+        schema.getModel().addUndoableEditListener(um);
+        
+       GlobalElement stick = schema.getModel().getFactory().createGlobalElement();
+       stick.setName("stickAfterRollbackElement");
+       model.startTransaction();
+       schema.addElement(stick);
+       model.endTransaction();
+       
+       model.startTransaction();
+       ArrayList<GlobalComplexType> types = new ArrayList(schema.getComplexTypes());
+       ArrayList<GlobalElement> elements = new ArrayList(schema.getElements());
+       GlobalElement element = elements.get(0);
+       
+         if(element.getName().equals("purchaseOrder")) {
+            schema.removeElement(element);
+                          
+            String text = (( AbstractDocumentModel)model).getAccess().getCurrentDocumentText();
+            assertTrue(text.indexOf("purchaseOrder")== -1);
+            ( (AbstractModel)model).rollbackTransaction();
+            text = (( AbstractDocumentModel)model).getAccess().getCurrentDocumentText();
+            assertTrue(text.indexOf("purchaseOrder") > 0);
+            assertTrue(text.indexOf("stickAfterRollbackElement") > 0);
+       
+            um.undo();
+            text = (( AbstractDocumentModel)model).getAccess().getCurrentDocumentText();
+            assertTrue(text.indexOf("stickAfterRollbackElement") == -1);
+
+            um.redo();
+            text = (( AbstractDocumentModel)model).getAccess().getCurrentDocumentText();
+            assertTrue(text.indexOf("stickAfterRollbackElement") > 0);
+           
+         }
+       
+    }
+    
+    public void testRenameRollback() throws Exception {
+        UndoManager um = new UndoManager();
+        schema.getModel().addUndoableEditListener(um);
+        
+       GlobalElement stick = schema.getModel().getFactory().createGlobalElement();
+       stick.setName("stickAfterRollbackElement");
+       model.startTransaction();
+       schema.addElement(stick);
+       model.endTransaction();
+       
+       int initialCount = schema.getElements().size();
+       model.startTransaction();
+       ArrayList<GlobalComplexType> types = new ArrayList(schema.getComplexTypes());
+       ArrayList<GlobalElement> elements = new ArrayList(schema.getElements());
+       GlobalElement element = elements.get(0);
+       
+         if(element.getName().equals("purchaseOrder")) {
+            element.setName("TestPurchaseOrder");
+                          
+            String text = (( AbstractDocumentModel)model).getAccess().getCurrentDocumentText();
+            assertTrue(text.indexOf("purchaseOrder")== -1);
+            assertTrue(text.indexOf("TestPurchaseOrder") > 0);
+            assertEquals(initialCount, schema.getElements().size());
+            ( (AbstractModel)model).rollbackTransaction();
+            text = (( AbstractDocumentModel)model).getAccess().getCurrentDocumentText();
+            assertTrue(text.indexOf("purchaseOrder") > 0);
+            assertTrue(text.indexOf("TestPurchaseOrder") == -1);
+            assertTrue(text.indexOf("stickAfterRollbackElement") > 0);
+            assertEquals(initialCount, schema.getElements().size());
+            assertEquals("purchaseOrder", element.getName());
+            
+            um.undo();
+            text = (( AbstractDocumentModel)model).getAccess().getCurrentDocumentText();
+            assertTrue(text.indexOf("stickAfterRollbackElement") == -1);
+
+            um.redo();
+            text = (( AbstractDocumentModel)model).getAccess().getCurrentDocumentText();
+            assertTrue(text.indexOf("stickAfterRollbackElement") > 0);
+           
+         }
+      
     }
 }
