@@ -2278,6 +2278,14 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                     return true;
                 }
             }
+            // fail if trying to move a non-menu component into a menu container
+            if(!MenuEditLayer.containsMenuTypeComponent(movingComponents)) {
+                if(MenuEditLayer.isValidMenuContainer(targetContainer)) {
+                    formDesigner.getLayoutDesigner().endMoving(false);
+                    formDesigner.updateContainerLayout(originalCont);
+                    return true;
+                }
+            }
             if (p != null) {
                 if (targetContainer == null || targetContainer.getLayoutSupport() != null) {
                     // dropped in old layout support, or on non-visual area
