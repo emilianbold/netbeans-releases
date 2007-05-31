@@ -145,12 +145,12 @@ Microsystems, Inc. All Rights Reserved.
         </condition>
         <condition property="ok-unittestruntimeclasspath" >
             <and>
-                <contains string="${unit.runtime.cp2}" substring="-mising-Module-Entries-:"/>
+                <contains string="${unit.runtime.cp2}" substring="-missing-Module-Entries-:"/>
             </and>
         </condition> 
         <condition property="ok-unittestcompileclasspath" >
             <and>
-                <contains string="${unit.compile.cp2}" substring="-mising-Module-Entries-:"/>
+                <contains string="${unit.compile.cp2}" substring="-missing-Module-Entries-:"/>
             </and>    
         </condition>     
         
@@ -168,12 +168,12 @@ Microsystems, Inc. All Rights Reserved.
 
         <condition property="ok-qatestruntimeclasspath" >
             <and>
-                <contains string="${qa.runtime.cp2}" substring="-mising-Module-Entries-:"/>
+                <contains string="${qa.runtime.cp2}" substring="-missing-Module-Entries-:"/>
             </and>
         </condition> 
         <condition property="ok-qatestcompileclasspath" >
             <and>
-                <contains string="${qa.compile.cp2}" substring="-mising-Module-Entries-:"/>
+                <contains string="${qa.compile.cp2}" substring="-missing-Module-Entries-:"/>
             </and>    
         </condition>     
         

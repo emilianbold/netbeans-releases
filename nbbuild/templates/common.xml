@@ -368,16 +368,17 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="do-test-build" depends="init,test-init">
-        <condition property="missing-test-testdeps" >
-            <or>
-            <contains string="${test.unit.runtime.cp}" substring="-mising-Module-Entries-:" />
-            <contains string="${test.unit.compile.cp}" substring="-mising-Module-Entries-:" />
-            </or>
-        </condition>
-        <fail if="missing-test-testdeps" >Missing test dependency 
+        <fail >
+         Missing test dependency 
           Runtime classpath: ${test.unit.runtime.cp}
           Compile classpath: ${test.unit.compile.cp} 
-         </fail>
+            <condition>
+                <or>
+                <contains string="${test.unit.runtime.cp}" substring="-missing-Module-Entries-:" />
+                <contains string="${test.unit.compile.cp}" substring="-missing-Module-Entries-:" />
+                </or>
+            </condition>
+             </fail>
         <mkdir dir="${build.test.unit.classes.dir}"/>
         <mkdir dir="${test.dist.dir}"/>
         <depend srcdir="${test.unit.src.dir}" destdir="${build.test.unit.classes.dir}" cache="${build.test.unit.dir}/depcache">

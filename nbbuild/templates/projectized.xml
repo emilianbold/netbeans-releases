@@ -372,15 +372,16 @@ Microsystems, Inc. All Rights Reserved.
         
 
     <target name="do-test-build-qa-functional" depends="init,test-init-qa-functional">
-        <condition property="missing-test-testdeps" >
-            <or>
-             <contains string="${test.qa-functional.runtime.cp}" substring="-mising-Module-Entries-:" />
-             <contains string="${test.qa-functional.compile.cp}" substring="-mising-Module-Entries-:" />
-            </or>
-        </condition>
-        <fail if="missing-test-testdeps" >Missing test dependency 
+        <fail>
+          Missing test dependency 
           Runtime classpath: ${test.unit.runtime.cp}
           Compile classpath: ${test.unit.compile.cp} 
+         <condition>
+            <or>
+             <contains string="${test.qa-functional.runtime.cp}" substring="-missing-Module-Entries-:" />
+             <contains string="${test.qa-functional.compile.cp}" substring="-missing-Module-Entries-:" />
+            </or>
+        </condition>
          </fail>
 
         <mkdir dir="${build.test.qa-functional.classes.dir}"/>

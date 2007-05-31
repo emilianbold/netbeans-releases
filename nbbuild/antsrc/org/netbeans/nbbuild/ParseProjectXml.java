@@ -852,7 +852,7 @@ public final class ParseProjectXml extends Task {
       final String cnb;
       final ModuleListParser modulesParser;
       
-      private Set<String> misingEntries;
+      private Set<String> missingEntries;
   
       public  static final String TEST_DIST_VAR = "test.dist.dir";
       public TestDeps(String testtype,String cnb,ModuleListParser modulesParser) {
@@ -886,7 +886,7 @@ public final class ParseProjectXml extends Task {
         }
 
         String getCompileClassPath() {
-            return getPath(getFiles(true)) + getMisingEntries();
+            return getPath(getFiles(true)) + getMissingEntries();
         }
         private String getPath(List<String> files) {
             StringBuffer path = new StringBuffer();
@@ -904,7 +904,7 @@ public final class ParseProjectXml extends Task {
         }
 
         String getRuntimeClassPath() {
-            return getPath(getFiles(false)) + getMisingEntries();
+            return getPath(getFiles(false)) + getMissingEntries();
         }
         
     /** construct test compilation compilation dependencies.
@@ -952,17 +952,17 @@ public final class ParseProjectXml extends Task {
     }
     
     public void addMisingEntry(String cnd) {
-        if (misingEntries == null) {
-            misingEntries = new HashSet<String>();
+        if (missingEntries == null) {
+            missingEntries = new HashSet<String>();
         }
-        misingEntries.add(cnd);
+        missingEntries.add(cnd);
     }
     
-    public String getMisingEntries() {
-       if ( misingEntries != null) {
+    public String getMissingEntries() {
+       if ( missingEntries != null) {
            StringBuilder builder = new StringBuilder();
-           builder.append("\n-mising-Module-Entries-: ");
-           for (String cnd : misingEntries) {
+           builder.append("\n-missing-Module-Entries-: ");
+           for (String cnd : missingEntries) {
                builder.append(cnd);
                builder.append("\n");
            }
