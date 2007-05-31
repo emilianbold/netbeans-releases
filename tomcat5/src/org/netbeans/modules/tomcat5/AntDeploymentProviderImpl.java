@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.AntDeploymentProvider;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
@@ -35,7 +36,9 @@ import org.openide.filesystems.FileUtil;
  */
 public class AntDeploymentProviderImpl implements AntDeploymentProvider {
     
-    private TomcatManager tm;
+    private final TomcatManager tm;
+    
+    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.tomcat5"); // NOI18N
     
     public AntDeploymentProviderImpl(DeploymentManager dm) {
         tm = (TomcatManager)dm;
@@ -43,6 +46,11 @@ public class AntDeploymentProviderImpl implements AntDeploymentProvider {
 
     public void writeDeploymentScript(OutputStream os, Object moduleType) throws IOException {
         InputStream is = AntDeploymentProviderImpl.class.getResourceAsStream("resources/tomcat-ant-deploy.xml"); // NOI18N
+        if (is == null) {
+            // this should never happen, but better make sure
+            LOGGER.severe("Missing resource resources/tomcat-ant-deploy.xml."); // NOI18N
+            return;
+        }
         try {
             FileUtil.copy(is, os);
         } finally {
