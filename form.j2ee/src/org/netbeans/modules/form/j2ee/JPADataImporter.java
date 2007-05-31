@@ -70,6 +70,7 @@ public class JPADataImporter extends JPanel implements DataImporter {
         tableLabel.setText(org.openide.util.NbBundle.getMessage(JPADataImporter.class, "LBL_ImportDBTable")); // NOI18N
 
         tableCombo.setEnabled(false);
+        tableCombo.setRenderer(J2EEUtils.DBColumnInfo.getRenderer());
 
         connectionCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -131,8 +132,8 @@ private void connectionComboActionPerformed(java.awt.event.ActionEvent evt) {//G
      */
     private void fillTableCombo(DatabaseConnection connection) {
         DefaultComboBoxModel model = new DefaultComboBoxModel();
-        for (String tableName : J2EEUtils.tableNamesForConnection(connection)) {
-            model.addElement(tableName);
+        for (J2EEUtils.DBColumnInfo table : J2EEUtils.tableNamesForConnection(connection)) {
+            model.addElement(table);
         }
         tableCombo.setModel(model);
         tableCombo.setEnabled(tableCombo.getModel().getSize() != 0);
@@ -159,8 +160,9 @@ private void connectionComboActionPerformed(java.awt.event.ActionEvent evt) {//G
         if (dd.getValue() != DialogDescriptor.OK_OPTION) return null;
         RADComponent resultList = null;
         try {
-            String tableName = (String)tableCombo.getSelectedItem();
-            if (tableName == null) return null;
+            J2EEUtils.DBColumnInfo table = (J2EEUtils.DBColumnInfo)tableCombo.getSelectedItem();
+            if ((table == null) || !table.isValid()) return null;
+            String tableName = table.getName();
             DatabaseConnection connection = (DatabaseConnection)connectionCombo.getSelectedItem();
             FileObject formFile = FormEditor.getFormDataObject(formModel).getFormFile();
             Project project = FileOwnerQuery.getOwner(formFile);

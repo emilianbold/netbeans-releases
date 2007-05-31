@@ -124,6 +124,9 @@
         <Component class="javax.swing.JComboBox" name="tableCombo">
           <Properties>
             <Property name="enabled" type="boolean" value="false"/>
+            <Property name="renderer" type="javax.swing.ListCellRenderer" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="J2EEUtils.DBColumnInfo.getRenderer()" type="code"/>
+            </Property>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="tableComboActionPerformed"/>

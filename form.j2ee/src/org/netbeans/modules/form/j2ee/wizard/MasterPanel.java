@@ -116,6 +116,7 @@ public class MasterPanel implements WizardDescriptor.Panel {
         tableLabel.setText(org.openide.util.NbBundle.getMessage(MasterPanel.class, "LBL_DatabaseTable")); // NOI18N
 
         tableCombo.setEnabled(false);
+        tableCombo.setRenderer(J2EEUtils.DBColumnInfo.getRenderer());
         tableCombo.addActionListener(formListener);
 
         availableLabel.setText(org.openide.util.NbBundle.getMessage(MasterPanel.class, "LBL_AvailableColumns")); // NOI18N
@@ -175,7 +176,7 @@ public class MasterPanel implements WizardDescriptor.Panel {
                             .add(connectionCombo, 0, 290, Short.MAX_VALUE)))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, masterPanelLayout.createSequentialGroup()
                         .add(masterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(availablePane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE)
+                            .add(availablePane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE)
                             .add(availableLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(masterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
@@ -186,7 +187,7 @@ public class MasterPanel implements WizardDescriptor.Panel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(masterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(masterPanelLayout.createSequentialGroup()
-                                .add(includePane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 126, Short.MAX_VALUE)
+                                .add(includePane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 140, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(masterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                                     .add(upButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -217,7 +218,7 @@ public class MasterPanel implements WizardDescriptor.Panel {
                     .add(availablePane, 0, 140, Short.MAX_VALUE)
                     .add(includePane, 0, 140, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, masterPanelLayout.createSequentialGroup()
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 13, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 15, Short.MAX_VALUE)
                         .add(addAllButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(masterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -229,7 +230,7 @@ public class MasterPanel implements WizardDescriptor.Panel {
                             .add(downButton))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(removeAllButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 13, Short.MAX_VALUE)))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 15, Short.MAX_VALUE)))
                 .addContainerGap())
         );
     }
@@ -328,16 +329,16 @@ public class MasterPanel implements WizardDescriptor.Panel {
     }//GEN-LAST:event_availableListValueChanged
 
     private void tableComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tableComboActionPerformed
-        String table = getTable();
+        J2EEUtils.DBColumnInfo table = getTable();
         DatabaseConnection connection = getConnection();
-        Connection con = (connection == null) ? null : connection.getJDBCConnection();
+        Connection con = ((connection == null) || !table.isValid()) ? null : connection.getJDBCConnection();
         try {
             DefaultListModel model = (DefaultListModel)availableList.getModel();
             model.clear();
             model = (DefaultListModel)includeList.getModel();
             model.clear();
             if (con != null) {
-                ResultSet rs = con.getMetaData().getColumns(con.getCatalog(), connection.getSchema(), table, "%"); // NOI18N
+                ResultSet rs = con.getMetaData().getColumns(con.getCatalog(), connection.getSchema(), table.getName(), "%"); // NOI18N
                 while (rs.next()) {
                     String columnName = rs.getString("COLUMN_NAME"); // NOI18N
                     model.addElement(columnName);
@@ -375,8 +376,8 @@ public class MasterPanel implements WizardDescriptor.Panel {
      *
      * @return selected database table.
      */
-    private String getTable() {
-        return (String)tableCombo.getSelectedItem();
+    private J2EEUtils.DBColumnInfo getTable() {
+        return (J2EEUtils.DBColumnInfo)tableCombo.getSelectedItem();
     }
 
     /**
@@ -397,7 +398,7 @@ public class MasterPanel implements WizardDescriptor.Panel {
     private void fillTableCombo(DatabaseConnection connection) {
         DefaultComboBoxModel model = new DefaultComboBoxModel();
         if (connection != null) {
-            for (String tableName : J2EEUtils.tableNamesForConnection(connection)) {
+            for (J2EEUtils.DBColumnInfo tableName : J2EEUtils.tableNamesForConnection(connection)) {
                 model.addElement(tableName);
             }
         }
@@ -487,7 +488,7 @@ public class MasterPanel implements WizardDescriptor.Panel {
     public void storeSettings(Object settings) {
         WizardDescriptor wizard = (WizardDescriptor) settings;
         wizard.putProperty("connection", getConnection()); // NOI18N
-        wizard.putProperty("master", getTable()); // NOI18N
+        wizard.putProperty("master", getTable().getName()); // NOI18N
         wizard.putProperty("masterColumns", getSelectedColumns()); // NOI18N
     }
     

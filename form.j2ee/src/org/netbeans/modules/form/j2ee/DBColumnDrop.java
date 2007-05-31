@@ -70,6 +70,13 @@ public class DBColumnDrop extends DBConnectionDrop {
      */
     public PaletteItem getPaletteItem(DropTargetDragEvent dtde) {
         PaletteItem pItem;
+        if (!J2EEUtils.hasPrimaryKey(column.getDatabaseConnection(), column.getTableName())) {
+            if (!assistantInitialized) {
+                initAssistant();
+            }
+            FormEditor.getAssistantModel(model).setContext("tableWithoutPK"); // NOI18N
+            return null;
+        }
         setBindingOnly(dtde.getDropAction() == DnDConstants.ACTION_MOVE);
         if (isBindingOnly()) {
             if (!assistantInitialized) {
@@ -94,9 +101,11 @@ public class DBColumnDrop extends DBConnectionDrop {
         ResourceBundle bundle = NbBundle.getBundle(DBColumnDrop.class);
         String dropBindingMsg = bundle.getString("MSG_ColumnDropBinding"); // NOI18N
         String dropComponentMsg = bundle.getString("MSG_ColumnDropComponent"); // NOI18N
+        String tableWithoutPKMsg = bundle.getString("MSG_TableWithoutPK"); // NOI18N
         AssistantMessages messages = AssistantMessages.getDefault();
         messages.setMessages("columnDropBinding", dropBindingMsg); // NOI18N
-        messages.setMessages("columnDropComponent", dropComponentMsg); // NOI18N        
+        messages.setMessages("columnDropComponent", dropComponentMsg); // NOI18N
+        messages.setMessages("tableWithoutPK", tableWithoutPKMsg); // NOI18N
         assistantInitialized = true;
     }
 

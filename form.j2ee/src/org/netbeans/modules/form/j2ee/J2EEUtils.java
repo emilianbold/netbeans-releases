@@ -19,6 +19,7 @@
 package org.netbeans.modules.form.j2ee;
 
 import com.sun.source.tree.*;
+import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
@@ -36,6 +37,9 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.Action;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
@@ -81,6 +85,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
@@ -557,6 +562,19 @@ public class J2EEUtils {
             comp.setStoredName(newName);
         }
     }
+    
+    public static boolean hasPrimaryKey(DatabaseConnection connection, String tableName) {
+        Connection con = connection.getJDBCConnection();
+        boolean hasPK = false;
+        try {
+            ResultSet rs = con.getMetaData().getPrimaryKeys(con.getCatalog(), connection.getSchema(), tableName);
+            hasPK = rs.next();
+            rs.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return hasPK;
+    }
 
     /**
      * Finds out tables in the DB represented by the given DB connection. 
@@ -564,20 +582,67 @@ public class J2EEUtils {
      * @param connection DB connection to search for tables.
      * @return list of names of the tables.
      */
-    public static List<String> tableNamesForConnection(DatabaseConnection connection) {
+    public static List<DBColumnInfo> tableNamesForConnection(DatabaseConnection connection) {
         Connection con = connection.getJDBCConnection();
-        List<String> tableNames = new LinkedList<String>();
+        List<DBColumnInfo> tables = new LinkedList<DBColumnInfo>();
         try {
-            ResultSet rs = con.getMetaData().getTables(con.getCatalog(), connection.getSchema(), "%",  new String[] {"TABLE"}); // NOI18N
+            Set<String> tablesWithPK = new HashSet<String>();
+            ResultSet rs = con.getMetaData().getPrimaryKeys(con.getCatalog(), connection.getSchema(), "%");
             while (rs.next()) {
                 String tableName = rs.getString("TABLE_NAME"); // NOI18N
-                tableNames.add(tableName);
+                tablesWithPK.add(tableName);
+            }
+            rs.close();
+            rs = con.getMetaData().getTables(con.getCatalog(), connection.getSchema(), "%",  new String[] {"TABLE"}); // NOI18N
+            while (rs.next()) {
+                String tableName = rs.getString("TABLE_NAME"); // NOI18N
+                boolean hasPK = tablesWithPK.contains(tableName);
+                tables.add(new DBColumnInfo(tableName, hasPK, hasPK ? null : NbBundle.getMessage(J2EEUtils.class, "MSG_NO_PK"))); // NOI18N
             }
             rs.close();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        return tableNames;
+        return tables;
+    }
+
+    public static class DBColumnInfo {
+        private String name;
+        private boolean valid;
+        private String message;
+        
+        DBColumnInfo(String name, boolean valid, String message) {
+            this.name = name;
+            this.valid = valid;
+            this.message = message;
+        }
+
+        public String getName() {
+            return name;
+        }
+        
+        public boolean isValid() {
+            return valid;
+        }
+        
+        public String getMessage() {
+            return message;
+        }
+        
+        public static ListCellRenderer getRenderer() {
+            return new DefaultListCellRenderer() {
+                public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                    super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                    if (value instanceof DBColumnInfo) {
+                        DBColumnInfo column = (DBColumnInfo)value;
+                        String label = column.getName() + (column.isValid() ? "" : " (" + column.getMessage() + ")"); // NOI18N
+                        setText(label);
+                        setEnabled(column.isValid());
+                    }
+                    return this;
+                }
+            };
+        }
     }
 
     /**
