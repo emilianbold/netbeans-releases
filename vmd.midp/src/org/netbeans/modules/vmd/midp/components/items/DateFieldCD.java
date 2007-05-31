@@ -19,14 +19,15 @@
 
 package org.netbeans.modules.vmd.midp.components.items;
 
-import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
 import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
+import org.netbeans.modules.vmd.midp.codegen.MidpCodeSupport;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
-import org.netbeans.modules.vmd.midp.codegen.MidpCodeSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
@@ -34,14 +35,9 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.date.PropertyEditorDate;
 import org.netbeans.modules.vmd.midp.propertyeditors.timezone.PropertyEditorTimeZone;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
-import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.DateFieldDisplayPresenter;
+
+import java.util.*;
 
 /**
  *
@@ -100,7 +96,7 @@ public class DateFieldCD extends ComponentDescriptor {
 
     private static Presenter createSetterPresenter() {
         return new CodeSetterPresenter()
-                .addParameters(MidpParameter.create(PROP_DATE))
+                .addParameters (new DateParameter ())
                 .addParameters (new TimeZoneParameter ())
                 .addParameters (new InputModeParameter ())
                 .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP).addParameters(ItemCD.PROP_LABEL, InputModeParameter.PARAM_INPUT_MODE))
@@ -129,6 +125,25 @@ public class DateFieldCD extends ComponentDescriptor {
         }
 
         return inputModeValues;
+    }
+
+    private static class DateParameter extends MidpParameter {
+
+        public static final String PARAM_DATE = "date"; // NOI18N
+
+        protected DateParameter () {
+            super (PARAM_DATE);
+        }
+
+
+        public void generateParameterCode (DesignComponent component, MultiGuardedSection section, int index) {
+            PropertyValue propertyValue = component.readProperty (PROP_DATE);
+            if (propertyValue.getKind () == PropertyValue.Kind.VALUE) {
+                long date = MidpTypes.getLong (propertyValue);
+                section.getWriter ().write ("new java.util.Date (" + date + "l)");
+            } else
+                super.generateParameterCode (component, section, index);
+        }
     }
 
     private static class InputModeParameter extends MidpParameter {
