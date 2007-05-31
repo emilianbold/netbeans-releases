@@ -78,9 +78,6 @@ Microsystems, Inc. All Rights Reserved.
 <replacefilter token="@org-netbeans-modules-editor@" value="${javadoc.docs.org-netbeans-modules-editor}"/>
 <replacefilter token="@org-netbeans-modules-editor-fold@" value="${javadoc.docs.org-netbeans-modules-editor-fold}"/>
 <replacefilter token="@org-netbeans-modules-classfile@" value="${javadoc.docs.org-netbeans-modules-classfile}"/>
-<replacefilter token="@org-netbeans-modules-registry@" value="${javadoc.docs.org-netbeans-modules-registry}"/>
-<replacefilter token="@org-netbeans-core-registry@" value="${javadoc.docs.org-netbeans-core-registry}"/>
-<replacefilter token="@org-netbeans-modules-convertor@" value="${javadoc.docs.org-netbeans-modules-convertor}"/>
 <replacefilter token="@org-netbeans-modules-masterfs@" value="${javadoc.docs.org-netbeans-modules-masterfs}"/>
 <replacefilter token="@org-netbeans-modules-looks@" value="${javadoc.docs.org-netbeans-modules-looks}"/>
 <replacefilter token="@org-netbeans-lib-terminalemulator@" value="${javadoc.docs.org-netbeans-lib-terminalemulator}"/>
