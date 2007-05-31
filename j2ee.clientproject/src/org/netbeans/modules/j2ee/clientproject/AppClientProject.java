@@ -25,6 +25,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.Icon;
@@ -38,6 +39,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.clientproject.classpath.AppClientProjectClassPathExtender;
 import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathProviderImpl;
@@ -60,7 +62,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.spi.ejbjar.CarFactory;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
-import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModelProvider;
@@ -70,11 +71,14 @@ import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
+import org.netbeans.spi.project.ant.AntBuildExtenderFactory;
+import org.netbeans.spi.project.ant.AntBuildExtenderImplementation;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -141,14 +145,17 @@ public final class AppClientProject implements Project, AntProjectListener, File
     private JarContainerImpl enterpriseResourceSupport;
     private FileObject libFolder;
     private final AppClientProjectClassPathExtender classpathExtender; 
-
+    
+    // use AntBuildExtender to enable Ant Extensibility
+    private AntBuildExtender buildExtender;
     
     AppClientProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
         eval = createEvaluator();
         aux = helper.createAuxiliaryConfiguration();
         refHelper = new ReferenceHelper(helper, aux, eval);
-        genFilesHelper = new GeneratedFilesHelper(helper);
+        genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
+        buildExtender = AntBuildExtenderFactory.createAntExtender(new AppClientExtenderImplementation());
         this.updateHelper = new UpdateHelper(this, this.helper, this.aux, this.genFilesHelper,
                 UpdateHelper.createDefaultNotifier());
         carProjectWebServicesClientSupport = new AppClientProjectWebServicesClientSupport(this, helper, refHelper);
@@ -440,7 +447,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
         askUserIfFlags |= GeneratedFilesHelper.FLAG_MODIFIED;
         int flags = genFilesHelper.getBuildScriptState(
             GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-            AppClientProject.class.getResource("resources/build-impl.xsl"), jaxWsFo); // NOI18N
+            AppClientProject.class.getResource("resources/build-impl.xsl")); // NOI18N
         if ((flags & askUserIfFlags) == askUserIfFlags) {
             Runnable run = new Runnable () {
                 public void run () {
@@ -458,7 +465,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
                         try {
                             genFilesHelper.generateBuildScriptFromStylesheet(
                                 GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                                AppClientProject.class.getResource("resources/build-impl.xsl"), jaxWsFo); // NOI18N
+                                AppClientProject.class.getResource("resources/build-impl.xsl")); // NOI18N
                         } catch (IOException e) {
                             ErrorManager.getDefault().notify(e);
                         } catch (IllegalStateException e) {
@@ -477,7 +484,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
                 genFilesHelper.refreshBuildScript(
                     GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                     AppClientProject.class.getResource("resources/build-impl.xsl"), // NOI18N
-                    jaxWsFo, false);
+                    false);
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(e);
             }
@@ -545,7 +552,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
             genFilesHelper.refreshBuildScript(
                 getBuildXmlName(),
                 AppClientProject.class.getResource("resources/build.xsl"), //NOI18N
-                jaxWsFo, false);
+                false);
         }
         
     }
@@ -591,7 +598,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
                 genFilesHelper.refreshBuildScript(
                     getBuildXmlName(),
                     AppClientProject.class.getResource("resources/build.xsl"), //NOI18N
-                    jaxWsFo, true);
+                    true);
                 
                 String servInstID = getProperty(AntProjectHelper.PRIVATE_PROPERTIES_PATH, AppClientProjectProperties.J2EE_SERVER_INSTANCE);
                 J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(servInstID);
@@ -773,7 +780,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
     }
     
     private FileObject findJaxWsFileObject(FileObject projectDir) {
-        return projectDir.getFileObject(GeneratedFilesHelper.JAX_WS_XML_PATH);
+        return projectDir.getFileObject("nbproject/jax-ws.xml");
     }
     
     /**
@@ -931,11 +938,26 @@ public final class AppClientProject implements Project, AntProjectListener, File
                 genFilesHelper.refreshBuildScript(
                 GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                 AppClientProject.class.getResource("resources/build-impl.xsl"),     //NOI18N
-                jaxWsFo, false);    
+                false);    
             } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ex);
             }
         }
+    }
+    
+    private class AppClientExtenderImplementation implements AntBuildExtenderImplementation {
+        //add targets here as required by the external plugins..
+        public List<String> getExtensibleTargets() {
+            String[] targets = new String[] {
+                "-do-init", "-init-check", "-post-clean", "jar", "-pre-pre-compile","-do-compile","-do-compile-single" //NOI18N
+            };
+            return Arrays.asList(targets);
+        }
+
+        public Project getOwningProject() {
+            return AppClientProject.this;
+        }
+
     }
     
 }
