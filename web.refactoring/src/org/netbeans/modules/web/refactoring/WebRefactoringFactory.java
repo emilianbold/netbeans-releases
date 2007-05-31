@@ -27,11 +27,13 @@ import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
+import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.refactoring.rename.WebXmlRename;
 import org.netbeans.modules.web.refactoring.safedelete.WebXmlSafeDelete;
+import org.netbeans.modules.web.refactoring.whereused.WebXmlWhereUsed;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -70,6 +72,9 @@ public class WebRefactoringFactory implements RefactoringPluginFactory{
         } if (refactoring instanceof SafeDeleteRefactoring){
             SafeDeleteRefactoring safeDelete = (SafeDeleteRefactoring) refactoring;
             return new WebXmlSafeDelete(ddFile, webApp, oldFqn, safeDelete);
+        } if (refactoring instanceof WhereUsedQuery){
+            WhereUsedQuery whereUsedQuery = (WhereUsedQuery) refactoring;
+            return new WebXmlWhereUsed(ddFile, webApp, oldFqn, whereUsedQuery);
         }
         
         return null;
