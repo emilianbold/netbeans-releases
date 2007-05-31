@@ -22,6 +22,7 @@ package org.netbeans.modules.j2ee.common.method;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.StatementTree;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
@@ -46,6 +47,7 @@ import org.netbeans.modules.j2ee.common.source.FakeJavaDataLoaderPool;
 import org.netbeans.modules.j2ee.common.source.RepositoryImpl;
 import org.netbeans.modules.j2ee.common.source.SourceUtils;
 import org.netbeans.modules.j2ee.common.source.TestUtilities;
+import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -65,6 +67,11 @@ public class MethodModelSupportTest extends NbTestCase {
         MockServices.setServices(FakeJavaDataLoaderPool.class, RepositoryImpl.class);
 
         clearWorkDir();
+        
+        File file = new File(getWorkDir(),"cache");	//NOI18N
+        file.mkdirs();
+        IndexUtil.setCacheFolder(file);
+
         FileObject workDir = FileUtil.toFileObject(getWorkDir());
         testFO = workDir.createData("TestClass.java");
     }
