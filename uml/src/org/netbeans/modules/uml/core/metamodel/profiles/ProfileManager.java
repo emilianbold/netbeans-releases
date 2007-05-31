@@ -184,70 +184,59 @@ public class ProfileManager
 	 *
 	 * @param proj[in]   The IProject we are querying against. Used to establish a location
 	 */          
-	protected ETPairT<String, IProfile> createStandAloneProfile(IProject proj)
-	{
-		ETPairT<String, IProfile> retPair = new ETPairT<String, IProfile>();		
-		IProfile prof = null;
-		String href = "";
-		try
-		{
-			if (proj != null)
-			{
-				ICoreProduct prod = ProductRetriever.retrieveProduct();
-				if (prod != null)
-				{
-					IPreferenceManager2 prefMan = prod.getPreferenceManager();
-					if (prefMan != null)
-					{
-						//Need to determine where to create the new Profile
-						String prefValue = prefMan.getPreferenceValue("NewProject|UnknownStereotype",
-																	  "UnknownStereotypeCreate");
-						String location = determineProfileLocation( proj, prod, prefValue );
-						if (location != null && location.length() > 0)
-						{
-							XMLFragmentLoader loader = new XMLFragmentLoader();
-							String xmlFrag = loader.retrieveFragment(						
-													ProfileManager.class,
-													StructureConstants.IDR_XMI_HEADER_WITHOUT_DTD);
-														
-							if (xmlFrag != null && xmlFrag.length() > 0)
-							{							
-								ETPairT<Document, IProfile> sapPair = createStandAloneProfile(xmlFrag);
-								Document doc = sapPair.getParamOne();
-								prof = sapPair.getParamTwo();	
-								if (doc != null && prof != null)
-								{
-									String projName = proj.getName();
-									if (projName != null && projName.length() > 0)
-									{
-										String projLoc = proj.getFileName();
-										location += projName + ".etup";
-										
-										XMLManip.save(doc, location);
-									
-										href = PathManip.retrieveRelativePath(location, projLoc);
-										String xmiID = prof.getXMIID();
-									
-										href += "#//*[@xmi.id='";
-										href += xmiID;
-										href += "']";																			   
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-		catch(Exception e)
-		{
-			//not doing anything for now.
-		}
-		
-		retPair.setParamOne(href);
-		retPair.setParamTwo(prof);
-		return retPair;		
-	}
+	protected ETPairT<String, IProfile> createStandAloneProfile(IProject proj) {
+            ETPairT<String, IProfile> retPair = new ETPairT<String, IProfile>();
+            IProfile prof = null;
+            String href = "";
+            try {
+                if (proj != null) {
+                    ICoreProduct prod = ProductRetriever.retrieveProduct();
+                    if (prod != null) {
+                        IPreferenceManager2 prefMan = prod.getPreferenceManager();
+                        if (prefMan != null) {
+                            //Need to determine where to create the new Profile
+                            //kris richards - UnknownStereotypeCreate pref deleted. Set to PSK_IN_PROJECT_PROFILE
+                            String prefValue = "PSK_IN_PROJECT_PROFILE";
+                            String location = determineProfileLocation( proj, prod, prefValue );
+                            if (location != null && location.length() > 0) {
+                                XMLFragmentLoader loader = new XMLFragmentLoader();
+                                String xmlFrag = loader.retrieveFragment(
+                                        ProfileManager.class,
+                                        StructureConstants.IDR_XMI_HEADER_WITHOUT_DTD);
+                                
+                                if (xmlFrag != null && xmlFrag.length() > 0) {
+                                    ETPairT<Document, IProfile> sapPair = createStandAloneProfile(xmlFrag);
+                                    Document doc = sapPair.getParamOne();
+                                    prof = sapPair.getParamTwo();
+                                    if (doc != null && prof != null) {
+                                        String projName = proj.getName();
+                                        if (projName != null && projName.length() > 0) {
+                                            String projLoc = proj.getFileName();
+                                            location += projName + ".etup";
+                                            
+                                            XMLManip.save(doc, location);
+                                            
+                                            href = PathManip.retrieveRelativePath(location, projLoc);
+                                            String xmiID = prof.getXMIID();
+                                            
+                                            href += "#//*[@xmi.id='";
+                                            href += xmiID;
+                                            href += "']";
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch(Exception e) {
+                //not doing anything for now.
+            }
+            
+            retPair.setParamOne(href);
+            retPair.setParamTwo(prof);
+            return retPair;
+        }
 
 	/**
 	 *

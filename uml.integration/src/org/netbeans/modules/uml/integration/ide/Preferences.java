@@ -35,6 +35,7 @@ import java.util.Iterator;
 import org.netbeans.modules.uml.core.coreapplication.IPreferenceManager2;
 import org.netbeans.modules.uml.core.support.umlsupport.Log;
 import org.netbeans.modules.uml.core.support.umlutils.IPropertyElement;
+import org.openide.util.NbBundle;
 
 /**
  * Describe preference manager for preferences affecting integrations.
@@ -77,8 +78,6 @@ public class Preferences {
                                 "RoundTrip|Java|COLLECTION_OVERRIDE_DEFAULT";
     public static final String USE_GENERICS_DEFAULT =
                                 "RoundTrip|Java|USE_GENERICS_DEFAULT";
-    public static final String QUERY_NEW_DIAGRAM =
-                                "NewProject|QueryForNewDiagram";
     public static final String RECONNECT_LINKS =
                                 "Diagrams|ReconnectToNodeBoundary";
     public static final String LOG_DESCRIBE_MESSAGES =
@@ -223,7 +222,6 @@ public class Preferences {
 
             reconnectLinks = getBooleanPreference(RECONNECT_LINKS);
             promptSaveWorkspace = getBooleanPreference(PROMPT_SAVE_WKS);
-            createNewDiagram = getBooleanPreference(QUERY_NEW_DIAGRAM);
 
             defaultWorkspaceLocation = getPreference(DEFAULT_WKS_LOC);
             defaultElementName = getPreference(DEFAULT_ELEM_NAME);
@@ -376,8 +374,8 @@ public class Preferences {
         // doesn't seem to be working in this case.  Not sure how this variable
         // would ever be updated.  So, changed to get the preference value whenever
         // this method is called
-        preferenceCache.remove(QUERY_NEW_DIAGRAM);
-	return getBooleanPreference(QUERY_NEW_DIAGRAM);
+        //kris richards - "QueryForNewDiagram" pref expunged. Set to true.
+        return true;
     }
     
     public static boolean getUseGenericsDefault()
@@ -494,7 +492,8 @@ public class Preferences {
      * @return A <code>String</code> of the default name for unnamed elements.
      */
     public static String getDefaultElementName() {
-        return defaultElementName;
+        //kris richards - "DefaultElementName" pref expunged. Set to "Unnamed".
+        return NbBundle.getMessage(Preferences.class, "UNNAMED");
     }
 
     /**
@@ -598,7 +597,6 @@ public class Preferences {
 
 
     // Individual preference properties
-    private static boolean createNewDiagram;
     private static boolean promptSaveWorkspace;
     private static boolean reconnectLinks;
 //    private static boolean useGenericsForCollections;

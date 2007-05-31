@@ -22,6 +22,7 @@ package org.netbeans.modules.uml.core.preferenceframework;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.coreapplication.IPreferenceManager2;
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
+import org.openide.util.NbBundle;
 
 /**
  * @author sumitabhk
@@ -53,8 +54,8 @@ public class PreferenceAccessor implements IPreferenceAccessor{
 	 *
 	 */
 	public String getDefaultProjectName() {
-		String value = getTranslatedPreferenceValue("", "NewProject", "DefaultProjectName");
-		return value;
+		//all callers removed.
+            throw new UnsupportedOperationException("DefaultProjectName pref no longer valid.");
 	}
 
 	/**
@@ -67,11 +68,8 @@ public class PreferenceAccessor implements IPreferenceAccessor{
 	 *
 	 */
 	public int getIDType() {
-		int type = 0;
-		String value = getTranslatedPreferenceValue("", "NewProject", "IDType");
-		if (value.equals("PSK_NORMAL"))
-			type = 0;
-		return type;
+            //kris richards - "IDType" pref expunged. Also, this method is never called.
+            throw new UnsupportedOperationException ("IDType pref no longer valid.") ;
 	}
 
 	/**
@@ -85,9 +83,10 @@ public class PreferenceAccessor implements IPreferenceAccessor{
 	 *
 	 */
 	public String getDefaultElementName() {
-		String value = getTranslatedPreferenceValue("", "NewProject", "DefaultElementName");
-		return value;
-	}
+            //kris richards - "DefaultElementName" pref expunged. Set to "Unnamed"
+            
+            return NbBundle.getMessage(PreferenceAccessor.class, "UNNAMED");
+        }
 
 	/**
 	 * Gets a flag from the preferences file which tells us whether or not to create a classifier
@@ -100,11 +99,9 @@ public class PreferenceAccessor implements IPreferenceAccessor{
 	 *
 	 */
 	public boolean getUnknownClassifierCreate() {
-		boolean retVal = false;
-		String value = getPreferenceValue("", "NewProject|UnknownClassifier", "UnknownClassifierCreate");
-		if (value.equals("PSK_YES"))
-			retVal = true;
-		return retVal;
+            //kris richards - "UnknownClassifierCreate" pref expunged. Set to true.
+		
+            return true ;
 	}
 
 	/**
@@ -118,8 +115,8 @@ public class PreferenceAccessor implements IPreferenceAccessor{
 	 *
 	 */
 	public String getUnknownClassifierType() {
-		String value = getTranslatedPreferenceValue("", "NewProject|UnknownClassifier", "UnknownClassifierType");
-		return value;
+            //kris richards - "UnknownClassifierType" pref expunged. Set to "DataType"
+            return "DataType" ;
 	}
 
 	/**
@@ -165,8 +162,9 @@ public class PreferenceAccessor implements IPreferenceAccessor{
 	 *
 	 */
 	public String getDefaultMode() {
-		String value = getPreferenceValue("", "NewProject", "DefaultMode");
-		return value;
+            //kris richards - all calls to this have been removed.
+	
+            throw new UnsupportedOperationException ("DefaultMode pref no longer valid.");
 	}
 
 	/**

@@ -867,25 +867,8 @@ public class Classifier extends Namespace implements IClassifier,
             // datatypes, we should assume that it should be present in the 
             // system.  After we retrieve the type, we should make sure that 
             // the preference is set to the original state.
-            PreferenceAccessor pref = PreferenceAccessor.instance();
-            boolean curCreateValue = pref.getUnknownClassifierCreate();
-            if((makeSureToCreateType == true) && (curCreateValue == false))
-            {
-                pref.setPreferenceValue("", 
-                                        "NewProject|UnknownClassifier", 
-                                        "UnknownClassifierCreate",
-                                        "PSK_YES");
-            }
-            
+
             IClassifier clazz = resolveSingleClassifierFromString(type);
-            
-            if((makeSureToCreateType == true) && (curCreateValue == false))
-            {
-                pref.setPreferenceValue("", 
-                                        "NewProject|UnknownClassifier", 
-                                        "UnknownClassifierCreate",
-                                        "PSK_NO");
-            }
             
             if (clazz != null)
                 retAttr = createAttribute2(clazz, name);

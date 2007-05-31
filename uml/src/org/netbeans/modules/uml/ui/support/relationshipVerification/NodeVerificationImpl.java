@@ -67,6 +67,7 @@ import com.tomsawyer.drawing.geometry.TSConstPoint;
 import com.tomsawyer.drawing.geometry.TSConstRect;
 import com.tomsawyer.drawing.geometry.TSPoint;
 import org.netbeans.modules.uml.core.metamodel.dynamics.ILifeline;
+import org.netbeans.modules.uml.core.preferenceframework.PreferenceAccessor;
 
 /**
  * 
@@ -468,10 +469,8 @@ public class NodeVerificationImpl implements INodeVerification {
 
 	protected IElement createElement(String name, String eleKind, INamespace namespace) {
 		if (name == null || name.length() == 0) {
-			IPreferenceManager2 prefMan = ProductRetriever.retrieveProduct().getPreferenceManager();
-			name = prefMan.getTranslatedPreferenceValue("NewProject", "DefaultElementName");
-			//PreferenceAccessor accessor = PreferenceAccessor.instance();
-			//name = accessor.getDefaultElementName();
+			PreferenceAccessor accessor = PreferenceAccessor.instance();
+			name = accessor.getDefaultElementName();
 		}
 		
 		IElement retEle = null;

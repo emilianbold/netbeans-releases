@@ -38,6 +38,7 @@ import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
+import org.openide.util.NbBundle;
 
 /**
  * Contains commonly used functions.
@@ -1033,8 +1034,9 @@ public class Util
         if (space==null)
             return false;
         
-        String defaultName = ProductHelper.getPreferenceManager()
-            .getPreferenceValue("NewProject", "DefaultElementName"); // NOI18N
+        //kris richards - "DefaultElementName" pref expunged. Set to "Unnamed".
+        String defaultName = NbBundle.getMessage (Util.class, "UNNAMED");
+                
         
         // skip validation for the newly created unnamed element
         if (defaultName != null && defaultName.equals(name))

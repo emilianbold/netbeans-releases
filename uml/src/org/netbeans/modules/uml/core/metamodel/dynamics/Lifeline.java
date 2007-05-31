@@ -387,7 +387,6 @@ public class Lifeline extends NamedElement implements ILifeline
             try
             {
                es = new EventState( EventDispatchNameKeeper.lifeTime(), "RepresentingClassifier" );
-               prefManip = new UnknownPrefManip( "Diagrams|SequenceDiagram", "UnknownClassifierType" );
                
                INamedElement element = resolveSingleTypeFromString(classifierName);
                setRepresentingClassifier( (IClassifier) element );
@@ -398,11 +397,7 @@ public class Lifeline extends NamedElement implements ILifeline
                {
                   es.existState();
                }
-               
-               if( prefManip != null )
-               {
-                  prefManip.restoreUnknownPrefValue();
-               }
+
             }
         }
     }

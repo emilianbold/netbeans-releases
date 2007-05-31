@@ -203,8 +203,6 @@ public class ConfigStringTranslator implements IConfigStringTranslator {
             addToMap("PSK_DEFAULTMODE_HLP", "IDS_STRING121");
             addToMap("PSK_UNKNOWNCLASSIFIER", "IDS_STRING122");
             addToMap("PSK_UNKNOWNCLASSIFIER_HLP", "IDS_STRING123");
-            addToMap("PSK_UNKNOWNCLASSIFIERCREATE", "IDS_STRING124");
-            addToMap("PSK_UNKNOWNCLASSIFIERCREATE_HLP", "IDS_STRING125");
             addToMap("PSK_UNKNOWNCLASSIFIERTYPE", "IDS_STRING126");
             addToMap("PSK_UNKNOWNCLASSIFIERSQDTYPE", "IDS_STRING1562");
             addToMap("PSK_UNKNOWNCLASSIFIERSQDTYPE_HLP", "IDS_STRING1563");

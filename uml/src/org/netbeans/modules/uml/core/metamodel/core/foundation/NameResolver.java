@@ -266,24 +266,16 @@ public class NameResolver
                         String packageStructure = fullName.substring(0, pos);
                         
                         IPackage outerPack = project.createPackageStructure(packageStructure);
-                        if (outerPack != null)
-                        {
-                            if (filterType != null && filterType.length() > 0)
-                            {
-                                UnknownPrefManip prefManip = new UnknownPrefManip("NewProject|UnknownClassifier", "UnknownClassifierType");
-                                if (prefManip != null)
-                                {
-                                    prefManip.setUnknownPrefValue(filterType);
-                                    retEle = UMLXMLManip.createAndAddUnknownType(outerPack, typeName);
-                                    
-                                    // THis is a hack.  Since createAndAddUnknowType will always add
-                                    // the type to the pacakge.
-                                    outerPack.addOwnedElement(retEle);
-                                    prefManip.restoreUnknownPrefValue();
-                                }
-                            }
-                            else
-                            {
+                        if (outerPack != null) {
+                            if (filterType != null && filterType.length() > 0) {
+                                //kris richards - removed access to expunged prefs.
+                                retEle = UMLXMLManip.createAndAddUnknownType(outerPack, typeName);
+                                
+                                // THis is a hack.  Since createAndAddUnknowType will always add
+                                // the type to the pacakge.
+                                outerPack.addOwnedElement(retEle);
+                                
+                            } else {
                                 retEle = UMLXMLManip.createAndAddUnknownType(outerPack, typeName);
                             }
                         }

@@ -32,6 +32,7 @@ import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
+import org.openide.util.NbBundle;
 
 
 public class PreferenceManager implements IPreferenceManager
@@ -151,8 +152,8 @@ public class PreferenceManager implements IPreferenceManager
      */
     public String getDefaultElementName()
     {
-        return getAttribute("Preferences/DefaultProject/Elements/NamedElement",
-            "defaultName");
+        //kris richards - "DefaultelementName" pref expunged. Set to "Unnamed"
+        return NbBundle.getMessage (PreferenceManager.class, "UNNAMED") ;
     }
     
     /* (non-Javadoc)

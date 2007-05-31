@@ -180,7 +180,7 @@ public class Project extends org.netbeans.modules.uml.core.metamodel.structure.M
 	*
 	*	 "TopLevel is a stereotyped package that denotes the highest level package
 	*	 in a containment hierarchy. The topLevel stereotype defines the outer limit
-	*	 for looking up names, as namespaces “see” outwards. A topLevel
+	*	 for looking up names, as namespaces ï¿½seeï¿½ outwards. A topLevel
 	*	 subsystem is the top of a subsystem containment hierarchy, i.e., it is the
 	*	 model element that represents the boundary of the entire physical system
 	*	 being modeled."
@@ -427,20 +427,11 @@ public class Project extends org.netbeans.modules.uml.core.metamodel.structure.M
 			establishOldDefaultPackageImports(); 
 		}
 		IPreferenceAccessor pref = PreferenceAccessor.instance();
-		String modeName = pref.getDefaultMode();
+                //kris richards - "DefaultMode" pref expunged. Set to "PSK_IMPLEMENTATION".
+		String modeName = "PSK_IMPLEMENTATION";
 		XMLManip.setAttributeValue(m_Node,"mode",modeName);
-		String str = "";
-		if (modeName.equals(StructureConstants.PSK_ANALYSIS))
-		{
-			str = "Analysis";
-		}
-		else if (modeName.equals(StructureConstants.PSK_DESIGN))
-		{
-			str = "Design";
-		}else
-		{
-			str = "Implementation";
-		}
+                String str = "Implementation";
+
 		String lang = pref.getDefaultLanguage(str);		
 		if (lang != null)
 		{

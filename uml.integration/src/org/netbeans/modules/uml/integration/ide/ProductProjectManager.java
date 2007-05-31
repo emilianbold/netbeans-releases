@@ -241,31 +241,21 @@ public class ProductProjectManager implements IProductProjectManager {
     * @param pProject [in] The project that was just created.
     * @param pDetails [in] The new project details.
     */
-   public void doPostNewProject(IProject pProject, INewDialogProjectDetails pDetails)
-   {
-      if (pProject != null)
-      {
-         boolean promptUser = true;
-         if (pDetails != null)
-         {
-            promptUser = pDetails.getPromptToCreateDiagram();
-         }
-         
-         if (promptUser)
-         {
-            IPreferenceManager2 prefMan = ProductHelper.getPreferenceManager();
-            if (prefMan != null)
-            {
-               String prefVal = prefMan.getPreferenceValue("NewProject", "QueryForNewDiagram");
-               if (prefVal != null && prefVal.equals("PSK_YES"))
-               {
-                  // Query the user for a new diagram
-                  INamespace space = (INamespace)pProject;
-                  queryUserForNewDiagram(space, IDiagramKind.DK_UNKNOWN, IDiagramKind.DK_ALL);
-               }
-            }
-         }
-      }
+   public void doPostNewProject(IProject pProject, INewDialogProjectDetails pDetails) {
+       if (pProject != null) {
+           boolean promptUser = true;
+           if (pDetails != null) {
+               promptUser = pDetails.getPromptToCreateDiagram();
+           }
+           
+           if (promptUser) {
+               
+               // Query the user for a new diagram
+               INamespace space = (INamespace)pProject;
+               queryUserForNewDiagram(space, IDiagramKind.DK_UNKNOWN, IDiagramKind.DK_ALL);
+               
+           }
+       }
    }
     
    public IDiagram queryUserForNewDiagram(INamespace pNamespace, int diaKind, int availableKinds)

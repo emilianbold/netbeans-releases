@@ -2000,36 +2000,25 @@ public class Element extends BaseElement implements IElement
       Object retObj = null;
       if (name != null && name.length() > 0)
       {
-         IStereotype stereo = retrieveStereotype(name);
-         if (stereo == null)
-         {
-            ICoreProduct prod = ProductRetriever.retrieveProduct();
-            if (prod != null)
-            {
-               IPreferenceManager2 prefMan = prod.getPreferenceManager();
-               if (prefMan != null)
-               {
-                  String value = prefMan.getPreferenceValue("NewProject|UnknownStereotype", "UnknownStereotypeCreate");
-
-                  if (!(value.equals("PSK_NEVERCREATE")))
-                  {
-                     // Establish a new Stereotype
-                     ProfileManager profMan = new ProfileManager();
-                     retObj = profMan.establishNewStereotype(this, name);
-                  }
-               }
-            }
-         }
-
-         if (retObj == null && stereo != null)
-         {
-            retObj = stereo;
-         }
-
-         if (retObj != null)
-         {
-            applyStereotype(retObj);
-         }
+          IStereotype stereo = retrieveStereotype(name);
+          if (stereo == null) {
+              
+              //kris richards - UnknownStereotypeCreate pref deleted. Set to PSK_IN_PROJECT_PROFILE
+              
+              // Establish a new Stereotype
+              ProfileManager profMan = new ProfileManager();
+              retObj = profMan.establishNewStereotype(this, name);
+              
+              
+          }
+          
+          if (retObj == null && stereo != null) {
+              retObj = stereo;
+          }
+          
+          if (retObj != null) {
+              applyStereotype(retObj);
+          }
       }
       return retObj;
    }

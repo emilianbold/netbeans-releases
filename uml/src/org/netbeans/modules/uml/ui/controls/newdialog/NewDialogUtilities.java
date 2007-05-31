@@ -53,6 +53,7 @@ import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeControl;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeItem;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProductProjectManager;
+import org.openide.util.NbBundle;
 
 /**
  * @author sumitabhk
@@ -593,17 +594,8 @@ public class NewDialogUtilities
    
    public static String getDefaultDiagramName()
    {
-      String defName = null;
-      
-      // If the name is empty get the default from the preferences
-      IPreferenceManager2 pPrefMgr = ProductHelper.getPreferenceManager();
-      if (pPrefMgr != null)
-      {
-         defName = pPrefMgr.getTranslatedPreferenceValue("NewProject",
-                 "DefaultDiagramName");
-      }
-      
-      return defName;
+      //kris richards - "DefaultDiagramName" pref expunged. Set to "New Diagram".
+      return NbBundle.getMessage (NewDialogUtilities.class, "NEW_DIAGRAM");
    }
    
    public static String getDefaultElementName()
@@ -620,14 +612,8 @@ public class NewDialogUtilities
    
    public static String getDefaultProjectName()
    {
-      String defName = null;
-      // If there's no default name then get it from the preference accessor
-      IPreferenceAccessor pPref = PreferenceAccessor.instance();
-      if (pPref != null)
-      {
-         defName = pPref.getDefaultProjectName();
-      }
-      return defName;
+      //kris richards - "DefaultProjectName" pref expunged. Set to "New Project".
+      return NbBundle.getMessage(NewDialogUtilities.class, "NEW_PROJECT");
    }
    
    public static String getDefaultWorkspaceLocation()
