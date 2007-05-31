@@ -13,14 +13,7 @@ Use is subject to license terms.  *-->
 
         <p>A handler is a Java class that provides a filtering mechanism for
         preprocessing and postprocessing the web service message, by intercepting it and acting
-        on the request or response. Handlers can be
-        used on the client side, server side, or both. Handlers can be used to add features
-        to a service call and are a good means to layer additional functionality over the
-        core message. They are useful because they provide the ability to introduce
-        security services, business processing, and error handling. They also permit managing
-        the selection of content creation strategies in both service consumers and
-        service implementations without changing client or server code.
-
+        on the request or response. 
         <p>Typical uses of handlers include:</p>
         <ul>
             <li>Logging and auditing</li>
@@ -29,32 +22,7 @@ Use is subject to license terms.  *-->
         </ul>
 
         <p> There are two types of handlers: message handlers
-        and logical handlers. These are the differences between them.</p>
-
-        <table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
-            task name. The right column lists the steps to perform.">
-            <tr valign="top"> 
-                <th scope="col" align="left">Message Handlers</th>
-                <th scope="col" align="left">Logical Handlers</th>
-            </tr>
-            <tr valign="top"> 
-                <td>SOAP over HTTP or XML over HTTP.</td>
-                <td> 
-                    Protocol agnostic and cannot change any protocol 
-                    specific parts (like headers) of a message.
-                </td>
-            </tr>
-            <tr valign="top"> 
-                <td>If you are using SOAP over HTTP, the contents of the SOAP Body 
-                forms the payload. If you are using XML over HTTP, the XML content 
-                of the primary part of the message becomes the payload.</td>
-                <td> 
-                    Only acts on the payload and the context of the message.
-                </td>
-            </tr>
-            
-        </table>
-       
+        and logical handlers. 
         <ul class="note">
             <li>Logical handlers are only supported by web services
                 and clients that are compatible with the Java EE 5 specification.

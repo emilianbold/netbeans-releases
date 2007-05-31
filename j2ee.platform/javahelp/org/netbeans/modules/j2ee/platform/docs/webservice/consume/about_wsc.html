@@ -19,34 +19,6 @@ Use is subject to license terms.  *-->
             deployment to a test container.</li>
         </ul>
         
-        <p>The strategy that you take in comsuming a web service depends first and foremost
-        on the specification that you choose to adopt. Either use the Java EE 5 specification,
-        which provides for JAX-WS web services, or follow the J2EE 1.4 specification, which
-        assumes the use of the JAX-RPC web services:
-        <ul>
-            <li><b>JAX-WS web service clients (Java EE 5)</b>. For consuming JAX-WS web services, there is one type
-            of web service client, the IDE-generated static stub. The IDE generates 
-            the stub and other artifacts, packages them in the archive, and deploys them. Since
-            JAX-WS does not need to work with deployment descriptors, but uses annotations within
-            the Java code instead, a J2EE container-generated static stub, which
-            implies the use of deployment descriptors, would be superfluous.
-            
-            <li><b>JAX-RPC web service clients (J2EE 1.4).</b> For consuming JAX-RPC web services, there are two types of web service clients:</p>
-            <ul><li><b>J2EE Container-generated static stub.</b> 
-            This type is based on JSR-109, which enhances JAX-RPC by defining the packaging
-            of web services into standard J2EE modules, including a new deployment descriptor,
-            and defining web services that are implemented as session beans or servlets.
-            This is the recommended and portable (via J2EE 1.4 specification) type.
-            When you choose this type, the IDE adds deployment information in the 
-            deployment descriptors and the container generates the stub and other artifacts.</li>
-            <li><b>IDE-generated static stub.</b> 
-            This type is based on JSR-101, which defines the mapping of WSDL to Java and vice versa.
-            It also defines a client API to invoke a remote web service and a runtime environment 
-            on the server to host a web service. This type is not portable.
-            When you choose this type, the IDE generates 
-            the stub and other 
-            artifacts, packages them in the archive, and deploys them.</li></ul>
-        </ul>
         <p>For detailed information, refer to the full specifications:</p>
         <ul>
             
