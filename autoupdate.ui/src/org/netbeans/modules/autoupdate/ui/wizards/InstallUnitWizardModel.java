@@ -64,6 +64,9 @@ public class InstallUnitWizardModel extends OperationWizardModel {
         case LOCAL_DOWNLOAD :
             c = Containers.forAvailableNbms ();
             support = Containers.forAvailableNbms ().getSupport ();
+            if (support == null) {
+                support = Containers.forUpdateNbms ().getSupport ();
+            }
             break;
         }
         return c;

@@ -33,6 +33,7 @@ import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
+import org.netbeans.modules.autoupdate.ui.Containers;
 import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
@@ -205,6 +206,9 @@ public abstract class OperationWizardModel {
     public Set<OperationInfo> listAll () {
         Set<OperationInfo> infos = new HashSet<OperationInfo> ();
         infos.addAll (getBaseContainer ().listAll ());
+        if (OperationType.LOCAL_DOWNLOAD == getOperation ()) {
+            infos.addAll (Containers.forUpdateNbms ().listAll ());
+        }
         infos.addAll (getCustomHandledContainer ().listAll ());
         return infos;
     }
