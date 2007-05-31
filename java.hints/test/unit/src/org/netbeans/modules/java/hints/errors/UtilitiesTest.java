@@ -76,8 +76,12 @@ public class UtilitiesTest extends NbTestCase {
         performNameGuessTest("package test; public class Test {public void t() {getDo();} public int getDo() {return 0;}}", 52, "aDo");
     }
     
-    public void testNameGuessKeywordTypeMirror() throws Exception {
-        performNameGuessTest("package test; public class Test {public void t() {getDo();} public int getDo() {return 0;}}", 52, "aDo");
+    public void testNameGuessKeywordNoShortName() throws Exception {
+        performNameGuessTest("package test; public class Test {public void t() {t(this);}}", 54, "aThis");
+    }
+    
+    public void testNameGuessKeywordNoShortName2() throws Exception {
+        assertEquals("aDo", Utilities.adjustName("do"));
     }
     
     protected void prepareTest(String code) throws Exception {

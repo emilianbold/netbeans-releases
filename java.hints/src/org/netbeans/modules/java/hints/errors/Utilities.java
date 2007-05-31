@@ -109,7 +109,7 @@ public class Utilities {
         }
     }
     
-    private static String adjustName(String name) {
+    static String adjustName(String name) {
         if (name == null)
             return null;
         
@@ -127,10 +127,17 @@ public class Utilities {
             return firstToLower(shortName);
         }
         
-        return name;
+        if (SourceVersion.isKeyword(name)) {
+            return "a" + Character.toUpperCase(name.charAt(0)) + name.substring(1);
+        } else {
+            return name;
+        }
     }
     
     private static String firstToLower(String name) {
+        if (name.length() == 0)
+            return null;
+        
         String cand = Character.toLowerCase(name.charAt(0)) + name.substring(1);
         
         if (SourceVersion.isKeyword(cand)) {
