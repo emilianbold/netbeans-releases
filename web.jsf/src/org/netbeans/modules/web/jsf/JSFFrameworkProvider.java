@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -70,34 +70,64 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         FileObject fileObject = webModule.getDocumentBase();
         Project project = FileOwnerQuery.getOwner(fileObject);
         Set result = new HashSet();
-        
+              
         try {
             FileObject dd = webModule.getDeploymentDescriptor();
             WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
             ClassPath cp = ClassPath.getClassPath(fileObject, ClassPath.COMPILE);
             if (ddRoot != null){
-                if (!WebApp.VERSION_2_5.equals(ddRoot.getVersion())) {
-                    Library jsfLibrary = LibraryManager.getDefault().getLibrary("jsf");
-                    if (jsfLibrary != null) {
-                        if (cp.findResource("javax/faces/FacesException.class") == null) {  //NOI18N
-                            ProjectClassPathExtender cpExtender = (ProjectClassPathExtender) project.getLookup().lookup(ProjectClassPathExtender.class);
+                if (cp.findResource("javax/faces/FacesException.class") == null) {  //NOI18N
+                    ProjectClassPathExtender cpExtender = (ProjectClassPathExtender) project.getLookup().lookup(ProjectClassPathExtender.class);
+                    if (WebApp.VERSION_2_5.equals(ddRoot.getVersion())) {
+                        Library jsf12Library = LibraryManager.getDefault().getLibrary("jsf12");                        
+                        if (jsf12Library != null) {
                             if (cpExtender != null) {
                                 try {
-                                    cpExtender.addLibrary(jsfLibrary);
+                                    cpExtender.addLibrary(jsf12Library);
                                     Library jstlLibrary = LibraryManager.getDefault().getLibrary("jstl11");
                                     if (jstlLibrary != null){
                                         cpExtender.addLibrary(jstlLibrary);
                                     }
                                 } catch (IOException ioe) {
-                                    //                    ErrorManager.getDefault().notify(ioe);
+                                    //ErrorManager.getDefault().notify(ioe);
                                 }
                             }
-                        } else {
-                            //                ErrorManager.getDefault().log ("WebProjectClassPathExtender not found in the project lookup of project: "+project.getProjectDirectory().getPath());    //NOI18N
+                        }
+                    } else {
+                        Library jsfLib = null;
+                        JSFConfigurationPanel.LibraryType libraryType = panel.getLibraryType();
+                        if (libraryType != null && libraryType != JSFConfigurationPanel.LibraryType.NONE) {
+                            if (libraryType == JSFConfigurationPanel.LibraryType.USED) {
+                                jsfLib = panel.getLibrary();
+                            } else if (libraryType == JSFConfigurationPanel.LibraryType.NEW) {
+                                String libraryVersion = panel.getNewLibraryVersion();
+                                File installFolder = panel.getInstallFolder();
+                                if (installFolder != null && libraryVersion != null) {
+                                    try {
+                                        JSFUtils.createJSFUserLibrary(installFolder, libraryVersion);
+                                        jsfLib = JSFUtils.getJSFLibrary(libraryVersion);
+                                    } catch (IOException e){
+                                        ErrorManager.getDefault().notify(e);
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if (cpExtender != null) {
+                            try {
+                                cpExtender.addLibrary(jsfLib);
+                                Library jstlLibrary = LibraryManager.getDefault().getLibrary("jstl11");
+                                if (jstlLibrary != null){
+                                    cpExtender.addLibrary(jstlLibrary);
+                                }
+                            } catch (IOException ioe) {
+                                //ErrorManager.getDefault().notify(ioe);
+                            }
                         }
                     }
                 }
             }
+            
             boolean isMyFaces = cp.findResource("org/apache/myfaces/webapp/StartupServletContextListener.class") != null; //NOI18N
             FileSystem fileSystem = webModule.getWebInf().getFileSystem();
             fileSystem.runAtomicAction(new CreateFacesConfig(webModule, isMyFaces));
