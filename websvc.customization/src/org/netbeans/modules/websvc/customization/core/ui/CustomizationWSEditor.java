@@ -278,4 +278,8 @@ public class CustomizationWSEditor implements WSEditor{
             ErrorManager.getDefault().notify(e);
         }
     }
+    
+    public String getDescription() {
+        return NbBundle.getMessage(CustomizationWSEditor.class, "WSDL_CUSTOMIZE_DESC");
+    }
 }

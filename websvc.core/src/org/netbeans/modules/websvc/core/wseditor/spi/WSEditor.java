@@ -57,4 +57,9 @@ public interface WSEditor {
      * This is called when the Cancel button is selected
      */
     void cancel(Node node, JaxWsModel jaxWsModel);
+    
+    /**
+     *  Provides a description text that will be displayed at the top of the editor
+     */
+    String getDescription();
 }

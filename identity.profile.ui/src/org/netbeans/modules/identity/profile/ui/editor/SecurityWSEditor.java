@@ -166,4 +166,8 @@ public class SecurityWSEditor implements WSEditor {
             }
         }
     }
+    
+    public String getDescription() {
+        return NbBundle.getMessage(SecurityWSEditor.class, "AM_SECURITY_DESC");
+    }
 }

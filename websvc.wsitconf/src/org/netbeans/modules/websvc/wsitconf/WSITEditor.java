@@ -413,4 +413,7 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
         this.undoManager = undoManager;
     }
 
+    public String getDescription() {
+        return NbBundle.getMessage(WSITEditor.class, "WSIT_CONFIG_DESC");
+    }
 }
