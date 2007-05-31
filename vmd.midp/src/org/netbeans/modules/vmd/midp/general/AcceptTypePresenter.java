@@ -36,9 +36,10 @@ public class AcceptTypePresenter extends AbstractAcceptPresenter {
     
     public final boolean isAcceptable(ComponentProducer producer) {
         DescriptorRegistry registry = getComponent().getDocument().getDescriptorRegistry();
-        return registry.isInHierarchy(typeID, producer.getComponentTypeID());
+        TypeID producerTypeID = producer.getComponentTypeID ();
+        return registry.isInHierarchy(typeID, producerTypeID)  &&  notifyAccepting (producerTypeID);
     }
-    
+
     public final ComponentProducer.Result accept(ComponentProducer producer) {
         ComponentProducer.Result result = producer.createComponent (getComponent ().getDocument ());
         DesignComponent component = result.getMainComponent();
@@ -47,6 +48,10 @@ public class AcceptTypePresenter extends AbstractAcceptPresenter {
         return result;
     }
     
+    protected boolean notifyAccepting (TypeID producerTypeID) {
+        return true;
+    }
+
     protected void notifyCreated(DesignComponent component) {
         getComponent().addComponent(component);
     }
