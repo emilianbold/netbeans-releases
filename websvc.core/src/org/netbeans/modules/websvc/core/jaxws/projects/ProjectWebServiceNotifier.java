@@ -41,13 +41,13 @@ public class ProjectWebServiceNotifier implements WebServiceNotifier {
     }
 
     /** Notifies that web service was added */
-    public void servicaAdded(String serviceName, String implementationClass) {
+    public void serviceAdded(String serviceName, String implementationClass) {
         JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(proj.getProjectDirectory());
         if (jaxWsSupport!=null) jaxWsSupport.addService(serviceName, implementationClass, isJsr109Supported());
     }
 
     /** Notifies that web service was removed */
-    public void servicaRemoved(String serviceName) {
+    public void serviceRemoved(String serviceName) {
         JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(proj.getProjectDirectory());
         if (jaxWsSupport!=null) jaxWsSupport.serviceFromJavaRemoved(serviceName);
     }

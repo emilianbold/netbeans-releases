@@ -25,9 +25,9 @@ package org.netbeans.modules.websvc.api.jaxws.project;
 public interface WebServiceNotifier {
     
     /** Notifies that web service was added */
-    public void servicaAdded(String serviceName, String implementationClass);
+    public void serviceAdded(String serviceName, String implementationClass);
 
     /** Notifies that web service was removed */
-    public void servicaRemoved(String serviceName);
+    public void serviceRemoved(String serviceName);
 
 }

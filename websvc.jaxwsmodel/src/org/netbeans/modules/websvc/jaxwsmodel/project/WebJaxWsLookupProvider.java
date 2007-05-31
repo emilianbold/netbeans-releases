@@ -69,14 +69,14 @@ public class WebJaxWsLookupProvider implements LookupProvider {
                         public void serviceAdded(String name, String implementationClass) {
                             WebServiceNotifier servicesNotifier = prj.getLookup().lookup(WebServiceNotifier.class);
                             if (servicesNotifier!=null) {
-                                servicesNotifier.servicaAdded(name, implementationClass);
+                                servicesNotifier.serviceAdded(name, implementationClass);
                             }
                         }
 
                         public void serviceRemoved(String name) {
                             WebServiceNotifier servicesNotifier = prj.getLookup().lookup(WebServiceNotifier.class);
                             if (servicesNotifier!=null) {
-                                servicesNotifier.servicaRemoved(name);
+                                servicesNotifier.serviceRemoved(name);
                             }
                         }
                     };
