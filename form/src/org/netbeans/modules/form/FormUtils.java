@@ -1146,6 +1146,7 @@ public class FormUtils
      */
     public static Class typeToClass(TypeHelper type) {
         Class clazz = Object.class;
+        if (type == null) return clazz;
         Type t = type.getType();
         if (t instanceof Class) {
             clazz = (Class)t;
