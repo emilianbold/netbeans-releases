@@ -20,8 +20,15 @@ package org.netbeans.modules.java.source.parsing;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import javax.tools.JavaFileObject;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 
 /**
  *
@@ -31,6 +38,13 @@ public class CachingArchiveTest extends NbTestCase {
     
     public CachingArchiveTest(String testName) {
         super(testName);
+    }
+    
+    public static Test suite() {
+        TestSuite suite = new NbTestSuite ();
+        suite.addTest(new CachingArchiveTest("testPutName"));
+        suite.addTest(new CachingArchiveTest("testJoin"));
+        return suite;
     }
 
     public void testPutName() throws Exception {
@@ -73,6 +87,60 @@ public class CachingArchiveTest extends NbTestCase {
             int  lower = (int)(mtime & 0xFFFFFFFF);
             
             assertEquals(mtime, CachingArchive.join(higher, lower));
+        }
+    }
+    
+    //By default turned off (takes long time)
+    public void testCachingArchive () throws Exception {
+        String cp = System.getProperty("sun.boot.class.path");
+        String[] paths = cp.split(Pattern.quote(System.getProperty("path.separator")));
+        for (String path : paths) {
+            File testFile = new File (path);
+            if (!testFile.canRead()) {
+                continue;
+            }
+            CachingArchive a = new CachingArchive (testFile, false);
+            ZipFile zf = new ZipFile (testFile);
+            try {
+                Enumeration<? extends ZipEntry> entries = zf.entries();
+                while (entries.hasMoreElements()) {
+                    ZipEntry entry = entries.nextElement();
+                    String name = entry.getName();
+                    int i = name.lastIndexOf('/');
+                    String dirname = i == -1 ? "" : name.substring(0, i /* +1 */);
+                    String basename = name.substring(i+1);
+                    if (basename.length() == 0) {
+                        continue;
+                    }
+                    Iterable<? extends JavaFileObject> res = a.getFiles(dirname, null, null);
+                    for (JavaFileObject jfo : res) {
+                        if (jfo.toUri().toString().endsWith('/'+basename)) {
+                            assertEquals (entry.getTime(),jfo.getLastModified());
+                        }
+                    }
+                }
+
+                a = new CachingArchive (testFile, true);
+                entries = zf.entries();
+                while (entries.hasMoreElements()) {
+                    ZipEntry entry = entries.nextElement();
+                    String name = entry.getName();
+                    int i = name.lastIndexOf('/');
+                    String dirname = i == -1 ? "" : name.substring(0, i /* +1 */);
+                    String basename = name.substring(i+1);
+                    if (basename.length() == 0) {
+                        continue;
+                    }
+                    Iterable<? extends JavaFileObject> res = a.getFiles(dirname, null, null);
+                    for (JavaFileObject jfo : res) {
+                        if (jfo.toUri().toString().endsWith('/'+basename)) {
+                            assertEquals (entry.getTime(),jfo.getLastModified());
+                        }
+                    }
+                }
+            } finally {
+                zf.close();
+            }                        
         }
     }
 }
