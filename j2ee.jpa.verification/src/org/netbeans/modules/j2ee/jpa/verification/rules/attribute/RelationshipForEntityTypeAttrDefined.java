@@ -18,16 +18,20 @@
  */
 package org.netbeans.modules.j2ee.jpa.verification.rules.attribute;
 
+import java.util.Arrays;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.jpa.model.AttributeWrapper;
 import org.netbeans.modules.j2ee.jpa.model.ModelUtils;
 import org.netbeans.modules.j2ee.jpa.verification.JPAEntityAttributeCheck;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.common.Rule;
+import org.netbeans.modules.j2ee.jpa.verification.fixes.CreateUnidirOneToOneRelationship;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.util.NbBundle;
 
@@ -45,10 +49,17 @@ public class RelationshipForEntityTypeAttrDefined extends JPAEntityAttributeChec
             Entity entity = ModelUtils.getEntity(ctx.getMetaData(), ((TypeElement)typeElement));
             
             if (entity != null){
+                ElementHandle<TypeElement> classHandle = ElementHandle.create(ctx.getJavaClass());
+                ElementHandle<Element> elemHandle = ElementHandle.create(attrib.getJavaElement());
+                
+                Fix fix1 = new CreateUnidirOneToOneRelationship(ctx.getFileObject(),
+                        classHandle, elemHandle);
+                
                 return new ErrorDescription[]{Rule.createProblem(attrib.getJavaElement(),
                         ctx, NbBundle.getMessage(RelationshipForEntityTypeAttrDefined.class,
                         "MSG_EntityRelationNotDefined"),
-                        Severity.WARNING)};
+                        Severity.WARNING,
+                        Arrays.asList(fix1))};
             }
         }
         
