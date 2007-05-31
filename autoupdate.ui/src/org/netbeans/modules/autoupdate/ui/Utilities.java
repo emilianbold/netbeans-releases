@@ -238,7 +238,7 @@ public class Utilities {
         ProgressHandle handle = ProgressHandleFactory.createHandle ("refresh-providers-handle"); // NOI18N
         JComponent progressComp = ProgressHandleFactory.createProgressComponent (handle);
         JLabel detailLabel = ProgressHandleFactory.createDetailLabelComponent (handle);
-        detailLabel.setHorizontalAlignment (SwingConstants.RIGHT);
+        detailLabel.setHorizontalAlignment (SwingConstants.LEFT);
         try {
             manager.setProgressComponent (detailLabel, progressComp);
             handle.setInitialDelay (0);
@@ -271,7 +271,7 @@ public class Utilities {
                 JLabel detailLabel = ProgressHandleFactory.createDetailLabelComponent(handle);
                 
                 try {                    
-                    detailLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+                    detailLabel.setHorizontalAlignment(SwingConstants.LEFT);
                     manager.setProgressComponent(detailLabel, progressComp);
                     handle.setInitialDelay(0);                    
                     handle.start();                    

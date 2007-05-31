@@ -192,8 +192,19 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
         assert pProgress != null;
         assert SwingUtilities.isEventDispatchThread () : "Must be called in EQ.";
         pProgress.setVisible (true);
-        pProgress.add (detail, BorderLayout.CENTER);
-        pProgress.add (progressComponent, BorderLayout.EAST);
+
+        java.awt.GridBagConstraints gridBagConstraints;
+        
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        pProgress.add(progressComponent, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        pProgress.add(detail, gridBagConstraints);
+
         revalidate ();
     }
     
@@ -237,7 +248,7 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
             }
         });
 
-        pProgress.setLayout(new java.awt.BorderLayout());
+        pProgress.setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(bClose, org.openide.util.NbBundle.getMessage(PluginManagerUI.class, "UnitTab_bClose_Text")); // NOI18N
 
@@ -250,9 +261,9 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(pProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 562, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 121, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 170, Short.MAX_VALUE)
                         .add(bClose))
-                    .add(tpTabs, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 752, Short.MAX_VALUE))
+                    .add(tpTabs, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 774, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -261,9 +272,9 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
                 .addContainerGap()
                 .add(tpTabs, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 471, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(bClose)
-                    .add(pProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 17, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(pProgress, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(bClose, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
