@@ -21,23 +21,20 @@ package org.netbeans.modules.vmd.midpnb.components.svg;
 
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
-import org.netbeans.modules.vmd.midp.components.MidpTypes;
-import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
-import org.netbeans.modules.vmd.midp.components.MidpVersionable;
+import org.netbeans.modules.vmd.midp.components.*;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
 import org.openide.util.NbBundle;
+
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
-import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
-import org.netbeans.modules.vmd.midp.components.MidpAcceptProducerKindPresenter;
 
 /**
  * @author Karol Harezlak
@@ -90,20 +87,6 @@ public final class SVGWaitScreenCD extends ComponentDescriptor {
 
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
             // properties
             createPropertiesPresenter (),
             // code

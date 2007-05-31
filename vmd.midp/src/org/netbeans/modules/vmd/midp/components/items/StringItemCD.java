@@ -19,29 +19,25 @@
 
 package org.netbeans.modules.vmd.midp.components.items;
 
-import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
-import org.netbeans.modules.vmd.midp.components.MidpTypes;
-import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
-import org.netbeans.modules.vmd.midp.components.MidpVersionable;
+import org.netbeans.modules.vmd.midp.components.*;
 import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
+import org.netbeans.modules.vmd.midp.screen.display.StringItemDisplayPresenter;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
-import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
-import org.netbeans.modules.vmd.midp.components.MidpAcceptProducerKindPresenter;
-import org.netbeans.modules.vmd.midp.components.MidpAcceptTrensferableKindPresenter;
-import org.netbeans.modules.vmd.midp.screen.display.StringItemDisplayPresenter;
 
 /**
  *
@@ -100,260 +96,6 @@ public class StringItemCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList(
             // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
-            
-            // properties
             createPropertiesPresenter(),
             // code
             createSetterPresenter(),
@@ -361,13 +103,6 @@ public class StringItemCD extends ComponentDescriptor {
             DeleteDependencyPresenter.createNullableComponentReferencePresenter (PROP_FONT),
             // screen
             new StringItemDisplayPresenter(),new MidpAcceptProducerKindPresenter().addType(FontCD.TYPEID, PROP_FONT),MidpAcceptTrensferableKindPresenter.createFontAcceptPresenter()
-       
-       
-       
-       
-       
-       
-       
        );   
     }
     
