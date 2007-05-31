@@ -124,7 +124,7 @@ public class SecurityRoleMappingPanel extends SectionNodeInnerPanel
         jLblSecurityRoleName.setLabelFor(jTxtSecurityRoleName);
         jLblSecurityRoleName.setText("Security Role Name :");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(jLblSecurityRoleName, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -559,6 +559,7 @@ public class SecurityRoleMappingPanel extends SectionNodeInnerPanel
     
     /** Return correct preferred size.  The tables in this are a bit territorial.
      */
+    @Override
     public Dimension getPreferredSize() {
         Dimension minSize = getMinimumSize();
         Dimension maxSize = getMaximumSize();

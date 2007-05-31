@@ -223,7 +223,7 @@ public class ServletPanel extends SectionNodeInnerPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
@@ -361,6 +361,7 @@ public class ServletPanel extends SectionNodeInnerPanel {
     /** Return correct preferred size.  The multiline JLabels in this panel cause
      *  the default preferred size behavior to be incorrect (too wide).
      */
+    @Override
     public Dimension getPreferredSize() {
         return new Dimension(getMinimumSize().width, super.getPreferredSize().height);
     }
