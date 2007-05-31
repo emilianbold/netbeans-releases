@@ -19,36 +19,13 @@
 
 package org.netbeans.modules.visualweb.websvcmgr.codegen;
 
-import java.io.File;
+import com.sun.tools.ws.processor.model.Operation;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import org.netbeans.modules.visualweb.websvcmgr.model.WebServiceData;
-
-import com.sun.tools.ws.processor.model.Port;
-import com.sun.tools.ws.processor.model.Operation;
-import com.sun.tools.ws.processor.model.java.JavaMethod;
-import com.sun.tools.ws.processor.model.java.JavaException;
-import com.sun.tools.ws.processor.model.java.JavaParameter;
-
-/*
-import com.sun.xml.rpc.processor.model.java.JavaException;
-import com.sun.xml.rpc.processor.model.java.JavaMethod;
-import com.sun.xml.rpc.processor.model.java.JavaParameter;
-import com.sun.xml.rpc.processor.model.Port;
-import com.sun.xml.rpc.processor.model.Operation;
-*/
-
-/*
- * SD
-import org.netbeans.modules.visualweb.xml.rpc.processor.model.java.JavaException;
-import org.netbeans.modules.visualweb.xml.rpc.processor.model.java.JavaMethod;
-import org.netbeans.modules.visualweb.xml.rpc.processor.model.java.JavaParameter;
-import org.netbeans.modules.visualweb.xml.rpc.processor.model.Port;
-import org.netbeans.modules.visualweb.xml.rpc.processor.model.Operation;
-*/
+import org.netbeans.modules.visualweb.websvcmgr.WebServiceDescriptor;
+import org.netbeans.modules.visualweb.websvcmgr.codegen.DataProviderInfo;
 
 import org.netbeans.modules.visualweb.websvcmgr.util.Util;
 import java.io.Writer;
@@ -73,11 +50,10 @@ public class WrapperClientWriter extends java.io.PrintWriter {
     private Set interfaces = new HashSet();
     private String packageName;
     private Set imports = new HashSet();
-    private WsdlPort port;
     private String className;
-    private WebServiceData wsData;
-    
-    private Set constructorStatements = new HashSet();
+    private WebServiceDescriptor wsData;
+    private WsdlPort port;
+    private List<WsdlOperation> operations;
     
     int indent = 0;
     
@@ -86,9 +62,10 @@ public class WrapperClientWriter extends java.io.PrintWriter {
     boolean isJaxRpc = false;
     
     /** Creates a new instance of JavaWriter */
-    public WrapperClientWriter(Writer writer, WebServiceData wsData, boolean isJaxRpc, List<java.lang.reflect.Method> sortedMethods){
+    public WrapperClientWriter(Writer writer, WebServiceDescriptor wsData, boolean isJaxRpc, List<java.lang.reflect.Method> sortedMethods, List<WsdlOperation> operations){
         super(writer);
         
+        this.operations = operations;
         this.sortedMethods = sortedMethods;
         this.isJaxRpc = isJaxRpc;
         this.wsData = wsData;
@@ -119,15 +96,15 @@ public class WrapperClientWriter extends java.io.PrintWriter {
         imports.add(importLine);
     }
     
+    public void setPort(WsdlPort port) {
+        this.port = port;
+    }
+    
     /** Set the name of the super class this class would extends */
     public void setSuperClass(String superClass){
         superClassName = superClass;
     }
     
-    public void setPort(WsdlPort inPort ) {
-        this.port = inPort;
-    }
-   
     public void writeClass() throws IOException {
         /**
          * Write the package statement
@@ -231,7 +208,7 @@ public class WrapperClientWriter extends java.io.PrintWriter {
         }else {
             // Instantiate the Service class, specifying the wsdl URL kept in the
             // web service jar
-            URL url = new File(wsData.getURL()).toURI().toURL();
+            URL url = wsData.getWsdlUrl();
             String urlPath = url.getPath();
             int start;
             if (url.getProtocol().toLowerCase().startsWith("file")) { // NOI18N
@@ -243,8 +220,8 @@ public class WrapperClientWriter extends java.io.PrintWriter {
             start = (start < 0 || start >= urlPath.length()-1) ? 0 : start + 1;
             
             String wsdlFileName = urlPath.substring(start);
-            String namespace = wsData.getWsdlService().getNamespaceURI();
-            String qname = wsData.getWsdlService().getName();
+            String namespace = wsData.getModel().getNamespaceURI();
+            String qname = wsData.getName();
             
             println("  public " + className + "() {");
             println("    " + "java.net.URL wsdl = this.getClass().getResource(\"" + wsdlFileName + "\");");
@@ -287,113 +264,42 @@ public class WrapperClientWriter extends java.io.PrintWriter {
         String portInterfaceVariable = portInterfaceName.substring(portInterfaceName.lastIndexOf('.') + 1, portInterfaceName.length());
         String portInterfacePrefix = portInterfaceVariable.toLowerCase() ;
         portInterfaceVariable = portInterfaceVariable.toLowerCase() + "1";
-        Iterator operationsIterator = port.getOperations().iterator();
 
-        Operation currentOperation = null;
-        while(operationsIterator.hasNext()) {
-            WsdlOperation oper = (WsdlOperation) operationsIterator.next();
-            currentOperation = (Operation)oper.getInternalJAXWSOperation();
-            if(null == currentOperation) {
-                continue;
-            }
+        for(int j = 0; j < sortedMethods.size(); j++) {
+            java.lang.reflect.Method method = sortedMethods.get(j);
+            Operation operation = (Operation)operations.get(j).getInternalJAXWSOperation();
             
-            JavaMethod method = currentOperation.getJavaMethod();
+            assert method.getName().equalsIgnoreCase(operation.getJavaMethodName());
+            
             println();
             
-            /**
-             *  XXX The return types and method names may differ between JAX-RPC and JAX-WS; since
-             *  the model was created for JAX-WS, an alternate method of discovering
-             *  the values is used (reflection on the port interface methods)
-             */
-            String methodReturnTypeName;
-            String methodName;
+            String methodReturnTypeName = method.getReturnType().getCanonicalName();
+            String methodName = method.getName();
             
-            if (isJaxRpc) {
-                java.lang.reflect.Method actualMethod = getJaxRpcMethod(method);
-                
-                if (actualMethod == null) {
-                    methodReturnTypeName = method.getReturnType().getRealName();
-                    methodName = method.getName();
-                }else {
-                    methodReturnTypeName = actualMethod.getReturnType().getCanonicalName();
-                    methodName = actualMethod.getName();
+            print("  public " + methodReturnTypeName + " " + methodName + "(");
+            
+            Class[] parameters = method.getParameterTypes();
+            for (int i = 0; i < parameters.length; i++) {
+                if (i != 0) {
+                    print(",");
                 }
-            }else {
-                methodReturnTypeName = method.getReturnType().getRealName();
-                methodName = method.getName();
-            }
-            
-            print("  public " + methodReturnTypeName + " ");
-            // use method.getName() so the DataProvider matches up
-            print(method.getName() + "(");
-            Iterator params = method. getParametersList().iterator();
-            String parameterType = "";
-
-            while (params.hasNext()) {
-                JavaParameter param = (JavaParameter)params.next();
-                /**
-                 * Bug fix: 5059732
-                 * If the parameter is a "Holder" we need the holder type and not the JavaType.  This is
-                 * typically the case when there is no return type and the parameter's meant to be mutable, pass-by-reference
-                 * type parameters.
-                 * - David Botterill 6/8/2004
-                 */
- 
-                parameterType = Util.getParameterType(port,param);
-                /**
-                 * end of bug fix: 5059732
-                 */
-
-                print(parameterType + " " + param.getName());
-                if(params.hasNext()) write(", ");
+                            
+                print(parameters[i].getCanonicalName() + " " + "arg" + i);
             }
             print(") ");
-            Iterator exceptions = method.getExceptions();
-            /**
-             * Bugid: 4970323 This area of code was not exercised before WSDLInfo was fixed.  Hence this bug showed up as a result of
-             * fixing a bug.
-             *
-             */
-
-            boolean firstException = true;
-            while (exceptions.hasNext()) {
-                if (firstException == true) {
-                    firstException = false;
+            
+            Class[] exceptions = method.getExceptionTypes();
+            for (int i = 0; i < exceptions.length; i++) {
+                if (i == 0) {
                     print(" throws ");
                 }else {
                     print(", ");
                 }
-                                
-                /**
-                 * Bugid: 4970323 - The return type of an exceptions is a String not a JavaException.  This
-                 * can only be know for sure by reading the current JavaException code since the "JavaMethod.getExceptions()"
-                 * method returns an Iterator and the javadoc says nothing of it being a String.
-                 *
-                 * This area of code was not exercised before WSDLInfo was fixed.  Hence this bug showed up as a result of
-                 * fixing a bug.
-                 */
-                /**
-                 * Make sure we don't get back a null or an empty String.  Check to make sure
-                 * the Object is a string in case the API matures and JavaException turns back into a real object with
-                 * a "getName" method.
-                 */
-                Object currentException = exceptions.next();
-                if(null != currentException &&
-                currentException instanceof String &&
-                ((String)currentException).length() > 0) {
-                    print((String)currentException);
-                }
+                
+                print(exceptions[i].getCanonicalName());
             }
+            println(" {");
             
-            // only throw RemoteException in jaxrpc
-            if (isJaxRpc && firstException) {
-                println(" throws RemoteException { ");
-            }else if (isJaxRpc) {
-                println(", RemoteException { ");
-            }else {
-                println(" { ");
-            }
-
             if(!"void".equals(methodReturnTypeName)){
                 println( "      if( Beans.isDesignTime() && !testMode )" );
                 println( "        return " + designTimeReturnValue(methodReturnTypeName) + ";" );
@@ -405,24 +311,17 @@ public class WrapperClientWriter extends java.io.PrintWriter {
                 println( "      else " );
                 print("         " + portInterfaceVariable + "." + methodName + "(");
             }
-            params = method.getParametersList().iterator();
-            while (params.hasNext()) {
-                JavaParameter param = (JavaParameter)params.next();
-                //if(param.isHolder()){
-                //print(param.getHolderName());
-                //}else {
-                print(param.getName());
-                //}
-                if(params.hasNext()) write(", ");
+            
+            for (int i = 0; i < parameters.length; i++) {
+                print("arg" + i);
+                if (i + 1 < parameters.length) print(", ");
             }
             println(");");
-
-
             println("  }");
 
             // If this method return non-void, we'll need to generate DataProvider (readonly for now) for it
             // For overloaded method, we'll index method names
-            if(!"void".equals(method.getReturnType().getRealName()))
+            if(!"void".equals(methodReturnTypeName))
             {
                 String dpClassName = method.getName();
 
@@ -438,7 +337,7 @@ public class WrapperClientWriter extends java.io.PrintWriter {
                 }
                 methodNames.put( method.getName(), occurrence ); 
 
-                dataProviders.add( new DataProviderInfo( packageName, className, method, dpClassName ) ); // NOI18N
+                dataProviders.add( new DataProviderInfo( packageName, className, operation.getJavaMethod() , dpClassName ) ); // NOI18N
             }
         }
 
@@ -518,98 +417,4 @@ public class WrapperClientWriter extends java.io.PrintWriter {
             // return null for all object return type
             return null;
     }
-    
-    private java.lang.reflect.Method getJaxRpcMethod(JavaMethod method) {
-        String modelMethodName = method.getName();
-        int index = doBinarySearch(sortedMethods, modelMethodName);
-                
-        // search forwards and backwards
-        for (int i = index; i < sortedMethods.size() && i >= 0; i++) {
-            java.lang.reflect.Method nextMethod = sortedMethods.get(i);
-            if (methodsEqual(nextMethod, method)) {
-                return nextMethod;
-            }else if (!nextMethod.getName().equals(method.getName())) {
-                break;
-            }
-        }
-        
-        for (int i = index; i >= 0; i--) {
-            java.lang.reflect.Method nextMethod = sortedMethods.get(i);
-            if (methodsEqual(nextMethod, method)) {
-                return nextMethod;
-            }else if (!nextMethod.getName().equals(method.getName())) {
-                break;
-            }            
-        }
-        
-        return null;
-    }
-    
-    private boolean methodsEqual(java.lang.reflect.Method realMethod, JavaMethod modelMethod) {
-        if (!realMethod.getName().equalsIgnoreCase(modelMethod.getName())) {
-            return false;
-        }else {
-            List<JavaParameter> modelParams = modelMethod.getParametersList();
-            Class<? extends Object>[] realParams = realMethod.getParameterTypes();
-            
-            if (realParams.length != realParams.length) {
-                return false;
-            }
-            
-            for (int i = 0; i < realParams.length; i++) {
-                String modelNext = modelParams.get(i).getType().getRealName();
-                String realNext = realParams[i].getCanonicalName();
-                
-                if (!modelNext.equals(realNext)) {
-                    return false;
-                }
-            }
-            
-            return true;
-        }
-    }
-    
-    private static int doBinarySearch(List<java.lang.reflect.Method> methods, String name) {
-        int low = 0;
-        int high = methods.size();
-        
-        while (low < high) {
-            int mid = (low + high) / 2;
-            String nextMethod = methods.get(mid).getName();
-            // XXX method names compared ignoring case since JAX-RPC and JAX-WS
-            // have different capitalization (JAX-WS changes the capitalization of
-            // methods if they start with capital letters)
-            int compare = nextMethod.compareToIgnoreCase(name);
-            if (compare == 0) {
-                return mid;
-            }else if (compare < 0) {
-                low = mid + 1;
-            }else if (compare > 0) {
-                high = mid;
-            }
-        }
-
-        return -1;
-    }
-    
-    public class Method {
-        Set methodStatement = new HashSet();
-        public Method(JavaMethod method){
-        }
-        
-        public void addStatement(String statement){
-            methodStatement.add(statement);
-        }
-        
-        public Set getStatements(){
-            return methodStatement;
-        }
-    }
-    
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-    }
-    
 }
