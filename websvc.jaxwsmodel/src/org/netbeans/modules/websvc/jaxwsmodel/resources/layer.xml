@@ -36,6 +36,10 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="org.netbeans.modules.websvc.jaxwsmodel.project.EjbJaxWsLookupProvider.instance"/>
             </folder>            
         </folder>
-        
+        <folder name="org-netbeans-modules-j2ee-clientproject">
+            <folder name="Lookup">
+                <file name="org.netbeans.modules.websvc.jaxwsmodel.project.AppClientJaxWsLookupProvider.instance"/>
+            </folder>            
+        </folder>   
     </folder>
 </filesystem>
