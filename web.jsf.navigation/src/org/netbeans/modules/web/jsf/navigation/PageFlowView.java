@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import javax.swing.Action;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
@@ -44,6 +45,7 @@ import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.navigation.JSFPageFlowMultiviewDescriptor.PageFlowElement;
+import org.netbeans.modules.web.jsf.navigation.graph.LayoutManager;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowSceneData;
 import org.netbeans.modules.web.jsf.navigation.graph.SceneSerializer;
@@ -344,6 +346,8 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         PageFlowUtilities utilities = PageFlowUtilities.getInstance(this);
         toolbar.add(utilities.createScopeComboBox());
         
+        toolbar.add(utilities.createLayoutButton());
+        
         return toolbar;
         
     }
@@ -544,7 +548,13 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         return PERSISTENCE_NEVER;
     }
     
-    
+    private LayoutManager layout;
+    public void layoutNodes() {
+        if( layout == null ) {
+            layout = new LayoutManager();
+        }
+        layout.performLayout(scene);
+    }
     
     
 }
