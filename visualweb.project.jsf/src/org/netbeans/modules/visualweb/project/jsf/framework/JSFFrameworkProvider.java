@@ -20,7 +20,6 @@
 package org.netbeans.modules.visualweb.project.jsf.framework;
 
 import org.netbeans.modules.visualweb.project.jsf.JsfProjectTemplateJakarta;
-import org.netbeans.modules.visualweb.project.jsf.VWPDeployment;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectConstants;
 import org.netbeans.modules.visualweb.project.jsf.api.ProjectTemplate;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
@@ -111,7 +110,6 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 try{
                     project.getProjectDirectory().setAttribute("NewProject", Boolean.TRUE); // NOI18N
                     template.create(project, webModule.getJ2eePlatformVersion(), pageName);
-                    VWPDeployment.OpenProjectsListener.registerListener(webModule);
                 } catch (IOException ioe){
                     ErrorManager.getDefault().notify(ioe);
                 }
