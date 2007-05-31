@@ -120,6 +120,7 @@ public class UpdateUnitFactoryTest extends NbTestCase {
         UpdateUnit u = units.get (id);
         assertNull ("Unit is not installed.", u.getInstalled ());
         assertNotNull ("Unit has update.", u.getAvailableUpdates ());
+        assertFalse ("Unit.getAvailableUpdates() is not empty.", u.getAvailableUpdates ().isEmpty ());
         assertEquals ("Unit has only one update.", 1, u.getAvailableUpdates ().size ());
         UpdateElement el = u.getAvailableUpdates ().get (0);
         assertEquals ("org.yourorghere.depending", el.getCodeName ());
