@@ -548,12 +548,8 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         return PERSISTENCE_NEVER;
     }
     
-    private LayoutManager layout;
     public void layoutNodes() {
-        if( layout == null ) {
-            layout = new LayoutManager();
-        }
-        layout.performLayout(scene);
+        LayoutManager.performGridGraphLayout(scene);
     }
     
     
