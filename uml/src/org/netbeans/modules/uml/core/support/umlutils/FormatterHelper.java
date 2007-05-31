@@ -344,25 +344,8 @@ public class FormatterHelper
    /// wether to use the input element, or the project to get the language
    protected boolean useElementLanguage()
    {
-		boolean bUseElementLanguage = true;
-	
-		 ICoreProduct prod = ProductRetriever.retrieveProduct();
-		 if( prod != null )
-		 {
-		   IPreferenceManager2 pMgr = prod.getPreferenceManager();
-		   if (pMgr != null)
-		   {
-			  String sPrefValue = pMgr.getPreferenceValue("DisplaySettings", "DisplayFormatString");
-			  if (sPrefValue != null )
-			  {
-			  	if (sPrefValue.equals("PSK_PROJECT"))
-			  	{
-					bUseElementLanguage = false;
-			  	}
-			  }
-		   }
-		}
-		return bUseElementLanguage;
+       //kris richards - "DisplayFormatString" pref expunged. Set to "PSK_ELEMENT"
+       return true ;
    }
 
    /// Retrieve the language manager from the project

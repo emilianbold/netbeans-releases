@@ -2725,6 +2725,7 @@ public class JProjectTree extends ApplicationView implements IProjectTreeControl
       public void onPreferencesChange(IPropertyElement[] pElements,
       IResultCell cell)
       {
+          //kris richards - these prefs are no longer valid so this code should never execute.
          for (int index = 0; index < pElements.length; index++)
          {
             String name = pElements[index].getName();

@@ -7534,7 +7534,8 @@ public class ADDrawingAreaControl extends ApplicationView
       IPropertyElement pAliasPropertyElement = pPropertyElements.getElement("", "ShowAliasedNames", false);
       
       // Now see if aliased or show tagged values has changed
-      IPropertyElement pDisplayTVsPropertyElement = pPropertyElements.getElement("", "DisplayTVs", false);
+      //kris richards - "DisplayTVs" pref expunged. Set to true.
+      //IPropertyElement pDisplayTVsPropertyElement = pPropertyElements.getElement("", "DisplayTVs", false);
       
       // Process the diagram preferences
       ETList<IPropertyElement> diagramProps = new ETArrayList<IPropertyElement>();
@@ -7593,7 +7594,8 @@ public class ADDrawingAreaControl extends ApplicationView
          }
          bDidChange = true;
       }
-      else if (pDisplayTVsPropertyElement != null)
+      //kris richards - "DisplayTVs" pref expunged. Set to true. So element not null.
+      else //if (pDisplayTVsPropertyElement != null)
       {
          syncElements(false);
          bDidChange = true;

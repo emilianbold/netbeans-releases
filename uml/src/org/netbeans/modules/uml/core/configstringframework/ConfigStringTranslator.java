@@ -633,16 +633,8 @@ public class ConfigStringTranslator implements IConfigStringTranslator {
             addToMap("PSK_REFERENCEDLIBRARY", "IDS_STRING1428 ");
             addToMap("PSK_DISPLAYSETTINGS", "IDS_STRING1487 ");
             addToMap("PSK_DISPLAYSETTINGS_HLP", "IDS_STRING1488 ");
-            addToMap("PSK_DISPLAYVISIBILITY", "IDS_STRING1489 ");
-            addToMap("PSK_DISPLAYVISIBILITY_HLP", "IDS_STRING1490 ");
-            addToMap("PSK_DISPLAYSTEREOTYPE", "IDS_STRING1491 ");
-            addToMap("PSK_DISPLAYSTEREOTYPE_HLP", "IDS_STRING1492 ");
             addToMap("PSK_PARTICIPANT2", "IDS_STRING1493 ");
-            addToMap("PSK_DISPLAYTVS", "IDS_STRING1514 ");
-            addToMap("PSK_DISPLAYTVS_HLP", "IDS_STRING1515 ");
             addToMap("PSK_CHILDPROPERTIES", "IDS_STRING1564");
-            addToMap("PSK_DISPLAYFORMATSTRING", "IDS_STRING1673 ");
-            addToMap("PSK_DISPLAYFORMATSTRING_HLP", "IDS_STRING1674 ");
             addToMap("PSK_GRADIENTCOLOR_HLP","IDS_STRING2052");
             
             // Added for RoundTrip preferences
