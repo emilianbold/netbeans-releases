@@ -40,7 +40,6 @@ import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -50,7 +49,16 @@ import org.openide.util.lookup.Lookups;
  */
 public class RADComponentRenameRefactoringSupport {
     private String newName = "";
-    
+    private RADComponent component = null;
+
+    public RADComponent getComponent() {
+        return component;
+    }
+
+    public void setComponent(RADComponent component) {
+        this.component = component;
+    }
+
     /**
      * Creates a new instance of support.
      * @param newName the new name of the field being set
@@ -117,19 +125,16 @@ public class RADComponentRenameRefactoringSupport {
     public void doRenameRefactoring(){
         //now we need to get into the Java phase and get a TreePathHandle
         //to the field we are renaming. We can then kick off a RenameRefactoring
-        Lookup lu = Utilities.actionsGlobalContext();
-        RADComponentNode node = lu.lookup(RADComponentNode.class);
-        DataObject dao = lu.lookup(DataObject.class);
-        if(node!=null){
+        DataObject dao = FormEditor.getFormDataObject(this.component.getFormModel());
+        if(dao!=null){
             //we should be able to
-            RADComponent rad  = node.getRADComponent();
             JavaSource js = JavaSource.forFileObject(dao.getPrimaryFile());
             try {
-                MemberVisitor visitor = new MemberVisitor(null, node.getName());
+                MemberVisitor visitor = new MemberVisitor(null, component.getName());
                 js.runUserActionTask(visitor, true);
                 if(visitor.getHandle()==null){
-                    //this would only happen if setName were called without the correct Node being
-                    //selected...
+                    //this would only happen if setName were called without the correct component being
+                    //selected some how...
                     return;
                 }
                 //ok, so we are now ready to actually setup our RenameRefactoring...we need the element TreePathHandle

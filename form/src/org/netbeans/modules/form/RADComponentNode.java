@@ -250,7 +250,7 @@ public class RADComponentNode extends FormNode
      * @param s the new name
      */
     public void setName(String s) {
-        component.setName(s);
+        component.rename(s);
     }
     
     /** Can this node be renamed?

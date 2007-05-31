@@ -252,7 +252,7 @@ public class CodeCustomizer implements CustomCodeView.Listener {
             try {
                 String newName = input.getInputText();
                 if (!newName.equals("")) // NOI18N
-                    customizedComponent.setName(newName);
+                    customizedComponent.rename(newName);
             }
             catch (IllegalArgumentException e) {
                 Exceptions.printStackTrace(e);

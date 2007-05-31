@@ -265,7 +265,7 @@ class JavaCodeGenerator extends CodeGenerator {
                     if (!(value instanceof String))
                         throw new IllegalArgumentException();
 
-                    component.setName((String)value);
+                    component.rename((String)value);
                     component.getNodeReference().firePropertyChangeHelper(
                         RADComponent.PROP_NAME, null, null); // NOI18N
                 }

@@ -461,6 +461,21 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
         if (getNodeReference() != null)
             getNodeReference().updateName();
     }
+    
+    /**
+     * Method used to push setName through refactoring instead of just setting the variable name and
+     * not changing it in users custom code.
+     * @param name the new name for the variable
+     */
+    public void rename(String name){
+        if(Boolean.getBoolean("form.refactoring")){
+            RADComponentRenameRefactoringSupport rf = new RADComponentRenameRefactoringSupport(name);
+            rf.setComponent(this);
+            rf.doRenameRefactoring();
+            return;
+        }
+        setName(name);
+    }
 
     public void setStoredName(String name) {
         storedName = name;
