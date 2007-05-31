@@ -44,9 +44,10 @@ public interface SunEjbJar extends org.netbeans.modules.j2ee.sun.dd.api.RootInte
     public int addSecurityRoleMapping(SecurityRoleMapping value);
     public int removeSecurityRoleMapping(SecurityRoleMapping value);
     public int sizeSecurityRoleMapping();
+    public SecurityRoleMapping newSecurityRoleMapping();
     
-    public void setEnterpriseBeans(EnterpriseBeans value);
     public EnterpriseBeans getEnterpriseBeans();
+    public void setEnterpriseBeans(EnterpriseBeans value);
     public EnterpriseBeans newEnterpriseBeans();
     
     
