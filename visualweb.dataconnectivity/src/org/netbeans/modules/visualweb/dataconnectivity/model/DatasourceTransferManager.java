@@ -42,9 +42,12 @@ import java.sql.SQLException;
 import javax.naming.NamingException;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.db.api.explorer.DatabaseMetaDataTransfer;
+import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
 import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSource;
 import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSourceHelper;
+import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.openide.ErrorManager;
 
 /**
@@ -146,10 +149,14 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
             } else
                 dsName = dbConnection.getSchema() + "_" + databaseProductName; 
             
-            DataSourceInfo dataSourceInfo = new DataSourceInfo(dsName, driverClassName, url, validationQuery, username, password);
-                                    
+            // Used to create data sources
+            DataSourceInfo dataSourceInfo = new DataSourceInfo(dsName, driverClassName, url, validationQuery, username, password);                        
+            
             // Logic to reuse the datasource exist in the project. No necessary to create new data source
             ProjectDataSourceManager projectDataSourceManager = new ProjectDataSourceManager(designBean); 
+
+            // Create resource reference info in the Project everytime
+            JsfProjectUtils.setDataSourceReference(CurrentProject.getInstance().getProject(), dsName); 
             
             // Add the data sources to the project
             projectDataSourceManager.addDataSource(dataSourceInfo);
