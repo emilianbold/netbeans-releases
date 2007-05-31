@@ -268,13 +268,13 @@ public class WebServiceNode extends AbstractNode implements WSRegisterCookie, Ja
             webServices.removeWebserviceDescription(webServiceDescription);
             //need to write everytime to remove the node
             webServices.write(wsSupport.getWebservicesDD());
+            //remove entry in module DD and project files
+            wsSupport.removeServiceEntry(getLinkName());
+            wsSupport.removeProjectEntries(wsName);
             //if there are no more web services, delete webservices.xml
             if(webServices.sizeWebserviceDescription() == 0) {
                 deleteDDFile();
             }
-            //remove entry in module DD and project files
-            wsSupport.removeServiceEntry(getLinkName());
-            wsSupport.removeProjectEntries(wsName);
             if (deletePackage) { // remove the package where WS was generated
                 FileObject wsPackage = srcRoot.getFileObject(packageName);
                 if (wsPackage!=null) {
