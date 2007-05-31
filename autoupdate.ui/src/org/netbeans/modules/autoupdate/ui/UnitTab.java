@@ -24,6 +24,8 @@ import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -84,15 +86,21 @@ public class UnitTab extends javax.swing.JPanel {
     private RowTabAction deactivateAction;
     private TabAction refreshAction;
     
-    private RowTabAction removeLocallyDownloaded = new RemoveLocallyDownloadedAction ();
-    private PopupAction popupAction = new PopupAction();
+    private RowTabAction removeLocallyDownloaded;
     
     
     private static final RequestProcessor RP = new RequestProcessor ();
-    private final RequestProcessor.Task searchTask = RP.create (new Runnable (){
-        public void run () {
+    private final RequestProcessor.Task searchTask = RP.create(new Runnable(){
+        public void run() {
             if (filter != null) {
-                model.setFilter (filter);
+                final Map<String, Boolean> state = UnitCategoryTableModel.captureState(model.getUnitData());                
+                Runnable runAftreWards = new Runnable(){
+                    public void run() {
+                        UnitCategoryTableModel.restoreState(model.getUnitData(), state, model.isMarkedAsDefault());
+                        refreshState();
+                    }
+                };
+                model.setFilter(filter, runAftreWards);
             }
         }
     });
@@ -107,16 +115,37 @@ public class UnitTab extends javax.swing.JPanel {
         assert m instanceof UnitCategoryTableModel : m + " instanceof UnitCategoryTableModel.";
         this.model = (UnitCategoryTableModel) m;
         table.getSelectionModel ().setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
+        removeLocallyDownloaded = new RemoveLocallyDownloadedAction ();                
         initComponents ();
         spTab.setLeftComponent (new JScrollPane (table));
         spTab.setRightComponent (new JScrollPane (details,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
         initTab ();
         listenOnSelection ();
+        addComponentListener(new ComponentAdapter(){
+            @Override
+            public void componentShown(ComponentEvent e) {
+                super.componentShown(e);
+                focusTable();
+                
+            }            
+        });
+    }
+    
+    void focusTable() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                table.requestFocusInWindow();
+            }
+        });        
     }
     
     UnitCategoryTableModel getModel() {
         return model;
+    }
+
+    UnitTable getTable() {
+        return table;
     }
     
     void setWaitingState (boolean waitingState) {
@@ -147,7 +176,7 @@ public class UnitTab extends javax.swing.JPanel {
         Component rootPane = getRootPane ();
         if (parent != null) {
             parent.setEnabled (enabled);
-        }
+        }        
         if (rootPane != null) {
             if (enabled) {
                 rootPane.setCursor (null);
@@ -155,6 +184,7 @@ public class UnitTab extends javax.swing.JPanel {
                 rootPane.setCursor (Cursor.getPredefinedCursor (Cursor.WAIT_CURSOR));
             }
         }
+        focusTable();
     }
     
     private void addToToolbar(Action action) {
@@ -168,7 +198,7 @@ public class UnitTab extends javax.swing.JPanel {
         super.addNotify ();
         if (dlForSearch == null) {
             tfSearch.getDocument ().addDocumentListener (getDocumentListener ());
-        }        
+        }           
     }
     
     @Override
@@ -191,7 +221,7 @@ public class UnitTab extends javax.swing.JPanel {
         } else {
             setSelectionInfo (Utilities.getDownloadSizeAsString (downloadSize), units.size ());
         }
-        getDefaultAction ().setEnabled (units.size () > 0);
+        getDefaultAction ().setEnabled (units.size () > 0);        
     }
     
     public TabAction getDefaultAction () {
@@ -272,6 +302,7 @@ public class UnitTab extends javax.swing.JPanel {
                 refreshState ();
             }
         });
+        new PopupAction();
         table.addMouseListener (popupActionsSupport = new PopupActionSupport (forPopup));
         
         getDefaultAction ().setEnabled (model.getMarkedUnits ().size () > 0);
@@ -475,7 +506,7 @@ public class UnitTab extends javax.swing.JPanel {
                         UnitCategoryTableModel.restoreState(model.getUnitData(), state, model.isMarkedAsDefault());
                         setSelectedRow(row);
                         refreshState();
-                        setWaitingState (false);
+                        setWaitingState (false);                        
                     }
                 });
             }
@@ -567,6 +598,7 @@ public class UnitTab extends javax.swing.JPanel {
         }
         
         private void maybeShowPopup (MouseEvent e) {
+            focusTable();
             if (e.isPopupTrigger ()) {
                 showPopup(e.getPoint(), e.getComponent());
             } /*else if (org.openide.awt.MouseUtils.isDoubleClick (e) && model.getType ().equals (UnitCategoryTableModel.Type.INSTALLED)) {
@@ -582,7 +614,7 @@ public class UnitTab extends javax.swing.JPanel {
     
     private void showPopup(Point e, Component invoker) {
         int row = UnitTab.this.table.rowAtPoint(e);
-        if (row >= 0) {
+        if (row >= 0) {            
             table.getSelectionModel().setSelectionInterval(row, row);
             final JPopupMenu popup = popupActionsSupport.createPopup();
             if (popup != null && popup.getComponentCount() > 0) {                
@@ -622,13 +654,13 @@ public class UnitTab extends javax.swing.JPanel {
             this.actionCategory = actionCategoryKey;//(actionCategoryKey != null) ? NbBundle.getMessage(UnitTab.class, actionCategoryKey) : null;
             putValue (MNEMONIC_KEY, mnemonicForKey (nameKey));
             name = (String)getValue (NAME);
-            putIntoActionMap (UnitTab.this);
+            putIntoActionMap (table);
         }
         
         public TabAction (String key, KeyStroke accelerator, String actionCategoryKey) {
             this (key, actionCategoryKey);
             putValue (ACCELERATOR_KEY, accelerator);
-            putIntoActionMap (UnitTab.this);
+            putIntoActionMap (table);
         }
         
         protected String getActionName () {
@@ -654,7 +686,7 @@ public class UnitTab extends javax.swing.JPanel {
                 ks = KeyStroke.getKeyStroke ((Integer)getValue (MNEMONIC_KEY), KeyEvent.VK_ALT);
             }
             if (ks != null && key != null) {
-                component.getInputMap (JComponent.WHEN_IN_FOCUSED_WINDOW).put (ks, key);
+                component.getInputMap (JComponent.WHEN_FOCUSED).put (ks, key);
                 component.getActionMap ().put (key,this);
             }
         }
@@ -807,7 +839,7 @@ public class UnitTab extends javax.swing.JPanel {
             int row = getSelectedRow();
             if(row > 0) { 
                 Point e = table.getCellRect(row, 1, enabled).getLocation();
-                showPopup(e, table);
+                showPopup(e, table);                
             }            
         }
 
@@ -843,6 +875,7 @@ public class UnitTab extends javax.swing.JPanel {
                     UnitCategoryTableModel.restoreState(model.getUnitData(), state, model.isMarkedAsDefault());
                 }
                 refreshState();
+                focusTable();
             }
         }
     }
@@ -863,6 +896,7 @@ public class UnitTab extends javax.swing.JPanel {
                     UnitCategoryTableModel.restoreState(model.getUnitData(), state, model.isMarkedAsDefault());
                 }                
                 refreshState();
+                focusTable();
             }            
         }
     }
@@ -883,6 +917,7 @@ public class UnitTab extends javax.swing.JPanel {
                     UnitCategoryTableModel.restoreState(model.getUnitData(), state, model.isMarkedAsDefault());
                 }              
                 refreshState();
+                focusTable();
             }
         }
     }
@@ -903,6 +938,7 @@ public class UnitTab extends javax.swing.JPanel {
                     UnitCategoryTableModel.restoreState(model.getUnitData(), state, model.isMarkedAsDefault());
                 }
                 refreshState();                
+                focusTable();
             }
         }
     }
@@ -988,6 +1024,12 @@ public class UnitTab extends javax.swing.JPanel {
                 Containers.forEnable ().removeAll ();
             }
         }
+
+        @Override
+        public void after() {
+            super.after();
+            focusTable();
+        }
         
         @Override
         protected boolean isVisible (Unit u) {
@@ -1046,6 +1088,12 @@ public class UnitTab extends javax.swing.JPanel {
                 Containers.forEnable ().removeAll ();
             }
         }
+
+        @Override
+        public void after() {
+            super.after();
+            focusTable();
+        }
         
         @Override
         protected boolean isVisible (Unit u) {
@@ -1089,6 +1137,12 @@ public class UnitTab extends javax.swing.JPanel {
                 Containers.forDisable ().removeAll ();
             }
         }
+
+        @Override
+        public void after() {
+            super.after();
+            focusTable();
+        }
         
         @Override
         protected boolean isVisible (Unit u) {
@@ -1119,6 +1173,13 @@ public class UnitTab extends javax.swing.JPanel {
             
             return  retval;
         }
+
+        @Override
+        public void after() {
+            super.after();
+            focusTable();
+        }
+        
         protected String getContextName (Unit u) {
             if ((u != null) && (u instanceof Unit.Installed)) {
                 return getActionName ()+ " \"" + u.getCategoryName () + "\"";//NOI18N

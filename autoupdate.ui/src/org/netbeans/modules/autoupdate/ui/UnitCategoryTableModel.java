@@ -221,7 +221,7 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
         setData (data, showCategories, categoryCmp, unitCmp);
     }
     
-    public void setFilter (final String filter) {
+    public void setFilter (final String filter, final Runnable runAfterwards) {
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
                 synchronized(UnitCategoryTableModel.class) {
@@ -229,6 +229,9 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
                 }
                 //UnitCategoryTableModel.this.fireTableDataChanged ();
                 fireUpdataUnitChange ();
+                if (runAfterwards != null) {
+                    runAfterwards.run();
+                }
             }
         });
     }
