@@ -283,7 +283,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
             ret = AstRenderer.renderType(token, getContainingFile());
         }
         if( ret == null ) {
-            ret = TypeImpl.createBuiltinType("int", (AST) null, 0,  null/*getAst().getFirstChild()*/, getContainingFile()); // NOI18N
+            ret = TypeFactory.createBuiltinType("int", (AST) null, 0,  null/*getAst().getFirstChild()*/, getContainingFile()); // NOI18N
         }
         return ret;
     }
@@ -300,7 +300,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
                 case CPPTokenTypes.CSM_TYPE_COMPOUND:
                     return token;
                 default:
-                    if( AstRenderer.isQialifier(type) ) {
+                    if( AstRenderer.isQualifier(type) ) {
                         return token;
                     }
             }

@@ -25,13 +25,15 @@ import java.beans.PropertyEditorSupport;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javax.swing.JTable;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public class EnvPanel extends javax.swing.JPanel implements HelpCtx.Provider, PropertyChangeListener {
+public class EnvPanel extends javax.swing.JPanel implements HelpCtx.Provider, PropertyChangeListener, ListSelectionListener {
     private RunProfile currentProfile;
 
     private ListTableModel envvarModel = null;
@@ -63,6 +65,19 @@ public class EnvPanel extends javax.swing.JPanel implements HelpCtx.Provider, Pr
         envvarTable.getAccessibleContext().setAccessibleDescription(getString("ACSD_ENV_VAR_TABLE"));   
         addButton.getAccessibleContext().setAccessibleDescription(getString("ACSD_ADD_BUTTON"));
         removeButton.getAccessibleContext().setAccessibleDescription(getString("ACSD_REMOVE_BUTTON"));
+        
+        envvarTable.getSelectionModel().addListSelectionListener(this);
+        
+        validateButtons();
+    }
+    
+    private void validateButtons() {                                         
+	int[] selRows = envvarTable.getSelectedRows();
+        removeButton.setEnabled(envvarModel.getRowCount() > 0 && selRows != null && selRows.length > 0);
+    }
+
+    public void valueChanged(ListSelectionEvent e) {
+        validateButtons();
     }
 
     public void initValues(Env env) {
@@ -185,10 +200,12 @@ public class EnvPanel extends javax.swing.JPanel implements HelpCtx.Provider, Pr
 	if ((selRows != null) && (selRows.length > 0)) {
 	    envvarModel.removeRows(selRows);
 	}
+        validateButtons();
     }//GEN-LAST:event_removeButtonActionPerformed
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
 	envvarModel.addRow();
+        validateButtons();
     }//GEN-LAST:event_addButtonActionPerformed
     
     

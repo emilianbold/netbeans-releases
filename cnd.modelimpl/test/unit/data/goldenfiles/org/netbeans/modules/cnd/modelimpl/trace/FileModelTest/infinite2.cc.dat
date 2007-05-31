@@ -1,0 +1,45 @@
+
+State of macro map:
+Own Map:
+MACROS (sorted 0):
+System Map:
+MACROS (sorted 0):
+
+
+========== Dumping model of FILE infinite2.cc
+Includes:
+    <no includes>
+Macros:
+    <no macros>
+CLASS A (A ) [1:1/0-4:3/37] lcurly=12
+    BASE CLASSES:
+        CLASS=A VISIBILITY==private virtual==false text='A'
+    MEMBERS:
+        FUNCTION foo [2:5/18-2:16/29] MethodImpl
+            DEFINITION: foo  [6:1/42-9:2/74]
+            SIGNATURE foo()
+            UNIQUE NAME FUNCTION:A::foo()
+            PARAMETERS:
+            RETURNS void TEXT=void  [2:5/18-2:9/22]
+FUNCTION DEFINITION foo  [6:1/42-9:2/74] FunctionDefinitionImpl
+    SIGNATURE foo()
+    UNIQUE NAME FUNCTION_DEFINITION:A::foo()
+    DECLARATION: foo  [2:5/18-2:16/29]
+    PARAMETERS:
+    RETURNS void TEXT=void  [6:1/42-6:5/46]
+    STATEMENT Compound  [6:15/56-9:2/74]
+        STATEMENT Declaration  [7:5/62-7:9/66]
+            VARIABLE a [7:5/62-7:9/66] type: $unresolved$::C TEXT=C  [7:5/62-7:6/63] init: null
+
+========== Dumping model of PROJECT DummyProject
+CLASS A (A ) [1:1/0-4:3/37] lcurly=12
+    BASE CLASSES:
+        CLASS=A VISIBILITY==private virtual==false text='A'
+    MEMBERS:
+        FUNCTION foo [2:5/18-2:16/29] MethodImpl
+            DEFINITION: foo  [6:1/42-9:2/74]
+            SIGNATURE foo()
+            UNIQUE NAME FUNCTION:A::foo()
+            PARAMETERS:
+            RETURNS void TEXT=void  [2:5/18-2:9/22]
+

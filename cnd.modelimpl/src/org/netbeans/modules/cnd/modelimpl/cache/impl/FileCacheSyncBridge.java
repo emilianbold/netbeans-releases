@@ -311,13 +311,13 @@ final class FileCacheSyncBridge {
                         out = full ? aptFull : aptLight;
                     }
                 } catch (IOException ex) {
-                    APTUtils.LOG.log(Level.SEVERE, "create stream: {0}", new Object[] {ex.getMessage()});// NOI18N
+                    APTUtils.LOG.log(Level.INFO, "create stream: {0}", new Object[] {ex.getMessage()});// NOI18N
                 } finally {
                     if (stream != null) {
                         try {
                             stream.close();
                         } catch (IOException ex) {
-                            APTUtils.LOG.log(Level.SEVERE, "closing stream: {0}", new Object[] {ex.getMessage()});// NOI18N
+                            APTUtils.LOG.log(Level.INFO, "closing stream: {0}", new Object[] {ex.getMessage()});// NOI18N
                         }
                     }
                 }

@@ -37,36 +37,43 @@ public class ResolverFactory {
     }
     
     public static Resolver createResolver(CsmOffsetable context) {
+        return createResolver(context, null);
+    }
+    public static Resolver createResolver(CsmOffsetable context, Resolver parent) {
 //        if (useNewResolver)
 //            return new Resolver2(context);
 //        else
 //            return new Resolver3(context);
         switch( resolver ) {
             case 1: 
-                return new Resolver1(context);
+                return new Resolver1(context, parent);
             case 2: 
-                return new Resolver2(context);
+                return new Resolver2(context, parent);
             case 3: 
-                return new Resolver3(context);
+                return new Resolver3(context, parent);
             default:
-                return new Resolver1(context);
+                return new Resolver1(context, parent);
         }
     }
 
     public static Resolver createResolver(CsmFile file, int offset) {
+        return createResolver(file, offset, null);
+    }
+    
+    public static Resolver createResolver(CsmFile file, int offset, Resolver parent) {
 //        if (useNewResolver)
 //            return new Resolver2(file, offset);
 //        else
 //            return new Resolver3(file, offset);
         switch( resolver ) {
             case 1: 
-                return new Resolver1(file, offset);
+                return new Resolver1(file, offset, parent);
             case 2: 
-                return new Resolver2(file, offset);
+                return new Resolver2(file, offset, parent);
             case 3: 
-                return new Resolver3(file, offset);
+                return new Resolver3(file, offset, parent);
             default:
-                return new Resolver1(file, offset);
+                return new Resolver1(file, offset, parent);
         }
     }
     

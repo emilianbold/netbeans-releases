@@ -50,14 +50,14 @@ public interface CallStackFrame {
      *
      *  @param frameNumber Frame number in Call Stack ("0" means top)
      */
-    public void setFrameNumber(String frameNumber);
+    public void setFrameNumber(int frameNumber);
     
     /**
      *  Returns frame number in Call Stack.
      *
      *  @return Frame nunmber in Call Stack ("0" means top)
      */
-    public String getFrameNumber();
+    public int getFrameNumber();
     
     /**
      * Returns line number associated with this stack frame.

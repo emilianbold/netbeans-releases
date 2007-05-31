@@ -23,18 +23,11 @@ import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionProvider;
-//import lib.EditorTestCase;
-//import lib.EditorTestCase.ValueResolver;
-//import org.netbeans.api.editor.mimelookup.MimeLookup;
-//import org.netbeans.api.editor.mimelookup.MimePath;
 import org.openide.filesystems.FileObject;
 import org.netbeans.editor.*;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
-//import org.netbeans.modules.editor.java.JavaCompletionItem;
-//import org.netbeans.modules.editor.java.JavaCompletionProvider;
-//import org.netbeans.modules.editor.java.LazyTypeCompletionItem;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.openide.cookies.SaveCookie;
@@ -152,16 +145,18 @@ public class CompletionTestPerformer {
         }
         
         doc = doc == null ? Utilities.getDocument(editor) : doc;
-        int offset = Utilities.getRowStartFromLineOffset(doc, lineIndex -1) + (colIndex - 1);
+        assert doc != null;
+        int offset = CndCoreTestUtils.getDocumentOffset(doc, lineIndex, colIndex);
         
-        if (editor != null) {
-            editor.grabFocus();
-            editor.getCaret().setDot(offset);
-        }
         if (textToInsert.length() > 0) {
             doc.insertString(offset, textToInsert, null);
             reparseDocument((DataObject) doc.getProperty(doc.StreamDescriptionProperty));
+            offset += textToInsert.length();
         }
+        if (editor != null) {
+            editor.grabFocus();
+            editor.getCaret().setDot(offset);
+        }        
         return completionQuery(log, editor, doc, offset, unsorted, queryType);
     }
     

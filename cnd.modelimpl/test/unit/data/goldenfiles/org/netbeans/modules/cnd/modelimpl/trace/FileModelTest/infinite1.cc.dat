@@ -1,0 +1,74 @@
+
+State of macro map:
+Own Map:
+MACROS (sorted 0):
+System Map:
+MACROS (sorted 0):
+
+
+========== Dumping model of FILE infinite1.cc
+Includes:
+    <no includes>
+Macros:
+    <no macros>
+CLASS B (B ) [2:1/1-6:3/47] lcurly=13
+    BASE CLASSES:
+        CLASS=A VISIBILITY==private virtual==false text='A'
+    MEMBERS:
+        CLASS D (B::D ) [3:5/19-5:7/44] lcurly=27
+            BASE CLASSES:
+            MEMBERS:
+NAMESPACE DEFINITOIN N [8:1/49-12:2/90]
+    CLASS A (N::A ) [9:5/67-11:7/88] lcurly=79
+        BASE CLASSES:
+            CLASS=B VISIBILITY==private virtual==false text='B'
+        MEMBERS:
+CLASS A (A ) [14:1/92-16:3/124] lcurly=104
+    BASE CLASSES:
+        CLASS=B VISIBILITY==private virtual==false text='B'
+    MEMBERS:
+        FUNCTION foo [15:5/110-15:16/121] MethodImpl
+            DEFINITION: foo  [18:1/126-20:2/152]
+            SIGNATURE foo()
+            UNIQUE NAME FUNCTION:A::foo()
+            PARAMETERS:
+            RETURNS void TEXT=void  [15:5/110-15:9/114]
+FUNCTION DEFINITION foo  [18:1/126-20:2/152] FunctionDefinitionImpl
+    SIGNATURE foo()
+    UNIQUE NAME FUNCTION_DEFINITION:A::foo()
+    DECLARATION: foo  [15:5/110-15:16/121]
+    PARAMETERS:
+    RETURNS void TEXT=void  [18:1/126-18:5/130]
+    STATEMENT Compound  [18:15/140-20:2/152]
+        STATEMENT Declaration  [19:5/146-19:9/150]
+            VARIABLE a [19:5/146-19:9/150] type: $unresolved$::C TEXT=C  [19:5/146-19:6/147] init: null
+
+========== Dumping model of PROJECT DummyProject
+CLASS B (B ) [2:1/1-6:3/47] lcurly=13
+    BASE CLASSES:
+        CLASS=A VISIBILITY==private virtual==false text='A'
+    MEMBERS:
+        CLASS D (B::D ) [3:5/19-5:7/44] lcurly=27
+            BASE CLASSES:
+            MEMBERS:
+CLASS D (B::D ) [3:5/19-5:7/44] lcurly=27
+    BASE CLASSES:
+    MEMBERS:
+CLASS A (A ) [14:1/92-16:3/124] lcurly=104
+    BASE CLASSES:
+        CLASS=B VISIBILITY==private virtual==false text='B'
+    MEMBERS:
+        FUNCTION foo [15:5/110-15:16/121] MethodImpl
+            DEFINITION: foo  [18:1/126-20:2/152]
+            SIGNATURE foo()
+            UNIQUE NAME FUNCTION:A::foo()
+            PARAMETERS:
+            RETURNS void TEXT=void  [15:5/110-15:9/114]
+NAMESPACE DEFINITIONS for N (N) 
+    infinite1.cc  [8:1/49-12:2/90]
+NAMESPACE N (N) 
+    CLASS A (N::A ) [9:5/67-11:7/88] lcurly=79
+        BASE CLASSES:
+            CLASS=B VISIBILITY==private virtual==false text='B'
+        MEMBERS:
+

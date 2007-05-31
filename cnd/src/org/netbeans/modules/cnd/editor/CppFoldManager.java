@@ -169,7 +169,7 @@ final class CppFoldManager extends CppFoldManagerBase
     }
 
     private void removeFoldNotify(Fold fold) {
-	log.log("CppFoldManager.removeFoldNotify:");
+	log.log("CppFoldManager.removeFoldNotify:"); // NOI18N
     }
 
     synchronized private void updateFolds() {
@@ -197,8 +197,8 @@ final class CppFoldManager extends CppFoldManagerBase
 			    FoldHierarchyTransaction t = getOperation().openTransaction();
 			    try {
 				log.log("CFM.updateFolds$X1.run: Calling " +
-					"processUpdateFoldRequest for " + // NOI18N
-					getShortName() + " [" + // NOI18N
+					"processUpdateFoldRequest for " +
+					getShortName() + " [" +
 					Thread.currentThread().getName() + "]"); // NOI18N
 //                                System.out.println("=========== " + getShortName() + " ===========");
 //                                System.out.println(hierarchy.toString());
@@ -218,7 +218,7 @@ final class CppFoldManager extends CppFoldManagerBase
 	    }
 	};
 	// Do fold updates in AWT
-	log.log("CFM.updateFolds: Starting update for " + getShortName() + " on AWT thread");
+	log.log("CFM.updateFolds: Starting update for " + getShortName() + " on AWT thread"); // NOI18N
 	SwingUtilities.invokeLater(hierarchyUpdate);
     }
 
@@ -230,7 +230,7 @@ final class CppFoldManager extends CppFoldManagerBase
 	Document doc = getDocument();
 
 	if (getOperation().isReleased() || !(doc instanceof AbstractDocument)) {
-	    log.log("CFM.collectFoldUpdates: No doc found for " + getShortName());
+	    log.log("CFM.collectFoldUpdates: No doc found for " + getShortName()); // NOI18N
 	    return request;
 	}
 
@@ -381,7 +381,7 @@ final class CppFoldManager extends CppFoldManagerBase
                     foldInfo.removeFromHierarchy(transaction);
                 }
             } else {
-		log.log("CFM.processUpdateFoldRequest: infoList is null");
+		log.log("CFM.processUpdateFoldRequest: infoList is null"); // NOI18N
 	    }
 
 	}
@@ -462,6 +462,8 @@ final class CppFoldManager extends CppFoldManagerBase
     }
     
     public void changedUpdate(DocumentEvent evt, FoldHierarchyTransaction transaction) {
+//        scheduleParsing(evt.getDocument());
+//        documentModified = true;
     }
     
     public void removeEmptyNotify(Fold emptyFold) {
@@ -489,10 +491,10 @@ final class CppFoldManager extends CppFoldManagerBase
 	    if (primaryFile != null) {
 		String pfile = FileUtil.getFileDisplayName(primaryFile);
 		if (pfile.equals(path)) {
-		    log.log("CFM.objectParsed: Calling updateFolds for " + getShortName());
+		    log.log("CFM.objectParsed: Calling updateFolds for " + getShortName()); // NOI18N
 		    updateFolds();
 		} else {
-		    log.log("CFM.objectParsed: Skipping updateFolds");
+		    log.log("CFM.objectParsed: Skipping updateFolds"); // NOI18N
 		}
 	    }
 	}
@@ -737,7 +739,7 @@ final class CppFoldManager extends CppFoldManagerBase
                     template = IFDEF_FOLD_TEMPLATE;
                     break;
                 default:
-                    assert (false) : "unsupported block type " + fi;
+                    assert (false) : "unsupported block type " + fi; // NOI18N
             }
             // TODO: our lexer don't provide enough information about folds
             // it produces. NB java ids based on MOFID are more reliable.
@@ -779,7 +781,7 @@ final class CppFoldManager extends CppFoldManagerBase
                     //	(origInfo != null && (origFold = origInfo.getFold()) != null)
                     //  ? origFold.isCollapsed() : documentModified;
                             
-		    log.log("CFM.FunctionFoldInfo.updateHierarchy: Creating fold at (" +
+		    log.log("CFM.FunctionFoldInfo.updateHierarchy: Creating fold at (" +  // NOI18N
 			    startOffset + ", " + endOffset + ")"); // NOI18N
                     this.fold = getOperation().addToHierarchy(
                         template.getType(), template.getDescription(), collapsed,
@@ -790,7 +792,7 @@ final class CppFoldManager extends CppFoldManagerBase
                     );
                 }
             } else {
-		log.log("CFM.FunctionFoldInfo.updateHierarchy: No functionStartPos, skipping");
+		log.log("CFM.FunctionFoldInfo.updateHierarchy: No functionStartPos, skipping"); // NOI18N
 	    }
 	}
 

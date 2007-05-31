@@ -61,13 +61,10 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
     public void propertyChange(PropertyChangeEvent e) {
         if (e.getPropertyName() == DebuggerManager.PROP_CURRENT_ENGINE) {
             updateCurrentDebugger();
-            //updateCurrentThread();
             annotate();
         } else if (e.getPropertyName() == GdbDebugger.PROP_CURRENT_THREAD) {
-            //updateCurrentThread();
             annotate();
         } else if (e.getPropertyName() == GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME) {
-            //updateCurrentThread();
             annotate();
         } else if (e.getPropertyName() == GdbDebugger.PROP_STATE) {
             annotate();
@@ -99,19 +96,10 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         return (GdbDebugger) currentEngine.lookupFirst(null, GdbDebugger.class);
     }
 
-    private void updateCurrentThread () {
-        // get current thread
-//        if (currentDebugger != null) 
-//            currentThread = currentDebugger.getCurrentThread ();
-//        else
-//            currentThread = null;
-    }
-
     /**
      * Annotates current thread or removes annotations.
      */
     private void annotate() {
-        //assert (!(currentDebugger == null && Boolean.getBoolean("gdb.assertions.enabled")));
         if (currentDebugger == null) {
             return;
         }
@@ -163,7 +151,6 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
     private RequestProcessor.Task taskRemove;
     private RequestProcessor.Task taskAnnotate;
     private List stackToAnnotate;
-    //private SourcePath sourcePathToAnnotate;
 
     private void removeAnnotations() {
         synchronized (rp) {

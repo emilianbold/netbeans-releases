@@ -1,0 +1,4 @@
+argc int
+argv char**
+main(int argc, char** argv) int
+S1

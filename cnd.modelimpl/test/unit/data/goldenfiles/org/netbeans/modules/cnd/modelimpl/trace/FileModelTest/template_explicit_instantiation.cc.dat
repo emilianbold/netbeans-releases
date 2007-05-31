@@ -1,0 +1,42 @@
+
+State of macro map:
+Own Map:
+MACROS (sorted 0):
+System Map:
+MACROS (sorted 0):
+
+
+========== Dumping model of FILE template_explicit_instantiation.cc
+Includes:
+    <no includes>
+Macros:
+    <no macros>
+CLASS Cls<> (Cls ) [1:1/0-2:3/32] lcurly=28
+    BASE CLASSES:
+    MEMBERS:
+FUNCTION DEFINITION min  [6:1/60-8:2/119] FunctionDDImpl
+    SIGNATURE min(T,T)
+    UNIQUE NAME FUNCTION_DEFINITION:min(T,T)
+    DECLARATION: min  [6:1/60-8:2/119]
+    PARAMETERS:
+        x [6:25/84-6:28/87] type: $unresolved$::T TEXT=T  [6:25/84-6:26/85] init: null
+        y [6:30/89-6:33/92] type: $unresolved$::T TEXT=T  [6:30/89-6:31/90] init: null
+    RETURNS $unresolved$::T TEXT=T  [6:19/78-6:20/79]
+    STATEMENT Compound  [6:35/94-8:2/119]
+        STATEMENT Return  [7:1/96-7:22/117] text: 'return x < y ? x : y;'
+
+========== Dumping model of PROJECT DummyProject
+CLASS Cls<> (Cls ) [1:1/0-2:3/32] lcurly=28
+    BASE CLASSES:
+    MEMBERS:
+FUNCTION DEFINITION min  [6:1/60-8:2/119] FunctionDDImpl
+    SIGNATURE min(T,T)
+    UNIQUE NAME FUNCTION_DEFINITION:min(T,T)
+    DECLARATION: min  [6:1/60-8:2/119]
+    PARAMETERS:
+        x [6:25/84-6:28/87] type: $unresolved$::T TEXT=T  [6:25/84-6:26/85] init: null
+        y [6:30/89-6:33/92] type: $unresolved$::T TEXT=T  [6:30/89-6:31/90] init: null
+    RETURNS $unresolved$::T TEXT=T  [6:19/78-6:20/79]
+    STATEMENT Compound  [6:35/94-8:2/119]
+        STATEMENT Return  [7:1/96-7:22/117] text: 'return x < y ? x : y;'
+

@@ -313,7 +313,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
 	    DialogDisplayer.getDefault().notify(dialogDescriptor);
 	    if (dialogDescriptor.getValue() != DialogDescriptor.OK_OPTION)
 		return;
-            if (libraryOptionPanel.getOption(conf).length() == 0)
+            if (libraryOptionPanel.getOption(conf).trim().length() == 0)
 		return;
 	    myListEditorPanel.addObjectAction(new LibraryItem.OptionItem(libraryOptionPanel.getOption(conf)));
 	}

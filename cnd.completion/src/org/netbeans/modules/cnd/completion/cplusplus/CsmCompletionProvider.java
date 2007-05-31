@@ -70,12 +70,13 @@ public class CsmCompletionProvider implements CompletionProvider {
     }
     
     public CompletionTask createTask(int queryType, JTextComponent component) {
-        if (queryType == COMPLETION_QUERY_TYPE)
+        if (queryType == COMPLETION_QUERY_TYPE) {
             return new AsyncCompletionTask(new Query(component.getCaret().getDot()), component);
-        else if (queryType == DOCUMENTATION_QUERY_TYPE)
+        } else if (queryType == DOCUMENTATION_QUERY_TYPE) {
             return new AsyncCompletionTask(new DocQuery(null), component);
-        else if (queryType == TOOLTIP_QUERY_TYPE)
+        } else if (queryType == TOOLTIP_QUERY_TYPE) {
             return new AsyncCompletionTask(new ToolTipQuery(), component);
+        }
         return null;
     }
     
@@ -117,19 +118,20 @@ public class CsmCompletionProvider implements CompletionProvider {
             // TODO: scanning-in-progress
 //            if (JavaMetamodel.getManager().isScanInProgress())
 //                resultSet.setWaitText(NbBundle.getMessage(CsmCompletionProvider.class, "scanning-in-progress")); //NOI18N
-            NbCsmCompletionQuery query = new NbCsmCompletionQuery();
-            NbCsmCompletionQuery.CsmCompletionResult res = (NbCsmCompletionQuery.CsmCompletionResult)query.query(component, caretOffset,
-                    Utilities.getSyntaxSupport(component)
-            );
-            if (res != null) {
-                queryCaretOffset = caretOffset;
-                queryAnchorOffset = res.getSubstituteOffset();
-                Collection items = res.getData();
-                resultSet.estimateItems(items.size(), -1);
-                resultSet.setTitle(res.getTitle());
-                resultSet.setAnchorOffset(queryAnchorOffset);
-                resultSet.addAllItems(items);
-                queryResult = res;
+            CsmSyntaxSupport sup = (CsmSyntaxSupport)Utilities.getSyntaxSupport(component).get(CsmSyntaxSupport.class);
+            if (!sup.isCompletionDisabled(caretOffset)) {
+                NbCsmCompletionQuery query = new NbCsmCompletionQuery();
+                NbCsmCompletionQuery.CsmCompletionResult res = (NbCsmCompletionQuery.CsmCompletionResult)query.query(component, caretOffset, sup);
+                if (res != null) {
+                    queryCaretOffset = caretOffset;
+                    queryAnchorOffset = res.getSubstituteOffset();
+                    Collection items = res.getData();
+                    resultSet.estimateItems(items.size(), -1);
+                    resultSet.setTitle(res.getTitle());
+                    resultSet.setAnchorOffset(queryAnchorOffset);
+                    resultSet.addAllItems(items);
+                    queryResult = res;
+                }
             }
             resultSet.finish();
         }

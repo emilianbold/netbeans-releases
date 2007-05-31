@@ -25,6 +25,7 @@ import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.VectorNodeProp;
 import org.openide.nodes.Sheet;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public class CCCCompilerConfiguration extends BasicCompilerConfiguration {
@@ -255,7 +256,7 @@ public class CCCCompilerConfiguration extends BasicCompilerConfiguration {
             else
                 master = null;
 	}
-	set1.put(new VectorNodeProp(getIncludeDirectories(), getInheritIncludes(), getBaseDir(), new String[] {"IncludeDirectories", getString("IncludeDirectoriesTxt"), getString("IncludeDirectoriesHint"), inheritedValues}, true)); // NOI18N
+	set1.put(new VectorNodeProp(getIncludeDirectories(), getInheritIncludes(), getBaseDir(), new String[] {"IncludeDirectories", getString("IncludeDirectoriesTxt"), getString("IncludeDirectoriesHint"), inheritedValues}, true, new HelpCtx("AddtlIncludeDirectories"))); // NOI18N
 	// Preprocessor Macros
 	inheritedValues = ""; // NOI18N
         master = (CCCCompilerConfiguration)getMaster();

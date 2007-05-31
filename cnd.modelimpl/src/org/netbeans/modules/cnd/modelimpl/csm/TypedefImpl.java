@@ -195,7 +195,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
                 }
             }
             if( classifier != null ) {
-                return TypeImpl.createType(classifier, getContainingFile(), ptrOperator, arrayDepth);
+                return TypeFactory.createType(classifier, getContainingFile(), ptrOperator, arrayDepth);
             }
         //}
             return null;

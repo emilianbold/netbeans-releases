@@ -120,10 +120,10 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
 			    do {
 				TypeImpl type;
 				if( typeToken.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ) {
-				    type = TypeImpl.createBuiltinType(typeToken.getText(), null, 0, typeToken, getContainingFile());
+				    type = TypeFactory.createBuiltinType(typeToken.getText(), null, 0, typeToken, getContainingFile());
 				}
 				else {
-				    type = TypeImpl.createType(typeToken, getContainingFile(), null, 0);
+				    type = TypeFactory.createType(typeToken, getContainingFile(), null, 0);
 				}
 				String name = next.getText();
 				VariableImpl var = new VariableImpl<CsmVariable>(next, getContainingFile(), type, name, true);
@@ -156,10 +156,10 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
 	    if( next != null && next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID ) {
 		TypeImpl type;
 		if( typeToken.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ) {
-		    type = TypeImpl.createBuiltinType(typeToken.getText(), null, 0, typeToken, getContainingFile());
+		    type = TypeFactory.createBuiltinType(typeToken.getText(), null, 0, typeToken, getContainingFile());
 		}
 		else {
-		    type = TypeImpl.createType(typeToken, getContainingFile(), null, 0);
+		    type = TypeFactory.createType(typeToken, getContainingFile(), null, 0);
 		}
 		String name = next.getText();
 		VariableImpl var = new VariableImpl<CsmVariable>(next, getContainingFile(), type, name, true);

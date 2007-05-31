@@ -29,6 +29,7 @@ import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.junit.Manager;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
@@ -141,4 +142,12 @@ public class CndCoreTestUtils {
     public static boolean diff(String first, String second, String diff) throws IOException {
         return Manager.getSystemDiff().diff(first, second, diff);
     }    
+
+    /**
+     * converts (line, col) into offset. Line and column info are 1-based, so 
+     * the start of document is (1,1)
+     */
+    public static int getDocumentOffset(BaseDocument doc, int lineIndex, int colIndex) {
+        return Utilities.getRowStartFromLineOffset(doc, lineIndex -1) + (colIndex - 1);
+    }
 }

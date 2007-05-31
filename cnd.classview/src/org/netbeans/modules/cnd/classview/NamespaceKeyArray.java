@@ -254,6 +254,9 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
     
     public void projectParsingCancelled(CsmProject project) {
     }
+
+    public void fileInvalidated(CsmFile file) {
+    }
     
     public void fileParsingStarted(CsmFile file) {
     }

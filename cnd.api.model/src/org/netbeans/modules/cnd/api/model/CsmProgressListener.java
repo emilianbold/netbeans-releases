@@ -33,6 +33,8 @@ public interface CsmProgressListener {
 
     void projectParsingCancelled(CsmProject project);
     
+    void fileInvalidated(CsmFile file);
+    
     void fileParsingStarted(CsmFile file);
     
     void fileParsingFinished(CsmFile file);

@@ -140,6 +140,7 @@ public class CompilerSetConfiguration extends IntConfiguration implements Compil
     }
     
     public void assign(CompilerSetConfiguration conf) {
+        setDirty(getValue() != conf.getValue());
         setValue(conf.getValue());
         setModified(conf.getModified());
     }

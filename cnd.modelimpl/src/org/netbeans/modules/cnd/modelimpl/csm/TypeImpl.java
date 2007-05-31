@@ -55,7 +55,8 @@ public class TypeImpl extends OffsetableBase implements CsmType {
     private CsmClassifier classifierOLD;
     private CsmUID<CsmClassifier> classifierUID;
     
-    private TypeImpl(CsmClassifier classifier, int pointerDepth, boolean reference, int arrayDepth, AST ast, CsmFile file) {
+    // package-local - for facory only
+    TypeImpl(CsmClassifier classifier, int pointerDepth, boolean reference, int arrayDepth, AST ast, CsmFile file) {
         super(ast, file);
         this._setClassifier(classifier);
         this.pointerDepth = pointerDepth;
@@ -75,7 +76,8 @@ public class TypeImpl extends OffsetableBase implements CsmType {
         }
     }
 
-    private TypeImpl(AST classifier, CsmFile file, int pointerDepth, boolean reference, int arrayDepth) {
+    // package-local - for facory only
+    TypeImpl(AST classifier, CsmFile file, int pointerDepth, boolean reference, int arrayDepth) {
         super(classifier, file);
         //setAst(classifier);
         this.pointerDepth = pointerDepth;
@@ -197,23 +199,27 @@ public class TypeImpl extends OffsetableBase implements CsmType {
     }
 
     public CsmClassifier getClassifier() {
+        return getClassifier(null);
+    }
+
+    public CsmClassifier getClassifier(Resolver parent) {
         CsmClassifier classifier = _getClassifier();
         if (classifier != null && (!(classifier instanceof CsmValidable) || (((CsmValidable)classifier).isValid()))) {
             return classifier;
         } else {
             _setClassifier(null);
             if (qname != null) {
-                _setClassifier(renderClassifier(qname));
+                _setClassifier(renderClassifier(qname, parent));
             } else if (classifierText.length() > 0) {
-                _setClassifier(renderClassifier(new String[] { classifierText } ));
+                _setClassifier(renderClassifier(new String[] { classifierText }, parent ));
             }
         }
         return _getClassifier();
     }
     
-    private CsmClassifier renderClassifier(String[] qname) {
+    private CsmClassifier renderClassifier(String[] qname, Resolver parent) {
         CsmClassifier result = null;
-        Resolver resolver = ResolverFactory.createResolver(getContainingFile(), firstOffset);
+        Resolver resolver = ResolverFactory.createResolver(getContainingFile(), firstOffset, parent);
         CsmObject o = resolver.resolve(qname);
         if( CsmKindUtilities.isClassifier(o) ) {
             result = (CsmClassifier) o;
@@ -309,89 +315,6 @@ public class TypeImpl extends OffsetableBase implements CsmType {
     
     public int getPointerDepth() {
         return pointerDepth;
-    }
-
-    public static TypeImpl createType(AST classifier, CsmFile file,  AST ptrOperator, int arrayDepth) {
-        boolean pointer = false;
-        boolean refence = false;
-        int pointerDepth = 0;
-        while( ptrOperator != null && ptrOperator.getType() == CPPTokenTypes.CSM_PTR_OPERATOR ) {
-            //for( AST token = ptrOperator.getFirstChild(); token != null; token = token.getNextSibling() ) {
-                AST token = ptrOperator.getFirstChild();
-                switch( token.getType() ) {
-                    case CPPTokenTypes.STAR:
-                        pointerDepth++;
-                        break;
-                    case CPPTokenTypes.AMPERSAND:
-                        refence = true;
-                        break;
-                }
-            //}
-            ptrOperator = ptrOperator.getNextSibling();
-        }
-        return new TypeImpl(classifier, file, pointerDepth, refence, arrayDepth);
-    }
-    
-    public static TypeImpl createBuiltinType(String text, AST ptrOperator, int arrayDepth, AST ast, CsmFile file) {
-        CsmBuiltIn builtin = BuiltinTypes.getBuiltIn(text);
-        return createType(builtin, ptrOperator, arrayDepth, ast, file);
-    }
-
-    public static TypeImpl createType(CsmClassifier classifier, AST ptrOperator, int arrayDepth, AST ast, CsmFile file) {
-        boolean pointer = false;
-        boolean refence = false;
-        int pointerDepth = 0;
-        if (ptrOperator != null &&
-            (ptrOperator.getType() == CPPTokenTypes.CSM_CLASS_DECLARATION ||
-            ptrOperator.getType() == CPPTokenTypes.CSM_ENUM_DECLARATION)) {
-            ptrOperator = ptrOperator.getFirstChild();
-            int count = 0; 
-            boolean findBody = false;
-            boolean findStruct = false;
-            for (; ptrOperator != null; ptrOperator = ptrOperator.getNextSibling()){
-                switch( ptrOperator.getType() ) {
-                    case CPPTokenTypes.LITERAL_struct:
-                    case CPPTokenTypes.LITERAL_class:
-                    case CPPTokenTypes.LITERAL_enum:
-                    case CPPTokenTypes.LITERAL_union:
-                        findStruct = true;
-                        continue;
-                    case CPPTokenTypes.LCURLY:
-                        findBody = true;
-                        count++;
-                        continue;
-                    case CPPTokenTypes.RCURLY:
-                        count--;
-                        if (findStruct && count == -1){
-                            count = 0;
-                            findStruct = false;
-                            findBody = true;
-                        }
-                        continue;
-                    default:
-                        if (findBody && count == 0) {
-                            break;
-                        }
-                        continue;
-                }
-                break;
-            }
-        }
-        while( ptrOperator != null && ptrOperator.getType() == CPPTokenTypes.CSM_PTR_OPERATOR ) {
-            //for( AST token = ptrOperator.getFirstChild(); token != null; token = token.getNextSibling() ) {
-                AST token = ptrOperator.getFirstChild();
-                switch( token.getType() ) {
-                    case CPPTokenTypes.STAR:
-                        pointerDepth++;
-                        break;
-                    case CPPTokenTypes.AMPERSAND:
-                        refence = true;
-                        break;
-                }
-            //}
-            ptrOperator = ptrOperator.getNextSibling();
-        }
-        return new TypeImpl(classifier, pointerDepth, refence, arrayDepth, ast, file);
     }
 
     private CsmClassifier _getClassifier() {

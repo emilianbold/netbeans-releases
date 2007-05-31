@@ -60,10 +60,14 @@ public class FunctionDefinitionImpl extends FunctionImplEx<CsmFunctionDefinition
     }
 
     public CsmFunction getDeclaration() {
+        return getDeclaration(null);
+    }
+    
+    public CsmFunction getDeclaration(Resolver parent) {
         CsmFunction declaration = _getDeclaration();
 	if( declaration == null ) {
             _setDeclaration(null);
-	    declaration = findDeclaration();
+	    declaration = findDeclaration(parent);
             _setDeclaration(declaration);
 	}
 	return declaration;
@@ -72,7 +76,7 @@ public class FunctionDefinitionImpl extends FunctionImplEx<CsmFunctionDefinition
     private CsmFunction _getDeclaration() {
         if (TraceFlags.USE_REPOSITORY) {
             CsmFunction decl = UIDCsmConverter.UIDtoDeclaration(this.declarationUID);
-            assert decl != null || declarationUID == null : "null object for UID " + declarationUID;
+            // null object is OK here, because of changed cached reference
             return decl;
         } else {
             return this.declarationOLD;
@@ -87,11 +91,12 @@ public class FunctionDefinitionImpl extends FunctionImplEx<CsmFunctionDefinition
             this.declarationOLD = decl;
         }
     }
-    private CsmFunction findDeclaration() {
+    
+    private CsmFunction findDeclaration(Resolver parent) {
         String uname = CsmDeclaration.Kind.FUNCTION.toString() + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
         CsmDeclaration def = getContainingFile().getProject().findDeclaration(uname);
 	if( def == null ) {
-	    CsmObject owner = findOwner();
+	    CsmObject owner = findOwner(parent);
 	    if( owner instanceof CsmClass ) {
 		def = findByName(((CsmClass) owner).getMembers(), getName());
 	    }

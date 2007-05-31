@@ -82,7 +82,7 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProvider 
         }
     }  
     
-    protected Token getToken(Document doc, int offset) {
+    protected static Token getToken(Document doc, int offset) {
         return TokenUtilities.getToken(doc, offset);
     }
     

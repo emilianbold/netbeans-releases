@@ -29,4 +29,11 @@
 <project name="org.netbeans.modules.cnd.repository" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.netbeans.modules.cnd.repository.</description>
     <import file="nbproject/build-impl.xml"/>
+    
+    <target name="do-test-build" depends="-build-cnd-tests,projectized-common.do-test-build">
+    </target>
+
+    <target name="-build-cnd-tests">
+        <ant dir="../modelimpl" target="test-build" inheritall="false" />
+    </target>      
 </project>

@@ -1014,6 +1014,9 @@ public class CCSyntax extends Syntax {
             case ISA_HASH:
                 state = INIT;
                 return CCTokenContext.HASH;
+            case ISA_COLON:
+                state = INIT;
+                return CCTokenContext.COLON;
             }
         }
 

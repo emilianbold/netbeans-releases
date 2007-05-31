@@ -61,7 +61,7 @@ final class MakefileOrConfigureDescriptorPanel implements WizardDescriptor.Panel
     } 
 
     public HelpCtx getHelp() {
-        return new HelpCtx("NewMakeWizardP2"); // NOI18N
+        return new HelpCtx("NewMakeWizardP11"); // NOI18N
     }
     
     public boolean isValid() {

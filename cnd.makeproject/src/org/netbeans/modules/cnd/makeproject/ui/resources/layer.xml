@@ -23,6 +23,8 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Templates">
         <folder name="Project">
+            <attr name="Standard/Native" boolvalue="true"/>
+            <attr name="Native/Samples" boolvalue="true"/>
             <folder name="Native">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/desktop.html"/>
