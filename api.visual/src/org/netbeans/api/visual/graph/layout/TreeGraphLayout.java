@@ -96,7 +96,7 @@ public class TreeGraphLayout<N, E> {
      * @return the collection of children
      */
     protected Collection<N> resolveChildren (N node) {
-        Collection<E> edges = scene.findNodeEdges (node, false, true);
+        Collection<E> edges = scene.findNodeEdges (node, true, false);
         HashSet<N> nodes = new HashSet<N> ();
         for (E edge : edges)
             nodes.add (scene.getEdgeTarget (edge));
