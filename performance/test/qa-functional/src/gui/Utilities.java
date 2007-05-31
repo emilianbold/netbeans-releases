@@ -432,15 +432,19 @@ public class Utilities {
         long oldTimeout = runtimeTree.getTimeouts().getTimeout("JTreeOperator.WaitNextNodeTimeout");
         runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", 60000);
         try {
+            log("Looking path = Servers");
+            path = runtimeTree.findPath("Servers");
+            runtimeTree.selectPath(path);
             log("Looking path = Servers|Sun Java System Application Server");
             path = runtimeTree.findPath("Servers|Sun Java System Application Server"); // NOI18N
+            runtimeTree.selectPath(path);
         } catch (Exception exc) {
             exc.printStackTrace(System.err);
             throw new Error("Cannot find Application Server Node: "+exc.getMessage());
         }
         runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", oldTimeout);
 //        rto.setComparator(previousComparator);
-        return new Node(rto.tree(),path);
+        return new Node(runtimeTree,path);
     }
     
     
