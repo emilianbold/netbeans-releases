@@ -296,7 +296,7 @@ public class ComponentInspector extends TopComponent
             getExplorerManager().setSelectedNodes(nodes);
     }
 
-    Node[] getSelectedNodes() {
+    public Node[] getSelectedNodes() {
         return getExplorerManager().getSelectedNodes();
     }
 

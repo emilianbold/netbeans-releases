@@ -55,6 +55,7 @@ import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.palette.PaletteUtils;
 import org.openide.nodes.Node;
+import org.openide.nodes.NodeOp;
 
 /**
  *
@@ -524,24 +525,23 @@ public class MenuEditLayer extends JPanel {
         }
     }
     
-    /* josh: use this as a base to add the context menu to the MenuEditLayer
     private void showContextMenu(Point popupPos) {
         ComponentInspector inspector = ComponentInspector.getInstance();
+        /*
         TopComponent activated = TopComponent.getRegistry().getActivated();
         if (activated != formDesigner.multiViewObserver.getTopComponent()
                 && activated != inspector)
-            return;
+            return;*/
 
-        formDesigner.componentActivated(); // just for sure...
+        //formDesigner.componentActivated(); // just for sure...
 
         Node[] selectedNodes = inspector.getSelectedNodes();
         JPopupMenu popup = NodeOp.findContextMenu(selectedNodes);
         if (popup != null) {
-            popup.show(HandleLayer.this, popupPos.x, popupPos.y);
+            popup.show(this, popupPos.x, popupPos.y);
         }
     }
-*/
-    
+
     
     // returns true if this is a menu container that should be highlighted if the component
     // tcomp is dragged over it.
@@ -864,6 +864,12 @@ public class MenuEditLayer extends JPanel {
                     isEditing = true;
                     formDesigner.startInPlaceEditing(radcomp);
                 }
+            }
+            
+            // show context menu
+            if(e.isPopupTrigger()) {
+                showContextMenu(e.getPoint());
+                return;
             }
 
             //prep for drag motion for menuitem to menuitem drags
