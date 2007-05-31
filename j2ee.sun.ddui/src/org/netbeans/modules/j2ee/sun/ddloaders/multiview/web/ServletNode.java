@@ -32,6 +32,7 @@ public class ServletNode extends NamedBeanNode {
 
     public ServletNode(SectionNodeView sectionNodeView, final Servlet servlet, final ASDDVersion version) {
         super(sectionNodeView, servlet, Servlet.SERVLET_NAME, ICON_BASE_SERVLET_NODE, version);
+        enableRemoveAction();
     }
 
     protected SectionNodeInnerPanel createNodeInnerPanel() {

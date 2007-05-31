@@ -79,6 +79,7 @@ public class ServiceRefPanel extends SectionNodeInnerPanel {
         jLblWsdlOverride = new javax.swing.JLabel();
         jTxtWsdlOverride = new javax.swing.JTextField();
 
+        setOpaque(false);
         setLayout(new java.awt.GridBagLayout());
 
         jPnlServiceName.setOpaque(false);
@@ -180,7 +181,7 @@ public class ServiceRefPanel extends SectionNodeInnerPanel {
 //	}
 
     public String getHelpId() {
-		String result = "AS_CFG_ServiceRefGeneral";	// NOI18N
+		String result = "AS_CFG_ServiceRefGeneral"; // NOI18N
 
 //		// Determine which tab has focus and return help context for that tab.
 //		switch(serviceRefTabbedPanel.getSelectedIndex()) {

@@ -38,8 +38,10 @@ public class SecurityRoleMappingGroupNode extends NamedBeanGroupNode {
 
     public SecurityRoleMappingGroupNode(SectionNodeView sectionNodeView, RootInterface rootDD, ASDDVersion version) {
         super(sectionNodeView, rootDD, SecurityRoleMapping.ROLE_NAME, 
-                NbBundle.getMessage(SecurityRoleMappingGroupNode.class, "LBL_SecurityRoleMappingGroupHeader"),
+                NbBundle.getMessage(SecurityRoleMappingGroupNode.class, "LBL_SecurityRoleMappingGroupHeader"), // NOI18N
                 ICON_BASE_SECURITY_ROLE_MAPPING_NODE, version);
+        
+        enableAddAction(NbBundle.getMessage(SecurityRoleMappingGroupNode.class, "LBL_AddSecurityRoleMapping")); // NOI18N
     }
 
     protected SectionNode createNode(CommonDDBean bean) {
@@ -50,14 +52,53 @@ public class SecurityRoleMappingGroupNode extends NamedBeanGroupNode {
         SecurityRoleMapping [] mappings = null;
         
         // TODO find a better way to do this for common beans.
-        if(rootDD instanceof SunWebApp) {
-            mappings = ((SunWebApp) rootDD).getSecurityRoleMapping();
-        } else if(rootDD instanceof SunEjbJar) {
-            mappings = ((SunEjbJar) rootDD).getSecurityRoleMapping();
-        } else if(rootDD instanceof SunApplication) {
-            mappings = ((SunApplication) rootDD).getSecurityRoleMapping();
+        if(commonDD instanceof SunWebApp) {
+            mappings = ((SunWebApp) commonDD).getSecurityRoleMapping();
+        } else if(commonDD instanceof SunEjbJar) {
+            mappings = ((SunEjbJar) commonDD).getSecurityRoleMapping();
+        } else if(commonDD instanceof SunApplication) {
+            mappings = ((SunApplication) commonDD).getSecurityRoleMapping();
         }
         return mappings;
     }
 
+    protected CommonDDBean addNewBean() {
+        SecurityRoleMapping newMapping = null;
+        
+        // TODO find a better way to do this for common beans.
+        if(commonDD instanceof SunWebApp) {
+            SunWebApp sunWebApp = (SunWebApp) commonDD;
+            newMapping = sunWebApp.newSecurityRoleMapping();
+            sunWebApp.addSecurityRoleMapping(newMapping);
+        } else if(commonDD instanceof SunEjbJar) {
+            SunEjbJar sunEjbJar = (SunEjbJar) commonDD;
+            newMapping = sunEjbJar.newSecurityRoleMapping();
+            sunEjbJar.addSecurityRoleMapping(newMapping);
+        } else if(commonDD instanceof SunApplication) {
+            SunApplication sunApplication = (SunApplication) commonDD;
+            newMapping = sunApplication.newSecurityRoleMapping();
+            sunApplication.addSecurityRoleMapping(newMapping);
+        }
+        
+        newMapping.setRoleName("role" + getNewBeanId()); // NOI18N
+        
+        return newMapping;
+    }
+    
+    protected void removeBean(CommonDDBean bean) {
+        SecurityRoleMapping mapping = (SecurityRoleMapping) bean;
+        
+        // TODO find a better way to do this for common beans.
+        if(commonDD instanceof SunWebApp) {
+            SunWebApp sunWebApp = (SunWebApp) commonDD;
+            sunWebApp.removeSecurityRoleMapping(mapping);
+        } else if(commonDD instanceof SunEjbJar) {
+            SunEjbJar sunEjbJar = (SunEjbJar) commonDD;
+            sunEjbJar.removeSecurityRoleMapping(mapping);
+        } else if(commonDD instanceof SunApplication) {
+            SunApplication sunApplication = (SunApplication) commonDD;
+            sunApplication.removeSecurityRoleMapping(mapping);
+        }
+    }
+    
 }

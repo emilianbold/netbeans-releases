@@ -1,0 +1,518 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+package org.netbeans.modules.j2ee.sun.share.configbean.customizers.webservice;
+
+import java.awt.Dimension;
+import javax.swing.JComponent;
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
+import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
+import org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
+import org.netbeans.modules.j2ee.sun.dd.api.common.PortInfo;
+import org.netbeans.modules.j2ee.sun.dd.api.common.WsdlPort;
+import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.DDTextFieldEditorModel;
+import org.netbeans.modules.xml.multiview.ItemEditorHelper;
+import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
+import org.openide.ErrorManager;
+
+/**
+ *
+ * @author Peter Williams
+ */
+public class PortInfoPanel extends SectionNodeInnerPanel {
+
+    private SunDescriptorDataObject dataObject;
+    private PortInfo portInfo;
+    private ASDDVersion version;
+//    private boolean selectedPortSetup;
+    
+//	private PortInfoMapping selectedPortInfoMap;
+//	private PortInfo selectedPortInfo;
+
+	/** Creates new form SelectedPortInfoPanel */
+	public PortInfoPanel(SectionNodeView sectionNodeView, final PortInfo portInfo, final ASDDVersion version) {
+        super(sectionNodeView);
+        this.dataObject = (SunDescriptorDataObject) sectionNodeView.getDataObject();
+        this.portInfo = portInfo;
+        this.version = version;
+//        this.selectedPortSetup = false;
+        
+		initComponents();
+		initUserComponents();
+	}
+    
+    private void initUserComponents() {
+//		try {
+//			selectedPortSetup = true;
+//			selectedPortInfoMap = piMap;
+
+//			if(selectedPortInfoMap != null) {
+//				selectedPortInfo = selectedPortInfoMap.getPortInfo();
+//			} else {
+//				selectedPortInfo = null;
+//			}
+
+            boolean hasMessageSecurityBinding = false;
+            
+            jTxtServiceEI.setText(portInfo.getServiceEndpointInterface());
+            WsdlPort wsdlPort = portInfo.getWsdlPort();
+            if(wsdlPort != null) {
+                jTxtLocalpart.setText(wsdlPort.getLocalpart());
+                jTxtNamespaceURI.setText(wsdlPort.getNamespaceURI());
+            } else {
+                jTxtLocalpart.setText("");		// NOI18N
+                jTxtNamespaceURI.setText("");	// NOI18N
+            }
+
+            try {
+                hasMessageSecurityBinding = (portInfo.getMessageSecurityBinding() != null);
+            } catch (VersionNotSupportedException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+
+            jChkEnableMsgSecurity.setSelected(hasMessageSecurityBinding);
+            enableMessageSecurityUI(hasMessageSecurityBinding);
+            
+//			if(portInfo != null) {
+//				stubPropertiesPanel.setModel(selectedPortInfo, asVersion);
+//				callPropertiesPanel.setModel(selectedPortInfo, asVersion);
+//			} else {
+//				PortInfo stub = StorageBeanFactory.getStorageBeanFactory(asVersion).createPortInfo();
+//				stubPropertiesPanel.setModel(stub, asVersion);
+//				callPropertiesPanel.setModel(stub, asVersion);
+//			}
+//		} finally {
+//			selectedPortSetup = false;
+//		}
+        
+        XmlMultiViewDataSynchronizer synchronizer = dataObject.getModelSynchronizer();
+        addRefreshable(new ItemEditorHelper(jTxtServiceEI, new PortInfoTextFieldEditorModel(synchronizer, PortInfo.SERVICE_ENDPOINT_INTERFACE)));
+//        addRefreshable(new ItemEditorHelper(jTxtNamespaceURI, new PortInfoTextFieldEditorModel(synchronizer, PortInfo.PRINCIPAL_NAME)));
+//        addRefreshable(new ItemEditorHelper(jTxtLocalpart, new PortInfoTextFieldEditorModel(synchronizer, PortInfo.PRINCIPAL_NAME, ATTR_CLASSNAME)));
+        
+    }
+
+	/** This method is called from within the constructor to
+	 * initialize the form.
+	 * WARNING: Do NOT modify this code. The content of this method is
+	 * always regenerated by the Form Editor.
+	 */
+    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
+
+        jPnlPortInfoDesc = new javax.swing.JPanel();
+        jLblServiceEI = new javax.swing.JLabel();
+        jTxtServiceEI = new javax.swing.JTextField();
+        jLblNamespaceURI = new javax.swing.JLabel();
+        jTxtNamespaceURI = new javax.swing.JTextField();
+        jLblLocalpart = new javax.swing.JLabel();
+        jTxtLocalpart = new javax.swing.JTextField();
+        jLblEnableMsgSecurity = new javax.swing.JLabel();
+        jChkEnableMsgSecurity = new javax.swing.JCheckBox();
+        jBtnEditBindings = new javax.swing.JButton();
+
+        setLayout(new java.awt.GridBagLayout());
+
+        jPnlPortInfoDesc.setOpaque(false);
+        jPnlPortInfoDesc.setLayout(new java.awt.GridBagLayout());
+
+        jLblServiceEI.setLabelFor(jTxtServiceEI);
+        jLblServiceEI.setText(ServiceRefCustomizer.bundle.getString("LBL_ServiceEndPoint_1")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        jPnlPortInfoDesc.add(jLblServiceEI, gridBagConstraints);
+
+        jTxtServiceEI.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                jTxtServiceEIKeyReleased(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        jPnlPortInfoDesc.add(jTxtServiceEI, gridBagConstraints);
+        jTxtServiceEI.getAccessibleContext().setAccessibleName(ServiceRefCustomizer.bundle.getString("ACSN_ServiceEndPoint")); // NOI18N
+        jTxtServiceEI.getAccessibleContext().setAccessibleDescription(ServiceRefCustomizer.bundle.getString("ACSD_ServiceEndPoint")); // NOI18N
+
+        jLblNamespaceURI.setLabelFor(jTxtNamespaceURI);
+        jLblNamespaceURI.setText(ServiceRefCustomizer.bundle.getString("LBL_NamespaceURI_1")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        jPnlPortInfoDesc.add(jLblNamespaceURI, gridBagConstraints);
+
+        jTxtNamespaceURI.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                jTxtNamespaceURIKeyReleased(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
+        jPnlPortInfoDesc.add(jTxtNamespaceURI, gridBagConstraints);
+        jTxtNamespaceURI.getAccessibleContext().setAccessibleName(ServiceRefCustomizer.bundle.getString("ACSN_NamespaceURI")); // NOI18N
+        jTxtNamespaceURI.getAccessibleContext().setAccessibleDescription(ServiceRefCustomizer.bundle.getString("ACSD_NamespaceURI")); // NOI18N
+
+        jLblLocalpart.setLabelFor(jTxtLocalpart);
+        jLblLocalpart.setText(ServiceRefCustomizer.bundle.getString("LBL_Localpart_1")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        jPnlPortInfoDesc.add(jLblLocalpart, gridBagConstraints);
+
+        jTxtLocalpart.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                jTxtLocalpartKeyReleased(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
+        jPnlPortInfoDesc.add(jTxtLocalpart, gridBagConstraints);
+        jTxtLocalpart.getAccessibleContext().setAccessibleName(ServiceRefCustomizer.bundle.getString("ACSN_Localpart")); // NOI18N
+        jTxtLocalpart.getAccessibleContext().setAccessibleDescription(ServiceRefCustomizer.bundle.getString("ACSD_Localpart")); // NOI18N
+
+        jLblEnableMsgSecurity.setText(WebServiceDescriptorCustomizer.bundle.getString("LBL_EnableMsgSecurity_1")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        jPnlPortInfoDesc.add(jLblEnableMsgSecurity, gridBagConstraints);
+
+        jChkEnableMsgSecurity.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        jChkEnableMsgSecurity.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        jChkEnableMsgSecurity.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                jChkEnableMsgSecurityItemStateChanged(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 12);
+        jPnlPortInfoDesc.add(jChkEnableMsgSecurity, gridBagConstraints);
+
+        jBtnEditBindings.setText(ServiceRefCustomizer.bundle.getString("LBL_EditMsgSecBindings")); // NOI18N
+        jBtnEditBindings.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBtnEditBindingsActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
+        jPnlPortInfoDesc.add(jBtnEditBindings, gridBagConstraints);
+        jBtnEditBindings.getAccessibleContext().setAccessibleName(ServiceRefCustomizer.bundle.getString("ACSN_EditMsgSecBindings")); // NOI18N
+        jBtnEditBindings.getAccessibleContext().setAccessibleDescription(ServiceRefCustomizer.bundle.getString("ACSD_EditMsgSecBindings")); // NOI18N
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
+        add(jPnlPortInfoDesc, gridBagConstraints);
+
+        getAccessibleContext().setAccessibleName(ServiceRefCustomizer.bundle.getString("ACSN_SelectedPortInfo")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(ServiceRefCustomizer.bundle.getString("ACSD_SelectedPortInfo")); // NOI18N
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void jBtnEditBindingsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnEditBindingsActionPerformed
+//        if(!selectedPortSetup) {
+//            try {
+//                ServiceRef theBean = masterPanel.getBean();
+//                ASDDVersion asVersion = theBean.getAppServerVersion();
+//                String asCloneVersion = "";
+//                
+//                // !PW FIXME find a better way to do this!!!
+//                if(theBean.getParent() instanceof WebAppRoot) {
+//                    asCloneVersion = asVersion.getWebAppVersionAsString();
+//                } else if(theBean.getParent() instanceof BaseEjb) {
+//                    asCloneVersion = asVersion.getEjbJarVersionAsString();
+//                } else if(theBean.getParent() instanceof AppClientRoot) {
+//                    asCloneVersion = asVersion.getAppClientVersionAsString();
+//                }
+//                
+//                MessageSecurityBinding binding = selectedPortInfo.getMessageSecurityBinding();
+//                if(binding == null) {
+//                    binding = selectedPortInfo.newMessageSecurityBinding();
+//                    selectedPortInfo.setMessageSecurityBinding(binding);
+//                }
+//                
+//                EditBinding.editMessageSecurityBinding(masterPanel, theBean, true, binding, asVersion, asCloneVersion);
+//            } catch (VersionNotSupportedException ex) {
+//                // Should not happen if we get this far.
+//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//            }
+//        }
+    }//GEN-LAST:event_jBtnEditBindingsActionPerformed
+
+    private void jChkEnableMsgSecurityItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jChkEnableMsgSecurityItemStateChanged
+//        if(!selectedPortSetup) {
+//            boolean hasMessageSecurity = Utils.interpretCheckboxState(evt);
+//            if(!hasMessageSecurity) {
+//                try {
+//                    selectedPortInfo.setMessageSecurityBinding(null);
+//                    masterPanel.getBean().setDirty();
+//                } catch (VersionNotSupportedException ex) {
+//                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//                }
+//            }
+//            enableMessageSecurityUI(hasMessageSecurity);
+//        }
+    }//GEN-LAST:event_jChkEnableMsgSecurityItemStateChanged
+
+	private void jTxtLocalpartKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTxtLocalpartKeyReleased
+//		WsdlPort wsdlPort = selectedPortInfo.getWsdlPort();
+//		if(wsdlPort == null) {
+//            ASDDVersion asVersion = masterPanel.getBean().getAppServerVersion();
+//			wsdlPort = StorageBeanFactory.getStorageBeanFactory(asVersion).createWsdlPort();
+//			selectedPortInfo.setWsdlPort(wsdlPort);
+//		}
+//
+//		wsdlPort.setLocalpart(jTxtLocalpart.getText());
+//		selectedPortInfoMap.updateDisplayText();
+//		masterPanel.getBean().setDirty();
+	}//GEN-LAST:event_jTxtLocalpartKeyReleased
+
+	private void jTxtNamespaceURIKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTxtNamespaceURIKeyReleased
+//		WsdlPort wsdlPort = selectedPortInfo.getWsdlPort();
+//		if(wsdlPort == null) {
+//            ASDDVersion asVersion = masterPanel.getBean().getAppServerVersion();
+//			wsdlPort = StorageBeanFactory.getStorageBeanFactory(asVersion).createWsdlPort();
+//			selectedPortInfo.setWsdlPort(wsdlPort);
+//		}
+//
+//		wsdlPort.setNamespaceURI(jTxtNamespaceURI.getText());
+//		selectedPortInfoMap.updateDisplayText();
+//		masterPanel.getBean().setDirty();
+	}//GEN-LAST:event_jTxtNamespaceURIKeyReleased
+
+	private void jTxtServiceEIKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTxtServiceEIKeyReleased
+//		selectedPortInfo.setServiceEndpointInterface(jTxtServiceEI.getText());
+//		selectedPortInfoMap.updateDisplayText();
+//		masterPanel.getBean().setDirty();
+	}//GEN-LAST:event_jTxtServiceEIKeyReleased
+
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton jBtnEditBindings;
+    private javax.swing.JCheckBox jChkEnableMsgSecurity;
+    private javax.swing.JLabel jLblEnableMsgSecurity;
+    private javax.swing.JLabel jLblLocalpart;
+    private javax.swing.JLabel jLblNamespaceURI;
+    private javax.swing.JLabel jLblServiceEI;
+    private javax.swing.JPanel jPnlPortInfoDesc;
+    private javax.swing.JTextField jTxtLocalpart;
+    private javax.swing.JTextField jTxtNamespaceURI;
+    private javax.swing.JTextField jTxtServiceEI;
+    // End of variables declaration//GEN-END:variables
+
+//	private void initUserComponents() {
+//		/** Add stub properties table panel :
+//		 *  TableEntry list has two properties: Name, Value
+//		 */
+//		ArrayList tableColumns = new ArrayList(2);
+//		tableColumns.add(new GenericTableModel.ValueEntry("Name",				// NOI18N - property name
+//			ServiceRefCustomizer.bundle.getString("LBL_Name_Column"), true));	// NOI18N
+//		tableColumns.add(new GenericTableModel.ValueEntry("Value",				// NOI18N - property name
+//			ServiceRefCustomizer.bundle.getString("LBL_Value_Column"), true));	// NOI18N
+//
+//        stubPropertiesModel = new GenericTableModel(PortInfo.STUB_PROPERTY,
+//			stubPropertyFactory, tableColumns);
+//        stubPropertiesModel.addTableModelListener(this);
+//		stubPropertiesPanel = new GenericTablePanel(stubPropertiesModel,
+//			ServiceRefCustomizer.bundle, "StubProperties",	// NOI18N - property name
+//			DynamicPropertyPanel.class, HelpContext.HELP_SERVICE_PORT_STUB_PROPERTY_POPUP,
+//			PropertyListMapping.getPropertyList(PropertyListMapping.SERVICE_REF_STUB_PROPERTIES));
+//
+//        GridBagConstraints gridBagConstraints = new GridBagConstraints();
+//        gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
+//        gridBagConstraints.fill = GridBagConstraints.BOTH;
+//        gridBagConstraints.weightx = 1.0;
+//        gridBagConstraints.weighty = 1.0;
+//		gridBagConstraints.insets = new Insets(0, 6, 0, 5);
+//		add(stubPropertiesPanel, gridBagConstraints);
+//
+//		/** Add call properties table panel :
+//		 *  Uses same TableEntry list as stubProperties
+//		 */
+//        callPropertiesModel = new GenericTableModel(PortInfo.CALL_PROPERTY,
+//			callPropertyFactory, tableColumns);
+//        callPropertiesModel.addTableModelListener(this);
+//		callPropertiesPanel = new GenericTablePanel(callPropertiesModel,
+//			ServiceRefCustomizer.bundle, "CallProperties",	// NOI18N - property name
+//			DynamicPropertyPanel.class, HelpContext.HELP_SERVICE_PORT_CALL_PROPERTY_POPUP,
+//			PropertyListMapping.getPropertyList(PropertyListMapping.SERVICE_REF_CALL_PROPERTIES));
+//
+//        gridBagConstraints = new GridBagConstraints();
+//        gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
+//        gridBagConstraints.fill = GridBagConstraints.BOTH;
+//        gridBagConstraints.weightx = 1.0;
+//        gridBagConstraints.weighty = 1.0;
+//		gridBagConstraints.insets = new Insets(0, 6, 5, 5);
+//		add(callPropertiesPanel, gridBagConstraints);
+//	}
+
+//	public void setPortInfoMapping(PortInfoMapping piMap) {
+//		try {
+//            ASDDVersion asVersion = masterPanel.getBean().getAppServerVersion();
+//			selectedPortSetup = true;
+//			selectedPortInfoMap = piMap;
+//
+//			if(selectedPortInfoMap != null) {
+//				selectedPortInfo = selectedPortInfoMap.getPortInfo();
+//			} else {
+//				selectedPortInfo = null;
+//			}
+//
+//            boolean hasMessageSecurityBinding = false;
+//            
+//			if(selectedPortInfo != null) {
+//				jTxtServiceEI.setText(selectedPortInfo.getServiceEndpointInterface());
+//				WsdlPort wsdlPort = selectedPortInfo.getWsdlPort();
+//				if(wsdlPort != null) {
+//					jTxtLocalpart.setText(wsdlPort.getLocalpart());
+//					jTxtNamespaceURI.setText(wsdlPort.getNamespaceURI());
+//				} else {
+//					jTxtLocalpart.setText("");		// NOI18N
+//					jTxtNamespaceURI.setText("");	// NOI18N
+//				}
+//                
+//                try {
+//                    hasMessageSecurityBinding = (selectedPortInfo.getMessageSecurityBinding() != null);
+//                } catch (VersionNotSupportedException ex) {
+//                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//                }
+//			} else {
+//				jTxtServiceEI.setText("");		// NOI18N
+//				jTxtLocalpart.setText("");		// NOI18N
+//				jTxtNamespaceURI.setText("");	// NOI18N
+//			}
+//
+//            jChkEnableMsgSecurity.setSelected(hasMessageSecurityBinding);
+//            enableMessageSecurityUI(hasMessageSecurityBinding);
+//            
+//			if(selectedPortInfo != null) {
+//				stubPropertiesPanel.setModel(selectedPortInfo, asVersion);
+//				callPropertiesPanel.setModel(selectedPortInfo, asVersion);
+//			} else {
+//				PortInfo stub = StorageBeanFactory.getStorageBeanFactory(asVersion).createPortInfo();
+//				stubPropertiesPanel.setModel(stub, asVersion);
+//				callPropertiesPanel.setModel(stub, asVersion);
+//			}
+//		} finally {
+//			selectedPortSetup = false;
+//		}
+//	}
+
+    private void enableMessageSecurityUI(boolean enable) {
+        jBtnEditBindings.setEnabled(enable);
+    }
+
+    public String getHelpId() {
+		return "AS_CFG_ServiceRefPortInfo"; // NOI18N
+    }
+    
+    public void setValue(JComponent source, Object value) {
+    }
+
+    public void linkButtonPressed(Object ddBean, String ddProperty) {
+    }
+
+    public JComponent getErrorComponent(String errorId) {
+        return null;
+    }
+    
+//	public void setContainerEnabled(Container container, boolean enabled) {
+//		Component [] components = container.getComponents();
+//		for(int i = 0; i < components.length; i++) {
+//			components[i].setEnabled(enabled);
+//			if(components[i] instanceof Container) {
+//				setContainerEnabled((Container) components[i], enabled);
+//			}
+//		}
+//	}
+
+//	/** -----------------------------------------------------------------------
+//	 *  Implementation of javax.swing.event.TableModelListener
+//	 */
+//	public void tableChanged(TableModelEvent e) {
+//		if(!selectedPortSetup) {
+//			ServiceRef bean = masterPanel.getBean();
+//			if(bean != null) {
+//				if(e.getSource().equals(callPropertiesModel)) {
+//					// Force property change to be issued by the bean
+//					bean.setDirty();
+//				} else if(e.getSource().equals(stubPropertiesModel)) {
+//					// Force property change to be issued by the bean
+//					bean.setDirty();
+//				}
+//			}
+//		}
+//	}
+
+//    // New for migration to sun DD API model.  Factory instance to pass to generic table model
+//    // to allow it to create callProperty and stubProperty beans.
+//	private static GenericTableModel.ParentPropertyFactory stubPropertyFactory =
+//        new GenericTableModel.ParentPropertyFactory() {
+//            public CommonDDBean newParentProperty(ASDDVersion asVersion) {
+//                return StorageBeanFactory.getStorageBeanFactory(asVersion).createStubProperty();
+//            }
+//        };
+//
+//    private static GenericTableModel.ParentPropertyFactory callPropertyFactory =
+//        new GenericTableModel.ParentPropertyFactory() {
+//            public CommonDDBean newParentProperty(ASDDVersion asVersion) {
+//                return StorageBeanFactory.getStorageBeanFactory(asVersion).createCallProperty();
+//            }
+//        };
+    
+    // Model class for handling updates to the text fields
+    private class PortInfoTextFieldEditorModel extends DDTextFieldEditorModel {
+
+        public PortInfoTextFieldEditorModel(XmlMultiViewDataSynchronizer synchronizer, String propertyName) {
+            super(synchronizer, propertyName);
+        }
+        
+        public PortInfoTextFieldEditorModel(XmlMultiViewDataSynchronizer synchronizer, String propertyName, String attributeName) {
+            super(synchronizer, propertyName, attributeName);
+        }
+
+        protected CommonDDBean getBean() {
+            return portInfo;
+        }
+        
+    }
+
+    /** Return correct preferred size.  The multiline JLabels in this panel cause
+     *  the default preferred size behavior to be incorrect (too wide).
+     */
+    @Override
+    public Dimension getPreferredSize() {
+        return new Dimension(getMinimumSize().width, super.getPreferredSize().height);
+    }
+}

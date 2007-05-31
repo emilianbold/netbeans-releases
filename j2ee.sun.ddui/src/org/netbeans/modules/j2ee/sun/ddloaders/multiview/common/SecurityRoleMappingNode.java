@@ -32,6 +32,7 @@ public class SecurityRoleMappingNode extends NamedBeanNode {
 
     public SecurityRoleMappingNode(SectionNodeView sectionNodeView, final SecurityRoleMapping mapping, final ASDDVersion version) {
         super(sectionNodeView, mapping, SecurityRoleMapping.ROLE_NAME, ICON_BASE_SECURITY_ROLE_MAPPING_NODE, version);
+        enableRemoveAction();
     }
 
     protected SectionNodeInnerPanel createNodeInnerPanel() {

@@ -32,6 +32,7 @@ public class EjbNode extends NamedBeanNode {
     // TODO session/entity/mdb specific icons
     public EjbNode(SectionNodeView sectionNodeView, final Ejb ejb, final ASDDVersion version) {
         super(sectionNodeView, ejb, Ejb.EJB_NAME, ICON_EJB_SESSION_NODE, version);
+        enableRemoveAction();
     }
 
     protected SectionNodeInnerPanel createNodeInnerPanel() {

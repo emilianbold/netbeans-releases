@@ -35,10 +35,15 @@ import org.openide.util.NbBundle;
  */
 public class EjbGroupNode extends NamedBeanGroupNode {
 
+    private SunEjbJar sunEjbJar;
+    
     public EjbGroupNode(SectionNodeView sectionNodeView, SunEjbJar sunEjbJar, ASDDVersion version) {
         super(sectionNodeView, sunEjbJar, Ejb.EJB_NAME, 
-                NbBundle.getMessage(EjbGroupNode.class, "LBL_EjbGroupHeader"),
+                NbBundle.getMessage(EjbGroupNode.class, "LBL_EjbGroupHeader"), // NOI18N
                 ICON_EJB_GROUP_NODE, version);
+        
+        this.sunEjbJar = sunEjbJar;
+        enableAddAction(NbBundle.getMessage(EjbGroupNode.class, "LBL_AddEjb")); // NOI18N
     }
 
     protected SectionNode createNode(CommonDDBean bean) {
@@ -46,11 +51,34 @@ public class EjbGroupNode extends NamedBeanGroupNode {
     }
 
     protected CommonDDBean [] getBeansFromModel() {
-        EnterpriseBeans eb = ((SunEjbJar) rootDD).getEnterpriseBeans();
+        EnterpriseBeans eb = sunEjbJar.getEnterpriseBeans();
         if(eb != null) {
             return eb.getEjb();
         }
         return null;
     }
 
+    protected CommonDDBean addNewBean() {
+        EnterpriseBeans eb = sunEjbJar.getEnterpriseBeans();
+        if(eb == null) {
+            eb = sunEjbJar.newEnterpriseBeans();
+            sunEjbJar.setEnterpriseBeans(eb);
+        }
+        Ejb newEjb = eb.newEjb();
+        eb.addEjb(newEjb);
+        
+        newEjb.setEjbName("ejb" + getNewBeanId()); // NOI18N
+        
+        return newEjb;
+    }
+    
+    protected void removeBean(CommonDDBean bean) {
+        EnterpriseBeans eb = sunEjbJar.getEnterpriseBeans();
+        if(eb != null) {
+            Ejb ejb = (Ejb) bean;
+            eb.removeEjb(ejb);
+            // TODO if eb is empty of all data now, we could remove it too.
+        }
+    }
+    
 }

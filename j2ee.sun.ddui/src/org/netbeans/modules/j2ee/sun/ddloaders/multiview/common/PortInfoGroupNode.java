@@ -17,13 +17,12 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.j2ee.sun.ddloaders.multiview.web;
+package org.netbeans.modules.j2ee.sun.ddloaders.multiview.common;
 
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
-import org.netbeans.modules.j2ee.sun.dd.api.web.Servlet;
-import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
-import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.NamedBeanGroupNode;
+import org.netbeans.modules.j2ee.sun.dd.api.common.PortInfo;
+import org.netbeans.modules.j2ee.sun.dd.api.common.ServiceRef;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.openide.util.NbBundle;
@@ -32,37 +31,36 @@ import org.openide.util.NbBundle;
 /**
  * @author Peter Williams
  */
-public class ServletGroupNode extends NamedBeanGroupNode {
+public class PortInfoGroupNode extends NamedBeanGroupNode {
 
-    private SunWebApp sunWebApp;
+    private ServiceRef serviceRef;
     
-    public ServletGroupNode(SectionNodeView sectionNodeView, SunWebApp sunWebApp, ASDDVersion version) {
-        super(sectionNodeView, sunWebApp, Servlet.SERVLET_NAME, 
-                NbBundle.getMessage(ServletGroupNode.class, "LBL_ServletGroupHeader"), // NOI18N
-                ICON_BASE_SERVLET_NODE, version);
+    public PortInfoGroupNode(SectionNodeView sectionNodeView, ServiceRef serviceRef, ASDDVersion version) {
+        super(sectionNodeView, serviceRef, ServiceRef.SERVICE_REF_NAME, 
+                NbBundle.getMessage(ServiceRefGroupNode.class, "LBL_PortInfoGroupHeader"), // NOI18N
+                ICON_BASE_PORT_INFO_NODE, version);
         
-        this.sunWebApp = sunWebApp;
-        enableAddAction(NbBundle.getMessage(ServletGroupNode.class, "LBL_AddServlet")); // NOI18N
+        this.serviceRef = serviceRef;
+        enableAddAction(NbBundle.getMessage(ServiceRefGroupNode.class, "LBL_AddPortInfo")); // NOI18N
     }
 
     protected SectionNode createNode(CommonDDBean bean) {
-        return new ServletNode(getSectionNodeView(), (Servlet) bean, version);
+        return new PortInfoNode(getSectionNodeView(), (PortInfo) bean, version);
     }
 
     protected CommonDDBean [] getBeansFromModel() {
-        return sunWebApp.getServlet();
+        return serviceRef.getPortInfo();
     }
 
     protected CommonDDBean addNewBean() {
-        Servlet newServlet = sunWebApp.newServlet();
-        sunWebApp.addServlet(newServlet);
-        newServlet.setServletName("servlet" + getNewBeanId()); // NOI18N
-        return newServlet;
-    }
-
+        PortInfo portInfo = serviceRef.newPortInfo();
+        serviceRef.addPortInfo(portInfo);
+        return portInfo;
+    }    
+    
     protected void removeBean(CommonDDBean bean) {
-        Servlet servlet = (Servlet) bean;
-        sunWebApp.removeServlet(servlet);
+        PortInfo portInfo = (PortInfo) bean;
+        serviceRef.removePortInfo(portInfo);
     }
     
 }
