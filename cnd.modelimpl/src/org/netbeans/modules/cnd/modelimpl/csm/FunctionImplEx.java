@@ -59,10 +59,10 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     
 
     /** @return either class or namespace */
-    protected CsmObject findOwner() {
+    protected CsmObject findOwner(Resolver parent) {
 	String[] cnn = classOrNspNames;
 	if( cnn != null ) {
-	    CsmObject obj = ResolverFactory.createResolver(this).resolve(cnn);
+	    CsmObject obj = ResolverFactory.createResolver(this, parent).resolve(cnn);
 	    if( obj instanceof CsmClass ) {
 		if( !( obj instanceof Unresolved.UnresolvedClass) ) {
 		    return (CsmClass) obj;
@@ -104,7 +104,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     }
     
     protected String findQualifiedName() {
-	CsmObject owner = findOwner();
+	CsmObject owner = findOwner(null);
 	if( owner instanceof CsmQualifiedNamedElement  ) {
 	    qualifiedNameIsFake = false;
 	    return ((CsmQualifiedNamedElement) owner).getQualifiedName() + "::" + getQualifiedNamePostfix(); // NOI18N

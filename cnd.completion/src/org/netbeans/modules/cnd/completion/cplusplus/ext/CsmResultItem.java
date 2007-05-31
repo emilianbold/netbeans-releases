@@ -609,14 +609,14 @@ public abstract class CsmResultItem
             BaseDocument doc = (BaseDocument)c.getDocument();
             String text = null;
             boolean addParams = true;
-            CsmCompletionExpression exp = substituteExp;
-            while(exp != null) {
-//                if (exp.getExpID() == CsmCompletionExpression.IMPORT) {
-//                    addParams = false;
-//                    break;
-//                }
-                exp = exp.getParent();
-            }
+//            CsmCompletionExpression exp = substituteExp;
+//            while(exp != null) {
+////                if (exp.getExpID() == CsmCompletionExpression.IMPORT) {
+////                    addParams = false;
+////                    break;
+////                }
+//                exp = exp.getParent();
+//            }
 
             switch ((substituteExp != null) ? substituteExp.getExpID() : -1) {
             case CsmCompletionExpression.METHOD:
@@ -1155,7 +1155,7 @@ public abstract class CsmResultItem
         }
         
         public String getItemText() {
-            return displayFQN ? cls.getQualifiedName() : cls.getName();
+            return displayFQN ? cls.getQualifiedName() : getName();
         }
         
         protected CsmPaintComponent.StructPaintComponent createStructPaintComponent(){

@@ -95,29 +95,33 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         
         boolean errTheSame = true;
         File goldenErrFile = null;
+        File goldenErrFileCopy = null;
         // first of all check err, because if not failed (often) => dat diff will be created
         if (goldenErrFileName != null) {
             goldenErrFile = getGoldenFile(goldenErrFileName);
             if (CndCoreTestUtils.diff(error, goldenErrFile, null)) {
                 errTheSame = false;
                 // copy golden
-                CndCoreTestUtils.copyToWorkDir(goldenErrFile, new File(workDir, goldenErrFileName + ".golden")); // NOI18N
+                goldenErrFileCopy = new File(workDir, goldenErrFileName + ".golden");
+                CndCoreTestUtils.copyToWorkDir(goldenErrFile, goldenErrFileCopy); // NOI18N
             }
         }
         
         boolean outTheSame = true;
         File goldenDataFile = getGoldenFile(goldenDataFileName);
+        File goldenDataFileCopy = null;
         if (CndCoreTestUtils.diff(output, goldenDataFile, null)) {
             outTheSame = false;
             // copy golden
-            CndCoreTestUtils.copyToWorkDir(goldenDataFile, new File(workDir, goldenDataFileName + ".golden")); // NOI18N
+            goldenDataFileCopy = new File(workDir, goldenDataFileName + ".golden");
+            CndCoreTestUtils.copyToWorkDir(goldenDataFile, goldenDataFileCopy); // NOI18N
         }
         if (outTheSame) {
-            assertTrue("ERR Difference between " + error + " and " + goldenErrFile, errTheSame); // NOI18N
+            assertTrue("ERR Difference between " + error + " and " + goldenErrFileCopy, errTheSame); // NOI18N
         } else if (errTheSame) {
-            assertTrue("OUTPUT Difference between " + output + " and " + goldenDataFile, outTheSame); // NOI18N
+            assertTrue("OUTPUT Difference between " + output + " and " + goldenDataFileCopy, outTheSame); // NOI18N
         } else {
-            assertTrue("OUTPUT and ERR are different", false); // NOI18N
+            assertTrue("OUTPUT and ERR are different, see content of folder " + workDir, false); // NOI18N
         }
     }    
 }

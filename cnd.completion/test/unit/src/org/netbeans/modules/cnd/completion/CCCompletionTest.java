@@ -21,19 +21,23 @@ package org.netbeans.modules.cnd.completion;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.completion.test.CompletionBaseTestSuite;
+import org.netbeans.modules.cnd.test.BaseTestSuite;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-public class CCCompletionTest extends CompletionBaseTestSuite {
+public class CCCompletionTest extends BaseTestSuite {
     
     public CCCompletionTest() {
         super("C/C++ Completion");
         
         this.addTestSuite(CheckModelTestCase.class);
         this.addTestSuite(CCBasicCompletionTestCase.class);
+        this.addTestSuite(TemplateSpecializationTestCase.class);
+        this.addTestSuite(NamespacesTestCase.class);
+        this.addTestSuite(InheritanceTestCase.class);
+        //this.addTestSuite(StaticMembersTestCase.class);
     }
 
     public static Test suite() {

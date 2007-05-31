@@ -107,8 +107,8 @@ public class OutputWindowWriter extends Writer {
     }
 
     private static FileObject resolveRelativePath(FileObject relativeDir, String relativePath) {
-        if (relativePath.startsWith("/") || relativePath.indexOf(":")==1){ // NOI18N
-            if (relativePath.startsWith("/")){ // NOI18N
+        if (relativePath.startsWith(File.separator) || relativePath.indexOf(":")==1){ // NOI18N
+            if (relativePath.startsWith(File.separator)){ // NOI18N
                 relativePath = relativePath.substring(1);
             }
             try {
@@ -127,7 +127,7 @@ public class OutputWindowWriter extends Writer {
         }
         
         FileObject myObj = relativeDir;
-        StringTokenizer st = new StringTokenizer(relativePath, "/"); // NOI18N
+        StringTokenizer st = new StringTokenizer(relativePath, File.separator); // NOI18N
         
         while ((myObj != null) && st.hasMoreTokens()) {
             String nameExt = st.nextToken();
@@ -384,11 +384,11 @@ public class OutputWindowWriter extends Writer {
                 }
                 
                 if (this.isEntered) {
-                    if (!directory.startsWith("/") &&    //NOI18N
+                    if (!directory.startsWith(File.separator) &&    //NOI18N
                         !(directory.charAt(1) == ':')) { //NOI18N
                         if (this.relativeToFO != null) {
                             if (this.relativeToFO.isFolder()) {
-                                directory = this.relativeToFO.getURL().getPath() + "/" + directory;
+                                directory = this.relativeToFO.getURL().getPath() + File.separator + directory;
                             }
                         }
                     }
@@ -411,11 +411,11 @@ public class OutputWindowWriter extends Writer {
             
             if (m.pattern() == GCC_DIRECTORY_CD) {
                 String directory = m.group(1);
-                if (!directory.startsWith("/") ||    //NOI18N
+                if (!directory.startsWith(File.separator) ||    //NOI18N
                     !(directory.charAt(1) == ':')) { //NOI18N
                     if (this.relativeToFO != null) {
                         if (this.relativeToFO.isFolder()) {
-                            directory = this.relativeToFO.getURL().getPath() + "/" + directory;
+                            directory = this.relativeToFO.getURL().getPath() + File.separator + directory;
                         }
                     }
                 }

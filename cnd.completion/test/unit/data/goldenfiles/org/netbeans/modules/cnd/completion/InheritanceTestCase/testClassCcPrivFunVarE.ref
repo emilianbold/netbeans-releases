@@ -1,0 +1,8 @@
+cPriv int
+cProt int
+cPub int
+ePub int
+cPrivFun() void
+cProtFun() void
+cPubFun() void
+ePubFun() void

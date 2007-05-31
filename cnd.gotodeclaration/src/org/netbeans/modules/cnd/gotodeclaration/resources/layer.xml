@@ -33,8 +33,9 @@ Microsystems, Inc. All Rights Reserved.
                         <file name="org-netbeans-modules-cnd-gotodeclaration-actions-SearchAction.shadow">
                             <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-gotodeclaration-actions-SearchAction.instance"/>
                         </file>
+                        <attr name="goto/org-netbeans-modules-cnd-gotodeclaration-actions-SearchAction.shadow" boolvalue="true"/>
                     </folder>
-                    </folder>
+                </folder>
             </folder>
             <folder name="x-c++">
                 <folder name="Popup">
@@ -44,7 +45,7 @@ Microsystems, Inc. All Rights Reserved.
                         </file>
                         <attr name="goto/org-netbeans-modules-cnd-gotodeclaration-actions-SearchAction.shadow" boolvalue="true"/>
                     </folder>
-                    </folder>
+                </folder>
             </folder>
         </folder>
     </folder>

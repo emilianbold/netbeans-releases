@@ -19,6 +19,11 @@
 
 package org.netbeans.modules.cnd.modelimpl.trace;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+
 /**
  * pre-integration tests for parser
  * @author Vladimir Voskresensky
@@ -31,6 +36,7 @@ public class FileModelTest extends TraceModelTestBase {
 
     @Override
     protected void setUp() throws Exception {
+	System.setProperty("parser.report.errors", "true");
         super.setUp();
     }
 
@@ -51,4 +57,68 @@ public class FileModelTest extends TraceModelTestBase {
     public void testIncludeCorrectness() throws Exception {
         performTest("test_include_correcteness.cc"); // NOI18N
     }   
+    
+    public void testTemplateExplicitInstantiation() throws Exception {
+        performTest("template_explicit_instantiation.cc"); // NOI18N
+    }
+    
+    public void testIntStaticField() throws Exception {
+	performTest("int_static_field.cc"); // NOI18N
+    }
+
+    public void testResolverInfiniteLoop1() throws Exception {
+	performTest("infinite1.cc"); // NOI18N
+    }
+
+    public void testResolverInfiniteLoop2() throws Exception {
+	performTest("infinite2.cc"); // NOI18N
+    }
+    
+    public void testResolverInfiniteLoop3() throws Exception {
+	performTest("infinite3.cc"); // NOI18N
+    }
+    
+    /////////////////////////////////////////////////////////////////////
+    // FAILS
+    
+    public static class Failed extends TraceModelTestBase {
+	
+        public Failed(String testName) {
+            super(testName);
+        }
+
+	@Override
+	protected void setUp() throws Exception {
+	    System.setProperty("parser.report.errors", "true");
+	    super.setUp();
+	}
+	
+	protected Class getTestCaseDataClass() {
+	    return FileModelTest.class;
+	}
+	
+
+	public void testTemplateInnerClassDtorDefinition() throws Exception {
+	    performTest("template_inner_class_dtor_definition.cc"); // NOI18N
+	}
+
+	public void testFunctionPointerAsParameterType () throws Exception {
+	    performTest("function_pointer_as_param_type.cc"); // NOI18N
+	}
+	
+	public void testFunctionPointerAsReturnType () throws Exception {
+	    performTest("function_pointer_as_return_type.cc"); // NOI18N
+	}
+	
+	public void testFunctionPointerAsVariableType () throws Exception {
+	    performTest("function_pointer_as_var_type.cc"); // NOI18N
+	}
+	
+	protected void postSetUp() {
+	    // init flags needed for file model tests
+	    getTraceModel().setDumpModel(true);
+	    getTraceModel().setDumpPPState(true);
+	}	
+   }
+    
 }

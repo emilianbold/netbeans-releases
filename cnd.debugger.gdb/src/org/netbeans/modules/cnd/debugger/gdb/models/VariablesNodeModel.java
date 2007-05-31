@@ -23,9 +23,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Vector;
-
-import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.NodeModel;
@@ -36,12 +33,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-import org.netbeans.modules.cnd.debugger.gdb.InvalidExpressionException;
 import org.netbeans.modules.cnd.debugger.gdb.LocalVariable;
 import org.netbeans.modules.cnd.debugger.gdb.Field;
-//import org.netbeans.modules.cnd.debugger.gdb.ObjectVariable;
-//import org.netbeans.modules.cnd.debugger.gdb.Super;
-//import org.netbeans.modules.cnd.debugger.gdb.This;
 
 /*
  * VariablesNodeModel.java
@@ -68,8 +61,7 @@ public class VariablesNodeModel implements NodeModel {
     private final Collection modelListeners = new HashSet();
     
     // Localizable messages
-    private String LC_NoInfo = NbBundle.getMessage(VariablesNodeModel.class,
-            "CTL_No_Info"); // NOI18N
+    private String LC_NoInfo = NbBundle.getMessage(VariablesNodeModel.class, "CTL_No_Info"); // NOI18N
     private String LC_NoCurrentThreadVar = NbBundle.getMessage(VariablesNodeModel.class,
             "NoCurrentThreadVar"); // NOI18N
     private String LC_LocalsModelColumnNameName = NbBundle.getMessage(VariablesNodeModel.class,
@@ -78,7 +70,6 @@ public class VariablesNodeModel implements NodeModel {
             "CTL_LocalsModel_Column_Name_Desc"); // NOI18N
     
     // Non-localized magic strings
-    private final String strEmpty = ""; // NOI18N
     private final String strNoInfo = "NoInfo"; // NOI18N
     private final String strSubArray = "SubArray"; // NOI18N
     private final String strNoCurrentThread = "No current thread"; // NOI18N
@@ -89,18 +80,16 @@ public class VariablesNodeModel implements NodeModel {
     }
     
     public String getDisplayName(Object o) throws UnknownTypeException {
-        if (o == TreeModel.ROOT)
+        if (o == TreeModel.ROOT) {
             return LC_LocalsModelColumnNameName;
-        if (o instanceof Field)
+        }
+        if (o instanceof Field) {
             return ((Field) o).getName();
-        if (o instanceof LocalVariable)
+        }
+        if (o instanceof LocalVariable) {
             return ((LocalVariable) o).getName();
-        /*NM TEMPORARY COMMENTED OUT
-        if (o instanceof Super)
-            return "super"; // NOI18N
-        if (o instanceof This)
-            return "this"; // NOI18N
-         */
+        }
+        
         String str = o.toString();
         if (str.equals(strNoInfo)) {
             return LC_NoInfo;
@@ -134,8 +123,8 @@ public class VariablesNodeModel implements NodeModel {
         // Called from AWT - we need to postpone the work...
         evaluationRP.post(new Runnable() {
             public void run() {
-                Object shortDescription = getShortDescriptionSynch(o);
-                if (shortDescription != null && !strEmpty.equals(shortDescription)) {
+                String shortDescription = getShortDescriptionSync(o);
+                if (shortDescription != null && shortDescription.length() > 0) {
                     synchronized (shortDescriptionMap) {
                         shortDescriptionMap.put(o, shortDescription);
                     }
@@ -144,98 +133,41 @@ public class VariablesNodeModel implements NodeModel {
                 }
             }
         });
-        return strEmpty;
+        return ""; // NOI18N
     }
     
-    private String getShortDescriptionSynch(Object o) {
-        if (o == TreeModel.ROOT)
+    private String getShortDescriptionSync(Object o) {
+        if (o == TreeModel.ROOT) {
             return LC_LocalsModelColumnNameDesc;
-        if (o instanceof Field) {
-        /*NM TEMPORARY COMMENTED OUT
-            if (o instanceof ObjectVariable) {
-                String type = ((ObjectVariable) o).getType ();
-                String declaredType = ((Field) o).getDeclaredType ();
-                if (type.equals (declaredType))
-                    try {
-                        return "(" + type + ") " +
-                            ((ObjectVariable) o).getToStringValue ();
-                    } catch (InvalidExpressionException ex) {
-                        return ex.getLocalizedMessage ();
-                    }
-                else
-                    try {
-                        return "(" + declaredType + ") " + "(" + type + ") " +
-                            ((ObjectVariable) o).getToStringValue ();
-                    } catch (InvalidExpressionException ex) {
-                        return ex.getLocalizedMessage ();
-                    }
-            } else
-        NM*/
-            return "(" + ((Field) o).getDeclaredType() + ") " +  // NOI18N
-                    ((Field) o).getValue();
+        } else if (o instanceof Field) {
+            return "(" + ((Field) o).getType() + ") " + ((Field) o).getValue(); // NOI18N
+        } else if (o instanceof LocalVariable) {
+            return "(" + ((LocalVariable) o).getType() + ") " + ((LocalVariable) o).getValue(); // NOI18N
         }
-        if (o instanceof LocalVariable) {
-            /*NM TEMPORARY COMMENTED OUT
-            if (o instanceof ObjectVariable) {
-                String type = ((ObjectVariable) o).getType ();
-                String declaredType = ((LocalVariable) o).getDeclaredType ();
-                if (type.equals (declaredType))
-                    try {
-                        return "(" + type + ") " +
-                            ((ObjectVariable) o).getToStringValue ();
-                    } catch (InvalidExpressionException ex) {
-                        return ex.getLocalizedMessage ();
-                    }
-                else
-                    try {
-                        return "(" + declaredType + ") " + "(" + type + ") " +
-                            ((ObjectVariable) o).getToStringValue ();
-                    } catch (InvalidExpressionException ex) {
-                        return ex.getLocalizedMessage ();
-                    }
-            }
-             */
-            return "(" + ((LocalVariable) o).getDeclaredType() + ") " +  // NOI18N
-                    ((LocalVariable) o).getValue();
-        }
-        /*NM TEMPORARY COMMENTED OUT
-        if (o instanceof Super)
-            return ((Super) o).getType ();
-        if (o instanceof This)
-            try {
-                return "(" + ((This) o).getType () + ") " +
-                    ((This) o).getToStringValue ();
-            } catch (InvalidExpressionException ex) {
-                return ex.getLocalizedMessage ();
-            }
-         */
+        
         String str = o.toString();
         if (str.startsWith(strSubArray)) {
             int index = str.indexOf('-');
             return NbBundle.getMessage(VariablesNodeModel.class,
                     "CTL_LocalsModel_Column_Descr_SubArray", // NOI18N
                     str.substring(8, index), str.substring(index + 1));
-        }
-        if (str.equals(strNoInfo)) {
+        } else if (str.equals(strNoInfo)) {
             return LC_NoInfo;
-        }
-        if (str.equals(strNoCurrentThread)) {
+        } else if (str.equals(strNoCurrentThread)) {
             return LC_NoCurrentThreadVar;
+        } else {
+            return ""; // NOI18N
         }
-        return strEmpty;
-        //NM throw new UnknownTypeException (o);
     }
     
     private void testKnown(Object o) throws UnknownTypeException {
-        if (o == TreeModel.ROOT) return ;
-        if (o instanceof Field) return ;
-        if (o instanceof LocalVariable) return ;
-        //NM if (o instanceof Super) return ;
-        //NM if (o instanceof This) return ;
+        if (o == TreeModel.ROOT || o instanceof Field || o instanceof LocalVariable) {
+            return;
+        }
         String str = o.toString();
-        if (str.startsWith(strSubArray)) return ;
-        if (str.equals(strNoInfo)) return ;
-        if (str.equals(strNoCurrentThread)) return ;
+        if (str.startsWith(strSubArray) || str.equals(strNoInfo) || str.equals(strNoCurrentThread)) {
+            return;
+        }
         throw new UnknownTypeException(o);
     }
     

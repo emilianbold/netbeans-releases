@@ -24,7 +24,10 @@ import java.util.*;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
+import org.netbeans.modules.cnd.modelimpl.csm.FunctionDefinitionImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.TypeImpl;
 
 /**
  * @author Vladimir Kvasihn
@@ -34,6 +37,7 @@ public class Resolver3 implements Resolver {
     private ProjectBase project;
     private CsmFile file;
     private int offset;
+    private Resolver parentResolver;
 
     private List usedNamespaces = new ArrayList();
     private Map namespaceAliases = new HashMap()/*<String, CsmNamespace>*/;
@@ -78,15 +82,17 @@ public class Resolver3 implements Resolver {
 
     //private CsmNamespace currentNamespace;
     
-    public Resolver3(CsmFile file, int offset) {
+    public Resolver3(CsmFile file, int offset, Resolver parent) {
         this.file = file;
         this.offset = offset;
+        parentResolver = parent;
         this.project = (ProjectBase) file.getProject();
     }
     
-    public Resolver3(CsmOffsetable context) {
+    public Resolver3(CsmOffsetable context, Resolver parent) {
         this.file = context.getContainingFile();
         this.offset = context.getStartOffset();
+        parentResolver = parent;
         this.project = (ProjectBase) context.getContainingFile().getProject();
     }
 
@@ -147,7 +153,7 @@ public class Resolver3 implements Resolver {
                     if( ns != null && ! ns.isGlobal() ) {
                         containingNamespace = ns;
                     }
-                    CsmFunction fun = fd.getDeclaration();
+                    CsmFunction fun = getFunctionDeclaration(fd);
                     if( fun != null && CsmKindUtilities.isMethod(fun) ) {
                         containingClass = ((CsmMethod) fun).getContainingClass();
                     }
@@ -156,8 +162,22 @@ public class Resolver3 implements Resolver {
         }
     }
 
+    private CsmFunction getFunctionDeclaration(CsmFunctionDefinition fd){
+        if (fd instanceof FunctionDefinitionImpl) {
+            Resolver3 parent = (Resolver3)parentResolver;
+            while(parent != null) {
+                if (parent.offset == offset && parent.file == file) {
+                    return null;
+                }
+                parent = (Resolver3) parent.parentResolver;
+            }
+            return ((FunctionDefinitionImpl)fd).getDeclaration(this);
+        }
+        return fd.getDeclaration();
+    }
+    
     private CsmNamespace getFunctionDefinitionNamespace(CsmFunctionDefinition def) {
-        CsmFunction fun = def.getDeclaration();
+        CsmFunction fun = getFunctionDeclaration(def);
         if( fun != null ) {
             CsmScope scope = fun.getScope();
             if( CsmKindUtilities.isNamespace(scope)) {
@@ -364,7 +384,7 @@ public class Resolver3 implements Resolver {
                 if( currTypedef != null ) {
                     CsmType type = currTypedef.getType();
                     if( type != null ) {
-                        result = type.getClassifier();
+                        result = getTypeClassifier(type);
                     }
                 }
 
@@ -416,13 +436,7 @@ public class Resolver3 implements Resolver {
                 if( currTypedef != null ) {
                     CsmType type = currTypedef.getType();
                     if( type != null ) {
-			boolean overflow = Thread.currentThread().getStackTrace().length > 200;
-			if( overflow ) {
-                                traceOverflow(type, sb.toString());
-			}
-			if( ! overflow ) {
-			    result = type.getClassifier();
-			}
+                        result = getTypeClassifier(type);
                     }
                 }
                 if( result == null ) {
@@ -447,7 +461,7 @@ public class Resolver3 implements Resolver {
                     if( currTypedef != null ) {
                         CsmType type = currTypedef.getType();
                         if( type != null ) {
-                            result = type.getClassifier();
+                            result = getTypeClassifier(type);
                         }
                     }
                 }
@@ -464,47 +478,56 @@ public class Resolver3 implements Resolver {
         return result;
     }
 
-    private void traceOverflow(final CsmOffsetable type, final String sb) {
-        CsmOffsetable.Position pos = type.getStartPosition();
-        System.err.println("\n\n'nINFINITE LOOP. FILE: " + type.getContainingFile().getAbsolutePath() + " POS " + new CsmTracer().getOffsetString(type));
-        int ln = 1;
-        String text = file.getText(0, offset);
-        for( int i = 0; i < text.length(); i++ ) {
-				if( text.charAt(i) == '\n') {
-				    ln++;
-				}
+    private CsmObject getTypeClassifier(CsmType type){
+        if (type instanceof TypeImpl) {
+            Resolver3 parent = (Resolver3)parentResolver;
+            while(parent != null) {
+                if (parent.offset == offset && parent.file == file) {
+                    return null;
+                }
+                parent = (Resolver3) parent.parentResolver;
+            }
+            return ((TypeImpl)type).getClassifier(this);
         }
-        System.err.println("while resolving " + sb + " in " + file.getAbsolutePath() + " at " + ln + (type instanceof CsmOffsetableDeclaration ? " using declaration " + ((CsmOffsetableDeclaration)type).getUniqueName() : ""));
-        
-        Thread.currentThread().dumpStack();
+        return type.getClassifier();
     }
     
-
     private CsmObject resolveInBaseClasses(CsmClass cls, String name) {
+        return _resolveInBaseClasses(cls, name, new HashSet<CsmClass>());
+    }
+
+    private CsmObject _resolveInBaseClasses(CsmClass cls, String name, Set<CsmClass> antiLoop) {
 	if( cls != null && cls.isValid()) {
 	    for( CsmInheritance inh : (List<CsmInheritance>) cls.getBaseClasses() ) {
-                if (inh.getContainingFile() != this.file || inh.getStartOffset() < this.offset) {
-                    boolean overflow = Thread.currentThread().getStackTrace().length > 200;
-                    if( overflow ) {
-                        traceOverflow(cls, name);
-                        return null;
-                    } else {
-                        CsmClass base = inh.getCsmClass();
-                        CsmObject result = resolveInClass(base, name);
-                        if( result != null ) {
-                            return result;
-                        }
-                        result = resolveInBaseClasses(base, name);
-                        if( result != null ) {
-                            return result;
-                        }
+                CsmClass base = getInheritanceClass(inh);
+                if (base != null && !antiLoop.contains(base)) {
+                    antiLoop.add(base);
+                    CsmObject result = resolveInClass(base, name);
+                    if( result != null ) {
+                        return result;
                     }
-                } else {
-                    break;
+                    result = _resolveInBaseClasses(base, name, antiLoop);
+                    if( result != null ) {
+                        return result;
+                    }
                 }
 	    }
 	}
 	return null;
+    }
+
+    private CsmClass getInheritanceClass(CsmInheritance inh){
+        if (inh instanceof InheritanceImpl) {
+            Resolver3 parent = (Resolver3)parentResolver;
+            while(parent != null) {
+                if (parent.offset == offset && parent.file == file) {
+                    return null;
+                }
+                parent = (Resolver3) parent.parentResolver;
+            }
+            return ((InheritanceImpl)inh).getCsmClass(this);
+        }
+        return inh.getCsmClass();
     }
     
     private CsmObject resolveInClass(CsmClass cls, String name) {

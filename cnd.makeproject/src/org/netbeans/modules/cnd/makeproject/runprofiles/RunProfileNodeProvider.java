@@ -26,6 +26,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.openide.nodes.Sheet;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public class RunProfileNodeProvider {
@@ -46,6 +47,10 @@ public class RunProfileNodeProvider {
 	    return runProfile != null ? runProfile.getSheet() : null;
 	    //return configurationDescriptor.getSheet(project, configuration);
 	}
+        
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx("ProjectPropsRunning"); // NOI18N
+        }
     }
     
     /** Look up i18n strings here */

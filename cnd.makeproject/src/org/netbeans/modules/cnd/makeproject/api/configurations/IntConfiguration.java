@@ -27,6 +27,7 @@ public class IntConfiguration {
 
     private int value;
     private boolean modified;
+    private boolean dirty = false;
 
     public IntConfiguration(IntConfiguration master, int def, String[] names, String[] options) {
 	this.master = master;
@@ -73,6 +74,13 @@ public class IntConfiguration {
 	return modified;
     }
 
+    public void setDirty(boolean dirty) {
+        this.dirty = dirty;
+    }
+    public boolean getDirty() {
+        return dirty;
+    }
+    
     public int getDefault() {
 	return def;
     }
@@ -99,6 +107,7 @@ public class IntConfiguration {
 
     // Clone and Assign
     public void assign(IntConfiguration conf) {
+        dirty = getValue() != conf.getValue();
 	setValue(conf.getValue());
 	setModified(conf.getModified());
     }

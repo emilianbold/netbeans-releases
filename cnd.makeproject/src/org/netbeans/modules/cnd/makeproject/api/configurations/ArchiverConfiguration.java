@@ -23,8 +23,9 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
@@ -182,7 +183,7 @@ public class ArchiverConfiguration implements AllOptionsProvider {
         set1.setName("General"); // NOI18N
         set1.setDisplayName(getString("GeneralTxt"));
         set1.setShortDescription(getString("GeneralHint"));
-        set1.put(new StringNodeProp(getOutput(), getOutputValue(), "Output", getString("OutputTxt"), getString("OutputHint"))); // NOI18N
+        set1.put(new OutputNodeProp(getOutput(), getOutputValue(), "Output", getString("OutputTxt"), getString("OutputHint"))); // NOI18N
         set1.put(new BooleanNodeProp(getRunRanlib(), true, "RunRanlib", getString("RunRanlibTxt"), getString("RunRanlibHint"))); // NOI18N
         sheet.put(set1);
         Sheet.Set set2 = new Sheet.Set();
@@ -240,6 +241,20 @@ public class ArchiverConfiguration implements AllOptionsProvider {
             return getOutput().getValue();
         else
             return getOutputDefault();
+    }
+    
+    private class OutputNodeProp extends StringNodeProp {
+        public OutputNodeProp(StringConfiguration stringConfiguration, String def, String txt1, String txt2, String txt3) {
+            super(stringConfiguration, def, txt1, txt2, txt3);
+        }
+        
+        public void setValue(Object v) {
+            if (IpeUtils.hasMakeSpecialCharacters((String)v)) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(getString("SPECIAL_CHARATERS_ERROR"), NotifyDescriptor.ERROR_MESSAGE));
+                return;
+            }
+            super.setValue(v);
+        }
     }
     
     private String getOutputDefault() {

@@ -37,10 +37,19 @@ public class KeyValidatorRepository extends HashMapRepository {
     public void put(Key key, Persistent obj) {
         // Validate key
         Key oldKey = keyMap.get(key);
+        if (oldKey != null && oldKey != key)
+        {
+            System.err.println("key uniquity breaked for " + key); //NOI18N
+        }
         assert oldKey == null || oldKey == key;
 
         super.put(key, obj);
         keyMap.put(key,key);
+    }
+
+    public void shutdown() {
+        super.shutdown();
+        keyMap.clear();
     }
     
 }
