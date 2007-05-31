@@ -323,6 +323,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         viewSourceButton = new javax.swing.JButton();
 
         newActionButton.setText(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.newActionButton.text")); // NOI18N
+        newActionButton.setEnabled(false);
         newActionButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newActionButtonActionPerformed(evt);
@@ -330,6 +331,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         });
 
         editActionButton.setText(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.editActionButton.text")); // NOI18N
+        editActionButton.setEnabled(false);
         editActionButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editActionButtonActionPerformed(evt);
@@ -338,6 +340,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
 
         deleteActionButton.setAction(getDeleteAction());
         deleteActionButton.setText(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.deleteActionButton.text")); // NOI18N
+        deleteActionButton.setEnabled(false);
 
         jLabel4.setText(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.jLabel4.text")); // NOI18N
 
@@ -365,6 +368,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
 
         jSplitPane1.setBorder(null);
         jSplitPane1.setDividerLocation(500);
+        jSplitPane1.setResizeWeight(1.0);
 
         actionTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -438,6 +442,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         );
 
         viewSourceButton.setText(org.openide.util.NbBundle.getMessage(GlobalActionPanel.class, "GlobalActionPanel.viewSourceButton.text")); // NOI18N
+        viewSourceButton.setEnabled(false);
         viewSourceButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 viewSourceButtonActionPerformed(evt);
@@ -581,6 +586,9 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         
         // get a file from the project
         FileObject fileInProject =  actionManager.getRoot();
+        if(fileInProject == null) {
+            return;
+        }
         
         final ActionEditor editor = new ActionEditor(fileInProject, true);//actionManager.getFileForClass(defClassName));
         //editor.setValue(null);
