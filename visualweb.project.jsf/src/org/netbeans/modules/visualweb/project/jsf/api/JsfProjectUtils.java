@@ -72,6 +72,8 @@ import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
+import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
+import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
@@ -512,11 +514,31 @@ public class JsfProjectUtils {
             return null;
 
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        String name = (String) propertyValues[0];
         if (wm != null) {
             try {
                 FileObject dd = wm.getDeploymentDescriptor();
                 WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
                 if (ddRoot != null) {
+                    if ("ResourceRef".equals(beanName)) {
+                        ResourceRef[] rscRefs = ddRoot.getResourceRef();
+                        if (rscRefs != null) {
+                            for (int i = 0; i < rscRefs.length; i++) {
+                                if (name.equals(rscRefs[i].getResRefName())) {
+                                    return null;
+                                }
+                            }
+                        }
+                    } else if ("EjbRef".equals(beanName)) {
+                        EjbRef[] ejbRefs = ddRoot.getEjbRef();
+                        if (ejbRefs != null) {
+                            for (int i = 0; i < ejbRefs.length; i++) {
+                                if (name.equals(ejbRefs[i].getEjbRefName())) {
+                                    return null;
+                                }
+                            }
+                        }
+                    }
                     ddRoot.addBean(beanName, propertyNames, propertyValues, keyProperty); // NOI18N
                     ddRoot.write(dd);
                 }
@@ -530,7 +552,7 @@ public class JsfProjectUtils {
             }
         }
 
-        return (String) propertyValues[0];
+        return name;
     }
 
     /**
