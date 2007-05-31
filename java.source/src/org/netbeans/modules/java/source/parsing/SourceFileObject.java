@@ -47,6 +47,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.JarFileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.NbDocument;
@@ -252,6 +253,14 @@ public class SourceFileObject implements JavaFileObject, DocumentProvider {
      */
     public long getLastModified() {
         if (isModified()==null) {
+            try {
+                //Prefer class files to packed sources, the packed sources may have wrong time stamps.
+                if (this.file.getFileSystem() instanceof JarFileSystem) {
+                    return 0L;
+                }
+            } catch (FileStateInvalidException e) {
+                //Handled below
+            }
             return this.file.lastModified().getTime();
         }
         else {
