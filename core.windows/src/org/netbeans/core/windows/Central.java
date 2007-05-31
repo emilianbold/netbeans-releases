@@ -744,6 +744,9 @@ final class Central implements ControllerHandler {
                 new ViewRequest(mode, View.CHANGE_MODE_TOPCOMPONENT_ADDED, // PENDING inserted?
                 null, tc));
         }
+        
+        // #102258: Notify opened when opened through openAtTabPosition as well
+        WindowManagerImpl.getInstance().notifyTopComponentOpened(tc);
     }
     
     public void addModeClosedTopComponent(ModeImpl mode, TopComponent tc) {
