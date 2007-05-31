@@ -30,6 +30,7 @@ import java.awt.*;
 
 /**
  * This class represents a general icon node widget which is rendered as a image and a label placed to the right or bottom from the image.
+ * By default uses vertical/horizontal flow layout.
  *
  * @author David Kaspar
  */
