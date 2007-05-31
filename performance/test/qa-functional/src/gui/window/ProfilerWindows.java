@@ -33,7 +33,7 @@ import org.netbeans.junit.NbTestSuite;
  */
 public class ProfilerWindows extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
-    private static final String menuPrefix = "Profile|View|"; //NOI18N
+    private static final String menuPrefix = "Window|Profiling|"; //NOI18N
     
     private String commandName;
     private String windowName;
