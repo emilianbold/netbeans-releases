@@ -83,6 +83,7 @@ public class JSFComponentOptionsDialog extends org.netbeans.performance.test.uti
     
     public void prepare() {
         log("::prepare");
+        surface = WebFormDesignerOperator.findWebFormDesignerOperator("Page1",false);
     }
     
     public ComponentOperator open(){
