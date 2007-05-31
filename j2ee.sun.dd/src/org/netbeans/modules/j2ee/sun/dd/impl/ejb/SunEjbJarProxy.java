@@ -64,35 +64,12 @@ public class SunEjbJarProxy implements SunEjbJar, RootInterfaceImpl {
         addPropertyChangeListener(reindentationListener);
     }
 
-    public int addSecurityRoleMapping(org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping securityRoleMapping) {
-        return ejbJarRoot==null?-1:ejbJarRoot.addSecurityRoleMapping(securityRoleMapping);
-    }
-
-    public org.netbeans.modules.j2ee.sun.dd.api.ejb.EnterpriseBeans getEnterpriseBeans() {
-        return ejbJarRoot==null?null:ejbJarRoot.getEnterpriseBeans();
-    }
-
     public org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping[] getSecurityRoleMapping() {
         return ejbJarRoot==null?null:ejbJarRoot.getSecurityRoleMapping();
     }
 
     public org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping getSecurityRoleMapping(int param) {
         return ejbJarRoot==null?null:ejbJarRoot.getSecurityRoleMapping(param);
-    }
-
-    public org.netbeans.modules.j2ee.sun.dd.api.ejb.EnterpriseBeans newEnterpriseBeans() {
-        if(ejbJarRoot == null)
-            return null;
-        else
-            return ejbJarRoot.newEnterpriseBeans();
-    }
-
-    public int removeSecurityRoleMapping(org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping securityRoleMapping) {
-        return ejbJarRoot==null?-1:ejbJarRoot.removeSecurityRoleMapping(securityRoleMapping);
-    }
-
-    public void setEnterpriseBeans(org.netbeans.modules.j2ee.sun.dd.api.ejb.EnterpriseBeans enterpriseBeans) {
-        if (ejbJarRoot!=null) ejbJarRoot.setEnterpriseBeans(enterpriseBeans);
     }
 
     public void setSecurityRoleMapping(org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping[] securityRoleMapping) {
@@ -102,10 +79,38 @@ public class SunEjbJarProxy implements SunEjbJar, RootInterfaceImpl {
     public void setSecurityRoleMapping(int param, org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping securityRoleMapping) {
         if (ejbJarRoot!=null) ejbJarRoot.setSecurityRoleMapping(param, securityRoleMapping);
     }
+    
+    public int addSecurityRoleMapping(org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping securityRoleMapping) {
+        return ejbJarRoot==null?-1:ejbJarRoot.addSecurityRoleMapping(securityRoleMapping);
+    }
+
+    public int removeSecurityRoleMapping(org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping securityRoleMapping) {
+        return ejbJarRoot==null?-1:ejbJarRoot.removeSecurityRoleMapping(securityRoleMapping);
+    }
 
     public int sizeSecurityRoleMapping() {
          return ejbJarRoot==null?-1:ejbJarRoot.sizeSecurityRoleMapping();
     }
+
+    public org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping newSecurityRoleMapping() {
+        return ejbJarRoot==null?null:ejbJarRoot.newSecurityRoleMapping();
+    }
+
+    public org.netbeans.modules.j2ee.sun.dd.api.ejb.EnterpriseBeans getEnterpriseBeans() {
+        return ejbJarRoot==null?null:ejbJarRoot.getEnterpriseBeans();
+    }
+
+    public void setEnterpriseBeans(org.netbeans.modules.j2ee.sun.dd.api.ejb.EnterpriseBeans enterpriseBeans) {
+        if (ejbJarRoot!=null) ejbJarRoot.setEnterpriseBeans(enterpriseBeans);
+    }
+
+    public org.netbeans.modules.j2ee.sun.dd.api.ejb.EnterpriseBeans newEnterpriseBeans() {
+        if(ejbJarRoot == null)
+            return null;
+        else
+            return ejbJarRoot.newEnterpriseBeans();
+    }
+
 
     public void removePropertyChangeListener(PropertyChangeListener pcl) {
         if (ejbJarRoot != null) 
