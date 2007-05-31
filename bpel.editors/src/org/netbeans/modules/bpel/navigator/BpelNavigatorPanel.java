@@ -22,20 +22,22 @@ package org.netbeans.modules.bpel.navigator;
 
 import java.util.Collection;
 import javax.swing.JComponent;
+import org.netbeans.modules.bpel.core.BPELDataObject;
+import org.openide.awt.UndoRedo;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
-import org.netbeans.spi.navigator.NavigatorPanel;
 import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.spi.navigator.NavigatorPanelWithUndo;
 
 /**
  *
  * @author Vitaly Bychkov
  * @version 6 December 2005
  */
-public class BpelNavigatorPanel implements NavigatorPanel {
+public class BpelNavigatorPanel implements NavigatorPanelWithUndo {
     
     private static String navPanelName = NbBundle.getMessage(BpelNavigatorPanel.class
             , "LBL_BPEL_LOGICAL_VIEW"); // NOI18N
@@ -46,7 +48,9 @@ public class BpelNavigatorPanel implements NavigatorPanel {
     
     private final LookupListener selectionListener = new LookupListener() {
         public void resultChanged(LookupEvent ev) {
-            
+            if (myDObjLookupResult == null) {
+                return;
+            }
             setNewContent(myDObjLookupResult.allInstances());
         }
     };
@@ -146,7 +150,21 @@ public class BpelNavigatorPanel implements NavigatorPanel {
             .navigate(dobjLookup, bpelModel);
             
         }
+    }
+    
+    private DataObject getDataObject() {
+        return myDObjLookupResult != null 
+                ? (DataObject) myDObjLookupResult.allInstances().iterator().next()
+                : null;
+    }
+
+    public UndoRedo getUndoRedo() {
+        DataObject dObj = getDataObject();
+        if (dObj instanceof BPELDataObject) {
+            return ((BPELDataObject)dObj).getEditorSupport().getUndoManager();
+        }
         
+        return null;
     }
 }
 
