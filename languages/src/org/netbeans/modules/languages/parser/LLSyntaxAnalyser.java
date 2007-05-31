@@ -168,8 +168,11 @@ public class LLSyntaxAnalyser {
                 String nt = (String) current;
                 int newRule = getRule (nt, input);
                 if (newRule == -1) {
-                    if (!skipErrors)
-                        throw new ParseException ("No rule for " + input.next (1) + " in " + nt + ".", root.createASTNode ());
+                    if (!skipErrors) {
+                        if (node == null)
+                            root = node = new Node ("Root", -1, offset, whitespaces);
+                        throw new ParseException ("No rule for " + input.next (1) + " in " + nt + ".", root.createASTNode());
+                    }
                     if (input.eof ()) {
                         if (node == null)
                             root = node = new Node ("Root", -1, offset, whitespaces);
@@ -245,6 +248,9 @@ public class LLSyntaxAnalyser {
             //input.next (1).getMimeType () == mimeType
         )
             createErrorNode (node, input.getOffset ()).addItem (readEmbeddings (input.read (), skipErrors, embeddings));
+        if (root == null) {
+            root = new Node ("Root", -1, input.getOffset(), readWhitespaces (node, input, skipErrors, embeddings));
+        }
         return root.createASTNode ();
     }
     
