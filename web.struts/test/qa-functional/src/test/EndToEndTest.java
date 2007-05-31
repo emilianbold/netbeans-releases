@@ -138,7 +138,7 @@ public class EndToEndTest extends JellyTestCase {
         new JTextFieldOperator(
                 (JTextField)new JLabelOperator(frameworkStep, "Application Resource:").getLabelFor()
                 ).setText("com.mycompany.eshop.struts.ApplicationResource");
-        frameworkStep.finish();
+        frameworkStep.btFinish().pushNoBlock();
         // Opening Projects
         String openingProjectsTitle = Bundle.getString(
                 "org.netbeans.modules.project.ui.Bundle",
