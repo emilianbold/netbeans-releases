@@ -37,6 +37,12 @@ import com.sun.org.apache.bcel.internal.classfile.LocalVariableTable;
 import com.sun.org.apache.bcel.internal.classfile.Method;
 import com.sun.org.apache.bcel.internal.generic.Type;
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -111,7 +117,9 @@ public class BytecodeTest extends NbTestCase {
             ||  "sjsxp.jar".equals(f.getName())
             ||  "resolver-1_1_nb.jar".equals(f.getName())
             ||  "webserver.jar".equals(f.getName())
-            ||  "swing-layout-1.0.1.jar".equals(f.getName())
+            ||  "swing-layout-1.0.2.jar".equals(f.getName())
+            ||  "beansbinding-0.5.jar".equals(f.getName())
+            ||  "appframework-0.21.jar".equals(f.getName())
 //            ||  "jmi.jar".equals(f.getName())
             ||  "persistence-tool-support.jar".equals(f.getName())
             ||  "ini4j.jar".equals(f.getName())
@@ -328,9 +336,11 @@ public class BytecodeTest extends NbTestCase {
                     || f.getName().endsWith("jh-2.0_04.jar")
                     || f.getName().endsWith("xerces-2.8.0.jar")
                     || f.getName().endsWith("svnClientAdapter.jar")
+                    || f.getName().endsWith("beansbinding-0.5.jar")
                     || f.getName().endsWith("persistence-tool-support.jar")    // issue #96439
                     || f.getName().endsWith("org-netbeans-modules-websvc-core.jar")    // issue #96453
                     || f.getName().endsWith("org-netbeans-modules-websvc-jaxrpc.jar")
+                    || f.getName().endsWith("org-netbeans-modules-websvc-design.jar") // issue #99971
                     || f.getName().endsWith("org-netbeans-modules-j2ee-sun-appsrv.jar")    // issue #96439
                     || f.getName().endsWith("org-netbeans-modules-j2ee-sun-appsrv81.jar")
                     || f.getName().endsWith("org-netbeans-modules-j2ee-ejbjarproject.jar")    // issue #96423
@@ -368,7 +378,9 @@ public class BytecodeTest extends NbTestCase {
                             || "org/netbeans/swing/tabcontrol/TabData.class".equals(entry.getName()) // empty icon si OK
                             || "org/openide/explorer/propertysheet/PropertySheet.class".equals(entry.getName())) { // deprecated kept for compat
                         continue;
-                    } else if (entry.getName().startsWith("org/netbeans/modules/editor/java/JavaCompletionItem")) { // #96442
+                    } else if (entry.getName().startsWith("org/netbeans/modules/editor/java/JavaCompletionItem") // #96442
+//                            || entry.getName().startsWith("org/netbeans/api/visual") // 99964
+                            ) { 
                         continue;
                     }
 
@@ -386,7 +398,7 @@ public class BytecodeTest extends NbTestCase {
         }
         if (!violations.isEmpty()) {
             StringBuilder msg = new StringBuilder();
-            msg.append("Some classes retain memory permanently:\n");
+            msg.append("Some classes retain memory permanently (").append(violations.size()).append("):\n");
             for (Violation v: violations) {
                 msg.append(v.entry).append(" in ").append(v.jarFile).append(v.comment).append('\n');
             }
@@ -408,6 +420,51 @@ public class BytecodeTest extends NbTestCase {
             } catch (NoSuchMethodException ex) {
                 // expected path - OK
             }
+        }
+    }
+    
+    public void testDuplicateClasses() throws Exception {
+        SortedMap<String, List<String>> res2jars = new TreeMap<String, List<String>>();
+        
+        Set<Violation> violations = new TreeSet<Violation>();
+        for (File f: org.netbeans.core.startup.Main.getModuleSystem().getModuleJars()) {
+            if (!f.getName().endsWith(".jar"))
+                continue;
+            
+            if (f.getName().endsWith("servlet-2.2.jar") 
+                    || f.getName().endsWith("servlet2.5-jsp2.1-api.jar")) 
+                continue;
+                    
+            JarFile jar = new JarFile(f);
+            Enumeration<JarEntry> entries = jar.entries();
+            JarEntry entry;
+            while (entries.hasMoreElements()) {
+                entry = entries.nextElement();
+                String name = entry.getName();
+                if (!name.endsWith(".class")) 
+                    continue;
+                
+                LOG.log(Level.FINE, "testing entry {0}", entry);
+                List<String> jars = res2jars.get(name);
+                if (jars == null) {
+                    jars = new LinkedList<String>();
+                    res2jars.put(name, jars);
+                }
+                jars.add(jar.getName());
+            }
+        }
+        boolean fail = false;
+        StringBuilder msg = new StringBuilder("There are some duplicated classes in IDE\n");
+        for (Map.Entry<String, List<String>> entry: res2jars.entrySet()) {
+            if (entry.getValue().size() > 1) {
+                fail = true;
+                msg.append(entry.getKey()).append(" is contained in ").
+                        append(entry.getValue().size()).append(" files: ").
+                        append(entry.getValue().toString()).append('\n');
+            }
+        }
+        if (fail) {
+            fail(msg.toString());
         }
     }
 }

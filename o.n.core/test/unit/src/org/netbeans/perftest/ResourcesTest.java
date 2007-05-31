@@ -19,14 +19,10 @@
 
 package org.netbeans.perftest;
 
-import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import junit.framework.*;
@@ -147,7 +143,7 @@ public class ResourcesTest extends NbTestCase {
             StringBuilder msg = new StringBuilder();
             msg.append("Some JARs in IDE contains sparsely populated packages ("+violations.size()+"):\n");
             for (Violation viol: violations) {
-                msg.append(viol.entry).append(" in ").append(viol.jarFile).append('\n');
+                msg.append(viol).append('\n');
             }
             fail(msg.toString());
         }
@@ -188,6 +184,10 @@ public class ResourcesTest extends NbTestCase {
                     violations.add(new Violation(name, jar.getName(), " cannot be read"));
                     continue;
                 }
+                catch (IndexOutOfBoundsException ioobe) {
+                    violations.add(new Violation(name, jar.getName(), " cannot be read"));
+                    continue;
+                }
                 // more aggressive way - use reader matching to file extension
                 if (name.endsWith(".png")) {
                     ImageInputStream stream = ImageIO.createImageInputStream(jar.getInputStream(entry));
@@ -221,7 +221,7 @@ public class ResourcesTest extends NbTestCase {
             StringBuilder msg = new StringBuilder();
             msg.append("Some images in IDE have problems ("+violations.size()+"):\n");
             for (Violation viol: violations) {
-                msg.append(viol.entry).append(" in ").append(viol.jarFile).append('\n');
+                msg.append(viol).append('\n');
             }
             fail(msg.toString());
         }
@@ -242,6 +242,84 @@ public class ResourcesTest extends NbTestCase {
             String second = v2.entry + v2.jarFile;
             return (entry +jarFile).compareTo(second);
         }
+        
+        @Override
+        public String toString() {
+            return entry+" in "+jarFile+": "+comment;
+        }
     }
 
+    /** Too large or too small (empty) files are suspicious.
+     *  There should be just couple of them: splash image
+     */
+    public void testUnusualFileSize() throws Exception {
+        SortedSet<Violation> violations = new TreeSet<Violation>();
+        for (File f: org.netbeans.core.startup.Main.getModuleSystem().getModuleJars()) {
+            // check JAR files only
+            if (!f.getName().endsWith(".jar"))
+                continue;
+            
+            JarFile jar = new JarFile(f);
+            Enumeration<JarEntry> entries = jar.entries();
+            JarEntry entry;
+            BufferedImage img;
+            while (entries.hasMoreElements()) {
+                entry = entries.nextElement();
+                if (entry.isDirectory())
+                    continue;
+                
+                long len = entry.getSize();
+                if (len >= 0 && len < 10) {
+                    violations.add(new Violation(entry.getName(), jar.getName(), " is too small ("+len+" bytes)"));
+                }
+                if (len >= 100 * 1024) {
+                    violations.add(new Violation(entry.getName(), jar.getName(), " is too large ("+len+" bytes)"));
+                }
+            }
+        }
+        if (!violations.isEmpty()) {
+            StringBuilder msg = new StringBuilder();
+            msg.append("Some files have extreme size ("+violations.size()+"):\n");
+            for (Violation viol: violations) {
+                msg.append(viol).append('\n');
+            }
+            fail(msg.toString());
+        }
+    }
+    
+    /** Scan for accidentally commited files that get into product
+     */
+    public void testInappropraiteEntries() throws Exception {
+        SortedSet<Violation> violations = new TreeSet<Violation>();
+        for (File f: org.netbeans.core.startup.Main.getModuleSystem().getModuleJars()) {
+            // check JAR files only
+            if (!f.getName().endsWith(".jar"))
+                continue;
+            
+            JarFile jar = new JarFile(f);
+            Enumeration<JarEntry> entries = jar.entries();
+            JarEntry entry;
+            BufferedImage img;
+            while (entries.hasMoreElements()) {
+                entry = entries.nextElement();
+                if (entry.isDirectory())
+                    continue;
+                
+                if (entry.getName().endsWith("Thumbs.db")) {
+                    violations.add(new Violation(entry.getName(), jar.getName(), " should not be in module JAR"));
+                }
+                if (entry.getName().contains("nbproject/private")) {
+                    violations.add(new Violation(entry.getName(), jar.getName(), " should not be in module JAR"));
+                }
+            }
+        }
+        if (!violations.isEmpty()) {
+            StringBuilder msg = new StringBuilder();
+            msg.append("Some files have extreme size ("+violations.size()+"):\n");
+            for (Violation viol: violations) {
+                msg.append(viol).append('\n');
+            }
+            fail(msg.toString());
+        }
+    }
 }
