@@ -129,10 +129,12 @@ public class Utils {
         String name = null;
         try {
             name = (String) bean.getValue(nameProperty);
+        } catch(IllegalArgumentException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         } catch(Schema2BeansRuntimeException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
-        return name != null ? name : " "; // NOI18N
+        return name != null ? name : "unknown"; // NOI18N
     }
     
 }
