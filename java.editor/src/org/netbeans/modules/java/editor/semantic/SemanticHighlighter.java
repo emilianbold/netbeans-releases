@@ -82,7 +82,6 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
-import org.netbeans.api.timers.TimesCollector;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.highlights.spi.Highlight;
 import org.netbeans.modules.editor.highlights.spi.Highlighter;
@@ -293,7 +292,8 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
         
         setter.setErrors(doc, errors, allUnusedImports);
         
-        TimesCollector.getDefault().reportTime(((DataObject) doc.getProperty(Document.StreamDescriptionProperty)).getPrimaryFile(), "semantic", "Semantic", (System.currentTimeMillis() - start));
+        Logger.getLogger("TIMER").log(Level.FINE, "Semantic",
+            new Object[] {((DataObject) doc.getProperty(Document.StreamDescriptionProperty)).getPrimaryFile(), System.currentTimeMillis() - start});
         
         return result;
     }

@@ -52,7 +52,6 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.timers.TimesCollector;
 import org.netbeans.modules.editor.highlights.spi.Highlight;
 import org.netbeans.modules.editor.highlights.spi.Highlighter;
 import org.netbeans.modules.java.editor.options.MarkOccurencesSettings;
@@ -121,7 +120,8 @@ public class MarkOccurrencesHighlighter implements CancellableTask<CompilationIn
         if (isCancelled())
             return;
         
-        TimesCollector.getDefault().reportTime(((DataObject) doc.getProperty(Document.StreamDescriptionProperty)).getPrimaryFile(), "occurrences", "Occurrences", (System.currentTimeMillis() - start));
+        Logger.getLogger("TIMER").log(Level.FINE, "Occurrences",
+            new Object[] {((DataObject) doc.getProperty(Document.StreamDescriptionProperty)).getPrimaryFile(), (System.currentTimeMillis() - start)});
         
         if (highlights == null) {
             if (node.getBoolean(MarkOccurencesSettings.KEEP_MARKS, true)) {

@@ -60,7 +60,6 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.ClassIndex;
-import org.netbeans.api.timers.TimesCollector;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
@@ -86,8 +85,7 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
     
     IsOverriddenAnnotationHandler(FileObject file) {
         this.file = file;
-        
-        TimesCollector.getDefault().reportReference(file, IsOverriddenAnnotationHandler.class.getName(), "[M] IsOverriddenAnnotationHandler", this);
+        Logger.getLogger("TIMER").log(Level.FINE, "IsOverriddenAnnotationHandler", new Object[] {file, this});
     }
     
     public StyledDocument getDocument() {
@@ -133,7 +131,8 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
                 visitor = null;
             }
             
-            TimesCollector.getDefault().reportTime(file, "is-overridden", "Overridden in", System.currentTimeMillis() - startTime);
+            Logger.getLogger("TIMER").log(Level.FINE, "Overridden in",
+                    new Object[] {file, System.currentTimeMillis() - startTime});
         }
     }
     
@@ -160,7 +159,8 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
                 Set<FileObject> reverseSourceRootsInt = new HashSet<FileObject>(ReverseSourceRootsLookup.reverseSourceRootsLookup(thisSourceRoot));
                 long endTime = System.currentTimeMillis();
                 
-                TimesCollector.getDefault().reportTime(thisFile, "findReverseSourceRoots", "Find Reverse Source Roots", endTime - startTime);
+                Logger.getLogger("TIMER").log(Level.FINE, "Find Reverse Source Roots",
+                    new Object[] {thisFile, endTime - startTime});
                 
                 synchronized (o) {
                     reverseSourceRoots.addAll(reverseSourceRootsInt);
@@ -231,7 +231,8 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
         
         long endTime1 = System.currentTimeMillis();
         
-        TimesCollector.getDefault().reportTime(file, "overridden-scanner", "Overridden Scanner", endTime1 - startTime1);
+        Logger.getLogger("TIMER").log(Level.FINE, "Overridden Scanner",
+                    new Object[] {file, endTime1 - startTime1});
         
         Set<FileObject> reverseSourceRoots;
         
@@ -364,8 +365,10 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
                     return null;
                 }
                 
-                TimesCollector.getDefault().reportTime(file, "overridden-users-classindex", "Overridden Users Class Index", classIndexTime[0]);
-                TimesCollector.getDefault().reportTime(file, "overridden-users", "Overridden Users", endTime - startTime);
+                Logger.getLogger("TIMER").log(Level.FINE, "Overridden Users Class Index",
+                    new Object[] {file, classIndexTime[0]});
+                Logger.getLogger("TIMER").log(Level.FINE, "Overridden Users",
+                    new Object[] {file, endTime - startTime});
                 
                 for (Map.Entry<FileObject, Set<ElementHandle<TypeElement>>> data : users.entrySet()) {
                     if (isCanceled())

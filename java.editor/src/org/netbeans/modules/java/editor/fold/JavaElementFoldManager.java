@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
@@ -50,7 +52,6 @@ import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.timers.TimesCollector;
 import org.netbeans.editor.SettingsChangeEvent;
 import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.ext.java.JavaFoldManager;
@@ -209,7 +210,8 @@ public class JavaElementFoldManager extends JavaFoldManager {
             
             long endTime = System.currentTimeMillis();
             
-            TimesCollector.getDefault().reportTime(info.getFileObject(), "java-folds-1", "Folds - 1", endTime - startTime);
+            Logger.getLogger("TIMER").log(Level.FINE, "Folds - 1",
+                    new Object[] {info.getFileObject(), endTime - startTime});
         }
         
     }
@@ -301,7 +303,8 @@ public class JavaElementFoldManager extends JavaFoldManager {
             
             long endTime = System.currentTimeMillis();
             
-            TimesCollector.getDefault().reportTime(file, "java-folds-2", "Folds - 2", endTime - startTime);
+            Logger.getLogger("TIMER").log(Level.FINE, "Folds - 2",
+                    new Object[] {file, endTime - startTime});
         }
     }
     

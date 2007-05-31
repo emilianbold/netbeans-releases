@@ -27,8 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.timers.TimesCollector;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -82,8 +82,8 @@ public class AnnotationsHolder implements PropertyChangeListener {
             }
         });
         
-        TimesCollector.getDefault().reportReference(file, AnnotationsHolder.class.getName(), "[M] Overridden AnnotationsHolder", this);
-    }
+        Logger.getLogger("TIMER").log(Level.FINE, "Overridden AnnotationsHolder", new Object[] {file, this});
+     }
     
     public void propertyChange(PropertyChangeEvent evt) {
         if (EditorCookie.Observable.PROP_OPENED_PANES.endsWith(evt.getPropertyName()) || evt.getPropertyName() == null) {
