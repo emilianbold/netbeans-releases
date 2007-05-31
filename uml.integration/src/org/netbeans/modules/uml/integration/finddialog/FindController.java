@@ -1090,63 +1090,6 @@ public class FindController implements IFindController
                     }
                 }
             }
-            // we may have had some projects that were not open, those have been stored in
-            // an array, and we need to ask the user if they want to open them.
-            //					int unopenedCnt = unopened.size();
-            //					if (unopenedCnt > 0)
-            //					{
-            //					   String projList = "";
-            //					   for (int y = 0; y < unopenedCnt; y++)
-            //					   {
-            //							IWSProject wsProject = unopened.get(y);
-            //							if (wsProject != null)
-            //							{
-            //							  String temp = wsProject.getName();
-            //							  if (y > 0)
-            //							  {
-            //								projList += "\n";
-            //							  }
-            //							  projList += temp;
-            //							}
-            //					   }
-            //					   int nResult = -1;
-            //					   if (bAskAboutUnopened)
-            //					   {
-            //							IPreferenceQuestionDialog cpDialog = new SwingPreferenceQuestionDialog(m_Dialog);
-            //							if( cpDialog != null )
-            //							{
-            //								String title = FindUtilities.translateString("IDS_PROJNAME2");
-            //								String msg = FindUtilities.translateString("IDS_UNOPENEDPROJECTS");
-            //								String fmsg = StringUtilities.replaceSubString(msg, "%s", projList);
-            //								nResult = cpDialog.displayFromStrings( "Default",
-            //															 "FindDialog",
-            //															 "OpenClosedProjects",
-            //															 "PSK_ALWAYS",
-            //															 "PSK_NEVER",
-            //															 "PSK_ASK",
-            //															 fmsg,
-            //															 SimpleQuestionDialogResultKind.SQDRK_RESULT_NO,
-            //															 title,
-            //															 SimpleQuestionDialogKind.SQDK_YESNO,
-            //															 MessageIconKindEnum.EDIK_ICONQUESTION,
-            //															 null);
-            //							}
-            //						   if (nResult == SimpleQuestionDialogResultKind.SQDRK_RESULT_YES)
-            //						   {
-            //							  for (int y = 0; y < unopenedCnt; y++)
-            //							  {
-            //								  IWSProject wsProject = unopened.get(y);
-            //								  if (wsProject != null)
-            //								  {
-            //									wsProject.open();
-            //									pProjects.add(wsProject);
-            //								  }
-            //							  }
-            //						   }
-            //						}
-            //					}
-            //				}
-            //			}
         }
         catch (Exception e)
         {}
@@ -1664,7 +1607,7 @@ public class FindController implements IFindController
                 String msg = FindUtilities.translateString("IDS_LONGTIME");
                 int result = pDialog.displayFromStrings("Default",
                         "FindDialog",
-                        "LongSearch",
+                        "UML_ShowMe_Allow_Lengthy_Searches",
                         "PSK_ALWAYS",
                         "PSK_NEVER",
                         "PSK_ASK",

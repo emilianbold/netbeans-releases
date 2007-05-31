@@ -23,6 +23,7 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.prefs.Preferences;
 
 import javax.swing.Box;
 import javax.swing.JCheckBox;
@@ -48,6 +49,7 @@ import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.swing.commondialogs.JCenterDialog;
 import org.netbeans.modules.uml.ui.swing.commondialogs.SwingErrorDialog;
 import org.openide.awt.Mnemonics;
+import org.openide.util.NbPreferences;
 
 public class ReplaceDialogUI extends JCenterDialog
 {
@@ -721,17 +723,19 @@ public class ReplaceDialogUI extends JCenterDialog
         Object obj = evt.getSource();
         if (obj instanceof JCheckBox)
         {
+            Preferences prefs = NbPreferences.forModule (ReplaceDialogUI.class) ;
             JCheckBox box = (JCheckBox)obj;
             boolean checkboxState = box.isSelected();
             if (checkboxState)
             {
-                ProductHelper.getPreferenceManager().setPreferenceValue("FindDialog", "LongSearch", "PSK_NEVER");
+                prefs.put ("UML_ShowMe_Allow_Lengthy_Searches", "PSK_NEVER") ;
             }
             else
             {
                 m_Controller.setCaseSensitive(false);
-                if ("PSK_NEVER".equals(ProductHelper.getPreferenceManager().getPreferenceValue("FindDialog", "LongSearch")))
-                    ProductHelper.getPreferenceManager().setPreferenceValue("FindDialog", "LongSearch", "PSK_ALWAYS");
+                String find = prefs.get ("UML_ShowMe_Allow_Lengthy_Searches", "PSK_ASK");
+                if (find.equals("PSK_NEVER"))
+                    prefs.put("UML_ShowMe_Allow_Lengthy_Searches", "PSK_ALWAYS");
             }
         }
     }

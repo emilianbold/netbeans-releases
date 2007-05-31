@@ -194,71 +194,63 @@ public class PreferenceControlledInputDialog extends JCenterDialog
 	}
 	 
 	 public void displayFromStrings(String	sPreferenceKey,
-									String	sPreferencePath,
-									String	sPreferenceName,
-                                    String	sAffirmative,
-								    String	sNegative,
-								    String	sAsk,
-                                    String  sMessageString, 
-						            int 	nDefaultResult,
-                                    int 	nResult, 
-                                    String  sTitle, 
-                                    int		nDialogType, 
-                                    int		nDialogIcon,
-                                    int		parent )
-	 {
-	 	try
-		{
-	 		// Set the preference file information
-	 		preferenceInformation(sPreferenceKey, sPreferencePath, 
-	 				sPreferenceName, true);
-	 		String bsPreferenceValue = getPreferenceValue();
-	 		// Set the preference strings
-	 		m_sAffirmative = sAffirmative;
-	 		m_sNegative = sNegative;
-	 		m_sAsk = sAsk;
-//	 		if(dlg != null)
-//	 		{
-//	 			int userAnswer = 
-//	 				DisplaySimpleDialog(sMessageString, nDefaultResult,
-//                                        sTitle, nDialogType, 
-//                                        nDialogIcon, bsPreferenceValue,
-//                                        dlg);   
-
-	 			int userAnswer = 
-      			displaySimpleQuestionDialogWithCheckbox
-							(nDialogType, nDialogIcon, sMessageString, 
-							RPMessages.getString("IDS_NEVER_SHOW"), 
-							sTitle, nDefaultResult, false, bsPreferenceValue);
-      			
-	 			String bsPrefValue = null;
-	 			if((SimpleQuestionDialogKind.SQDK_YESNOALWAYS == nDialogType) || 
-	 				(SimpleQuestionDialogKind.SQDK_YESNONEVER == nDialogType))
-	 			{
-	 				bsPrefValue = getAlwaysNeverResult(nDialogType, userAnswer, 
-	 													nResult);
-	 			}
-	 			else
-	 			{
-	 				bsPrefValue = getDefaultResult(userAnswer, nResult, 
-	 						m_Checkbox.isSelected());
-	 			}
-      
-	 			// Because we do not want to screw up any bodies preference 
-	 			// by putting a blank 
-	 			// into the value, do not set if blank.
-	 			if(( bsPrefValue != null) &&  bsPrefValue.length() > 0)
-	 			{
-	 				setPreferenceValue( bsPrefValue );
-	 			}
-//	 		}	
-		}
-	 	catch(Exception e)
-		{
-	 		// I just want to forward the error to the listener.
-	 		Log.stackTrace(e);
-		}
-	}
+                 String	sPreferencePath,
+                 String	sPreferenceName,
+                 String	sAffirmative,
+                 String	sNegative,
+                 String	sAsk,
+                 String  sMessageString,
+                 int 	nDefaultResult,
+                 int 	nResult,
+                 String  sTitle,
+                 int		nDialogType,
+                 int		nDialogIcon,
+                 int		parent ) {
+             try {
+                 // Set the preference file information
+                 preferenceInformation(sPreferenceKey, sPreferencePath,
+                         sPreferenceName, true);
+                 String bsPreferenceValue = getPreferenceValue();
+                 // Set the preference strings
+                 m_sAffirmative = sAffirmative;
+                 m_sNegative = sNegative;
+                 m_sAsk = sAsk;
+                 //	 		if(dlg != null)
+                 //	 		{
+                 //	 			int userAnswer =
+                 //	 				DisplaySimpleDialog(sMessageString, nDefaultResult,
+                 //                                        sTitle, nDialogType,
+                 //                                        nDialogIcon, bsPreferenceValue,
+                 //                                        dlg);
+                 
+                 int userAnswer =
+                         displaySimpleQuestionDialogWithCheckbox
+                         (nDialogType, nDialogIcon, sMessageString,
+                         RPMessages.getString("IDS_NEVER_SHOW"),
+                         sTitle, nDefaultResult, false, bsPreferenceValue);
+                 
+                 String bsPrefValue = null;
+                 if((SimpleQuestionDialogKind.SQDK_YESNOALWAYS == nDialogType) ||
+                         (SimpleQuestionDialogKind.SQDK_YESNONEVER == nDialogType)) {
+                     bsPrefValue = getAlwaysNeverResult(nDialogType, userAnswer,
+                             nResult);
+                 } else {
+                     bsPrefValue = getDefaultResult(userAnswer, nResult,
+                             m_Checkbox.isSelected());
+                 }
+                 
+                 // Because we do not want to screw up any bodies preference
+                 // by putting a blank
+                 // into the value, do not set if blank.
+                 if(( bsPrefValue != null) &&  bsPrefValue.length() > 0) {
+                     setPreferenceValue( bsPrefValue );
+                 }
+                 //	 		}
+             } catch(Exception e) {
+                 // I just want to forward the error to the listener.
+                 Log.stackTrace(e);
+             }
+         }
 	 
 	public int displaySimpleQuestionDialogWithCheckbox(
 										int 		nDialogType, 

@@ -46,7 +46,9 @@ import org.netbeans.modules.uml.project.ProjectUtil;
 import org.netbeans.modules.uml.project.UMLProject;
 import org.netbeans.modules.uml.project.UMLProjectHelper;
 import java.util.ArrayList;
+import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
+import org.openide.util.NbPreferences;
 
 public class FindUtilities
 {
@@ -72,56 +74,37 @@ public class FindUtilities
 	 */
 	public static ETList<String> buildColumns()
 	{
+            Preferences prefs = NbPreferences.forModule (FindUtilities.class);
 		ETList<String> strs = new ETArrayList<String>();
-		if (prefSetToShow("FindDialog|DisplayedColumns", "Icon"))
+		if (prefs.getBoolean("UML_Find_Dialog_Icon", false))
 		{
 			strs.add("IDS_ICON");
 		}
-		if (prefSetToShow("FindDialog|DisplayedColumns", "Name"))
+                if (prefs.getBoolean("UML_Find_Dialog_Name", false))
 		{
 			strs.add("IDS_NAME");
 		}
-		if (prefSetToShow("FindDialog|DisplayedColumns", "Alias"))
+                if (prefs.getBoolean("UML_Find_Dialog_Alias", false))
 		{
 			strs.add("IDS_ALIAS");
 		}
-		if (prefSetToShow("FindDialog|DisplayedColumns", "Type"))
+                if (prefs.getBoolean("UML_Find_Dialog_Type", false))
 		{
 			strs.add("IDS_TYPE");
 		}
-		if (prefSetToShow("FindDialog|DisplayedColumns", "Full"))
+                if (prefs.getBoolean("UML_Find_Dialog_Full", false))
 		{
 			strs.add("IDS_FULLNAME");
 		}
-		if (prefSetToShow("FindDialog|DisplayedColumns", "Project"))
+                if (prefs.getBoolean("UML_Find_Dialog_Project", false))
 		{
 			strs.add("IDS_PROJECT");
 		}
-		if (prefSetToShow("FindDialog|DisplayedColumns", "XMIID"))
+                if (prefs.getBoolean("UML_Find_Dialog_XMIID", false))
 		{
 			strs.add("IDS_ID");
 		}
 		return strs;
-	}
-	/**
-	 *	Determines whether or not to display a column in the find dialog based on a preference
-	 * @param pref[in]			The full path to the preference in the pref file
-	 *
-	 * @return bool				Whether or not the preferences says to show this column
-	 */
-	public static boolean prefSetToShow(String sPrefPath, String sPrefName)
-	{
-		boolean show = true;
-		IPreferenceManager2 prefMan = ProductHelper.getPreferenceManager();
-		if (prefMan != null)
-		{
-			String str = prefMan.getPreferenceValue(sPrefPath, sPrefName);
-			if (str.equals("PSK_NO"))
-			{
-				show = false;
-			}
-		}
-		return show;
 	}
 
 	/**

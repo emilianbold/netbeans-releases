@@ -24,6 +24,7 @@ package org.netbeans.modules.uml.ui.support;
 import org.netbeans.modules.uml.core.coreapplication.IPreferenceManager2;
 import org.netbeans.modules.uml.ui.support.commondialogs.IPreferenceControlledDialog;
 import org.netbeans.modules.uml.ui.support.messaging.IMessenger;
+import org.openide.util.NbPreferences;
 
 /**
  * @author sumitabhk
@@ -202,16 +203,11 @@ public class SwingPreferenceControlledDialog implements IPreferenceControlledDia
 	 * @return 
 	 *
 	 */
-	public String getPreferenceValue()
-	{
-		String sVal = "";
-		IPreferenceManager2 pManager = ProductHelper.getPreferenceManager();
-		if (pManager != null)
-		{
-			sVal = pManager.getPreferenceValue(m_PrefKey, m_PrefPath, m_PrefName);
-		}
-		return sVal;
-	}
+	public String getPreferenceValue() {
+            
+            //kris richards - set to use NbPreferences
+            return NbPreferences.forModule(SwingPreferenceControlledDialog.class).get(m_PrefName,"") ;
+        }
 
 	/**
 	 *

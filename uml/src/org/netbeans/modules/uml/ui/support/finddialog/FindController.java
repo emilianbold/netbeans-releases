@@ -959,137 +959,109 @@ public class FindController implements IFindController
 		}
 		return result;
 	}
-
-	public ETList<IWSProject> getProjects(boolean bAskAboutUnopened)
-	{
-		// TODO Right now getting all projects - see c++ for details		
-		// get the workspace from the core product
-		ETList<IWSProject> pProjects = new ETArrayList<IWSProject>();
-		try {
-			IWorkspace pWorkspace = ProductHelper.getWorkspace();
-			if (pWorkspace != null)
-			{
-				// get all of the projects in the workspace
-				ETList<IWSProject> wsProjects = pWorkspace.getWSProjects();
-				if (wsProjects != null)
-				{
-					ETList<IWSProject> unopened = new ETArrayList<IWSProject>();
-					// loop through the list of projects in the workspace
-					int count = wsProjects.size();
-					for (int x = 0; x < count; x++)
-					{
-						IWSProject wsProject = wsProjects.get(x);
-						if (wsProject != null)
-						{
-						  // if they have chosen to search the workspace, add the project, no questions asked
-						  if (m_Scope == 1/*FIND_SCOPE_WORKSPACE*/)
-						  {
-							 boolean isOpen = wsProject.isOpen();
-							 if (isOpen)
-							 {
-								pProjects.add(wsProject);
-							 }
-							 else
-							 {
-								unopened.add(wsProject);
-							 }
-						  }
-						  else
-						  {
-							 // they have chosen to search by project, they may have more than one project selected
-							 // so we need to check what they have selected
-							 String name = wsProject.getName();
-							 if (name.length() > 0)
-							 {
-								// check the list of projects that they have selected
-								for (int x2 = 0; x2 < m_Projects.size(); x2++)
-								{
-								   Object obj = m_Projects.get(x2);
-								   if (obj instanceof String)
-								   {
-									   String projName = (String)obj;
-									   if (projName.equals(name))
-									   {
-										  // have it selected, so add it to our list
-										  boolean isOpen = wsProject.isOpen();
-										  if (isOpen)
-										  {
-											pProjects.add(wsProject);
-										  }
-										  else
-										  {
-											 unopened.add(wsProject);
-										  }
-										  break;
-										}
-								   }
-								}
-							}
-						  }
-						}
-					}
-					// we may have had some projects that were not open, those have been stored in
-					// an array, and we need to ask the user if they want to open them.
-					int unopenedCnt = unopened.size();
-					if (unopenedCnt > 0)
-					{
-					   String projList = "";
-					   for (int y = 0; y < unopenedCnt; y++)
-					   {
-							IWSProject wsProject = unopened.get(y);
-							if (wsProject != null)
-							{
-							  String temp = wsProject.getName();
-							  if (y > 0)
-							  {
-								projList += "\n";
-							  }
-							  projList += temp;
-							}
-					   }
-					   int nResult = -1;
-					   if (bAskAboutUnopened)
-					   {
-							IPreferenceQuestionDialog cpDialog = new SwingPreferenceQuestionDialog(m_Dialog);
-							if( cpDialog != null )
-							{
-								String title = FindUtilities.translateString("IDS_PROJNAME2");
-								String msg = FindUtilities.translateString("IDS_UNOPENEDPROJECTS");
-								String fmsg = StringUtilities.replaceSubString(msg, "%s", projList);
-								nResult = cpDialog.displayFromStrings( "Default", 
-															 "FindDialog", 
-															 "OpenClosedProjects",
-															 "PSK_ALWAYS",
-															 "PSK_NEVER",
-															 "PSK_ASK",
-															 fmsg, 
-															 SimpleQuestionDialogResultKind.SQDRK_RESULT_NO, 
-															 title,
-															 SimpleQuestionDialogKind.SQDK_YESNO,
-															 MessageIconKindEnum.EDIK_ICONQUESTION,
-															 null);
-							}
-						   if (nResult == SimpleQuestionDialogResultKind.SQDRK_RESULT_YES)
-						   {
-							  for (int y = 0; y < unopenedCnt; y++)
-							  {
-								  IWSProject wsProject = unopened.get(y);
-								  if (wsProject != null)
-								  {
-									wsProject.open();
-									pProjects.add(wsProject);
-								  }
-							  }
-						   }
-						}
-					}
-				}
-			}
-		}
-		catch (Exception e)
-		{}
-		return pProjects;
-	}
+        
+        public ETList<IWSProject> getProjects(boolean bAskAboutUnopened) {
+            // TODO Right now getting all projects - see c++ for details
+            // get the workspace from the core product
+            ETList<IWSProject> pProjects = new ETArrayList<IWSProject>();
+            try {
+                IWorkspace pWorkspace = ProductHelper.getWorkspace();
+                if (pWorkspace != null) {
+                    // get all of the projects in the workspace
+                    ETList<IWSProject> wsProjects = pWorkspace.getWSProjects();
+                    if (wsProjects != null) {
+                        ETList<IWSProject> unopened = new ETArrayList<IWSProject>();
+                        // loop through the list of projects in the workspace
+                        int count = wsProjects.size();
+                        for (int x = 0; x < count; x++) {
+                            IWSProject wsProject = wsProjects.get(x);
+                            if (wsProject != null) {
+                                // if they have chosen to search the workspace, add the project, no questions asked
+                                if (m_Scope == 1/*FIND_SCOPE_WORKSPACE*/) {
+                                    boolean isOpen = wsProject.isOpen();
+                                    if (isOpen) {
+                                        pProjects.add(wsProject);
+                                    } else {
+                                        unopened.add(wsProject);
+                                    }
+                                } else {
+                                    // they have chosen to search by project, they may have more than one project selected
+                                    // so we need to check what they have selected
+                                    String name = wsProject.getName();
+                                    if (name.length() > 0) {
+                                        // check the list of projects that they have selected
+                                        for (int x2 = 0; x2 < m_Projects.size(); x2++) {
+                                            Object obj = m_Projects.get(x2);
+                                            if (obj instanceof String) {
+                                                String projName = (String)obj;
+                                                if (projName.equals(name)) {
+                                                    // have it selected, so add it to our list
+                                                    boolean isOpen = wsProject.isOpen();
+                                                    if (isOpen) {
+                                                        pProjects.add(wsProject);
+                                                    } else {
+                                                        unopened.add(wsProject);
+                                                    }
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        // we may have had some projects that were not open, those have been stored in
+                        // an array, and we need to ask the user if they want to open them.
+                        int unopenedCnt = unopened.size();
+                        if (unopenedCnt > 0) {
+                            String projList = "";
+                            for (int y = 0; y < unopenedCnt; y++) {
+                                IWSProject wsProject = unopened.get(y);
+                                if (wsProject != null) {
+                                    String temp = wsProject.getName();
+                                    if (y > 0) {
+                                        projList += "\n";
+                                    }
+                                    projList += temp;
+                                }
+                            }
+                            int nResult = -1;
+                            if (bAskAboutUnopened) {
+                                IPreferenceQuestionDialog cpDialog = new SwingPreferenceQuestionDialog(m_Dialog);
+                                if( cpDialog != null ) {
+                                    String title = FindUtilities.translateString("IDS_PROJNAME2");
+                                    String msg = FindUtilities.translateString("IDS_UNOPENEDPROJECTS");
+                                    String fmsg = StringUtilities.replaceSubString(msg, "%s", projList);
+                                    nResult = cpDialog.displayFromStrings( "Default",
+                                            "FindDialog",
+                                            "OpenClosedProjects",
+                                            "PSK_ALWAYS",
+                                            "PSK_NEVER",
+                                            "PSK_ASK",
+                                            fmsg,
+                                            SimpleQuestionDialogResultKind.SQDRK_RESULT_NO,
+                                            title,
+                                            SimpleQuestionDialogKind.SQDK_YESNO,
+                                            MessageIconKindEnum.EDIK_ICONQUESTION,
+                                            null);
+                                }
+                                if (nResult == SimpleQuestionDialogResultKind.SQDRK_RESULT_YES) {
+                                    for (int y = 0; y < unopenedCnt; y++) {
+                                        IWSProject wsProject = unopened.get(y);
+                                        if (wsProject != null) {
+                                            wsProject.open();
+                                            pProjects.add(wsProject);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+            }
+            return pProjects;
+        }
 	
 	public String buildXPathString(String searchString)
 	{
@@ -1592,7 +1564,7 @@ public class FindController implements IFindController
 				String msg = FindUtilities.translateString("IDS_LONGTIME");
 				int result = pDialog.displayFromStrings("Default", 
                                                     "FindDialog", 
-                                                    "LongSearch",
+                                                    "UML_ShowMe_Allow_Lengthy_Searches",
                                                     "PSK_ALWAYS",
                                                     "PSK_NEVER",
                                                     "PSK_ASK",

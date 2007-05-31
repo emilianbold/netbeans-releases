@@ -30,6 +30,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import java.util.ResourceBundle;
+import java.util.prefs.Preferences;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -58,6 +59,7 @@ import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  * @author jingmingm
@@ -632,18 +634,20 @@ public class AssociateDlgGUI extends JCenterDialog implements IAssociateDlgGUI
         Object obj = evt.getSource();
         if (obj instanceof JCheckBox)
         {
+            Preferences prefs = NbPreferences.forModule (AssociateDlgGUI.class) ;
             JCheckBox box = (JCheckBox)obj;
             boolean checkboxState = box.isSelected();
             if (checkboxState)
             {
                 m_Controller.setCaseSensitive(true);
-                ProductHelper.getPreferenceManager().setPreferenceValue("FindDialog", "LongSearch", "PSK_NEVER");
+                prefs.put ("UML_ShowMe_Allow_Lengthy_Searches", "PSK_NEVER") ;
             }
             else
             {
                 m_Controller.setCaseSensitive(false);
-                if ("PSK_NEVER".equals(ProductHelper.getPreferenceManager().getPreferenceValue("FindDialog", "LongSearch")))
-                    ProductHelper.getPreferenceManager().setPreferenceValue("FindDialog", "LongSearch", "PSK_ALWAYS");
+                String find = prefs.get ("UML_ShowMe_Allow_Lengthy_Searches", "PSK_ASK");
+                if (find.equals("PSK_NEVER"))
+                    prefs.put("UML_ShowMe_Allow_Lengthy_Searches", "PSK_ALWAYS");
             }
         }
     }

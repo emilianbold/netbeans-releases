@@ -23,6 +23,7 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.prefs.Preferences;
 import javax.swing.Box;
 import javax.swing.JCheckBox;
 import javax.swing.JButton;
@@ -215,7 +216,7 @@ public class FindDialogUI extends JCenterDialog
         // "Yes" or "Ask Me".
         if (! matchCaseEnabled()) {
             m_Controller.setCaseSensitive(true) ;
-            ProductHelper.getPreferenceManager().setPreferenceValue("FindDialog", "CaseSensitivity", "PSK_YES");
+            NbPreferences.forModule (FindDialogUI.class).putBoolean("UML_Case_Sensitivity", true);
             m_MatchCaseCheck.setSelected(true) ;
             m_MatchCaseCheck.setEnabled(false) ;
         }
@@ -681,18 +682,18 @@ public class FindDialogUI extends JCenterDialog
         Object obj = evt.getSource();
         if (obj instanceof JCheckBox)
         {
+            Preferences prefs = NbPreferences.forModule (FindDialogUI.class) ;
             JCheckBox box = (JCheckBox)obj;
             boolean checkboxState = box.isSelected();
             if (checkboxState)
             {
                 m_Controller.setCaseSensitive(true);
-                ProductHelper.getPreferenceManager().setPreferenceValue("FindDialog", "CaseSensitivity", "PSK_YES");
+                prefs.putBoolean("UML_Case_Sensitivity", true);
             }
             else
             {
                 m_Controller.setCaseSensitive(false);
-                //if ("PSK_NEVER".equals(ProductHelper.getPreferenceManager().getPreferenceValue("FindDialog", "LongSearch")))
-                ProductHelper.getPreferenceManager().setPreferenceValue("FindDialog", "CaseSensitivity", "PSK_NO");
+                prefs.putBoolean("UML_Case_Sensitivity", false);
             }
         }
     }
@@ -918,7 +919,7 @@ public class FindDialogUI extends JCenterDialog
         //return !"PSK_NEVER".equals(ProductHelper.getPreferenceManager().getPreferenceValue("FindDialog", "LongSearch"));    
         
         //options are "ASK ME", "ALWAYS", and "NEVER"
-        String status = NbPreferences.forModule (FindDialogOptionsForm.class).get ("LongSearch", "ALWAYS");
+        String status = NbPreferences.forModule (FindDialogOptionsForm.class).get ("UML_ShowMe_Allow_Lengthy_Searches", "ALWAYS");
         return ! status.equals ("PSK_NEVER") ;
     }
     
