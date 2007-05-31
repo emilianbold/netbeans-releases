@@ -22,7 +22,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import org.netbeans.modules.form.InPlaceEditLayer;
+import org.netbeans.modules.form.RADComponent;
 import org.netbeans.modules.form.RADVisualComponent;
 import org.netbeans.modules.form.RADVisualContainer;
 
@@ -33,14 +35,27 @@ import org.netbeans.modules.form.RADVisualContainer;
  */
 public class KeyboardMenuNavigator implements KeyListener {
     MenuEditLayer menuEditLayer;
-    RADVisualContainer menuBarRAD;
-    RADVisualContainer currentMenuRAD;
+    private RADVisualContainer menuBarRAD;
+    private RADVisualContainer currentMenuRAD;
     RADVisualComponent selectedRADComponent;
     KeyboardFinishListener listener;
     
     public KeyboardMenuNavigator(MenuEditLayer menuEditLayer) {
         this.menuEditLayer = menuEditLayer;
         configure();
+    }
+    
+    public void setCurrentMenuRAD(RADVisualContainer currentMenuRAD) {
+        this.currentMenuRAD = currentMenuRAD;
+        this.menuBarRAD = getMenuBarRad(currentMenuRAD);
+    }
+    
+    private RADVisualContainer getMenuBarRad(RADComponent comp) {
+       if(JMenuBar.class.isAssignableFrom(comp.getBeanClass())) {
+           return (RADVisualContainer) comp;
+       }
+       if(comp.getParentComponent() == null) return null;
+       return getMenuBarRad(comp.getParentComponent());
     }
     
     public void configure() {
@@ -77,8 +92,9 @@ public class KeyboardMenuNavigator implements KeyListener {
     // select the next menu item offset from the current one.
     // pass in -1 and +1 to do prev and next menu items
     private void selectOffsetMenuItem(int offset) {
+        if(currentMenuRAD == null) return;
         if(currentMenuRAD.getSubComponents().length == 0) {
-            menuEditLayer.setSelectedComponent(null);
+            menuEditLayer.setSelectedComponent((JComponent)null);
             return;
         }
         if(selectedRADComponent == null) {

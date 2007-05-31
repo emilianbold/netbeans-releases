@@ -32,7 +32,11 @@ import java.awt.dnd.DropTargetListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TooManyListenersException;
 import javax.swing.BorderFactory;
@@ -50,6 +54,7 @@ import javax.swing.plaf.PopupMenuUI;
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.palette.PaletteUtils;
+import org.openide.nodes.Node;
 
 /**
  *
@@ -91,6 +96,7 @@ public class MenuEditLayer extends JPanel {
     private Map<RADVisualContainer,FormModelListener> formModelListeners;
     private DragOperation dragop;
     private FormModelListener menuBarFormListener;
+    private PropertyChangeListener selectionListener;
     
     
     /** Creates a new instance of MenuEditLayer */
@@ -131,6 +137,8 @@ public class MenuEditLayer extends JPanel {
         MouseInputAdapter mia = new GlassLayerMouseListener();
         glassLayer.addMouseListener(mia);
         glassLayer.addMouseMotionListener(mia);
+        configureSelectionListener();
+        //josh: when do we call this? unconfigureSelectionListener();
     }
     
     
@@ -197,11 +205,11 @@ public class MenuEditLayer extends JPanel {
         JMenu menu = (JMenu) comp;
         currentMenu = menu;
         registerKeyListeners();
+        glassLayer.requestFocusInWindow();
         configureMenu(null,menu);
         showMenuPopup(menu);
         if(metacomp instanceof RADVisualContainer) {
-            keyboardMenuNavigator.currentMenuRAD = (RADVisualContainer)metacomp;
-            keyboardMenuNavigator.menuBarRAD = keyboardMenuNavigator.currentMenuRAD.getParentContainer();
+            keyboardMenuNavigator.setCurrentMenuRAD((RADVisualContainer)metacomp);
         }
     }
     
@@ -228,7 +236,6 @@ public class MenuEditLayer extends JPanel {
     
     //josh: all this key listener stuff should go into a separate class
     private void registerKeyListeners() {
-        glassLayer.requestFocusInWindow();
         if(keyboardMenuNavigator == null) {
             keyboardMenuNavigator = new KeyboardMenuNavigator(this);
             glassLayer.addKeyListener(keyboardMenuNavigator);
@@ -273,14 +280,50 @@ public class MenuEditLayer extends JPanel {
         menuBarFormListener = null;
     }    
 
+    private void configureSelectionListener() {
+        if(selectionListener == null) {
+            selectionListener = new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    p("activated nodes changed: ");
+                    Node[] oldNodes = (Node[])evt.getOldValue();
+                    Node[] newNodes = (Node[])evt.getNewValue();
+                    for(Node n : newNodes) {
+                        if(n instanceof RADComponentNode) {
+                            RADComponentNode radn = (RADComponentNode) n;
+                            setSelectedComponent(radn.getRADComponent());
+                        }
+                    }
+                    
+                }
+                
+            };
+            formDesigner.addPropertyChangeListener("activatedNodes",selectionListener);
+        };
+    }
+    
+    private void unconfigureSelectionListener() {
+        if(selectionListener != null) {
+            formDesigner.removePropertyChangeListener(selectionListener);
+            selectionListener = null;
+        }
+    }
 
     void showMenuPopup(final JMenu menu) {
         // if already created then just make it visible
         if(hackedPopupFactory.containerMap.containsKey(menu)) {
             hackedPopupFactory.containerMap.get(menu).setVisible(true);
         } else {
-            JPopupMenu popup = menu.getPopupMenu();
-            popup.show(menu,0,menu.getHeight());
+            if(!isConfigured(menu)) {
+                configureMenu(null, menu);
+            }
+            if(menu.isVisible()) {
+                try {
+                    JPopupMenu popup = menu.getPopupMenu();
+                    popup.show(menu,0,menu.getHeight());
+                } catch (Exception ex) {
+                    //ignore anyexceptions caused by showing the popups
+                }
+            }
         }
         this.validate();
     }
@@ -400,7 +443,61 @@ public class MenuEditLayer extends JPanel {
         return menuParentMap.get(menu);
     }
     
+    private void setSelectedComponent(RADComponent comp) {
+        JComponent c = (JComponent) formDesigner.getComponent(comp);
+        
+        if(selectedComponent != null) {
+            selectedComponent.setBorder(UNSELECTED_BORDER);
+        }
+        selectedComponent = c;
+        if(selectedComponent != null) {
+            selectedComponent.setBorder(SELECTED_BORDER);
+            makeSureShowingOnScreen(comp,selectedComponent);
+            if(selectedComponent instanceof JMenu) {
+                JMenu menu = (JMenu) selectedComponent;
+                showMenuPopup(menu);
+            }
+        }
+        repaint();
+            
+    }
+    
+    
+    private void makeSureShowingOnScreen(RADComponent rad, JComponent comp) {
+        if(!this.isVisible()) {
+            this.setVisible(true);
+            registerKeyListeners();
+            if(rad instanceof RADVisualContainer) {
+                keyboardMenuNavigator.setCurrentMenuRAD((RADVisualContainer)rad);
+            } else {
+                keyboardMenuNavigator.setCurrentMenuRAD((RADVisualContainer)rad.getParentComponent());
+            }
+        }
+        
+        List<RADComponent> path = new ArrayList<RADComponent>();
+        RADComponent temp = rad.getParentComponent();
+        while(true) {
+            path.add(temp);
+            temp = temp.getParentComponent();
+            if(!isMenuRelatedRADComponent(temp)) {
+                break;
+            }
+        }
+        
+        // go backwards, top to bottom
+        for(int i = path.size()-1; i>=0; i--) {
+            RADComponent r = path.get(i);
+            JComponent c = (JComponent) formDesigner.getComponent(r);
+            if(c instanceof JMenu) {
+                showMenuPopup((JMenu)c);
+            }
+        }
+        
+    }
+    
+    
     void setSelectedComponent(JComponent c) {
+        if(selectedComponent == c) return;
         glassLayer.requestFocusInWindow();
         try {
             if(selectedComponent != null) {
@@ -426,6 +523,24 @@ public class MenuEditLayer extends JPanel {
             ex.printStackTrace();
         }
     }
+    
+    /* josh: use this as a base to add the context menu to the MenuEditLayer
+    private void showContextMenu(Point popupPos) {
+        ComponentInspector inspector = ComponentInspector.getInstance();
+        TopComponent activated = TopComponent.getRegistry().getActivated();
+        if (activated != formDesigner.multiViewObserver.getTopComponent()
+                && activated != inspector)
+            return;
+
+        formDesigner.componentActivated(); // just for sure...
+
+        Node[] selectedNodes = inspector.getSelectedNodes();
+        JPopupMenu popup = NodeOp.findContextMenu(selectedNodes);
+        if (popup != null) {
+            popup.show(HandleLayer.this, popupPos.x, popupPos.y);
+        }
+    }
+*/
     
     
     // returns true if this is a menu container that should be highlighted if the component
@@ -642,17 +757,19 @@ public class MenuEditLayer extends JPanel {
             popupContainer.removeAll();
             // rebuild it
             for(RADVisualComponent child : menuRAD.getSubComponents()) {
-                JComponent jchild = (JComponent) formDesigner.getComponent(child);
-                //p("checking: " + jchild);
-                if(!isConfigured(jchild)) {
-                    //p("not configured!");
-                    if(jchild instanceof JMenu) {
-                        configureMenu(menu, (JMenu)jchild);
-                    } else {
-                        configureMenuItem(menu,jchild);
+                if(child != null) {
+                    JComponent jchild = (JComponent) formDesigner.getComponent(child);
+                    //p("checking: " + jchild);
+                    if(!isConfigured(jchild)) {
+                        //p("not configured!");
+                        if(jchild instanceof JMenu) {
+                            configureMenu(menu, (JMenu)jchild);
+                        } else {
+                            configureMenuItem(menu,jchild);
+                        }
                     }
+                    popupContainer.add(jchild);
                 }
-                popupContainer.add(jchild);
             }
             
             // repack it
@@ -711,11 +828,9 @@ public class MenuEditLayer extends JPanel {
         private boolean isEditing = false;
         
         public void mouseClicked(MouseEvent e) {
-            p("mouse clicked: " + e);
         }
         
         public void mousePressed(MouseEvent e) {
-            p("mouse pressed: " + e);
             // drag drag ops
             if(dragop.isStarted()) {
                 dragop.end(e.getPoint());
@@ -735,9 +850,7 @@ public class MenuEditLayer extends JPanel {
             }
 
             JComponent c = dragop.getDeepestComponentInPopups(e.getPoint());
-            p("pressed component: " + c);
 
-            p("pressed rad = " + rad);
             if(c == null && !isMenuRelatedRADComponent(rad)) {
                 p("not a menu component. going back to handle layer");
                 hideMenuLayer();
@@ -745,7 +858,6 @@ public class MenuEditLayer extends JPanel {
 
             // start editing
             if(e.getClickCount() > 1) {
-                p("double click");
                 if(c instanceof JMenuItem) {
                     JMenuItem item = (JMenuItem) c;
                     RADComponent radcomp = formDesigner.getMetaComponent(item);
@@ -777,14 +889,8 @@ public class MenuEditLayer extends JPanel {
         }
         
         public void mouseEntered(MouseEvent e) {
-            p("mouse entered: " + e);
             if(!dragop.isStarted()) {
-                p("not started");
                 PaletteItem item = PaletteUtils.getSelectedItem();
-                p("designer mode = " + formDesigner.getDesignerMode());
-                p("add = " + FormDesigner.MODE_ADD);
-                p("connect = " + FormDesigner.MODE_CONNECT);
-                p("select = " + FormDesigner.MODE_SELECT);
                 
                 // if not menu related at all, then jump back to handle layer
                 if(item != null && !isMenuRelatedComponentClass(item.getComponentClass())) {
@@ -840,7 +946,6 @@ public class MenuEditLayer extends JPanel {
     
     private class GlassLayerDropTargetListener implements DropTargetListener {
         public void dragEnter(DropTargetDragEvent dtde) {
-            p("new drag enter");
             if(!dragop.isStarted()) {
                 PaletteItem item = PaletteUtils.getSelectedItem();
                 
@@ -863,7 +968,6 @@ public class MenuEditLayer extends JPanel {
         }
 
         public void dragOver(DropTargetDragEvent dtde) {
-            p("new drag over");
             if(dragop.isStarted()) {
                 dragop.move(dtde.getLocation());
             }
@@ -876,7 +980,6 @@ public class MenuEditLayer extends JPanel {
         }
 
         public void drop(DropTargetDropEvent dtde) {
-            p("new drop");
             if(dragop.isStarted()) {
                 dragop.end(dtde.getLocation());
                 return;

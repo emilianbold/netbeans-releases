@@ -290,6 +290,9 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             // 70940: Make sure some form designer is registered
             formEditor.setFormDesigner(this);
         }
+        
+        //force the menu edit layer to be created
+        getMenuEditLayer();
     }
     
     void reset(FormEditor formEditor) {
