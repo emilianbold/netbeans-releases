@@ -4,9 +4,11 @@
  *
  * Created on August 5, 2005, 12:13 PM
  */
-
 package org.netbeans.modules.xml.xdm;
+
 import java.beans.PropertyChangeListener;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryUsage;
 import java.util.List;
 import javax.swing.undo.UndoManager;
 import junit.framework.*;
@@ -26,6 +28,22 @@ public class XDMModelTest extends TestCase {
     
     public XDMModelTest(String testName) {
         super(testName);
+    }
+    
+    public static Test suite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new XDMModelTest("testAdd"));
+        suite.addTest(new XDMModelTest("testAddNegative"));
+        suite.addTest(new XDMModelTest("testAddToSelfClosing"));
+        suite.addTest(new XDMModelTest("testAppend"));
+        suite.addTest(new XDMModelTest("testDelete"));
+        suite.addTest(new XDMModelTest("testFlush"));
+        suite.addTest(new XDMModelTest("testModify"));
+        suite.addTest(new XDMModelTest("testModifyNegative"));
+        suite.addTest(new XDMModelTest("testSyncAndNamespace"));
+        suite.addTest(new XDMModelTest("testSyncToEmptyRoot"));
+        suite.addTest(new XDMModelTest("testXDMModelSize"));
+        return suite;
     }
     
     public void testAddNegative() throws Exception {
@@ -422,6 +440,18 @@ public class XDMModelTest extends TestCase {
             count = 0;
         }
     }
+    
+    public void testXDMModelSize() throws Exception {
+        MemoryUsage usage = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
+        System.out.println("Usage: " + usage.getUsed() + "/" + usage.getMax());
+        javax.swing.text.Document swdoc = Util.getResourceAsDocument("resources/fields.xsd");
+        usage = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
+        System.out.println("Usage: " + usage.getUsed() + "/" + usage.getMax());
+        XDMModel m = Util.loadXDMModel(swdoc);
+        usage = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
+        System.out.println("Usage: " + usage.getUsed() + "/" + usage.getMax());
+    }
+
     
     protected void setUp() throws Exception {
         um = new UndoManager();
