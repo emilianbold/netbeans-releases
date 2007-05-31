@@ -32,6 +32,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Element;
@@ -51,7 +53,6 @@ import javax.lang.model.type.WildcardType;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.timers.TimesCollector;
 import org.netbeans.modules.java.navigation.ElementNode.Description;
 
 /** XXX Remove the ElementScanner class from here it should be wenough to
@@ -119,8 +120,8 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             ui.refresh( rootDescription );            
         }
         long end = System.currentTimeMillis();
-        TimesCollector.getDefault().reportTime(info.getFileObject(),  "element-scanning-task",   //NOI18N
-            "Element Scanning Task", end - start);   //NOI18N
+        Logger.getLogger("TIMER").log(Level.FINE, "Element Scanning Task",  //NOI18N
+                new Object[] {info.getFileObject(), end - start});
     }
 
     private static class PositionVisitor extends TreePathScanner<Void, Map<Element,Long>> {

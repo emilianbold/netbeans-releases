@@ -95,7 +95,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.api.timers.TimesCollector;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.source.*;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
@@ -1784,8 +1783,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     it.remove();
                 }
                 
-                TimesCollector.getDefault().reportTime(rootFO, "deps-reparse", "Deps - Reparse", System.currentTimeMillis() - cur);
-                TimesCollector.getDefault().reportTime(rootFO, "deps-total", "Deps - Total", System.currentTimeMillis() - start);
+                Logger.getLogger("TIMER").log(Level.FINE, "Deps - Reparse",
+                    new Object[] {rootFO, System.currentTimeMillis() - cur});
+                Logger.getLogger("TIMER").log(Level.FINE, "Deps - Total",
+                    new Object[] {rootFO, System.currentTimeMillis() - start});
             }
             
             if (!toRecompile.isEmpty()) {

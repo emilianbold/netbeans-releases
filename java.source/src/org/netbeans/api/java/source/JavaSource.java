@@ -95,7 +95,6 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.ModificationResult.Difference;
-import org.netbeans.api.timers.TimesCollector;
 import org.netbeans.editor.Registry;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.netbeans.modules.java.source.builder.ASTService;
@@ -212,10 +211,8 @@ public final class JavaSource {
     static JavaFileObjectProvider jfoProvider = new DefaultJavaFileObjectProvider (); 
     
     /**
-     * Helper maps mapping the {@link Phase} to key and message for
-     * the {@link TimesCollector}
+     * Helper map mapping the {@link Phase} to message for performance logger
      */
-    private static Map<Phase, String> phase2Key = new HashMap<Phase,String> ();
     private static Map<Phase, String> phase2Message = new HashMap<Phase,String> ();
     
     private static final Object INTERNAL_LOCK = new Object ();
@@ -225,13 +222,8 @@ public final class JavaSource {
      */
     static {
         JavaSourceAccessor.INSTANCE = new JavaSourceAccessorImpl ();
-        phase2Key.put(Phase.PARSED,"parsed");                                   //NOI18N
         phase2Message.put (Phase.PARSED,"Parsed");                              //NOI18N
-        
-        phase2Key.put(Phase.ELEMENTS_RESOLVED,"sig-attributed");                //NOI18N
         phase2Message.put (Phase.ELEMENTS_RESOLVED,"Signatures Attributed");    //NOI18N
-        
-        phase2Key.put(Phase.RESOLVED, "attributed");                            //NOI18N
         phase2Message.put (Phase.RESOLVED, "Attributed");                       //NOI18N
         
         //Initialize the excludedTasks
@@ -395,7 +387,8 @@ public final class JavaSource {
         for (Iterator<? extends FileObject> it = this.files.iterator(); it.hasNext();) {
             FileObject file = it.next();
             try {
-                TimesCollector.getDefault().reportReference( file, JavaSource.class.toString(), "[M] JavaSource", this );       //NOI18N
+                Logger.getLogger("TIMER").log(Level.FINE, "JavaSource",
+                    new Object[] {file, this});
                 if (!multipleSources) {
                     file.addFileChangeListener(FileUtil.weakFileChangeListener(this.fileChangeListener,file));
                     this.assignDocumentListener(file);
@@ -738,8 +731,8 @@ public final class JavaSource {
             } finally {
                 currentRequest.cancelCompleted (request);
             }
-            TimesCollector.getDefault().reportTime(currentInfo.getFileObject(),  "java-source-modification-task",   //NOI18N
-            "Modification Task", System.currentTimeMillis() - start);   //NOI18N
+            Logger.getLogger("TIMER").log(Level.FINE, "Modification Task",
+                    new Object[] {currentInfo.getFileObject(), System.currentTimeMillis() - start});
         }
         else {
             final JavaSource.Request request = currentRequest.getTaskToCancel();
@@ -1060,7 +1053,9 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 currentPhase = Phase.PARSED;
                 long end = System.currentTimeMillis();
                 FileObject file = currentInfo.getFileObject();
-                TimesCollector.getDefault().reportReference(file, "compilationUnit", "[M] Compilation Unit", unit);     //NOI18N
+                Logger.getLogger("TIMER").log(Level.FINE, "Compilation Unit",
+                    new Object[] {file, unit});
+
                 logTime (file,currentPhase,(end-start));
             }                
             if (lmListener != null && lmListener.lowMemory.getAndSet(false)) {
@@ -1132,10 +1127,9 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     
     static void logTime (FileObject source, Phase phase, long time) {
         assert source != null && phase != null;
-        String key = phase2Key.get(phase);
         String message = phase2Message.get(phase);
-        assert key != null && message != null;
-        TimesCollector.getDefault().reportTime (source,key,message,time);
+        assert message != null;
+        Logger.getLogger("TIMER").log(Level.FINE, message, new Object[] {source, time});
     }
     
     private static final RequestProcessor RP = new RequestProcessor ("JavaSource-event-collector",1);       //NOI18N
@@ -1689,7 +1683,8 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         
     private static CompilationInfo createCurrentInfo (final JavaSource js, final FileObject fo, final FilterListener filterListener, final JavacTaskImpl javac) throws IOException {        
         CompilationInfo info = new CompilationInfo (js, fo, filterListener == null ? null : filterListener.filter, javac);
-        TimesCollector.getDefault().reportReference(fo, CompilationInfo.class.toString(), "[M] CompilationInfo", info);     //NOI18N
+        Logger.getLogger("TIMER").log(Level.FINE, "CompilationInfo",
+            new Object[] {fo, info});
         return info;
     }
 

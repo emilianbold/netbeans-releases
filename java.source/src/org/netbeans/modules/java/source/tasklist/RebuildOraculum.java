@@ -45,7 +45,6 @@ import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.timers.TimesCollector;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.openide.filesystems.FileObject;
 
@@ -74,7 +73,7 @@ public class RebuildOraculum {
     private Map<ElementHandle, Collection<String>> members;
             
     private RebuildOraculum(FileObject file) {
-        TimesCollector.getDefault().reportReference(file, RebuildOraculum.class.getName(), "RebuildOraculum", this);
+        Logger.getLogger("TIMER").log(Level.FINE, "RebuildOraculum", new Object[] {file, this});
         this.file = file;
     }
     
@@ -188,8 +187,10 @@ public class RebuildOraculum {
         toParse.removeAll(classes);
         
         if (file != null) {
-            TimesCollector.getDefault().reportTime(file, "deps-handles", "Deps - Handles", System.currentTimeMillis() - start);
-            TimesCollector.getDefault().reportTime(file, "deps-handles-#", "Deps - Handles #", toParse.size());
+            Logger.getLogger("TIMER").log(Level.FINE, "Deps - Handles",
+                new Object[] {file, System.currentTimeMillis() - start});
+            Logger.getLogger("TIMER").log(Level.FINE, "Deps - Handles #",
+                new Object[] {file, toParse.size()});
         }
         
         long cur = System.currentTimeMillis();
@@ -214,8 +215,10 @@ public class RebuildOraculum {
         files.remove(null);
         
         if (file != null) {
-            TimesCollector.getDefault().reportTime(file, "deps-files", "Deps - Files", System.currentTimeMillis() - cur);
-            TimesCollector.getDefault().reportTime(file, "deps-files-#", "Deps - Files #", files.size());
+            Logger.getLogger("TIMER").log(Level.FINE, "Deps - Files",
+                new Object[] {file, System.currentTimeMillis() - cur});
+            Logger.getLogger("TIMER").log(Level.FINE, "Deps - Files #",
+                new Object[] {file, files.size()});
         }
         
         return new ArrayList<File>(files);

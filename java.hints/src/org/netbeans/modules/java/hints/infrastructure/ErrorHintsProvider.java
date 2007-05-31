@@ -33,7 +33,6 @@ import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import javax.tools.Diagnostic;
 import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.timers.TimesCollector;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.LazyFixList;
 import org.netbeans.spi.editor.hints.Severity;
@@ -369,7 +368,8 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
         
         long end = System.currentTimeMillis();
         
-        TimesCollector.getDefault().reportTime(info.getFileObject(), "java-hints", "Java Hints", end - start);
+        Logger.getLogger("TIMER").log(Level.FINE, "Java Hints",
+                new Object[] {info.getFileObject(), end - start});
     }
     
     private long getPrefferedPosition(CompilationInfo info, Diagnostic d) {
