@@ -25,7 +25,6 @@ import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmMember;
@@ -37,8 +36,6 @@ import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmType;
-import org.netbeans.modules.cnd.api.model.CsmUsingDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 
@@ -438,14 +435,5 @@ public class CsmKindUtilities {
     
     public static boolean isMacro(CsmObject obj) {
         return obj instanceof CsmMacro;
-    }
-
-    public static boolean isInclude(CsmObject obj) {
-        return obj instanceof CsmInclude;
-    }
-
-    public static boolean isUsing(CsmObject obj) {
-        return (obj instanceof CsmUsingDeclaration) ||
-               (obj instanceof CsmUsingDirective);
     }
 }

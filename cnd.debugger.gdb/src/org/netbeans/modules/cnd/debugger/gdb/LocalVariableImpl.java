@@ -19,8 +19,10 @@
 
 package org.netbeans.modules.cnd.debugger.gdb;
 
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebuggerImpl;
+import org.netbeans.modules.cnd.debugger.gdb.LocalVariable;
+import org.netbeans.modules.cnd.debugger.gdb.Field;
+import org.netbeans.modules.cnd.debugger.gdb.models.AbstractVariable;
 
 /*
  * LocalVariableImpl.java
@@ -30,24 +32,50 @@ import org.netbeans.api.debugger.DebuggerManager;
  */
 public class LocalVariableImpl implements LocalVariable, Field {
     private String name;
+    private String shortname; 
     private String previousValueText;
     private String currentValueText;
     private String type;
+    private String className;
+    private int dimCount;
     private GdbDebuggerImpl debugger;
+    private Field[]         fields;
+    private Field[]         staticFields;
+    private Field[]         inheritedFields;
     
     /**
      * Creates a new instance of LocalVariableImpl
      */
     public LocalVariableImpl(String name, String type, String value) {
-        this.name = name;
+        setName(name);
         this.currentValueText = value;
         this.previousValueText = value;
         this.type = type;
+        dimCount = 1;
         debugger = null;
     }
     
     public String getName() {
-        return name; // Name to show in Locals View
+        return shortname; // Name to show in Locals View
+    }
+    
+    public void setName(String name) {
+        //objectChanged(CHANGED_NAME);
+        this.name = name;
+        shortname = name;
+        int i = shortname.lastIndexOf('.');
+        if (i >= 0) {
+            i++;
+            if (i < shortname.length()) {
+                shortname = shortname.substring(i);
+            }
+            // Copy all stars
+            for (i = 0; i < name.length(); i++) {
+                if (name.charAt(i) == '*') {
+                    shortname = '*' + shortname;
+                } else break;
+            }
+        }
     }
     
     public String getValue() {
@@ -61,12 +89,7 @@ public class LocalVariableImpl implements LocalVariable, Field {
      * @throws InvalidExpressionException if the expression is not correct
      */
     public void setValue(String expression) throws InvalidExpressionException {
-        if (debugger == null) {
-	    // Don't set it unless its needed...
-	    DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
-	    debugger = (GdbDebuggerImpl) currentEngine.lookupFirst(null, GdbDebugger.class);
-	}
-        
+        if (debugger == null) return;
         // evaluate expression to Value
         //String value = debugger.evaluateIn (expression);
         String value = expression;
@@ -109,7 +132,7 @@ public class LocalVariableImpl implements LocalVariable, Field {
                         if (c != oldstrValue.charAt(n)) {
                             if (n < 2) break; // First 2 characters must match (\")
                             int k = n - 2;
-                            debugger.setVariableValue(name + "[" + k + "]", "'" + c + "'"); // NOI18N
+                            debugger.setVariableValue(name+"["+k+"]", "'"+c+"'"); // NOI18N
                         }
                     }
                 }
@@ -125,7 +148,50 @@ public class LocalVariableImpl implements LocalVariable, Field {
     }
     
     public String getType() {
+        if (type != null && !type.equals("")) { // NOI18N
+            return type;
+        }
+        type = debugger.getVariableType(name);
         return type;
+    }
+    
+    public void setType(String type) {
+        //objectChanged(CHANGED_TYPE);
+        this.type = type;
+    }
+    
+    private boolean typeIsSimple() {
+        String type = getType();
+        if (type == null) return false;
+        if ((type.equals("char")) // NOI18N
+            || (type.equals("short")) // NOI18N
+            || (type.equals("int")) // NOI18N
+            || (type.equals("long")) // NOI18N
+            || (type.equals("long long")) // NOI18N
+            || (type.equals("double")) // NOI18N
+            || (type.equals("long double")) // NOI18N
+            || (type.equals("unsigned char")) // NOI18N
+            || (type.equals("unsigned short")) // NOI18N
+            || (type.equals("unsigned int")) // NOI18N
+            || (type.equals("unsigned long")) // NOI18N
+            || (type.equals("unsigned long long")) // NOI18N
+        ) {
+            return true;
+        }
+        return false;
+    }
+    
+    public String getDeclaredType() {
+        return type;
+    }
+    
+    public String getClassName() {
+        return className;
+    }
+    
+    public void setClassName(String name) {
+        //objectChanged(CHANGED_CLASSNAME);
+        this.className = name;
     }
     
     /**
@@ -136,4 +202,173 @@ public class LocalVariableImpl implements LocalVariable, Field {
     public boolean isStatic() {
         return false;
     }
+    
+    public int getDimCount() {
+        return dimCount;
+    }
+    
+    public void setDimCount(int dimCount) {
+        //objectChanged(CHANGED_DIM_COUNT);
+        this.dimCount = dimCount;
+    }
+    
+    public void setDebugger(GdbDebuggerImpl debugger) {
+        //objectChanged(CHANGED_TYPE);
+        this.debugger = debugger;
+    }
+    
+    //public List getAnnotations() {
+    //        return Collections.EMPTY_LIST;
+    //}
+    //
+    //void setData(String name, List annotations, int dimCount, String initialValueText) {
+    //    this.name = name;
+    //    this.isFinal = isFinal;
+    //    changeChild(null, initialValue);
+    //    this.initialValue = initialValue;
+    //    this.initialValueText = initialValueText;
+    //    this.dimCount = dimCount;
+    //}
+    
+    private void initFields() {
+        this.fields = new Field [0];
+        this.staticFields = new Field [0];
+        this.inheritedFields = new Field [0];
+        if (typeIsSimple()) {
+            // It is known that this variable does not have children
+            return;
+        }
+        if (name.indexOf('[') >= 0) {
+            // Algorithm below does not work for array
+            return; // Algorithm for array is not implemented yet.
+        }
+        // Check if this variable has children. Try to get * value
+        String expression = "*" + name; // NOI18N
+        String v = debugger.getExpressionValue(expression);
+        // Multi value format: \"{name1 = addr1 \\\"value1\\\", name2 = addr2 \\\"value2\\\", ...}\"\n
+        if (v != null) {
+            if (!v.startsWith("\"{")) { // NOI18N
+                // Single value format: string v contains value or error message
+                int index = v.indexOf("\" is not a known variable in current context <"); // NOI18N
+                if (index < 0) {
+                    // Known variable
+                    String sName = expression;
+                    String sType = debugger.getVariableType(sName);
+                    if (sType == null) {
+                        // Generate a type
+                        sType = getType();
+                        if ((sType != null) && (sType.endsWith("*"))) { // NOI18N
+                            sType = sType.substring(0, sType.length() - 1);
+                        }
+                    }
+                    String sValue = v;
+                    if (sValue.endsWith("\n")) { // NOI18N
+                        sValue = sValue.substring(0, sValue.length() - 1);
+                    }
+                    LocalVariableImpl lvi = new LocalVariableImpl(sName, sType, sValue);
+                    lvi.setDebugger(debugger);
+                    addField((Field) lvi);
+                } else {
+                    // Update type
+                    getType();
+                }
+                return;
+            }
+            // Multi value format: \"{name1 = addr1 \\\"value1\\\", ...}\"\n
+            v = v.substring(2);
+            if (v.endsWith("}\"\n")) { // NOI18N
+                v = v.substring(0, v.length() - 3);
+            }
+            for (int cp = 0; cp < v.length(); ) {
+                int index = v.indexOf(" = ", cp); // NOI18N
+                if (index < 0) break;
+                String sName = v.substring(cp, index);
+                // Add parent's name
+                sName = name + '.' + sName;
+                String sType = debugger.getVariableType(sName);
+                String sValue = "UNKNOWN VALUE"; // FIXUP // NOI18N
+                cp = index + 3;
+                index = v.indexOf(", ", cp); // NOI18N
+                if (index < 0) index = v.length();
+                else {
+                    // Check if it is a simple value
+                    int k = v.indexOf(" = {", cp - 3); // NOI18N
+                    if (k >= 0 && k < index) {
+                        // "{_p = 0x0, _bf = {_base = 0x0, _size = 0}, _lbfsize = 0, ...}"
+                        k = v.indexOf("}, ", cp); // NOI18N
+                        if (k < 0) index = v.length();
+                        else index = k + 1;
+                    }
+                }
+                sValue = v.substring(cp, index);
+                LocalVariableImpl lvi = new LocalVariableImpl(sName, sType, sValue);
+                lvi.setDebugger(debugger);
+                addField((Field) lvi);
+                cp = index + 2;
+            }
+        }
+    }
+    
+    /**
+     * Adds a field.
+     *
+     * @parameter field A field to add.
+     */
+    public void addField(Field field) {
+        if (fields == null) {
+            initFields();
+        }
+        int n = fields.length;
+        Field[] fv = new Field [n + 1];
+        System.arraycopy(fields, 0, fv, 0, n);
+        fields = fv;
+        fields[n] = field;
+    }
+    
+    /**
+     * Returns string representation of type of this variable.
+     *
+     * @return string representation of type of this variable.
+     */
+    public int getFieldsCount() {
+        if (fields == null) initFields();
+        return fields.length;
+    }
+    
+    /**
+     * Returns field defined in this object.
+     *
+     * @param name a name of field to be returned
+     *
+     * @return field defined in this object
+     */
+    public Field getField(String name) {
+        if (fields == null) return null;
+        int i, k = fields.length;
+        for (i=0; i < k; i++) {
+            Field f = fields[i];
+            if (name.equals(f.getName())) {
+                return f;
+            }
+        }
+        return null; // Not found
+    }
+    
+    /**
+     * Returns all fields declared in this type that are in interval
+     * &lt;<code>from</code>, <code>to</code>).
+     */
+    public Field[] getFields(int from, int to) {
+        //either the fields are cached or we have to init them
+        if (fields == null) initFields();
+        if (to != 0) {
+            to = Math.min(fields.length, to);
+            from = Math.min(fields.length, from);
+            Field[] fv = new Field [to - from];
+            System.arraycopy(fields, from, fv, 0, to - from);
+            return fv;
+        }
+        return fields;
+    }
+    
 }

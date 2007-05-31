@@ -67,13 +67,18 @@ public abstract class ModelImplBaseTestCase extends BaseTestCase {
         }        
     }   
 
-    @Override
     protected File getDataFile(String filename) {
         String dataDirPath = System.getProperty("cnd.modelimpl.unit.data"); // NOI18N
         if (dataDirPath == null || dataDirPath.length() == 0) {
-            return super.getDataFile(filename);
+            return new File(super.getDataDir(), toPath(filename));
         } else {
             return Manager.normalizeFile(new File(dataDirPath, filename));
         }
-    }   
+    }
+    
+    private String toPath(String filename) {
+        String fullClassName = this.getClass().getName();
+        String filePath = fullClassName.replace('.', '/')+"/"+filename; // NOI18N
+        return filePath;
+    }    
 }

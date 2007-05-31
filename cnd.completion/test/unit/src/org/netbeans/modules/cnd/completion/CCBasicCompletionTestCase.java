@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.cnd.completion;
 
-import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionBaseTestCase;
+import org.netbeans.modules.cnd.completion.test.CompletionBaseTestCase;
 
 /**
  *
@@ -36,9 +36,11 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
     
     public void testCompletionOnEmptyInGlobal() throws Exception {
         super.performTest("file.cc", 1, 1);
+//        new CompletionTestPerformer().test(outputWriter, logWriter, "", false, new File(getProjectDir()),"", "file.cc", 1, 1); // NOI18N
     }
     
     public void testCompletionOnEmptyInFunction() throws Exception {
         super.performTest("file.cc", 5, 1);
+//        new CompletionTestPerformer().test(outputWriter, logWriter, "", false, new File(getProjectDir()),"", "file.cc", 5, 1); // NOI18N
     }        
 }

@@ -326,9 +326,6 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
     public void projectParsingCancelled(CsmProject project) {
     }
 
-    public void fileInvalidated(CsmFile file) {
-    }
-
     public void fileParsingStarted(CsmFile file) {
     }
 

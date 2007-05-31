@@ -91,7 +91,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     private CsmVariable _getDeclaration() {
         if (TraceFlags.USE_REPOSITORY) {
             CsmVariable declaration = UIDCsmConverter.UIDtoDeclaration(this.declarationUID);
-            // null object is OK here, because of changed cached reference
+            assert declaration != null || this.declarationUID == null : "null object for UID " + declarationUID;
             return declaration;
         } else {
             return this.declaration;

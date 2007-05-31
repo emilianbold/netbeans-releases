@@ -57,48 +57,45 @@ public class CsmImageLoader implements CsmImageName {
     private static String getImagePath(CsmObject o) {
         CsmDeclaration.Kind kind = CsmDeclaration.Kind.BUILT_IN;
         int modifiers = CsmUtilities.getModifiers(o);
-        if (CsmKindUtilities.isEnumerator(o)) {
-            kind = CsmDeclaration.Kind.ENUM;
-            modifiers |= CsmUtilities.ENUMERATOR;
-        } else if (CsmKindUtilities.isUsing(o)) {
-            return USING;
-        } else if (CsmKindUtilities.isClassForwardDeclaration(o)) {
-            return CLASS_FORWARD;
-        } else if (CsmKindUtilities.isDeclaration(o)) {
+        if (CsmKindUtilities.isDeclaration(o)) {
             kind = ((CsmDeclaration)o).getKind();
         } else if (CsmKindUtilities.isNamespace(o)) {
             // FIXUP: consider namespace same as namespace definition
             // because namespace is not declaration
             kind = CsmDeclaration.Kind.NAMESPACE_DEFINITION;
-        } else if (CsmKindUtilities.isMacro(o)) {
-            return MACRO;
-        } else if (CsmKindUtilities.isInclude(o)) {
-            return INCLUDE;
         }
+        if (CsmKindUtilities.isEnumerator(o)) {
+            kind = CsmDeclaration.Kind.ENUM;
+            modifiers |= CsmUtilities.ENUMERATOR;
+        }
+        if (CsmKindUtilities.isMacro(o))
+            return MACRO;
         return getImagePath(kind, modifiers);
     }
     
     static String getImagePath(CsmDeclaration.Kind kind, int modifiers) {
 
         String iconPath = DEFAULT;
-        if (kind == CsmDeclaration.Kind.NAMESPACE_DEFINITION) {
+        if (kind == CsmDeclaration.Kind.NAMESPACE_DEFINITION)
             iconPath = NAMESPACE;
-        } else if (kind == CsmDeclaration.Kind.ENUM) { 
+        if (kind == CsmDeclaration.Kind.ENUM) { 
             if ((modifiers & CsmUtilities.ENUMERATOR) == 0)
                 iconPath = ENUMERATION;
             else
                 iconPath = ENUMERATOR;
-        } else if (kind == CsmDeclaration.Kind.MACRO){
+        }
+        if (kind == CsmDeclaration.Kind.MACRO)
             iconPath = MACRO;
-        } else if (kind == CsmDeclaration.Kind.CLASS) {
+        if (kind == CsmDeclaration.Kind.CLASS)
             iconPath = CLASS;
-        } else if (kind == CsmDeclaration.Kind.STRUCT) {
+        if (kind == CsmDeclaration.Kind.STRUCT)
             iconPath = STRUCT;
-        } else if (kind == CsmDeclaration.Kind.UNION) {
-            iconPath = UNION; 
-        } else if (kind == CsmDeclaration.Kind.TYPEDEF) {
+        if (kind == CsmDeclaration.Kind.UNION)
+            iconPath = UNION;
+        if (kind == CsmDeclaration.Kind.TYPEDEF)
             iconPath = TYPEDEF;
-        } else if (kind == CsmDeclaration.Kind.VARIABLE || kind == CsmDeclaration.Kind.VARIABLE_DEFINITION ) {
+
+        if (kind == CsmDeclaration.Kind.VARIABLE || kind == CsmDeclaration.Kind.VARIABLE_DEFINITION ) {
             boolean isLocal = (modifiers & CsmUtilities.LOCAL) != 0;
             boolean isFileLocal = (modifiers & CsmUtilities.FILE_LOCAL) != 0;
             boolean isGlobal = !(isLocal | isFileLocal);
@@ -186,7 +183,9 @@ public class CsmImageLoader implements CsmImageName {
                     }
                 }
           }
-        } else if (kind == CsmDeclaration.Kind.FUNCTION || kind == CsmDeclaration.Kind.FUNCTION_DEFINITION) {
+        }
+    
+        if (kind == CsmDeclaration.Kind.FUNCTION || kind == CsmDeclaration.Kind.FUNCTION_DEFINITION) {
             boolean isMethod = (modifiers & CsmUtilities.MEMBER) != 0;
             boolean isGlobal = !(isMethod);
             boolean isConstructor = (modifiers & CsmUtilities.CONSTRUCTOR) != 0;
@@ -198,11 +197,7 @@ public class CsmImageLoader implements CsmImageName {
                 if (isOperator) {
                     iconPath = OPERATOR_GLOBAL;
                 } else {
-                    if (kind == CsmDeclaration.Kind.FUNCTION) {
-                        iconPath = FUNCTION_DECLARATION_GLOBAL;
-                    } else {
-                        iconPath = FUNCTION_GLOBAL;
-                    }
+                    iconPath = FUNCTION_GLOBAL;
                 }
                 if (isStatic) {
                     if (isOperator) {
@@ -297,7 +292,7 @@ public class CsmImageLoader implements CsmImageName {
                         break;
                 }
             }
-        }
+         }
         return iconPath;
     }
 }

@@ -715,27 +715,6 @@ public class IpeUtils {
         }
     }
     
-    /*
-     * Check for special charaters not allowed in a make target.
-     */
-    public static boolean hasMakeSpecialCharacters(String string) {
-	if (string == null || string.length() == 0)
-	    return false;
-	for (int i = 0; i < string.length(); i++) {
-	    if (Character.isLetterOrDigit(string.charAt(i)) ||
-		string.charAt(i) == '_' ||
-		string.charAt(i) == '-' ||
-		string.charAt(i) == '.' ||
-		string.charAt(i) == '/' ||
-		string.charAt(i) == '\\') {
-            }
-            else {
-		return true;
-	    }
-	}
-	return false;
-    }
-    
     /**
      * Trims .. from a file path.
      * NOTE: This is not safe to use on Unix if any of the directories are softlinks in

@@ -908,23 +908,17 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         synchronized( waitParseLock ) {
             waitParseLock.notifyAll();
         }
-	// it's ok to move the entire sycle into synchronized block,
-	// because from inter-session persistence point of view,
-	// if we don't fix fakes, we'll later consider that files are ok,
-	// which is incorrect if there are some fakes
-	synchronized (disposeLock) {
-	    if( ! isProjectDisposed ) {
-		for (Iterator it = getFileList().iterator(); it.hasNext();) {
-		    FileImpl file= (FileImpl) it.next();
-		    synchronized (disposeLock) {
-			if( isProjectDisposed ) {
-			    break;
-			}
-			file.fixFakeRegistrations();
+        if( ! isProjectDisposed ) {
+            for (Iterator it = getFileList().iterator(); it.hasNext();) {
+		FileImpl file= (FileImpl) it.next();
+		synchronized (disposeLock) {
+		    if( isProjectDisposed ) {
+			break;
 		    }
+		    file.fixFakeRegistrations();
 		}
-	    }
-	}
+            }
+        }
     }
     
     /**

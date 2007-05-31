@@ -68,7 +68,6 @@ import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -401,9 +400,6 @@ public class MakeActionProvider implements ActionProvider {
                     assert false;
                 }
             } else if (targetName.equals("build")) { // NOI18N
-                if (conf.isCompileConfiguration() && !validateProject()) {
-                    break;
-                }
                 if (validateBuildSystem(pd, conf, validated)) {
                     MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
                     String buildCommand = makeArtifact.getBuildCommand(CppSettings.getDefault().getMakePath(), "");
@@ -427,9 +423,6 @@ public class MakeActionProvider implements ActionProvider {
                 }
                 validated = true;
             } else if (targetName.equals("clean")) { // NOI18N
-                if (conf.isCompileConfiguration() && !validateProject()) {
-                    break;
-                }
                 if (validateBuildSystem(pd, conf, validated)) {
                     MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
                     String buildCommand = makeArtifact.getCleanCommand(CppSettings.getDefault().getMakePath(), ""); // NOI18N
@@ -546,15 +539,6 @@ public class MakeActionProvider implements ActionProvider {
                         actionEvents.add(projectActionEvent);
             }
         }
-    }
-    
-    private boolean validateProject() {
-        boolean ret = true;
-        if (getProjectDescriptor().getProjectItems().length == 0) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(getString("ERR_EMPTY_PROJECT"), NotifyDescriptor.ERROR_MESSAGE));
-            ret = false;
-        }
-        return ret;
     }
     
     /**

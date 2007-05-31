@@ -68,15 +68,11 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
     }
 
     public CsmClass getCsmClass() {
-        return getCsmClass(null);
-    }
-    
-    public CsmClass getCsmClass(Resolver parent) {
         CsmClass ancestorCache = _getAncestorCache();
         if (ancestorCache == null || !ancestorCache.isValid())
         {
             ancestorCache = null;
-            CsmClassifier classifier = getCsmClassifier(parent);
+            CsmClassifier classifier = getCsmClassifier();
             classifier = CsmBaseUtilities.getOriginalClassifier(classifier);
             if (CsmKindUtilities.isClass(classifier)) {
                 ancestorCache = (CsmClass)classifier;
@@ -87,14 +83,10 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
     }
     
     public CsmClassifier getCsmClassifier() {
-        return getCsmClassifier(null);
-    }
-    
-    public CsmClassifier getCsmClassifier(Resolver parent) {
         CsmClassifier classifierCache = _getClassifierCache();
         if (classifierCache == null || 
                 ((classifierCache instanceof CsmValidable) && !((CsmValidable)classifierCache).isValid())) {
-            classifierCache = renderClassifier(ancestorName, parent);
+            classifierCache = renderClassifier(ancestorName);
             _setClassifierCache(classifierCache);
         }
         return classifierCache;        
@@ -141,9 +133,9 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
         }
     }
 
-    private CsmClassifier renderClassifier(String ancName, Resolver parent) {
+    private CsmClassifier renderClassifier(String ancName) {
         CsmClassifier result = null;
-        CsmObject o = ResolverFactory.createResolver(this, parent).resolve(ancName);
+        CsmObject o = ResolverFactory.createResolver(this).resolve(ancName);
         if( CsmKindUtilities.isClassifier(o) ) {
             result = (CsmClassifier) o;
         }

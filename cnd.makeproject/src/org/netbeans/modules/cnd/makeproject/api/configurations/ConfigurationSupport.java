@@ -54,6 +54,26 @@ public class ConfigurationSupport {
     }
 
 
+    // Legal Names
+    public static boolean isNameLegal(String displayName) {
+	boolean legal = true;
+	if (displayName == null || displayName.length() == 0)
+	    return false;
+	for (int i = 0; i < displayName.length(); i++) {
+	    if (Character.isLetterOrDigit(displayName.charAt(i)) ||
+		displayName.charAt(i) == '_' ||
+		displayName.charAt(i) == '-' ||
+		displayName.charAt(i) == '.') {
+		; // OK
+	    }
+	    else {
+		legal = false;
+		break;
+	    }
+	}
+	return legal;
+    }
+
     public static String makeNameLegal(String displayName) {
 	StringBuffer tmp = new StringBuffer();
 	for (int i = 0; i < displayName.length(); i++) {

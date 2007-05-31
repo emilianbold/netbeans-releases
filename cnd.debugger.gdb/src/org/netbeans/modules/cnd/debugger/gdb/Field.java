@@ -34,14 +34,28 @@ public interface Field extends Variable {
      *
      * @return name of this field.
      */
-    public abstract String getName();
+    public abstract String getName ();
+
+    /**
+     * Returns name of enclosing class.
+     *
+     * @return name of enclosing class
+     */
+    public abstract String getClassName ();
+
+    /**
+     * Declared type of this field.
+     *
+     * @return declared type of this field
+     */
+    public abstract String getDeclaredType ();
 
     /**
      * Returns <code>true</code> for static fields.
      *
      * @return <code>true</code> for static fields
      */
-    public abstract boolean isStatic();
+    public abstract boolean isStatic ();
 
     /**
      * Sets value of this field represented as text.
@@ -49,5 +63,6 @@ public interface Field extends Variable {
      * @return sets value of this field represented as text
      * @throws InvalidExpressionException if the expression is not correct
      */
-    public abstract void setValue(String value) throws InvalidExpressionException;
+    public abstract void setValue (String value) 
+    throws InvalidExpressionException;
 }

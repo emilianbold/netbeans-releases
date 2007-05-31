@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -29,9 +29,9 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
  * @author Vladimir Kvashin
  */
 public class FileBufferFile extends AbstractFileBuffer {
-    
+
     private SoftReference bytes;
-    
+
     public FileBufferFile(File file) {
         super(file);
     }
@@ -39,7 +39,7 @@ public class FileBufferFile extends AbstractFileBuffer {
     public String getText() throws IOException {
         return new String(getBytes());
     }
-    
+
     public String getText(int start, int end) {
         try {
             byte[] b = getBytes();
@@ -48,7 +48,8 @@ public class FileBufferFile extends AbstractFileBuffer {
                 end = b.length;
             }
             return new String(b, start, end-start);
-        } catch( IOException e ) {
+        }
+        catch( IOException e ) {
             e.printStackTrace(System.err);
             return "";
         }
@@ -67,7 +68,7 @@ public class FileBufferFile extends AbstractFileBuffer {
         bytes = new SoftReference(b);
         return b;
     }
-    
+
     private byte[] doGetBytes() throws IOException {
         File file = getFile();
         long length = file.length();
@@ -85,66 +86,28 @@ public class FileBufferFile extends AbstractFileBuffer {
         } finally {
             is.close();
         }
-        convertLSToLF(bytes);
         return bytes;
     }
     
-    private static int convertLSToLF(byte[] bytes) {
-        int len = bytes.length;
-        int tgtOffset = 0;
-        short lsLen = 0;
-        int moveStart = 0;
-        int moveLen;
-        for (int i = 0; i < len; i++) {
-            if (bytes[i] == '\r') {
-                if (i + 1 < len && bytes[i + 1] == '\n') {
-                    lsLen = 2;
-                } else  {
-                    lsLen = 1;
-                }
-            }
-            if (lsLen > 0) {
-                moveLen = i - moveStart;
-                if (moveLen > 0) {
-                    if (tgtOffset != moveStart) {
-                        System.arraycopy(bytes, moveStart, bytes, tgtOffset, moveLen);
-                    }
-                    tgtOffset += moveLen;
-                }
-                bytes[tgtOffset++] = '\n';
-                moveStart += moveLen + lsLen;
-                i += lsLen - 1;
-                lsLen = 0;
-            }
-        }
-        moveLen = len - moveStart;
-        if (moveLen > 0) {
-            if (tgtOffset != moveStart) {
-                System.arraycopy(bytes, moveStart, bytes, tgtOffset, moveLen);
-            }
-            tgtOffset += moveLen;
-        }
-        return tgtOffset;
-    }
-    
+
     public InputStream getInputStream() throws IOException {
         return new BufferedInputStream(new FileInputStream(getFile()), TraceFlags.BUF_SIZE);
     }
-    
+
     public int getLength() {
         return (int) getFile().length();
-    }
+    } 
     
     public boolean isFileBased() {
         return true;
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     
     public void write(DataOutput output) throws IOException {
         super.write(output);
-    }
+    }  
     
     public FileBufferFile(DataInput input) throws IOException {
         super(input);

@@ -43,7 +43,6 @@ import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /** Customization of Make project
@@ -152,12 +151,13 @@ public class MakeCustomizerProvider implements CustomizerProvider {
             DialogDescriptor.BOTTOM_ALIGN,          // options align
             null,                                   // helpCtx
             null );                                 // listener 
-            
+ 
         dialogDescriptor.setClosingOptions( new Object[] { options[ OPTION_OK ], options[ OPTION_CANCEL ] } );
-        innerPane.setDialogDescriptor(dialogDescriptor);
+
         Dialog dialog = DialogDisplayer.getDefault().createDialog( dialogDescriptor );
 
         customizerPerProject.put (project, dialog);
+
         dialog.setVisible(true);
         
     }    

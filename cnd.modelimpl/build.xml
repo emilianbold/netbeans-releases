@@ -87,7 +87,7 @@ Microsystems, Inc. All Rights Reserved.
         </antlr>      
 		-->
         <antlr target="${antlr.grammar.dir}/cppparser.g"
-            outputdirectory="${antlr.output.dir}" traceParser="no">
+            outputdirectory="${antlr.output.dir}">
                 <classpath path="${antlr.jar}"/>
         </antlr>         
     </target>

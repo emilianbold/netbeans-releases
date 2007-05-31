@@ -25,6 +25,7 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmMember;
@@ -51,7 +52,8 @@ import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.loaders.CppEditorSupport;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.awt.StatusDisplayer;
@@ -124,11 +126,6 @@ public class CsmUtilities {
 	int mod = 0;
         if (CsmKindUtilities.isClassMember(obj)) {
             mod |= CsmUtilities.getMemberModifiers((CsmMember)obj);
-        } else if (CsmKindUtilities.isFunctionDefinition(obj)) {
-            CsmFunctionDefinition fun = (CsmFunctionDefinition)obj;
-            if (CsmKindUtilities.isClassMember(fun.getDeclaration())) {
-                mod |= CsmUtilities.getMemberModifiers((CsmMember)fun.getDeclaration());
-            }            
         } else {
             if (CsmKindUtilities.isGlobalVariable(obj)||CsmKindUtilities.isGlobalVariable(obj)){
                 mod |= GLOBAL;

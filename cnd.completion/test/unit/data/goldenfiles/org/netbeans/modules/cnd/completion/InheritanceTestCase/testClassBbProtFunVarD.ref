@@ -1,8 +1,0 @@
-bPriv int
-bProt int
-bPub int
-dPub int
-bPrivFun() void
-bProtFun() void
-bPubFun() void
-dPubFun() void

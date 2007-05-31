@@ -1283,11 +1283,11 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                         }
                     } else { // package.method() is invalid
                         // this is the case of code completion after opening paren "method(|"
-                        int varPos = endOffset; // mtdNameExp.getTokenOffset(0);
+                        int varPos = mtdNameExp.getTokenOffset(0);
                         compResolver.setResolveTypes(CompletionResolver.RESOLVE_CONTEXT);
                         if (compResolver.refresh() && compResolver.resolve(varPos, "", false)) {
                             res = compResolver.getResult();
-                            result = new CsmCompletionResult(component, getBaseDocument(), res, mtdName + '*', mtdNameExp, varPos, 0, 0, isProjectBeeingParsed());
+                            result = new CsmCompletionResult(component, getBaseDocument(), res, mtdName + '*', mtdNameExp, 0, isProjectBeeingParsed());
                         }                              
 
 //                        } else {

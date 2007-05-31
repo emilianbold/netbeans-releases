@@ -52,8 +52,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
-import org.openide.windows.TopComponent;
 
 /**
  *
@@ -70,9 +68,6 @@ public class ModelSupport implements PropertyChangeListener {
     private Set sourceExtensions = new TreeSet();
     
     private FileChangeListener modifiedListener;
-
-    private static final boolean TRACE_STARTUP = false;
-    private volatile boolean postponeParse = false;
     
     private ModelSupport() {
         modifiedListener = new FileChangeListener();
@@ -110,60 +105,39 @@ public class ModelSupport implements PropertyChangeListener {
         //CodeModelRequestProcessor.instance().post(ProjectListenerThread.instance(), "Project Listener");
         this.model = model;
         
+        Project[] projects = OpenProjects.getDefault().getOpenProjects();
         openedProjects = new HashSet();
-        if (TRACE_STARTUP) System.out.println("Model support: Inited");
-
-        if (TopComponent.getRegistry().getOpened().size() > 0){
-            if (TRACE_STARTUP) System.out.println("Model support: Open projects in Init");
-            postponeParse = false;
-            openProjects();
-        } else {
-            if (TRACE_STARTUP) System.out.println("Model support: Postpone open projects");
-            postponeParse = true;
+        for( int i = 0; i < projects.length; i++ ) {
+            addProject(projects[i]);
         }
         
-        TopComponent.getRegistry().addPropertyChangeListener(this);
         OpenProjects.getDefault().addPropertyChangeListener(this);
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
-        if (TRACE_STARTUP) System.out.println("Model support event:"+evt.getPropertyName());
-        if(!postponeParse  && evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS) ) {
-            if (TRACE_STARTUP) System.out.println("Model support: Open projects on OpenProjects.PROPERTY_OPEN_PROJECTS");
-            openProjects();
-        } else if (postponeParse && evt.getPropertyName().equals(TopComponent.Registry.PROP_ACTIVATED)){
-            if (TRACE_STARTUP) System.out.println("Model support: Open projects on TopComponent.Registry.PROP_ACTIVATED");
-            postponeParse = false;
-            TopComponent.getRegistry().removePropertyChangeListener(this);
-            RequestProcessor.getDefault().post(new Runnable(){
-                public void run() {
-                    openProjects();
-                }
-            });
-        }
-    }
-
-    private void openProjects() {
-        Project[] projects = OpenProjects.getDefault().getOpenProjects();
-        synchronized (openedProjects){
-            Set nowOpened = new HashSet();
-            for( int i = 0; i < projects.length; i++ ) {
-                nowOpened.add(projects[i]);
-                if( ! openedProjects.contains(projects[i]) ) {
-                    addProject(projects[i]);
-                }
-            }
+        if( evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS) ) {
             
-            Set toClose = new HashSet();
-            for( Iterator iter = openedProjects.iterator(); iter.hasNext(); ) {
-                Object o = iter.next();
-                if( ! nowOpened.contains(o) ) {
-                    toClose.add(o);
+            Project[] projects = OpenProjects.getDefault().getOpenProjects();
+            synchronized (openedProjects){
+                Set nowOpened = new HashSet();
+                for( int i = 0; i < projects.length; i++ ) {
+                    nowOpened.add(projects[i]);
+                    if( ! openedProjects.contains(projects[i]) ) {
+                        addProject(projects[i]);
+                    }
                 }
-            }
-            
-            for( Iterator iter = toClose.iterator(); iter.hasNext(); ) {
-                removeProject((Project) iter.next());
+                
+                Set toClose = new HashSet();
+                for( Iterator iter = openedProjects.iterator(); iter.hasNext(); ) {
+                    Object o = iter.next();
+                    if( ! nowOpened.contains(o) ) {
+                        toClose.add(o);
+                    }
+                }
+                
+                for( Iterator iter = toClose.iterator(); iter.hasNext(); ) {
+                    removeProject((Project) iter.next());
+                }
             }
         }
     }
@@ -471,24 +445,16 @@ public class ModelSupport implements PropertyChangeListener {
         openedProjects.remove(project);
     }
     
-    private Collection<NativeProject> getNativeProjects() {
-        Set<NativeProject> res = new HashSet<NativeProject>();
-        for(CsmProject project : model.projects()){
-            Object prj = project.getPlatformProject();
-            if (prj instanceof NativeProject) {
-                res.add((NativeProject)prj);
+    public Collection<NativeProject> getNativeProjects() {
+        Collection<NativeProject> nativeProjects = new HashSet<NativeProject>();
+        Project[] nbProjects = OpenProjects.getDefault().getOpenProjects();
+        for (int i = 0; i < nbProjects.length; i++) {
+            NativeProject nativeProject = (NativeProject) nbProjects[i].getLookup().lookup(NativeProject.class);
+            if (nativeProject != null) {
+                nativeProjects.add(nativeProject);
             }
         }
-        return res;
-//        Collection<NativeProject> nativeProjects = new HashSet<NativeProject>();
-//        Project[] nbProjects = OpenProjects.getDefault().getOpenProjects();
-//        for (int i = 0; i < nbProjects.length; i++) {
-//            NativeProject nativeProject = (NativeProject) nbProjects[i].getLookup().lookup(NativeProject.class);
-//            if (nativeProject != null) {
-//                nativeProjects.add(nativeProject);
-//            }
-//        }
-//        return nativeProjects;
+        return nativeProjects;
     }
     
     /** gets a key, which uniquely identifies the project */

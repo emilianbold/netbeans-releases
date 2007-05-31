@@ -445,11 +445,11 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         
         ParserThreadManager.instance().startup(isStandalone());
 	
-	//if( ! isStandalone() ) {
-	//    for( NativeProject nativeProject : ModelSupport.instance().getNativeProjects() ) {
-	//    	addProject(nativeProject, nativeProject.getProjectDisplayName());
-	//    }
-	//}
+	if( ! isStandalone() ) {
+	    for( NativeProject nativeProject : ModelSupport.instance().getNativeProjects() ) {
+		addProject(nativeProject, nativeProject.getProjectDisplayName());
+	    }
+	}
     }
     
     public void shutdown() {

@@ -19,9 +19,7 @@
 
 package org.netbeans.modules.cnd.test;
 
-import java.io.File;
 import javax.swing.JEditorPane;
-import org.netbeans.junit.Manager;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileUtil;
 
@@ -46,7 +44,6 @@ import org.openide.filesystems.FileUtil;
 
 /**
  * base class to isolate using of NbJUnit library
- * ${xtest.data} vallue is usually ${module}/test/unit/data folder
  * @author Vladimir Voskresensky
  */
 public abstract class BaseTestCase extends NbTestCase {
@@ -60,7 +57,6 @@ public abstract class BaseTestCase extends NbTestCase {
         super.tearDown();
     }
     
-    @SuppressWarnings("deprecation")
     protected void setUp() throws Exception {
         super.setUp();
         // this is the only way to init extension-based recognizer
@@ -71,59 +67,5 @@ public abstract class BaseTestCase extends NbTestCase {
         JEditorPane.registerEditorKitForContentType("text/x-c++", "org.netbeans.modules.cnd.editor.cplusplus.CCKit");
         
         JEditorPane.registerEditorKitForContentType("text/x-c", "org.netbeans.modules.cnd.editor.cplusplus.CKit");
-    }
-
-    /**
-     * Get the test method specific data file; 
-     * usually it is ${xtest.data}/${classname}/filename
-     * @see getTestCaseDataClass
-     * @see getTestCaseDataDir
-     */
-    protected File getDataFile(String filename) {
-        return new File(getTestCaseDataDir(), filename);
-    }
-
-    /** Get the test method specific golden file as ${xtest.data}/goldenfiles/${classname}/filename
-     * @param filename filename to get from golden files directory
-     * @return golden file
-     * @see getTestCaseGoldenDataClass
-     */
-    public File getGoldenFile(String filename) {
-        String fullClassName = getTestCaseGoldenDataClass().getName();
-        String goldenFileName = fullClassName.replace('.', File.separatorChar) + File.separator + filename;
-        File goldenFile = new File(getDataDir() + "/goldenfiles/" + goldenFileName);
-        return goldenFile;
-    }
-
-    /**
-     * this method is responsible for construction of part
-     * ${classname}
-     * in path ${xtest.data}/goldenfiles/${classname}/filename
-     * @see getGoldenFile
-     */
-    protected Class getTestCaseGoldenDataClass() {
-        return getTestCaseDataClass();
-    }
-
-    /**
-     * Get the test method specific data dir
-     * usually it is ${xtest.data}/${classname}
-     * @see getTestCaseDataClass
-     */
-    protected File getTestCaseDataDir() {
-        File dataDir = super.getDataDir();
-        String fullClassName = getTestCaseDataClass().getName();
-        String filePath = fullClassName.replace('.', File.separatorChar);
-        return Manager.normalizeFile(new File(dataDir, filePath));
-    }
-
-    /**
-     * this method is responsible for construction of part
-     * ${classname}
-     * in path ${xtest.data}/${classname}
-     * @see getGoldenFile
-     */    
-    protected Class getTestCaseDataClass() {
-        return this.getClass();
     }
 }

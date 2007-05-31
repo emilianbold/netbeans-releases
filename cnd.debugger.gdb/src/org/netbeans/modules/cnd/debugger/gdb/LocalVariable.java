@@ -41,11 +41,26 @@ public interface LocalVariable extends Variable {
     public abstract String getName ();
 
     /**
+     * Returns name of enclosing class.
+     *
+     * @return name of enclosing class
+     */
+    public abstract String getClassName ();
+
+    /**
+     * Declared type of this local.
+     *
+     * @return declared type of this local
+     */
+    public abstract String getDeclaredType ();
+
+    /**
      * Sets value of this local represented as text.
      *
      * @param value a new value of this local represented as text
      * @throws InvalidExpressionException if the expression is not correct
      */
-    public abstract void setValue (String value) throws InvalidExpressionException;
+    public abstract void setValue (String value) 
+    throws InvalidExpressionException;
 }
 

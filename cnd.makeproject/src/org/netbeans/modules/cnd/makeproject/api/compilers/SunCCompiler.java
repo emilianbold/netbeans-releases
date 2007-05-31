@@ -218,9 +218,6 @@ public class SunCCompiler extends CCCCompiler {
                     }
                 }
             }
-            // Adding "__STDC__=0". It's missing from dryrun output
-            systemPreprocessorSymbolsList.add("__STDC__=0"); // NOI18N
-            
             is.close();
             reader.close();
         } catch (IOException ioe) {

@@ -218,7 +218,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
         }
         
         protected Icon getIcon(){
-            Icon newIcon = CsmImageLoader.getIcon(CsmDeclaration.Kind.FUNCTION_DEFINITION, getModifiers()|CsmUtilities.GLOBAL);
+            Icon newIcon = CsmImageLoader.getIcon(CsmDeclaration.Kind.FUNCTION, getModifiers()|CsmUtilities.GLOBAL);
             return newIcon;             
         }
     }
@@ -230,7 +230,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
         }
         
         protected Icon getIcon(){
-            Icon newIcon = CsmImageLoader.getIcon(CsmDeclaration.Kind.FUNCTION_DEFINITION, getModifiers()|CsmUtilities.MEMBER);
+            Icon newIcon = CsmImageLoader.getIcon(CsmDeclaration.Kind.FUNCTION, getModifiers()|CsmUtilities.MEMBER);
             return newIcon;            
         }
     }
@@ -243,7 +243,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
 
         
         protected Icon getIcon(){
-            Icon newIcon = CsmImageLoader.getIcon(CsmDeclaration.Kind.FUNCTION_DEFINITION, getModifiers()|CsmUtilities.CONSTRUCTOR);
+            Icon newIcon = CsmImageLoader.getIcon(CsmDeclaration.Kind.FUNCTION, getModifiers()|CsmUtilities.CONSTRUCTOR);
             return newIcon;            
         }
         

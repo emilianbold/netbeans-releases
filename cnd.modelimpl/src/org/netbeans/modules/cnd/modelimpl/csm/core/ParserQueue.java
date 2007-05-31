@@ -288,7 +288,6 @@ public class ParserQueue {
                 if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: added as Last with entry " + entry.toString(TraceFlags.TRACE_PARSER_QUEUE_DETAILS));
                 queue.addLast(entry);
             }
-            fireFileInvalidated(file);
             lock.notifyAll();
         }
     }
@@ -325,7 +324,6 @@ public class ParserQueue {
             }
             if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: added as First with entry " + entry.toString(TraceFlags.TRACE_PARSER_QUEUE_DETAILS));
             queue.addFirst(entry);
-            fireFileInvalidated(file);
             lock.notifyAll();
         }
     }
@@ -542,13 +540,6 @@ public class ParserQueue {
     public void onStartAddingProjectFiles(ProjectBase project) {
         getProjectData(project, true).notifyListeners = true;
         fireProjectParsingStarted(project);
-    }
-        
-    private void fireFileInvalidated(FileImpl file) {
-        if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: fireFileParsingStarted " + file.getAbsolutePath());
-        for( CsmProgressListener listener : progressListeners ) {
-            listener.fileInvalidated(file);
-        }
     }
     
     private void fireFileParsingStarted(FileImpl file) {

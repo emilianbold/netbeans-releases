@@ -233,7 +233,7 @@ public class AstRenderer {
                             }
                         }
                         if (name != null) {
-                            CsmType type = TypeFactory.createType(classifier, ptrOperator, arrayDepth, token, file);
+                            CsmType type = TypeImpl.createType(classifier, ptrOperator, arrayDepth, token, file);
                             VariableImpl var = createVariable(token, file, type, name, false);
                             if( container2 != null ) {
                                 container2.addDeclaration(var);
@@ -295,7 +295,7 @@ public class AstRenderer {
                                 arrayDepth++;
                             case CPPTokenTypes.COMMA:
                             case CPPTokenTypes.SEMICOLON:
-                                TypeImpl typeImpl = TypeFactory.createType(cls, ptrOperator, arrayDepth, ast, file);
+                                TypeImpl typeImpl = TypeImpl.createType(cls, ptrOperator, arrayDepth, ast, file);
                                 CsmTypedef typedef = createTypedef((nameToken == null) ? ast : nameToken, file, container, typeImpl, name);
                                 if (cls != null && cls.getName().length()==0){
                                     ((TypedefImpl)typedef).setTypeUnnamed();
@@ -385,10 +385,10 @@ public class AstRenderer {
                         case CPPTokenTypes.SEMICOLON:
                             TypeImpl typeImpl = null;
                             if( classifier != null ) {
-                                typeImpl = TypeFactory.createType(classifier, file, ptrOperator, arrayDepth);
+                                typeImpl = TypeImpl.createType(classifier, file, ptrOperator, arrayDepth);
                             }
                             else if( ei != null ) {
-                                typeImpl = TypeFactory.createType(ei, ptrOperator, arrayDepth, ast, file);
+                                typeImpl = TypeImpl.createType(ei, ptrOperator, arrayDepth, ast, file);
                             }
                             if( typeImpl != null) {
                                 CsmTypedef typedef = createTypedef(ast/*nameToken*/, file, container, typeImpl, name);
@@ -435,7 +435,7 @@ public class AstRenderer {
         switch( child.getType() ) {
             case CPPTokenTypes.LITERAL_class:
             case CPPTokenTypes.LITERAL_struct:
-            case CPPTokenTypes.LITERAL_union:
+            case CPPTokenTypes.LITERAL_enum:
                 ClassForwardDeclarationImpl cfdi = new ClassForwardDeclarationImpl(ast, file);
                 if( container != null ) {
                     container.addDeclaration(cfdi);
@@ -607,14 +607,14 @@ public class AstRenderer {
          */
         AST next = tokType.getNextSibling();
         AST ptrOperator =  (next != null && next.getType() == CPPTokenTypes.CSM_PTR_OPERATOR) ? next : null;
-        return TypeFactory.createType(typeAST/*tokType*/, file, ptrOperator, 0); 
+        return TypeImpl.createType(typeAST/*tokType*/, file, ptrOperator, 0); 
     }
 
     /**
      * Returns first sibling (or just passed ast), skipps cv-qualifiers and storage class specifiers
      */
     public static AST getFirstSiblingSkipQualifiers(AST ast) {
-        while( ast != null && isQualifier(ast.getType()) ) {
+        while( ast != null && isQialifier(ast.getType()) ) {
             ast = ast.getNextSibling();
         }
         return ast;
@@ -627,7 +627,7 @@ public class AstRenderer {
         return getFirstSiblingSkipQualifiers(ast.getFirstChild());
     }
     
-    public static boolean isQualifier(int tokenType) {
+    public static boolean isQialifier(int tokenType) {
         return isCVQualifier(tokenType) || isStorageClassSpecifier(tokenType);
     }
     
@@ -710,7 +710,7 @@ public class AstRenderer {
             AST nextToken = tokType.getNextSibling();
             while( nextToken != null && 
                     (nextToken.getType() == CPPTokenTypes.CSM_PTR_OPERATOR ||
-                     isQualifier(nextToken.getType()) ||
+                     isCVQualifier(nextToken.getType()) ||
                      nextToken.getType() == CPPTokenTypes.LPAREN)) {
                 nextToken = nextToken.getNextSibling(); 
             }
@@ -791,8 +791,8 @@ public class AstRenderer {
                     break;
             }
         }
-        CsmType type = TypeFactory.createType(classifier, file, ptrOperator, arrayDepth);
-        if (isScopedId(qn)){
+        CsmType type = TypeImpl.createType(classifier, file, ptrOperator, arrayDepth);
+        if (qn != null && isScopedId(qn)){
             // This is definition of global namespace variable or definition of static class variable
             // TODO What about global variable definitions:
             // extern int i; - declaration
@@ -927,13 +927,13 @@ public class AstRenderer {
 	    return CastUtils.isMemberDefinition(ast);
 	}
         AST id = AstUtil.findMethodName(ast);
-        return isScopedId(id);
+        if (id != null){
+            return isScopedId(id);
+        }
+        return false;
     }
 
     private boolean isScopedId(AST id){
-	if( id == null ) {
-	    return false;
-	}
         if( id.getType() == CPPTokenTypes.ID ) {
             AST scope = id.getNextSibling();
             if( scope != null && scope.getType() == CPPTokenTypes.SCOPE ) {

@@ -70,7 +70,6 @@ import org.openide.util.NbBundle;
 public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provider {
     
     private Component currentCustomizer;
-    private ConfigurationNode currentConfigurationNode = null;
     private Node previousNode;
     
     private GridBagConstraints fillConstraints;
@@ -78,8 +77,6 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     private Project project;
     
     private MakeCustomizer makeCustomizer;
-    
-    private DialogDescriptor dialogDescriptor;
     
     private ConfigurationDescriptor projectDescriptor;
     private Item item;
@@ -133,10 +130,6 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         // Accessibility
         configurationsButton.getAccessibleContext().setAccessibleDescription(getString("CONFIGURATIONS_BUTTON_AD"));
         configurationComboBox.getAccessibleContext().setAccessibleDescription(getString("CONFIGURATION_COMBOBOX_AD"));
-    }
-    
-    public void setDialogDescriptor(DialogDescriptor dialogDescriptor) {
-        this.dialogDescriptor = dialogDescriptor;
     }
     
     /** This method is called from within the constructor to
@@ -318,12 +311,14 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     // HelpCtx.Provider implementation -----------------------------------------
     
     public HelpCtx getHelpCtx() {
-        if ( currentConfigurationNode != null ) {
-            return HelpCtx.findHelp( currentConfigurationNode );
+        if ( currentCustomizer != null ) {
+            return HelpCtx.findHelp( currentCustomizer );
         } else {
-            return null;
+            return HelpCtx.findHelp( customizerPanel );
         }
     }
+    
+    
     
     // Private innerclasses ----------------------------------------------------
     
@@ -438,11 +433,11 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                     if ( currentCustomizer != null ) {
                         customizerPanel.remove( currentCustomizer );
                     }
-                    currentConfigurationNode = (ConfigurationNode)node;
+                    ConfigurationNode configurationNode = (ConfigurationNode)node;
                     PropertySheetView currentPropertySheetView = new PropertySheetView();
                     DummyNode[] dummyNodes = new DummyNode[selectedConfigurations.length];
                     for (int i = 0; i < selectedConfigurations.length; i++) {
-                        dummyNodes[i] = new DummyNode(currentConfigurationNode.getSheet(project, projectDescriptor, selectedConfigurations[i]), selectedConfigurations[i].getName());
+                        dummyNodes[i] = new DummyNode(configurationNode.getSheet(project, projectDescriptor, selectedConfigurations[i]), selectedConfigurations[i].getName());
                     }
                     currentPropertySheetView.setNodes(dummyNodes);
                     JPanel panel = new JPanel();
@@ -456,13 +451,12 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                     
                     IpeUtils.requestFocus(btv);
                     
-                    dialogDescriptor.setHelpCtx(HelpCtx.findHelp(currentConfigurationNode));
                     return;
                 }
             }
         }
     }
-        
+    
     private void calculateSelectedConfs() {
         if (configurationComboBox.getSelectedIndex() < configurationItems.length) {
             // One selected
@@ -702,10 +696,6 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
             return ((MakeConfiguration)configuration).getGeneralSheet(project);
         }
-        
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectProperties"); // NOI18N
-        }
     }
     
     private CustomizerNode createGeneralItemDescription(Project project, Item item) {
@@ -794,10 +784,6 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
             return ((MakeConfiguration)configuration).getMakefileConfiguration().getSheet();
         }
-        
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectPropsMake"); // NOI18N
-        }
     }
     
     
@@ -847,9 +833,6 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
             return ((MakeConfiguration)configuration).getLinkerConfiguration().getGeneralSheet((MakeConfigurationDescriptor)configurationDescriptor, (MakeConfiguration)configuration);
         }
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectPropsLinking"); // NOI18N
-        }
     }
     class LibrariesGeneralCustomizerNode extends CustomizerNode {
         public LibrariesGeneralCustomizerNode(String name, String displayName, CustomizerNode[] children) {
@@ -858,9 +841,6 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
             return ((MakeConfiguration)configuration).getLinkerConfiguration().getLibrariesSheet(project, (MakeConfiguration)configuration);
         }
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectPropsLinkerGeneral"); // NOI18N
-        }
     }
     class LinkerCommandLineCustomizerNode extends CustomizerNode {
         public LinkerCommandLineCustomizerNode(String name, String displayName, CustomizerNode[] children) {
@@ -868,9 +848,6 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         }
         public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
             return ((MakeConfiguration)configuration).getLinkerConfiguration().getCommandLineSheet();
-        }
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectPropsCommandLine"); // NOI18N
         }
     }
     
@@ -891,9 +868,6 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
             return ((MakeConfiguration)configuration).getArchiverConfiguration().getGeneralSheet();
         }
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectPropsArchiverGeneral"); // NOI18N
-        }
     }
     class ArchiverCommandLineCustomizerNode extends CustomizerNode {
         public ArchiverCommandLineCustomizerNode(String name, String displayName, CustomizerNode[] children) {
@@ -901,9 +875,6 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         }
         public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
             return ((MakeConfiguration)configuration).getArchiverConfiguration().getCommandLineSheet();
-        }
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectPropsCommandLine"); // NOI18N
         }
     }
     
@@ -953,10 +924,6 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             } else
                 return ((MakeConfiguration)configuration).getCCompilerConfiguration().getGeneralSheet((MakeConfiguration)configuration, folder);
         }
-        
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectPropsCompiling"); // NOI18N
-        }
     }
     
     class CCompilerCommandLineNode extends CustomizerNode {
@@ -977,10 +944,6 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 return folder.getFolderConfiguration((MakeConfiguration)configuration).getCCompilerConfiguration().getCommandLineSheet(configuration);
             } else
                 return ((MakeConfiguration)configuration).getCCompilerConfiguration().getCommandLineSheet(configuration);
-        }
-        
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectPropsCommandLine"); // NOI18N
         }
     }
     
@@ -1031,10 +994,6 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 return ((MakeConfiguration)configuration).getCCCompilerConfiguration().getSheet((MakeConfiguration)configuration, folder);
             }
         }
-        
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectPropsCompiling"); // NOI18N
-        }
     }
     
     class CCCompilerCommandLineNode extends CustomizerNode {
@@ -1055,10 +1014,6 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 return folder.getFolderConfiguration(configuration).getCCCompilerConfiguration().getCommandLineSheet(configuration);
             } else
                 return ((MakeConfiguration)configuration).getCCCompilerConfiguration().getCommandLineSheet(configuration);
-        }
-        
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectPropsCommandLine"); // NOI18N
         }
     }
     
@@ -1102,10 +1057,6 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             } else
                 return ((MakeConfiguration)configuration).getFortranCompilerConfiguration().getGeneralSheet((MakeConfiguration)configuration);
         }
-        
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectPropsCompiling"); // NOI18N
-        }
     }
     
     class FortranCompilerCommandLineNode extends CustomizerNode {
@@ -1122,10 +1073,6 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 return itemConfiguration.getFortranCompilerConfiguration().getCommandLineSheet(configuration);
             } else
                 return ((MakeConfiguration)configuration).getFortranCompilerConfiguration().getCommandLineSheet(configuration);
-        }
-        
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectPropsCommandLine"); // NOI18N
         }
     }
     
@@ -1163,7 +1110,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     
     /** Node to be used for configuration
      */
-    private class ConfigurationNode extends AbstractNode  implements HelpCtx.Provider {
+    private class ConfigurationNode extends AbstractNode {
         
         private CustomizerNode description;
         
@@ -1177,10 +1124,6 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         
         public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
             return description.getSheet(project, configurationDescriptor, configuration);
-        }
-        
-        public HelpCtx getHelpCtx() {
-            return description.getHelpCtx();
         }
     }
     
@@ -1234,6 +1177,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         }
         
         public void removeAction(Object o) {
+            /*
             Configuration c = (Configuration)o;
             if (c.isDefault()) {
                 if (getListData().elementAt(0) == o)
@@ -1241,6 +1185,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 else
                     ((Configuration)getListData().elementAt(0)).setDefault(true);
             }
+             */
         }
         
         public void defaultAction(Object o) {

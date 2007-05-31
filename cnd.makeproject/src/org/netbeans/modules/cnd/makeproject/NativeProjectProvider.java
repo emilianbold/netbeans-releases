@@ -364,13 +364,6 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         BooleanConfiguration ccInheritMacros;
         Item[] items;
         
-        // Check first whether compiler set has changed
-        if (makeConfiguration.getCompilerSet().getDirty()) {
-            makeConfiguration.getCompilerSet().setDirty(false);
-            fireFilesPropertiesChanged();
-            return;
-        }
-        
         if (folder != null) {
             FolderConfiguration folderConfiguration = folder.getFolderConfiguration(makeConfiguration);
             cIncludeDirectories = folderConfiguration.getCCompilerConfiguration().getIncludeDirectories();

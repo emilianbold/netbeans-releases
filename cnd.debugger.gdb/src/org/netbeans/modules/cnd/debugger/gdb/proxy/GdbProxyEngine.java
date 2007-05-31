@@ -50,7 +50,6 @@ public class GdbProxyEngine {
     private PrintStream toGdb;
     private GdbDebuggerImpl debugger;
     private GdbProxy gdbProxy;
-    private int nextToken = 100;
     
     private Logger log = Logger.getLogger("gdb.gdbproxy.logger"); // NOI18N
     
@@ -130,25 +129,42 @@ public class GdbProxyEngine {
         });
     }
     
-    private int nextToken() {
-        return nextToken++;
-    }
-    
     /**
      * Send a command to the debugger
      *
      * @param cmd - a command to be sent to the debugger
      */
-    int sendCommand(String cmd) {
-        int token = nextToken();
-        StringBuilder fullcmd = new StringBuilder(String.valueOf(token));
-        fullcmd.append(cmd);
-        fullcmd.append('\n');
-        gdbProxy.getLogger().logMessage(fullcmd.toString());
-        toGdb.print(fullcmd.toString());
-        return token;
+    void sendCommand(String cmd) {
+        cmd += "\n"; // NOI18N
+        gdbProxy.getLogger().logMessage(cmd);
+        toGdb.print(cmd);
     }
     
+//    /**
+//     * Send a signal to the process
+//     *
+//     * @param PID - process ID
+//     * @param signal - a signal to be sent to the process
+//     *
+//     * @return null if signal is sent, otherwise return error message
+//     */
+//    public String sendSignal(long PID, String signal) {
+//        String reply = null;
+//        
+//        // Create external process
+//        ShellCommand sc = new ShellCommand();
+//        String cmd = "kill"; // NOI18N
+//        cmd = cmd + " " + signal; // NOI18N
+//        cmd = cmd + " " + PID; // NOI18N
+//        gdbProxy.getLogger().logMessage(cmd + "\n"); // NOI18N
+//        try {
+//            sc.run(cmd);
+//        } catch (Exception e) {
+//            reply = "# Exception: " + e; // FIXUP (i18n) // NOI18N
+//        }
+//        return (reply);
+//    }
+//    
     /**
      * Process the first complete reply from the queue
      *

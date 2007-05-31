@@ -30,24 +30,21 @@ import org.netbeans.modules.cnd.makeproject.ui.utils.DirectoryChooserPanel;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.PropertySupport;
-import org.openide.util.HelpCtx;
 
 public class VectorNodeProp extends PropertySupport {
     private VectorConfiguration vectorConfiguration;
     private BooleanConfiguration inheritValues;
-    private String baseDir;
-    private String[] texts;
+    String baseDir;
+    String[] texts;
     boolean addPathPanel;
-    private HelpCtx helpCtx;
     
-    public VectorNodeProp(VectorConfiguration vectorConfiguration, BooleanConfiguration inheritValues, String baseDir, String[] texts, boolean addPathPanel, HelpCtx helpCtx) {
+    public VectorNodeProp(VectorConfiguration vectorConfiguration, BooleanConfiguration inheritValues, String baseDir, String[] texts, boolean addPathPanel) {
         super(texts[0], Vector.class, texts[1], texts[2], true, true);
         this.vectorConfiguration = vectorConfiguration;
         this.inheritValues = inheritValues;
 	this.baseDir = baseDir;
 	this.texts = texts;
 	this.addPathPanel = addPathPanel;
-        this.helpCtx = helpCtx;
     }
 
     public String getHtmlDisplayName() {
@@ -122,7 +119,7 @@ public class VectorNodeProp extends PropertySupport {
 	    String text = null;
 	    if (inheritValues != null)
 		text = texts[3];
-            return new DirectoryChooserPanel(baseDir, (String[])value.toArray(new String[value.size()]), addPathPanel, inheritValues, text, this, env, helpCtx);
+            return new DirectoryChooserPanel(baseDir, (String[])value.toArray(new String[value.size()]), addPathPanel, inheritValues, text, this, env);
         }
         
         public boolean supportsCustomEditor() {

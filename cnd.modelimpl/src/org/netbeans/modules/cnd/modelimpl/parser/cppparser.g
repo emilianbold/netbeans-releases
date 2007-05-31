@@ -130,7 +130,6 @@ tokens {
 	CSM_TYPE_COMPOUND<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
 	CSM_TEMPLATE_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-	CSM_TEMPLATE_EXPLICIT_INSTANTIATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TEMPLATE_CLASS_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_EXTERN_TEMPLATE<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
@@ -641,162 +640,6 @@ public translation_unit:
 		{/*exitExternalScope();*/ #translation_unit = #(#[CSM_TRANSLATION_UNIT, getFilename()], #translation_unit);}
        ;
 
-//
-// it's a caller's responsibility to check isCPlusPlus
-//
-protected
-template_explicit_specialization
-	:
-	LITERAL_template LESSTHAN GREATERTHAN
-	(
-	// Template explicit specialisation function definition (VK 30/05/06)
-		(declaration_specifiers function_declarator[true] LCURLY)=>
-		{if(statementTrace >= 1)
-			printf("external_declaration_0a[%d]: template " +
-				"explicit-specialisation function definition\n", LT(1).getLine());
-		}
-		function_definition
-		{ #template_explicit_specialization = #(#[CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
-	|
-	// Template explicit specialisation ctor definition 
-		(ctor_declarator[true] LCURLY)=>
-		{if(statementTrace >= 1)
-			printf("template_explicit_specialization_0b[%d]: template " +
-				"explicit-specialisation ctor definition\n", LT(1).getLine());
-		}
-		ctor_definition
-		{ #template_explicit_specialization = #(#[CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
-         //     { #template_explicit_specialization = #(#[CSM_TEMPLATE_CTOR_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_CTOR_DEFINITION_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
-	| 
-        // Template explicit specialisation ctor declaration 
-		(ctor_declarator[false] SEMICOLON)=>
-		{if(statementTrace >= 1)
-			printf("template_explicit_specialization_0c[%d]: template " +
-				"explicit-specialisation ctor declaration\n", LT(1).getLine());
-		}
-		ctor_declarator[false] SEMICOLON
-		{ #template_explicit_specialization = #(#[CSM_TEMPLATE_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
-        // Template explicit specialisation dtor declaration        
-        |
-		(dtor_declarator[false] SEMICOLON)=>
-		{if(statementTrace >= 1)
-			printf("template_explicit_specialization_0d[%d]: template " +
-				"explicit-specialisation dtor definition\n", LT(1).getLine());
-		}
-		dtor_declarator[false] SEMICOLON
-		{ #template_explicit_specialization = #(#[CSM_TEMPLATE_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
-
-        |
-	// Template explicit specialisation (DW 14/04/03)
-		{if(statementTrace >= 1)
-			printf("template_explicit_specialization_0e[%d]: template " +
-				"explicit-specialisation\n", LT(1).getLine());
-		}
-		declaration
-		{ #template_explicit_specialization = #(#[CSM_TEMPLATE_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
-	)
-	;
-
-//
-// it's a caller's responsibility to check isCPlusPlus
-//
-protected
-external_declaration_template { K_and_R = false; }
-	:      
-		(LITERAL_template LESSTHAN GREATERTHAN) => template_explicit_specialization
-	|
-		(LITERAL_template (LITERAL_class | LITERAL_struct| LITERAL_union)) =>
-		LITERAL_template (LITERAL_class | LITERAL_struct| LITERAL_union) 
-		ID LESSTHAN template_argument_list GREATERTHAN SEMICOLON
-		{#external_declaration_template = #(#[CSM_TEMPLATE_EXPLICIT_INSTANTIATION, "CSM_TEMPLATE_EXPLICIT_INSTANTIATION"], #external_declaration_template);}
-	|
-		(LITERAL_template (~LESSTHAN)) =>
-		LITERAL_template declaration
-		{#external_declaration_template = #(#[CSM_TEMPLATE_EXPLICIT_INSTANTIATION, "CSM_TEMPLATE_EXPLICIT_INSTANTIATION"], #external_declaration_template);}
-	|
-		{beginTemplateDefinition();}               
-		(template_head)
-		(   
-			// Class template definition
-			(class_head)=>
-			{if (statementTrace>=1) 
-				printf("external_declaration_1b[%d]: Class template definition\n",
-					LT(1).getLine());
-			}                           
-			declaration
-			{ #external_declaration_template = #(#[CSM_TEMPLATE_CLASS_DECLARATION, "CSM_TEMPLATE_CLASS_DECLARATION"], #external_declaration_template); }
-		|
-			// templated forward class decl, init/decl of static member in template
-			(declaration_specifiers
-				(init_declarator_list)? SEMICOLON! /*{end_of_stmt();}*/)=>
-			//{beginTemplateDeclaration();}
-			{ if (statementTrace>=1) 
-				printf("external_declaration_10[%d]: Class template declaration\n",
-					LT(1).getLine());
-			}
-			declaration_specifiers
-				(init_declarator_list)? SEMICOLON! //{end_of_stmt();}
-			{/*endTemplateDeclaration();*/ #external_declaration_template = #(#[CSM_TEMPL_FWD_CL_OR_STAT_MEM, "CSM_TEMPL_FWD_CL_OR_STAT_MEM"], #external_declaration_template);}
-		|  
-		// Templated FUNCTIONS and CONSTRUCTORS matched here.
-                       // Templated CONSTRUCTOR declaration
-                        (	(template_head)?   // :)
-                                ctor_decl_spec
-                                {qualifiedItemIsOneOf(qiCtor)}?
-                                ctor_declarator[false] (EOF|SEMICOLON)
-                        )=>
-                        {if (statementTrace>=1) 
-                                printf("external_declaration_11a[%d]: Constructor declarator\n",
-                                        LT(1).getLine());
-                        }
-                        (template_head)?   // :)
-                        ctor_decl_spec
-                        ctor_declarator[false] 	(EOF!|SEMICOLON) // Constructor declarator
-                        {
-                        // below is a workaround for know infinite loop bug in ANTLR 
-                        // see http://www.jguru.com/faq/view.jsp?EID=271922
-                        //if( #cds1 != null ) { #cds1.setNextSibling(null); }; 
-                        #external_declaration_template= #(#[CSM_CTOR_DECLARATION, "CSM_CTOR_DECLARATION"],  #external_declaration_template); //end_of_stmt();
-                        }   
-
-                  |   
-			// Templated CONSTRUCTOR definition
-			// JEL 4/3/96.. Added predicate that works once the
-			// restriction is added that ctor cannot be virtual
-			(	(template_head)?   // :) 
-                                ctor_decl_spec                            
-				{qualifiedItemIsOneOf(qiCtor)}?
-			)=>
-			{if (statementTrace>=1) 
-				printf("external_declaration_11b[%d]: Template constructor " +
-					"definition\n", LT(1).getLine());
-			}
-                        (template_head)?   // :)
-			ctor_definition
-			{ #external_declaration_template = #(#[CSM_CTOR_DEFINITION, "CSM_CTOR_DEFINITION"], #external_declaration_template); }
-		|
-			// Templated function declaration
-			(declaration_specifiers function_declarator[false] SEMICOLON)=> 
-			{if (statementTrace>=1) 
-				printf("external_declaration_11c[%d]: Function template " +
-					"declaration\n", LT(1).getLine());
-			}
-			declaration
-			{ #external_declaration_template = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #external_declaration_template); }
-		|  
-			// Templated function definition
-			((template_head)? declaration_specifiers function_declarator[true] LCURLY)=> 
-			{if (statementTrace>=1) 
-				printf("external_declaration_11d[%d]: Function template " +
-					"definition\n", LT(1).getLine());
-			}
-			(template_head)? function_definition
-			{ #external_declaration_template = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #external_declaration_template); }
-
-		)
-		{endTemplateDefinition(); /*#external_declaration_template = #(#[CSM_STRANGE_2, "CSM_STRANGE_2"], #external_declaration_template);*/}
-	;
-
 external_declaration {String s; K_and_R = false; boolean definition;}
 	:  
 	(
@@ -808,9 +651,66 @@ external_declaration {String s; K_and_R = false; boolean definition;}
 		}
 		LITERAL_extern LITERAL_template external_declaration                
 		{ #external_declaration = #(#[CSM_EXTERN_TEMPLATE, "CSM_EXTERN_TEMPLATE"], #external_declaration); }
+        |       				
+	
+	// Template explicit specialisation function definition (VK 30/05/06)
+		{isCPlusPlus()}?
+		(LITERAL_template LESSTHAN GREATERTHAN declaration_specifiers function_declarator[true] LCURLY)=>
+		{if(statementTrace >= 1)
+			printf("external_declaration_0a[%d]: template " +
+				"explicit-specialisation function definition\n", LT(1).getLine());
+		}
+		LITERAL_template LESSTHAN GREATERTHAN function_definition
+		{ #external_declaration = #(#[CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION"], #external_declaration); }
+	|
+
+
+       
+	// Template explicit specialisation ctor definition 
+		{isCPlusPlus()}?
+		(LITERAL_template LESSTHAN GREATERTHAN  ctor_declarator[true] LCURLY)=>
+		{if(statementTrace >= 1)
+			printf("external_declaration_0b[%d]: template " +
+				"explicit-specialisation ctor definition\n", LT(1).getLine());
+		}
+		LITERAL_template LESSTHAN GREATERTHAN ctor_definition
+		{ #external_declaration = #(#[CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION"], #external_declaration); }
+         //     { #external_declaration = #(#[CSM_TEMPLATE_CTOR_DEFINITION_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_CTOR_DEFINITION_EXPLICIT_SPECIALIZATION"], #external_declaration); }
+	| 
+        // Template explicit specialisation ctor declaration 
+		{isCPlusPlus()}?
+		(LITERAL_template LESSTHAN GREATERTHAN  ctor_declarator[false] SEMICOLON)=>
+		{if(statementTrace >= 1)
+			printf("external_declaration_0c[%d]: template " +
+				"explicit-specialisation ctor declaration\n", LT(1).getLine());
+		}
+		LITERAL_template LESSTHAN GREATERTHAN ctor_declarator[false] SEMICOLON
+		{ #external_declaration = #(#[CSM_TEMPLATE_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_EXPLICIT_SPECIALIZATION"], #external_declaration); }
+        // Template explicit specialisation dtor declaration        
         |
-	    {isCPlusPlus()}? ((LITERAL_export)? LITERAL_template) => external_declaration_template
+                {isCPlusPlus()}?
+		(LITERAL_template LESSTHAN GREATERTHAN  dtor_declarator[false] SEMICOLON)=>
+		{if(statementTrace >= 1)
+			printf("external_declaration_0d[%d]: template " +
+				"explicit-specialisation dtor definition\n", LT(1).getLine());
+		}
+		LITERAL_template LESSTHAN GREATERTHAN dtor_declarator[false] SEMICOLON
+		{ #external_declaration = #(#[CSM_TEMPLATE_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_EXPLICIT_SPECIALIZATION"], #external_declaration); }
+
         |
+
+
+
+	// Template explicit specialisation (DW 14/04/03)
+		{isCPlusPlus()}?
+		(LITERAL_template LESSTHAN GREATERTHAN)=>
+		{if(statementTrace >= 1)
+			printf("external_declaration_0e[%d]: template " +
+				"explicit-specialisation\n", LT(1).getLine());
+		}
+		LITERAL_template LESSTHAN GREATERTHAN declaration
+		{ #external_declaration = #(#[CSM_TEMPLATE_EXPLICIT_SPECIALIZATION, "CSM_TEMPLATE_EXPLICIT_SPECIALIZATION"], #external_declaration); }
+	| 
 	// Class definition (templates too)
 	// This is separated out otherwise the next alternative
 	// would look for "class A { ... } f() {...}" which is
@@ -829,6 +729,17 @@ external_declaration {String s; K_and_R = false; boolean definition;}
 		{ #external_declaration = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #external_declaration); }
 
 	|	
+		// Class template definition
+		{isCPlusPlus()}?                
+		(template_head class_head)=>
+		{if (statementTrace>=1) 
+			printf("external_declaration_1b[%d]: Class template definition\n",
+				LT(1).getLine());
+		}                           
+		template_head declaration
+		{ #external_declaration = #(#[CSM_TEMPLATE_CLASS_DECLARATION, "CSM_TEMPLATE_CLASS_DECLARATION"], #external_declaration); }
+	|
+
                 //enum typedef )))	
                 (LITERAL_typedef enum_specifier)=>
                 {if(statementTrace>=1) 
@@ -850,7 +761,8 @@ external_declaration {String s; K_and_R = false; boolean definition;}
 		}
 		enum_specifier (init_declarator_list)? SEMICOLON! //{end_of_stmt();}
 		{ #external_declaration = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #external_declaration); }
-	|
+
+	|  
 		// Destructor DEFINITION (templated or non-templated)
 		{isCPlusPlus()}?
 		((template_head)? dtor_head[true] LCURLY)=>
@@ -923,6 +835,80 @@ external_declaration {String s; K_and_R = false; boolean definition;}
 		function_definition
 		{ #external_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #external_declaration); }
 	|  
+		// templated forward class decl, init/decl of static member in template
+		{isCPlusPlus()}?
+		(template_head declaration_specifiers
+			(init_declarator_list)? SEMICOLON! /*{end_of_stmt();}*/)=>
+		//{beginTemplateDeclaration();}
+		{ if (statementTrace>=1) 
+			printf("external_declaration_10[%d]: Class template declaration\n",
+				LT(1).getLine());
+		}
+		template_head declaration_specifiers
+			(init_declarator_list)? SEMICOLON! //{end_of_stmt();}
+		{/*endTemplateDeclaration();*/ #external_declaration = #(#[CSM_TEMPL_FWD_CL_OR_STAT_MEM, "CSM_TEMPL_FWD_CL_OR_STAT_MEM"], #external_declaration);}
+	|  
+		// Templated FUNCTIONS and CONSTRUCTORS matched here.
+		{isCPlusPlus()}?
+		{beginTemplateDefinition();}               
+		(template_head)
+		(   
+                       // Templated CONSTRUCTOR declaration
+                        (	(template_head)?   // :)
+                                ctor_decl_spec
+                                {qualifiedItemIsOneOf(qiCtor)}?
+                                ctor_declarator[false] (EOF|SEMICOLON)
+                        )=>
+                        {if (statementTrace>=1) 
+                                printf("external_declaration_11a[%d]: Constructor declarator\n",
+                                        LT(1).getLine());
+                        }
+                        (template_head)?   // :)
+                        ctor_decl_spec
+                        ctor_declarator[false] 	(EOF!|SEMICOLON) // Constructor declarator
+                        {
+                        // below is a workaround for know infinite loop bug in ANTLR 
+                        // see http://www.jguru.com/faq/view.jsp?EID=271922
+                        //if( #cds1 != null ) { #cds1.setNextSibling(null); }; 
+                        #external_declaration= #(#[CSM_CTOR_DECLARATION, "CSM_CTOR_DECLARATION"],  #external_declaration); //end_of_stmt();
+                        }   
+
+                  |   
+			// Templated CONSTRUCTOR definition
+			// JEL 4/3/96.. Added predicate that works once the
+			// restriction is added that ctor cannot be virtual
+			(	(template_head)?   // :) 
+                                ctor_decl_spec                            
+				{qualifiedItemIsOneOf(qiCtor)}?
+			)=>
+			{if (statementTrace>=1) 
+				printf("external_declaration_11b[%d]: Template constructor " +
+					"definition\n", LT(1).getLine());
+			}
+                        (template_head)?   // :)
+			ctor_definition
+			{ #external_declaration = #(#[CSM_CTOR_DEFINITION, "CSM_CTOR_DEFINITION"], #external_declaration); }
+		|
+			// Templated function declaration
+			(declaration_specifiers function_declarator[false] SEMICOLON)=> 
+			{if (statementTrace>=1) 
+				printf("external_declaration_11c[%d]: Function template " +
+					"declaration\n", LT(1).getLine());
+			}
+			declaration
+			{ #external_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #external_declaration); }
+		|  
+			// Templated function definition
+			((template_head)? declaration_specifiers function_declarator[true] LCURLY)=> 
+			{if (statementTrace>=1) 
+				printf("external_declaration_11d[%d]: Function template " +
+					"definition\n", LT(1).getLine());
+			}
+			(template_head)? function_definition
+			{ #external_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #external_declaration); }
+		)
+		{endTemplateDefinition(); /*#external_declaration = #(#[CSM_STRANGE_2, "CSM_STRANGE_2"], #external_declaration);*/}
+	|  
 		{isCPlusPlus()}?
 		{if (statementTrace>=1) 
 			printf("external_declaration_12[%d]: Namespace declaration\n",
@@ -982,103 +968,6 @@ decl_namespace
 			ASSIGNEQUAL qid = qualified_id SEMICOLON! 
 			{/*end_of_stmt();*/#decl_namespace = #(#[CSM_NAMESPACE_ALIAS, name], #decl_namespace);} 
 		)
-	;
-
-//
-// it's a caller's responsibility to check isCPlusPlus
-//
-member_declaration_template
-	{String q; boolean definition;}
-	:
-		{beginTemplateDefinition();}
-		template_head
- 		(     
-			(class_head)=>
-			{if (statementTrace>=1) 
-				printf("member_declaration_12[%d]: Class template declaration\n",
-					LT(1).getLine());
-			}                           
-			declaration
-			{ #member_declaration_template = #(#[CSM_TEMPLATE_CLASS_DECLARATION, "CSM_TEMPLATE_CLASS_DECLARATION"], #member_declaration_template); }
-		|         
-			// templated forward class decl, init/decl of static member in template
-			(declaration_specifiers
-				(init_declarator_list)? SEMICOLON! /*{end_of_stmt();}*/)=>
-			//{beginTemplateDeclaration();}
-			{ if (statementTrace>=1) 
-				printf("member_declaration_12a[%d]: Class template declaration\n",
-					LT(1).getLine());
-			}
-			declaration_specifiers
-				(init_declarator_list)? SEMICOLON! //{end_of_stmt();}
-			{/*endTemplateDeclaration();*/ #member_declaration_template = #(#[CSM_TEMPL_FWD_CL_OR_STAT_MEM, "CSM_TEMPL_FWD_CL_OR_STAT_MEM"], #member_declaration_template); } 		
-		|  
-			// Templated FUNCTIONS and CONSTRUCTORS matched here.
-			// DW 27/06/03 Copied here from external_declaration since templates
-			// can now be nested
-
-			// Templated CONSTRUCTOR declaration
-                        (	ctor_decl_spec
-                                {qualifiedItemIsOneOf(qiCtor)}?
-                                ctor_declarator[false] (EOF|SEMICOLON)
-                        )=>
-                        {if (statementTrace>=1) 
-                                printf("member_declaration_13[%d]: Constructor declarator\n",
-                                        LT(1).getLine());
-                        }
-                        ctor_decl_spec
-                        ctor_declarator[false] 	(EOF!|SEMICOLON) // Constructor declarator
-                        {
-                        // below is a workaround for know infinite loop bug in ANTLR 
-                        // see http://www.jguru.com/faq/view.jsp?EID=271922
-                        //if( #cds1 != null ) { #cds1.setNextSibling(null); }; 
-                        #member_declaration_template = #(#[CSM_CTOR_DECLARATION, "CSM_CTOR_DECLARATION"],  #member_declaration_template); //end_of_stmt();
-                        }   
-
-                  |
-
-			// Templated CONSTRUCTOR definition
-			// JEL 4/3/96 Added predicate that works once the
-			// restriction is added that ctor cannot be virtual
-			(ctor_decl_spec
-			 {qualifiedItemIsOneOf(qiCtor)}?
-			)=>
-			{if (statementTrace>=1) 
-				printf("member_declaration_13a[%d]: Template constructor " +
-					"definition\n", LT(1).getLine());
-			}
-			ctor_definition
-			{ #member_declaration_template = #(#[CSM_CTOR_DEFINITION, "CSM_CTOR_DEFINITION"], #member_declaration_template); }
-		|
-			// Templated function declaration
-			(declaration_specifiers function_declarator[false] SEMICOLON)=>
-			{if (statementTrace>=1) 
-				printf("member_declaration_13b[%d]: Function template " +
-					"declaration\n", LT(1).getLine());
-			}
-			declaration
-			{ #member_declaration_template = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #member_declaration_template); }
-		|  
-			// Templated function definition
-			// Function definition DW 2/6/97
-			(declaration_specifiers function_declarator[true] LCURLY)=> 
-			{if (statementTrace>=1) 
-				printf("member_declaration_13c[%d]: Function template " +
-					    "definition\n", LT(1).getLine());
-			}
-			function_definition
-			{ #member_declaration_template = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #member_declaration_template); }
-		|
-			{if (statementTrace>=1) 
-				printf("member_declaration_13d[%d]: Templated operator " +
-					    "function\n", LT(1).getLine());
-			}
-			definition = conversion_function_decl_or_def
-			{ if( definition ) #member_declaration_template = #(#[CSM_USER_TYPE_CAST_DEFINITION, "CSM_USER_TYPE_CAST_DEFINITION"], #member_declaration_template);
-			    else	   #member_declaration_template = #(#[CSM_USER_TYPE_CAST, "CSM_USER_TYPE_CAST"], #member_declaration_template); }
-		)
-		{endTemplateDefinition();}
-
 	;
 
 member_declaration
@@ -1240,7 +1129,95 @@ member_declaration
 		function_declarator[true] compound_statement //{endFunctionDefinition();}
 		{ #member_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #member_declaration); }
 	|  
-		{isCPlusPlus()}? ((LITERAL_export)? LITERAL_template) => member_declaration_template
+                {isCPlusPlus()}?                
+		(template_head class_head)=>
+		{if (statementTrace>=1) 
+			printf("member_declaration_12[%d]: Class template declaration\n",
+				LT(1).getLine());
+		}                           
+		template_head declaration
+		{ #member_declaration = #(#[CSM_TEMPLATE_CLASS_DECLARATION, "CSM_TEMPLATE_CLASS_DECLARATION"], #member_declaration); }
+        |         
+		// templated forward class decl, init/decl of static member in template
+		{isCPlusPlus()}?
+		(template_head declaration_specifiers
+			(init_declarator_list)? SEMICOLON! /*{end_of_stmt();}*/)=>
+		//{beginTemplateDeclaration();}
+		{ if (statementTrace>=1) 
+			printf("member_declaration_12a[%d]: Class template declaration\n",
+				LT(1).getLine());
+		}
+		template_head declaration_specifiers
+			(init_declarator_list)? SEMICOLON! //{end_of_stmt();}
+		{/*endTemplateDeclaration();*/ #member_declaration = #(#[CSM_TEMPL_FWD_CL_OR_STAT_MEM, "CSM_TEMPL_FWD_CL_OR_STAT_MEM"], #member_declaration); } 		
+	|  
+		// Templated FUNCTIONS and CONSTRUCTORS matched here.
+		// DW 27/06/03 Copied here from external_declaration since templates
+		// can now be nested
+		{beginTemplateDefinition();}
+		template_head
+ 		(     
+                       // Templated CONSTRUCTOR declaration
+                        (	ctor_decl_spec
+                                {qualifiedItemIsOneOf(qiCtor)}?
+                                ctor_declarator[false] (EOF|SEMICOLON)
+                        )=>
+                        {if (statementTrace>=1) 
+                                printf("member_declaration_13[%d]: Constructor declarator\n",
+                                        LT(1).getLine());
+                        }
+                        ctor_decl_spec
+                        ctor_declarator[false] 	(EOF!|SEMICOLON) // Constructor declarator
+                        {
+                        // below is a workaround for know infinite loop bug in ANTLR 
+                        // see http://www.jguru.com/faq/view.jsp?EID=271922
+                        //if( #cds1 != null ) { #cds1.setNextSibling(null); }; 
+                        #member_declaration = #(#[CSM_CTOR_DECLARATION, "CSM_CTOR_DECLARATION"],  #member_declaration); //end_of_stmt();
+                        }   
+
+                  |
+
+			// Templated CONSTRUCTOR definition
+			// JEL 4/3/96 Added predicate that works once the
+			// restriction is added that ctor cannot be virtual
+			(ctor_decl_spec
+			 {qualifiedItemIsOneOf(qiCtor)}?
+			)=>
+			{if (statementTrace>=1) 
+				printf("member_declaration_13a[%d]: Template constructor " +
+					"definition\n", LT(1).getLine());
+			}
+			ctor_definition
+			{ #member_declaration = #(#[CSM_CTOR_DEFINITION, "CSM_CTOR_DEFINITION"], #member_declaration); }
+		|
+			// Templated function declaration
+			(declaration_specifiers function_declarator[false] SEMICOLON)=>
+			{if (statementTrace>=1) 
+				printf("member_declaration_13b[%d]: Function template " +
+					"declaration\n", LT(1).getLine());
+			}
+			declaration
+			{ #member_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #member_declaration); }
+		|  
+			// Templated function definition
+			// Function definition DW 2/6/97
+			(declaration_specifiers function_declarator[true] LCURLY)=> 
+			{if (statementTrace>=1) 
+				printf("member_declaration_13c[%d]: Function template " +
+					    "definition\n", LT(1).getLine());
+			}
+			function_definition
+			{ #member_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #member_declaration); }
+		|
+			{if (statementTrace>=1) 
+				printf("member_declaration_13d[%d]: Templated operator " +
+					    "function\n", LT(1).getLine());
+			}
+			definition = conversion_function_decl_or_def
+			{ if( definition ) #member_declaration = #(#[CSM_USER_TYPE_CAST_DEFINITION, "CSM_USER_TYPE_CAST_DEFINITION"], #member_declaration);
+			    else	   #member_declaration = #(#[CSM_USER_TYPE_CAST, "CSM_USER_TYPE_CAST"], #member_declaration); }
+		)
+		{endTemplateDefinition();}
 	|  
 		{if (statementTrace>=1) 
 			printf("member_declaration_14[%d]: Access specifier\n",
@@ -1585,7 +1562,6 @@ initializer
    :  remainder_expression // DW 18/4/01 assignment_expression
    |  LCURLY initializer (COMMA initializer)* (COMMA)? (EOF!|RCURLY)
    ;
-
 
 class_head     
         { String s; }

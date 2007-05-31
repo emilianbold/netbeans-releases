@@ -68,9 +68,6 @@ public class ProgressListenerImpl implements CsmProgressListener {
             handles.remove(project);
         }
     }
-
-    public void fileInvalidated(CsmFile file) {
-    }
     
     public void fileParsingStarted(CsmFile file) {
         if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("  ProgressListenerImpl.fileParsingStarted " + file.getAbsolutePath());

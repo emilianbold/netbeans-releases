@@ -63,7 +63,7 @@ public class HashMapRepository implements Repository {
     }
     
     public void shutdown() {
-        map.clear();
+        // do nothing
     }
 
     public void closeUnit(String unitName) {

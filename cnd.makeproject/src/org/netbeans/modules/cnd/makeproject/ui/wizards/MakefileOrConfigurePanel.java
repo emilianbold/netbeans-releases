@@ -89,7 +89,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
     }
     
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("NewMakeWizardP11"); // NOI18N
+        return new HelpCtx(BuildActionsPanel.class);
     }
     
     private void update(DocumentEvent e) {

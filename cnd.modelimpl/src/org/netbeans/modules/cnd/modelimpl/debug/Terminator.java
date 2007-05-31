@@ -59,7 +59,7 @@ public class Terminator implements Runnable {
         synchronized (lock) {
             inParse++;
         }
-        System.err.println("Parse started. " + inParse + " projects in list"); // NOI18N
+        System.err.println("Parse started. " + inParse + " projects in list");
         if (TraceFlags.CLOSE_TIMEOUT > 0) {
             ActionListener terminator2 = new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -74,7 +74,7 @@ public class Terminator implements Runnable {
         project.waitParse();
         synchronized (lock) {
             inParse--;
-            System.err.println("Parse finished. " + inParse + " projects left"); // NOI18N
+            System.err.println("Parse finished. " + inParse + " projects left");
             if (inParse == 0) {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
@@ -88,15 +88,15 @@ public class Terminator implements Runnable {
     private void terminate() {
         synchronized (lock) {
             long ptime = ParserQueue.instance().getStopWatchTime();
-            System.err.println("disposing at " + ptime); // NOI18N
-            String xmlOutput = System.getProperty("cnd.close.report.xml"); // NOI18N
+            System.err.println("disposing at " + ptime);
+            String xmlOutput = System.getProperty("cnd.close.report.xml");
             if (xmlOutput != null) {
                 BufferedWriter out;
                 try {
                     out = new BufferedWriter(new FileWriter(xmlOutput, true));
-                    String result = timeout ? "failed" : "passed"; // NOI18N
-                    out.write("<result>" + result + "</result>"); // NOI18N
-                    out.write("<parsetime>" + ptime + "</parsetime>"); // NOI18N
+                    String result = timeout ? "failed" : "passed";
+                    out.write("<result>" + result + "</result>");
+                    out.write("<parsetime>" + ptime + "</parsetime>");
                     out.close();
                 } catch (IOException ex) {
                     ex.printStackTrace();

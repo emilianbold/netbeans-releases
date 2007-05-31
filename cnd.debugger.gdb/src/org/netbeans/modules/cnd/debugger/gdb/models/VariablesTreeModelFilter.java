@@ -197,7 +197,10 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
      *
      * @return  true if node is leaf
      */
-    public int getChildrenCount(final TreeModel original, final Object parent) throws UnknownTypeException {
+    public int getChildrenCount (
+        final TreeModel   original, 
+        final Object      parent
+    ) throws UnknownTypeException {
         /*NM TEMPORARY COMMENTED OUT
         VariablesFilter vf = getFilter (parent, true, new Runnable() {
             public void run() {

@@ -33,10 +33,7 @@ import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.nodes.Sheet;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public class LinkerConfiguration implements AllOptionsProvider {
@@ -284,9 +281,9 @@ public class LinkerConfiguration implements AllOptionsProvider {
 	set1.setName("General"); // NOI18N
 	set1.setDisplayName(getString("GeneralTxt"));
 	set1.setShortDescription(getString("GeneralHint"));
-	set1.put(new OutputNodeProp(getOutput(), getOutputDefault(), "Output", getString("OutputTxt"), getString("OutputHint"))); // NOI18N
-	set1.put(new VectorNodeProp(getAdditionalLibs(), null, getMakeConfiguration().getBaseDir(), new String[] {"AdditionalLibraryDirectories", getString("AdditionalLibraryDirectoriesTxt"), getString("AdditionalLibraryDirectoriesHint")}, true, new HelpCtx("AddtlLibraryDirectories"))); // NOI18N
-	set1.put(new VectorNodeProp(getDynamicSearch(), null, getMakeConfiguration().getBaseDir(), new String[] {"RuntimeSearchDirectories", getString("RuntimeSearchDirectoriesTxt"), getString("RuntimeSearchDirectoriesHint")}, false, new HelpCtx("RuntimeSearchDirectories"))); // NOI18N
+	set1.put(new StringNodeProp(getOutput(), getOutputDefault(), "Output", getString("OutputTxt"), getString("OutputHint"))); // NOI18N
+	set1.put(new VectorNodeProp(getAdditionalLibs(), null, getMakeConfiguration().getBaseDir(), new String[] {"AdditionalLibraryDirectories", getString("AdditionalLibraryDirectoriesTxt"), getString("AdditionalLibraryDirectoriesHint")}, true)); // NOI18N
+	set1.put(new VectorNodeProp(getDynamicSearch(), null, getMakeConfiguration().getBaseDir(), new String[] {"RuntimeSearchDirectories", getString("RuntimeSearchDirectoriesTxt"), getString("RuntimeSearchDirectoriesHint")}, false)); // NOI18N
 	sheet.put(set1);
 	Sheet.Set set2 = new Sheet.Set();
 	set2.setName("Options"); // NOI18N
@@ -401,20 +398,6 @@ public class LinkerConfiguration implements AllOptionsProvider {
 	    outputName = "lib" + outputName + ".so"; // NOI18N
         
 	return MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + outputName; // NOI18N 
-    }
-    
-    private class OutputNodeProp extends StringNodeProp {
-        public OutputNodeProp(StringConfiguration stringConfiguration, String def, String txt1, String txt2, String txt3) {
-            super(stringConfiguration, def, txt1, txt2, txt3);
-        }
-        
-        public void setValue(Object v) {
-            if (IpeUtils.hasMakeSpecialCharacters((String)v)) {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(getString("SPECIAL_CHARATERS_ERROR"), NotifyDescriptor.ERROR_MESSAGE));
-                return;
-            }
-            super.setValue(v);
-        }
     }
     
     /** Look up i18n strings here */

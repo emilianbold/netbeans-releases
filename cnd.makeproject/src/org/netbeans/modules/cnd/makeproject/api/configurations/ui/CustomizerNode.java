@@ -23,7 +23,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.openide.nodes.Sheet;
-import org.openide.util.HelpCtx;
 
 public class CustomizerNode {
     public static String iconbase = "org/netbeans/modules/cnd/makeproject/ui/resources/general"; // NOI18N
@@ -47,9 +46,5 @@ public class CustomizerNode {
 
     public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
 	return null;
-    }
-    
-    public HelpCtx getHelpCtx() {
-        return null;
     }
 }

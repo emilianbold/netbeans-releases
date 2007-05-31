@@ -190,7 +190,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 		return false;
 	    }
 		    
-	    CsmType type = TypeFactory.createType(typeAST, getContainingFile(), null, 0);
+	    CsmType type = TypeImpl.createType(typeAST, getContainingFile(), null, 0);
             FieldImpl field = new FieldImpl(token, getContainingFile(), type, idAST.getText(), ClassImpl.this, curentVisibility);
             ClassImpl.this.addMember(field);
 	    

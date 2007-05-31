@@ -1,6 +1,0 @@
-cPriv int
-cProt int
-cPub int
-cPrivFun() void
-cProtFun() void
-cPubFun() void

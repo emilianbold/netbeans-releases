@@ -70,7 +70,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
     }
     
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("NewMakeWizardP4"); // NOI18N
+        return new HelpCtx(ParserConfigurationPanel.class);
     }
     
     private boolean isApplicable(WizardDescriptor settings){

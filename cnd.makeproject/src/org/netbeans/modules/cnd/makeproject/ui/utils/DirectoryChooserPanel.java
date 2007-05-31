@@ -40,14 +40,12 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
     private boolean addPathPanel;
     private BooleanConfiguration inheritValues;
     private PropertyEditorSupport editor;
-    private HelpCtx helpCtx;
     
-    public DirectoryChooserPanel(String baseDir, Object[] data, boolean addPathPanel, BooleanConfiguration inheritValues, String inheritText, PropertyEditorSupport editor, PropertyEnv env, HelpCtx helpCtx) {
+    public DirectoryChooserPanel(String baseDir, Object[] data, boolean addPathPanel, BooleanConfiguration inheritValues, String inheritText, PropertyEditorSupport editor, PropertyEnv env) {
 	this.baseDir = baseDir;
 	this.addPathPanel = addPathPanel;
 	this.inheritValues = inheritValues;
         this.editor = editor;
-        this.helpCtx = helpCtx;
         initComponents();
 	myListEditorPanel = new MyListEditorPanel(data);
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -98,8 +96,7 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
     }
 
     public HelpCtx getHelpCtx() {
-        return helpCtx;
-//        return new HelpCtx("RuntimeSearchDirectories"); // NOI18N
+        return new HelpCtx("RuntimeSearchDirectories"); // NOI18N
     }
 
     /**

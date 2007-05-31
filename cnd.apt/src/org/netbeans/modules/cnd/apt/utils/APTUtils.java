@@ -320,7 +320,7 @@ public class APTUtils {
                 token = ts.nextToken();
             }
         } catch (TokenStreamException ex) {
-            LOG.log(Level.INFO, "error on converting token stream to list", ex.getMessage()); // NOI18N
+            LOG.log(Level.SEVERE, "error on converting token stream to list", ex); // NOI18N
         }
         return tokens;
     }
