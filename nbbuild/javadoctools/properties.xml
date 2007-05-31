@@ -78,6 +78,9 @@ Microsystems, Inc. All Rights Reserved.
 <property name="javadoc.docs.org-netbeans-modules-editor" value="${javadoc.web.root}/org-netbeans-modules-editor"/>
 <property name="javadoc.docs.org-netbeans-modules-editor-fold" value="${javadoc.web.root}/org-netbeans-modules-editor-fold"/>
 <property name="javadoc.docs.org-netbeans-modules-classfile" value="${javadoc.web.root}/org-netbeans-modules-classfile"/>
+<property name="javadoc.docs.org-netbeans-modules-registry" value="${javadoc.web.root}/org-netbeans-modules-registry"/>
+<property name="javadoc.docs.org-netbeans-core-registry" value="${javadoc.web.root}/org-netbeans-core-registry"/>
+<property name="javadoc.docs.org-netbeans-modules-convertor" value="${javadoc.web.root}/org-netbeans-modules-convertor"/>
 <property name="javadoc.docs.org-netbeans-modules-masterfs" value="${javadoc.web.root}/org-netbeans-modules-masterfs"/>
 <property name="javadoc.docs.org-netbeans-modules-looks" value="${javadoc.web.root}/org-netbeans-modules-looks"/>
 <property name="javadoc.docs.org-netbeans-lib-terminalemulator" value="${javadoc.web.root}/org-netbeans-lib-terminalemulator"/>
@@ -122,3 +125,4 @@ Microsystems, Inc. All Rights Reserved.
 <property name="javadoc.docs.org-netbeans-modules-editor-guards" value="${javadoc.web.root}/org-netbeans-modules-editor-guards"/>
 <property name="javadoc.docs.org-netbeans-modules-autoupdate-services" value="${javadoc.web.root}/org-netbeans-modules-autoupdate-services"/>
 <property name="javadoc.docs.org-netbeans-modules-refactoring-api" value="${javadoc.web.root}/org-netbeans-modules-refactoring-api"/>
+<property name="javadoc.docs.org-netbeans-core-startup" value="${javadoc.web.root}/org-netbeans-core-startup"/>
