@@ -101,6 +101,8 @@ public class EjbJarProjectGenerator {
         ep.setProperty(EjbJarProjectProperties.META_INF, "${"+EjbJarProjectProperties.SOURCE_ROOT+"}/"+DEFAULT_DOC_BASE_FOLDER); //NOI18N
         ep.setProperty(EjbJarProjectProperties.SRC_DIR, "${"+EjbJarProjectProperties.SOURCE_ROOT+"}/"+DEFAULT_JAVA_FOLDER); //NOI18N
         ep.setProperty(EjbJarProjectProperties.META_INF_EXCLUDES, "sun-cmp-mappings.xml"); // NOI18N
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        
         Project p = ProjectManager.getDefault().findProject(h.getProjectDirectory());
         ProjectManager.getDefault().saveProject(p);
         
