@@ -37,8 +37,6 @@ import javax.swing.KeyStroke;
 import org.netbeans.modules.form.FormAwareEditor;
 import org.netbeans.modules.form.FormEditor;
 import org.netbeans.modules.form.FormModel;
-import org.netbeans.modules.form.FormModelEvent;
-import org.netbeans.modules.form.FormModelListener;
 import org.netbeans.modules.form.FormProperty;
 import org.netbeans.modules.form.RADComponent;
 import org.netbeans.modules.form.RADProperty;
@@ -46,6 +44,7 @@ import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -365,7 +364,18 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         // if the user created a new action and assigned it to this component
         if(panel.isNewActionCreated()) {
             if(!panel.canCreateNewAction()) {
-                throw new PropertyVetoException("Method Name cannot be empty",evt);
+                if(!panel.isMethodNonEmpty()) {
+                    throw new PropertyVetoException(NbBundle.getMessage(ActionEditor.class,"ActionEditor.createMethodError.emptyMethod"),evt);
+                }
+                if(panel.doesMethodContainBadChars()) {
+                    throw new PropertyVetoException(NbBundle.getMessage(ActionEditor.class,"ActionEditor.createMethodError.invalidName",panel.getNewMethodName()),evt);
+                }
+                if(!panel.isValidClassname()) {
+                    throw new PropertyVetoException(NbBundle.getMessage(ActionEditor.class,"ActionEditor.createMethodError.invalidClassname"),evt);
+                }
+                if(panel.isDuplicateMethod()) {
+                    throw new PropertyVetoException(NbBundle.getMessage(ActionEditor.class,"ActionEditor.createMethodError.duplicateMethod",panel.getNewMethodName()),evt);
+                }
             }
             ProxyAction act = createNewAction();
             panel.setMode(ActionPropertyEditorPanel.Mode.Form);

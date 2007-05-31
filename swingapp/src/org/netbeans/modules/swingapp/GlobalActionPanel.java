@@ -597,9 +597,17 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
                 editor.createNewAction();
                 break;
             } else {
-                //josh: need to update this to handle all of the things that could
-                // go wrong
-                JOptionPane.showMessageDialog(d, "Method name cannot be empty");
+                String message = "UNKNOWN ERROR";
+                if(!panel.isMethodNonEmpty()) {
+                    message = NbBundle.getMessage(ActionEditor.class,"ActionEditor.createMethodError.emptyMethod");
+                } else if(panel.doesMethodContainBadChars()) {
+                    message = NbBundle.getMessage(ActionEditor.class,"ActionEditor.createMethodError.invalidName",panel.getNewMethodName());
+                } else if(!panel.isValidClassname()) {
+                    message = NbBundle.getMessage(ActionEditor.class,"ActionEditor.createMethodError.invalidClassname");
+                } else if(panel.isDuplicateMethod()) {
+                    message = NbBundle.getMessage(ActionEditor.class,"ActionEditor.createMethodError.duplicateMethod",panel.getNewMethodName());
+                }
+                JOptionPane.showMessageDialog(d, message);
                 d.setVisible(true);
             }
         }

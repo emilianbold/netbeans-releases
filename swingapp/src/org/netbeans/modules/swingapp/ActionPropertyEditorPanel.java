@@ -1045,8 +1045,8 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
             actionsCombo.setEnabled(true);
         }
     }
-        
-    boolean canCreateNewAction() {
+     
+    boolean isMethodNonEmpty() {
         newMethodName = methodField.getText();
         if(newMethodName == null) {
             return false;
@@ -1054,13 +1054,71 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         if(newMethodName.trim().equals("")) { //NOI18N
             return false;
         }
+        return true;
+    }
+    
+    boolean doesMethodContainBadChars() {
+        newMethodName = methodField.getText();        
+        if(newMethodName.contains(" ")) { //NOI18N
+            return true;
+        }
+        if(newMethodName.matches("^\\d.*")) { //NOI18N
+            return true;
+        }
+        return false;
+    }
+    
+    boolean isValidClassname() {
+        String classname = getSelectedClassname();
+        if(classname == null) { return false; }
+        if(classname.trim().equals("")) { return false; }
+        return true;
+    }
+    
+    boolean isDuplicateMethod() {
+        newMethodName = methodField.getText();
+        String classname = getSelectedClassname();
+        if(classname == null) { return true; }
+        if(classname.trim().equals("")) { return true; }
+        
+        
+        ActionManager am = ActionManager.getActionManager(sourceFile);
+        System.out.println("checking for dupe: " + newMethodName);
+        if(am.isExistingMethod(classname, newMethodName)) {
+            System.out.println("is dup");
+            return true;
+        }
+        return false;
+    }
+    
+    
+    
+    boolean canCreateNewAction() {
+        newMethodName = methodField.getText();
+        
+        /*
+        if(newMethodName == null) {
+            return false;
+        }
+        if(newMethodName.trim().equals("")) { //NOI18N
+            return false;
+        }*/
+        if(!isMethodNonEmpty()) { 
+            return false;
+        }
+        
+        /*
         if(newMethodName.contains(" ")) { //NOI18N
             return false;
         }
         if(newMethodName.matches("^\\d.*")) { //NOI18N
             return false;
+        }*/
+        if(doesMethodContainBadChars()) {
+            return false;
         }
         
+        /*
         String classname = getSelectedClassname();
         if(classname == null) { return false; }
         if(classname.trim().equals("")) { return false; }
@@ -1069,13 +1127,20 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         ActionManager am = ActionManager.getActionManager(sourceFile);
         if(am.isExistingMethod(classname, newMethodName)) {
             return false;
+        }*/
+        if(!isValidClassname()) {
+            return false;
+        }
+        
+        if(isDuplicateMethod()) {
+            return false;
         }
         
         return true;
     }
         
     String getNewMethodName() {
-        return newMethodName;
+        return methodField.getText();
     }
         
     private class DirtyDocumentListener implements DocumentListener {
