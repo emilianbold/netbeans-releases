@@ -18,40 +18,33 @@
  */
 package org.netbeans.modules.vmd.midp.components.sources;
 
-import org.netbeans.modules.vmd.api.model.*;
-import org.netbeans.modules.vmd.api.model.support.ArraySupport;
-import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
-import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
-import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
-import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
-import org.netbeans.modules.vmd.midp.components.MidpTypes;
-import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
-import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
-import org.netbeans.modules.vmd.midp.components.MidpVersionable;
+import org.netbeans.modules.vmd.api.inspector.common.RenameAction;
+import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
+import org.netbeans.modules.vmd.api.model.presenters.actions.*;
+import org.netbeans.modules.vmd.api.model.support.ArraySupport;
+import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
+import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
+import org.netbeans.modules.vmd.midp.components.*;
 import org.netbeans.modules.vmd.midp.components.displayables.ListCD;
 import org.netbeans.modules.vmd.midp.components.elements.ElementSupport;
 import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.netbeans.modules.vmd.midp.flow.FlowEventSourcePinPresenter;
 import org.netbeans.modules.vmd.midp.flow.FlowListElementPinOrderPresenter;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
-import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
+import org.netbeans.modules.vmd.midp.general.FileAcceptPresenter;
 import org.netbeans.modules.vmd.midp.inspector.controllers.ComponentsCategoryPC;
 import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
+import org.netbeans.modules.vmd.midp.screen.display.ListElementEventSourceDisplayPresenter;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.ArrayList;
-import org.netbeans.modules.vmd.api.inspector.common.RenameAction;
-import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
-import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenterForwarder;
-import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteAction;
-import org.netbeans.modules.vmd.midp.general.FileAcceptPresenter;
-import org.netbeans.modules.vmd.midp.components.MidpAcceptTrensferableKindPresenter;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
-import org.netbeans.modules.vmd.midp.screen.display.ListElementEventSourceDisplayPresenter;
 
 /**
  * @author David Kaspar
@@ -109,68 +102,6 @@ public final class ListElementEventSourceCD extends ComponentDescriptor {
 
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
-            // info
-            
-            // info
-            
-            // info
-            
-            // info
-            
-            // info
-            
-            // info
-            
-            // info
-            
-            // info
-            
-            // info
-            
-            // info
-            
-            // info
-            
-            // info
-            
-            // info
-            
-            // info
-            
-            // info
-            
-            // info
-            
-            // info
-            
-            // info
-            
-            // info
-            
-            // info
-            
-            // info
-            
-            // info
-            
-            // info
-            
-            // info
-            
-            // info
-            
-            // info
-            
-            // info
-            
-            // info
-            
-            // info
-            
-            // info
-            
-            // info
-            
             // info
             InfoPresenter.create (ElementSupport.createListElementInfoResolver ()),
             // properties
