@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.vmd.midp.components.categories;
 
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.AddAction;
@@ -27,6 +26,7 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
 
 /**
  * @author David Kaspar
@@ -50,7 +50,7 @@ public final class CategoryCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
             // inspector
-            InspectorFolderPresenter.create(false),
+            new InspectorFolderComponentPresenter(false),
             // actions
             ActionsPresenter.create(10, AddAction.getInstance()),
             // delete

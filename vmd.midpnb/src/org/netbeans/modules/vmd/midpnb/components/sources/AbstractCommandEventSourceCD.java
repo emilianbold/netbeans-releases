@@ -29,6 +29,7 @@ import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
 import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
@@ -67,7 +68,7 @@ public class AbstractCommandEventSourceCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             //inspector
-            InspectorFolderPresenter.create(false),    
+            new InspectorFolderComponentPresenter(true),   
             // delete
             DeleteDependencyPresenter.createDependentOnParentComponentPresenter (),
             DeletePresenter.createUserIndeliblePresenter ()

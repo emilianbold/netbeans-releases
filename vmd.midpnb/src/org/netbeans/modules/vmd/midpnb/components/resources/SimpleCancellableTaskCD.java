@@ -23,7 +23,6 @@ import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.codegen.CodeWriter;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
 import org.netbeans.modules.vmd.api.codegen.Parameter;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.inspector.common.FolderPositionControllerFactory;
 import org.netbeans.modules.vmd.api.model.*;
@@ -40,6 +39,7 @@ import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScree
 
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
 
 
 /**
@@ -101,7 +101,7 @@ public class SimpleCancellableTaskCD extends ComponentDescriptor {
             createSetterPresenter (),
             MidpCodePresenterSupport.createAddImportPresenter (),
              // inspector
-            InspectorFolderPresenter.create(true),
+            new InspectorFolderComponentPresenter(true),
             InspectorPositionPresenter.create(new ResourcePC (), FolderPositionControllerFactory.createHierarchical()),
             // screen
             new ResourceSRItemPresenter ()

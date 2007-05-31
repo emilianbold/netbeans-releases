@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.vmd.midp.components.resources;
 
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.inspector.common.FolderPositionControllerFactory;
 import org.netbeans.modules.vmd.api.model.*;
@@ -30,6 +29,7 @@ import org.netbeans.modules.vmd.midp.screen.ResourceSRItemPresenter;
 
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
 
 
 /**
@@ -61,7 +61,7 @@ public final class ResourceCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
             // inspector
-            InspectorFolderPresenter.create(true),
+            new InspectorFolderComponentPresenter(true),
             InspectorPositionPresenter.create(new ResourcePC(), FolderPositionControllerFactory.createHierarchical()),
             // screen
             new ResourceSRItemPresenter ()

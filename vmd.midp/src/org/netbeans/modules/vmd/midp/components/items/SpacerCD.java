@@ -43,6 +43,7 @@ import org.netbeans.modules.vmd.midp.screen.display.SpacerDisplayPresenter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
 
 /**
  *
@@ -121,7 +122,7 @@ public class SpacerCD extends ComponentDescriptor {
                 createPropertiesPresenter(),
                 // code
                 createSetterPresenter(),
-                InspectorFolderPresenter.create(true),
+                new InspectorFolderComponentPresenter(true),
                 // screen
                 new SpacerDisplayPresenter()
                 );

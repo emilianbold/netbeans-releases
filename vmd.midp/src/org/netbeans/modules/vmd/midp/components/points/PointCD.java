@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.vmd.midp.components.points;
 
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
@@ -26,6 +25,7 @@ import org.netbeans.modules.vmd.midp.inspector.controllers.PointPC;
 
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
 
 /**
  * @author David Kaspar
@@ -50,7 +50,7 @@ public final class PointCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList(
             //inspector
-            InspectorFolderPresenter.create(false),
+            new InspectorFolderComponentPresenter(false),
             InspectorPositionPresenter.create(new PointPC(), null)
         );
     }

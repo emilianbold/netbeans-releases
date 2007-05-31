@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.vmd.midp.components.elements;
 
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
@@ -35,6 +34,7 @@ import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
@@ -106,7 +106,7 @@ public final class ChoiceElementCD extends ComponentDescriptor {
             // general
             InfoPresenter.create(ElementSupport.createChoiceElementInfoResolver()),
             //inspector
-            InspectorFolderPresenter.create(false),
+            new InspectorFolderComponentPresenter(true),
             InspectorPositionPresenter.create(new ComponentsCategoryPC(MidpInspectorSupport.TYPEID_ELEMENTS)),
             //properties
             createPropertiesPresenter(),

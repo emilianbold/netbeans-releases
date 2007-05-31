@@ -20,7 +20,6 @@
 package org.netbeans.modules.vmd.midpnb.components.svg;
 
 import org.netbeans.modules.vmd.api.codegen.*;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.inspector.common.FolderPositionControllerFactory;
 import org.netbeans.modules.vmd.api.model.*;
@@ -40,6 +39,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
 import org.netbeans.modules.vmd.midp.screen.ResourceSRItemPresenter;
 
 
@@ -135,7 +135,7 @@ public class SVGImageCD extends ComponentDescriptor {
                 createSetterPresenter(),
                 MidpCodePresenterSupport.createAddImportPresenter(),
                 // inspector
-                InspectorFolderPresenter.create(true),
+                new InspectorFolderComponentPresenter(true),
                 InspectorPositionPresenter.create(new ResourcePC(), FolderPositionControllerFactory.createHierarchical()),
                 // screen
                 new ResourceSRItemPresenter()       

@@ -20,7 +20,6 @@ package org.netbeans.modules.vmd.midp.components.commands;
 
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.inspector.common.FolderPositionControllerFactory;
 import org.netbeans.modules.vmd.api.model.*;
@@ -41,6 +40,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
 
 /**
  * @author David Kaspar
@@ -131,7 +131,7 @@ public final class CommandCD extends ComponentDescriptor {
             // action
             EditDependencyPresenter.createEditablePresenter(),
             // inspector
-            InspectorFolderPresenter.create(true),
+            new InspectorFolderComponentPresenter(true),
             InspectorPositionPresenter.create(FolderPositionControllerFactory.createHierarchical()),
             // code
             createSetterPresenter ()

@@ -20,7 +20,6 @@
 package org.netbeans.modules.vmd.midp.components.items;
 
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.inspector.common.ArrayPropertyOrderingController;
@@ -53,6 +52,7 @@ import org.netbeans.modules.vmd.midp.screen.DisplayableResourceCategoriesPresent
 import org.netbeans.modules.vmd.midp.screen.display.ItemDisplayPresenter;
 
 import java.util.*;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
 
 
 /**
@@ -168,7 +168,7 @@ public class ItemCD extends ComponentDescriptor {
                 // properties
                 createPropertiesPresenter(),
                 // inspector
-                InspectorFolderPresenter.create(true),
+                new InspectorFolderComponentPresenter(true),
                 InspectorPositionPresenter.create(new ComponentsCategoryPC(MidpInspectorSupport.TYPEID_ELEMENTS)),
                 MidpInspectorSupport.createComponentCommandsCategory(createOrderingArrayController(), CommandCD.TYPEID),
                 // accept

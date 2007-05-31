@@ -21,7 +21,6 @@ package org.netbeans.modules.vmd.midp.components.general;
 import org.netbeans.modules.vmd.api.codegen.CodeNamePresenter;
 import org.netbeans.modules.vmd.api.flow.FlowScenePresenter;
 import org.netbeans.modules.vmd.api.flow.visual.FlowDescriptor;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
 import org.netbeans.modules.vmd.api.inspector.InspectorOrderingPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
@@ -43,6 +42,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorVersion;
 import java.awt.datatransfer.Transferable;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
 
 /**
  * @author David Kaspar
@@ -101,7 +101,7 @@ public final class RootCD extends ComponentDescriptor {
             // validator
             InstanceNameResolver.createValidatorPresenter (),
             // inspector
-            InspectorFolderPresenter.create(false),
+            new InspectorFolderComponentPresenter(false),
             InspectorPositionPresenter.create(new RootPC()),
             InspectorOrderingPresenter.create(creatOrderingControllers()),
             // flow

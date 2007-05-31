@@ -33,6 +33,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
 import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
@@ -94,7 +95,7 @@ public final class ListSelectCommandEventSourceCD extends ComponentDescriptor {
             // delete
             DeletePresenter.createUserIndeliblePresenter(),
             //inspector
-            InspectorFolderPresenter.create(false)
+            new InspectorFolderComponentPresenter(false)
         );
     }
 

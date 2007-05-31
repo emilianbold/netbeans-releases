@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.vmd.midp.components.handlers;
 
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.inspector.common.FolderPositionControllerFactory;
 import org.netbeans.modules.vmd.api.model.*;
@@ -33,6 +32,7 @@ import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
 
 /**
  * @author David Kaspar
@@ -68,7 +68,7 @@ public final class EventHandlerCD extends ComponentDescriptor {
             //properties
             PropertiesPresenterForwarder.createByNames(PROP_EVENT_SOURCE, EventSourceCD.PROP_EVENT_HANDLER),
             // inspector
-            InspectorFolderPresenter.create(false),
+            new InspectorFolderComponentPresenter(false),
             InspectorPositionPresenter.create( FolderPositionControllerFactory.createHierarchical()),
             // delete
             DeleteDependencyPresenter.createDependentOnParentComponentPresenter (),

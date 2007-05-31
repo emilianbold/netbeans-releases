@@ -20,7 +20,6 @@ package org.netbeans.modules.vmd.midp.components.sources;
 
 import org.netbeans.modules.vmd.api.codegen.CodeMultiGuardedLevelPresenter;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionController;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.model.*;
@@ -41,6 +40,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.eventhandler.PropertyEditor
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
 
 /**
  * @author David Kaspar
@@ -90,7 +90,7 @@ public final class EventSourceCD extends ComponentDescriptor {
             // properties
             createPropertiesPresenter (),
             //inspector
-            InspectorFolderPresenter.create(true),
+            new InspectorFolderComponentPresenter(true),
             InspectorPositionPresenter.create(createPositionControllers()),
             // accept
             new AcceptTypePresenter(EventHandlerCD.TYPEID) {

@@ -42,6 +42,7 @@ import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorTableModel;
 
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
 
 /**
  *
@@ -104,7 +105,7 @@ public class SimpleTableModelCD extends ComponentDescriptor {
             createSetterPresenter (),
             MidpCodePresenterSupport.createAddImportPresenter (),
              // inspector
-            InspectorFolderPresenter.create(true),
+            new InspectorFolderComponentPresenter(true),
             InspectorPositionPresenter.create(new ResourcePC(), FolderPositionControllerFactory.createHierarchical()),
              // screen
             new ResourceSRItemPresenter()

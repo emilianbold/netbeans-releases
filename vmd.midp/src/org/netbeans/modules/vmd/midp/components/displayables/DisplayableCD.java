@@ -19,7 +19,6 @@
 package org.netbeans.modules.vmd.midp.components.displayables;
 
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
 import org.netbeans.modules.vmd.api.inspector.common.ArrayPropertyOrderingController;
 import org.netbeans.modules.vmd.api.model.*;
@@ -49,6 +48,7 @@ import org.netbeans.modules.vmd.midp.screen.display.DisplayableDisplayPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.injector.TickerInjectorPresenter;
 
 import java.util.*;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpAcceptTrensferableKindPresenter;
 
 /**
@@ -128,7 +128,7 @@ public final class DisplayableCD extends ComponentDescriptor {
             // properties
             createPropertiesPresenter (),
             // inspector
-            InspectorFolderPresenter.create(true),
+            new InspectorFolderComponentPresenter(true),
             MidpInspectorSupport.createComponentCommandsCategory(createOrderingArrayController(), CommandCD.TYPEID),
             // action
             EditDependencyPresenter.createEditablePresenter(),    

@@ -27,6 +27,7 @@ import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.openide.util.Utilities;
 import java.util.List;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderCategoryPresenter;
 
 /**
  *
@@ -48,7 +49,7 @@ public final class MidpInspectorSupport {
     //Ordering inside of category by array property defined by propertyName
     public static final Presenter createComponentCategory(String categoryName, TypeID folderTypeID, Image icon, List<InspectorOrderingController> orderingControllers, TypeID... filtersTypeID) {
         
-        return InspectorFolderPresenter.create(categoryName, 
+        return new InspectorFolderCategoryPresenter(categoryName, 
                                                folderTypeID,
                                                icon,
                                                filtersTypeID,
