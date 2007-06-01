@@ -12,7 +12,6 @@ package org.netbeans.modules.xml.refactoring;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -26,17 +25,20 @@ import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.Transaction;
 import org.netbeans.modules.xml.refactoring.impl.UndoRedoProgress;
 import org.netbeans.modules.xml.refactoring.spi.RefactoringUtil;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.retriever.catalog.ProjectCatalogSupport;
+import org.netbeans.modules.xml.xam.AbstractModel;
 import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.EmbeddableRoot;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Nameable;
 import org.netbeans.modules.xml.xam.NamedReferenceable;
 import org.netbeans.modules.xml.xam.Referenceable;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
+import org.netbeans.modules.xml.xam.dom.DocumentModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -59,6 +61,7 @@ public class XMLRefactoringTransaction implements Transaction {
      //For delete refactoring we need to save the model since it wont be available after delete for undo/redo
     Model targetModel;
     boolean isLocal = false;
+    private UndoManager previewUndoManager, targetPreviewUndoManager;
     
     
     
@@ -202,21 +205,7 @@ public class XMLRefactoringTransaction implements Transaction {
         }
     }
     
-    private Map<Model, Set<RefactoringElementImplementation>> getModels(){
-        Map<Model, Set<RefactoringElementImplementation>> results = new HashMap<Model, Set<RefactoringElementImplementation>>();
-        for(RefactoringElementImplementation element:elements){
-           Model model = ((Component)element.getLookup().lookup(Component.class)).getModel();
-           Set<RefactoringElementImplementation> elementsInModel = results.get(model);
-           if(elementsInModel == null){
-               elementsInModel = new HashSet<RefactoringElementImplementation>();
-               elementsInModel.add(element);
-               results.put(model, elementsInModel);
-           } else
-               elementsInModel.add(element);
-        }
-        return results;
-    }
-    
+       
     private synchronized void addUndoableRefactorListener(Model model) {
         if (undoManagers == null) {
             undoManagers = new HashMap<Model,UndoManager>();
@@ -302,13 +291,15 @@ public class XMLRefactoringTransaction implements Transaction {
        }
        
        private void refreshCatalogModel( FileObject referencedFO) {
+        //   Map<Model, Set<RefactoringElementImplementation>> modelsInRefactoring = SharedUtils.getModelMap(elements);
            Map<Model, Set<RefactoringElementImplementation>> modelsInRefactoring = getModels();
            Set<Model> models = modelsInRefactoring.keySet();
            for (Model ug : models) {
             FileObject referencingFO = ug.getModelSource().getLookup().lookup(FileObject.class);
             ProjectCatalogSupport pcs = SharedUtils.getCatalogSupport(referencingFO);
             if (pcs == null) continue;
-            for (Component uc : getRefactorComponents()) {
+            Set<RefactoringElementImplementation> elems = modelsInRefactoring.get(ug);
+            for (Component uc : getRefactorComponents(elems)) {
                 String reference = getModelReference(uc);
                 if (reference == null) continue;
                 try {
@@ -322,9 +313,9 @@ public class XMLRefactoringTransaction implements Transaction {
         }
        }
            
-        private List<Component> getRefactorComponents() {
+       private List<Component> getRefactorComponents(Set<RefactoringElementImplementation> elementImpls) {
             List<Component> ret = new ArrayList<Component>();
-            for(RefactoringElementImplementation element:elements){
+            for(RefactoringElementImplementation element:elementImpls){
                 if(element.isEnabled())
                     ret.add( (Component)element.getLookup().lookup(Component.class));
             }
@@ -351,7 +342,85 @@ public class XMLRefactoringTransaction implements Transaction {
         fo = SharedUtils.renameFile(fo, oldName);
         refreshCatalogModel(fo);
     }
+    
+       
+    public String refactorForPreview(Model model){
+        try {
+             Map<Model, Set<RefactoringElementImplementation>> modelsInRefactoring = getModels();
+             Model mod = null;
+                     
+             //This takes care of WSDL model with embedded schema imports
+             if(model instanceof DocumentModel) {
+                 Component c = ((DocumentModel)model).getRootComponent();
+                 if(c instanceof EmbeddableRoot) {
+                     if(  ( (EmbeddableRoot)c).getForeignParent() != null )
+                        mod = ( (EmbeddableRoot)c).getForeignParent().getModel();
+                     
+                 }
+             } 
+             
+            if(mod == null)
+               mod = model;
+             Set<RefactoringElementImplementation> elements = modelsInRefactoring.get(mod);
+             ArrayList<RefactoringElementImplementation> elementsForRefactoring = new ArrayList<RefactoringElementImplementation>(elements);
+             
+             //for file rename, we dont need to refactor the target
+             if( !(target instanceof Model && request instanceof RenameRefactoring)) {
+                 targetModel.startTransaction();
+                 doRefactorTarget();
+             }
+            
+             if(targetModel != mod) {
+                 mod.startTransaction();
+             }
+             for (XMLRefactoringPlugin plugin : plugins) {
+                 plugin.doRefactoring(elementsForRefactoring);
+             }
+         
+             String refactoredString = ( (AbstractDocumentModel)mod).getAccess().getCurrentDocumentText(); 
+             if( !(target instanceof Model && request instanceof RenameRefactoring)) {
+                 ( (AbstractModel)targetModel).rollbackTransaction();
+              }
+            ((AbstractModel)mod).rollbackTransaction();
+                       
+            return refactoredString;
+                  
+        }  catch (Exception e){
+            String msg = e.getMessage();
+            e.printStackTrace();
+       }
+        return "";
       
+    }
+    
+        
+     private Map<Model, Set<RefactoringElementImplementation>> getModels(){
+        Map<Model, Set<RefactoringElementImplementation>> results = new HashMap<Model, Set<RefactoringElementImplementation>>();
+        for(RefactoringElementImplementation element:elements){
+           Component comp = element.getLookup().lookup(Component.class);
+           Model model = null;
+           //First group the RE by Foreign Model, if no Foreign Model, then group by Model
+           //This takes care of WSDL model with embedded schema imports
+           if(comp.getModel() instanceof DocumentModel) {
+               Component c = ((DocumentModel)comp.getModel()).getRootComponent();
+               if(c instanceof EmbeddableRoot) {
+                     if(  ( (EmbeddableRoot)c).getForeignParent() != null )
+                        model = ( (EmbeddableRoot)c).getForeignParent().getModel();
+                     
+               }
+           } 
+           if(model == null)
+               model = comp.getModel();
+           Set<RefactoringElementImplementation> elementsInModel = results.get(model);
+           if(elementsInModel == null){
+               elementsInModel = new HashSet<RefactoringElementImplementation>();
+               elementsInModel.add(element);
+               results.put(model, elementsInModel);
+           } else
+               elementsInModel.add(element);
+        }
+        return results;
+    }
        
        
   }
