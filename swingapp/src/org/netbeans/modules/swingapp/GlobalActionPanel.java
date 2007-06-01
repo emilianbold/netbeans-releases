@@ -73,12 +73,15 @@ import org.openide.windows.WindowManager;
  * @author  joshua.marinacci@sun.com
  */
 public class GlobalActionPanel extends javax.swing.JPanel {
+    private static final boolean DEBUG = false;
     private ActionManager actionManager;
     
     private ActionManager.ActionChangedListener actChangeListener = new ActionManager.ActionChangedListener() {
         public void actionChanged(ProxyAction action) {
             if(realModel != null) {
+                int row = getSelectedRow();
                 realModel.updateAction(action);
+                setSelectedRow(row);
             }
         }
     };
@@ -525,8 +528,8 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     }
     
     private void editSelectedAction() {
-        
         final ProxyAction act = getSelectedAction();
+        int row = getSelectedRow();
         if(act == null) { return; }
         String defClassName = act.getClassname();
         ActionEditor editor = new ActionEditor(actionManager.getFileForClass(defClassName));
@@ -542,7 +545,9 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
             try {
                 PropertyChangeEvent evt = new PropertyChangeEvent(this,"action",act,editor.getValue());
                 editor.confirmChanges(evt); // this updates
-                reloadTable();
+                //reloadTable(); // it should automatically reload the table when the actionmanager is updated
+                //reselect the original action
+                setSelectedRow(row);//(ProxyAction)editor.getValue());
             } catch (IllegalArgumentException ex) {
                 ErrorManager.getDefault().notify(ex);
             } catch (PropertyVetoException vex) {
@@ -556,6 +561,11 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         if(act == null) return;
         actionManager.jumpToActionSource(act);
     }
+    
+    private int getSelectedRow() {
+        return actionTable.getSelectedRow();
+    }
+    
     private ProxyAction getSelectedAction() {
         int row = actionTable.getSelectedRow();
         if(row < 0) {
@@ -567,6 +577,10 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         ActionTableModel model = (ActionTableModel) filter.getTableModel();
         ProxyAction act = model.getAction(row);
         return act;
+    }
+    
+    private void setSelectedRow(int row) {
+        actionTable.getSelectionModel().setSelectionInterval(row, row);
     }
     
     private void deleteSelectedAction() {
@@ -752,6 +766,11 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     
     private PropertyChangeListener topcompsListener;
     
+    private static void p(String s) {
+        if(DEBUG) {
+            System.out.println(s);
+        }
+    }
     private PropertyChangeListener amListener;
     private void switchedToTopComponent(TopComponent active) {
         if(active == null) { return; }
@@ -771,16 +790,19 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
                 }
             };
         }
-        
-        if(actionManager != null) {
-            actionManager.removePropertyChangeListener(amListener);
-            actionManager.removeActionChangedListener(actChangeListener);
-        }
-        actionManager = ActionManager.getActionManager(fo);
-        if(actionManager != null) {
-            actionManager.addPropertyChangeListener(amListener);
-            actionManager.addActionChangedListener(actChangeListener);
-            refresh();
+
+        // refresh everything if the action manager changed
+        if(actionManager != ActionManager.getActionManager(fo)) {
+            if(actionManager != null) {
+                actionManager.removePropertyChangeListener(amListener);
+                actionManager.removeActionChangedListener(actChangeListener);
+            }
+            actionManager = ActionManager.getActionManager(fo);
+            if(actionManager != null) {
+                actionManager.addPropertyChangeListener(amListener);
+                actionManager.addActionChangedListener(actChangeListener);
+                refresh();
+            }
         }
     }
     

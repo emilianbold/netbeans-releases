@@ -287,6 +287,10 @@ public final class TableSorter extends AbstractTableModel {
         }
         return modelToView;
     }
+    
+    public int viewIndex(int modelIndex) {
+        return getModelToView()[modelIndex];
+    }
 
     // TableModel interface methods 
 

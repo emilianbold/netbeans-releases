@@ -93,6 +93,7 @@ public class ActionManager {
     private static Map<ActionManager, Project> reverseams;
     
     private static ActionManager emptyActionManager = new ActionManager(null);
+    private static final boolean DEBUG = false;
 
     public static synchronized ActionManager getActionManager(FileObject fileInProject) {
         if(ams == null) {
@@ -596,6 +597,12 @@ public class ActionManager {
         }
     }
     
+    private static void p(String s) {
+        if(DEBUG) {
+            System.out.println(s);
+        }
+    }
+    
     public void updateAction(ProxyAction action) {
         List<ProxyAction> actions = getActions(action.getClassname(), false);
         boolean replaced = false;
@@ -1074,8 +1081,12 @@ public class ActionManager {
     /** attach a RAD component to the specified action. This will
      * trigger an update to any listeners. */
     public void addRADComponent(ProxyAction act, RADComponent comp) {
+        if(comp == null) return;
         if(!boundComponents.containsKey(getKey(act))) {
             boundComponents.put(getKey(act),new ArrayList<RADComponent>());
+        }
+        if(boundComponents.get(getKey(act)).contains(comp)) {
+            return;
         }
         boundComponents.get(getKey(act)).add(comp);
         fireActionChanged(act);
