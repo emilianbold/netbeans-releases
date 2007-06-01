@@ -37,11 +37,12 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-
-   <testbag testattribs="validation, jv" executor="ide" name="testbag_binding">
+    
+    <testbag testattribs="validation, jv" executor="ide" name="testbag_binding">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/binding/SimpleBeansBinding.class"/>
+                <include name="org/netbeans/qa/form/binding/AdvancedBeansBinding.class"/>
             </patternset>
         </testset>
     </testbag>

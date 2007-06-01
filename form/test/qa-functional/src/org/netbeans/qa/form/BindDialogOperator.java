@@ -32,7 +32,14 @@ public class BindDialogOperator extends JDialogOperator {
     private JTabbedPaneOperator _tbdPane;
     private JComboBoxOperator _cboBindSource;
     private JComboBoxOperator _cboBindExpression;
+    private JComboBoxOperator _cboUpdateMode;
     private JTextFieldOperator _txtBindExpression;
+    private JCheckBoxOperator _chbNullValue;
+    private JCheckBoxOperator _chbIncompletePathValue;    
+    
+    public static String READ_WRITE_UPDATE_MODE = "(read/write)";
+    public static String READ_ONLY_UPDATE_MODE = "(read-only)";
+    public static String READ_ONCE_UPDATE_MODE = "(read once)";
 
     /**
      * Creates new instance using default name
@@ -69,6 +76,17 @@ public class BindDialogOperator extends JDialogOperator {
         return _cboBindSource;
     }
 
+    
+    /** Tries to find JComboBoxOperator in Advanced tab.
+     * @return JComboBoxOperator
+     */
+    private JComboBoxOperator cboUpdateMode() {
+        if (_cboUpdateMode ==null) {
+            _cboUpdateMode = new JComboBoxOperator(tbdPane(),0);
+        }
+        return _cboUpdateMode;
+    }
+    
     /** Tries to find JComboBoxOperator in this dialog.
      * @return JComboBoxOperator
      */
@@ -108,27 +126,149 @@ public class BindDialogOperator extends JDialogOperator {
         }
         return _btOk;
     }
+
+    /** Tries to find JCheckBoxOperator in Advanced tab.
+     * @return JCheckBoxOperator
+     */
+    public JCheckBoxOperator chbNullValue() {
+        if (_chbNullValue == null) {
+            _chbNullValue = new JCheckBoxOperator(tbdPane(), "Null"); // NOI18N
+        }
+        return _chbNullValue;
+    }
+
+    /** Tries to find JCheckBoxOperator in Advanced tab.
+     * @return JCheckBoxOperator
+     */
+    public JCheckBoxOperator chbIncompletePathValue() {
+        if (_chbIncompletePathValue == null) {
+            _chbIncompletePathValue = new JCheckBoxOperator(tbdPane(), "Incomplete"); // NOI18N
+        }
+        return _chbIncompletePathValue;
+    }
     
-    /** clicks Cancel button */
+    /** Clicks Cancel button */
     public void cancel() {
         btCancel().push();
     }
 
-    /** clicks OK button */
+    /** Clicks OK button */
     public void ok() {
         btOk().push();
+    }
+
+    /** Clicks Null Value checkbox */
+    public void selectNullValue() {
+        if (!chbNullValue().isSelected())
+            chbNullValue().clickMouse();
+    }
+
+    /** Unselect Incomplete Path Value checkbox */
+    public void unselectNullValue() {
+        if (chbNullValue().isSelected())
+            chbNullValue().clickMouse();
+    }
+    
+    /** Select Incomplete Path Value checkbox */
+    public void selectIncompletePathValue() {
+        if (!chbIncompletePathValue().isSelected())
+            chbIncompletePathValue().clickMouse();
+    }
+    
+    /** Unselect Incomplete Path Value checkbox */
+    public void unselectIncompletePathValue() {
+        if (chbIncompletePathValue().isSelected())
+            chbIncompletePathValue().clickMouse();
+    }
+    
+    /** Set Null Value text */
+    public void setNullValueText(String text) {
+        // TODO: remove this ID and get button better way        
+        new JButtonOperator(tbdPane(), 2).pushNoBlock();
+        setTextIntoValueDialog(text);        
+    }
+
+    /** Get Null Value text */
+    public String getNullValueText() {
+        // TODO: remove this ID and get button better way        
+        new JButtonOperator(tbdPane(), 2).pushNoBlock();
+        return getTextIntoValueDialog();
+    }
+    
+    /** Set Incomplete Path Value text */
+    public void setIncompletePathValueText(String text) {
+        // TODO: remove this ID and get button better way
+        new JButtonOperator(tbdPane(), 2).pushNoBlock();
+        setTextIntoValueDialog(text);
+    }
+
+    /** get Incomplete Path Value text */
+    public String getIncompletePathValueText() {
+        // TODO: remove this ID and get button better way        
+        new JButtonOperator(tbdPane(), 2).pushNoBlock();
+        return getTextIntoValueDialog();
+    }
+    
+    private void setTextIntoValueDialog(String text) {
+        JDialogOperator dialog = new JDialogOperator("Value");
+        new JTextAreaOperator(dialog).setText(text);
+        new JCheckBoxOperator(dialog).setSelected(true);
+        new JButtonOperator(dialog, "OK").push();
+    }
+
+    private String getTextIntoValueDialog() {
+        JDialogOperator dialog = new JDialogOperator("Value");
+        String result = (new JTextAreaOperator(dialog)).getText();
+        new JButtonOperator(dialog, "Cancel").push();
+        return result;
+    }
+    
+    public void selectAdvancedTab() {
+        tbdPane().selectPage(1);
+    }
+    
+    public void selectBindingTab() {
+        tbdPane().selectPage(0);
     }
     
     /** selects binding source */
     public void selectBindSource(String item) {
         cboBindSource().selectItem(item);
     }
+
+    /** selects update mode */
+    public void selectUpdateMode(String item) {
+        cboUpdateMode().selectItem(item);
+    }
+
+    /** selects update mode */
+    public void selectReadWriteUpdateMode() {
+        cboUpdateMode().selectItem(READ_WRITE_UPDATE_MODE);
+    }
+
+    /** selects update mode */
+    public void selectReadOnlyUpdateMode() {
+        cboUpdateMode().selectItem(READ_ONLY_UPDATE_MODE);
+    }
+
+    /** selects update mode */
+    public void selectReadOnceUpdateMode() {
+        cboUpdateMode().selectItem(READ_ONCE_UPDATE_MODE);
+    }
+    
     
     /** gets selected binding source
      * @return String text
      */    
     public String getSelectedBindSource() {
         return cboBindSource().getSelectedItem().toString();
+    }
+
+    /** gets selected update mode
+     * @return String text
+     */    
+    public String getSelectedUpdateMode() {
+        return cboUpdateMode().getSelectedItem().toString();
     }
     
     /** sets binding expression */    
