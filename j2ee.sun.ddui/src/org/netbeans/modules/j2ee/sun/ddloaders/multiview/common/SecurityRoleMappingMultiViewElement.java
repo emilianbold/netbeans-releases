@@ -29,9 +29,6 @@ import org.netbeans.modules.xml.multiview.ui.SectionView;
  */
 public class SecurityRoleMappingMultiViewElement extends DDMultiViewElement {
 
-    /**
-     * Creates a new instance of DDMultiViewElement
-     */
     public SecurityRoleMappingMultiViewElement(SunDescriptorDataObject dataObject) {
         super(dataObject);
     }

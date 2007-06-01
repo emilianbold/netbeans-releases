@@ -18,10 +18,7 @@
  */
 package org.netbeans.modules.j2ee.sun.ddloaders.multiview.common;
 
-import java.util.HashSet;
-import java.util.Set;
 import org.netbeans.modules.j2ee.sun.dd.api.client.SunApplicationClient;
-import org.netbeans.modules.j2ee.sun.dd.api.common.ServiceRef;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.DDSectionNodeView;
@@ -31,11 +28,9 @@ import org.netbeans.modules.xml.multiview.SectionNode;
 /**
  * @author Peter Williams
  */
-public class ServiceRefView extends DDSectionNodeView {
+public class EnvironmentView extends DDSectionNodeView {
 
-    private final Set<ServiceRef> serviceRefCache = new HashSet<ServiceRef>();
-
-    public ServiceRefView(SunDescriptorDataObject dataObject) {
+    public EnvironmentView(SunDescriptorDataObject dataObject) {
         super(dataObject);
         
         if(!(rootDD instanceof SunWebApp || rootDD instanceof SunApplicationClient)) {
@@ -43,7 +38,9 @@ public class ServiceRefView extends DDSectionNodeView {
         }
         
         SectionNode [] children = new SectionNode [] { 
-            new ServiceRefGroupNode(this, rootDD, version)
+            new EjbRefGroupNode(this, rootDD, version),
+            new ResourceRefGroupNode(this, rootDD, version),
+            new ResourceEnvRefGroupNode(this, rootDD, version)
         };
        
         setChildren(children);

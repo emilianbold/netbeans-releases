@@ -50,6 +50,12 @@ public class BaseSectionNode extends SectionNode {
             "org/netbeans/modules/j2ee/sun/ddloaders/resources/EntityBean"; // NOI18N
     public static final String ICON_EJB_MDB_NODE =
             "org/netbeans/modules/j2ee/sun/ddloaders/resources/MessageBean"; // NOI18N
+    public static final String ICON_BASE_EJB_REF_NODE =
+            "org/netbeans/modules/j2ee/sun/ddloaders/resources/EjbRefIcon"; // NOI18N
+    public static final String ICON_BASE_RESOURCE_REF_NODE =
+            "org/netbeans/modules/j2ee/sun/ddloaders/resources/ResourceRefIcon"; // NOI18N
+    public static final String ICON_BASE_RESOURCE_ENV_REF_NODE =
+            "org/netbeans/modules/j2ee/sun/ddloaders/resources/ResourceEnvRefIcon"; // NOI18N
             
     protected final ASDDVersion version;
     

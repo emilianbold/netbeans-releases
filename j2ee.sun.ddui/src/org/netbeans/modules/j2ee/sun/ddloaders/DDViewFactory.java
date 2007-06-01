@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.appclient.SunAppClientOverviewMultiViewElement;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.EnvironmentMultiViewElement;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.SecurityRoleMappingMultiViewElement;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ServiceRefMultiViewElement;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.EjbMultiViewElement;
@@ -50,6 +51,7 @@ public abstract class DDViewFactory implements Serializable {
     public static final String EJB = "EJB"; // NOI18N
     public static final String SECURITY = "Security"; // NOI18N
     public static final String WSCLIENT = "WSClient"; // NOI18N
+    public static final String ENVIRONMENT = "Environment"; // NOI18N
     
     private static transient Map<DDType, DDViewFactory> factoryMap = new HashMap<DDType, DDViewFactory>();
     
@@ -75,6 +77,8 @@ public abstract class DDViewFactory implements Serializable {
     public MultiViewElement createElement(SunDescriptorDataObject dataObject, final String name) {
         if(name.equals(SECURITY)) {
             return new SecurityRoleMappingMultiViewElement(dataObject);
+        } else if(name.equals(ENVIRONMENT)) {
+            return new EnvironmentMultiViewElement(dataObject);
         } else if(name.equals(WSCLIENT)) {
             return new ServiceRefMultiViewElement(dataObject);
         }
@@ -101,6 +105,7 @@ public abstract class DDViewFactory implements Serializable {
             return new DDView[] {
                 new DDView(dataObject, OVERVIEW),
                 new DDView(dataObject, SERVLET),
+                new DDView(dataObject, ENVIRONMENT),
                 new DDView(dataObject, WSCLIENT),
                 new DDView(dataObject, SECURITY)
             };
@@ -184,6 +189,7 @@ public abstract class DDViewFactory implements Serializable {
             // TODO complete set of sun-application-client.xml multiview panels.
             return new DDView[] {
                 new DDView(dataObject, OVERVIEW),
+                new DDView(dataObject, ENVIRONMENT),
                 new DDView(dataObject, WSCLIENT)
             };
         }

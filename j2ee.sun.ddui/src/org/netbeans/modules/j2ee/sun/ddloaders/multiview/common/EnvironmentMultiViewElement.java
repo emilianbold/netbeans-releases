@@ -27,14 +27,14 @@ import org.netbeans.modules.xml.multiview.ui.SectionView;
 /**
  * @author Peter Williams
  */
-public class ServiceRefMultiViewElement extends DDMultiViewElement {
+public class EnvironmentMultiViewElement extends DDMultiViewElement {
 
-    public ServiceRefMultiViewElement(SunDescriptorDataObject dataObject) {
+    public EnvironmentMultiViewElement(SunDescriptorDataObject dataObject) {
         super(dataObject);
     }
 
     protected SectionView createView() {
-        return new ServiceRefView(dataObject);
+        return new EnvironmentView(dataObject);
     }
 
 }

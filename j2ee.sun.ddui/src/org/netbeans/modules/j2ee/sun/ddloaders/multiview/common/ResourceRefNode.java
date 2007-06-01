@@ -16,25 +16,28 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.j2ee.sun.ddloaders.multiview.common;
 
-import org.netbeans.modules.j2ee.sun.ddloaders.multiview.DDMultiViewElement;
-import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
-import org.netbeans.modules.xml.multiview.ui.SectionView;
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
+import org.netbeans.modules.j2ee.sun.dd.api.common.ResourceRef;
+import org.netbeans.modules.j2ee.sun.share.configbean.customizers.ResourceRefPanel;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 
 /**
  * @author Peter Williams
  */
-public class ServiceRefMultiViewElement extends DDMultiViewElement {
+public class ResourceRefNode extends NamedBeanNode {
 
-    public ServiceRefMultiViewElement(SunDescriptorDataObject dataObject) {
-        super(dataObject);
+    public ResourceRefNode(SectionNodeView sectionNodeView, final ResourceRef resourceRef, final ASDDVersion version) {
+        super(sectionNodeView, resourceRef, ResourceRef.RES_REF_NAME, ICON_BASE_RESOURCE_REF_NODE, version);
+        
+        enableRemoveAction();
     }
 
-    protected SectionView createView() {
-        return new ServiceRefView(dataObject);
+    protected SectionNodeInnerPanel createNodeInnerPanel() {
+        return new ResourceRefPanel(getSectionNodeView(), (ResourceRef) key, version);
     }
-
+    
 }

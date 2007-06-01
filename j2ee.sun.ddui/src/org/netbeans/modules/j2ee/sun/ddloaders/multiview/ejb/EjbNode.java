@@ -20,7 +20,10 @@ package org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb;
 
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.EjbRefGroupNode;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.NamedBeanNode;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ResourceRefGroupNode;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ResourceEnvRefGroupNode;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ServiceRefGroupNode;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule.EjbPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
@@ -36,6 +39,9 @@ public class EjbNode extends NamedBeanNode {
         super(sectionNodeView, ejb, Ejb.EJB_NAME, ICON_EJB_SESSION_NODE, version);
         
         enableRemoveAction();
+        addChild(new EjbRefGroupNode(sectionNodeView, ejb, version));
+        addChild(new ResourceRefGroupNode(sectionNodeView, ejb, version));                
+        addChild(new ResourceEnvRefGroupNode(sectionNodeView, ejb, version));
         addChild(new ServiceRefGroupNode(sectionNodeView, ejb, version));
     }
 

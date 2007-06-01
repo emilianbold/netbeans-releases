@@ -16,25 +16,28 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.j2ee.sun.ddloaders.multiview.common;
 
-import org.netbeans.modules.j2ee.sun.ddloaders.multiview.DDMultiViewElement;
-import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
-import org.netbeans.modules.xml.multiview.ui.SectionView;
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
+import org.netbeans.modules.j2ee.sun.dd.api.common.EjbRef;
+import org.netbeans.modules.j2ee.sun.share.configbean.customizers.EjbRefPanel;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 
 /**
  * @author Peter Williams
  */
-public class ServiceRefMultiViewElement extends DDMultiViewElement {
+public class EjbRefNode extends NamedBeanNode {
 
-    public ServiceRefMultiViewElement(SunDescriptorDataObject dataObject) {
-        super(dataObject);
+    public EjbRefNode(SectionNodeView sectionNodeView, final EjbRef ejbRef, final ASDDVersion version) {
+        super(sectionNodeView, ejbRef, EjbRef.EJB_REF_NAME, ICON_BASE_EJB_REF_NODE, version);
+        
+        enableRemoveAction();
     }
 
-    protected SectionView createView() {
-        return new ServiceRefView(dataObject);
+    protected SectionNodeInnerPanel createNodeInnerPanel() {
+        return new EjbRefPanel(getSectionNodeView(), (EjbRef) key, version);
     }
-
+    
 }
