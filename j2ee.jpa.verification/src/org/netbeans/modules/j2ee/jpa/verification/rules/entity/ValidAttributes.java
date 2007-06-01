@@ -27,6 +27,7 @@ import org.netbeans.modules.j2ee.jpa.model.ModelUtils;
 import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule;
 import org.netbeans.modules.j2ee.jpa.verification.JPAEntityAttributeCheck;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
+import org.netbeans.modules.j2ee.jpa.verification.JPAProblemFinder;
 import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.rules.attribute.AttrIsEncapsulated;
 import org.netbeans.modules.j2ee.jpa.verification.rules.attribute.MVRelationshipForEntityTypeAttrDefined;
@@ -55,8 +56,8 @@ public class ValidAttributes extends JPAClassRule {
         new MVRelationshipForEntityTypeAttrDefined(),
         new AttrIsEncapsulated(),
         new ValidVersionType()
-        //TODO: enable this check once #104484 is fixed
-        // new TemporalFieldsAnnotated()
+                //TODO: enable this check once #104484 is fixed
+                // new TemporalFieldsAnnotated()
     };
     
     public ValidAttributes() {
@@ -106,12 +107,17 @@ public class ValidAttributes extends JPAClassRule {
         for (AttributeWrapper attr : attrs){
             ModelUtils.resolveJavaElementFromModel(jpaCtx, attr);
             
-            for (JPAEntityAttributeCheck check : attribChecks){
-                ErrorDescription[] attrProblems = check.check(jpaCtx, attr);
-                
-                if (attrProblems != null){
-                    for (ErrorDescription err : attrProblems){
-                        problemsFound.add(err);
+            if (attr.getJavaElement() == null){
+                JPAProblemFinder.LOG.severe("Failed to resolve java model element for JPA merged model element "
+                        + subject.getSimpleName() + "." + attr.getName());
+            } else{
+                for (JPAEntityAttributeCheck check : attribChecks){
+                    ErrorDescription[] attrProblems = check.check(jpaCtx, attr);
+                    
+                    if (attrProblems != null){
+                        for (ErrorDescription err : attrProblems){
+                            problemsFound.add(err);
+                        }
                     }
                 }
             }
