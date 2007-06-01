@@ -246,6 +246,6 @@ public class NextVisualPositionAction extends TextAction {
 //                DomPosition.NONE, offsetX, offsetY, snapDisabled);
         webform.getDomDocument().moveComponents(
                 webform, boxes.toArray(new CssBox[boxes.size()]), points.toArray(new Point[points.size()]),
-                DomPosition.NONE, offsetX, offsetY, snapDisabled);
+                DomPosition.NONE, offsetX, offsetY, !snapDisabled);
     }
 }
