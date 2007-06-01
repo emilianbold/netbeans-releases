@@ -39,7 +39,8 @@ public class LayoutUtility<N, E, P> {
             GridGraphLayoutUtility.performLayout(graph);
             break;
         case TREE_GRAPH:
-            System.out.println("NOTHING DEFINED FOR THIS LAYOUT YET");
+            /* Tree Graph Layout Utility was taken from Tree Graph Layout as is incomplete.*/
+            TreeGraphLayoutUtility.performLayout(graph);
             break;
         }
     }
