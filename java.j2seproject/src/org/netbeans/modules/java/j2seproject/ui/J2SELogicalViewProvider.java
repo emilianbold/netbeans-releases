@@ -65,7 +65,6 @@ import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.ErrorManager;
 import org.openide.actions.FindAction;
-import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileStatusEvent;
@@ -495,7 +494,6 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             actions.add(CommonProjectActions.deleteProjectAction());
             actions.add(null);
             actions.add(SystemAction.get(FindAction.class));
-            actions.add(null);
             
             // honor 57874 contact
             
@@ -510,8 +508,6 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
                 }
             }
             
-            actions.add(null);
-            actions.add(SystemAction.get(ToolsAction.class));
             actions.add(null);
             if (broken) {
                 actions.add(brokenLinksAction);
