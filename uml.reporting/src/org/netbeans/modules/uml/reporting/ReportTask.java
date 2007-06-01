@@ -88,6 +88,7 @@ public class ReportTask extends Thread implements Cancellable
     public static String ELEMENT_INDEX_FILE = "element-index.html";
     public static String HELP_FILE = "help.html";
     public static String JPG_EXT = ".jpg";
+    public static String IMAGE_EXT = ".png";
     
     private static String[] files = {
         "org/netbeans/modules/uml/reporting/templates/zoom.js",

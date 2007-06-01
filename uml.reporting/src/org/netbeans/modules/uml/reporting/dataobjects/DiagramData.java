@@ -25,8 +25,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import org.netbeans.modules.uml.common.Util;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
@@ -96,7 +94,7 @@ public class DiagramData extends ElementDataObject {
             String fullname = pDiagram.getFilename();
             String name = StringUtilities.getFileName(fullname);
             String jpg = name;
-            jpg += "_" + full_size_index + ReportTask.JPG_EXT;
+            jpg += "_" + full_size_index + ReportTask.IMAGE_EXT;
             // will place the name and documentation for the diagram at the top of the html
             String diagName = pDiagram.getName();
             String doc = StringUtilities.unescapeHTML(pDiagram.getDocumentation());
@@ -372,7 +370,7 @@ public class DiagramData extends ElementDataObject {
         String fullname = pDiagram.getFilename();
         String name = StringUtilities.getFileName(fullname);
         String jpg = name;
-        jpg += ReportTask.JPG_EXT;
+        jpg += ReportTask.IMAGE_EXT;
         // will place the name and documentation for the diagram at the top of the html
         String diagName = pDiagram.getName();
         String filename = getDirectoryPath();
@@ -489,13 +487,13 @@ public class DiagramData extends ElementDataObject {
                 IGraphicExportDetails details = null; // the image to be used for full diagram page
                 
                 for (int i=0;i<scales.length; i++) {
-                    String imageName = getDirectoryPath() + File.separator + name + "_" + i + ReportTask.JPG_EXT;
+                    String imageName = getDirectoryPath() + File.separator + name + "_" + i + ReportTask.IMAGE_EXT;
                     try {
-                        IGraphicExportDetails pDetails = pDiagram.saveAsGraphic2(imageName, SaveAsGraphicKind.SAFK_JPG, scales[i]);
+                        IGraphicExportDetails pDetails = pDiagram.saveAsGraphic2(imageName, SaveAsGraphicKind.SAFK_PNG, scales[i]);
                         if (pDetails!=null) {
                             int width = (int) (pDetails.getFrameBoundingRect().getWidth() * scales[i]);
                             int height = (int) (pDetails.getFrameBoundingRect().getHeight() * scales[i]);
-                            imageString.append("               { 'path' : '" + name + "_" + i + ReportTask.JPG_EXT + "' , 'width' : " + width + " , 'height' : " + height + " }, ");
+                            imageString.append("               { 'path' : '" + name + "_" + i + ReportTask.IMAGE_EXT + "' , 'width' : " + width + " , 'height' : " + height + " }, ");
                             imageString.append("\n");
                             if (i == full_size_index) {
                                 details = pDetails;
