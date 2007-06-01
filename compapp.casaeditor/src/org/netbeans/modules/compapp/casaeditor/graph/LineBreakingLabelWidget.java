@@ -61,7 +61,7 @@ public class LineBreakingLabelWidget extends Widget {
         super(scene);
         
         // Set up a vertical layout of label widgets, justified to the same width.
-        setLayout(LayoutFactory.createVerticalLayout(LayoutFactory.SerialAlignment.JUSTIFY, 4));
+        setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 4));
     }
     
     

@@ -64,13 +64,13 @@ public class CasaPinWidgetEngine extends CasaPinWidget implements CasaMinimizabl
         
         switch(getDirection()) {
             case LEFT :
-                setLayout(RegionUtilities.createHorizontalLayoutWithJustifications(LayoutFactory.SerialAlignment.LEFT_TOP, 5));
+                setLayout(RegionUtilities.createHorizontalFlowLayoutWithJustifications(LayoutFactory.SerialAlignment.LEFT_TOP, 5));
                 addChild(mImageWidget);
                 addChild(mNameWidget);
                 addChild(mEmptyWidget);
                 break;
             case RIGHT :
-                setLayout(RegionUtilities.createHorizontalLayoutWithJustifications(LayoutFactory.SerialAlignment.RIGHT_BOTTOM, 5));
+                setLayout(RegionUtilities.createHorizontalFlowLayoutWithJustifications(LayoutFactory.SerialAlignment.RIGHT_BOTTOM, 5));
                 addChild(mEmptyWidget);
                 addChild(mNameWidget);
                 addChild(mImageWidget);

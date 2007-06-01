@@ -55,7 +55,7 @@ public class CasaBindingBadges {
         mContainerWidget = new Widget(scene);
         mContainerWidget.setOpaque(false);
         mContainerWidget.setLayout(
-            LayoutFactory.createVerticalLayout(LayoutFactory.SerialAlignment.LEFT_TOP, 1));
+            LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.LEFT_TOP, 1));
         
         Widget emptyWidget = new Widget(scene);
         emptyWidget.setPreferredBounds(new Rectangle(16, 0));

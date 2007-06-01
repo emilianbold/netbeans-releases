@@ -77,7 +77,7 @@ public class CasaEngineTitleWidget extends Widget implements CasaMinimizable {
         super(scene);
         
         mTitleWidget = new Widget(scene);
-        mTitleWidget.setLayout(LayoutFactory.createHorizontalLayout(
+        mTitleWidget.setLayout(LayoutFactory.createHorizontalFlowLayout(
                 LayoutFactory.SerialAlignment.LEFT_TOP, TITLE_GAP));
         Widget emptyWidget = new Widget(scene); //Placeholder to place MinimizeIcon inside rounded rectangle
         
@@ -117,7 +117,7 @@ public class CasaEngineTitleWidget extends Widget implements CasaMinimizable {
         Widget bottomEmptyWidget = new Widget(scene);
         bottomEmptyWidget.setPreferredBounds(new Rectangle(0,0,0, GAP_BELOW_AND_ABOVE_TITLE));
 
-        topHolderWidget.setLayout(LayoutFactory.createVerticalLayout());
+        topHolderWidget.setLayout(LayoutFactory.createVerticalFlowLayout());
         topHolderWidget.addChild(topEmptyWidget);
         topHolderWidget.addChild(mTitleWidget);
         topHolderWidget.addChild(bottomEmptyWidget);

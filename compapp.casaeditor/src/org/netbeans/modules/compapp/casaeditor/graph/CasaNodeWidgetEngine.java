@@ -62,7 +62,7 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget
     public CasaNodeWidgetEngine(Scene scene) {
         super(scene);
         setOpaque(false);
-        setLayout(LayoutFactory.createVerticalLayout());
+        setLayout(LayoutFactory.createVerticalFlowLayout());
         
         mStateModel = new StateModel();
         mStateModel.addListener(this);
@@ -138,7 +138,7 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget
         mContainerWidget.setOpaque(false);
         mContainerWidget.addChild(mTitleWidget);
         
-        mContainerWidget.setLayout(LayoutFactory.createVerticalLayout(
+        mContainerWidget.setLayout(LayoutFactory.createVerticalFlowLayout(
                 LayoutFactory.SerialAlignment.LEFT_TOP,
                 PIN_VERTICAL_GAP));
         addChild(mContainerWidget);

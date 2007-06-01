@@ -41,7 +41,7 @@ public class CasaGlyphSetWidget extends Widget {
      */
     public CasaGlyphSetWidget (Scene scene) {
         super (scene);
-        setLayout (LayoutFactory.createHorizontalLayout ());
+        setLayout (LayoutFactory.createHorizontalFlowLayout ());
     }
 
     /**

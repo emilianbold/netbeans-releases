@@ -68,7 +68,7 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
         super(scene);
         setOpaque(true);
         setBackground(CasaFactory.getCasaCustomizer().getCOLOR_BC_BACKGROUND());
-        setLayout(LayoutFactory.createVerticalLayout());
+        setLayout(LayoutFactory.createVerticalFlowLayout());
         
         mBadges = new CasaBindingBadges(scene);
         mVerticalTextImageWidget = new ImageWidget(scene);
@@ -77,7 +77,7 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
         mHeaderHolder = new Widget(scene);
         mHeaderHolder.setOpaque(true);
         mHeaderHolder.setBackground(CasaFactory.getCasaCustomizer().getCOLOR_BC_TITLE_BACKGROUND());
-        mHeaderHolder.setLayout(LayoutFactory.createHorizontalLayout(
+        mHeaderHolder.setLayout(LayoutFactory.createHorizontalFlowLayout(
                 LayoutFactory.SerialAlignment.LEFT_TOP, 0));
         mHeaderHolder.addChild(mBadges.getContainerWidget());
         mHeaderHolder.addChild(mVerticalTextImageWidget);
@@ -88,7 +88,7 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
         
         mBodyWidget = new Widget(scene);
         mBodyWidget.setOpaque(true);
-        mBodyWidget.setLayout(LayoutFactory.createHorizontalLayout(
+        mBodyWidget.setLayout(LayoutFactory.createHorizontalFlowLayout(
                 LayoutFactory.SerialAlignment.LEFT_TOP, 0));
         mBodyWidget.setBackground(CasaFactory.getCasaCustomizer().getCOLOR_BC_BACKGROUND());
         mBodyWidget.addChild(mHeaderHolder);
@@ -96,7 +96,7 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
         
         mContainerWidget = new Widget(scene);
         mContainerWidget.setBackground(CasaFactory.getCasaCustomizer().getCOLOR_BC_BACKGROUND());
-        mContainerWidget.setLayout(LayoutFactory.createVerticalLayout(
+        mContainerWidget.setLayout(LayoutFactory.createVerticalFlowLayout(
                 LayoutFactory.SerialAlignment.CENTER, 0));
         mContainerWidget.addChild(mBodyWidget);
         

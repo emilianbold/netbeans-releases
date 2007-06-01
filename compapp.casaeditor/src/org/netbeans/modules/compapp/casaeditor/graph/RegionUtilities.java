@@ -296,8 +296,8 @@ public class RegionUtilities {
      * The instance can be shared by multiple widgets.
      * @return the horizontal box layout
      */
-    public static Layout createHorizontalLayoutWithJustifications() {
-        return createHorizontalLayoutWithJustifications(null, 0);
+    public static Layout createHorizontalFlowLayoutWithJustifications() {
+        return createHorizontalFlowLayoutWithJustifications(null, 0);
     }
     
     
@@ -308,7 +308,7 @@ public class RegionUtilities {
      * @param gap the gap between widgets
      * @return the horizontal box layout
      */
-    public static Layout createHorizontalLayoutWithJustifications(SerialAlignment alignment, int gap) {
+    public static Layout createHorizontalFlowLayoutWithJustifications(SerialAlignment alignment, int gap) {
         return new SerialLayoutWithJustifications(false, alignment != null ? alignment : SerialAlignment.JUSTIFY, gap);
     }
     

@@ -90,7 +90,7 @@ public abstract class CasaPinWidget extends Widget {
         mImageWidget = new ImageWidget(scene);
         
         setOpaque(false);
-        setLayout(LayoutFactory.createHorizontalLayout(LayoutFactory.SerialAlignment.CENTER, 0));
+        setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 0));
         notifyStateChanged(ObjectState.createNormal(), ObjectState.createNormal());
     }
 
