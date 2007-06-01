@@ -176,6 +176,7 @@ public class MenuEditLayer extends JPanel {
     }
     
     public void startNewMenuComponentDragAndDrop(PaletteItem item) {
+        p("starting a new menu component drag and drop");
         this.setVisible(true);
         this.requestFocus();
         configureGlassLayer();
@@ -478,6 +479,7 @@ public class MenuEditLayer extends JPanel {
         List<RADComponent> path = new ArrayList<RADComponent>();
         RADComponent temp = rad.getParentComponent();
         while(true) {
+            if(temp == null) break;
             path.add(temp);
             temp = temp.getParentComponent();
             if(!isMenuRelatedRADComponent(temp)) {
@@ -798,6 +800,15 @@ public class MenuEditLayer extends JPanel {
             if(JMenuItem.class.isAssignableFrom(c.getBeanClass())) return true;
             if(JMenuBar.class.isAssignableFrom(c.getBeanClass())) return true;
             if(JMenu.class.isAssignableFrom(c.getBeanClass())) return true;
+        }
+        return false;
+    }
+    
+    public static boolean containsMenuBar(RADVisualComponent[] comps) {
+        if(comps == null) return false;
+        if(comps.length < 1) return false;
+        for(RADVisualComponent c : comps) {
+            if(JMenuBar.class.isAssignableFrom(c.getBeanClass())) return true;
         }
         return false;
     }
