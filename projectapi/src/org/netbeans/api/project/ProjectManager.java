@@ -339,7 +339,7 @@ public final class ProjectManager {
         for (ProjectFactory factory : factories.allInstances()) {
             Project p = factory.loadProject(dir, state);
             if (p != null) {
-                Logger.getLogger("TIMER").log(Level.FINE, "[M] Project", p);
+                Logger.getLogger("TIMER").log(Level.FINE, "Project", p);
                 proj2Factory.put(p, factory);
                 state.attach(p);
                 return p;
