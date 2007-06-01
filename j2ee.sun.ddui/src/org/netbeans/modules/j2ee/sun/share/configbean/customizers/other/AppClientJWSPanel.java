@@ -140,8 +140,10 @@ public class AppClientJWSPanel extends SectionNodeInnerPanel {
         jPnlJws.add(jLblEligible, gridBagConstraints);
 
         jChkEligible.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        jChkEligible.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.ipady = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         jPnlJws.add(jChkEligible, gridBagConstraints);
