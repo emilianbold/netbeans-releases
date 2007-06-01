@@ -494,14 +494,14 @@ public final class TestUtil extends ProxyLookup {
             // get layer for the websvc/core
             addLayer(layers, "org/netbeans/modules/websvc/core/resources/mf-layer.xml");
             // get layer for the java support (for Main class template)
-            addLayer(layers, "org/netbeans/modules/java/resources/mf-layer.xml");
+            addLayer(layers, "org/netbeans/modules/java/project/layer.xml");
             MultiFileSystem mfs = new MultiFileSystem((FileSystem[]) layers.toArray(new FileSystem[layers.size()]));
             return mfs;
         }
         
         private static void addLayer(List<FileSystem> layers, String layerRes) throws SAXException {
             URL layerFile = Repo.class.getClassLoader().getResource(layerRes);
-            assert layerFile != null;
+            assert layerFile != null : "Cannot find layer file " + layerRes;
             layers.add(new XMLFileSystem(layerFile));
         }
         

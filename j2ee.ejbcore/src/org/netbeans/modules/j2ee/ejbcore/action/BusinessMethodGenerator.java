@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import javax.lang.model.element.Modifier;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
@@ -34,18 +35,22 @@ import org.openide.filesystems.FileObject;
  */
 public final class BusinessMethodGenerator extends AbstractMethodGenerator {
     
-    private BusinessMethodGenerator(EntityAndSession ejb, FileObject ejbClassFileObject) {
-        super(ejb, ejbClassFileObject, null);
+    private BusinessMethodGenerator(String ejbClass, FileObject ejbClassFileObject) {
+        super(ejbClass, ejbClassFileObject);
     }
     
-    public static BusinessMethodGenerator create(EntityAndSession ejb, FileObject ejbClassFileObject) {
-        return new BusinessMethodGenerator(ejb, ejbClassFileObject);
+    public static BusinessMethodGenerator create(String ejbClass, FileObject ejbClassFileObject) {
+        return new BusinessMethodGenerator(ejbClass, ejbClassFileObject);
     }
     
     public void generate(MethodModel methodModel, boolean generateLocal, boolean generateRemote) throws IOException {
         
+        Map<String, String> interfaces = getInterfaces();
+        String local = interfaces.get(EntityAndSession.LOCAL);
+        String remote = interfaces.get(EntityAndSession.REMOTE);
+
         // local interface
-        if (generateLocal && ejb.getLocal() != null) {
+        if (generateLocal && local != null) {
             MethodModel methodModelCopy = MethodModel.create(
                     methodModel.getName(),
                     methodModel.getReturnType(),
@@ -54,11 +59,11 @@ public final class BusinessMethodGenerator extends AbstractMethodGenerator {
                     methodModel.getExceptions(),
                     methodModel.getModifiers()
                     );
-            addMethodToInterface(methodModelCopy, ejb.getLocal());
+            addMethodToInterface(methodModelCopy, local);
         }
         
         // remote interface, add RemoteException if it's not there
-        if (generateRemote && ejb.getRemote() != null) {
+        if (generateRemote && remote != null) {
             List<String> exceptions = new ArrayList<String>(methodModel.getExceptions());
             if (!methodModel.getExceptions().contains("java.rmi.RemoteException")) {
                 exceptions.add("java.rmi.RemoteException");
@@ -71,7 +76,7 @@ public final class BusinessMethodGenerator extends AbstractMethodGenerator {
                     exceptions,
                     methodModel.getModifiers()
                     );
-            addMethodToInterface(methodModelCopy, ejb.getRemote());
+            addMethodToInterface(methodModelCopy, remote);
         }
         
         // ejb class, add 'public' modifier
@@ -83,7 +88,9 @@ public final class BusinessMethodGenerator extends AbstractMethodGenerator {
                 methodModel.getExceptions(),
                 Collections.singleton(Modifier.PUBLIC)
                 );
-        addMethod(methodModelCopy, ejbClassFileObject, ejb.getEjbClass());
+        
+        addMethod(methodModelCopy, ejbClassFileObject, ejbClass);
+        
     }
     
 }

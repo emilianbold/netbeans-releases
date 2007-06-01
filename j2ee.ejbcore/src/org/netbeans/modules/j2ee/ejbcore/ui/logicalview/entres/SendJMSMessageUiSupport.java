@@ -35,7 +35,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
@@ -43,6 +43,8 @@ import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.MessageDestinationUiSupport;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.SendJMSMessageUiSupport.MdbHolder;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -66,7 +68,7 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
         for (Project p : openProjects) {
             if (EjbJar.getEjbJars(p).length > 0) {
                 try {
-                    List<MessageDriven> drivens = getMdbs(p);
+                    List<String> drivens = getMdbs(p);
                     populateMdbs(mdbs, drivens, p);
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
@@ -114,16 +116,15 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
         }
     }
     
-    private static void populateMdbs(List<MdbHolder> mdbs, final List<MessageDriven> drivens, final Project project) {
-        for (MessageDriven md : drivens) {
-            String mdbName = md.getEjbName();
+    private static void populateMdbs(List<MdbHolder> mdbs, final List<String> drivens, final Project project) {
+        for (String mdbName : drivens) {
             J2eeModuleProvider j2eeModuleProvider = getJ2eeModuleProvider(project);
             try {
                 MessageDestination messageDestination = null;
                 String destName = j2eeModuleProvider.getConfigSupport().findMessageDestinationName(mdbName);
                 if (destName != null) {
                     messageDestination = j2eeModuleProvider.getConfigSupport().findMessageDestination(destName);
-                    mdbs.add(new MdbHolder(md, messageDestination, project));
+                    mdbs.add(new MdbHolder(mdbName, messageDestination, project));
                 }
             } catch (ConfigurationException ce) {
                 Exceptions.printStackTrace(ce);
@@ -135,56 +136,51 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
         return project.getLookup().lookup(J2eeModuleProvider.class);
     }
     
-    private static List<MessageDriven> getMdbs(Project project) throws IOException {
+    private static List<String> getMdbs(Project project) throws IOException {
         
-        List<MessageDriven> mdbs = new ArrayList<MessageDriven>();
+        List<String> mdbs = new ArrayList<String>();
         
-        org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = getEjbJar(project);
-        if (ejbJar == null) {
-            return mdbs;
-        }
-        
-        EnterpriseBeans eb = ejbJar.getEnterpriseBeans();
-        if (eb == null) {
-            return mdbs;
-        }
-        
-        MessageDriven[] messageDrivens = eb.getMessageDriven();
-        for (MessageDriven mdb : messageDrivens) {
-            if (mdb.getEjbName() != null) {
-                mdbs.add(mdb);
-            }
+        for (EjbJar ejbModule : EjbJar.getEjbJars(project)) {
+            MetadataModel<EjbJarMetadata> metadataModel = ejbModule.getMetadataModel();
+            List<String> mdbsInModule = metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, List<String>>() {
+                public List<String> run(EjbJarMetadata metadata) throws Exception {
+                    List<String> result = new ArrayList<String>();
+                    EnterpriseBeans eb = metadata.getRoot().getEnterpriseBeans();
+                    if (eb == null) {
+                        return Collections.<String>emptyList();
+                    }
+
+                    MessageDriven[] messageDrivens = eb.getMessageDriven();
+                    for (MessageDriven mdb : messageDrivens) {
+                        result.add(mdb.getEjbName());
+                    }
+                    return result;
+                }
+            });
+            mdbs.addAll(mdbsInModule);
         }
         
         return mdbs;
-    }
-    
-    private static org.netbeans.modules.j2ee.dd.api.ejb.EjbJar getEjbJar(final Project project) throws IOException {
-        EjbJar apiEjbJar = EjbJar.getEjbJars(project)[0];
-        return DDProvider.getDefault().getMergedDDRoot(apiEjbJar.getMetadataUnit());
     }
     
     /**
      * Holder for message-driven bean and its properties.
      */
     public static class MdbHolder {
-        private final MessageDriven mdb;
+        
+        private final String mdbEjbName;
         private final MessageDestination messageDestination;
         private final Project project;
 
         /** Constructor with all properties. */
-        public MdbHolder(final MessageDriven mdb, final MessageDestination messageDestination, final Project project) {
-            assert mdb != null;
+        public MdbHolder(String mdbEjbName, final MessageDestination messageDestination, final Project project) {
+            assert mdbEjbName != null;
             assert messageDestination != null;
             assert project != null;
             
-            this.mdb = mdb;
+            this.mdbEjbName = mdbEjbName;
             this.messageDestination = messageDestination;
             this.project = project;
-        }
-
-        public MessageDriven getMdb() {
-            return mdb;
         }
 
         public MessageDestination getMessageDestination() {
@@ -196,7 +192,7 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
         }
         
         public String getMdbEjbName() {
-            return mdb.getEjbName();
+            return mdbEjbName;
         }
         
         public String getProjectName() {

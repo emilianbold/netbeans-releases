@@ -19,40 +19,60 @@
 
 package org.netbeans.modules.j2ee.api.ejbjar;
 
-import org.openide.nodes.Node;
-import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
-import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
-
 /**
  *
  * @author Martin Adamek
  */
-public interface EjbReference extends Node.Cookie {
+public final class EjbReference {
 
-    //TODO: RETOUCHE remove this class? 
-    // It seems to be possible to replace it with EnterpriseReferenceContainer?
+    private final String ejbClass;
+    private final String ejbRefType;
+    private final String local;
+    private final String localHome;
+    private final String remote;
+    private final String remoteHome;
+    private final EjbJar ejbModule;
     
-    boolean supportsLocalInvocation();
-    
-    boolean supportsRemoteInvocation();
-    
-    void populateReference(EjbRef ref);
-    
-    void populateReference(EjbLocalRef ref);
+    private EjbReference(String ejbClass, String ejbRefType, String local, String localHome, String remote, String remoteHome, EjbJar ejbModule) {
+        this.ejbClass = ejbClass;
+        this.ejbRefType = ejbRefType;
+        this.local = local;
+        this.localHome = localHome;
+        this.remote = remote;
+        this.remoteHome = remoteHome;
+        this.ejbModule = ejbModule;
+    }
 
-    AntArtifact getClientJarTarget();
+    public static EjbReference create(String ejbClass, String ejbRefType, String local, String localHome, String remote, String remoteHome, EjbJar ejbModule) {
+        return new EjbReference(ejbClass, ejbRefType, local, localHome, remote, remoteHome, ejbModule);
+    }
     
-    EjbRef createRef();
+    public String getEjbClass() {
+        return ejbClass;
+    }
     
-    EjbLocalRef createLocalRef();
+    public String getEjbRefType() {
+        return ejbRefType;
+    }
     
-    Object generateReferenceCode(Object target, EjbRef ref, boolean throwExceptions);
-    
-    Object generateReferenceCode(Object target, EjbLocalRef ref, boolean throwExceptions);
-    
-    Object generateServiceLocatorLookup(Object target, EjbRef ref, String serviceLocatorName, boolean throwExceptions);
-    
-    Object generateServiceLocatorLookup(Object target, EjbLocalRef ref, String serviceLocatorName, boolean throwExceptions);
+    public String getLocal() {
+        return local;
+    }
+
+    public String getLocalHome() {
+        return localHome;
+    }
+
+    public String getRemote() {
+        return remote;
+    }
+
+    public String getRemoteHome() {
+        return remoteHome;
+    }
+
+    public EjbJar getEjbModule() {
+        return ejbModule;
+    }
     
 }

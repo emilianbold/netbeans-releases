@@ -23,6 +23,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Iterator;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -79,17 +80,23 @@ public interface J2eeModuleImplementation {
      */
     FileObject getContentDirectory() throws java.io.IOException;
     
-    /** Returns a live bean representing the final deployment descriptor
-     * that will be used for deploment of the module. This can be
-     * taken from sources, constructed on fly or a combination of these
-     * but it needs to be available even if the module has not been built yet.
-     *
-     * @param location Parameterized by location because of possibility of multiple 
-     * deployment descriptors for a single module (jsp.xml, webservices.xml, etc).
-     * Location must be prefixed by /META-INF or /WEB-INF as appropriate.
-     * @return a live bean representing the final DD
+    /**
+     * Returns a metadata model of a deployment descriptor specified by the 
+     * <code>type</code> parameter.
+     * 
+     * <p>
+     * As an example, passing <code>org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata.class</code>
+     * as a type parameter will return a metadata model of the web module deployment 
+     * descriptor - web.xml.
+     * </p>
+     * 
+     * @param type metadata model type class for which a <code>MetadataModel</code>
+     *        instance will be returned.
+     * 
+     * @return metadata model of a deployment descriptor specified by the <code>type</code>
+     *         parameter.
      */
-    RootInterface getDeploymentDescriptor(String location);
+    <T> MetadataModel<T> getDeploymentDescriptor(Class<T> type);
     
     /**
      * Returns the module resource directory, or null if the module has no resource

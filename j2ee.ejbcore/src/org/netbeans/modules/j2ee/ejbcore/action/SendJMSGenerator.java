@@ -30,28 +30,33 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
+import org.netbeans.modules.j2ee.api.ejbjar.MessageDestinationReference;
+import org.netbeans.modules.j2ee.api.ejbjar.ResourceReference;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
-import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
-import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
+import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
+import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
+import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.JMSDestination;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.ServiceLocatorStrategy;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -61,22 +66,25 @@ import org.openide.util.Exceptions;
  */
 public final class SendJMSGenerator {
     
+    private static final String HARDCODED_FACTORY_SUFFIX = "Factory"; // NO18N
+    
     private static final String PRODUCES = org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef.MESSAGE_DESTINATION_USAGE_PRODUCES;
-
-    private final JMSDestination jmsDestination;
+    
+    private final MessageDestination messageDestination;
+    private final Project mdbHolderProject;
     private boolean supportsInjection;
     
-    public SendJMSGenerator(JMSDestination jmsDestination) {
-        this.jmsDestination = jmsDestination;
+    public SendJMSGenerator(MessageDestination messageDestination, Project mdbHolderProject) {
+        this.messageDestination = messageDestination;
+        this.mdbHolderProject = mdbHolderProject;
     }
     
     public void genMethods(
-            EnterpriseReferenceContainer container, 
-            final String className, 
-            FileObject fileObject, 
+            EnterpriseReferenceContainer container,
+            final String className,
+            FileObject fileObject,
             ServiceLocatorStrategy slStrategy,
-            J2eeModuleProvider j2eeModuleProvider,
-            MessageDestination dest) throws IOException {
+            J2eeModuleProvider j2eeModuleProvider) throws IOException {
         
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         final boolean[] isInjectionTarget = new boolean[1];
@@ -94,134 +102,99 @@ public final class SendJMSGenerator {
         String destinationName = null;
         
         if (supportsInjection){
-            factoryName = jmsDestination.getConnectionFactoryName();
-            destinationName = jmsDestination.getDestinationName();
-            connectionFactoryFieldName = createInjectedField(fileObject, className, factoryName, "javax.jms.ConnectionFactory"); //NO18N
-            destinationFieldName = createInjectedField(fileObject, className, destinationName, jmsDestination.getType());
+            factoryName = messageDestination.getName() + HARDCODED_FACTORY_SUFFIX;
+            destinationName = messageDestination.getName();
+            connectionFactoryFieldName = createInjectedField(fileObject, className, factoryName, "javax.jms.ConnectionFactory"); // NO18N
+            String type = messageDestination.getType() == MessageDestination.Type.QUEUE ? "javax.jms.Queue" : "javax.jms.Topic"; // NO18N
+            destinationFieldName = createInjectedField(fileObject, className, destinationName, type);
         } else {
             factoryName = generateConnectionFactoryReference(container, fileObject, className);
-            destinationName = generateDestinationReference(container, fileObject, className, jmsDestination.getProject());
+            destinationName = generateDestinationReference(container, fileObject, className);
         }
-        String sendMethodName = createSendMethod(fileObject, className, jmsDestination.getDestination());
+        String sendMethodName = createSendMethod(fileObject, className, messageDestination.getName());
         createJMSProducer(fileObject, className, factoryName, connectionFactoryFieldName, destinationName,
                 destinationFieldName,sendMethodName, slStrategy);
         
-        if (dest != null) {
+        if (messageDestination != null) {
             try {
                 if (j2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.WAR)) {
                     //in the current implementation, reference name is the same as the destination name...
                     j2eeModuleProvider.getConfigSupport().bindMessageDestinationReference(
-                            dest.getName(), factoryName, dest.getName(), dest.getType());
+                            messageDestination.getName(), factoryName, messageDestination.getName(), messageDestination.getType());
                 } else if (j2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.EJB)) {
-                    //in the current implementation, reference name is the same as the destination name...
-                    bindMessageDestinationReferenceForEjb(j2eeModuleProvider, fileObject, className, 
-                            dest.getName(), factoryName, dest.getName(), dest.getType());
-                }
+                        //in the current implementation, reference name is the same as the destination name...
+                        bindMessageDestinationReferenceForEjb(j2eeModuleProvider, fileObject, className,
+                                messageDestination.getName(), factoryName, messageDestination.getName(), messageDestination.getType());
+                    }
             } catch (ConfigurationException ce) {
                 Exceptions.printStackTrace(ce);
             }
         }
     }
 
-    private void bindMessageDestinationReferenceForEjb(J2eeModuleProvider j2eeModuleProvider, 
-            FileObject fileObject, String className, 
+    private void bindMessageDestinationReferenceForEjb(J2eeModuleProvider j2eeModuleProvider,
+            FileObject fileObject,final String className,
             String referenceName, String connectionFactoryName,
-            String destName, MessageDestination.Type destType) throws ConfigurationException {
+            String destName, MessageDestination.Type destType) throws ConfigurationException, IOException {
 
-        EjbJar dd = null;
-        try {
-            dd = findDDRoot(fileObject);
+            org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fileObject);
+        MetadataModel<EjbJarMetadata> metadataModel = ejbModule.getMetadataModel();
+        
+        final String[] ejbName = new String[1];
+        final String[] ejbType = new String[1];
+        
+        metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
+            public Void run(EjbJarMetadata metadata) throws Exception {
+                Ejb ejb = metadata.findByEjbClass(className);
+                ejbName[0] = ejb.getEjbName();
+                if (ejb instanceof Session) {
+                    ejbType[0] = EnterpriseBeans.SESSION;
+                } else if (ejb instanceof MessageDriven) {
+                    ejbType[0] = EnterpriseBeans.MESSAGE_DRIVEN;
+                } else if (ejb instanceof Entity) {
+                    ejbType[0] = EnterpriseBeans.ENTITY;
+                }
+                return null;
+            }
+        });
+        
+        if (ejbName[0] != null && ejbType[0] != null) {
+            j2eeModuleProvider.getConfigSupport().bindMessageDestinationReferenceForEjb(
+                    ejbName[0], ejbType[0], referenceName, connectionFactoryName, destName, destType);
         }
-        catch (IOException ioe) {
-            // TODO
-        }
-        if (dd == null) {
-            return;
-        }
-
-        EnterpriseBeans beans = dd.getEnterpriseBeans();
-        if (beans == null) {
-            return;
-        }
-
-        String ejbName = getEjbName(beans, className);
-        if (ejbName == null) {
-            return;
-        }
-
-        String ejbType = getEjbType(beans, className);
-        if (ejbType == null) {
-            return;
-        }
-
-        j2eeModuleProvider.getConfigSupport().bindMessageDestinationReferenceForEjb(
-                ejbName, ejbType, referenceName, connectionFactoryName, destName, destType);
     }        
 
-    private EjbJar findDDRoot(FileObject fileObject) throws IOException {
-        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbJar = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fileObject);
-        assert ejbJar != null;
-        return DDProvider.getDefault().getMergedDDRoot(ejbJar.getMetadataUnit());
-    }
-
-    private String getEjbName(EnterpriseBeans beans, String className) {
-        Ejb ejb = (Ejb) beans.findBeanByName(EnterpriseBeans.SESSION, Ejb.EJB_CLASS, className);
-        if (ejb == null) {
-            ejb = (Ejb) beans.findBeanByName(EnterpriseBeans.ENTITY, Ejb.EJB_CLASS, className);
-        }
-        if (ejb == null) {
-            ejb = (Ejb) beans.findBeanByName(EnterpriseBeans.MESSAGE_DRIVEN, Ejb.EJB_CLASS, className);
-        }
-
-        return ejb.getEjbName();
-    }
-
-    private String getEjbType(EnterpriseBeans beans, String className) {
-        String type = null;
-
-        if (beans.findBeanByName(EnterpriseBeans.SESSION, Ejb.EJB_CLASS, className) != null) {
-            type = EnterpriseBeans.SESSION;
-        }
-        else
-        if (beans.findBeanByName(EnterpriseBeans.ENTITY, Ejb.EJB_CLASS, className) != null) {
-            type = EnterpriseBeans.ENTITY;
-        }
-        else
-        if (beans.findBeanByName(EnterpriseBeans.MESSAGE_DRIVEN, Ejb.EJB_CLASS, className) != null) {
-            type = EnterpriseBeans.MESSAGE_DRIVEN;
-        }
-
-        return type;
-    }
-    
     private String generateConnectionFactoryReference(EnterpriseReferenceContainer container, FileObject referencingFile, String referencingClass) throws IOException {
-        ResourceRef ref = container.createResourceRef(referencingClass);
-        ref.setResRefName(jmsDestination.getConnectionFactoryName()); // NOI18N
-        ref.setResAuth(org.netbeans.modules.j2ee.dd.api.common.ResourceRef.RES_AUTH_CONTAINER);
-        ref.setResSharingScope(org.netbeans.modules.j2ee.dd.api.common.ResourceRef.RES_SHARING_SCOPE_SHAREABLE);
-        ref.setResType("javax.jms.ConnectionFactory"); //NOI18N
+        ResourceReference ref = ResourceReference.create(
+                messageDestination.getName() + HARDCODED_FACTORY_SUFFIX,
+                "javax.jms.ConnectionFactory",
+                ResourceRef.RES_AUTH_CONTAINER,
+                ResourceRef.RES_SHARING_SCOPE_SHAREABLE,
+                null
+                );
         return container.addResourceRef(ref, referencingFile, referencingClass);
     }
     
-    private String generateDestinationReference(EnterpriseReferenceContainer container, FileObject referencingFile, String referencingClass, Project project) throws IOException {
-        MessageDestinationRef ref = container.createDestinationRef(referencingClass);
-        ref.setMessageDestinationUsage(PRODUCES);
-        ref.setMessageDestinationType(jmsDestination.getType());
-        ref.setMessageDestinationRefName(jmsDestination.getDestinationName());
+    private String generateDestinationReference(EnterpriseReferenceContainer container, FileObject referencingFile, String referencingClass) throws IOException {
         // this may need to generalized later if jms producers are expected
         // in web modules
-        ProjectInformation projectInformation = ProjectUtils.getInformation(jmsDestination.getProject());
-        ref.setMessageDestinationLink(projectInformation.getName() + ".jar#" + jmsDestination.getDestination());
-        if (jmsDestination.getProject().equals(project)) {
-            String linkWithoutModule = ref.getMessageDestinationLink();
-            linkWithoutModule = linkWithoutModule.substring(linkWithoutModule.indexOf('#')+1);
-            ref.setMessageDestinationLink(linkWithoutModule);
+        ProjectInformation projectInformation = ProjectUtils.getInformation(mdbHolderProject);
+        String link = projectInformation.getName() + ".jar#" + messageDestination.getName();
+        Project referenceingProject = FileOwnerQuery.getOwner(referencingFile);
+        if (mdbHolderProject.equals(referenceingProject)) {
+            link = link.substring(link.indexOf('#') + 1);
         }
+        MessageDestinationReference ref = MessageDestinationReference.create(
+                messageDestination.getName(),
+                messageDestination.getType() == MessageDestination.Type.QUEUE ? "javax.jms.Queue" : "javax.jms.Topic",
+                PRODUCES,
+                link
+                );
         return container.addDestinationRef(ref, referencingFile, referencingClass);
     }
     
     /**
-     * Creates an injected resource field for the given <code>target</code>. The name 
+     * Creates an injected resource field for the given <code>target</code>. The name
      * of the field will be derivated from the given <code>mappedName</code>.
      * @param target the target class
      * @param mappedName the value for resource's mappedName attribute
@@ -231,12 +204,12 @@ public final class SendJMSGenerator {
     private String createInjectedField(FileObject fileObject, String className, String mappedName, String fieldType) throws IOException {
         String fieldName = Utils.jndiNameToCamelCase(mappedName, true, "jms");
         _RetoucheUtil.generateAnnotatedField(
-                fileObject, 
-                className, 
-                "javax.annotation.Resource", 
+                fileObject,
+                className,
+                "javax.annotation.Resource",
                 fieldName,
-                fieldType, 
-                Collections.singletonMap("mappedName", mappedName), 
+                fieldType,
+                Collections.singletonMap("mappedName", mappedName),
                 InjectionTargetQuery.isStaticReferenceRequired(fileObject, className)
                 );
         return fieldName;
@@ -285,7 +258,7 @@ public final class SendJMSGenerator {
         String destName = destinationName.substring(destinationName.lastIndexOf('/') + 1);
         StringBuffer destBuff = new StringBuffer(destName);
         destBuff.setCharAt(0, Character.toUpperCase(destBuff.charAt(0)));
-
+        
         boolean namingException = false;
         String body = null;
         if (supportsInjection){
@@ -296,7 +269,7 @@ public final class SendJMSGenerator {
         } else {
             body = getSendJMSCode(connectionFactoryName, destinationName, sendMethodName, slStrategy, fileObject, className);
         }
-
+        
         final MethodModel methodModel = MethodModel.create(
                 "sendJMSMessageTo" + destBuff,
                 "void",
@@ -394,5 +367,5 @@ public final class SendJMSGenerator {
                 "'}'\n",
                 new Object[] {connectionName, destinationName, messageMethodName});
     }
-
+    
 }

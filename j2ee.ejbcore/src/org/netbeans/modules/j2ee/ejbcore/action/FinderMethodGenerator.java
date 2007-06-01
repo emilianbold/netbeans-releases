@@ -23,13 +23,20 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import javax.lang.model.element.Modifier;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
+import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
+import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.dd.api.ejb.MethodParams;
 import org.netbeans.modules.j2ee.dd.api.ejb.Query;
 import org.netbeans.modules.j2ee.dd.api.ejb.QueryMethod;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -38,20 +45,25 @@ import org.openide.filesystems.FileObject;
  */
 public class FinderMethodGenerator extends AbstractMethodGenerator {
     
-    private FinderMethodGenerator(Entity ejb, FileObject ejbClassFileObject, FileObject ddFileObject) {
-        super(ejb, ejbClassFileObject, ddFileObject);
+    private FinderMethodGenerator(String ejbClass, FileObject ejbClassFileObject) {
+        super(ejbClass, ejbClassFileObject);
     }
     
-    public static FinderMethodGenerator create(Entity ejb, FileObject ejbClassFileObject, FileObject ddFileObject) {
-        return new FinderMethodGenerator(ejb, ejbClassFileObject, ddFileObject);
+    public static FinderMethodGenerator create(String ejbClass, FileObject ejbClassFileObject) {
+        return new FinderMethodGenerator(ejbClass, ejbClassFileObject);
     }
     
     public void generate(MethodModel methodModel, boolean generateLocal, boolean generateRemote,
             boolean isOneReturn, String ejbql) throws IOException {
-        Entity entity = (Entity) ejb;
-        if (Entity.PERSISTENCE_TYPE_CONTAINER.equals(entity.getPersistenceType())) {
+        String persistenceType = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
+            public String run(EjbJarMetadata metadata) throws Exception {
+                Entity entity = (Entity) metadata.findByEjbClass(ejbClass);
+                return entity != null ? entity.getPersistenceType() : null;
+            }
+        });
+        if (Entity.PERSISTENCE_TYPE_CONTAINER.equals(persistenceType)) {
             generateCmp(methodModel, generateLocal, generateRemote, isOneReturn, ejbql);
-        } else if (Entity.PERSISTENCE_TYPE_BEAN.equals(entity.getPersistenceType())) {
+        } else if (Entity.PERSISTENCE_TYPE_BEAN.equals(persistenceType)) {
             generateBmp(methodModel, generateLocal, generateRemote, isOneReturn, ejbql);
         }
     }
@@ -63,27 +75,33 @@ public class FinderMethodGenerator extends AbstractMethodGenerator {
             throw new IllegalArgumentException("The finder method name must have find as its prefix.");
         }
         
+        Map<String, String> interfaces = getInterfaces();
+        String local = interfaces.get(EntityAndSession.LOCAL);
+        String localHome = interfaces.get(EntityAndSession.LOCAL_HOME);
+        String remote = interfaces.get(EntityAndSession.REMOTE);
+        String remoteHome = interfaces.get(EntityAndSession.HOME);
+        
         // local interface EJB 2.1 spec 10.6.12
-        if (generateLocal && ejb.getLocal() != null && ejb.getLocalHome() != null) {
+        if (generateLocal && local != null && localHome != null) {
             List<String> exceptions = new ArrayList<String>(methodModel.getExceptions());
             if (!methodModel.getExceptions().contains("javax.ejb.FinderException")) {
                 exceptions.add("javax.ejb.FinderException");
             }
             MethodModel methodModelCopy = MethodModel.create(
                     methodModel.getName(),
-                    isOneReturn ? ejb.getLocal() : "java.util.Collection",
+                    isOneReturn ? local : "java.util.Collection",
                     null,
                     methodModel.getParameters(),
                     exceptions,
                     Collections.<Modifier>emptySet()
                     );
-            FileObject fileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, ejb.getLocalHome());
-            addMethod(methodModelCopy, fileObject, ejb.getLocalHome());
+            FileObject fileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, localHome);
+            addMethod(methodModelCopy, fileObject, localHome);
             
         }
         
         // remote interface
-        if (generateRemote && ejb.getRemote() != null && ejb.getHome() != null) {
+        if (generateRemote && remote != null && remoteHome != null) {
             List<String> exceptions = new ArrayList<String>(methodModel.getExceptions());
             if (!methodModel.getExceptions().contains("javax.ejb.FinderException")) {
                 exceptions.add("javax.ejb.FinderException");
@@ -93,14 +111,14 @@ public class FinderMethodGenerator extends AbstractMethodGenerator {
             }
             MethodModel methodModelCopy = MethodModel.create(
                     methodModel.getName(),
-                    isOneReturn ? ejb.getRemote() : "java.util.Collection",
+                    isOneReturn ? remote : "java.util.Collection",
                     null,
                     methodModel.getParameters(),
                     exceptions,
                     Collections.<Modifier>emptySet()
                     );
-            FileObject fileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, ejb.getHome());
-            addMethod(methodModelCopy, fileObject, ejb.getHome());
+            FileObject fileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, remoteHome);
+            addMethod(methodModelCopy, fileObject, remoteHome);
         }
         
         // write query to deplyment descriptor
@@ -115,8 +133,14 @@ public class FinderMethodGenerator extends AbstractMethodGenerator {
             throw new IllegalArgumentException("The finder method name must have find as its prefix.");
         }
         
+        Map<String, String> interfaces = getInterfaces();
+        String local = interfaces.get(EntityAndSession.LOCAL);
+        String localHome = interfaces.get(EntityAndSession.LOCAL_HOME);
+        String remote = interfaces.get(EntityAndSession.REMOTE);
+        String remoteHome = interfaces.get(EntityAndSession.HOME);
+        
         // local interface EJB 2.1 spec 10.6.12
-        if (generateLocal && ejb.getLocal() != null && ejb.getLocalHome() != null) {
+        if (generateLocal && local != null && localHome != null) {
             List<String> exceptions = new ArrayList<String>(methodModel.getExceptions());
             if (!methodModel.getExceptions().contains("javax.ejb.FinderException")) {
                 exceptions.add("javax.ejb.FinderException");
@@ -124,18 +148,25 @@ public class FinderMethodGenerator extends AbstractMethodGenerator {
             // find method in LocalHome interface
             MethodModel methodModelCopy = MethodModel.create(
                     methodModel.getName(),
-                    isOneReturn ? ejb.getLocal() : "java.util.Collection",
+                isOneReturn ? local : "java.util.Collection",
                     null,
                     methodModel.getParameters(),
                     exceptions,
                     Collections.<Modifier>emptySet()
                     );
-            FileObject fileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, ejb.getLocalHome());
-            addMethod(methodModelCopy, fileObject, ejb.getLocalHome());
+            FileObject fileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, localHome);
+            addMethod(methodModelCopy, fileObject, localHome);
         }
         
+        String primKeyClass = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
+            public String run(EjbJarMetadata metadata) throws Exception {
+                Entity entity = (Entity) metadata.findByEjbClass(ejbClass);
+                return entity.getPrimKeyClass();
+            }
+        });
+
         // remote interface
-        if (generateRemote && ejb.getRemote() != null && ejb.getHome() != null) {
+        if (generateRemote && remote != null && remoteHome != null) {
             List<String> exceptions = new ArrayList<String>(methodModel.getExceptions());
             if (!methodModel.getExceptions().contains("javax.ejb.FinderException")) {
                 exceptions.add("javax.ejb.FinderException");
@@ -146,49 +177,49 @@ public class FinderMethodGenerator extends AbstractMethodGenerator {
             // find method in RemoteHome interface
             MethodModel methodModelCopy = MethodModel.create(
                     'c' + methodModel.getName().substring(4),
-                    isOneReturn ? ejb.getRemote() : "java.util.Collection",
+                    isOneReturn ? remote : "java.util.Collection",
                     null,
                     methodModel.getParameters(),
                     exceptions,
                     Collections.<Modifier>emptySet()
                     );
-            FileObject fileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, ejb.getHome());
-            addMethod(methodModelCopy, fileObject, ejb.getHome());
+            FileObject fileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, remoteHome);
+            addMethod(methodModelCopy, fileObject, remoteHome);
             
             // ejbFind method in ejb class
-            Entity entity = (Entity) ejb;
             methodModelCopy = MethodModel.create(
                     "ejbF" + methodModelCopy.getName().substring(1),
-                    isOneReturn ? entity.getPrimKeyClass() : "java.util.Collection",
+                    isOneReturn ? primKeyClass : "java.util.Collection",
                     methodModelCopy.getBody(),
                     methodModelCopy.getParameters(),
                     methodModelCopy.getExceptions(),
                     Collections.singleton(Modifier.PUBLIC)
                     );
-            addMethod(methodModelCopy, ejbClassFileObject, ejb.getEjbClass());
+            addMethod(methodModelCopy, ejbClassFileObject, ejbClass);
             
         }
         
         // ejbFind method in ejb class
-        Entity entity = (Entity) ejb;
         List<String> exceptions = new ArrayList<String>(methodModel.getExceptions());
         if (!methodModel.getExceptions().contains("javax.ejb.FinderException")) {
             exceptions.add("javax.ejb.FinderException");
         }
         MethodModel methodModelCopy = MethodModel.create(
                 "ejbF" + methodModel.getName().substring(1),
-                isOneReturn ? entity.getPrimKeyClass() : "java.util.Collection",
+                isOneReturn ? primKeyClass : "java.util.Collection",
                 "return null;",
                 methodModel.getParameters(),
                 exceptions,
                 Collections.singleton(Modifier.PUBLIC)
                 );
-        addMethod(methodModelCopy, ejbClassFileObject, ejb.getEjbClass());
+        addMethod(methodModelCopy, ejbClassFileObject, ejbClass);
         
     }
     
     private void addQueryToXml(MethodModel methodModel, String ejbql) throws IOException {
-        Entity entity = (Entity) ejb;
+        EjbJar ejbJar = DDProvider.getDefault().getDDRoot(ejbModule.getDeploymentDescriptor()); // EJB 2.1
+        EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
+        Entity entity = (Entity) enterpriseBeans.findBeanByName(EnterpriseBeans.ENTITY, Entity.EJB_CLASS, ejbClass);
         Query query = entity.newQuery();
         QueryMethod queryMethod = query.newQueryMethod();
         queryMethod.setMethodName(methodModel.getName());

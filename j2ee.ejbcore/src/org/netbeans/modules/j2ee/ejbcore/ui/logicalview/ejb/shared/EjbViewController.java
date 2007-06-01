@@ -21,20 +21,19 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.api.project.ant.AntArtifactQuery;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
+import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.common.MessageDestination;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.ejb.AssemblyDescriptor;
@@ -42,90 +41,127 @@ import org.netbeans.modules.j2ee.dd.api.ejb.ContainerTransaction;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelation;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelationshipRole;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
+import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
 import org.netbeans.modules.j2ee.dd.api.ejb.Method;
 import org.netbeans.modules.j2ee.dd.api.ejb.MethodPermission;
 import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.dnd.EjbReferenceImpl;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 
 /**
  * This class provides controller capabilities for ejb logical views. The nodes
  * should delegate non ui tasks to this class.
+ * 
  * @author Chris Webster
  * @author Martin Adamek
  */
 public final class EjbViewController {
     
-    private final Ejb ejb;
-    private final EjbJar ejbJar;
+    private final String ejbClass;
+    private final org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule;
     private final Project project;
-    private final ClassPath classPath;
     
-    public EjbViewController(Ejb ejb, EjbJar ejbJar, ClassPath classPath) {
-        this.ejb = ejb;
-        this.ejbJar = ejbJar;
-        this.classPath = classPath;
-        project = FileOwnerQuery.getOwner(classPath.getRoots()[0]);
+    public EjbViewController(String ejbClass, org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule, Project project) {
+        this.ejbClass = ejbClass;
+        this.ejbModule = ejbModule;
+        this.project = project;
     }
     
     public String getDisplayName() {
-        String name = ejb.getDefaultDisplayName();
-        if (name == null) {
-            name = ejb.getEjbName();
+        String displayName = null;
+        try {
+            displayName = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
+                public String run(EjbJarMetadata metadata) throws IOException {
+                    Ejb ejb = metadata.findByEjbClass(ejbClass);
+                    String name = ejb.getDefaultDisplayName();
+                    if (name == null) {
+                        name = ejb.getEjbName();
+                    }
+                    return name;
+                }
+            });
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
         }
-        return name;
+        return displayName;
     }
     
     public void delete(boolean deleteClasses) throws IOException {
-        EnterpriseBeans beans = ejbJar.getEnterpriseBeans();
-        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
-        j2eeModuleProvider.getConfigSupport().ensureConfigurationReady();
-        deleteTraces();
-        // for MDBs remove message destination from assembly descriptor
-        if (ejb instanceof MessageDriven) {
-            try {
-                AssemblyDescriptor assemblyDescriptor = ejbJar.getSingleAssemblyDescriptor();
-                String mdLinkName = ((MessageDriven) ejb).getMessageDestinationLink();
-                MessageDestination[] messageDestinations = assemblyDescriptor.getMessageDestination();
-                for (MessageDestination messageDestination : messageDestinations) {
-                    if (messageDestination.getMessageDestinationName().equals(mdLinkName)) {
-                        assemblyDescriptor.removeMessageDestination(messageDestination);
-                        break;
+        
+        boolean isEE5 = EjbProjectConstants.JAVA_EE_5_LEVEL.equals(ejbModule.getJ2eePlatformVersion());
+        
+        if (!isEE5) {
+            ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
+                public Void run(EjbJarMetadata metadata) throws Exception {
+                    EjbJar ejbJar = metadata.getRoot();
+                    EnterpriseBeans beans = ejbJar.getEnterpriseBeans();
+                    J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+                    j2eeModuleProvider.getConfigSupport().ensureConfigurationReady();
+                    Ejb ejb = metadata.findByEjbClass(ejbClass);
+                    deleteTraces(ejb, ejbJar);
+                    // for MDBs remove message destination from assembly descriptor
+                    if (ejb instanceof MessageDriven) {
+                        try {
+                            AssemblyDescriptor assemblyDescriptor = ejbJar.getSingleAssemblyDescriptor();
+                            String mdLinkName = ((MessageDriven) ejb).getMessageDestinationLink();
+                            MessageDestination[] messageDestinations = assemblyDescriptor.getMessageDestination();
+                            for (MessageDestination messageDestination : messageDestinations) {
+                                if (messageDestination.getMessageDestinationName().equals(mdLinkName)) {
+                                    assemblyDescriptor.removeMessageDestination(messageDestination);
+                                    break;
+                                }
+                            }
+                        } catch (VersionNotSupportedException ex) {
+                            ErrorManager.getDefault().notify(ex);
+                        }
                     }
+                    beans.removeEjb(ejb);
+                    return null;
                 }
-            } catch (VersionNotSupportedException ex) {
-                ErrorManager.getDefault().notify(ex);
+            });
+            writeDD();
+            if (deleteClasses) {
+                deleteClasses();
             }
-        }
-        beans.removeEjb(ejb);
-        writeDD();
-        if (deleteClasses) {
+        } else {
             deleteClasses();
         }
     }
     
-    public EjbReference createEjbReference() {
-        AntArtifact[] antArtifacts = AntArtifactQuery.findArtifactsByType(project, JavaProjectConstants.ARTIFACT_TYPE_JAR);
-        AntArtifact moduleJarTarget;
-        if (antArtifacts == null || antArtifacts.length == 0) {
-            moduleJarTarget = null;
-        } else {
-            moduleJarTarget = antArtifacts[0];
-        }
-        return new EjbReferenceImpl(moduleJarTarget, (EntityAndSession) ejb);
-    }
-    
-    private FileObject findBeanFo() {
-        return classPath.findResource(ejb.getEjbClass().replace('.','/')+".java"); // NOI18N
+    public EjbReference createEjbReference() throws IOException {
+        Map<String, String> ejbInfo = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Map<String, String>>() {
+            public Map<String, String> run(EjbJarMetadata metadata) throws Exception {
+                EntityAndSession ejb = (EntityAndSession) metadata.findByEjbClass(ejbClass);
+                Map<String, String> result = new HashMap<String, String>();
+                result.put(Ejb.EJB_NAME, ejb.getEjbName());
+                result.put(EjbRef.EJB_REF_TYPE, ejb instanceof Entity ? EjbRef.EJB_REF_TYPE_ENTITY : EjbRef.EJB_REF_TYPE_SESSION);
+                result.put(EntityAndSession.LOCAL, ejb.getLocal());
+                result.put(EntityAndSession.LOCAL_HOME, ejb.getLocalHome());
+                result.put(EntityAndSession.REMOTE, ejb.getRemote());
+                result.put(EntityAndSession.HOME, ejb.getHome());
+                return result;
+            }
+        });
+        return EjbReference.create(
+                ejbClass,
+                ejbInfo.get(EjbRef.EJB_REF_TYPE),
+                ejbInfo.get(EntityAndSession.LOCAL),
+                ejbInfo.get(EntityAndSession.LOCAL_HOME),
+                ejbInfo.get(EntityAndSession.REMOTE),
+                ejbInfo.get(EntityAndSession.HOME),
+                ejbModule
+                );
     }
     
     public DataObject getBeanDo() {
@@ -147,7 +183,7 @@ public final class EjbViewController {
             javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
                 public void run(CompilationController compilationController) throws IOException {
                     compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
-                    TypeElement typeElement = compilationController.getElements().getTypeElement(ejb.getEjbClass());
+                    TypeElement typeElement = compilationController.getElements().getTypeElement(ejbClass);
                     result.add(ElementHandle.create(typeElement));
                 }
             }, true);
@@ -162,35 +198,54 @@ public final class EjbViewController {
      * gets an ejb reference representation
      * @return the xml code corresponding to this ejb
      */
-    public String getRemoteStringRepresentation(String ejbType) {
-        assert ejb instanceof EntityAndSession;
-        EntityAndSession refModel = (EntityAndSession) ejb;
-        String result ="\t<ejb-ref>\n" +
-                "\t\t<ejb-ref-name>ejb/" + ejb.getEjbName() + "</ejb-ref-name>\n"+
-                "\t\t<ejb-ref-type>" + ejbType + "</ejb-ref-type>\n"+
-                "\t\t<home>" + refModel.getHome() + "</home>\n"+
-                "\t\t<remote>" + refModel.getRemote() + "</remote>\n"+
-                "\t</ejb-ref>\n";
+    public String getRemoteStringRepresentation(final String ejbType) {
+        String result = null;
+        try {
+            result = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
+                public String run(EjbJarMetadata metadata) throws IOException {
+                    Ejb ejb = metadata.findByEjbClass(ejbClass);
+                    assert ejb instanceof EntityAndSession;
+                    EntityAndSession refModel = (EntityAndSession) ejb;
+                    return "\t<ejb-ref>\n" +
+                            "\t\t<ejb-ref-name>ejb/" + ejb.getEjbName() + "</ejb-ref-name>\n"+
+                            "\t\t<ejb-ref-type>" + ejbType + "</ejb-ref-type>\n"+
+                            "\t\t<home>" + refModel.getHome() + "</home>\n"+
+                            "\t\t<remote>" + refModel.getRemote() + "</remote>\n"+
+                            "\t</ejb-ref>\n";
+                }
+            });
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        }
         return result;
     }
     
-    public String getLocalStringRepresentation(String ejbType) {
-        assert ejb instanceof EntityAndSession;
-        EntityAndSession refModel = (EntityAndSession)ejb;
-        String result ="\t<ejb-local-ref>\n" +
-                "\t\t<ejb-ref-name>ejb/" + ejb.getEjbName() + "</ejb-ref-name>\n"+
-                "\t\t<ejb-ref-type>" + ejbType + "</ejb-ref-type>\n"+
-                "\t\t<local-home>" + refModel.getLocalHome() + "</local-home>\n"+
-                "\t\t<local>" + refModel.getLocal() + "</local>\n"+
-                "\t</ejb-local-ref>\n";
+    public String getLocalStringRepresentation(final String ejbType) {
+        String result = null;
+        try {
+            result = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
+                public String run(EjbJarMetadata metadata) throws IOException {
+                    Ejb ejb = metadata.findByEjbClass(ejbClass);
+                    assert ejb instanceof EntityAndSession;
+                    EntityAndSession refModel = (EntityAndSession) ejb;
+                    return "\t<ejb-local-ref>\n" +
+                            "\t\t<ejb-ref-name>ejb/" + ejb.getEjbName() + "</ejb-ref-name>\n"+
+                            "\t\t<ejb-ref-type>" + ejbType + "</ejb-ref-type>\n"+
+                            "\t\t<local-home>" + refModel.getLocalHome() + "</local-home>\n"+
+                            "\t\t<local>" + refModel.getLocal() + "</local>\n"+
+                            "\t</ejb-local-ref>\n";
+                }
+            });
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        }
         return result;
     }
     
     
     private void writeDD() throws IOException {
-        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(classPath.getRoots()[0]);
         FileObject ddFile = ejbModule.getDeploymentDescriptor();
-        DDProvider.getDefault().getMergedDDRoot(ejbModule.getMetadataUnit()).write(ddFile);
+        DDProvider.getDefault().getDDRoot(ddFile).write(ddFile); // EJB 2.1
     }
     
     private boolean isEjbUsed(EjbRelationshipRole role, String ejbName) {
@@ -199,7 +254,7 @@ public final class EjbViewController {
                 ejbName.equals(role.getRelationshipRoleSource().getEjbName());
     }
     
-    private void deleteRelationships(String ejbName) {
+    private void deleteRelationships(String ejbName, EjbJar ejbJar) {
         Relationships relationships = ejbJar.getSingleRelationships();
         if (relationships != null) {
             EjbRelation[] relations = relationships.getEjbRelation();
@@ -216,10 +271,10 @@ public final class EjbViewController {
         }
     }
     
-    private void deleteTraces() {
+    private void deleteTraces(Ejb ejb, EjbJar ejbJar) {
         String ejbName = ejb.getEjbName();
         String ejbNameCompare = ejbName + "";
-        deleteRelationships(ejbName);
+        deleteRelationships(ejbName, ejbJar);
         AssemblyDescriptor assemblyDescriptor = ejbJar.getSingleAssemblyDescriptor();
         if (assemblyDescriptor != null) {
             ContainerTransaction[] containerTransactions = assemblyDescriptor.getContainerTransaction();
@@ -251,39 +306,58 @@ public final class EjbViewController {
         }
     }
     
-    private FileObject getFileObject(String className) {
-        assert className != null: "cannot find null className";
-        return classPath.findResource(className.replace('.', '/') + ".java");
+    private FileObject findBeanFo() {
+        FileObject beanFO = null;
+        try {
+            beanFO =  ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
+                public FileObject run(EjbJarMetadata metadata) throws IOException {
+                    return metadata.findResource(Utils.toResourceName(ejbClass));
+                }
+            });
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        }
+        return beanFO;
     }
     
     private void deleteClasses() {
-        ArrayList<FileObject> classFileObjects = new ArrayList<FileObject>();
-        classFileObjects.add(getFileObject(ejb.getEjbClass()));
-        if (ejb instanceof EntityAndSession) {
-            EntityAndSession entityAndSessionfModel = (EntityAndSession) ejb;
-            if (entityAndSessionfModel.getLocalHome() != null) {
-                classFileObjects.add(getFileObject(entityAndSessionfModel.getLocalHome()));
-                classFileObjects.add(getFileObject(entityAndSessionfModel.getLocal()));
-                classFileObjects.add(getFileObject(entityAndSessionfModel.getLocal() + "Business"));
-            }
-            if (entityAndSessionfModel.getHome() != null) {
-                classFileObjects.add(getFileObject(entityAndSessionfModel.getHome()));
-                classFileObjects.add(getFileObject(entityAndSessionfModel.getRemote()));
-                classFileObjects.add(getFileObject(entityAndSessionfModel.getRemote() + "Business"));
-            }
-        }
-        for (FileObject fileObject : classFileObjects) {
-            if (fileObject != null) {
-                try {
+        final ArrayList<FileObject> classFileObjects = new ArrayList<FileObject>();
+        
+        try {
+            ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
+                public Void run(EjbJarMetadata metadata) throws Exception {
+                    classFileObjects.add(metadata.findResource(ejbClass));
+                    Ejb ejb = metadata.findByEjbClass(ejbClass);
+                    if (ejb instanceof EntityAndSession) {
+                        EntityAndSession entityAndSessionfModel = (EntityAndSession) ejb;
+                        if (entityAndSessionfModel.getLocalHome() != null) {
+                            classFileObjects.add(metadata.findResource(entityAndSessionfModel.getLocalHome()));
+                            classFileObjects.add(metadata.findResource(entityAndSessionfModel.getLocal()));
+                            classFileObjects.add(metadata.findResource(entityAndSessionfModel.getLocal() + "Business"));
+                        }
+                        if (entityAndSessionfModel.getHome() != null) {
+                            classFileObjects.add(metadata.findResource(entityAndSessionfModel.getHome()));
+                            classFileObjects.add(metadata.findResource(entityAndSessionfModel.getRemote()));
+                            classFileObjects.add(metadata.findResource(entityAndSessionfModel.getRemote() + "Business"));
+                        }
+                    }
+                    return null;
+                }
+            });
+
+            for (FileObject fileObject : classFileObjects) {
+                if (fileObject != null) {
                     DataObject dataObject = DataObject.find(fileObject);
                     assert dataObject != null: ("cannot find DataObject for " + fileObject.getPath());
                     if (dataObject != null) {
                         dataObject.delete();
                     }
-                } catch (IOException ioe) {
-                    ErrorManager.getDefault().notify(ErrorManager.USER, ioe);
                 }
             }
+            
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ErrorManager.USER, ioe);
         }
     }
+    
 }

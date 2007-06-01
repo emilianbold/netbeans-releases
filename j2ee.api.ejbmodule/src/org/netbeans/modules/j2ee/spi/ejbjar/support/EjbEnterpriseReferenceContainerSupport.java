@@ -20,30 +20,39 @@
 package org.netbeans.modules.j2ee.spi.ejbjar.support;
 
 import java.io.IOException;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.api.project.ant.AntArtifactQuery;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
+import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceSupport;
+import org.netbeans.modules.j2ee.api.ejbjar.MessageDestinationReference;
+import org.netbeans.modules.j2ee.api.ejbjar.ResourceReference;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
-import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 
 
-/** Default implementation of {@link org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer}.
+/** 
+ * Default implementation of {@link org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer}.
  *
  * @author Chris Webster
+ * @author Martin Adamek
  */
 public final class EjbEnterpriseReferenceContainerSupport {
     
@@ -56,8 +65,8 @@ public final class EjbEnterpriseReferenceContainerSupport {
     
     private static class ERC implements EnterpriseReferenceContainer {
         
-        private Project ejbProject;
-        private AntProjectHelper antHelper;
+        private final Project ejbProject;
+        private final AntProjectHelper antHelper;
         private static final String SERVICE_LOCATOR_PROPERTY = "project.serviceLocator.class"; //NOI18N
         
         private ERC(Project p, AntProjectHelper helper) {
@@ -65,69 +74,97 @@ public final class EjbEnterpriseReferenceContainerSupport {
             antHelper = helper;
         }
         
-        public String addEjbLocalReference(EjbLocalRef localRef, FileObject referencingFile, String referencingClass, AntArtifact target) throws IOException {
-            return addReference(localRef, referencingFile, referencingClass, target);
+        public String addEjbReference(EjbReference ref, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
+            return addReference(ref, ejbRefName, false, referencingFile, referencingClass);
         }
         
-        public String addEjbReference(EjbRef ref, FileObject referencingFile, String referencingClass, AntArtifact target) throws IOException {
-            return addReference(ref, referencingFile, referencingClass, target);
+        public String addEjbLocalReference(EjbReference ref, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
+            return addReference(ref, ejbRefName, true, referencingFile, referencingClass);
         }
         
-        private String addReference(Object ref, FileObject referencingFile, String referencingClass, AntArtifact target) throws IOException {
-            String refName = null;
-            Ejb model = findEjbForClass(referencingClass);
-            // XXX: target may be null (for example for a freeform project which doesn't have jar outputs set)
-            // that's the reason of the check for target == null
-            boolean fromSameProject = (target == null || ejbProject.equals(target.getProject()));
-            org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbJars [] = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJars(ejbProject);
-            assert ejbJars.length > 0;
-            // try to write to deployment descriptor anly if there is any
-            // in case of metadata written in annotations, model shoud be updatet automaticaly
-            if (ejbJars[0].getDeploymentDescriptor() != null) {
-                if (model == null) {
-                    if (ref instanceof EjbRef) {
-                        return ((EjbRef) ref).getEjbRefName();
+        private String addReference(final EjbReference ejbReference, final String ejbRefName, final boolean local, FileObject referencingFile,
+                final String referencingClass) throws IOException {
+
+            final org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = findEjbModule(referencingFile);
+            MetadataModel<EjbJarMetadata> metadataModel = ejbModule.getMetadataModel();
+            
+            MetadataModel<EjbJarMetadata> ejbReferenceMetadataModel = ejbReference.getEjbModule().getMetadataModel();
+            final String[] ejbName = new String[1];
+            FileObject ejbReferenceEjbClassFO = ejbReferenceMetadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
+                public FileObject run(EjbJarMetadata metadata) throws Exception {
+                    ejbName[1] = metadata.findByEjbClass(ejbReference.getEjbClass()).getEjbName();
+                    return metadata.findResource(ejbReference.getEjbClass().replace('.', '/') + ".java");
+                }
+            });
+            
+            Project project = FileOwnerQuery.getOwner(ejbReferenceEjbClassFO);
+            AntArtifact[] antArtifacts = AntArtifactQuery.findArtifactsByType(project, JavaProjectConstants.ARTIFACT_TYPE_JAR);
+            boolean hasArtifact = (antArtifacts != null && antArtifacts.length > 0);
+            final AntArtifact moduleJarTarget = hasArtifact ? antArtifacts[0] : null;
+            // only first URI is taken, if more of them are defined, just first one is taken
+            String[] names = new String[] { "" };
+            if (moduleJarTarget != null) {
+                names = moduleJarTarget.getArtifactLocations()[0].getPath().split("/");  //NOI18N
+            }
+            
+            String jarName = names[names.length - 1] + "#";
+            final String ejbLink = jarName + ejbName[1];
+            
+            final boolean[] write = new boolean[] { false };
+            String resourceName = metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
+                public String run(EjbJarMetadata metadata) {
+                    String refName = null;
+                    Ejb model = metadata.findByEjbClass(referencingClass);
+                    // XXX: target may be null (for example for a freeform project which doesn't have jar outputs set)
+                    // that's the reason of the check for target == null
+                    boolean fromSameProject = (moduleJarTarget == null || ejbProject.equals(moduleJarTarget.getProject()));
+                    // try to write to deployment descriptor only if there is any
+                    // in case of metadata written in annotations, model should be updatet automaticaly
+                    if (model == null) {
+                        return ejbRefName;
+                    }
+                    if (local) {
+                        refName = getUniqueName(model, Ejb.EJB_LOCAL_REF, EjbRef.EJB_REF_NAME, ejbRefName);
+                        EjbLocalRef ejbRef = model.newEjbLocalRef();
+                        ejbRef.setEjbRefName(refName);
+                        ejbRef.setEjbRefType(ejbReference.getEjbRefType());
+                        ejbRef.setLocal(ejbReference.getLocal());
+                        ejbRef.setLocalHome(ejbReference.getLocalHome());
+                        if (fromSameProject) {
+                            ejbRef.setEjbLink(stripModuleName(ejbLink));
+                        }
+                        model.addEjbLocalRef(ejbRef);
                     } else {
-                        return ((EjbLocalRef) ref).getEjbRefName();
+                        refName = getUniqueName(model, Ejb.EJB_REF, EjbRef.EJB_REF_NAME, ejbRefName);
+                        EjbRef ejbRef = model.newEjbRef();
+                        ejbRef.setEjbRefName(refName);
+                        ejbRef.setEjbRefType(ejbReference.getEjbRefType());
+                        ejbRef.setRemote(ejbReference.getRemote());
+                        ejbRef.setHome(ejbReference.getRemoteHome());
+                        if (fromSameProject) {
+                            ejbRef.setEjbLink(stripModuleName(ejbLink));
+                        }
+                        model.addEjbRef(ejbRef);
                     }
+                    write[0] = true;
+                    
+                    if(!fromSameProject) {
+                        try {
+                            ProjectClassPathExtender pcpe = ejbProject.getLookup().lookup(ProjectClassPathExtender.class);
+                            assert pcpe != null;
+                            pcpe.addAntArtifact(moduleJarTarget, moduleJarTarget.getArtifactLocations()[0]);
+                        } catch (IOException ioe) {
+                            ErrorManager.getDefault().notify(ioe);
+                        }
+                    }
+                    return refName;
                 }
-                // XXX could use visitor here to remove conditional logic
-                if (ref instanceof EjbRef) {
-                    org.netbeans.modules.j2ee.dd.api.common.EjbRef ejbRef =
-                            (org.netbeans.modules.j2ee.dd.api.common.EjbRef) ref;
-                    refName = getUniqueName(model, Ejb.EJB_REF,
-                            ejbRef.EJB_REF_NAME, ejbRef.getEjbRefName());
-                    ejbRef.setEjbRefName(refName);
-                    if (fromSameProject) {
-                        ejbRef.setEjbLink(stripModuleName(ejbRef.getEjbLink()));
-                    }
-                    model.addEjbRef(ejbRef);
-                } else {
-                    org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef ejbRef =
-                            (org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef) ref;
-                    refName = getUniqueName(model, Ejb.EJB_LOCAL_REF,
-                            ejbRef.EJB_REF_NAME, ejbRef.getEjbRefName());
-                    ejbRef.setEjbRefName(refName);
-                    if (fromSameProject) {
-                        ejbRef.setEjbLink(stripModuleName(ejbRef.getEjbLink()));
-                    }
-                    model.addEjbLocalRef(ejbRef);
-                }
-                writeDD();
+            });
+            if (write[0]) {
+                writeDD(ejbModule);
             }
-            
-            if(!fromSameProject) {
-                try {
-                    ProjectClassPathExtender pcpe = ejbProject.getLookup().lookup(ProjectClassPathExtender.class);
-                    assert pcpe != null;
-                    pcpe.addAntArtifact(target, target.getArtifactLocations()[0]);
-                } catch (IOException ioe) {
-                    ErrorManager.getDefault().notify(ioe);
-                }
-            }
-            
             ProjectManager.getDefault().saveProject(ejbProject);
-            return refName;
+            return resourceName;
         }
         
         public String getServiceLocatorName() {
@@ -148,66 +185,103 @@ public final class EjbEnterpriseReferenceContainerSupport {
             return ejbLink.substring(index+1);
         }
         
-        private Ejb findEjbForClass(String className) throws IOException {
-            EjbJar dd = findDD();
-            Ejb ejb = null;
-            if (dd != null) {
-                EnterpriseBeans beans = dd.getEnterpriseBeans();
-                if (beans != null) {
-                    ejb = (Ejb) beans.findBeanByName(EnterpriseBeans.SESSION, Ejb.EJB_CLASS, className);
-                    if (ejb == null) {
-                        ejb = (Ejb) beans.findBeanByName(EnterpriseBeans.ENTITY, Ejb.EJB_CLASS, className);
-                    }
-                    if (ejb == null) {
-                        ejb = (Ejb) beans.findBeanByName(EnterpriseBeans.MESSAGE_DRIVEN, Ejb.EJB_CLASS, className);
-                    }
-                }
-            }
-            return ejb;
+        private org.netbeans.modules.j2ee.api.ejbjar.EjbJar findEjbModule(FileObject fileObject) {
+            return org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fileObject);
         }
         
-        private EjbJar findDD() throws IOException {
-            org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbJars [] = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJars(ejbProject);
-            assert ejbJars.length > 0;
-            return DDProvider.getDefault().getMergedDDRoot(ejbJars[0].getMetadataUnit());
-        }
-        
-        private void writeDD() throws IOException {
-            org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbJars [] = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJars(ejbProject);
-            assert ejbJars.length > 0;
-            if (isDescriptorMandatory(ejbJars[0].getJ2eePlatformVersion())) {
-                FileObject fo = ejbJars[0].getDeploymentDescriptor();
+        private void writeDD(org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule) throws IOException {
+            if (isDescriptorMandatory(ejbModule.getJ2eePlatformVersion())) {
+                FileObject fo = ejbModule.getDeploymentDescriptor();
                 if (fo != null){
-                    DDProvider.getDefault().getMergedDDRoot(ejbJars[0].getMetadataUnit()).write(fo);
+                    DDProvider.getDefault().getDDRoot(fo).write(fo);
                 }
             }
         }
         
-        public String addResourceRef(ResourceRef ref, FileObject referencingFile, String referencingClass) throws IOException {
-            Ejb ejb = findEjbForClass(referencingClass);
-            if (ejb == null) {
-                return ref.getResRefName();
-            }
-            String resourceRefName = ref.getResRefName();
-            if (javax.sql.DataSource.class.getName().equals(ref.getResType())) {
-                if (!isJdbcConnectionAlreadyUsed(ejb, ref)) {
-                    resourceRefName = getUniqueName(ejb, Ejb.RESOURCE_REF, org.netbeans.modules.j2ee.dd.api.common.ResourceRef.RES_REF_NAME, ref.getResRefName());
-                    ref.setResRefName(resourceRefName);
-                    ejb.addResourceRef((org.netbeans.modules.j2ee.dd.api.common.ResourceRef)ref);
-                    writeDD();
+        public String addResourceRef(final ResourceReference ref, FileObject referencingFile, final String referencingClass) throws IOException {
+            org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = findEjbModule(referencingFile);
+            MetadataModel<EjbJarMetadata> metadataModel = ejbModule.getMetadataModel();
+            final boolean[] write = new boolean[] { false };
+            String resourceName = metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
+                public String run(EjbJarMetadata metadata) throws IOException {
+                    Ejb ejb = metadata.findByEjbClass(referencingClass);
+                    if (ejb == null) {
+                        return ref.getResRefName();
+                    }
+                    String resourceRefName = ref.getResRefName();
+                    if (javax.sql.DataSource.class.getName().equals(ref.getResType())) {
+                        if (!isJdbcConnectionAlreadyUsed(ejb, ref)) {
+                            resourceRefName = getUniqueName(ejb, Ejb.RESOURCE_REF, ResourceRef.RES_REF_NAME,ref.getResRefName());
+                            ResourceRef resourceRef = ejb.newResourceRef();
+                            EnterpriseReferenceSupport.populate(ref, resourceRefName, resourceRef);
+                            ejb.addResourceRef(resourceRef);
+                            write[0] = true;
+                        }
+                    } else {
+                        if (!isResourceRefUsed(ejb, ref)) {
+                            resourceRefName = getUniqueName(ejb, Ejb.RESOURCE_REF, ResourceRef.RES_REF_NAME,ref.getResRefName());
+                            ResourceRef resourceRef = ejb.newResourceRef();
+                            EnterpriseReferenceSupport.populate(ref, resourceRefName, resourceRef);
+                            ejb.addResourceRef(resourceRef);
+                            write[0] = true;
+                        }
+                    }
+                    return resourceRefName;
                 }
-            } else {
-                if (!isResourceRefUsed(ejb, ref)) {
-                    resourceRefName = getUniqueName(ejb, Ejb.RESOURCE_REF, org.netbeans.modules.j2ee.dd.api.common.ResourceRef.RES_REF_NAME, ref.getResRefName());
-                    ref.setResRefName(resourceRefName);
-                    ejb.addResourceRef((org.netbeans.modules.j2ee.dd.api.common.ResourceRef)ref);
-                    writeDD();
-                }
+            });
+            if (write[0]) {
+                writeDD(ejbModule);
             }
-            return resourceRefName;
+            return resourceName;
         }
         
-        private boolean isJdbcConnectionAlreadyUsed(Ejb ejb, ResourceRef ref) throws IOException {
+        public String addDestinationRef(final MessageDestinationReference ref, FileObject referencingFile, final String referencingClass) throws IOException {
+            org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = findEjbModule(referencingFile);
+            MetadataModel<EjbJarMetadata> metadataModel = ejbModule.getMetadataModel();
+            final boolean[] write = new boolean[] { false };
+            String resourceName = metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
+                public String run(EjbJarMetadata metadata) {
+                    Ejb ejb = metadata.findByEjbClass(referencingClass);
+                    if (ejb == null) {
+                        return ref.getMessageDestinationRefName();
+                    }
+                    try {
+                        // do not add if there is already an existing destination ref (see #85673)
+                        for (MessageDestinationRef mdRef : ejb.getMessageDestinationRef()){
+                            if (mdRef.getMessageDestinationRefName().equals(ref.getMessageDestinationRefName())){
+                                return mdRef.getMessageDestinationRefName();
+                            }
+                        }
+                    } catch (VersionNotSupportedException ex) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    }
+                    
+                    String destinationRefName = getUniqueName(
+                            
+                            
+                            
+                            ejb,
+                            Ejb.MESSAGE_DESTINATION_REF,
+                            MessageDestinationRef.MESSAGE_DESTINATION_REF_NAME,ref.getMessageDestinationRefName()
+                            );
+                    try {
+                        MessageDestinationRef messageDestinationRef = ejb.newMessageDestinationRef();
+                        EnterpriseReferenceSupport.populate(ref, destinationRefName, messageDestinationRef);
+                        ejb.addMessageDestinationRef(messageDestinationRef);
+                    } catch (VersionNotSupportedException vnse) {
+                        // this exception should not be generated
+                    }
+                    write[0] = true;
+                    return destinationRefName;
+                }
+            });
+            if (write[0]) {
+                writeDD(ejbModule);
+            }
+            return resourceName;
+        }
+        
+        private boolean isJdbcConnectionAlreadyUsed(Ejb ejb, ResourceReference ref) throws IOException {
             if (javax.sql.DataSource.class.getName().equals(ref.getResType())) {
                 for (ResourceRef existingRef : ejb.getResourceRef()) {
                     String newDefaultDescription = ref.getDefaultDescription();
@@ -231,7 +305,7 @@ public final class EjbEnterpriseReferenceContainerSupport {
          * @param resRef resource reference to find
          * @return true id resource reference was found, false otherwise
          */
-        private static boolean isResourceRefUsed(Ejb ejb, ResourceRef resRef) {
+        private static boolean isResourceRefUsed(Ejb ejb, ResourceReference resRef) {
             String resRefName = resRef.getResRefName();
             String resRefType = resRef.getResType();
             for (ResourceRef existingRef : ejb.getResourceRef()) {
@@ -242,8 +316,7 @@ public final class EjbEnterpriseReferenceContainerSupport {
             return false;
         }
         
-        private String getUniqueName(Ejb bean, String beanName,
-                String property, String originalValue) {
+        private String getUniqueName(Ejb bean, String beanName, String property, String originalValue) {
             String proposedValue = originalValue;
             int index = 1;
             while (bean.findBeanByName(beanName, property, proposedValue) != null) {
@@ -252,88 +325,12 @@ public final class EjbEnterpriseReferenceContainerSupport {
             return proposedValue;
         }
         
-        public ResourceRef createResourceRef(String className) throws IOException {
-            ResourceRef ref = null;
-            Ejb ejb = findEjbForClass(className);
-            if (ejb != null) {
-                ref = ejb.newResourceRef();
-            } else {
-                try {
-                    EjbJar ejbJar = findDD();
-                    if (ejbJar != null) {
-                        ref = (ResourceRef) ejbJar.createBean("ResourceRef");
-                    } else {
-                        ErrorManager.getDefault().log(ErrorManager.USER,
-                                NbBundle.getMessage(EjbEnterpriseReferenceContainerSupport.class, "MSG_MissingMetadata"));
-                    }
-                } catch (ClassNotFoundException cnfe) {
-                    IOException ioe = new IOException();
-                    ioe.initCause(cnfe);
-                    throw ioe;
-                }
+        private static boolean isDescriptorMandatory(String j2eeVersion) {
+            if ("1.3".equals(j2eeVersion) || "1.4".equals(j2eeVersion)) {
+                return true;
             }
-            return ref;
-        }
-        
-        public String addDestinationRef(MessageDestinationRef ref, FileObject referencingFile, String referencingClass) throws IOException {
-            Ejb ejb = findEjbForClass(referencingClass);
-            if (ejb == null) {
-                return ref.getMessageDestinationRefName();
-            }
-            try {
-                // do not add if there is already an existing destination ref (see #85673)
-                for (MessageDestinationRef mdRef : ejb.getMessageDestinationRef()){
-                    if (mdRef.getMessageDestinationRefName().equals(ref.getMessageDestinationRefName())){
-                        return mdRef.getMessageDestinationRefName();
-                    }
-                }
-            } catch (VersionNotSupportedException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            }
-            
-            String destinationRefName = getUniqueName(ejb, Ejb.MESSAGE_DESTINATION_REF,
-                    org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef.MESSAGE_DESTINATION_REF_NAME,
-                    ref.getMessageDestinationRefName());
-            ref.setMessageDestinationRefName(destinationRefName);
-            try {
-                ejb.addMessageDestinationRef((org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef)ref);
-            } catch (VersionNotSupportedException vnse) {
-                // this exception should not be generated
-            }
-            writeDD();
-            return destinationRefName;
-        }
-        
-        public MessageDestinationRef createDestinationRef(String className) throws IOException {
-            Ejb ejb = findEjbForClass(className);
-            MessageDestinationRef ref = null;
-            if (ejb != null) {
-                try {
-                    ref = ejb.newMessageDestinationRef();
-                } catch (VersionNotSupportedException vnse) {
-                    IOException ioe = new IOException();
-                    ioe.initCause(vnse);
-                    throw ioe;
-                }
-            } else {
-                try {
-                    ref = (MessageDestinationRef) findDD().createBean("MessageDestinationRef");
-                } catch (ClassNotFoundException cnfe) {
-                    IOException ioe = new IOException();
-                    ioe.initCause(cnfe);
-                    throw ioe;
-                }
-            }
-            return ref;
+            return false;
         }
         
     }
-    
-    private static boolean isDescriptorMandatory(String j2eeVersion) {
-        if ("1.3".equals(j2eeVersion) || "1.4".equals(j2eeVersion)) {
-            return true;
-        }
-        return false;
-    }
-    
 }

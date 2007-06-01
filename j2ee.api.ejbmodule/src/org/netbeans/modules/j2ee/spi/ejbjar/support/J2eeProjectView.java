@@ -24,10 +24,9 @@ import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbNodesFactory;
 import org.netbeans.modules.j2ee.ejbjar.project.ui.EjbContainerNode;
 import org.netbeans.modules.j2ee.ejbjar.project.ui.ServerResourceNode;
@@ -81,8 +80,8 @@ public final class J2eeProjectView {
         return new ServerResourceNode (p);
     }
     
-    public static Node createEjbsView (EjbJar model, ClassPath srcPath, FileObject ddFile, Project p) {
-        return new EjbContainerNode(model, srcPath, ddFile, p, getEjbNodesFactory());
+    public static Node createEjbsView(EjbJar ejbModule, Project p) {
+        return new EjbContainerNode(ejbModule, p, getEjbNodesFactory());
     }
     
     public static Node createConfigFilesView (FileObject folder) {

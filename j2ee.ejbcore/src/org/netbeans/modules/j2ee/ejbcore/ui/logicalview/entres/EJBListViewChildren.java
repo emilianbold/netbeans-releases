@@ -18,20 +18,13 @@
  */
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
-import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
@@ -41,26 +34,12 @@ import org.openide.nodes.Node;
 public final class EJBListViewChildren extends Children.Keys<EJBListViewChildren.KEY> {
 
     public enum KEY { EJB }
-    
-    private final Sources sources;
-    private final ClassPath classPath;
+
     private final Project project;
 
     public EJBListViewChildren(Project project) {
         assert project != null;
         this.project = project;
-        sources = ProjectUtils.getSources(project);
-        assert sources != null;
-        classPath = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(getRoots());
-    }
-
-    private FileObject[] getRoots() {
-        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        FileObject[] roots = new FileObject[groups.length];
-        for (int i = 0; i < groups.length; i++) {
-            roots[i] = groups[i].getRootFolder();
-        }
-        return roots;
     }
 
     @Override
@@ -85,15 +64,7 @@ public final class EJBListViewChildren extends Children.Keys<EJBListViewChildren
         Node node = null;
         if (key == KEY.EJB) {
             EjbJar[] apiEjbJars = EjbJar.getEjbJars(project);
-            org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = null;
-            try {
-                ejbJar = org.netbeans.modules.j2ee.dd.api.ejb.DDProvider.getDefault().getMergedDDRoot(apiEjbJars[0].getMetadataUnit());
-            } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
-            }
-            if (ejbJar != null) {
-                node = J2eeProjectView.createEjbsView(ejbJar, classPath, apiEjbJars[0].getDeploymentDescriptor(), project);
-            }
+            node = J2eeProjectView.createEjbsView(apiEjbJars[0], project);
         }
         return node == null ? new Node[0] : new Node[] {node};
     }

@@ -44,16 +44,18 @@ import org.netbeans.modules.j2ee.common.EventRequestProcessor.AsynchronousAction
 import org.netbeans.modules.j2ee.common.EventRequestProcessor.Context;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
-import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
+import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import org.netbeans.modules.j2ee.ejbcore.action.UseDatabaseGenerator;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -68,6 +70,7 @@ import org.openide.util.actions.NodeAction;
 
 /**
  * Provide action for using a data source.
+ * 
  * @author Chris Webster
  * @author Martin Adamek
  */
@@ -164,6 +167,8 @@ public class UseDatabaseAction extends NodeAction {
                     populateDataSourceReferences(holder, j2eeModuleProvider, fileObject);
                 } catch (ConfigurationException ex) {
                     ErrorManager.getDefault().notify(ex);
+                } catch (IOException ioe) {
+                    ErrorManager.getDefault().notify(ioe);
                 }
             }
         });
@@ -176,49 +181,57 @@ public class UseDatabaseAction extends NodeAction {
     
     // this method has to called asynchronously!
     private void populateDataSourceReferences(final ResourcesHolder holder, final J2eeModuleProvider j2eeModuleProvider,
-            final FileObject fileObject) throws ConfigurationException {
+            final FileObject fileObject) throws ConfigurationException, IOException {
         
-        HashMap<String, Datasource> references = new HashMap<String, Datasource>();
+        final HashMap<String, Datasource> references = new HashMap<String, Datasource>();
         holder.setReferences(references);
         holder.setModuleDataSources(j2eeModuleProvider.getModuleDatasources());
         holder.setServerDataSources(j2eeModuleProvider.getServerDatasources());
         
         if (j2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.EJB)) {
-            EjbJar dd = findEjbDDRoot(fileObject);
-            if (dd == null) {
-                return;
-            }
-            EnterpriseBeans beans = dd.getEnterpriseBeans();
-            if (beans == null) {
-                return;
-            }
             
-            Ejb[] ejbs = beans.getEjbs();
-            for (Ejb ejb : ejbs) {
-                ResourceRef[] refs = ejb.getResourceRef();
-                for (ResourceRef ref : refs) {
-                    String refName = ref.getResRefName();
-                    Datasource ds = findDatasourceForReferenceForEjb(holder, j2eeModuleProvider, refName, ejb.getEjbName());
-                    if (ds != null) {
-                        references.put(refName, ds);
+            MetadataModel<EjbJarMetadata> metadataModel = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fileObject).getMetadataModel();
+            metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
+                public Void run(EjbJarMetadata metadata) throws Exception {
+                    EnterpriseBeans beans = metadata.getRoot().getEnterpriseBeans();
+                    if (beans == null) {
+                        return null;
                     }
+
+                    Ejb[] ejbs = beans.getEjbs();
+                    for (Ejb ejb : ejbs) {
+                        ResourceRef[] refs = ejb.getResourceRef();
+                        for (ResourceRef ref : refs) {
+                            String refName = ref.getResRefName();
+                            Datasource ds = findDatasourceForReferenceForEjb(holder, j2eeModuleProvider, refName, ejb.getEjbName());
+                            if (ds != null) {
+                                references.put(refName, ds);
+                            }
+                        }
+                    }
+                    return null;
                 }
-            }
+            });
+            
         }
         else
         if (j2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.WAR)) {
-            WebApp dd = findWebDDRoot(fileObject);
-            if (dd == null) {
-                return;
-            }
-            ResourceRef[] refs = dd.getResourceRef();
-            for (ResourceRef ref : refs) {
-                String refName = ref.getResRefName();
-                Datasource ds = findDatasourceForReference(holder, j2eeModuleProvider, refName);
-                if (ds != null) {
-                    references.put(refName, ds);
+            
+            MetadataModel<WebAppMetadata> metadataModel = WebModule.getWebModule(fileObject).getMetadataModel();
+            metadataModel.runReadAction(new MetadataModelAction<WebAppMetadata, Void>() {
+                public Void run(WebAppMetadata metadata) throws Exception {
+                    ResourceRef[] refs = metadata.getRoot().getResourceRef();
+                    for (ResourceRef ref : refs) {
+                        String refName = ref.getResRefName();
+                        Datasource ds = findDatasourceForReference(holder, j2eeModuleProvider, refName);
+                        if (ds != null) {
+                            references.put(refName, ds);
+                        }
+                    }
+                    return null;
                 }
-            }
+            });
+            
         }
     }
 
@@ -260,29 +273,6 @@ public class UseDatabaseAction extends NodeAction {
         return null;
     }
     
-    private EjbJar findEjbDDRoot(FileObject fileObject) throws ConfigurationException {
-        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbJar = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fileObject);
-        assert ejbJar != null;
-        try {
-            return org.netbeans.modules.j2ee.dd.api.ejb.DDProvider.getDefault().getMergedDDRoot(ejbJar.getMetadataUnit());
-        }
-        catch (IOException ioe) {
-            String msg = NbBundle.getMessage(UseDatabaseAction.class, "ERR_CannotReadEjbDD");
-            throw new ConfigurationException(msg, ioe);
-        }
-    }
-    
-    private WebApp findWebDDRoot(FileObject fileObject) throws ConfigurationException {
-        WebModule mod = WebModule.getWebModule(fileObject);
-        try {
-            return org.netbeans.modules.j2ee.dd.api.web.DDProvider.getDefault().getMergedDDRoot(mod);
-        }
-        catch (IOException ioe) {
-            String msg = NbBundle.getMessage(UseDatabaseAction.class, "ERR_CannotReadWebDD");
-            throw new ConfigurationException(msg, ioe);
-        }
-    }
-        
     protected boolean enable(Node[] nodes) {
         if (nodes == null || nodes.length != 1) {
             return false;

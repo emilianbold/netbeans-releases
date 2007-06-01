@@ -23,50 +23,56 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
-import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
 /**
  * This class encapsulates functionality required for working with EJB methods.
+ * 
  * @author Chris Webster
  * @author Martin Adamek
  */
 public abstract class EjbMethodController {
     
-    public static EjbMethodController createFromClass(FileObject ejbClassFO, String className) {
+    private enum EjbType { SESSION, ENTITY, ERROR }
+    
+    public static EjbMethodController createFromClass(FileObject ejbClassFO, final String className) {
         org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(ejbClassFO);
         if (ejbModule == null) {
             return null;
         }
-        DDProvider provider = DDProvider.getDefault();
-        EjbJar ejbJar = null;
         EjbMethodController controller = null;
         try {
-            ejbJar = provider.getMergedDDRoot(ejbModule.getMetadataUnit());
-            if (ejbJar != null) {
-                EnterpriseBeans beans = ejbJar.getEnterpriseBeans();
-                if (beans != null) {
-                    Session session = (Session) beans.findBeanByName(EnterpriseBeans.SESSION, Ejb.EJB_CLASS, className);
-                    if (session != null) {
-                        controller = new SessionMethodController(ejbClassFO, session);
-                        // TODO EJB3: on Java EE 5.0 this always sets controller to null
-                        if (!controller.hasLocal() && !controller.hasRemote()) {
-                            // this is either an error or a web service 
-                            controller = null;
-                        }
+            MetadataModel<EjbJarMetadata> model = ejbModule.getMetadataModel();
+            EjbType ejbType = model.runReadAction(new MetadataModelAction<EjbJarMetadata, EjbType>() {
+                public EjbType run(EjbJarMetadata metadata) throws Exception {
+                    Ejb ejb = metadata.findByEjbClass(className);
+                    if (ejb == null) {
+                        return EjbType.ERROR;
+                    } else if (ejb instanceof Session) {
+                        return EjbType.SESSION;
+                    } else if (ejb instanceof Entity) {
+                        return EjbType.ENTITY;
                     } else {
-                        Entity entity = (Entity) beans.findBeanByName(EnterpriseBeans.ENTITY, Ejb.EJB_CLASS, className);
-                        if (entity != null) {
-                            controller = new EntityMethodController(ejbClassFO, entity, ejbJar);
-                        }
+                        return EjbType.ERROR;
                     }
                 }
+            });
+            if (ejbType == EjbType.SESSION) {
+                controller = new SessionMethodController(className, model);
+                // TODO EJB3: on Java EE 5.0 this always sets controller to null
+                if (!controller.hasLocal() && !controller.hasRemote()) {
+                    // this is either an error or a web service 
+                    controller = null;
+                }
+            } else if (ejbType == EjbType.ENTITY) {
+                controller = new EntityMethodController(className, model);
             }
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ioe);

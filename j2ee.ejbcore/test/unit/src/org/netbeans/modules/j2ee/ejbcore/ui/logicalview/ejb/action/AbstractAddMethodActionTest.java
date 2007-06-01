@@ -51,7 +51,7 @@ public class AbstractAddMethodActionTest extends TestBase {
         assertFalse(new AddMethodAction(new AddBusinessMethodStrategy()).enable(new Node[] {node}));
         assertFalse(new AddMethodAction(new AddCreateMethodStrategy()).enable(new Node[] {node}));
 
-        TestModule testModule = ejb14();
+        TestModule testModule = createEjb21Module();
         
         // EJB 2.1 Stateless Session Bean
         FileObject beanClass = testModule.getSources()[0].getFileObject("statelesslr/StatelessLRBean.java");

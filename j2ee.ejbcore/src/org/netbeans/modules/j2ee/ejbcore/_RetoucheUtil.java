@@ -147,11 +147,13 @@ public final class _RetoucheUtil {
                 if (isStatic) {
                     modifiers.add(Modifier.STATIC);
                 }
-                // annotation woth attributes
+                // annotation with attributes
                 List<ExpressionTree> attributesList = new ArrayList<ExpressionTree>();
-                for (Map.Entry<String, String> entry : attributes.entrySet()) {
-                    ExpressionTree attributeTree = generationUtils.createAnnotationArgument(entry.getKey(), entry.getValue());
-                    attributesList.add(attributeTree);
+                if (attributes != null) {
+                    for (Map.Entry<String, String> entry : attributes.entrySet()) {
+                        ExpressionTree attributeTree = generationUtils.createAnnotationArgument(entry.getKey(), entry.getValue());
+                        attributesList.add(attributeTree);
+                    }
                 }
                 AnnotationTree annotationTree = generationUtils.createAnnotation(annotationType, attributesList);
                 ModifiersTree modifiersTree = treeMaker.addModifiersAnnotation(treeMaker.Modifiers(modifiers), annotationTree);

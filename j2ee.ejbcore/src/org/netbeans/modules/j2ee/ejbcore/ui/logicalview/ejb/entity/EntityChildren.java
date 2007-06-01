@@ -21,12 +21,16 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.entity;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.openide.ErrorManager;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
@@ -37,41 +41,57 @@ import org.openide.nodes.Node;
  */
 public final class EntityChildren extends Children.Keys<EntityChildren.KEY> implements PropertyChangeListener {
     
+    // indexes into fields with results for model query
+    private final static int REMOTE = 0;
+    private final static int LOCAL = 1;
+    private final static int CMP = 2;
+    
     protected enum KEY { REMOTE, LOCAL, CMP_FIELDS }
     
-    private final Entity model;
-    private final ClassPath srcPath;
-//    private final EntityMethodController controller;
-//    private final EjbJar jar;
-//    private final FileObject ddFile;
+    private final String ejbClass;
+    private final MetadataModel<EjbJarMetadata> model;
     
-    public EntityChildren(Entity model, ClassPath srcPath, EjbJar jar, FileObject ddFile) {
-        this.srcPath = srcPath;
+    public EntityChildren(String ejbClass, MetadataModel<EjbJarMetadata> model) {
+        this.ejbClass = ejbClass;
         this.model = model;
-        //TODO: RETOUCHE
-//        this.jar = jar;
-//        this.ddFile = ddFile;
-//        controller = new EntityMethodController(null, model, jar);
     }
     
     protected void addNotify() {
         super.addNotify();
-        updateKeys();
-        model.addPropertyChangeListener(this);
-        srcPath.addPropertyChangeListener(this);
+        try {
+            updateKeys();
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        }
+        //TODO: RETOUCHE listening on model for logical view changes
+//        model.addPropertyChangeListener(this);
     }
     
-    private void updateKeys() {
+    private void updateKeys() throws IOException {
+        final boolean[] results = new boolean[] { false, false, false };
+        
+        model.runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
+            public Void run(EjbJarMetadata metadata) throws Exception {
+                Entity entity = (Entity) metadata.findByEjbClass(ejbClass);
+                if (entity != null) {
+                    results[REMOTE] = entity.getRemote() != null;
+                    results[LOCAL] = entity.getLocal() != null;
+                    results[CMP] = Entity.PERSISTENCE_TYPE_CONTAINER.equals(entity.getPersistenceType());
+                }
+                return null;
+            }
+        });
+        
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 List<KEY> keys = new ArrayList<KEY>();
-                if (model.getRemote() != null) {
+                if (results[REMOTE]) {
                     keys.add(KEY.REMOTE);
                 }
-                if (model.getLocal()!=null) {
+                if (results[LOCAL]) {
                     keys.add(KEY.LOCAL);
                 }
-                if (Entity.PERSISTENCE_TYPE_CONTAINER.equals(model.getPersistenceType())) {
+                if (results[CMP]) {
                     keys.add(KEY.CMP_FIELDS);
                 }
                 setKeys(keys);
@@ -80,8 +100,7 @@ public final class EntityChildren extends Children.Keys<EntityChildren.KEY> impl
     }
     
     protected void removeNotify() {
-        model.removePropertyChangeListener(this);
-        srcPath.removePropertyChangeListener(this);
+//        model.removePropertyChangeListener(this);
         setKeys(Collections.<KEY>emptySet());
         super.removeNotify();
     }
@@ -115,7 +134,11 @@ public final class EntityChildren extends Children.Keys<EntityChildren.KEY> impl
         //TODO add code for detecting class name changes 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                updateKeys();
+                try {
+                    updateKeys();
+                } catch (IOException ioe) {
+                    ErrorManager.getDefault().notify(ioe);
+                }
             }
         });
     }

@@ -84,18 +84,6 @@ public final class DDProvider {
         return ddProvider;
     }
 
-    public EjbJar getMergedDDRoot(MetadataUnit mu) throws IOException {
-        if (mu == null) {
-            return null;
-        }
-        EjbJar xmlRoot = getDDRoot(mu.getDeploymentDescriptor());
-        //  for J2ee 1.4 and lower delegate to XML-only method
-        if (xmlRoot != null && !xmlRoot.getVersion().equals(new BigDecimal(EjbJar.VERSION_3_0))) {
-            return xmlRoot;
-        }
-        return null;
-    }
-
     public List<EjbJar> getRoots() {
         synchronized (this) {
             return new ArrayList(annotationDDMap.values());

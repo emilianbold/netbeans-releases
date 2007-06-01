@@ -24,6 +24,7 @@
 
 package org.netbeans.modules.j2ee.dd.api.webservices;
 import org.netbeans.modules.j2ee.dd.api.common.Icon;
+import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 
 public interface PortComponent extends org.netbeans.modules.j2ee.dd.api.common.CommonDDBean{
 	
@@ -81,8 +82,16 @@ public interface PortComponent extends org.netbeans.modules.j2ee.dd.api.common.C
 	//public void setWsdlPort(java.lang.String value);
 
 	//public java.lang.String getWsdlPort();
- 
-    public void setWsdlPort(org.netbeans.modules.schema2beans.QName value);
+
+        public void setWsdlService(org.netbeans.modules.schema2beans.QName value) throws VersionNotSupportedException;
+
+	public org.netbeans.modules.schema2beans.QName getWsdlService() throws VersionNotSupportedException;
+
+	public void setWsdlServiceId(java.lang.String value) throws VersionNotSupportedException;
+
+	public java.lang.String getWsdlServiceId() throws VersionNotSupportedException;
+        
+        public void setWsdlPort(org.netbeans.modules.schema2beans.QName value);
 
 	public org.netbeans.modules.schema2beans.QName getWsdlPort();
 

@@ -39,8 +39,8 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
+import org.netbeans.modules.j2ee.dd.api.application.ApplicationMetadata;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
-import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.deployment.common.api.EjbChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -51,9 +51,12 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvid
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationImplementation;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.earproject.model.ApplicationMetadataModelImpl;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.VisualClassPathItem;
 import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -62,6 +65,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.util.NotImplementedException;
 import org.openide.util.WeakListeners;
 
 /**
@@ -84,8 +88,10 @@ public final class ProjectEar extends J2eeApplicationProvider
     
     private PropertyChangeSupport propertyChangeSupport;
     private J2eeApplication j2eeApplication;
+    // XXX remove this property after metadata model is implemented
     /* application reference for JAVA EE 5 only (if application.xml doesn't exist)  */
     private Application application;
+    private MetadataModel<ApplicationMetadata> metadataModel;
     
     ProjectEar (EarProject project) { // ], AntProjectHelper helper) {
         this.project = project;
@@ -163,14 +169,28 @@ public final class ProjectEar extends J2eeApplicationProvider
     public FileObject getBuildDirectory() {
         return project.getFileObject (EarProjectProperties.BUILD_DIR); //NOI18N
     }
-
-    public RootInterface getDeploymentDescriptor (String location) {
-        if (!J2eeModule.APP_XML.equals(location)) {
-            return null;
+    
+    /**
+     * Get metadata model of enterprise application.
+     */
+    public synchronized MetadataModel<ApplicationMetadata> getMetadataModel() {
+        if (metadataModel == null) {
+            metadataModel = MetadataModelFactory.createMetadataModel(new ApplicationMetadataModelImpl(project));
         }
-        
-        return getApplication();
+        return metadataModel;
     }
+
+    // TODO MetadataModel: fix when the model is ready
+    public <T> MetadataModel<T> getDeploymentDescriptor(Class<T> type) {
+        throw new NotImplementedException();
+    }
+//    public RootInterface getDeploymentDescriptor (String location) {
+//        if (!J2eeModule.APP_XML.equals(location)) {
+//            return null;
+//        }
+//        
+//        return getApplication();
+//    }
 
     /**
      * Get the metadata model of EAR project. The model is taken from deployment descriptor

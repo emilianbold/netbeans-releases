@@ -161,7 +161,7 @@ public class EntityGenerator {
 
     private void generateXml() throws IOException {
         org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(pkg);
-        org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = DDProvider.getDefault().getMergedDDRoot(ejbModule.getMetadataUnit());
+        org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = DDProvider.getDefault().getDDRoot(ejbModule.getDeploymentDescriptor()); // EJB 2.1
         EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
         if (enterpriseBeans == null) {
             enterpriseBeans = ejbJar.newEnterpriseBeans();

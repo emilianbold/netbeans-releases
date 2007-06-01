@@ -261,7 +261,8 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         buildExtender = AntBuildExtenderFactory.createAntExtender(new WebExtenderImplementation());
         genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
         this.updateHelper = new UpdateHelper (this, this.helper, this.aux, UpdateHelper.createDefaultNotifier());
-        webModule = new ProjectWebModule (this, updateHelper);
+        ClassPathProviderImpl cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots());
+        webModule = new ProjectWebModule (this, updateHelper, cpProvider);
         apiWebModule = WebModuleFactory.createWebModule (webModule);
         WebProjectWebServicesSupport webProjectWebServicesSupport = new WebProjectWebServicesSupport(this, helper, refHelper);
         WebProjectJAXWSSupport jaxwsSupport = new WebProjectJAXWSSupport(this, helper);
@@ -274,7 +275,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         enterpriseResourceSupport = new WebContainerImpl(this, refHelper, helper);
         cpMod = new WebProjectClassPathModifier(this, this.updateHelper, eval, refHelper);
         classPathExtender = new WebProjectClassPathExtender(cpMod);
-        lookup = createLookup(aux);
+        lookup = createLookup(aux, cpProvider);
         helper.addAntProjectListener(this);
         css = new CopyOnSaveSupport();
         webPagesFileWatch = new FileWatch(WebProjectProperties.WEB_DOCBASE_DIR);
@@ -317,9 +318,8 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         return helper;
     }
 
-    private Lookup createLookup(AuxiliaryConfiguration aux) {
+    private Lookup createLookup(AuxiliaryConfiguration aux, ClassPathProviderImpl cpProvider) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
-        ClassPathProviderImpl cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots());
         Lookup base = Lookups.fixed(new Object[] {            
             new Info(),
             aux,

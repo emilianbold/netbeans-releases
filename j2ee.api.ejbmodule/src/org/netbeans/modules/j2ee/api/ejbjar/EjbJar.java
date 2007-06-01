@@ -18,10 +18,10 @@
  */
 package org.netbeans.modules.j2ee.api.ejbjar;
 
-import java.util.Iterator;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.ejbjar.EjbJarAccessor;
-import org.netbeans.modules.j2ee.metadata.MetadataUnit;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.spi.ejbjar.*;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider;
 import org.openide.filesystems.FileObject;
@@ -127,14 +127,8 @@ public final class EjbJar {
         return impl.getMetaInf();
     }
 
-    /**
-     * Coupling of deployment desrciptor and classpath containing annotated classes
-     * describing metadata of the EJB module
-     * 
-     * @return non-null value
-     */
-    public MetadataUnit getMetadataUnit() {
-        return impl.getMetadataUnit();
+    public MetadataModel<EjbJarMetadata> getMetadataModel() {
+        return impl.getMetadataModel();
     }
-    
+
 }

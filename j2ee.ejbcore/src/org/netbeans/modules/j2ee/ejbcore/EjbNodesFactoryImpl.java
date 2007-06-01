@@ -19,16 +19,12 @@
 
 package org.netbeans.modules.j2ee.ejbcore;
 
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
-import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
-import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
-import org.netbeans.modules.j2ee.dd.api.ejb.Session;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.entity.EntityNode;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.mdb.MessageNode;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.session.SessionNode;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbNodesFactory;
-import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 
 /**
@@ -40,15 +36,15 @@ public final class EjbNodesFactoryImpl implements EjbNodesFactory {
     public EjbNodesFactoryImpl() {
     }
     
-    public Node createSessionNode (Session session, EjbJar ejbJar, ClassPath classPath) {
-        return new SessionNode (session, ejbJar, classPath);
+    public Node createSessionNode(String ejbClass, EjbJar ejbModule, Project project) {
+        return new SessionNode(ejbClass, ejbModule, project);
     }
     
-    public Node createEntityNode (Entity entity, EjbJar ejbJar, ClassPath classPath, FileObject ddFile) {
-        return new EntityNode (entity, ejbJar, classPath, ddFile);
+    public Node createEntityNode(String ejbClass, EjbJar ejbModule, Project project) {
+        return new EntityNode(ejbClass, ejbModule, project);
     }
     
-    public Node createMessageNode (MessageDriven mdb, EjbJar ejbJar, ClassPath classPath) {
-        return new MessageNode(mdb, ejbJar, classPath);
+    public Node createMessageNode(String ejbClass, EjbJar ejbModule, Project project) {
+        return new MessageNode(ejbClass, ejbModule, project);
     }
 }

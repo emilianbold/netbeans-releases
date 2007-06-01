@@ -1,6 +1,6 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
+ * The contents of this file are subject to the terms of the Common Development
  * compliance with the License.
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
@@ -25,24 +25,24 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.*;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
+import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
+import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation;
-import org.netbeans.modules.j2ee.metadata.ClassPathSupport;
-import org.netbeans.modules.j2ee.common.Util;
-import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.common.api.EjbChangeDescriptor;
-import org.netbeans.modules.j2ee.metadata.MetadataUnit;
-import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
@@ -53,8 +53,11 @@ import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
+import org.netbeans.modules.j2ee.dd.spi.ejb.EjbJarMetadataModelFactory;
+import org.netbeans.modules.j2ee.dd.spi.webservices.WebservicesMetadataModelFactory;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.openide.util.WeakListeners;
 
@@ -70,18 +73,19 @@ public final class EjbJarProvider extends J2eeModuleProvider
     
     private final EjbJarProject project;
     private final AntProjectHelper helper;
-    private Set versionListeners;
-    private MetadataUnit metadataUnit;
-    private ClassPath metadataClassPath;
+    private MetadataModel<EjbJarMetadata> ejbJarMetadataModel;
+    private MetadataModel<WebservicesMetadata> webservicesMetadataModel;
     
     private PropertyChangeSupport propertyChangeSupport;
     private J2eeModule j2eeModule;
+    private ClassPathProviderImpl cpProvider;
     
     private long notificationTimeout = 0; // used to suppress repeating the same messages
     
-    EjbJarProvider(EjbJarProject project, AntProjectHelper helper) {
+    EjbJarProvider(EjbJarProject project, AntProjectHelper helper, ClassPathProviderImpl cpProvider) {
         this.project = project;
         this.helper = helper;
+        this.cpProvider = cpProvider;
         project.evaluator().addPropertyChangeListener (this);
     }
     
@@ -218,50 +222,41 @@ public final class EjbJarProvider extends J2eeModuleProvider
         return getFile(EjbJarProjectProperties.BUILD_CLASSES_DIR);
     }
     
-    public RootInterface getDeploymentDescriptor(String location) {
-        if (J2eeModule.EJBJAR_XML.equals(location)){
-            return getEjbJar();
-        }
-        else if(J2eeModule.EJBSERVICES_XML.equals(location)){
-            return getWebservices();
-        }
-        return null;
-    }
-    
-    private EjbJar getEjbJar() {
-        try {
-            org.netbeans.modules.j2ee.api.ejbjar.EjbJar apiEjbJar = project.getAPIEjbJar();
-            if (apiEjbJar.getDeploymentDescriptor() == null && !EjbJarProjectProperties.JAVA_EE_5.equals(apiEjbJar.getJ2eePlatformVersion())) {
-                return null;
-            } else {
-                return DDProvider.getDefault().getMergedDDRoot(apiEjbJar.getMetadataUnit());
-            }
-        } catch (java.io.IOException e) {
-            org.openide.ErrorManager.getDefault().log(e.getLocalizedMessage());
+    public <T> MetadataModel<T> getDeploymentDescriptor(Class<T> type) {
+        if (type == EjbJarMetadata.class) {
+            @SuppressWarnings("unchecked") // NOI18N
+            MetadataModel<T> model = (MetadataModel<T>)getMetadataModel();
+            return model;
+        } else if (type == WebservicesMetadata.class) {
+            @SuppressWarnings("unchecked") // NOI18N
+            MetadataModel<T> model = (MetadataModel<T>)getWebservicesMetadataModel();
+            return model;
         }
         return null;
     }
     
-    private Webservices getWebservices() {
-        if (Util.isJavaEE5orHigher(project)) {
-            WebServicesSupport wss = WebServicesSupport.getWebServicesSupport(project.getProjectDirectory());
-            try {
-                return org.netbeans.modules.j2ee.dd.api.webservices.DDProvider.getDefault().getMergedDDRoot(wss);
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
-        } else {
-            FileObject wsdd = getDD();
-            if(wsdd != null) {
-                try {
-                    return org.netbeans.modules.j2ee.dd.api.webservices.DDProvider.getDefault().getDDRoot(wsdd);
-                } catch (java.io.IOException e) {
-                    org.openide.ErrorManager.getDefault().log(e.getLocalizedMessage());
-                }
-            }
-        }
-        return null;
-    }
+// TODO MetadataModel: rewrite when MetadataModel<WebservicesMode> is ready
+//    
+//    private Webservices getWebservices() {
+//        if (Util.isJavaEE5orHigher(project)) {
+//            WebServicesSupport wss = WebServicesSupport.getWebServicesSupport(project.getProjectDirectory());
+//            try {
+//                return org.netbeans.modules.j2ee.dd.api.webservices.DDProvider.getDefault().getMergedDDRoot(wss);
+//            } catch (IOException ex) {
+//                ErrorManager.getDefault().notify(ex);
+//            }
+//        } else {
+//            FileObject wsdd = getDD();
+//            if(wsdd != null) {
+//                try {
+//                    return org.netbeans.modules.j2ee.dd.api.webservices.DDProvider.getDefault().getDDRoot(wsdd);
+//                } catch (java.io.IOException e) {
+//                    org.openide.ErrorManager.getDefault().log(e.getLocalizedMessage());
+//                }
+//            }
+//        }
+//        return null;
+//    }
     
     public FileObject getDD() {
         FileObject metaInfFo = getMetaInf();
@@ -280,31 +275,23 @@ public final class EjbJarProvider extends J2eeModuleProvider
     }
     
     public String getModuleVersion() {
-        EjbJar ejbJar = getEjbJar();
-        return (ejbJar == null) ? EjbJar.VERSION_2_1 /* fallback */ : ejbJar.getVersion().toString();
-    }
-    
-    private Set versionListeners() {
-        if (versionListeners == null) {
-            versionListeners = new HashSet();
-            org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = getEjbJar();
-            if (ejbJar != null) {
-                PropertyChangeListener l = (PropertyChangeListener) org.openide.util.WeakListeners.create(PropertyChangeListener.class, this, ejbJar);
-                ejbJar.addPropertyChangeListener(l);
+        // we don't want to use MetadataModel here as it can block
+        String version = null;
+        try {
+            FileObject ddFO = getDeploymentDescriptor();
+            if (ddFO != null) {
+                org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = DDProvider.getDefault().getDDRoot(ddFO);
+                version = ejbJar.getVersion().toString();
             }
+        } catch (IOException e) {
+            Logger.getLogger("global").log(Level.WARNING, null, e); // NOI18N
         }
-        return versionListeners;
+        if (version == null) {
+            // XXX should return a version based on the Java EE version
+            version = EjbJar.VERSION_3_0;
+        }
+        return version;
     }
-//    
-//    public void addVersionListener(J2eeModule.VersionListener vl) {
-//        versionListeners().add(vl);
-//    }
-//    
-//    public void removeVersionListener(J2eeModule.VersionListener vl) {
-//        if (versionListeners != null) {
-//            versionListeners.remove(vl);
-//        }
-//    }
     
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.PROPERTY_VERSION)) {
@@ -352,15 +339,36 @@ public final class EjbJarProvider extends J2eeModuleProvider
         return helper.getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.J2EE_PLATFORM);
     }
 
-    public MetadataUnit getMetadataUnit() {
-        synchronized (this) {
-            if (metadataUnit == null) {
-                metadataUnit = new MetadataUnitImpl();
-            }
-            return metadataUnit;
+    public synchronized MetadataModel<EjbJarMetadata> getMetadataModel() {
+        if (ejbJarMetadataModel == null) {
+            FileObject ddFO = getDeploymentDescriptor();
+            File ddFile = ddFO != null ? FileUtil.toFile(ddFO) : null;
+            MetadataUnit metadataUnit = MetadataUnit.create(
+                cpProvider.getProjectSourcesClassPath(ClassPath.BOOT),
+                cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
+                cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
+                // XXX: add listening on deplymentDescriptor
+                ddFile);
+            ejbJarMetadataModel = EjbJarMetadataModelFactory.createMetadataModel(metadataUnit);
         }
+        return ejbJarMetadataModel;
     }
     
+    public synchronized MetadataModel<WebservicesMetadata> getWebservicesMetadataModel() {
+        if (webservicesMetadataModel == null) {
+            FileObject ddFO = getDD();
+            File ddFile = ddFO != null ? FileUtil.toFile(ddFO) : null;
+            MetadataUnit metadataUnit = MetadataUnit.create(
+                cpProvider.getProjectSourcesClassPath(ClassPath.BOOT),
+                cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
+                cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
+                // XXX: add listening on deplymentDescriptor
+                ddFile);
+            webservicesMetadataModel = WebservicesMetadataModelFactory.createMetadataModel(metadataUnit);
+        }
+        return webservicesMetadataModel;
+    }
+
     public FileObject[] getSourceRoots() {
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
@@ -418,19 +426,6 @@ public final class EjbJarProvider extends J2eeModuleProvider
         }
     }
 
-    private ClassPath getMetadataClassPath() {
-        synchronized (this) {
-            if (metadataClassPath == null) {
-                ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)project.getLookup().lookup(ClassPathProviderImpl.class);
-                metadataClassPath = ClassPathSupport.createWeakProxyClassPath(new ClassPath[] {
-                    cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
-                    cpProvider.getJ2eePlatformClassPath(),
-                });
-            }
-            return metadataClassPath;
-        }
-    }
-    
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         getPropertyChangeSupport().addPropertyChangeListener(listener);
     }
@@ -445,25 +440,26 @@ public final class EjbJarProvider extends J2eeModuleProvider
     }
     
     private PropertyChangeSupport getPropertyChangeSupport() {
-        EjbJar ejbJar = getEjbJar();
         synchronized (this) {
             if (propertyChangeSupport == null) {
                 propertyChangeSupport = new PropertyChangeSupport(this);
-                if (ejbJar != null) {
-                    PropertyChangeListener l = (PropertyChangeListener) WeakListeners.create(PropertyChangeListener.class, this, ejbJar);
-                    ejbJar.addPropertyChangeListener(l);
-                }
+                // XXX need to listen on the module version
+                // try {
+                //     project.getAPIEjbJar().getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
+                //         public Void run(EjbJarMetadata metadata) throws MetadataModelException, IOException {
+                //             EjbJar ejbJar = metadata.getRoot();
+                //             PropertyChangeListener l = (PropertyChangeListener) WeakListeners.create(PropertyChangeListener.class, EjbJarProvider.this, ejbJar);
+                //             ejbJar.addPropertyChangeListener(l);
+                //             return null;
+                //         }
+                //     });
+                // } catch (MetadataModelException e) {
+                //     // TODO MetadataModel: handle the exception
+                // } catch (IOException e) {
+                //     // TODO MetadataModel: handle the exception
+                // }
             }
             return propertyChangeSupport;
-        }
-    }
-
-    private class MetadataUnitImpl implements MetadataUnit {
-        public ClassPath getClassPath() {
-            return getMetadataClassPath();
-        }
-        public FileObject getDeploymentDescriptor() {
-            return EjbJarProvider.this.getDeploymentDescriptor();
         }
     }
 
@@ -508,4 +504,5 @@ public final class EjbJarProvider extends J2eeModuleProvider
             return FileUtil.getRelativePath(root, f);
         }
     }
+
 }

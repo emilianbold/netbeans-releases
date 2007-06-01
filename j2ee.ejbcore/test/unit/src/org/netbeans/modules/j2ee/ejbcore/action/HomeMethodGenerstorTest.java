@@ -34,8 +34,6 @@ import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
-import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
-import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.ejbcore.test.TestBase;
 import org.openide.filesystems.FileObject;
 
@@ -50,13 +48,12 @@ public class HomeMethodGenerstorTest extends TestBase {
     }
     
     public void testGenerate() throws IOException {
-        TestModule testModule = ejb14();
+        TestModule testModule = createEjb21Module();
         
         // add create method into local and remote interfaces of CMP Entity EJB
         FileObject beanClass = testModule.getSources()[0].getFileObject("cmplr/CmpLRBean.java");
         EjbJar ejbJar = DDProvider.getDefault().getDDRoot(testModule.getDeploymentDescriptor());
-        Entity entity = (Entity) ejbJar.getEnterpriseBeans().findBeanByName(EnterpriseBeans.ENTITY, Entity.EJB_CLASS, "cmplr.CmpLRBean");
-        HomeMethodGenerator generator = HomeMethodGenerator.create(entity, beanClass);
+        HomeMethodGenerator generator = HomeMethodGenerator.create("cmplr.CmpLRBean", beanClass);
         final MethodModel methodModel = MethodModel.create(
                 "homeTest",
                 "void",

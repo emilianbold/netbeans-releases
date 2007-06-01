@@ -22,8 +22,10 @@ package org.netbeans.modules.web.api.webmodule;
 import java.net.URL;
 import java.util.Iterator;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.metadata.ClassPathSupport;
 import org.netbeans.modules.j2ee.metadata.MetadataUnit;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.web.webmodule.WebModuleAccessor;
 import org.netbeans.modules.web.spi.webmodule.*;
 import org.openide.filesystems.FileObject;
@@ -180,5 +182,9 @@ public final class WebModule implements MetadataUnit {
         } else {
             return org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(new URL[0]);
         }
+    }
+    
+    public MetadataModel<WebAppMetadata> getMetadataModel() {
+        return impl.getMetadataModel();
     }
 }

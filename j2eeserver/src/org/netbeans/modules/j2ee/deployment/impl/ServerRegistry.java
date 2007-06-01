@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.j2ee.deployment.impl;
 
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
@@ -37,6 +38,8 @@ import org.openide.modules.InstalledFileLocator;
 //import java.util.logging.*;
 
 public final class ServerRegistry implements java.io.Serializable {
+    
+    private static final Logger LOGGER = Logger.getLogger(ServerRegistry.class.getName());
     
     public static final String DIR_INSTALLED_SERVERS = "/J2EE/InstalledServers"; //NOI18N
     public static final String DIR_JSR88_PLUGINS = "/J2EE/DeploymentPlugins"; //NOI18N
@@ -81,22 +84,24 @@ public final class ServerRegistry implements java.io.Serializable {
         instances = new HashMap();
         Repository rep = (Repository) Lookup.getDefault().lookup(Repository.class);
         FileObject dir = rep.getDefaultFileSystem().findResource(DIR_JSR88_PLUGINS);
-        dir.addFileChangeListener(new PluginInstallListener());
-        FileObject[] ch = dir.getChildren();
-        for(int i = 0; i < ch.length; i++) {
-            //long t1=System.currentTimeMillis();
-            addPlugin(ch[i]);
-            //System.out.println("ServerRegistry.addPlugin("+ch[i]+")="+(System.currentTimeMillis()-t1));
-        }
-        
-        dir = rep.getDefaultFileSystem().findResource(DIR_INSTALLED_SERVERS);
-        dir.addFileChangeListener(new InstanceInstallListener());
-        ch = dir.getChildren();
-        
-        for(int i = 0; i < ch.length; i++) {
-            //long t1=System.currentTimeMillis();
-            addInstance(ch[i]);
-            //System.out.println("ServerRegistry.addInstance("+ch[i]+")="+(System.currentTimeMillis()-t1));
+        if (dir != null) {
+            dir.addFileChangeListener(new PluginInstallListener());
+            FileObject[] ch = dir.getChildren();
+            for(int i = 0; i < ch.length; i++) {
+                //long t1=System.currentTimeMillis();
+                addPlugin(ch[i]);
+                //System.out.println("ServerRegistry.addPlugin("+ch[i]+")="+(System.currentTimeMillis()-t1));
+            }
+            dir = rep.getDefaultFileSystem().findResource(DIR_INSTALLED_SERVERS);
+            dir.addFileChangeListener(new InstanceInstallListener());
+            ch = dir.getChildren();
+            for(int i = 0; i < ch.length; i++) {
+                //long t1=System.currentTimeMillis();
+                addInstance(ch[i]);
+                //System.out.println("ServerRegistry.addInstance("+ch[i]+")="+(System.currentTimeMillis()-t1));
+            }
+        } else {
+            LOGGER.warning("No DIR_JSR88_PLUGINS folder found, no server plugins will be availabe"); // NOI18N
         }
         //System.out.println("ServerRegistry.init="+(System.currentTimeMillis()-t0));
     }
@@ -166,7 +171,7 @@ public final class ServerRegistry implements java.io.Serializable {
     class LayerListener implements FileChangeListener {
         
         public void fileAttributeChanged(FileAttributeEvent fae) {
-            java.util.logging.Logger.getLogger(ServerRegistry.class.getName()).log(java.util.logging.Level.FINEST,"Attribute changed event"); // NOI18N
+            LOGGER.finest("Attribute changed event"); // NOI18N
         }
         public void fileChanged(FileEvent fe) {
         }

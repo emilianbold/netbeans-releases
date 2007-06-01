@@ -190,7 +190,7 @@ public class EjbJarWebServicesClientSupport implements WebServicesClientSupportI
     private EjbJar getEjbJar() {
         try {
             // TODO: first one API EjbJar from project is taken... this should be fixed
-            return DDProvider.getDefault().getMergedDDRoot(org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJars(project)[0].getMetadataUnit());
+            return DDProvider.getDefault().getDDRoot(org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJars(project)[0].getDeploymentDescriptor());
         } catch (java.io.IOException e) {
             org.openide.ErrorManager.getDefault().log(e.getLocalizedMessage());
         }
@@ -375,7 +375,7 @@ public class EjbJarWebServicesClientSupport implements WebServicesClientSupportI
 
             try {
                 // TODO: first one API EjbJar from project is taken... this should be fixed
-                RootInterface rootDD = DDProvider.getDefault().getMergedDDRoot(org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJars(project)[0].getMetadataUnit());
+                RootInterface rootDD = DDProvider.getDefault().getDDRoot(org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJars(project)[0].getDeploymentDescriptor());
 
                 ServiceRef serviceRef = (ServiceRef) rootDD.findBeanByName("ServiceRef", "ServiceRefName", serviceName); // NOI18N
                 if (serviceRef == null) {

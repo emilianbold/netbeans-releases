@@ -27,11 +27,15 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
+import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.BusinessMethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.CreateMethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.FinderMethodType;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType.HomeMethodType;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
@@ -44,14 +48,21 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
 
     private static final String TODO = "//TODO implement "; //NOI18N
     
-    private final FileObject ejbClassFO;
-    private final Entity entity;
+    private final MetadataModel<EjbJarMetadata> model;
+    private final String ejbClass;
+    private final String primaryKeyClass;
     private MethodModel implMethod;
     private MethodModel secondaryMethod;
     
-    public EntityGenerateFromIntfVisitor(FileObject ejbClassFO, Entity entity) {
-        this.ejbClassFO = ejbClassFO;
-        this.entity = entity;
+    public EntityGenerateFromIntfVisitor(final String ejbClass, MetadataModel<EjbJarMetadata> model) throws IOException {
+        this.ejbClass = ejbClass;
+        this.model = model;
+        this.primaryKeyClass = model.runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
+            public String run(EjbJarMetadata metadata) throws Exception {
+                Entity entity = (Entity) metadata.findByEjbClass(ejbClass);
+                return entity.getPrimKeyClass();
+            }
+        });
     }
     
     public void getInterfaceMethodFromImpl(MethodType methodType) {
@@ -83,7 +94,7 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
         implMethod = cmt.getMethodElement();
         String origName = implMethod.getName();
         String newName = prependAndUpper(origName,"ejb"); //NOI18N
-        String type = entity.getPrimKeyClass();
+        String type = primaryKeyClass;
         String body = TODO + newName + type;
         implMethod = MethodModel.create(
                 newName, 
@@ -137,7 +148,7 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
         }
         implMethod = MethodModel.create(
                 newName, 
-                isAssignable ? "void" : entity.getPrimKeyClass(),
+                isAssignable ? "void" : primaryKeyClass,
                 body,
                 implMethod.getParameters(),
                 implMethod.getExceptions(),
@@ -146,6 +157,11 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
     }
     
     private boolean isSubtype(final String className1, final String className2) throws IOException {
+        FileObject ejbClassFO = model.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
+            public FileObject run(EjbJarMetadata metadata) throws Exception {
+                return metadata.findResource(Utils.toResourceName(ejbClass));
+            }
+        });
         JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
         final boolean[] result = new boolean[] {false};
         javaSource.runUserActionTask(new AbstractTask<CompilationController>() {

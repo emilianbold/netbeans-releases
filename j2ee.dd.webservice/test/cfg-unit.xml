@@ -18,9 +18,9 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<mconfig name="websvcddapi">
+<mconfig name="websvc/websvcddapi">
 
-    <testbag testattribs="stable" executor="unit-executor" name="websvcddapi">
+    <testbag testattribs="stable" executor="unit-executor" name="websvc/websvcddapi">
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>

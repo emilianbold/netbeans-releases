@@ -77,8 +77,8 @@ public class CmpGenerator implements PersistenceGenerator {
         return name;
     }
     
-    public Set createdObjects() {
-        return Collections.singleton(ejbModule.getDeploymentDescriptor());
+    public Set<FileObject> createdObjects() {
+        return Collections.<FileObject>singleton(ejbModule.getDeploymentDescriptor());
     }
     
     public void init(WizardDescriptor wiz) {

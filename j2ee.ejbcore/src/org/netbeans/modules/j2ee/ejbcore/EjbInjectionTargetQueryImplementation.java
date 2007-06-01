@@ -23,11 +23,8 @@ import java.io.IOException;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation;
-import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
-import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
-import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
-import org.netbeans.modules.j2ee.dd.api.ejb.Session;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.ErrorManager;
 
 /**
@@ -40,24 +37,22 @@ public class EjbInjectionTargetQueryImplementation implements InjectionTargetQue
     }
     
     public boolean isInjectionTarget(CompilationController controller, TypeElement typeElement) {
-        org.netbeans.modules.j2ee.api.ejbjar.EjbJar apiEjbJar = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(controller.getFileObject());
-        String fqn = typeElement.getQualifiedName().toString();
-        if (apiEjbJar != null && 
-                !apiEjbJar.getJ2eePlatformVersion().equals("1.3") && 
-                !apiEjbJar.getJ2eePlatformVersion().equals("1.4")) {
+        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(controller.getFileObject());
+        final String fqn = typeElement.getQualifiedName().toString();
+        if (ejbModule != null && 
+                !ejbModule.getJ2eePlatformVersion().equals("1.3") && 
+                !ejbModule.getJ2eePlatformVersion().equals("1.4")) {
+            boolean isEjb = false;
             try {
-                EjbJar ejbJar = DDProvider.getDefault().getMergedDDRoot(apiEjbJar.getMetadataUnit());
-                if (ejbJar != null && ejbJar.getEnterpriseBeans() != null) {
-                    if (ejbJar.getEnterpriseBeans().findBeanByName(EnterpriseBeans.SESSION, Session.EJB_CLASS, fqn) != null) {
-                        return true;
+                 isEjb = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Boolean>() {
+                    public Boolean run(EjbJarMetadata metadata) throws Exception {
+                        return metadata.findByEjbClass(fqn) != null;
                     }
-                    if (ejbJar.getEnterpriseBeans().findBeanByName(EnterpriseBeans.MESSAGE_DRIVEN, MessageDriven.EJB_CLASS, fqn) != null) {
-                        return true;
-                    }
-                }
+                });
             } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ex);
             }
+            return isEjb;
         }
         return false;
     }

@@ -21,21 +21,25 @@
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.mdb;
 
 import javax.swing.Action;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.openide.actions.*;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
-import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
+import java.io.IOException;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.DeleteEJBDialog;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.EjbViewController;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.openide.ErrorManager;
+import org.openide.actions.DeleteAction;
+import org.openide.actions.OpenAction;
 import org.openide.cookies.OpenCookie;
-import org.openide.util.WeakListeners;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -49,23 +53,34 @@ public class MessageNode extends AbstractNode implements OpenCookie {
     private final PropertyChangeListener nameChangeListener;
     private final EjbViewController controller;
     
-    public MessageNode(MessageDriven model, EjbJar module, ClassPath srcPath) {
-        this(new InstanceContent(), model, module, srcPath);
+    public MessageNode(String ejbClass, EjbJar ejbModule, Project project) {
+        this(new InstanceContent(), ejbClass, ejbModule, project);
     }
     
-    private MessageNode(InstanceContent content, MessageDriven model, EjbJar module, ClassPath srcPath) {
+    private MessageNode(InstanceContent content, final String ejbClass, EjbJar ejbModule, Project project) {
         super(Children.LEAF, new AbstractLookup(content));
         setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/ejb/mdb/MessageNodeIcon.gif");
-        setName(model.getEjbName()+"");
-        controller = new EjbViewController(model, module, srcPath);
+        String ejbName = null;
+        try {
+            ejbName = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
+                public String run(EjbJarMetadata metadata) throws Exception {
+                    Ejb ejb = metadata.findByEjbClass(ejbClass);
+                    return ejb == null ? null : ejb.getEjbName();
+                }
+            });
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        }
+        setName(ejbName + "");
+        controller = new EjbViewController(ejbClass, ejbModule, project);
         setDisplayName();
         nameChangeListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent pce) {
                 setDisplayName();
             }
         };
-        model.addPropertyChangeListener(
-            WeakListeners.propertyChange(nameChangeListener,model));
+        //TODO: RETOUCHE listening on model for logical view
+//        model.addPropertyChangeListener(WeakListeners.propertyChange(nameChangeListener,model));
         content.add(this);
         content.add(controller.getBeanClass());
         if (controller.getBeanDo() != null) {

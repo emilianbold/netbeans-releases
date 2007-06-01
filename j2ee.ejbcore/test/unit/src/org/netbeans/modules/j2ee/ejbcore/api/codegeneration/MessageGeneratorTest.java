@@ -22,7 +22,6 @@ package org.netbeans.modules.j2ee.ejbcore.api.codegeneration;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.j2ee.dd.api.common.MessageDestination;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.ejb.ActivationConfig;
 import org.netbeans.modules.j2ee.dd.api.ejb.ActivationConfigProperty;
@@ -31,6 +30,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.ejbcore.test.TestBase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -46,7 +46,7 @@ public class MessageGeneratorTest extends TestBase {
     }
     
     public void testGenerateJavaEE14() throws IOException, VersionNotSupportedException {
-        TestModule testModule = ejb14();
+        TestModule testModule = createEjb21Module();
         FileObject sourceRoot = testModule.getSources()[0];
         FileObject packageFileObject = sourceRoot.getFileObject("testGenerateJavaEE14");
         if (packageFileObject != null) {
@@ -56,7 +56,8 @@ public class MessageGeneratorTest extends TestBase {
 
         // Queue based MessageDriven EJB in Java EE 1.4
         
-        MessageGenerator generator = MessageGenerator.create("TestMDBQueue", packageFileObject, true, false, true);
+        MessageDestination messageDestination = new MessageDestinationImpl("TestMDBQueue", MessageDestination.Type.QUEUE);
+        MessageGenerator generator = MessageGenerator.create("TestMDBQueue", packageFileObject, messageDestination, false, true);
         generator.generate();
         
         EjbJar ejbJar = DDProvider.getDefault().getDDRoot(testModule.getDeploymentDescriptor());
@@ -86,7 +87,8 @@ public class MessageGeneratorTest extends TestBase {
 
         // Topic based MessageDriven EJB in Java EE 1.4
         
-        generator = MessageGenerator.create("TestMDBTopic", packageFileObject, false, false, true);
+        messageDestination = new MessageDestinationImpl("TestMDBTopic", MessageDestination.Type.TOPIC);
+        generator = MessageGenerator.create("TestMDBTopic", packageFileObject, messageDestination, false, true);
         generator.generate();
         
         messageDriven = (MessageDriven) enterpriseBeans.findBeanByName(
@@ -125,15 +127,16 @@ public class MessageGeneratorTest extends TestBase {
         
         AssemblyDescriptor assemblyDescriptor = ejbJar.getSingleAssemblyDescriptor();
         List<String> messageDestinationNames = new ArrayList<String>();
-        for (MessageDestination messageDestination : assemblyDescriptor.getMessageDestination()) {
-            messageDestinationNames.add(messageDestination.getMessageDestinationName());
+        for (org.netbeans.modules.j2ee.dd.api.common.MessageDestination msgDest : assemblyDescriptor.getMessageDestination()) {
+            messageDestinationNames.add(msgDest.getMessageDestinationName());
         }
+        assertEquals(2, assemblyDescriptor.getMessageDestination().length);
         assertTrue(messageDestinationNames.contains("TestMDBQueueBeanDestination"));
         assertTrue(messageDestinationNames.contains("TestMDBTopicBeanDestination"));
     }
     
     public void testGenerateJavaEE50() throws IOException {
-        TestModule testModule = ejb14();
+        TestModule testModule = createEjb30Module();
         FileObject sourceRoot = testModule.getSources()[0];
         FileObject packageFileObject = sourceRoot.getFileObject("testGenerateJavaEE50");
         if (packageFileObject != null) {
@@ -143,7 +146,8 @@ public class MessageGeneratorTest extends TestBase {
         
         // Queue based MessageDriven EJB in Java EE 5 defined in annotation
         
-        MessageGenerator generator = MessageGenerator.create("TestMDBQueue", packageFileObject, true, true, false);
+        MessageDestination messageDestination = new MessageDestinationImpl("TestMDBQueue", MessageDestination.Type.QUEUE);
+        MessageGenerator generator = MessageGenerator.create("TestMDBQueue", packageFileObject, messageDestination, true, false);
         generator.generate();
         
         assertFile(
@@ -154,7 +158,8 @@ public class MessageGeneratorTest extends TestBase {
 
         // Topic based MessageDriven EJB in Java EE 5 defined in annotation
         
-        generator = MessageGenerator.create("TestMDBTopic", packageFileObject, false, true, false);
+        messageDestination = new MessageDestinationImpl("TestMDBTopic", MessageDestination.Type.TOPIC);
+        generator = MessageGenerator.create("TestMDBTopic", packageFileObject, messageDestination, true, false);
         generator.generate();
         
         assertFile(
@@ -164,4 +169,24 @@ public class MessageGeneratorTest extends TestBase {
                 );
     }
 
+    private static final class MessageDestinationImpl implements MessageDestination {
+
+        private final String name;
+        private final MessageDestination.Type type;
+        
+        public MessageDestinationImpl(String name, MessageDestination.Type type) {
+            this.name = name;
+            this.type = type;
+        }
+        
+        public String getName() {
+            return name;
+        }
+
+        public Type getType() {
+            return type;
+        }
+        
+    }
+    
 }

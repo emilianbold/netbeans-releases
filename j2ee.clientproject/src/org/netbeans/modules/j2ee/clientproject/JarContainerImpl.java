@@ -21,22 +21,31 @@ package org.netbeans.modules.j2ee.clientproject;
 
 import java.io.IOException;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.api.project.ant.AntArtifactQuery;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
+import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceSupport;
+import org.netbeans.modules.j2ee.api.ejbjar.MessageDestinationReference;
+import org.netbeans.modules.j2ee.api.ejbjar.ResourceReference;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AntArtifactChooser;
 import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.dd.api.client.AppClient;
 import org.netbeans.modules.j2ee.dd.api.client.DDProvider;
-import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.spi.ejbjar.CarImplementation;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -76,42 +85,13 @@ public class JarContainerImpl implements EnterpriseReferenceContainer {
     }
     
     /**
-     * Create resource ref instance based on current project type.
-     *
-     * @param className to determine context from
-     */
-    public ResourceRef createResourceRef(String className) throws IOException {
-        ResourceRef ref = null;
-        try {
-            ref = (ResourceRef) getAppClient().createBean("ResourceRef"); // NOI18N
-        } catch (ClassNotFoundException cnfe) {
-            IOException ioe = new IOException();
-            ioe.initCause(cnfe);
-            throw ioe;
-        }
-        return ref;
-    }
-    
-    public MessageDestinationRef createDestinationRef(String className) throws IOException {
-        MessageDestinationRef ref = null;
-        try {
-            ref = (MessageDestinationRef) getAppClient().createBean("MessageDestinationRef"); // NOI18N
-        } catch (ClassNotFoundException cnfe) {
-            IOException ioe = new IOException();
-            ioe.initCause(cnfe);
-            throw ioe;
-        }
-        return ref;
-    }
-    
-    /**
      * Add given resource reference into the deployment descriptor.
      *
      * @param ref reference to resource used
      * @param referencingClass class which will use the resource
      * @return unique jndi name used in deployment descriptor
      */
-    public String addResourceRef(ResourceRef ref, FileObject referencingFile, String referencingClass) throws IOException {
+    public String addResourceRef(ResourceReference ref, FileObject referencingFile, String referencingClass) throws IOException {
         String resourceRefName = ref.getResRefName();
         AppClient ac = getAppClient();
         // see if jdbc resource has already been used in the app
@@ -131,8 +111,9 @@ public class JarContainerImpl implements EnterpriseReferenceContainer {
         }
         if (!isResourceRefUsed(ac, ref)) {
             resourceRefName = getUniqueName(ac, "ResourceRef", "ResRefName", ref.getResRefName()); //NOI18N
-            ref.setResRefName(resourceRefName);
-            getAppClient().addResourceRef(ref);
+            ResourceRef resourceRef = ac.newResourceRef();
+            EnterpriseReferenceSupport.populate(ref, resourceRefName, resourceRef);
+            getAppClient().addResourceRef(resourceRef);
             writeDD(referencingFile, referencingClass);
         }
         return resourceRefName;
@@ -143,8 +124,8 @@ public class JarContainerImpl implements EnterpriseReferenceContainer {
      *
      * @see #addEjbReference(EjbRef, String, AntArtifact)
      */
-    public String addEjbLocalReference(EjbLocalRef localRef, FileObject referencingFile, String referencedClassName, AntArtifact target) throws IOException {
-        return addReference(localRef, referencingFile, referencedClassName, target);
+    public String addEjbLocalReference(EjbReference localRef, String ejbRefName, FileObject referencingFile, String referencedClassName) throws IOException {
+        throw new UnsupportedOperationException("Local references are not supported in App Client module.");
     }
     
     /**
@@ -166,8 +147,8 @@ public class JarContainerImpl implements EnterpriseReferenceContainer {
      * @param target to include in the build
      * @return actual jndi name used in deployment descriptor
      */
-    public String addEjbReference(EjbRef ref, FileObject referencingFile, String referenceClassName, AntArtifact target) throws IOException {
-        return addReference(ref, referencingFile, referenceClassName, target);
+    public String addEjbReference(EjbReference ref, String ejbRefName, FileObject referencingFile, String referenceClassName) throws IOException {
+        return addReference(ref, ejbRefName, referencingFile, referenceClassName);
     }
     
     /**
@@ -177,12 +158,13 @@ public class JarContainerImpl implements EnterpriseReferenceContainer {
      * @param referencingClass class using the destination
      * @return unique jndi name used in the deployment descriptor
      */
-    public String addDestinationRef(MessageDestinationRef ref, FileObject referencingFile, String referencingClass) throws IOException {
-        String refName = getUniqueName(getAppClient(), "MessageDestinationRef", "MessageDestinationRefName", //NOI18N
-                ref.getMessageDestinationRefName());
-        ref.setMessageDestinationRefName(refName);
+    public String addDestinationRef(MessageDestinationReference ref, FileObject referencingFile, String referencingClass) throws IOException {
+        AppClient ac = getAppClient();
+        String refName = getUniqueName(ac, "MessageDestinationRef", "MessageDestinationRefName", ref.getMessageDestinationRefName()); //NOI18N
         try {
-            getAppClient().addMessageDestinationRef(ref);
+            MessageDestinationRef messageDestinationRef = ac.newMessageDestinationRef();
+            EnterpriseReferenceSupport.populate(ref, refName, messageDestinationRef);
+            ac.addMessageDestinationRef(messageDestinationRef);
             writeDD(referencingFile, referencingClass);
         } catch (VersionNotSupportedException ex){}
         return refName;
@@ -234,58 +216,26 @@ public class JarContainerImpl implements EnterpriseReferenceContainer {
         }, true);
     }
     
-    private String addReference(Object ref, FileObject referencingFile, String referencingClass, AntArtifact target) throws IOException {
+    private String addReference(EjbReference ejbReference, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
         String refName = null;
         AppClient webApp = getAppClient();
-        if (ref instanceof EjbRef) {
-            EjbRef ejbRef = (EjbRef) ref;
-            refName = getUniqueName(getAppClient(), "EjbRef", "EjbRefName", //NOI18N
-                    ejbRef.getEjbRefName());
-            ejbRef.setEjbRefName(refName);
-            // EjbRef can come from Ejb project
-            try {
-                EjbRef newRef = (EjbRef)webApp.createBean("EjbRef"); //NOI18N
-                try {
-                    newRef.setAllDescriptions(ejbRef.getAllDescriptions());
-                } catch (VersionNotSupportedException ex) {
-                    newRef.setDescription(ejbRef.getDefaultDescription());
-                }
-                newRef.setEjbRefName(ejbRef.getEjbRefName());
-                newRef.setEjbRefType(ejbRef.getEjbRefType());
-                newRef.setHome(ejbRef.getHome());
-                newRef.setRemote(ejbRef.getRemote());
-                getAppClient().addEjbRef(newRef);
-            } catch (ClassNotFoundException ex){}
-        } else if (ref instanceof EjbLocalRef) {
-            System.err.println("### UNSUPPORTED ###");
-            /*
-            EjbLocalRef ejbRef = (EjbLocalRef) ref;
-            refName = getUniqueName(getAppClient(), "EjbLocalRef", "EjbRefName", //NOI18N
-                    ejbRef.getEjbRefName());
-            ejbRef.setEjbRefName(refName);
-            // EjbLocalRef can come from Ejb project
-            try {
-                EjbLocalRef newRef = (EjbLocalRef)webApp.createBean("EjbLocalRef"); //NOI18N
-                try {
-                    newRef.setAllDescriptions(ejbRef.getAllDescriptions());
-                } catch (VersionNotSupportedException ex) {
-                    newRef.setDescription(ejbRef.getDefaultDescription());
-                }
-                newRef.setEjbLink(ejbRef.getEjbLink());
-                newRef.setEjbRefName(ejbRef.getEjbRefName());
-                newRef.setEjbRefType(ejbRef.getEjbRefType());
-                newRef.setLocal(ejbRef.getLocal());
-                newRef.setLocalHome(ejbRef.getLocalHome());
-                getAppClient().addEjbLocalRef(newRef);
-            } catch (ClassNotFoundException ex){}
-             */
-        }
+        refName = getUniqueName(getAppClient(), "EjbRef", "EjbRefName", ejbRefName); //NOI18N
+        // EjbRef can come from Ejb project
+        try {
+            EjbRef newRef = (EjbRef)webApp.createBean("EjbRef"); //NOI18N
+            newRef.setEjbRefName(ejbRefName);
+            newRef.setEjbRefType(ejbReference.getEjbRefType());
+            newRef.setHome(ejbReference.getRemoteHome());
+            newRef.setRemote(ejbReference.getRemote());
+            getAppClient().addEjbRef(newRef);
+        } catch (ClassNotFoundException ex){}
         
         ProjectClassPathExtender cpExtender = (ProjectClassPathExtender) webProject.getLookup().lookup(ProjectClassPathExtender.class);
         if (cpExtender != null) {
             try {
                 AntArtifactChooser.ArtifactItem artifactItems[] = new AntArtifactChooser.ArtifactItem [1];
                 //artifactItems[0] = new AntArtifactChooser.ArtifactItem(target, target.getArtifactLocation());
+                AntArtifact target = getAntArtifact(ejbReference);
                 cpExtender.addAntArtifact(target, target.getArtifactLocations()[0].normalize());
             } catch (IOException ioe) {
                 ErrorManager.getDefault().notify(ioe);
@@ -298,6 +248,23 @@ public class JarContainerImpl implements EnterpriseReferenceContainer {
         return refName;
     }
 
+    private static AntArtifact getAntArtifact(final EjbReference ejbReference) throws IOException {
+        
+        MetadataModel<EjbJarMetadata> ejbReferenceMetadataModel = ejbReference.getEjbModule().getMetadataModel();
+        FileObject ejbReferenceEjbClassFO = ejbReferenceMetadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
+            public FileObject run(EjbJarMetadata metadata) throws Exception {
+                return metadata.findResource(ejbReference.getEjbClass().replace('.', '/') + ".java");
+            }
+        });
+
+        Project project = FileOwnerQuery.getOwner(ejbReferenceEjbClassFO);
+        AntArtifact[] antArtifacts = AntArtifactQuery.findArtifactsByType(project, JavaProjectConstants.ARTIFACT_TYPE_JAR);
+        boolean hasArtifact = (antArtifacts != null && antArtifacts.length > 0);
+        
+        return hasArtifact ? antArtifacts[0] : null;
+        
+    }
+    
     private static boolean isDescriptorMandatory(String j2eeVersion) {
         if ("1.3".equals(j2eeVersion) || "1.4".equals(j2eeVersion)) {
             return true;
@@ -313,7 +280,7 @@ public class JarContainerImpl implements EnterpriseReferenceContainer {
      * @param resRef resource reference to find
      * @return true id resource reference was found, false otherwise
      */
-    private static boolean isResourceRefUsed(AppClient ac, ResourceRef resRef) {
+    private static boolean isResourceRefUsed(AppClient ac, ResourceReference resRef) {
         String resRefName = resRef.getResRefName();
         String resRefType = resRef.getResType();
         for (ResourceRef existingRef : ac.getResourceRef()) {

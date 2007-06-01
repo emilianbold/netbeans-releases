@@ -23,7 +23,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.api.ejbjar.*;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.metadata.MetadataUnit;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.spi.ejbjar.*;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -55,7 +57,6 @@ public class CustomProvider implements EjbJarProvider {
     private class EM implements EjbJarImplementation {
         FileObject root;
         String ver;
-        private MetadataUnit metadataUnit;
         
         public EM (FileObject root, String ver) {
             this.root = root;
@@ -79,21 +80,11 @@ public class CustomProvider implements EjbJarProvider {
         }
 
         public MetadataUnit getMetadataUnit() {
-            synchronized (this) {
-                if (metadataUnit == null) {
-                    metadataUnit = new MetadataUnitImpl();
-                }
-                return metadataUnit;
-            }
+            return null;
         }
 
-        private class MetadataUnitImpl implements MetadataUnit {
-            public ClassPath getClassPath() {
-                return ClassPathSupport.createClassPath(Collections.<PathResourceImplementation>emptyList());
-            }
-            public FileObject getDeploymentDescriptor() {
-                return EM.this.getDeploymentDescriptor();
-            }
+        public MetadataModel<EjbJarMetadata> getMetadataModel() {
+            return null;
         }
     }
 }

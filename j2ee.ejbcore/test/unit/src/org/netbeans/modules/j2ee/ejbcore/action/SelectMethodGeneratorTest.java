@@ -52,13 +52,12 @@ public class SelectMethodGeneratorTest extends TestBase {
     }
     
     public void testGenerateCmpCardinalityOne() throws IOException {
-        TestModule testModule = ejb14();
+        TestModule testModule = createEjb21Module();
 
         // add create method into local and remote interfaces of CMP Entity EJB 
         FileObject beanClass = testModule.getSources()[0].getFileObject("cmplr/CmpLRBean.java");
         EjbJar ejbJar = DDProvider.getDefault().getDDRoot(testModule.getDeploymentDescriptor());
-        Entity entity = (Entity) ejbJar.getEnterpriseBeans().findBeanByName(EnterpriseBeans.ENTITY, Entity.EJB_CLASS, "cmplr.CmpLRBean");
-        SelectMethodGenerator generator = SelectMethodGenerator.create(entity, beanClass, testModule.getDeploymentDescriptor());
+        SelectMethodGenerator generator = SelectMethodGenerator.create("cmplr.CmpLRBean", beanClass);
         final MethodModel methodModel = MethodModel.create(
                 "ejbSelectTest",
                 "int",
@@ -95,6 +94,7 @@ public class SelectMethodGeneratorTest extends TestBase {
         assertTrue(found[0]);
         
         // entry in deployment descriptor
+        Entity entity = (Entity) ejbJar.getEnterpriseBeans().findBeanByName(EnterpriseBeans.ENTITY, Entity.EJB_CLASS, "cmplr.CmpLRBean");
         boolean queryFound = false;
         for (Query query : entity.getQuery()) {
             QueryMethod queryMethod = query.getQueryMethod();

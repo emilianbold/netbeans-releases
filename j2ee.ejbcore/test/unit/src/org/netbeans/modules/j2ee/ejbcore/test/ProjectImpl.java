@@ -30,17 +30,17 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
-import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
-import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
-import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
-import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
+import org.netbeans.modules.j2ee.api.ejbjar.MessageDestinationReference;
+import org.netbeans.modules.j2ee.api.ejbjar.ResourceReference;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarsInProject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -215,6 +215,10 @@ public final class ProjectImpl implements Project {
 
         public void removePropertyChangeListener(PropertyChangeListener listener) {
         }
+
+        public <T> MetadataModel<T> getDeploymentDescriptor(Class<T> type) {
+            return null;
+        }
         
     }
     
@@ -222,10 +226,10 @@ public final class ProjectImpl implements Project {
         
         public EnterpriseReferenceContainerImpl() {}
         
-        public String addEjbReference(EjbRef ref, FileObject referencingFile, String referencingClass, AntArtifact target) throws IOException {            throw new UnsupportedOperationException("Not supported yet.");
+        public String addEjbReference(EjbReference ref, String ejbRefName, FileObject referencingFile, String referencingClass, AntArtifact target) throws IOException {            throw new UnsupportedOperationException("Not supported yet.");
         }
         
-        public String addEjbLocalReference(EjbLocalRef localRef, FileObject referencingFile, String referencingClass, AntArtifact target) throws IOException {
+        public String addEjbLocalReference(EjbReference localRef, String ejbRefName, FileObject referencingFile, String referencingClass, AntArtifact target) throws IOException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
         
@@ -237,22 +241,14 @@ public final class ProjectImpl implements Project {
             throw new UnsupportedOperationException("Not supported yet.");
         }
         
-        public String addDestinationRef(MessageDestinationRef ref, FileObject referencingFile, String referencingClass) throws IOException {
+        public String addDestinationRef(MessageDestinationReference ref, FileObject referencingFile, String referencingClass) throws IOException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
         
-        public MessageDestinationRef createDestinationRef(String className) throws IOException {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        
-        public String addResourceRef(ResourceRef ref, FileObject referencingFile, String referencingClass) throws IOException {
+        public String addResourceRef(ResourceReference ref, FileObject referencingFile, String referencingClass) throws IOException {
             return "testJndiName";
         }
         
-        public ResourceRef createResourceRef(String className) throws IOException {
-            ResourceRef resourceRef = new org.netbeans.modules.j2ee.dd.impl.ejb.model_3_0.ResourceRef();
-            return resourceRef;
-        }
     }
     
     private class EjbJarsInProjectImpl implements EjbJarsInProject {

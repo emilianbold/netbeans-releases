@@ -34,9 +34,6 @@ import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
-import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
-import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
-import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.ejbcore.test.TestBase;
 import org.openide.filesystems.FileObject;
 
@@ -51,13 +48,12 @@ public class CreateMethodGeneratorTest extends TestBase {
     }
     
     public void testGenerateSession() throws IOException {
-        TestModule testModule = ejb14();
+        TestModule testModule = createEjb21Module();
         
         // add create method into local and remote interfaces of Stateful session EJB 
         FileObject beanClass = testModule.getSources()[0].getFileObject("statefullr/StatefulLRBean.java");
         EjbJar ejbJar = DDProvider.getDefault().getDDRoot(testModule.getDeploymentDescriptor());
-        Session session = (Session) ejbJar.getEnterpriseBeans().findBeanByName(EnterpriseBeans.SESSION, Session.EJB_CLASS, "statefullr.StatefulLRBean");
-        CreateMethodGenerator generator = CreateMethodGenerator.create(session, beanClass);
+        CreateMethodGenerator generator = CreateMethodGenerator.create("statefullr.StatefulLRBean", beanClass);
         final MethodModel methodModel = MethodModel.create(
                 "createTest",
                 "void",
@@ -154,13 +150,12 @@ public class CreateMethodGeneratorTest extends TestBase {
     }
     
     public void testGenerateEntity() throws IOException {
-        TestModule testModule = ejb14();
+        TestModule testModule = createEjb21Module();
         
         // add create method into local and remote interfaces of CMP Entity EJB 
         FileObject beanClass = testModule.getSources()[0].getFileObject("cmplr/CmpLRBean.java");
         EjbJar ejbJar = DDProvider.getDefault().getDDRoot(testModule.getDeploymentDescriptor());
-        Entity entity = (Entity) ejbJar.getEnterpriseBeans().findBeanByName(EnterpriseBeans.ENTITY, Entity.EJB_CLASS, "cmplr.CmpLRBean");
-        CreateMethodGenerator generator = CreateMethodGenerator.create(entity, beanClass);
+        CreateMethodGenerator generator = CreateMethodGenerator.create("cmplr.CmpLRBean", beanClass);
         final MethodModel methodModel = MethodModel.create(
                 "createTest",
                 "void",

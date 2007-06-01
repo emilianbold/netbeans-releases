@@ -56,6 +56,20 @@
 		<namespace>http://java.sun.com/xml/ns/j2ee</namespace>
 		<bean-name>PortComponentType</bean-name>
                 <implements>org.netbeans.modules.j2ee.dd.api.webservices.PortComponent</implements>
+		<user-code>
+                    public void setWsdlService(org.netbeans.modules.schema2beans.QName value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(Webservices.VERSION_1_1);
+                    }
+                    public org.netbeans.modules.schema2beans.QName getWsdlService() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(Webservices.VERSION_1_1);
+                    }
+                    public void setWsdlServiceId(java.lang.String value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(Webservices.VERSION_1_1);
+                    }
+                    public java.lang.String getWsdlServiceId() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(Webservices.VERSION_1_1);
+                    }
+                </user-code>
 	</meta-element>
 	<meta-element>
 		<dtd-name>xsdQNameType</dtd-name>

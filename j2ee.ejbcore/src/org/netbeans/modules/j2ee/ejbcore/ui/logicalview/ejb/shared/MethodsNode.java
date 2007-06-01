@@ -19,13 +19,19 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared;
 
+import java.io.IOException;
 import javax.swing.Action;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddActionGroup;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.GoToSourceAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.openide.ErrorManager;
 import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -42,20 +48,20 @@ import org.openide.util.lookup.InstanceContent;
  */
 public class MethodsNode extends AbstractNode implements OpenCookie {
     
+    private final String ejbClass;
+    private final MetadataModel<EjbJarMetadata> model;
     private final EjbViewController controller;
-    private EntityAndSession model;
-    private ClassPath srcPath;
     private boolean local;
 
-    public MethodsNode(EntityAndSession model, EjbJar module, ClassPath srcPath, Children children, boolean local) {
-        this(new InstanceContent(), model, module, srcPath, children, local);
+    public MethodsNode(String ejbClass, EjbJar ejbModule, Project project, Children children, boolean local) {
+        this(new InstanceContent(), ejbClass, ejbModule, project, children, local);
     }
     
-    private MethodsNode(InstanceContent content, EntityAndSession model, EjbJar module, ClassPath srcPath, Children children, boolean local) {
+    private MethodsNode(InstanceContent content, String ejbClass, EjbJar ejbModule, Project project, Children children, boolean local) {
         super(children, new AbstractLookup(content));
-        controller = new EjbViewController(model, module, srcPath);
-        this.model = model;
-        this.srcPath = srcPath;
+        this.ejbClass = ejbClass;
+        this.model = ejbModule.getMetadataModel();
+        this.controller = new EjbViewController(ejbClass, ejbModule, project);
         this.local = local;
         content.add(this);
         if (controller.getBeanDo() != null) {
@@ -64,22 +70,44 @@ public class MethodsNode extends AbstractNode implements OpenCookie {
     }
     
     public Action[] getActions(boolean context) {
+        FileObject fileObject = null;
+        try {
+            fileObject = model.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
+                public FileObject run(EjbJarMetadata metadata) throws Exception {
+                    EntityAndSession entityAndSession = (EntityAndSession) metadata.findByEjbClass(ejbClass);
+                    String className = local ? entityAndSession.getLocal() : entityAndSession.getRemote();
+                    return metadata.findResource(className);
+                }
+            });
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        }
         return new Action[] {
-                new GoToSourceAction(srcPath, local ? model.getLocal() : model.getRemote(), 
-                        NbBundle.getMessage(MethodsNode.class, "LBL_GoToSourceGroup")),
+            new GoToSourceAction(fileObject, NbBundle.getMessage(MethodsNode.class, "LBL_GoToSourceGroup")),
             SystemAction.get(AddActionGroup.class),
         };
     }
 
     public Action getPreferredAction() {
-        return new GoToSourceAction(srcPath, local ? model.getLocal() : model.getRemote(), 
-                        NbBundle.getMessage(MethodsNode.class, "LBL_GoToSourceGroup"));
+        FileObject fileObject = null;
+        try {
+            fileObject = model.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
+                public FileObject run(EjbJarMetadata metadata) throws Exception {
+                    EntityAndSession entityAndSession = (EntityAndSession) metadata.findByEjbClass(ejbClass);
+                    String className = local ? entityAndSession.getLocal() : entityAndSession.getRemote();
+                    return metadata.findResource(className);
+                }
+            });
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        }
+        return new GoToSourceAction(fileObject, NbBundle.getMessage(MethodsNode.class, "LBL_GoToSourceGroup"));
     }
 
     public void open() {
         DataObject dataObject = controller.getBeanDo();
         if (dataObject != null) {
-            OpenCookie cookie = (OpenCookie) dataObject.getCookie(OpenCookie.class);
+            OpenCookie cookie = dataObject.getCookie(OpenCookie.class);
             if(cookie != null){
                 cookie.open();
             }

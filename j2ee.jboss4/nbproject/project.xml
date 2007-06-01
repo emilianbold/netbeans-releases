@@ -65,6 +65,15 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.j2ee.metadata</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0</release-version>
+                        <specification-version>1.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.j2eeapis</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>

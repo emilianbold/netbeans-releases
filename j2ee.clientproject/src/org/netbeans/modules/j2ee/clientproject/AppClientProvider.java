@@ -26,23 +26,25 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
 //import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.client.AppClient;
-import org.netbeans.modules.j2ee.dd.api.client.DDProvider;
-import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
+import org.netbeans.modules.j2ee.dd.api.client.AppClientMetadata;
+import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
+import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
+import org.netbeans.modules.j2ee.dd.spi.webservices.WebservicesMetadataModelFactory;
 //import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
 import org.netbeans.modules.j2ee.deployment.common.api.EjbChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -51,8 +53,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.spi.ejbjar.CarImplementation;
-import org.netbeans.modules.schema2beans.BaseBean;
 //import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientConstants;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -64,6 +66,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.NotImplementedException;
 import org.openide.util.WeakListeners;
 
 /**
@@ -76,15 +79,19 @@ public final class AppClientProvider extends J2eeModuleProvider
     
     private final AppClientProject project;
     private final AntProjectHelper helper;
+    private final ClassPathProviderImpl cpProvider;
+    
+    private MetadataModel<WebservicesMetadata> webservicesMetadataModel;
     
     private PropertyChangeSupport propertyChangeSupport;
     private J2eeModule j2eeModule;
     
     private long notificationTimeout = 0; // used to suppress repeating the same messages
     
-    AppClientProvider(AppClientProject project, AntProjectHelper helper) {
+    AppClientProvider(AppClientProject project, AntProjectHelper helper, ClassPathProviderImpl cpProvider) {
         this.project = project;
         this.helper = helper;
+        this.cpProvider = cpProvider;
         project.evaluator().addPropertyChangeListener(this);
     }
     
@@ -208,12 +215,43 @@ public final class AppClientProvider extends J2eeModuleProvider
         return getFile(AppClientProjectProperties.BUILD_CLASSES_DIR);
     }
     
-    public RootInterface getDeploymentDescriptor(String location) {
-        if (J2eeModule.CLIENT_XML.equals(location)){
-            return Utils.getAppClient(project);
+   // TODO MetadataModel: remove when transition to AppClientMetadata is finished
+//    public RootInterface getDeploymentDescriptor(String location) {
+//        if (J2eeModule.CLIENT_XML.equals(location)){
+//            return Utils.getAppClient(project);
+//        }
+//        return null;
+//    }
+    
+    public <T> MetadataModel<T> getDeploymentDescriptor(Class<T> type) {
+        if (type == AppClientMetadata.class) {
+            // TODO MetadataModel: uncomment when ready
+            // TODO MetadataModel: also uncomment in AppClientProviderTest.testMetadataModel()
+            // return (MetadataModel<T>) project.getAPICar().getMetadataModel();
+            throw new NotImplementedException();
+        } else if (type == WebservicesMetadata.class) {
+            @SuppressWarnings("unchecked") // NOI18N
+            MetadataModel<T> model = (MetadataModel<T>)getWebservicesMetadataModel();
+            return model;
         }
         return null;
     }
+    
+    private synchronized MetadataModel<WebservicesMetadata> getWebservicesMetadataModel() {
+        if (webservicesMetadataModel == null) {
+            FileObject ddFO = getDD();
+            File ddFile = ddFO != null ? FileUtil.toFile(ddFO) : null;
+            MetadataUnit metadataUnit = MetadataUnit.create(
+                cpProvider.getProjectSourcesClassPath(ClassPath.BOOT),
+                cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
+                cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
+                // XXX: add listening on deplymentDescriptor
+                ddFile);
+            webservicesMetadataModel = WebservicesMetadataModelFactory.createMetadataModel(metadataUnit);
+        }
+        return webservicesMetadataModel;
+    }
+    
     /*
     private Webservices getWebservices() {
         if (Util.isJavaEE5orHigher(project)) {

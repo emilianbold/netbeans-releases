@@ -55,6 +55,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.NotImplementedException;
 
 /**
  *
@@ -287,20 +288,24 @@ public class ServiceModuleImpl extends ServiceModule {
     }
     
     private Webservices getWebservices() {
-        RootInterface rootInterface = project.getWebModule().getDeploymentDescriptor(J2eeModule.WEBSERVICES_XML);
-        if (rootInterface instanceof Webservices) {
-            return (Webservices) rootInterface;
-        }
-        return null;
+        throw new NotImplementedException();
+        // TODO MetadataModel:
+//        RootInterface rootInterface = project.getWebModule().getDeploymentDescriptor(J2eeModule.WEBSERVICES_XML);
+//        if (rootInterface instanceof Webservices) {
+//            return (Webservices) rootInterface;
+//        }
+//        return null;
     }
     
     private WebApp getWebApp() {
-        RootInterface rootInterface = project.getWebModule().getDeploymentDescriptor(J2eeModule.WEB_XML);
-        if (rootInterface instanceof WebApp) {
-            return (WebApp) rootInterface;
-        }
-        assert false : "Failed to get WebApp";
-        return null;
+        throw new NotImplementedException();
+        // TODO MetadataModel:
+//        RootInterface rootInterface = project.getWebModule().getDeploymentDescriptor(J2eeModule.WEB_XML);
+//        if (rootInterface instanceof WebApp) {
+//            return (WebApp) rootInterface;
+//        }
+//        assert false : "Failed to get WebApp";
+//        return null;
     }
     
     /**

@@ -139,7 +139,8 @@ public class ServiceLocatorStrategy {
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         final String[] methodName = new String[1];
         javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
-            public void run(WorkingCopy workingCopy) {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement target = workingCopy.getElements().getTypeElement(className);
                 for (ExecutableElement executableElement : ElementFilter.methodsIn(target.getEnclosedElements())) {
                     if (executableElement.getParameters().size() == 0 &&

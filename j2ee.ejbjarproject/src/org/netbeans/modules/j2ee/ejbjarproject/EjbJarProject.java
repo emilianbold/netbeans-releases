@@ -213,7 +213,9 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         refHelper = new ReferenceHelper(helper, aux, helper.getStandardPropertyEvaluator());
         buildExtender = AntBuildExtenderFactory.createAntExtender(new EjbExtenderImplementation());
         genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
-        ejbModule = new EjbJarProvider(this, helper);
+        this.updateHelper = new UpdateHelper (this, this.helper, this.aux, this.genFilesHelper, UpdateHelper.createDefaultNotifier());
+        ClassPathProviderImpl cpProvider = new ClassPathProviderImpl(helper, evaluator(), getSourceRoots(), getTestSourceRoots());
+        ejbModule = new EjbJarProvider(this, helper, cpProvider);
         apiEjbJar = EjbJarFactory.createEjbJar(ejbModule);
         ejbJarWebServicesSupport = new EjbJarWebServicesSupport(this, helper, refHelper);
         jaxwsSupport = new EjbProjectJAXWSSupport(this, helper);
@@ -223,10 +225,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         apiJaxwsSupport = JAXWSSupportFactory.createJAXWSSupport(jaxwsSupport);
         apiWebServicesClientSupport = WebServicesClientSupportFactory.createWebServicesClientSupport(ejbJarWebServicesClientSupport);
         apiJAXWSClientSupport = JAXWSClientSupportFactory.createJAXWSClientSupport(jaxWsClientSupport);
-        this.updateHelper = new UpdateHelper (this, this.helper, this.aux, this.genFilesHelper,
-            UpdateHelper.createDefaultNotifier());
         classpathExtender = new EjbJarProjectClassPathExtender(this, updateHelper, evaluator(), refHelper);
-        lookup = createLookup(aux);
+        lookup = createLookup(aux, cpProvider);
         helper.addAntProjectListener(this);
         ProjectManager.mutex().postWriteRequest(
              new Runnable () {
@@ -280,7 +280,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         return helper;
     }
 
-    private Lookup createLookup(AuxiliaryConfiguration aux) {
+    private Lookup createLookup(AuxiliaryConfiguration aux, ClassPathProviderImpl cpProvider) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
 
         final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
@@ -295,7 +295,6 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
             }
         });
-        ClassPathProviderImpl cpProvider = new ClassPathProviderImpl(helper, evaluator(), getSourceRoots(),getTestSourceRoots());
         Lookup base = Lookups.fixed(new Object[] {
                 EjbJarProject.this, // never cast an externally obtained Project to EjbJarProject - use lookup instead
                 buildExtender,

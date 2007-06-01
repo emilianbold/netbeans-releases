@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.web.spi.webmodule;
 
+import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -72,4 +74,8 @@ public interface WebModuleImplementation {
      */
     FileObject[] getJavaSources();
     
+    /**
+     * Returns the metadata associated with this web module.
+     */
+    MetadataModel<WebAppMetadata> getMetadataModel();
 }

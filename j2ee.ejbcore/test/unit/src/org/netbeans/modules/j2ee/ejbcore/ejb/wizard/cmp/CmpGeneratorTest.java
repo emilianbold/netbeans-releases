@@ -76,7 +76,7 @@ public class CmpGeneratorTest extends TestBase {
     }
     
     public void testGenerationMultipleCMPs() throws IOException, SQLException, DBException {
-        TestModule testModule = ejb14();
+        TestModule testModule = createEjb21Module();
 
         String pkgName = "testGenerationMultipleCMPs";
         String[] tableNames = new String[] {

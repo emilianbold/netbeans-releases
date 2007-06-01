@@ -156,11 +156,12 @@ public final class AppClientProject implements Project, AntProjectListener, File
         jaxWsClientSupport = new AppClientProjectJAXWSClientSupport(this, helper);
         apiWebServicesClientSupport = WebServicesClientSupportFactory.createWebServicesClientSupport(carProjectWebServicesClientSupport);
         apiJAXWSClientSupport = JAXWSClientSupportFactory.createJAXWSClientSupport(jaxWsClientSupport);
-        appClient = new AppClientProvider(this, helper);
+        ClassPathProviderImpl cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots());
+        appClient = new AppClientProvider(this, helper, cpProvider);
         apiJar = CarFactory.createCar(appClient);
         enterpriseResourceSupport = new JarContainerImpl(this, refHelper, helper);
         classpathExtender = new AppClientProjectClassPathExtender(this, updateHelper, evaluator(), refHelper);
-        lookup = createLookup(aux);
+        lookup = createLookup(aux, cpProvider);
         helper.addAntProjectListener(this);
     }
     
@@ -202,7 +203,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
         return helper;
     }
     
-    private Lookup createLookup(AuxiliaryConfiguration aux) {
+    private Lookup createLookup(AuxiliaryConfiguration aux, ClassPathProviderImpl cpProvider) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
 
         final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
@@ -216,7 +217,6 @@ public final class AppClientProject implements Project, AntProjectListener, File
                 sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
             }
         });
-        ClassPathProviderImpl cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()); //Does not use APH to get/put properties/cfgdata
         Lookup base = Lookups.fixed(new Object[] {
             new Info(),
             aux,

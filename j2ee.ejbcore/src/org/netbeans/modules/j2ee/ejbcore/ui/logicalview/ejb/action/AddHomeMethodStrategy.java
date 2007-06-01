@@ -19,21 +19,25 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
-import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import java.io.IOException;
 import java.util.Collections;
 import javax.lang.model.element.Modifier;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizerFactory;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.ejbcore.action.HomeMethodGenerator;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;
-import org.openide.ErrorManager;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -79,24 +83,34 @@ public class AddHomeMethodStrategy extends AbstractAddMethodStrategy {
         return MethodType.Kind.HOME;
     }
 
-    protected void generateMethod(EntityAndSession entityAndSession,
-                                  MethodModel method, boolean isOneReturn,
+    protected void generateMethod(MethodModel method, boolean isOneReturn,
                                   boolean publishToLocal,
                                   boolean publishToRemote, String ejbql,
-                                  FileObject ejbClassFO, String className) throws IOException {
-        HomeMethodGenerator generator = HomeMethodGenerator.create(entityAndSession, ejbClassFO);
+                                  FileObject ejbClassFO, String ejbClass) throws IOException {
+        HomeMethodGenerator generator = HomeMethodGenerator.create(ejbClass, ejbClassFO);
         generator.generate(method, publishToLocal, publishToRemote);
     }
 
-    public boolean supportsEjb(FileObject fileObject, String className) {
-        try {
-            EntityAndSession ejb = getEntityAndSession(fileObject, className);
-            if (ejb instanceof Entity) {
-                return true;
+    public boolean supportsEjb(FileObject fileObject, final String className) {
+
+        boolean isEntity = false;
+        
+        EjbJar ejbModule = getEjbModule(fileObject);
+        if (ejbModule != null) {
+            MetadataModel<EjbJarMetadata> metadataModel = ejbModule.getMetadataModel();
+            try {
+                isEntity = metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, Boolean>() {
+                    public Boolean run(EjbJarMetadata metadata) throws Exception {
+                        Ejb ejb = metadata.findByEjbClass(className);
+                        return ejb instanceof Entity;
+                    }
+                });
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
             }
-        } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
         }
-        return false;
+        
+        return isEntity;
+
     }
 }

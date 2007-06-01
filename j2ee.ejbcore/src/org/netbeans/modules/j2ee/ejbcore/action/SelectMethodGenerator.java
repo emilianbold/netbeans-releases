@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.MethodParams;
 import org.netbeans.modules.j2ee.dd.api.ejb.Query;
@@ -38,16 +41,15 @@ import org.openide.filesystems.FileObject;
  */
 public class SelectMethodGenerator extends AbstractMethodGenerator {
     
-    public SelectMethodGenerator(Entity ejb, FileObject ejbClassFileObject, FileObject ddFileObject) {
-        super(ejb, ejbClassFileObject, ddFileObject);
+    public SelectMethodGenerator(String ejbClass, FileObject ejbClassFileObject) {
+        super(ejbClass, ejbClassFileObject);
     }
     
-    public static SelectMethodGenerator create(Entity ejb, FileObject ejbClassFileObject, FileObject ddFileObject) {
-        return new SelectMethodGenerator(ejb, ejbClassFileObject, ddFileObject);
+    public static SelectMethodGenerator create(String ejbClass, FileObject ejbClassFileObject) {
+        return new SelectMethodGenerator(ejbClass, ejbClassFileObject);
     }
     
-    public void generate(MethodModel methodModel, boolean generateLocal, boolean generateRemote,
-            boolean isOneReturn, String ejbql) throws IOException {
+    public void generate(MethodModel methodModel, boolean generateLocal, boolean generateRemote, boolean isOneReturn, String ejbql) throws IOException {
         
         if (!methodModel.getName().startsWith("ejbSelect")) {
             throw new IllegalArgumentException("The select method name must have ejbSelect as its prefix.");
@@ -68,7 +70,7 @@ public class SelectMethodGenerator extends AbstractMethodGenerator {
                 exceptions,
                 modifiers
                 );
-        addMethod(methodModelCopy, ejbClassFileObject, ejb.getEjbClass());
+        addMethod(methodModelCopy, ejbClassFileObject, ejbClass);
         
         // write query to deplyment descriptor
         addQueryToXml(methodModel, ejbql);
@@ -76,7 +78,9 @@ public class SelectMethodGenerator extends AbstractMethodGenerator {
     }
     
     private void addQueryToXml(MethodModel methodModel, String ejbql) throws IOException {
-        Entity entity = (Entity) ejb;
+        EjbJar ejbJar = DDProvider.getDefault().getDDRoot(ejbModule.getDeploymentDescriptor()); // EJB 2.1
+        EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
+        Entity entity = (Entity) enterpriseBeans.findBeanByName(EnterpriseBeans.ENTITY, Entity.EJB_CLASS, ejbClass);
         Query query = entity.newQuery();
         QueryMethod queryMethod = query.newQueryMethod();
         queryMethod.setMethodName(methodModel.getName());

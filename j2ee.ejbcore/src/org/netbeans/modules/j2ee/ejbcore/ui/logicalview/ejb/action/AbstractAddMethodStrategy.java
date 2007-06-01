@@ -20,13 +20,9 @@
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
 import java.io.IOException;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
-import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
-import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
-import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;
 import org.openide.ErrorManager;
@@ -56,8 +52,8 @@ public abstract class AbstractAddMethodStrategy {
     
     protected abstract MethodCustomizer createDialog(FileObject fileObject, MethodModel methodModel) throws IOException;
 
-    protected abstract void generateMethod(EntityAndSession entityAndSession, MethodModel method, boolean isOneReturn, 
-            boolean publishToLocal, boolean publishToRemote,  String ejbql, FileObject ejbClassFO, String className) throws IOException;
+    protected abstract void generateMethod(MethodModel method, boolean isOneReturn, boolean publishToLocal, boolean publishToRemote,
+            String ejbql, FileObject ejbClassFO, String ejbClass) throws IOException;
     
     public abstract boolean supportsEjb(FileObject fileObject, String className);
 
@@ -78,16 +74,15 @@ public abstract class AbstractAddMethodStrategy {
                 boolean publishToLocal = methodCustomizer.publishToLocal();
                 boolean publishToRemote = methodCustomizer.publishToRemote();
                 String ejbql = methodCustomizer.getEjbQL();
-                EntityAndSession entityAndSession = getEntityAndSession(fileObject, className);
-                generateMethod(entityAndSession, method, isOneReturn, publishToLocal, publishToRemote, ejbql, fileObject, className);
+                generateMethod(method, isOneReturn, publishToLocal, publishToRemote, ejbql, fileObject, className);
             } catch (IOException ioe) {
                 ErrorManager.getDefault().notify(ioe);
             }
         }
     }
     
-    protected FileObject getDDFile(FileObject fileObject) {
-        return org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fileObject).getDeploymentDescriptor();
+    protected EjbJar getEjbModule(FileObject fileObject) {
+        return org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fileObject);
     }
     
     protected static MethodsNode getMethodsNode() {
@@ -98,24 +93,4 @@ public abstract class AbstractAddMethodStrategy {
         return nodes[0].getLookup().lookup(MethodsNode.class);
     }
     
-    protected static EntityAndSession getEntityAndSession(FileObject fileObject, String className) throws IOException {
-        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fileObject);
-        if (ejbModule != null) {
-            EjbJar ejbJar = DDProvider.getDefault().getMergedDDRoot(ejbModule.getMetadataUnit());
-            if (ejbJar != null) {
-                EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
-                if (enterpriseBeans != null) {
-                    EntityAndSession entityAndSession= (EntityAndSession) enterpriseBeans.findBeanByName(
-                            EnterpriseBeans.SESSION, Ejb.EJB_CLASS, className);
-                    if (entityAndSession == null) {
-                        entityAndSession = (EntityAndSession) enterpriseBeans.findBeanByName(
-                                EnterpriseBeans.ENTITY, Ejb.EJB_CLASS, className);
-                    }
-                    return entityAndSession;
-                }
-            }
-        }
-        return null;
-    }
-
 }

@@ -25,7 +25,6 @@ import java.io.IOException;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
-import javax.swing.JButton;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
@@ -34,11 +33,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
-import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
-import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
-import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -47,7 +43,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import org.netbeans.modules.j2ee.ejbcore.action.SendJMSGenerator;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.MessageDestinationUiSupport;
-import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.MessageDestinationUiSupport.DestinationsHolder;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -62,6 +57,7 @@ import org.openide.util.actions.NodeAction;
 
 /**
  * Provide action for sending a JMS Message
+ * 
  * @author Chris Webster
  * @author Martin Adamek
  */
@@ -118,16 +114,15 @@ public class SendJMSMessageAction extends NodeAction {
             }
             
             MessageDestination messageDestination = sendJmsMessagePanel.getDestination();
-            // don't know if this can be removed...
-            JMSDestination destination = sendJmsMessagePanel.getJmsDestination(enterpriseProject);
-            SendJMSGenerator generator = new SendJMSGenerator(destination);
+            Project mdbHolderProject = sendJmsMessagePanel.getMdbHolderProject();
+            SendJMSGenerator generator = new SendJMSGenerator(messageDestination, mdbHolderProject != null ? mdbHolderProject : enterpriseProject);
             generator.genMethods(
                     erc, 
                     beanClass.getQualifiedName().toString(), 
                     srcFile, 
                     serviceLocatorStrategy,
-                    enterpriseProject.getLookup().lookup(J2eeModuleProvider.class),
-                    messageDestination);
+                    enterpriseProject.getLookup().lookup(J2eeModuleProvider.class)
+                    );
             if (serviceLocator != null) {
                 erc.setServiceLocatorName(serviceLocator);
             }

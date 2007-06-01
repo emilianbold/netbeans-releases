@@ -39,6 +39,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
+import org.netbeans.modules.j2ee.api.ejbjar.ResourceReference;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
@@ -151,15 +152,14 @@ public class SendEmailAction extends NodeAction {
     }
     
     private String generateJNDILookup(String jndiName, EnterpriseReferenceContainer erc, FileObject fileObject, String className) throws IOException {
-        ResourceRef ref = erc.createResourceRef(className);
-        if (ref != null) {
-            ref.setResRefName(jndiName); // NOI18N
-            ref.setResAuth(org.netbeans.modules.j2ee.dd.api.common.ResourceRef.RES_AUTH_CONTAINER);
-            ref.setResSharingScope(org.netbeans.modules.j2ee.dd.api.common.ResourceRef.RES_SHARING_SCOPE_SHAREABLE);
-            ref.setResType("javax.mail.Session"); //NOI18N
-            return erc.addResourceRef(ref, fileObject, className);
-        }
-        return null;
+        ResourceReference resourceReference = ResourceReference.create(
+                jndiName,
+                "javax.mail.Session", // NOI18N
+                ResourceRef.RES_AUTH_CONTAINER,
+                ResourceRef.RES_SHARING_SCOPE_SHAREABLE,
+                null
+                );
+        return erc.addResourceRef(resourceReference, fileObject, className);
     }
     
     private void generateMethods(Project project, FileObject fileObject, String className, 

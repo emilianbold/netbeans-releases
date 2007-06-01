@@ -19,7 +19,8 @@
 
 package org.netbeans.modules.j2ee.spi.ejbjar;
 
-import org.netbeans.modules.j2ee.metadata.MetadataUnit;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -56,11 +57,8 @@ public interface EjbJarImplementation {
     FileObject[] getJavaSources();
     
     /**
-     * Coupling of deployment desrciptor and classpath containing annotated classes
-     * describing metadata of the EJB module
-     * 
-     * @return non-null value
+     * Returns the metadata associated with this EJB module.
      */
-    MetadataUnit getMetadataUnit();
-    
+    MetadataModel<EjbJarMetadata> getMetadataModel();
+
 }

@@ -34,8 +34,6 @@ import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
-import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
-import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.ejbcore.test.TestBase;
 import org.openide.filesystems.FileObject;
 
@@ -50,13 +48,12 @@ public class BusinessMethodGeneratorTest extends TestBase {
     }
     
     public void testGenerateEE14() throws IOException {
-        TestModule testModule = ejb14();
+        TestModule testModule = createEjb21Module();
         
         // add business method into local and remote interfaces of stateless session EJB 
         FileObject beanClass = testModule.getSources()[0].getFileObject("statelesslr/StatelessLRBean.java");
         EjbJar ejbJar = DDProvider.getDefault().getDDRoot(testModule.getDeploymentDescriptor());
-        Session session = (Session) ejbJar.getEnterpriseBeans().findBeanByName(EnterpriseBeans.SESSION, Session.EJB_CLASS, "statelesslr.StatelessLRBean");
-        BusinessMethodGenerator generator = BusinessMethodGenerator.create(session, beanClass);
+        BusinessMethodGenerator generator = BusinessMethodGenerator.create("statelesslr.StatelessLRBean", beanClass);
         final MethodModel methodModel = MethodModel.create(
                 "businessMethodTest",
                 "java.lang.String",

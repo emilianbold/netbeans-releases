@@ -20,10 +20,14 @@
 package org.netbeans.modules.j2ee.ejbcore.test;
 
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.j2ee.metadata.MetadataUnit;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
+import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
+import org.netbeans.modules.j2ee.dd.spi.ejb.EjbJarMetadataModelFactory;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -34,6 +38,7 @@ public class EjbJarImplementationImpl implements EjbJarImplementation {
     private final String j2eePlatformVersion;
     private final FileObject ddFileObject;
     private final FileObject[] sources;
+    private MetadataModel<EjbJarMetadata> ejbJarMetadataModel;
     
     public EjbJarImplementationImpl(String j2eePlatformVersion, FileObject ddFileObject, FileObject[] sources) {
         this.j2eePlatformVersion = j2eePlatformVersion;
@@ -57,16 +62,17 @@ public class EjbJarImplementationImpl implements EjbJarImplementation {
         return sources;
     }
     
-    public MetadataUnit getMetadataUnit() {
-        return new MetadataUnit() {
-            public FileObject getDeploymentDescriptor() {
-                return ddFileObject;
-            }
-            public ClassPath getClassPath() {
-                return ClassPathSupport.createClassPath(sources);
-            }
-        };
-        
+    public MetadataModel<EjbJarMetadata> getMetadataModel() {
+        if (ejbJarMetadataModel == null) {
+            MetadataUnit metadataUnit = MetadataUnit.create(
+                    ClassPathSupport.createClassPath(new FileObject[0]),
+                    ClassPath.getClassPath(sources[0], ClassPath.COMPILE),
+                    ClassPath.getClassPath(sources[0], ClassPath.SOURCE),
+                    ddFileObject == null ? null : FileUtil.toFile(ddFileObject)
+                    );
+            ejbJarMetadataModel = EjbJarMetadataModelFactory.createMetadataModel(metadataUnit);
+        }
+        return ejbJarMetadataModel;
     }
     
 }

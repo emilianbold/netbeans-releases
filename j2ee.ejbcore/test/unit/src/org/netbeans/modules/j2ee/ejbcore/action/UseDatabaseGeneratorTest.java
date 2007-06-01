@@ -62,7 +62,7 @@ public class UseDatabaseGeneratorTest extends TestBase {
         UseDatabaseGenerator generator = new UseDatabaseGenerator();
         
         // EJB 2.1 Stateless Session Bean
-        TestModule testModule = ejb14();
+        TestModule testModule = createEjb21Module();
         FileObject beanClass = testModule.getSources()[0].getFileObject("statelesslr/StatelessLRBean.java");
         Node node = new AbstractNode(Children.LEAF, Lookups.singleton(beanClass));
         final ElementHandle<TypeElement> elementHandle = _RetoucheUtil.getJavaClassFromNode(node);
@@ -88,7 +88,7 @@ public class UseDatabaseGeneratorTest extends TestBase {
         });
         
         // EJB 3.0 Stateless Session Bean
-        testModule = ejb50();
+        testModule = createEjb30Module();
         beanClass = testModule.getSources()[0].getFileObject("statelesslr/StatelessLRBean.java");
         node = new AbstractNode(Children.LEAF, Lookups.singleton(beanClass));
         final ElementHandle<TypeElement> elementHandle2 = _RetoucheUtil.getJavaClassFromNode(node);
@@ -101,8 +101,7 @@ public class UseDatabaseGeneratorTest extends TestBase {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = elementHandle2.resolve(workingCopy);
-                //TODO: RETOUCHE not working because of missing annotation based model
-//                checkDatasourceField(workingCopy, typeElement, "testJndiName", "testJndiName");
+                checkDatasourceField(workingCopy, typeElement, "testJndiName", "testJndiName");
             }
         });
     }

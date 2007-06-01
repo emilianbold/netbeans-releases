@@ -48,6 +48,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -63,6 +64,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.NotImplementedException;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
@@ -571,24 +573,29 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
             return null;
         }
         
-        public RootInterface getDeploymentDescriptor(String location) {
-            RootInterface retVal = null;
-            if ("META-INF/application.xml".equals(location)) {
-                String dir = (String)getArchiveProjectProperties().get(ArchiveProjectProperties.PROXY_PROJECT_DIR);
-                FileObject appFile = getProjectDirectory().getFileObject(dir).getFileObject("src").getFileObject("conf").getFileObject("application.xml");
-//                Application appBean;
-                try {
-                    retVal = org.netbeans.modules.j2ee.dd.api.application.DDProvider.getDefault().getDDRoot(appFile);
-                } catch (IOException ex) {
-                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "" + ex);
-                }
-            } else if ("META-INF/ra.xml".equals(location)) {
-                retVal =  null;
-            } else {
-                throw new UnsupportedOperationException(location);
-            }
-            return retVal;
+        // TODO MetadataModel:
+        public <T> MetadataModel<T> getDeploymentDescriptor(Class<T> type) {
+            throw new NotImplementedException();
         }
+// TODO MetadataModel:
+//        public RootInterface getDeploymentDescriptor(String location) {
+//            RootInterface retVal = null;
+//            if ("META-INF/application.xml".equals(location)) {
+//                String dir = (String)getArchiveProjectProperties().get(ArchiveProjectProperties.PROXY_PROJECT_DIR);
+//                FileObject appFile = getProjectDirectory().getFileObject(dir).getFileObject("src").getFileObject("conf").getFileObject("application.xml");
+////                Application appBean;
+//                try {
+//                    retVal = org.netbeans.modules.j2ee.dd.api.application.DDProvider.getDefault().getDDRoot(appFile);
+//                } catch (IOException ex) {
+//                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "" + ex);
+//                }
+//            } else if ("META-INF/ra.xml".equals(location)) {
+//                retVal =  null;
+//            } else {
+//                throw new UnsupportedOperationException(location);
+//            }
+//            return retVal;
+//        }
         
         public File getResourceDirectory() {
             return new File(FileUtil.toFile(getProjectDirectory()),ArchiveProjectProperties.SETUP_DIR_VALUE);

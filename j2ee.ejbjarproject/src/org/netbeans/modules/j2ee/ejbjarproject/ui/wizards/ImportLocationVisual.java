@@ -962,13 +962,7 @@ public class ImportLocationVisual extends JPanel /*implements DocumentListener *
     
     private BigDecimal getEjbJarXmlVersion(FileObject ejbJarXml) throws IOException {
         if (ejbJarXml != null) {
-            EjbJar ejbJar = null;
-            org.netbeans.modules.j2ee.api.ejbjar.EjbJar apiEjbJar = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(ejbJarXml);
-            if (apiEjbJar != null) {
-              ejbJar = DDProvider.getDefault().getMergedDDRoot(apiEjbJar.getMetadataUnit());
-            } else {
-              ejbJar = DDProvider.getDefault().getDDRoot(ejbJarXml);
-            }
+            EjbJar ejbJar = DDProvider.getDefault().getDDRoot(ejbJarXml);
             if (ejbJar != null) {
                 return ejbJar.getVersion();
             }

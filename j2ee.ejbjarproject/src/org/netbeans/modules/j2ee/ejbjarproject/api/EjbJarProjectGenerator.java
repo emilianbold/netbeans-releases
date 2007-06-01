@@ -110,8 +110,7 @@ public class EjbJarProjectGenerator {
         if (!J2eeModule.JAVA_EE_5.equals(j2eeLevel)) {
             String resource = "org-netbeans-modules-j2ee-ejbjarproject/ejb-jar-2.1.xml";
             FileObject ddFile = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource(resource), confRoot, "ejb-jar"); //NOI18N
-            EjbJar ejbJar = DDProvider.getDefault().getMergedDDRoot(
-                    org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(ddFile).getMetadataUnit());
+            EjbJar ejbJar = DDProvider.getDefault().getDDRoot(ddFile);
             ejbJar.setDisplayName(name);
             ejbJar.write(ddFile);
         }
@@ -222,8 +221,7 @@ public class EjbJarProjectGenerator {
         FileObject ejbJarXml = FileUtil.toFileObject(configFilesBase).getFileObject("ejb-jar.xml"); // NOI18N
         if (ejbJarXml != null) {
             try {
-                EjbJar root = DDProvider.getDefault().getMergedDDRoot(
-                        org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(ejbJarXml).getMetadataUnit());
+                EjbJar root = DDProvider.getDefault().getDDRoot(ejbJarXml);
                 boolean writeDD = false;
                 if (new BigDecimal(EjbJar.VERSION_2_0).equals(root.getVersion()) && j2eeLevel.equals(EjbJarProjectProperties.J2EE_1_4)) { // NOI18N
                     root.setVersion(new BigDecimal(EjbJar.VERSION_2_1));

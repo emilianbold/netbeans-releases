@@ -20,17 +20,21 @@
 package org.netbeans.modules.j2ee.ejbcore.test;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.java.source.usages.IndexUtil;
+import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
+import org.openide.util.test.MockLookup;
 
 /**
  * Common ancestor for all test classes.
@@ -39,7 +43,7 @@ import org.openide.util.lookup.ProxyLookup;
  * @author Martin Adamek
  */
 public class TestBase extends NbTestCase {
-
+    
     private EjbJarProviderImpl ejbJarProvider;
     private ClassPathProviderImpl classPathProvider;
     private FileOwnerQueryImpl fileOwnerQuery;
@@ -47,13 +51,7 @@ public class TestBase extends NbTestCase {
     protected FileObject dataDir;
     protected FileObject testFO;
     
-    private TestModule testModuleEJB14;
-    private TestModule testModuleEJB50;
-
     static {
-        // set the lookup which will be returned by Lookup.getDefault()
-        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
-        assertEquals("Unable to set the default lookup!", Lkp.class, Lookup.getDefault().getClass());
         setLookups();
         assertEquals(RepositoryImpl.class, Lookup.getDefault().lookup(Repository.class).getClass());
         assertEquals("The default Repository is not our repository!", RepositoryImpl.class, Repository.getDefault().getClass());
@@ -63,20 +61,36 @@ public class TestBase extends NbTestCase {
         super(name);
     }
     
-    public TestModule ejb14() {
-        if (testModuleEJB14 == null) {
-            testModuleEJB14 = new TestModule(dataDir.getFileObject("EJBModule_1_4"), EjbProjectConstants.J2EE_14_LEVEL);
-        }
-        activate(testModuleEJB14);
-        return testModuleEJB14;
+    /**
+     * Creates copy of EJB 2.1 project in test's working directory
+     * and returns TestModule wrapper for that
+     */
+    public TestModule createEjb21Module() throws IOException {
+        return createTestModule("EJBModule_1_4", "2.1");
     }
     
-    public TestModule ejb50() {
-        if (testModuleEJB50 == null) {
-            testModuleEJB50 = new TestModule(dataDir.getFileObject("EJBModule_5_0"), EjbProjectConstants.JAVA_EE_5_LEVEL);
-        }
-        activate(testModuleEJB50);
-        return testModuleEJB50;
+    /**
+     * Creates copy of EJB 3.0 project in test's working directory
+     * and returns TestModule wrapper for that
+     */
+    public TestModule createEjb30Module() throws IOException {
+        return createTestModule("EJBModule_5_0", "3.0");
+    }
+
+    /**
+     * Creates new copy of project in test's working directory instead of using one froo data dir,
+     * co it can be called multiple times on 'clean' project (without generated code)
+     */
+    private TestModule createTestModule(String projectDirName, String ejbVersion) throws IOException {
+        
+        File projectDir = new File(getDataDir(), projectDirName);
+        File tempProjectDir = copyFolder(projectDir);
+        
+        TestModule testModule = new TestModule(FileUtil.toFileObject(tempProjectDir), ejbVersion);
+        activate(testModule);
+        
+        return testModule;
+        
     }
     
     protected void setUp() throws IOException {
@@ -88,67 +102,108 @@ public class TestBase extends NbTestCase {
         classPathProvider = new ClassPathProviderImpl();
         fileOwnerQuery = new FileOwnerQueryImpl();
         setLookups(
-                ejbJarProvider, 
-                classPathProvider, 
+                ejbJarProvider,
+                classPathProvider,
                 fileOwnerQuery,
-                new FakeJavaDataLoaderPool()
+                new FakeJavaDataLoaderPool(),
+                new TestSourceLevelQueryImplementation()
                 );
         dataDir = FileUtil.toFileObject(getDataDir());
         FileObject workDir = FileUtil.toFileObject(getWorkDir());
         testFO = workDir.createData("TestClass.java");
     }
-
-    public static void setLookups(Object... lookups) {
-        ((Lkp)Lookup.getDefault()).setProxyLookups(Lookups.fixed(lookups));
-    }
     
-    public static final class Lkp extends ProxyLookup {
-        
-        private final Repository repository = new RepositoryImpl();
-        
-        public Lkp() {
-            setProxyLookups(new Lookup[0]);
-        }
-        
-        private void setProxyLookups(Lookup... lookups) {
-            Lookup[] allLookups = new Lookup[lookups.length + 3];
-            ClassLoader classLoader = TestBase.class.getClassLoader();
-            allLookups[0] = Lookups.singleton(classLoader);
-            allLookups[1] = Lookups.singleton(repository);
-            System.arraycopy(lookups, 0, allLookups, 2, lookups.length);
-            allLookups[allLookups.length - 1] = Lookups.metaInfServices(classLoader);
-            setLookups(allLookups);
-        }
-        
+    public static void setLookups(Object... instances) {
+        Object[] allInstances = new Object[instances.length + 2];
+        ClassLoader classLoader = TestBase.class.getClassLoader();
+        allInstances[0] = classLoader;
+        allInstances[1] = new RepositoryImpl();
+        System.arraycopy(instances, 0, allInstances, 2, instances.length);
+        MockLookup.setInstances(allInstances);
     }
     
     private void activate(TestModule testModule) {
         fileOwnerQuery.setProject(testModule.project);
-        ejbJarProvider.setEjbModule(testModule.javaeeLevel, testModule.deploymentDescriptor, testModule.sources);
+        ejbJarProvider.setEjbModule(testModule.ejbLevel, testModule.deploymentDescriptor, testModule.sources);
         classPathProvider.setClassPath(testModule.sources);
+        try {
+            for (FileObject fileObject : testModule.sources) {
+                RepositoryUpdater.getDefault().scheduleCompilationAndWait(fileObject, fileObject).await();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+  
+    /**
+     * Make a temporary copy of a whole folder into some new dir in the scratch area.<br>
+     * Copy from /ant/freeform/test/unit/src/org/netbeans/modules/ant/freeform/TestBase.java
+     */
+    private File copyFolder(File d) throws IOException {
+        assert d.isDirectory();
+        File workdir = getWorkDir();
+        String name = d.getName();
+        while (name.length() < 3) {
+            name = name + "x";
+        }
+        File todir = workdir.createTempFile(name, null, workdir);
+        todir.delete();
+        doCopy(d, todir);
+        return todir;
+    }
+    
+    private static void doCopy(File from, File to) throws IOException {
+        if (from.isDirectory()) {
+            to.mkdir();
+            String[] kids = from.list();
+            for (int i = 0; i < kids.length; i++) {
+                doCopy(new File(from, kids[i]), new File(to, kids[i]));
+            }
+        } else {
+            assert from.isFile();
+            InputStream is = new FileInputStream(from);
+            try {
+                OutputStream os = new FileOutputStream(to);
+                try {
+                    FileUtil.copy(is, os);
+                } finally {
+                    os.close();
+                }
+            } finally {
+                is.close();
+            }
+        }
     }
     
     protected static class TestModule {
         
         private final FileObject projectDir;
-        private final String javaeeLevel;
+        private final String ejbLevel;
         private final FileObject deploymentDescriptor;
         private final FileObject[] sources;
         private final ProjectImpl project;
         
-        public TestModule(FileObject projectDir, String javaeeLevel) {
+        public TestModule(FileObject projectDir, String ejbLevel) {
             this.projectDir = projectDir;
-            this.javaeeLevel = javaeeLevel;
+            this.ejbLevel = ejbLevel;
             this.deploymentDescriptor = projectDir.getFileObject("src/conf/ejb-jar.xml");
-            this.sources = new FileObject[] {projectDir.getFileObject("src/java")};
-            this.project = new ProjectImpl("2.1");
+            this.sources = new FileObject[] { projectDir.getFileObject("src/java") };
+            this.project = new ProjectImpl(ejbLevel);
             project.setProjectDirectory(projectDir);
         }
-     
+        
         public FileObject getDeploymentDescriptor() { return deploymentDescriptor; }
         public FileObject[] getSources() { return sources; }
         public Project getProject() { return project; }
         public FileObject getConfigFilesFolder() { return projectDir.getFileObject("src/conf"); }
+        
+    }
+    
+    public static final class TestSourceLevelQueryImplementation implements SourceLevelQueryImplementation {
+        
+        public String getSourceLevel(FileObject javaFile) {
+            return "1.5";
+        }
         
     }
     

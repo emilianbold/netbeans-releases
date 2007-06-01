@@ -26,8 +26,11 @@ import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.tests.j2eeserver.devmodule.TestJ2eeModuleImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -79,31 +82,9 @@ public class J2eeModuleTest extends NbTestCase {
     
     public void testGetDeploymentDescriptor() throws Exception {
         // check non-existing DDs
-        assertNull(j2eeModule.getDeploymentDescriptor(J2eeModule.EJBJAR_XML));
+        assertNull(j2eeModule.getDeploymentDescriptor(EjbJarMetadata.class));
         
         // check existing DDs
-        WebApp webApp = (WebApp) j2eeModule.getDeploymentDescriptor(J2eeModule.WEB_XML);
-        assertNotNull(webApp);
-        
-        
-        // test listening to event changes
-        final Set propChanged = new HashSet();
-        PropertyChangeListener p = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent event) {
-                assertNull(event.getOldValue());
-                propChanged.add(event.getNewValue());
-            }
-        };
-        webApp.addPropertyChangeListener(p);
-        
-        WebApp webAppOrig = (WebApp) j2eeModuleImpl.getDeploymentDescriptor(J2eeModule.WEB_XML);
-        ResourceRef r = (ResourceRef) webAppOrig.createBean("ResourceRef");
-        r.setResRefName("myRef");
-        
-        webAppOrig.addResourceRef(r);
-        
-        assertTrue(propChanged.contains(r));
+        assertNotNull(j2eeModule.getDeploymentDescriptor(WebAppMetadata.class));
     }
-    
-    
 }

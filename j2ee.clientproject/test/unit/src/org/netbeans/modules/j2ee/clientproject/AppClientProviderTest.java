@@ -25,6 +25,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.clientproject.test.TestUtil;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
+import org.netbeans.modules.j2ee.dd.api.client.AppClientMetadata;
+import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -70,6 +72,15 @@ public class AppClientProviderTest extends NbTestCase {
         J2eeModuleProvider provider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
         assertEquals(FileUtil.toFile(metaInfFO.getFileObject(APPLICATION_CLIENT_XML)),
                 provider.getJ2eeModule().getDeploymentConfigurationFile(APPLICATION_CLIENT_XML));
+    }
+    
+    public void testMetadataModel() throws Exception {
+        File f = new File(getDataDir().getAbsolutePath(), "projects/ApplicationClient1");
+        Project project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
+        J2eeModuleProvider provider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModule j2eeModule = provider.getJ2eeModule();
+        // assertNotNull(j2eeModule.getDeploymentDescriptor(AppClientMetadata.class));
+        assertNotNull(j2eeModule.getDeploymentDescriptor(WebservicesMetadata.class));
     }
     
     public void testThatProjectWithoutDDCanBeOpened() throws Exception {

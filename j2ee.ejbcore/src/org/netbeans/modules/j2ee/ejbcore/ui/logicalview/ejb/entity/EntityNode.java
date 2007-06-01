@@ -20,7 +20,6 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.entity;
 import javax.swing.Action;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddActionGroup;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.GenerateDTOAction;
@@ -35,16 +34,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
-import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.EjbTransferable;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.EjbViewController;
-import org.openide.util.WeakListeners;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.DeleteEJBDialog;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.GoToSourceActionGroup;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.openide.ErrorManager;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.OpenAction;
-import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -58,36 +59,48 @@ import org.openide.util.lookup.InstanceContent;
  * @author Ludovic Champenois
  * @author Martin Adamek
  */
-public class EntityNode extends AbstractNode implements OpenCookie{
+public class EntityNode extends AbstractNode implements OpenCookie {
     
     private final PropertyChangeListener nameChangeListener;
     private final EjbViewController controller;
     
-    public EntityNode(Entity model, EjbJar module, ClassPath srcPath, FileObject ddFile) {
-        this(new InstanceContent(), model, module, srcPath, ddFile);
+    public EntityNode(String ejbClass, EjbJar ejbModule, Project project) {
+        this(new InstanceContent(), ejbClass, ejbModule, project);
     }
 
-    private EntityNode(InstanceContent content, Entity model, EjbJar module, ClassPath srcPath, FileObject ddFile) {
-        super(new EntityChildren(model, srcPath, module, ddFile), new AbstractLookup(content));
+    private EntityNode(InstanceContent content, final String ejbClass, EjbJar ejbModule, Project project) {
+        super(new EntityChildren(ejbClass, ejbModule.getMetadataModel()), new AbstractLookup(content));
         setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/ejb/entity/EntityNodeIcon.gif");
-        setName(model.getEjbName()+"");
-        controller = new EjbViewController(model, module, srcPath);
+        String ejbName = null;
+        try {
+            ejbName = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
+                public String run(EjbJarMetadata metadata) throws Exception {
+                    Ejb ejb = metadata.findByEjbClass(ejbClass);
+                    return ejb == null ? null : ejb.getEjbName();
+                }
+            });
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        }
+        setName(ejbName + "");
+        controller = new EjbViewController(ejbClass, ejbModule, project);
         setDisplayName();
         nameChangeListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent pce) {
                 setDisplayName();
             }
         };
-        model.addPropertyChangeListener(
-            WeakListeners.propertyChange(nameChangeListener,model));
+        //TODO: RETOUCHE listening on model for logical view
+//        model.addPropertyChangeListener(WeakListeners.propertyChange(nameChangeListener, model));
         content.add(this);
         content.add(controller.getBeanClass());
         if (controller.getBeanDo() != null) {
             content.add(controller.getBeanDo());
         }
-        EjbReference ejbReference = controller.createEjbReference();
-        if (ejbReference != null) {
+        try {
             content.add(controller.createEjbReference());
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
         }
     }
     
@@ -143,12 +156,7 @@ public class EntityNode extends AbstractNode implements OpenCookie{
     public Transferable clipboardCopy() throws IOException {
         EjbReference ejbRef = controller.createEjbReference();
         StringBuilder ejbRefString = new StringBuilder("");
-        if (ejbRef.supportsRemoteInvocation()) {
-            ejbRefString.append(controller.getRemoteStringRepresentation("Entity"));
-        }
-        if (ejbRef.supportsLocalInvocation()) {
-            ejbRefString.append(controller.getLocalStringRepresentation("Entity"));
-        }
+        ejbRefString.append(controller.getLocalStringRepresentation("Entity"));
         return new EjbTransferable(ejbRefString.toString(), ejbRef);
     }
     

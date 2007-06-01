@@ -25,7 +25,6 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.common.method.FieldCustomizer;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
@@ -112,14 +111,15 @@ public class AddCmpFieldAction extends NodeAction {
     }
 
     private static boolean addCmpField(EntityMethodController emc, FileObject ddFile, MethodModel.Variable field) throws IOException {
-        FieldCustomizer customizer = new FieldCustomizer(emc.getModelCopy(), field, "", 
-                emc.getLocal() != null, emc.getRemote() != null, true, true, false, false);
-        if (customizer.customizeField()) {
-            MethodModel.Variable customizedField = customizer.getField();
-            emc.addField(customizedField, ddFile, customizer.isLocalGetter(), customizer.isLocalSetter(),
-                    customizer.isRemoteGetter(), customizer.isRemoteSetter(), customizer.getDescription());
-            return true;
-        }
+        //TODO: RETOUCHE modifications of model
+//        FieldCustomizer customizer = new FieldCustomizer(emc.getModelCopy(), field, "", 
+//                emc.getLocal() != null, emc.getRemote() != null, true, true, false, false);
+//        if (customizer.customizeField()) {
+//            MethodModel.Variable customizedField = customizer.getField();
+//            emc.addField(customizedField, ddFile, customizer.isLocalGetter(), customizer.isLocalSetter(),
+//                    customizer.isRemoteGetter(), customizer.isRemoteSetter(), customizer.getDescription());
+//            return true;
+//        }
         return false;
     }
 

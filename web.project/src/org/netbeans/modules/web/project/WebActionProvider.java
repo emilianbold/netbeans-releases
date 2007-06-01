@@ -36,8 +36,10 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
+import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.filesystems.FileObject;
@@ -955,21 +957,20 @@ class WebActionProvider implements ActionProvider {
 
         WebModule wmod = WebModule.getWebModule(p.getProjectDirectory());
         if (wmod != null) {
-            WebApp webXml = null;
+            boolean hasEjbLocalRefs = false;
             try {
-                FileObject webXmlFo = wmod.getDeploymentDescriptor();
-                if (webXmlFo==null) return false;
-                webXml = DDProvider.getDefault().getMergedDDRoot(webXmlFo);
-            } catch (IOException ioe) {
+                wmod.getMetadataModel().runReadAction(new MetadataModelAction<WebAppMetadata, Boolean>() {
+                    public Boolean run(WebAppMetadata metadata) {
+                        // return true if there is an ejb reference in this module
+                        EjbLocalRef[] ejbLocalRefs = metadata.getRoot().getEjbLocalRef();
+                        return ejbLocalRefs != null && ejbLocalRefs.length > 0;
+                    }
+                });
+            } catch (IOException e) {
                 // ignore
             }
-            if (webXml != null) {
-                EjbLocalRef[] ejbLocalRefs = webXml.getEjbLocalRef();
-                if ((ejbLocalRefs != null) && (ejbLocalRefs.length > 0)) { // there's an ejb reference in this module                
-                    if (!isInJ2eeApp(p)) {
-                        return true;
-                    }
-                }
+            if (hasEjbLocalRefs && !isInJ2eeApp(p)) {
+                return true;
             }
         }
         return false;

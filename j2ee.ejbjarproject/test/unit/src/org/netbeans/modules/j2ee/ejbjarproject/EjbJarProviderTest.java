@@ -22,6 +22,8 @@ package org.netbeans.modules.j2ee.ejbjarproject;
 import java.io.File;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
+import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.test.TestBase;
@@ -66,17 +68,22 @@ public class EjbJarProviderTest extends TestBase {
         assertNotNull(ejbJarXmlFO);
         assertNotNull(metaInfFO.getFileObject("webservices.xml"));
 
-        // ensure deployment descriptor files and beans are returned
-        
+        // ensure deployment descriptor files are returned
         J2eeModuleProvider provider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
-        J2eeModule j2eeModule = provider.getJ2eeModule();
-        
         assertEquals(ejbJarXmlFO, FileUtil.toFileObject(provider.getJ2eeModule().getDeploymentConfigurationFile(EJBJAR_XML)));
-        assertNotNull(j2eeModule.getDeploymentDescriptor(J2eeModule.EJBSERVICES_XML));
         
         EjbJarImplementation ejbJar = (EjbJarImplementation)project.getLookup().lookup(EjbJarImplementation.class);
         assertEquals(metaInfFO, ejbJar.getMetaInf());
         assertEquals(ejbJarXmlFO, ejbJar.getDeploymentDescriptor());
+    }
+    
+    public void testMetadataModel()throws Exception {
+        File f = new File(getDataDir().getAbsolutePath(), "projects/EJBModule1");
+        project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
+        J2eeModuleProvider provider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModule j2eeModule = provider.getJ2eeModule();
+        assertNotNull(j2eeModule.getDeploymentDescriptor(EjbJarMetadata.class));
+        assertNotNull(j2eeModule.getDeploymentDescriptor(WebservicesMetadata.class));
     }
     
     /**
@@ -100,7 +107,8 @@ public class EjbJarProviderTest extends TestBase {
         J2eeModule j2eeModule = provider.getJ2eeModule();
         assertNotNull(j2eeModule.getDeploymentConfigurationFile(EJBJAR_XML));
         assertNull(FileUtil.toFileObject(j2eeModule.getDeploymentConfigurationFile(EJBJAR_XML)));
-        assertNull(j2eeModule.getDeploymentDescriptor(J2eeModule.EJBSERVICES_XML));
+        assertNotNull(j2eeModule.getDeploymentDescriptor(EjbJarMetadata.class));
+        assertNotNull(j2eeModule.getDeploymentDescriptor(WebservicesMetadata.class));
         
         EjbJarImplementation ejbJar = (EjbJarImplementation)project.getLookup().lookup(EjbJarImplementation.class);
         assertNull(ejbJar.getMetaInf());

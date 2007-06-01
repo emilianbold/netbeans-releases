@@ -29,6 +29,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Collections;
+import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileStateInvalidException;
 import org.w3c.dom.Element;
@@ -346,6 +348,10 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
         
         public FileObject[] getJavaSources() {
             return sourcesFOs;
+        }
+        
+        public MetadataModel<WebAppMetadata> getMetadataModel() {
+            return null;
         }
         
         /**

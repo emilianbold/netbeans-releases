@@ -387,6 +387,11 @@ Microsystems, Inc. All Rights Reserved.
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.openide.util</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.masterfs</code-name-base>
                     </test-dependency>
                     <test-dependency>
@@ -410,5 +415,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.modules.j2ee.ejbcore.spi</package>
             </friend-packages>
         </data>
+        <junit-version xmlns="http://www.netbeans.org/ns/junit/1" value="junit3"/>
     </configuration>
 </project>

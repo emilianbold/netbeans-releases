@@ -39,7 +39,7 @@ public class EntityGeneratorTest extends TestBase {
     }
 
     public void testGenerateJavaEE14() throws IOException {
-        TestModule testModule = ejb14();
+        TestModule testModule = createEjb21Module();
         FileObject sourceRoot = testModule.getSources()[0];
         FileObject packageFileObject = sourceRoot.getFileObject("testGenerateJavaEE14");
         if (packageFileObject != null) {

@@ -22,6 +22,8 @@ package org.netbeans.modules.j2ee.ejbcore.action;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -30,8 +32,10 @@ import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
@@ -41,23 +45,23 @@ import org.openide.util.Parameters;
  */
 public abstract class AbstractMethodGenerator {
     
-    protected final EntityAndSession ejb;
+    protected final String ejbClass;
     protected final FileObject ejbClassFileObject;
-    protected final FileObject ddFileObject;
+    protected final org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule;
     
-    protected AbstractMethodGenerator(EntityAndSession ejb, FileObject ejbClassFileObject, FileObject ddFileObject) {
-        Parameters.notNull("ejb", ejb);
+    protected AbstractMethodGenerator(String ejbClass, FileObject ejbClassFileObject) {
+        Parameters.notNull("ejbClass", ejbClass);
         Parameters.notNull("ejbClassFileObject", ejbClassFileObject);
-        this.ejb = ejb;
+        this.ejbClass = ejbClass;
         this.ejbClassFileObject = ejbClassFileObject;
-        this.ddFileObject = ddFileObject;
+        this.ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(ejbClassFileObject);
     }
     
     /**
      * Founds business interface if exists and adds method there, adds method into interface <code>className</code> otherwise
      */
     protected void addMethodToInterface(MethodModel methodModel, String className) throws IOException {
-        String commonInterface = findCommonInterface(ejb.getEjbClass(), className);
+        String commonInterface = findCommonInterface(ejbClass, className);
         if (commonInterface == null) { // there is no 'business' interface
             commonInterface = className;
         }
@@ -83,10 +87,28 @@ public abstract class AbstractMethodGenerator {
     }
     
     protected void saveXml() throws IOException {
-        EjbJar ejbJar = DDProvider.getDefault().getDDRoot(ddFileObject);
+        FileObject ddFileObject = ejbModule.getDeploymentDescriptor();
+        EjbJar ejbJar = DDProvider.getDefault().getDDRoot(ddFileObject); // EJB 2.1
         if (ejbJar != null) {
             ejbJar.write(ddFileObject);
         }
+    }
+    
+    /**
+     * Returns map of EJB interface class names, where keys are appropriate constants from {@link EntityAndSession}
+     */
+    protected Map<String, String> getInterfaces() throws IOException {
+        return ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Map<String, String>>() {
+            public Map<String, String> run(EjbJarMetadata metadata) throws Exception {
+                EntityAndSession ejb = (EntityAndSession) metadata.findByEjbClass(ejbClass);
+                Map<String, String> result = new HashMap<String, String>();
+                result.put(EntityAndSession.LOCAL, ejb.getLocal());
+                result.put(EntityAndSession.LOCAL_HOME, ejb.getLocalHome());
+                result.put(EntityAndSession.REMOTE, ejb.getRemote());
+                result.put(EntityAndSession.HOME, ejb.getHome());
+                return result;
+            }
+        });
     }
     
     private static String findCommonInterface(final String className1, final String className2) throws IOException {

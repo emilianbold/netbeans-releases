@@ -39,7 +39,7 @@ public class SessionGeneratorTest extends TestBase {
     }
     
     public void testGenerateJavaEE14() throws IOException {
-        TestModule testModule = ejb14();
+        TestModule testModule = createEjb21Module();
         FileObject sourceRoot = testModule.getSources()[0];
         FileObject packageFileObject = sourceRoot.getFileObject("testGenerateJavaEE14");
         if (packageFileObject != null) {
@@ -127,7 +127,7 @@ public class SessionGeneratorTest extends TestBase {
     }
     
     public void testGenerateJavaEE50() throws IOException {
-        TestModule testModule = ejb50();
+        TestModule testModule = createEjb30Module();
         FileObject sourceRoot = testModule.getSources()[0];
         FileObject packageFileObject = sourceRoot.getFileObject("testGenerateJavaEE50");
         if (packageFileObject != null) {

@@ -23,7 +23,6 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
@@ -38,18 +37,16 @@ import org.openide.util.actions.Presenter;
  */
 public class GoToSourceAction extends AbstractAction implements Presenter.Popup {
 
-    private final String className;
-    private final ClassPath classPath;
+    private final FileObject classFO;
     private final String actionName;
     
-    public GoToSourceAction(ClassPath classPath, String className, String actionName) {
-        this.classPath = classPath;
-        this.className = className;
+    public GoToSourceAction(FileObject classFO, String actionName) {
         this.actionName = actionName;
+        this.classFO = classFO;
     }
 
     public void actionPerformed(ActionEvent actionEvent) {
-        openSourceFO(getFileObject());
+        openSourceFO(classFO);
     }
 
     public Object getValue(String key) {
@@ -66,11 +63,6 @@ public class GoToSourceAction extends AbstractAction implements Presenter.Popup 
     }
 
     // private helpers =========================================================
-    
-    private FileObject getFileObject() {
-        assert className != null: "cannot find null className"; //NOI18N
-        return classPath.findResource(className.replace('.', '/') + ".java"); //NOI18N
-    }
     
     /*
      * from NbJavaFastOpen

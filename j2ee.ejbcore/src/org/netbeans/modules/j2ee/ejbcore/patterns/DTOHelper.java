@@ -64,9 +64,9 @@ public class DTOHelper {
         org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fileObject);
         
         
-        DDProvider provider = DDProvider.getDefault();
+        DDProvider provider = DDProvider.getDefault(); // EJB 2.1
         try{
-            ejbJar = provider.getMergedDDRoot(ejbModule.getMetadataUnit());
+            ejbJar = provider.getDDRoot(ejbModule.getDeploymentDescriptor());
             beans = ejbJar.getEnterpriseBeans();
             
             entity = (Entity) beans.findBeanByName(

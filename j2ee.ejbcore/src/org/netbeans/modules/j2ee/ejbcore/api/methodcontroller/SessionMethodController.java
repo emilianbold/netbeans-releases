@@ -19,9 +19,13 @@
 
 package org.netbeans.modules.j2ee.ejbcore.api.methodcontroller;
 
+import java.io.IOException;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.openide.ErrorManager;
 
 /**
  *
@@ -30,11 +34,27 @@ import org.openide.filesystems.FileObject;
  */
 public final class SessionMethodController extends AbstractMethodController {
 
-    private final Session model;
+    private final MetadataModel<EjbJarMetadata> model;
+    private final String sessionType;
 
-    public SessionMethodController(FileObject ejbClassFO, Session model) {
-        super(ejbClassFO, model);
+    public SessionMethodController(final String ejbClass, MetadataModel<EjbJarMetadata> model) {
+        super(ejbClass, model);
         this.model = model;
+        String resultSessionType = null;
+        try {
+            resultSessionType = model.runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
+                public String run(EjbJarMetadata metadata) throws Exception {
+                    Session session = (Session) metadata.findByEjbClass(ejbClass);
+                    if (session != null) {
+                        return session.getSessionType();
+                    }
+                    return null;
+                }
+            });
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        }
+        this.sessionType = resultSessionType;
     }
 
     @Override
@@ -61,8 +81,8 @@ public final class SessionMethodController extends AbstractMethodController {
     @Override
     public MethodType getMethodTypeFromInterface(MethodModel clientView) {
         // see if the interface is home or local home, otherwise assume business
-        String localHome = model.getLocalHome();
-        String home = model.getHome();
+        String localHome = getLocalHome();
+        String home = getHome();
         if ((localHome != null && findInClass(localHome, clientView)) || (home != null && findInClass(home, clientView))) {
             return new MethodType.CreateMethodType(clientView);
         } else {
@@ -80,8 +100,7 @@ public final class SessionMethodController extends AbstractMethodController {
 
     @Override
     public boolean supportsMethodType(MethodType.Kind methodType) {
-        boolean stateless = Session.SESSION_TYPE_STATELESS.equals(model.getSessionType());
-        boolean simplified = model.getRoot().getVersion().doubleValue() > 2.1;
-        return  methodType == MethodType.Kind.BUSINESS || (!simplified && !stateless && (methodType == MethodType.Kind.CREATE));
+        boolean stateless = Session.SESSION_TYPE_STATELESS.equals(sessionType);
+        return  methodType == MethodType.Kind.BUSINESS || (!isSimplified() && !stateless && (methodType == MethodType.Kind.CREATE));
     }
 }

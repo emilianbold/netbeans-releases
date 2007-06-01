@@ -21,17 +21,18 @@ package org.netbeans.tests.j2eeserver.devmodule;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
-import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
-import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.xml.sax.SAXException;
+import org.netbeans.modules.j2ee.metadata.model.api.SimpleMetadataModelImpl;
 
 /**
  *
@@ -41,12 +42,12 @@ public class TestJ2eeModuleImpl implements J2eeModuleImplementation {
     
     private final FileObject webAppRoot;
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
-    private final RootInterface webApp;
+    private final MetadataModel<WebAppMetadata> webAppMetadata;
 
     /** Creates a new instance of TestJ2eeModule */
     public TestJ2eeModuleImpl(FileObject webAppRoot) throws IOException, SAXException {
         this.webAppRoot = webAppRoot;
-        webApp = DDProvider.getDefault().getDDRoot(getDeploymentConfigurationFile(J2eeModule.WEB_XML));
+        webAppMetadata = MetadataModelFactory.createMetadataModel(new SimpleMetadataModelImpl<WebAppMetadata>());
     }
 
     public FileObject getArchive() {
@@ -96,16 +97,16 @@ public class TestJ2eeModuleImpl implements J2eeModuleImplementation {
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         propertyChangeSupport.removePropertyChangeListener(listener);
     }
-
-    public RootInterface getDeploymentDescriptor(String location) {
-        if (location.equals(J2eeModule.WEB_XML)) {
-            return webApp;
-        } else {
-            return null;
-        }
-    }
     
     public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
         propertyChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
+    }
+
+    public <T> MetadataModel<T> getDeploymentDescriptor(Class<T> type) {
+        if (type == WebAppMetadata.class) {
+            return (MetadataModel<T>) webAppMetadata;
+        } else {
+            return null;
+        }
     }
 }

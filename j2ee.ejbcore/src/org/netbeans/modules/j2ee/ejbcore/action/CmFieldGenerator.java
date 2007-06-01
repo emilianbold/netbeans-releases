@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -37,7 +38,11 @@ import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
+import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
+import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import org.openide.filesystems.FileObject;
 
@@ -52,17 +57,19 @@ public class CmFieldGenerator extends AbstractMethodGenerator {
         Modifier.ABSTRACT
     }));
     
-    private CmFieldGenerator(Entity entity, FileObject ejbClassFileObject, FileObject ddFileObject) {
-        super(entity, ejbClassFileObject, ddFileObject);
+    private CmFieldGenerator(String ejbClass, FileObject ejbClassFileObject) {
+        super(ejbClass, ejbClassFileObject);
     }
     
-    public static CmFieldGenerator create(Entity entity, FileObject ejbClassFileObject, FileObject ddFileObject) {
-        return new CmFieldGenerator(entity, ejbClassFileObject, ddFileObject);
+    public static CmFieldGenerator create(String ejbClass, FileObject ejbClassFileObject) {
+        return new CmFieldGenerator(ejbClass, ejbClassFileObject);
     }
     
     public void addCmpField(MethodModel.Variable field, boolean localGetter, boolean localSetter, 
             boolean remoteGetter, boolean remoteSetter, String description) throws IOException {
-        Entity entity = (Entity) ejb;
+        EjbJar ejbJar = DDProvider.getDefault().getDDRoot(ejbModule.getDeploymentDescriptor()); // EJB 2.1
+        EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
+        Entity entity = (Entity) enterpriseBeans.findBeanByName(EnterpriseBeans.ENTITY, Entity.EJB_CLASS, ejbClass);
         if (!containsField(ejbClassFileObject, entity.getEjbClass(), field)) {
             addFieldToClass(field, localGetter, localSetter, remoteGetter, remoteSetter);
         }
@@ -83,7 +90,7 @@ public class CmFieldGenerator extends AbstractMethodGenerator {
         javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                TypeElement typeElement = workingCopy.getElements().getTypeElement(ejb.getEjbClass());
+                TypeElement typeElement = workingCopy.getElements().getTypeElement(ejbClass);
                 MethodTree getterTree = createGetter(workingCopy, variable);
                 MethodTree setterTree = createSetter(workingCopy, variable);
                 ClassTree classTree = workingCopy.getTrees().getTree(typeElement);
@@ -93,14 +100,18 @@ public class CmFieldGenerator extends AbstractMethodGenerator {
             }
         }).commit();
         
+        Map<String, String> interfaces = getInterfaces();
+        final String local = interfaces.get(EntityAndSession.LOCAL);
+        final String remote = interfaces.get(EntityAndSession.REMOTE);
+
         // local interface
         if (localGetter || localSetter) {
-            FileObject localFileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, ejb.getLocal());
+            FileObject localFileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, local);
             javaSource = JavaSource.forFileObject(localFileObject);
             javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
                 public void run(WorkingCopy workingCopy) throws IOException {
                     workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                    TypeElement typeElement = workingCopy.getElements().getTypeElement(ejb.getLocal());
+                    TypeElement typeElement = workingCopy.getElements().getTypeElement(local);
                     ClassTree classTree = workingCopy.getTrees().getTree(typeElement);
                     ClassTree newClassTree = classTree;
                     if (localGetter) {
@@ -118,12 +129,12 @@ public class CmFieldGenerator extends AbstractMethodGenerator {
         
         // remote interface
         if (remoteGetter || remoteSetter) {
-            FileObject remoteFileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, ejb.getRemote());
+            FileObject remoteFileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, remote);
             javaSource = JavaSource.forFileObject(remoteFileObject);
             javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
                 public void run(WorkingCopy workingCopy) throws IOException {
                     workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                    TypeElement typeElement = workingCopy.getElements().getTypeElement(ejb.getRemote());
+                    TypeElement typeElement = workingCopy.getElements().getTypeElement(remote);
                     ClassTree classTree = workingCopy.getTrees().getTree(typeElement);
                     ClassTree newClassTree = classTree;
                     if (remoteGetter) {

@@ -73,7 +73,7 @@ public class CmpFromDbGenerator {
     public CmpFromDbGenerator(Project project, FileObject ddFileObject) throws IOException {
         this.project = project;
         this.ddFileObject = ddFileObject;
-        this.ejbJar = DDProvider.getDefault().getDDRoot(ddFileObject);
+        this.ejbJar = DDProvider.getDefault().getDDRoot(ddFileObject); // EJB 2.1
         this.ejbnames = new EJBNameOptions();
     }
     
@@ -135,13 +135,13 @@ public class CmpFromDbGenerator {
             progressNotifier.progress(2*entityClassIndex+3);
             String ejbClassName = packageNameWithDot + ejbnames.getEntityEjbClassPrefix() + wizardTargetName + ejbnames.getEntityEjbClassSuffix();
             Entity entity = findEntityForEjbClass(ejbClassName);
-            FinderMethodGenerator finderGenerator = FinderMethodGenerator.create(entity, ejbClassFileObject, ddFileObject);
+            FinderMethodGenerator finderGenerator = FinderMethodGenerator.create(ejbClassName, ejbClassFileObject);
             //            if (helper.isGenerateFinderMethods()) { // is it possible to have CMP with finder method in impl class?
             progressNotifier.progress(NbBundle.getMessage(CmpFromDbGenerator.class, "TXT_GeneratingFinderMethods", wizardTargetName));
             addFinderMethods(finderGenerator, entity, entityClass.getPackageFileObject(), entityClass, helper.isCmpFieldsInInterface());
             //            }
             
-            addCmpFields(entity, entityClass);
+            addCmpFields(ejbClassName, entityClass);
             populateEntity(entityClass, entity, wizardTargetName);
             
             DatabaseConnection dbconn = helper.getDatabaseConnection();
@@ -161,8 +161,7 @@ public class CmpFromDbGenerator {
             String packageNameWithDot = EjbGenerationUtil.getSelectedPackageName(entityClass.getPackageFileObject()) + ".";
             String wizardTargetName = entityClass.getClassName();
             String ejbClassName = packageNameWithDot + ejbnames.getEntityEjbClassPrefix() + wizardTargetName + ejbnames.getEntityEjbClassSuffix();
-            Entity entity = findEntityForEjbClass(ejbClassName);
-            addRelationshipFields(entity, entityClass);
+            addRelationshipFields(ejbClassName, entityClass);
         }
         EntityRelation[] relation = helper.getRelations();
         if (ejbJar.getSingleRelationships() == null && relation.length > 0) {
@@ -304,11 +303,11 @@ public class CmpFromDbGenerator {
         }
     }
     
-    private void addCmpFields(Entity entity, EntityClass entityClass) throws IOException {
+    private void addCmpFields(String ejbClass, EntityClass entityClass) throws IOException {
         EJBNameOptions ejbNames = new EJBNameOptions();
         String className = ejbNames.getEntityEjbClassPrefix() + entityClass.getClassName() + ejbNames.getEntityEjbClassSuffix();
         FileObject ejbClassFO = entityClass.getPackageFileObject().getFileObject(EjbGenerationUtil.getBaseName(className), "java"); // NOI18N
-        CmFieldGenerator generator = CmFieldGenerator.create(entity, ejbClassFO, ddFileObject);
+        CmFieldGenerator generator = CmFieldGenerator.create(ejbClass, ejbClassFO);
         for (EntityMember m : entityClass.getFields()) {
             generator.addCmpField(
                     MethodModel.Variable.create(m.getMemberType(), m.getMemberName()),
@@ -324,9 +323,9 @@ public class CmpFromDbGenerator {
     /**
      * Doesn't write entry to deployment descriptor
      */
-    private void addRelationshipFields(Entity entity, EntityClass entityClass) throws IOException {
-        FileObject ejbClassFO = entityClass.getPackageFileObject().getFileObject(EjbGenerationUtil.getBaseName(entity.getEjbClass()), "java"); // NOI18N
-        CmFieldGenerator generator = CmFieldGenerator.create(entity, ejbClassFO, ddFileObject);
+    private void addRelationshipFields(String ejbClass, EntityClass entityClass) throws IOException {
+        FileObject ejbClassFO = entityClass.getPackageFileObject().getFileObject(EjbGenerationUtil.getBaseName(ejbClass), "java"); // NOI18N
+        CmFieldGenerator generator = CmFieldGenerator.create(ejbClass, ejbClassFO);
         for (RelationshipRole role : entityClass.getRoles()) {
             String cmrFieldType = getCmrFieldType(role, entityClass.getPackage());
             MethodModel.Variable field = MethodModel.Variable.create(cmrFieldType, role.getFieldName());

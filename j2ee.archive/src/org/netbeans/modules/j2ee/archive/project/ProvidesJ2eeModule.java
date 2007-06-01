@@ -33,12 +33,14 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NotImplementedException;
 
 public class ProvidesJ2eeModule extends J2eeModuleProvider {
     
@@ -284,8 +286,9 @@ public class ProvidesJ2eeModule extends J2eeModuleProvider {
             return null;
         }
         
-        public RootInterface getDeploymentDescriptor(String location) {
-            return inner.getDeploymentDescriptor(location);
+        // TODO MetadataModel:
+        public <T> MetadataModel<T> getDeploymentDescriptor(Class<T> type) {
+            throw new NotImplementedException();
         }
         
         public File getResourceDirectory() {

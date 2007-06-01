@@ -32,15 +32,18 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
+import org.netbeans.modules.j2ee.api.ejbjar.ResourceReference;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
-import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
+import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
+import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
+import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -48,6 +51,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.ServiceLocatorStrategy;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -62,8 +67,8 @@ public final class UseDatabaseGenerator {
     public void generate(final FileObject fileObject, final ElementHandle<TypeElement> elementHandle, 
                          final J2eeModuleProvider j2eeModuleProvider, final String datasourceReferenceName, 
                          final Datasource datasource, final boolean createServerResources, String serviceLocator) 
-                         throws IOException, ConfigurationException
-    {
+                         throws IOException, ConfigurationException {
+        
         Project project = FileOwnerQuery.getOwner(fileObject);
         ServiceLocatorStrategy serviceLocatorStrategy = (serviceLocator == null) ? null : 
             ServiceLocatorStrategy.create(project, fileObject, serviceLocator);
@@ -105,43 +110,29 @@ public final class UseDatabaseGenerator {
     }
     
     private void bindDataSourceReferenceForEjb(J2eeModuleProvider j2eeModuleProvider, String dsRefName, Datasource datasource,
-            FileObject fileObject, ElementHandle<TypeElement> elementHandle) throws ConfigurationException {
+            FileObject fileObject, final ElementHandle<TypeElement> elementHandle) throws ConfigurationException, IOException {
 
+        final String[] ejbName = new String[1];
+        final String[] ejbType = new String[1];
+
+        MetadataModel<EjbJarMetadata> metadataModel = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fileObject).getMetadataModel();
+        metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
+            public Void run(EjbJarMetadata metadata) throws Exception {
+                Ejb ejb = metadata.findByEjbClass(elementHandle.getQualifiedName());
+                ejbName[0] = ejb.getEjbName();
+                if (ejb instanceof Session) {
+                    ejbType[0] = EnterpriseBeans.SESSION;
+                } else if (ejb instanceof MessageDriven) {
+                    ejbType[0] = EnterpriseBeans.MESSAGE_DRIVEN;
+                } else if (ejb instanceof Entity) {
+                    ejbType[0] = EnterpriseBeans.ENTITY;
+                }
+                return null;
+            }
+        });
+        
         String dsJndiName = datasource.getJndiName();
-
-        EjbJar dd = null;
-        try {
-            dd = findDDRoot(fileObject);
-        }
-        catch (IOException ioe) {
-            // TODO
-        }
-        if (dd == null) {
-            return;
-        }
-        
-        EnterpriseBeans beans = dd.getEnterpriseBeans();
-        if (beans == null) {
-            return;
-        }
-        
-        String ejbName = getEjbName(beans, elementHandle.getQualifiedName());
-        if (ejbName == null) {
-            return;
-        }
-        
-        String ejbType = getEjbType(beans, elementHandle.getQualifiedName());
-        if (ejbType == null) {
-            return;
-        }
-        
-        j2eeModuleProvider.getConfigSupport().bindDatasourceReferenceForEjb(ejbName, ejbType, dsRefName, dsJndiName);
-    }
-    
-    private EjbJar findDDRoot(FileObject fileObject) throws IOException {
-        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbJar = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fileObject);
-        assert ejbJar != null;
-        return DDProvider.getDefault().getMergedDDRoot(ejbJar.getMetadataUnit());
+        j2eeModuleProvider.getConfigSupport().bindDatasourceReferenceForEjb(ejbName[0], ejbType[0], dsRefName, dsJndiName);
     }
     
     private boolean isWebModule(J2eeModule module) {
@@ -152,51 +143,16 @@ public final class UseDatabaseGenerator {
         return module.getModuleType().equals(J2eeModule.EJB);
     }
     
-    private String getEjbName(EnterpriseBeans beans, String className) {
-        Ejb ejb = (Ejb) beans.findBeanByName(EnterpriseBeans.SESSION, Ejb.EJB_CLASS, className);
-        if (ejb == null) {
-            ejb = (Ejb) beans.findBeanByName(EnterpriseBeans.ENTITY, Ejb.EJB_CLASS, className);
-        }
-        if (ejb == null) {
-            ejb = (Ejb) beans.findBeanByName(EnterpriseBeans.MESSAGE_DRIVEN, Ejb.EJB_CLASS, className);
-        }
-
-        return ejb.getEjbName();
-    }
-    
-    private String getEjbType(EnterpriseBeans beans, String className) {
-        String type = null;
-        
-        if (beans.findBeanByName(EnterpriseBeans.SESSION, Ejb.EJB_CLASS, className) != null) {
-            type = EnterpriseBeans.SESSION;
-        }
-        else
-        if (beans.findBeanByName(EnterpriseBeans.ENTITY, Ejb.EJB_CLASS, className) != null) {
-            type = EnterpriseBeans.ENTITY;
-        }
-        else
-        if (beans.findBeanByName(EnterpriseBeans.MESSAGE_DRIVEN, Ejb.EJB_CLASS, className) != null) {
-            type = EnterpriseBeans.MESSAGE_DRIVEN;
-        }
-
-        return type;
-    }
-    
     private String generateJNDILookup(String datasourceReferenceName, EnterpriseReferenceContainer enterpriseReferenceContainer, 
             FileObject fileObject, String className, String nodeName, boolean createServerResources) throws IOException {
-        String result = null;
-        ResourceRef ref = enterpriseReferenceContainer.createResourceRef(className);
-        if (ref != null) {
-            if (createServerResources) {
-                ref.setDescription(nodeName);
-            }
-            ref.setResRefName(datasourceReferenceName);
-            ref.setResAuth(org.netbeans.modules.j2ee.dd.api.common.ResourceRef.RES_AUTH_CONTAINER);
-            ref.setResSharingScope(org.netbeans.modules.j2ee.dd.api.common.ResourceRef.RES_SHARING_SCOPE_SHAREABLE);
-            ref.setResType(javax.sql.DataSource.class.getName());
-            result = enterpriseReferenceContainer.addResourceRef(ref, fileObject, className);
-        }
-        return result;
+        ResourceReference resourceReference = ResourceReference.create(
+                datasourceReferenceName,
+                javax.sql.DataSource.class.getName(),
+                ResourceRef.RES_AUTH_CONTAINER,
+                ResourceRef.RES_SHARING_SCOPE_SHAREABLE,
+                nodeName
+                );
+        return enterpriseReferenceContainer.addResourceRef(resourceReference, fileObject, className);
     }
     
     private void generateLookupMethod(FileObject fileObject, final String className, final String datasourceReferenceName, 

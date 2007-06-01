@@ -26,7 +26,9 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.TypeElement;
 import javax.swing.UIManager;
@@ -44,12 +46,15 @@ import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
-import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
+import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -87,37 +92,40 @@ public class CallEjbPanel extends javax.swing.JPanel {
         // This is working only for EJB project. Will need some enhancement in EnterpriseReferenceContainer API?
         org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(srcFile);
         if (ejbModule != null) {
-            EjbJar ejbJar = null;
-            try {
-                ejbJar = DDProvider.getDefault().getMergedDDRoot(ejbModule.getMetadataUnit());
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
-            }
-            if (ejbJar != null) {
-                final EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
-                JavaSource javaSource = JavaSource.forFileObject(srcFile);
-                if (enterpriseBeans != null && javaSource != null) {
-                    javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
-                        public void run(CompilationController controller) throws IOException {
-                            controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                            TypeElement beanClass = controller.getElements().getTypeElement(CallEjbPanel.this.className);
-                            for (Ejb ejb : enterpriseBeans.getEjbs()) {
-                                if (beanClass.getQualifiedName().contentEquals(ejb.getEjbClass())) {
-                                    EjbRef[] ejbRefs = ejb.getEjbRef();
-                                    EjbLocalRef[] ejbLocalRefs = ejb.getEjbLocalRef();
-                                    for (int j = 0; j < ejbRefs.length; j++) {
-                                        refNameSet.add(ejbRefs[j].getEjbRefName());
+            
+            MetadataModel<EjbJarMetadata> model = ejbModule.getMetadataModel();
+            model.runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
+                public Void run(EjbJarMetadata metadata) throws IOException {
+                    EjbJar ejbJar = metadata.getRoot();
+                    if (ejbJar != null) {
+                        final EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
+                        JavaSource javaSource = JavaSource.forFileObject(srcFile);
+                        if (enterpriseBeans != null && javaSource != null) {
+                            javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+                                public void run(CompilationController controller) throws IOException {
+                                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                                    TypeElement beanClass = controller.getElements().getTypeElement(CallEjbPanel.this.className);
+                                    for (Ejb ejb : enterpriseBeans.getEjbs()) {
+                                        if (beanClass.getQualifiedName().contentEquals(ejb.getEjbClass())) {
+                                            EjbRef[] ejbRefs = ejb.getEjbRef();
+                                            EjbLocalRef[] ejbLocalRefs = ejb.getEjbLocalRef();
+                                            for (int j = 0; j < ejbRefs.length; j++) {
+                                                refNameSet.add(ejbRefs[j].getEjbRefName());
+                                            }
+                                            for (int j = 0; j < ejbLocalRefs.length; j++) {
+                                                refNameSet.add(ejbLocalRefs[j].getEjbRefName());
+                                            }
+                                            return;
+                                        }
                                     }
-                                    for (int j = 0; j < ejbLocalRefs.length; j++) {
-                                        refNameSet.add(ejbLocalRefs[j].getEjbRefName());
-                                    }
-                                    return;
                                 }
-                            }
+                            }, true);
                         }
-                    }, true);
+                    }
+                    return null;
                 }
-            }
+            });
+            
         }
         setErrorFieldColor(true);
         nodeDisplayPanel = new NodeDisplayPanel(rootNode);
@@ -129,7 +137,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
                 if (nodes.length == 0) {
                     return;
                 }
-                EjbReference ejbReference = (EjbReference) nodes[0].getCookie(EjbReference.class);
+                EjbReference ejbReference = nodes[0].getLookup().lookup(EjbReference.class);
                 if (ejbReference != null) {
                     try {
                         generateName(ejbReference, remoteRadioButton.isSelected(), nodes[0]);
@@ -217,13 +225,12 @@ public class CallEjbPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
-        javax.swing.JLabel jLabel1;
 
         intefaceButtonGroup = new javax.swing.ButtonGroup();
         serviceLocatorPanel = new javax.swing.JPanel();
         convertToRuntime = new javax.swing.JCheckBox();
         displayPanel = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
+        javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
         errorField = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
@@ -233,15 +240,14 @@ public class CallEjbPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("ACS_CallEJBPanel"));
-        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("ACS_CallEJBPanel"));
         serviceLocatorPanel.setLayout(new java.awt.BorderLayout());
 
         convertToRuntime.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("LBL_ConvertToRuntimeMneumonic").charAt(0));
         convertToRuntime.setSelected(true);
-        convertToRuntime.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("LBL_ConvertToRuntime"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle"); // NOI18N
+        convertToRuntime.setText(bundle.getString("LBL_ConvertToRuntime")); // NOI18N
         serviceLocatorPanel.add(convertToRuntime, java.awt.BorderLayout.SOUTH);
-        convertToRuntime.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CallEjbPanel.class, "ACSD_ConvertToRuntime"));
+        convertToRuntime.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CallEjbPanel.class, "ACSD_ConvertToRuntime")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -254,7 +260,6 @@ public class CallEjbPanel extends javax.swing.JPanel {
         add(serviceLocatorPanel, gridBagConstraints);
 
         displayPanel.setLayout(new java.awt.BorderLayout());
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -265,11 +270,11 @@ public class CallEjbPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         add(displayPanel, gridBagConstraints);
-        displayPanel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("LBL_DisplayPanel"));
-        displayPanel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("ACSD_DisplayPanel"));
+        displayPanel.getAccessibleContext().setAccessibleName(bundle.getString("LBL_DisplayPanel")); // NOI18N
+        displayPanel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_DisplayPanel")); // NOI18N
 
         jLabel1.setLabelFor(displayPanel);
-        jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("LBL_ModuleMustBeInSameApplication"));
+        jLabel1.setText(bundle.getString("LBL_ModuleMustBeInSameApplication")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -279,7 +284,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
         add(jLabel1, gridBagConstraints);
 
-        errorField.setBackground(getBackground());
+        errorField.setBackground(java.awt.SystemColor.control);
         errorField.setEditable(false);
         errorField.setBorder(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -290,12 +295,12 @@ public class CallEjbPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 5);
         add(errorField, gridBagConstraints);
-        errorField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("ACS_ErrorField"));
-        errorField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("ACS_ErrorField"));
+        errorField.getAccessibleContext().setAccessibleName(bundle.getString("ACS_ErrorField")); // NOI18N
+        errorField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_ErrorField")); // NOI18N
 
         jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("MN_ReferenceName").charAt(0));
         jLabel2.setLabelFor(referenceNameTextField);
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(CallEjbPanel.class, "LBL_ReferenceName"));
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(CallEjbPanel.class, "LBL_ReferenceName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -303,14 +308,13 @@ public class CallEjbPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 5);
         add(jLabel2, gridBagConstraints);
 
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(CallEjbPanel.class, "LBL_ReferencedInterface"));
+        jLabel3.setText(org.openide.util.NbBundle.getMessage(CallEjbPanel.class, "LBL_ReferencedInterface")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 5);
         add(jLabel3, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -318,31 +322,30 @@ public class CallEjbPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 5);
         add(referenceNameTextField, gridBagConstraints);
-        referenceNameTextField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("LBL_ReferenceName"));
-        referenceNameTextField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("LBL_ReferenceName"));
+        referenceNameTextField.getAccessibleContext().setAccessibleName(bundle.getString("LBL_ReferenceName")); // NOI18N
+        referenceNameTextField.getAccessibleContext().setAccessibleDescription(bundle.getString("LBL_ReferenceName")); // NOI18N
 
         intefaceButtonGroup.add(localRadioButton);
         localRadioButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("MN_Local").charAt(0));
         localRadioButton.setSelected(true);
-        localRadioButton.setText(org.openide.util.NbBundle.getMessage(CallEjbPanel.class, "LBL_Local"));
+        localRadioButton.setText(org.openide.util.NbBundle.getMessage(CallEjbPanel.class, "LBL_Local")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 5);
         add(localRadioButton, gridBagConstraints);
-        localRadioButton.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("LBL_Local"));
-        localRadioButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("LBL_Local"));
+        localRadioButton.getAccessibleContext().setAccessibleName(bundle.getString("LBL_Local")); // NOI18N
+        localRadioButton.getAccessibleContext().setAccessibleDescription(bundle.getString("LBL_Local")); // NOI18N
 
         intefaceButtonGroup.add(remoteRadioButton);
         remoteRadioButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("MN_Remote").charAt(0));
-        remoteRadioButton.setText(org.openide.util.NbBundle.getMessage(CallEjbPanel.class, "LBL_Remote"));
+        remoteRadioButton.setText(org.openide.util.NbBundle.getMessage(CallEjbPanel.class, "LBL_Remote")); // NOI18N
         remoteRadioButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 remoteRadioButtonItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 4;
@@ -350,9 +353,11 @@ public class CallEjbPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 5);
         add(remoteRadioButton, gridBagConstraints);
-        remoteRadioButton.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("LBL_Remote"));
-        remoteRadioButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("LBL_Remote"));
+        remoteRadioButton.getAccessibleContext().setAccessibleName(bundle.getString("LBL_Remote")); // NOI18N
+        remoteRadioButton.getAccessibleContext().setAccessibleDescription(bundle.getString("LBL_Remote")); // NOI18N
 
+        getAccessibleContext().setAccessibleName(bundle.getString("ACS_CallEJBPanel")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CallEJBPanel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     private void remoteRadioButtonItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_remoteRadioButtonItemStateChanged
@@ -395,24 +400,41 @@ public class CallEjbPanel extends javax.swing.JPanel {
     }
     
     private void generateName(EjbReference ejbReference, boolean remote, Node selectedNode) throws IOException {
-        if (ejbReference.getClientJarTarget() == null) {
+        
+        if (Utils.getAntArtifact(ejbReference) == null) {
             referenceNameTextField.setText("");
             return;
         }
+
         String name = "";
-        if (remote) {
-            boolean targetIsJavaSE = Utils.isTargetJavaSE(srcFile, className);
-            if (targetIsJavaSE && Utils.isJavaEE5orHigher(project)){
-                ElementHandle<TypeElement> elementHandle = _RetoucheUtil.getJavaClassFromNode(selectedNode);
-                name = elementHandle.getQualifiedName();
-            } else if (targetIsJavaSE){
-                name = ejbReference.createRef().getHome();
+
+        final ElementHandle<TypeElement> elementHandle = _RetoucheUtil.getJavaClassFromNode(selectedNode);
+        DataObject nodeDO = selectedNode.getLookup().lookup(DataObject.class);
+        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(nodeDO.getPrimaryFile());
+        if (ejbModule != null) {
+            Map<String, String> names = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Map<String, String>>() {
+                public Map<String, String> run(EjbJarMetadata metadata) throws Exception {
+                    Map<String, String> result = new HashMap<String, String>();
+                    EntityAndSession ejb = (EntityAndSession) metadata.findByEjbClass(elementHandle.getQualifiedName());
+                    result.put(EntityAndSession.HOME, ejb.getHome());
+                    result.put(EntityAndSession.EJB_NAME, ejb.getEjbName());
+                    return result;
+                }
+            });
+            if (remote) {
+                boolean targetIsJavaSE = Utils.isTargetJavaSE(srcFile, className);
+                if (targetIsJavaSE && Utils.isJavaEE5orHigher(project)){
+                    name = elementHandle.getQualifiedName();
+                } else if (targetIsJavaSE){
+                    name = names.get(EntityAndSession.HOME);
+                } else {
+                    name = names.get(EntityAndSession.EJB_NAME);
+                }
             } else {
-                name = ejbReference.createRef().getEjbRefName();
+                name = names.get(EntityAndSession.EJB_NAME);
             }
-        } else {
-            name = ejbReference.createLocalRef().getEjbRefName();
         }
+        
         int uniquifier = 1;
         String newName = name;
         while (refNameSet.contains(newName)) {
@@ -461,7 +483,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
                 return false;
             }
             // node cannot act as EJB reference
-            if (nodes[0].getCookie(EjbReference.class) == null) {
+            if (nodes[0].getLookup().lookup(EjbReference.class) == null) {
                 setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_ReferencesNotSupported")); //NOI18N
                 return false;
             }
@@ -515,13 +537,13 @@ public class CallEjbPanel extends javax.swing.JPanel {
         }
         
         private boolean acceptInterfaces(Node[] nodes) {
-            EjbReference ejbReference = (EjbReference) nodes[0].getCookie(EjbReference.class);
+            EjbReference ejbReference = nodes[0].getLookup().lookup(EjbReference.class);
             if (ejbReference == null) {
                 return false;
             }
             
-            boolean shouldEnableLocal = ejbReference.supportsLocalInvocation();
-            boolean shouldEnableRemote = ejbReference.supportsRemoteInvocation();
+            boolean shouldEnableLocal = (ejbReference.getLocal() != null);
+            boolean shouldEnableRemote = (ejbReference.getRemote() != null);
             localRadioButton.setEnabled(shouldEnableLocal);
             remoteRadioButton.setEnabled(shouldEnableRemote);
             if (!shouldEnableLocal && !shouldEnableRemote) {
@@ -547,7 +569,10 @@ public class CallEjbPanel extends javax.swing.JPanel {
         
         private boolean validateRefName() {
             String refName = referenceNameTextField.getText();
-            if (refNameSet.contains(refName)) {
+            if ("".equals(refName.trim())) {
+                setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "ERR_ReferenceNameEmpty", refName)); //NOI18N
+                return false;
+            } else if (refNameSet.contains(refName)) {
                 setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "ERR_ReferenceNameExists", refName)); //NOI18N
                 return false;
             }

@@ -73,6 +73,15 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.j2ee.metadata</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0</release-version>
+                        <specification-version>1.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.j2eeapis</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -216,6 +225,12 @@ Microsystems, Inc. All Rights Reserved.
             <test-dependencies>
                 <test-type>
                     <name>unit</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.j2ee.metadata</code-name-base>
+                        <compile-dependency/>
+                        <recursive/>
+                        <test/>
+                    </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.j2eeserver</code-name-base>
                         <recursive/>

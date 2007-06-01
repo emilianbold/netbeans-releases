@@ -385,7 +385,7 @@ public class EjbJarProjectProperties {
                 if (ejbJarModules.length > 0) {
                     FileObject ddFo = ejbJarModules[0].getDeploymentDescriptor();
                     if (ddFo != null) {
-                        EjbJar ddRoot = DDProvider.getDefault().getMergedDDRoot(ejbJarModules[0].getMetadataUnit());
+                        EjbJar ddRoot = DDProvider.getDefault().getDDRoot(ddFo);
                         if (ddRoot != null) {
                             ddRoot.setVersion(new BigDecimal(EjbJar.VERSION_2_1));
                             ddRoot.write(ddFo);

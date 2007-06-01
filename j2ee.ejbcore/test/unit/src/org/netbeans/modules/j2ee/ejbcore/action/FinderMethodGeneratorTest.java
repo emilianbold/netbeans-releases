@@ -51,13 +51,12 @@ public class FinderMethodGeneratorTest extends TestBase {
     }
     
     public void testGenerateCmpCardinalityOne() throws IOException {
-        TestModule testModule = ejb14();
+        TestModule testModule = createEjb21Module();
 
         // add create method into local and remote interfaces of CMP Entity EJB 
         FileObject beanClass = testModule.getSources()[0].getFileObject("cmplr/CmpLRBean.java");
         EjbJar ejbJar = DDProvider.getDefault().getDDRoot(testModule.getDeploymentDescriptor());
-        Entity entity = (Entity) ejbJar.getEnterpriseBeans().findBeanByName(EnterpriseBeans.ENTITY, Entity.EJB_CLASS, "cmplr.CmpLRBean");
-        FinderMethodGenerator generator = FinderMethodGenerator.create(entity, beanClass, testModule.getDeploymentDescriptor());
+        FinderMethodGenerator generator = FinderMethodGenerator.create("cmplr.CmpLRBean", beanClass);
         final MethodModel methodModel = MethodModel.create(
                 "findTestOne",
                 "void",
@@ -126,6 +125,7 @@ public class FinderMethodGeneratorTest extends TestBase {
         assertTrue(found[0]);
 
         // entry in deployment descriptor
+        Entity entity = (Entity) ejbJar.getEnterpriseBeans().findBeanByName(EnterpriseBeans.ENTITY, Entity.EJB_CLASS, "cmplr.CmpLRBean");
         boolean queryFound = false;
         for (Query query : entity.getQuery()) {
             QueryMethod queryMethod = query.getQueryMethod();
@@ -139,13 +139,12 @@ public class FinderMethodGeneratorTest extends TestBase {
     }
     
     public void testGenerateCmpCardinalityMany() throws IOException {
-        TestModule testModule = ejb14();
+        TestModule testModule = createEjb21Module();
 
         // add create method into local and remote interfaces of CMP Entity EJB 
         FileObject beanClass = testModule.getSources()[0].getFileObject("cmplr/CmpLRBean.java");
         EjbJar ejbJar = DDProvider.getDefault().getDDRoot(testModule.getDeploymentDescriptor());
-        Entity entity = (Entity) ejbJar.getEnterpriseBeans().findBeanByName(EnterpriseBeans.ENTITY, Entity.EJB_CLASS, "cmplr.CmpLRBean");
-        FinderMethodGenerator generator = FinderMethodGenerator.create(entity, beanClass, testModule.getDeploymentDescriptor());
+        FinderMethodGenerator generator = FinderMethodGenerator.create("cmplr.CmpLRBean", beanClass);
         final MethodModel methodModel = MethodModel.create(
                 "findTestMany",
                 "void",
@@ -216,6 +215,7 @@ public class FinderMethodGeneratorTest extends TestBase {
         assertTrue(found[0]);
 
         // entry in deployment descriptor
+        Entity entity = (Entity) ejbJar.getEnterpriseBeans().findBeanByName(EnterpriseBeans.ENTITY, Entity.EJB_CLASS, "cmplr.CmpLRBean");
         boolean queryFound = false;
         for (Query query : entity.getQuery()) {
             QueryMethod queryMethod = query.getQueryMethod();

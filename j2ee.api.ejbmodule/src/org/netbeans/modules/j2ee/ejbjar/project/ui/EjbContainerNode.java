@@ -21,12 +21,10 @@ package org.netbeans.modules.j2ee.ejbjar.project.ui;
 
 import java.awt.Image;
 import javax.swing.Action;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbNodesFactory;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -40,12 +38,13 @@ import org.openide.util.lookup.Lookups;
  * @author Chris Webster
  */
 public class EjbContainerNode extends AbstractNode {
+    
     public static final String NAME = "EJBS"; // NOI18N
     
     private static final String EJB_BADGE = "org/netbeans/modules/j2ee/ejbjar/project/ui/enterpriseBeansBadge.png"; // NOI18N
     
-    public EjbContainerNode(EjbJar model, ClassPath srcPath, FileObject ddFile, Project p, EjbNodesFactory nodesFactory) {
-        super(new EjbContainerChildren(model, srcPath, ddFile, nodesFactory), Lookups.singleton(p));
+    public EjbContainerNode(EjbJar ejbModule, Project p, EjbNodesFactory nodesFactory) {
+        super(new EjbContainerChildren(ejbModule, nodesFactory, p), Lookups.singleton(p));
         setName(EjbNodesFactory.CONTAINER_NODE_NAME);
         setDisplayName(NbBundle.getMessage(EjbContainerNode.class, "LBL_node"));
         setShortDescription(NbBundle.getMessage(EjbContainerNode.class, "HINT_node"));

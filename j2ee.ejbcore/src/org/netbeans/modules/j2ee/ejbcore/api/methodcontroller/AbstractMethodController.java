@@ -24,6 +24,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.util.Trees;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,10 +41,13 @@ import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
+import org.netbeans.modules.j2ee.ejbcore.Utils;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
@@ -54,15 +58,45 @@ import org.openide.filesystems.FileObject;
  */
 public abstract class AbstractMethodController extends EjbMethodController {
     
-    private final FileObject ejbClassFO;
-    private final EntityAndSession model;
+    private final static int LOCAL = 0;
+    private final static int REMOTE = 1;
+    private final static int LOCAL_HOME = 2;
+    private final static int REMOTE_HOME = 3;
+    
+    private final String ejbClass;
+    private final MetadataModel<EjbJarMetadata> model;
+    
     protected Set classesForSave;
     private final boolean simplified;
+    private final String local;
+    private final String remote;
+    private final String localHome;
+    private final String remoteHome;
     
-    public AbstractMethodController(FileObject ejbClassFO, EntityAndSession model) {
-        this.ejbClassFO = ejbClassFO;
+    public AbstractMethodController(final String ejbClass, MetadataModel<EjbJarMetadata> model) {
+        this.ejbClass = ejbClass;
         this.model = model;
-        this.simplified = model.getRoot().getVersion().doubleValue() > 2.1;
+        final String[] results = new String[4];
+        BigDecimal version = null;
+        try {
+            version = model.runReadAction(new MetadataModelAction<EjbJarMetadata, BigDecimal>() {
+                public BigDecimal run(EjbJarMetadata metadata) throws Exception {
+                    EntityAndSession model = (EntityAndSession) metadata.findByEjbClass(ejbClass);
+                    results[LOCAL] = model.getLocal();
+                    results[REMOTE] = model.getRemote();
+                    results[LOCAL_HOME] = model.getLocalHome();
+                    results[REMOTE_HOME] = model.getHome();
+                    return metadata.getRoot().getVersion();
+                }
+            });
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        }
+        this.simplified = version == null ? true : (version.doubleValue() > 2.1);
+        local = results[LOCAL];
+        remote = results[REMOTE];
+        localHome = results[LOCAL_HOME];
+        remoteHome = results[REMOTE_HOME];
     }
     
     public interface GenerateFromImpl {
@@ -81,15 +115,15 @@ public abstract class AbstractMethodController extends EjbMethodController {
     public abstract GenerateFromIntf createGenerateFromIntf();
     
     @Override
-    public final MethodModel createAndAdd(MethodModel clientView, boolean local, boolean isComponent) {
+    public final MethodModel createAndAdd(MethodModel clientView, boolean isLocal, boolean isComponent) {
         String home = null;
         String component = null;
-        if (local) {
-            home = model.getLocalHome();
-            component = findBusinessInterface(model.getLocal());
+        if (isLocal) {
+            home = localHome;
+            component = findBusinessInterface(local);
         } else {
-            home = model.getHome();
-            component = findBusinessInterface(model.getRemote());
+            home = remoteHome;
+            component = findBusinessInterface(remote);
         }
         if (isComponent) {
             try {
@@ -105,7 +139,6 @@ public abstract class AbstractMethodController extends EjbMethodController {
                 ErrorManager.getDefault().notify(e);
             }
         }
-        String ejbClass = model.getEjbClass();
         if (hasJavaImplementation(clientView)) {
             for (MethodModel me : getImplementationMethods(clientView)) {
                 try {
@@ -118,7 +151,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
             }
         }
         MethodModel result = clientView;
-        if (!local && !simplified) {
+        if (!isLocal && !simplified) {
             result = addExceptionIfNecessary(clientView, RemoteException.class.getName());
         }
         return result;
@@ -133,21 +166,21 @@ public abstract class AbstractMethodController extends EjbMethodController {
     }
     
     @Override
-    public final void createAndAddInterface(MethodModel beanImpl, boolean local) {
+    public final void createAndAddInterface(MethodModel beanImpl, boolean isLocal) {
         MethodType methodType = getMethodTypeFromImpl(beanImpl);
         GenerateFromImpl generateFromImpl = createGenerateFromImpl();
         String home = null;
         String component = null;
-        if (local) {
-            home = model.getLocalHome();
-            component = findBusinessInterface(model.getLocal());
+        if (isLocal) {
+            home = localHome;
+            component = findBusinessInterface(local);
         } else {
-            home = model.getHome();
-            component = findBusinessInterface(model.getRemote());
+            home = remoteHome;
+            component = findBusinessInterface(remote);
         }
         generateFromImpl.getInterfaceMethodFromImpl(methodType, home, component);
         MethodModel method = generateFromImpl.getInterfaceMethod();
-        if (!local && !simplified) {
+        if (!isLocal && !simplified) {
             method = addExceptionIfNecessary(method, RemoteException.class.getName());
         }
         method = MethodModel.create(
@@ -174,7 +207,6 @@ public abstract class AbstractMethodController extends EjbMethodController {
         GenerateFromIntf generateFromIntf = createGenerateFromIntf();
         generateFromIntf.getInterfaceMethodFromImpl(methodType);
         MethodModel method = generateFromIntf.getImplMethod();
-        String ejbClass = model.getEjbClass();
         try {
             addMethodToClass(ejbClass, method);
         } catch (IOException e) {
@@ -212,18 +244,18 @@ public abstract class AbstractMethodController extends EjbMethodController {
     }
     
     @Override
-    public final ClassMethodPair getInterface(MethodModel beanImpl, boolean local) {
+    public final ClassMethodPair getInterface(MethodModel beanImpl, boolean isLocal) {
         MethodType methodType = getMethodTypeFromImpl(beanImpl);
         assert methodType != null: "method cannot be used in interface";
         GenerateFromImpl generateFromImpl = createGenerateFromImpl();
         String home = null;
         String component = null;
-        if (local) {
-            home = model.getLocalHome();
-            component = findBusinessInterface(model.getLocal());
+        if (isLocal) {
+            home = localHome;
+            component = findBusinessInterface(local);
         } else {
-            home = model.getHome();
-            component = findBusinessInterface(model.getRemote());
+            home = remoteHome;
+            component = findBusinessInterface(remote);
         }
         generateFromImpl.getInterfaceMethodFromImpl(methodType,home,component);
         MethodModel interfaceMethodModel = generateFromImpl.getInterfaceMethod();
@@ -237,14 +269,14 @@ public abstract class AbstractMethodController extends EjbMethodController {
      * @return false if the interface is found but does not contain matching method.
      */
     @Override
-    public boolean hasMethodInInterface(MethodModel method, MethodType methodType, boolean local) {
+    public boolean hasMethodInInterface(MethodModel method, MethodType methodType, boolean isLocal) {
         String intf = null;
         MethodModel methodCopy = method;
         if (methodType.getKind() == MethodType.Kind.BUSINESS) {
-            intf = findBusinessInterface(local ? model.getLocal() : model.getRemote());
+            intf = findBusinessInterface(isLocal ? local : remote);
         } else if (methodType.getKind() == MethodType.Kind.CREATE) {
             String name = chopAndUpper(methodCopy.getName(), "ejb"); //NOI18N
-            String type = local ? model.getLocal() : model.getRemote();
+            String type = isLocal ? local : remote;
             methodCopy = MethodModel.create(
                     name,
                     type,
@@ -253,7 +285,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
                     methodCopy.getExceptions(),
                     methodCopy.getModifiers()
                     );
-            intf = local ? model.getLocalHome() : model.getHome();
+            intf = isLocal ? localHome : remoteHome;
         }
         if (methodCopy.getName() == null || intf == null || methodCopy.getReturnType() == null) {
             return true;
@@ -288,14 +320,23 @@ public abstract class AbstractMethodController extends EjbMethodController {
     }
     
     private String findBusinessInterface(String compInterfaceName) {
-        String beanClass = model.getEjbClass();
-        if (compInterfaceName == null || beanClass == null) {
+        if (compInterfaceName == null || ejbClass == null) {
             return null;
         }
         // get bean interfaces
-        List<String> beanInterfaces = getInterfaces(beanClass);
+        List<String> beanInterfaces = new ArrayList<String>();
+        try {
+            beanInterfaces = getInterfaces(ejbClass);
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        }
         // get method interfaces
-        List<String> compInterfaces = getInterfaces(compInterfaceName);
+        List<String> compInterfaces = new ArrayList<String>();
+        try {
+            compInterfaces = getInterfaces(compInterfaceName);
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        }
         // look for common candidates
         compInterfaces.retainAll(beanInterfaces);
         if (compInterfaces.isEmpty()) {
@@ -305,7 +346,12 @@ public abstract class AbstractMethodController extends EjbMethodController {
         return business == null ? compInterfaceName : business;
     }
     
-    private List<String> getInterfaces(final String className) {
+    private List<String> getInterfaces(final String className) throws IOException {
+        FileObject ejbClassFO = model.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
+            public FileObject run(EjbJarMetadata metadata) throws Exception {
+                return metadata.findResource(Utils.toResourceName(ejbClass));
+            }
+        });
         JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
         final List<String> result = new ArrayList<String>();
         try {
@@ -329,7 +375,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
     
     @Override
     public final String getBeanClass() {
-        return model.getEjbClass() == null ? null : model.getEjbClass();
+        return ejbClass;
     }
     
     @Override
@@ -338,11 +384,11 @@ public abstract class AbstractMethodController extends EjbMethodController {
             return Collections.<String>emptyList();
         }
         List<String> resultList = new ArrayList<String>(2);
-        if (model.getLocalHome() != null) {
-            resultList.add(model.getLocalHome());
+        if (localHome != null) {
+            resultList.add(localHome);
         }
-        if (model.getLocal() != null) {
-            resultList.add(findBusinessInterface(model.getLocal()));
+        if (local != null) {
+            resultList.add(findBusinessInterface(local));
         }
         
         return resultList;
@@ -354,11 +400,11 @@ public abstract class AbstractMethodController extends EjbMethodController {
             return Collections.<String>emptyList();
         }
         List<String> resultList = new ArrayList<String>(2);
-        if (model.getHome() != null) {
-            resultList.add(model.getHome());
+        if (remoteHome != null) {
+            resultList.add(remoteHome);
         }
-        if (model.getRemote() != null) {
-            resultList.add(findBusinessInterface(model.getRemote()));
+        if (remote != null) {
+            resultList.add(findBusinessInterface(remote));
         }
         return resultList;
     }
@@ -392,13 +438,13 @@ public abstract class AbstractMethodController extends EjbMethodController {
     
     @Override
     public boolean hasRemote() {
-        String intf = model.getHome();
+        String intf = remoteHome;
         if (!simplified) {
             if (intf == null) {
                 return false;
             }
         }
-        intf = model.getRemote();
+        intf = remote;
         if (intf == null || findBusinessInterface(intf) == null) {
             return false;
         }
@@ -407,13 +453,13 @@ public abstract class AbstractMethodController extends EjbMethodController {
     
     @Override
     public boolean hasLocal() {
-        String intf = model.getLocalHome();
+        String intf = localHome;
         if (!simplified) {
             if (intf == null) {
                 return false;
             }
         }
-        intf = model.getLocal();
+        intf = local;
         if (intf == null || findBusinessInterface(intf) == null) {
             return false;
         }
@@ -428,12 +474,25 @@ public abstract class AbstractMethodController extends EjbMethodController {
     
     @Override
     public String getRemote() {
-        return model.getRemote();
+        return remote;
     }
     
     @Override
     public String getLocal() {
-        return model.getLocal();
+        return local;
+    }
+    
+    protected String getLocalHome() {
+        return localHome;
+    }
+    
+    protected String getHome() {
+        return remoteHome;
+    }
+    
+    protected boolean isSimplified() {
+        return simplified;
+        
     }
     
 //    public final MethodModel addMethod(MethodModel method, boolean local, boolean isComponent) {
@@ -447,22 +506,21 @@ public abstract class AbstractMethodController extends EjbMethodController {
 //        return method;
 //    }
     
-    public String getBeanInterface(boolean local, boolean isComponent) {
+    public String getBeanInterface(boolean isLocal, boolean isComponent) {
         if (isComponent) {
-            return findBusinessInterface(local ? model.getLocal() : model.getRemote());
+            return findBusinessInterface(isLocal ? local : remote);
         } else {
-            String className = local ? model.getLocalHome() : model.getHome();
+            String className = isLocal ? localHome : remoteHome;
             return className;
         }
     }
     
     private void createBeanMethod(MethodModel method) throws IOException {
-        String beanClass = model.getEjbClass();
         if (hasJavaImplementation(method)) {
             List<MethodModel> implMethods = getImplementationMethods(method);
             for (MethodModel me : implMethods) {
-                if (!findInClass(beanClass, me)) {
-                    addMethodToClass(beanClass, method);
+                if (!findInClass(ejbClass, me)) {
+                    addMethodToClass(ejbClass, method);
                 }
             }
         }
@@ -498,6 +556,11 @@ public abstract class AbstractMethodController extends EjbMethodController {
     }
 
     private boolean methodFindInClass(final String clazz, final MethodModel methodModel) throws IOException {
+        FileObject ejbClassFO = model.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
+            public FileObject run(EjbJarMetadata metadata) throws Exception {
+                return metadata.findResource(Utils.toResourceName(ejbClass));
+            }
+        });
         JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
         final boolean [] result = new boolean[] {false};
         javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
@@ -516,7 +579,11 @@ public abstract class AbstractMethodController extends EjbMethodController {
     }
     
     protected void addMethodToClass(final String className, final MethodModel method) throws IOException {
-        FileObject fileObject = resolveFileObjectForClass(ejbClassFO, className);
+        FileObject fileObject = model.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
+            public FileObject run(EjbJarMetadata metadata) throws Exception {
+                return metadata.findResource(Utils.toResourceName(className));
+            }
+        });
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
@@ -532,7 +599,11 @@ public abstract class AbstractMethodController extends EjbMethodController {
     }
 
     protected void removeMethodFromClass(final String className, final MethodModel methodModel) throws IOException {
-        FileObject fileObject = resolveFileObjectForClass(ejbClassFO, className);
+        FileObject fileObject = model.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
+            public FileObject run(EjbJarMetadata metadata) throws Exception {
+                return metadata.findResource(Utils.toResourceName(className));
+            }
+        });
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
@@ -549,25 +620,4 @@ public abstract class AbstractMethodController extends EjbMethodController {
         }).commit();
     }
 
-    /**
-     * Tries to find {@link FileObject} which contains class with given className.<br>
-     * This method will enter javac context for referenceFileObject to find class by its className,
-     * therefore don't call this method within other javac context.
-     * 
-     * @param referenceFileObject helper file for entering javac context
-     * @param className fully-qualified class name to resolve file for
-     * @return resolved file or null if not found
-     */
-    private FileObject resolveFileObjectForClass(FileObject referenceFileObject, final String className) throws IOException {
-        final FileObject[] result = new FileObject[1];
-        JavaSource javaSource = JavaSource.forFileObject(referenceFileObject);
-        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
-            public void run(CompilationController controller) {
-                TypeElement typeElement = controller.getElements().getTypeElement(className);
-                result[0] = SourceUtils.getFile(typeElement, controller.getClasspathInfo());
-            }
-        }, true);
-        return result[0];
-    }
-    
 }

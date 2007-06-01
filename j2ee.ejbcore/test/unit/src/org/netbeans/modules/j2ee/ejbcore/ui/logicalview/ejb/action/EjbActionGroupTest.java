@@ -57,7 +57,7 @@ public class EjbActionGroupTest extends TestBase {
         Node node = new AbstractNode(Children.LEAF, Lookups.singleton(testFO));
         assertFalse(ejbActionGroup.enable(new Node[] {node}));
 
-        TestModule testModule = ejb14();
+        TestModule testModule = createEjb21Module();
         FileObject beanClass = testModule.getSources()[0].getFileObject("statelesslr/StatelessLRBean.java");
         node = new AbstractNode(Children.LEAF, Lookups.singleton(beanClass));
         assertTrue(ejbActionGroup.enable(new Node[] {node}));

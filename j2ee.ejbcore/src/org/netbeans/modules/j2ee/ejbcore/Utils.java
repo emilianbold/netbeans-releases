@@ -30,8 +30,6 @@ import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
-import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
-import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -47,14 +45,20 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ant.AntArtifactQuery;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.ejbcore.action.CallEjbGenerator;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.filesystems.FileObject;
 
 public class Utils {
@@ -231,53 +235,44 @@ public class Utils {
         ejbMethodController.createAndAddInterface(methodModel[0], false);
     }
     
-    public static void addReference(FileObject fileObject, String className, EjbReference ref, String serviceLocator, boolean remote,
-            boolean throwExceptions, String ejbRefName, Project nodeProject) throws IOException {
+    /**
+     * 
+     * 
+     * @param fileObject 
+     */
+    public static void addReference(FileObject referencingFileObject, String referencingClassName, EjbReference ejbReference, String serviceLocator, 
+            boolean remote, boolean throwExceptions, String ejbRefName, Project nodeProject) throws IOException {
         // find the project containing the source file
-        Project enterpriseProject = FileOwnerQuery.getOwner(fileObject);
+        Project enterpriseProject = FileOwnerQuery.getOwner(referencingFileObject);
         EnterpriseReferenceContainer erc = (EnterpriseReferenceContainer)
         enterpriseProject.getLookup().lookup(EnterpriseReferenceContainer.class);
 
         boolean enterpriseProjectIsJavaEE5 = isJavaEE5orHigher(enterpriseProject);
         boolean nodeProjectIsJavaEE5 = isJavaEE5orHigher(nodeProject);
 
+        CallEjbGenerator generator = CallEjbGenerator.create(ejbReference);
+        
         if (remote) {
-            EjbRef ejbRef = ref.createRef();
-            if (ejbRefName != null) {
-                ejbRef.setEjbRefName(ejbRefName);
-            }
-            if (enterpriseProjectIsJavaEE5 && InjectionTargetQuery.isInjectionTarget(fileObject, className)) {
-                addProjectToClassPath(enterpriseProject, ref);
+            if (enterpriseProjectIsJavaEE5 && InjectionTargetQuery.isInjectionTarget(referencingFileObject, referencingClassName)) {
+                addProjectToClassPath(enterpriseProject, ejbReference);
             } else if (nodeProjectIsJavaEE5 == enterpriseProjectIsJavaEE5){ // see #75876
-                erc.addEjbReference(ejbRef, fileObject, className, ref.getClientJarTarget());
+                erc.addEjbReference(ejbReference, ejbRefName, referencingFileObject, referencingClassName);
             }
             if (serviceLocator == null) {
-                //TODO: RETOUCHE resolve EjbReference signatures
-//                ref.generateReferenceCode(fileObject, className, ejbRef, throwExceptions);
-                ref.generateReferenceCode(fileObject, ejbRef, throwExceptions);
+                generator.generateReferenceCode(referencingFileObject, referencingClassName, false, throwExceptions);
             } else {
-                //TODO: RETOUCHE resolve EjbReference signatures
-//                ref.generateServiceLocatorLookup(fileObject, className, ejbRef, serviceLocator, throwExceptions);
-                ref.generateServiceLocatorLookup(fileObject, ejbRef, serviceLocator, throwExceptions);
+                generator.generateServiceLocatorLookup(referencingFileObject, referencingClassName, serviceLocator, false, throwExceptions);
             }
         } else {
-            EjbLocalRef ejbLocalRef = ref.createLocalRef();
-            if (ejbRefName != null) {
-                ejbLocalRef.setEjbRefName(ejbRefName);
-            }
-            if (enterpriseProjectIsJavaEE5 && InjectionTargetQuery.isInjectionTarget(fileObject, className)) {
-                addProjectToClassPath(enterpriseProject, ref);
+            if (enterpriseProjectIsJavaEE5 && InjectionTargetQuery.isInjectionTarget(referencingFileObject, referencingClassName)) {
+                addProjectToClassPath(enterpriseProject, ejbReference);
             } else if (nodeProjectIsJavaEE5 == enterpriseProjectIsJavaEE5){ // see #75876
-                erc.addEjbLocalReference(ejbLocalRef, fileObject, className, ref.getClientJarTarget());
+                erc.addEjbReference(ejbReference, ejbRefName, referencingFileObject, referencingClassName);
             }
             if (serviceLocator == null) {
-                //TODO: RETOUCHE resolve EjbReference signatures
-//                ref.generateReferenceCode(fileObject, className, ejbLocalRef, throwExceptions);
-                ref.generateReferenceCode(fileObject, ejbLocalRef, throwExceptions);
+                generator.generateReferenceCode(referencingFileObject, referencingClassName, true, throwExceptions);
             } else {
-                //TODO: RETOUCHE resolve EjbReference signatures
-//                ref.generateServiceLocatorLookup(fileObject, className, ejbLocalRef, serviceLocator, throwExceptions);
-                ref.generateServiceLocatorLookup(fileObject, ejbLocalRef, serviceLocator, throwExceptions);
+                generator.generateServiceLocatorLookup(referencingFileObject, referencingClassName, serviceLocator, true, throwExceptions);
             }
         }
         if (serviceLocator != null) {
@@ -286,7 +281,9 @@ public class Utils {
     }
     
     private static void addProjectToClassPath(final Project enterpriseProject, final EjbReference ref) throws IOException {
-        AntArtifact target = ref.getClientJarTarget();
+        
+        AntArtifact target = getAntArtifact(ref);
+        
         boolean differentProject = target != null && !enterpriseProject.equals(target.getProject());
         if (differentProject) {
             ProjectClassPathModifier cpModifier = enterpriseProject.getLookup().lookup(ProjectClassPathModifier.class);
@@ -434,6 +431,32 @@ public class Utils {
         }
         
         return result.toString();
+    }
+
+    public static AntArtifact getAntArtifact(final EjbReference ejbReference) throws IOException {
+        
+        MetadataModel<EjbJarMetadata> ejbReferenceMetadataModel = ejbReference.getEjbModule().getMetadataModel();
+        FileObject ejbReferenceEjbClassFO = ejbReferenceMetadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
+            public FileObject run(EjbJarMetadata metadata) throws Exception {
+                return metadata.findResource(toResourceName(ejbReference.getEjbClass()));
+            }
+        });
+
+        Project project = FileOwnerQuery.getOwner(ejbReferenceEjbClassFO);
+        AntArtifact[] antArtifacts = AntArtifactQuery.findArtifactsByType(project, JavaProjectConstants.ARTIFACT_TYPE_JAR);
+        boolean hasArtifact = (antArtifacts != null && antArtifacts.length > 0);
+        
+        return hasArtifact ? antArtifacts[0] : null;
+        
+    }
+ 
+    /**
+     * Creates resource name from fully-qualified class name by
+     * replacing '.' with '/' and appending ".java"
+     */
+    public static String toResourceName(String className) {
+        assert className != null: "cannot find null className";
+        return className.replace('.', '/') + ".java";
     }
     
     /**

@@ -21,13 +21,17 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.session;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.SessionMethodController;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.openide.ErrorManager;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
@@ -39,40 +43,60 @@ import org.openide.nodes.Node;
 
 public final class SessionChildren extends Children.Keys<SessionChildren.Key> implements PropertyChangeListener {
     
+    // indexes into fields with results for model query
+    private final static int REMOTE = 0;
+    private final static int LOCAL = 1;
+
     public enum Key {REMOTE, LOCAL};
     
-    private final Session session;
-    private final ClassPath classPath;
+    private final String ejbClass;
+    private final MetadataModel<EjbJarMetadata> model;
     private final SessionMethodController controller;
     
-    public SessionChildren(Session session, ClassPath classPath) {
-        this.classPath = classPath;
-        this.session = session;
+    public SessionChildren(String ejbClass, MetadataModel<EjbJarMetadata> model) {
+        this.ejbClass = ejbClass;
+        this.model = model;
         //TODO: RETOUCHE
-        controller = new SessionMethodController(null, session);
+        controller = new SessionMethodController(ejbClass, model);
     }
     
     protected void addNotify() {
         super.addNotify();
-        updateKeys();
-        session.addPropertyChangeListener(this);
-        classPath.addPropertyChangeListener(this);
+        try {
+            updateKeys();
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        }
+        //TODO: RETOUCHE listening on model for logical view
+//        session.addPropertyChangeListener(this);
     }
     
-    private void updateKeys() {
+    private void updateKeys() throws IOException {
+        final boolean[] results = new boolean[] { false, false };
+        
+        model.runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
+            public Void run(EjbJarMetadata metadata) throws Exception {
+                Session entity = (Session) metadata.findByEjbClass(ejbClass);
+                if (entity != null) {
+                    results[REMOTE] = entity.getRemote() != null;
+                    results[LOCAL] = entity.getLocal() != null;
+                }
+                return null;
+            }
+        });
+
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 List<Key> keys = new ArrayList<Key>();
-                if (session.getRemote() != null) { keys.add(Key.REMOTE); }
-                if (session.getLocal()!=null) { keys.add(Key.LOCAL); }
+                if (results[REMOTE]) { keys.add(Key.REMOTE); }
+                if (results[LOCAL]) { keys.add(Key.LOCAL); }
                 setKeys(keys);
             }
         });
     }
     
     protected void removeNotify() {
-        session.removePropertyChangeListener(this);
-        classPath.removePropertyChangeListener(this);
+//        session.removePropertyChangeListener(this);
         setKeys(Collections.<Key>emptyList());
         super.removeNotify();
     }
@@ -98,7 +122,11 @@ public final class SessionChildren extends Children.Keys<SessionChildren.Key> im
     public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                updateKeys();
+                try {
+                    updateKeys();
+                } catch (IOException ioe) {
+                    ErrorManager.getDefault().notify(ioe);
+                }
             }
         });
     }

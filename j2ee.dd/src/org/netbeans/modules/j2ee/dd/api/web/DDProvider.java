@@ -32,7 +32,6 @@ import org.netbeans.modules.j2ee.dd.impl.web.WebAppProxy;
 import org.netbeans.modules.j2ee.dd.impl.web.WebParseUtils;
 import org.netbeans.modules.j2ee.dd.impl.common.DDUtils;
 import org.netbeans.modules.j2ee.metadata.MetadataUnit;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.*;
@@ -75,40 +74,41 @@ public final class DDProvider {
         return ddProvider;
     }
     
-    /**
-     * Returns the root of deployment descriptor bean graph for given file object.
-     * The method is useful for clints planning to read only the deployment descriptor
-     * or to listen to the changes.
-     * @param fo FileObject representing the web.xml file
-     * @return WebApp object - root of the deployment descriptor bean graph
-     */
-    public WebApp getMergedDDRoot(FileObject fo) throws IOException {
-        if (fo == null) {
-            throw new IllegalArgumentException("FileObject is null");  //NOI18N;
-        }
-        
-        WebModule wm = WebModule.getWebModule(fo);
-        if(wm != null) {
-            //the MetadataUnits are cached; a key is the WM's DD FO
-            MetadataUnit mu = (MetadataUnit)musMap.get(wm.getDeploymentDescriptor());
-            if(mu == null) {
-                mu = new SimpleMetadataUnit(wm.getDeploymentDescriptor(), wm.getJavaSources());
-                musMap.put(wm.getDeploymentDescriptor(), mu);
-            }
-            return getMergedDDRoot(mu);
-        } else {
-            return getDDRoot(fo);
-        }
-    }
-    
-    public WebApp getMergedDDRoot(MetadataUnit mu) throws IOException {
-        WebApp xmlRoot = getDDRoot(mu.getDeploymentDescriptor());        
-        if (xmlRoot != null) { // && !xmlRoot.getVersion().equals(WebApp.VERSION_2_5)) {
-            // TODO find a better resolution for this hack
-            return xmlRoot;
-        }
-        return null;
-    }
+// FIXME remove
+//    /**
+//     * Returns the root of deployment descriptor bean graph for given file object.
+//     * The method is useful for clints planning to read only the deployment descriptor
+//     * or to listen to the changes.
+//     * @param fo FileObject representing the web.xml file
+//     * @return WebApp object - root of the deployment descriptor bean graph
+//     */
+//    public WebApp getMergedDDRoot(FileObject fo) throws IOException {
+//        if (fo == null) {
+//            throw new IllegalArgumentException("FileObject is null");  //NOI18N;
+//        }
+//        
+//        WebModule wm = WebModule.getWebModule(fo);
+//        if(wm != null) {
+//            //the MetadataUnits are cached; a key is the WM's DD FO
+//            MetadataUnit mu = (MetadataUnit)musMap.get(wm.getDeploymentDescriptor());
+//            if(mu == null) {
+//                mu = new SimpleMetadataUnit(wm.getDeploymentDescriptor(), wm.getJavaSources());
+//                musMap.put(wm.getDeploymentDescriptor(), mu);
+//            }
+//            return getMergedDDRoot(mu);
+//        } else {
+//            return getDDRoot(fo);
+//        }
+//    }
+//    
+//    public WebApp getMergedDDRoot(MetadataUnit mu) throws IOException {
+//        WebApp xmlRoot = getDDRoot(mu.getDeploymentDescriptor());        
+//        if (xmlRoot != null) { // && !xmlRoot.getVersion().equals(WebApp.VERSION_2_5)) {
+//            // TODO find a better resolution for this hack
+//            return xmlRoot;
+//        }
+//        return null;
+//    }
 
     public WebApp getDDRoot(FileObject fo) throws java.io.IOException {
         WebAppProxy webApp = null;

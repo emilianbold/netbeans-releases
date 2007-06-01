@@ -25,22 +25,25 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.j2ee.common.Util;
-import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.common.api.EjbChangeDescriptor;
+import org.netbeans.modules.web.project.classpath.ClassPathProviderImpl;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
@@ -53,11 +56,11 @@ import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.dd.api.webservices.*;
-import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
+import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
+import org.netbeans.modules.j2ee.dd.spi.web.WebAppMetadataModelFactory;
+import org.netbeans.modules.j2ee.dd.spi.webservices.WebservicesMetadataModelFactory;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
-import org.openide.ErrorManager;
-import org.openide.util.WeakListeners;
-
 
 /** A web module implementation on top of project.
  *
@@ -74,18 +77,23 @@ public final class ProjectWebModule extends J2eeModuleProvider
 
     private WebProject project;
     private UpdateHelper helper;
+    private ClassPathProviderImpl cpProvider;
     private String fakeServerInstId = null; // used to get access to properties of other servers
 
     private long notificationTimeout = 0; // used to suppress repeating the same messages
+    
+    private MetadataModel<WebAppMetadata> webAppMetadataModel;
+    private MetadataModel<WebservicesMetadata> webservicesMetadataModel;
     
     private PropertyChangeSupport propertyChangeSupport;
     private boolean webAppPropChangeLInitialized;
     
     private J2eeModule j2eeModule;
 
-    ProjectWebModule (WebProject project, UpdateHelper helper) {
+    ProjectWebModule (WebProject project, UpdateHelper helper, ClassPathProviderImpl cpProvider) {
         this.project = project;
         this.helper = helper;
+        this.cpProvider = cpProvider;
         project.evaluator ().addPropertyChangeListener (this);
     }
     
@@ -364,17 +372,49 @@ public final class ProjectWebModule extends J2eeModuleProvider
     public File getContentDirectoryAsFile() {
         return getFile ("build.web.dir"); //NOI18N
     }
-
-    public RootInterface getDeploymentDescriptor (String location) {
-        if (J2eeModule.WEB_XML.equals(location)){
-            return getWebApp ();
-        }
-        else if(J2eeModule.WEBSERVICES_XML.equals(location)){
-            return getWebservices();
+    
+    public <T> MetadataModel<T> getDeploymentDescriptor(Class<T> type) {
+        if (type == WebAppMetadata.class) {
+            @SuppressWarnings("unchecked") // NOI18N
+            MetadataModel<T> model = (MetadataModel<T>)getMetadataModel();
+            return model;
+        } else if (type == WebservicesMetadata.class) {
+            @SuppressWarnings("unchecked") // NOI18N
+            MetadataModel<T> model = (MetadataModel<T>)getWebservicesMetadataModel();
+            return model;
         }
         return null;
     }
-
+    
+    public synchronized MetadataModel<WebAppMetadata> getMetadataModel() {
+        if (webAppMetadataModel == null) {
+            FileObject ddFO = getDeploymentDescriptor();
+            File ddFile = ddFO != null ? FileUtil.toFile(ddFO) : null;
+            MetadataUnit metadataUnit = MetadataUnit.create(
+                cpProvider.getProjectSourcesClassPath(ClassPath.BOOT),
+                cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
+                cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
+                // XXX: add listening on deplymentDescriptor
+                ddFile);
+            webAppMetadataModel = WebAppMetadataModelFactory.createMetadataModel(metadataUnit);
+        }
+        return webAppMetadataModel;
+    }
+    
+    private synchronized MetadataModel<WebservicesMetadata> getWebservicesMetadataModel() {
+        if (webservicesMetadataModel == null) {
+            FileObject ddFO = getDD();
+            File ddFile = ddFO != null ? FileUtil.toFile(ddFO) : null;
+            MetadataUnit metadataUnit = MetadataUnit.create(
+                cpProvider.getProjectSourcesClassPath(ClassPath.BOOT),
+                cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
+                cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
+                // XXX: add listening on deplymentDescriptor
+                ddFile);
+            webservicesMetadataModel = WebservicesMetadataModelFactory.createMetadataModel(metadataUnit);
+        }
+        return webservicesMetadataModel;
+    }
     
     public void uncacheDescriptors() {
         // this.getConfigSupport().resetStorage();
@@ -382,39 +422,28 @@ public final class ProjectWebModule extends J2eeModuleProvider
         notificationTimeout = 0;
     }
 
-    private WebApp getWebApp () {
-        try {
-            FileObject deploymentDescriptor = getDeploymentDescriptor ();
-            if(deploymentDescriptor != null) {
-                return DDProvider.getDefault ().getMergedDDRoot (deploymentDescriptor);
-            }
-        } catch (java.io.IOException e) {
-            org.openide.ErrorManager.getDefault ().log (e.getLocalizedMessage ());
-        }
-        return null;
-    }
-    
-    private Webservices getWebservices() {
-        if (Util.isJavaEE5orHigher(project)) {
-            WebServicesSupport wss = WebServicesSupport.getWebServicesSupport(project.getProjectDirectory());
-            try {
-                return org.netbeans.modules.j2ee.dd.api.webservices.DDProvider.getDefault().getMergedDDRoot(wss);
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
-        } else {
-            FileObject wsdd = getDD();
-            if(wsdd != null) {
-                try {
-                    return org.netbeans.modules.j2ee.dd.api.webservices.DDProvider.getDefault()
-                    .getDDRoot(getDD());
-                } catch (java.io.IOException e) {
-                    org.openide.ErrorManager.getDefault().log(e.getLocalizedMessage());
-                }
-            }
-        }
-        return null;
-    }
+    // TODO MetadataModel: rewrite when MetadataModel is ready    
+//    private Webservices getWebservices() {
+//        if (Util.isJavaEE5orHigher(project)) {
+//            WebServicesSupport wss = WebServicesSupport.getWebServicesSupport(project.getProjectDirectory());
+//            try {
+//                return org.netbeans.modules.j2ee.dd.api.webservices.DDProvider.getDefault().getMergedDDRoot(wss);
+//            } catch (IOException ex) {
+//                ErrorManager.getDefault().notify(ex);
+//            }
+//        } else {
+//            FileObject wsdd = getDD();
+//            if(wsdd != null) {
+//                try {
+//                    return org.netbeans.modules.j2ee.dd.api.webservices.DDProvider.getDefault()
+//                    .getDDRoot(getDD());
+//                } catch (java.io.IOException e) {
+//                    org.openide.ErrorManager.getDefault().log(e.getLocalizedMessage());
+//                }
+//            }
+//        }
+//        return null;
+//    }
     
     public org.netbeans.modules.j2ee.deployment.common.api.EjbChangeDescriptor getEjbChanges (long timestamp) {
         return this;
@@ -425,10 +454,21 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
 
     public String getModuleVersion () {
-        WebApp wapp = getWebApp ();
-        String version = "2.5";             //NOI18N
-        if (wapp != null)
-            version = wapp.getVersion();
+        // we don't want to use MetadataModel here as it can block
+        String version = null;
+        try {
+            FileObject ddFO = getDeploymentDescriptor();
+            if (ddFO != null) {
+                WebApp webApp = DDProvider.getDefault().getDDRoot(ddFO);
+                version = webApp.getVersion().toString();
+            }
+        } catch (IOException e) {
+            Logger.getLogger("global").log(Level.WARNING, null, e); // NOI18N
+        }
+        if (version == null) {
+            // XXX should return a version based on the Java EE version
+            version = WebApp.VERSION_2_5;
+        }
         return version;
     }
     
@@ -524,14 +564,24 @@ public final class ProjectWebModule extends J2eeModuleProvider
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         synchronized (this) {
-            if (!webAppPropChangeLInitialized) {
-                WebApp webApp = getWebApp();
-                if (webApp != null) {
-                    PropertyChangeListener l = (PropertyChangeListener) WeakListeners.create(PropertyChangeListener.class, this, webApp);
-                    webApp.addPropertyChangeListener(l);
-                }
-                webAppPropChangeLInitialized = true;
-            }
+            // XXX need to listen on the module version
+            // if (!webAppPropChangeLInitialized) {
+            //     try {
+            //         project.getWebModule().getMetadataModel().runReadAction(new MetadataModelAction<WebAppMetadata, Void>() {
+            //             public Void run(WebAppMetadata metadata) throws MetadataModelException, IOException {
+            //                 WebApp webApp = metadata.getRoot();
+            //                 PropertyChangeListener l = (PropertyChangeListener) WeakListeners.create(PropertyChangeListener.class, ProjectWebModule.this, webApp);
+            //                 webApp.addPropertyChangeListener(l);
+            //                 return null;
+            //             }
+            //         });
+            //         webAppPropChangeLInitialized = true;
+            //     } catch (MetadataModelException e) {
+            //         // TODO MetadataModel: how should we handle this?
+            //     } catch (IOException e) {
+            //         // TODO MetadataModel: how should we handle this?
+            //     }
+            // }
         }
         getPropertyChangeSupport().addPropertyChangeListener(listener);
     }

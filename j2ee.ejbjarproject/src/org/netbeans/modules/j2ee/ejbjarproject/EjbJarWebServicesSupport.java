@@ -160,7 +160,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
         org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbJarModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJars(project)[0];
         org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = null;
         try {
-            ejbJar = provider.getMergedDDRoot(ejbJarModule.getMetadataUnit());
+            ejbJar = provider.getDDRoot(ejbJarModule.getDeploymentDescriptor());
         }
         catch(java.io.IOException e) {
             //FIX-ME: handle this
@@ -717,7 +717,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
     private EjbJar getEjbJar() {
         try {
             // TODO: first one API EjbJar from project is taken... this should be fixed
-            return DDProvider.getDefault().getMergedDDRoot(org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJars(project)[0].getMetadataUnit());
+            return DDProvider.getDefault().getDDRoot(org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJars(project)[0].getDeploymentDescriptor());
         } catch (java.io.IOException e) {
             org.openide.ErrorManager.getDefault().log(e.getLocalizedMessage());
         }
@@ -830,5 +830,5 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
             }
             return buf.toString();
         }
-    }
 }
+    }

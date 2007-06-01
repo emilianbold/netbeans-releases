@@ -24,13 +24,17 @@ import java.util.Collections;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.api.project.ant.AntArtifactQuery;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
@@ -39,7 +43,13 @@ import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
+import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceSupport;
+import org.netbeans.modules.j2ee.api.ejbjar.MessageDestinationReference;
+import org.netbeans.modules.j2ee.api.ejbjar.ResourceReference;
 import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.web.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.web.project.classpath.WebProjectClassPathExtender;
 import org.netbeans.modules.web.project.ui.customizer.AntArtifactChooser;
@@ -50,6 +60,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -67,55 +78,62 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
         this.antHelper = antHelper;
     }
     
-    public String addEjbLocalReference(EjbLocalRef localRef, FileObject referencingFile, String referencingClass, AntArtifact target) throws IOException {
-        return addReference(localRef, target, referencingFile, referencingClass);
+    public String addEjbLocalReference(EjbReference localRef, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
+        return addReference(localRef, ejbRefName, true, referencingFile, referencingClass);
     }
     
-    public String addEjbReference(EjbRef ref, FileObject referencingFile, String referencingClass, AntArtifact target) throws IOException {
-        return addReference(ref, target, referencingFile, referencingClass);
+    public String addEjbReference(EjbReference ref, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
+        return addReference(ref, ejbRefName, false, referencingFile, referencingClass);
     }
     
-    private String addReference(Object ref, AntArtifact target, FileObject referencingFile, String referencingClass) throws IOException {
+    private String addReference(final EjbReference ejbReference, String ejbRefName, boolean local, FileObject referencingFile, String referencingClass) throws IOException {
         String refName = null;
         WebApp webApp = getWebApp();
-        if (ref instanceof EjbRef) {
-            EjbRef ejbRef = (EjbRef) ref;
-            refName = getUniqueName(getWebApp(), "EjbRef", "EjbRefName", //NOI18N
-                    ejbRef.getEjbRefName());
-            ejbRef.setEjbRefName(refName);
-            // EjbRef can come from Ejb project
-            try {
-                EjbRef newRef = (EjbRef)webApp.createBean("EjbRef"); //NOI18N
-                try {
-                    newRef.setAllDescriptions(ejbRef.getAllDescriptions());
-                } catch (VersionNotSupportedException ex) {
-                    newRef.setDescription(ejbRef.getDefaultDescription());
-                }
-                newRef.setEjbRefName(ejbRef.getEjbRefName());
-                newRef.setEjbRefType(ejbRef.getEjbRefType());
-                newRef.setHome(ejbRef.getHome());
-                newRef.setRemote(ejbRef.getRemote());
-                getWebApp().addEjbRef(newRef);
-            } catch (ClassNotFoundException ex){}
-        } else if (ref instanceof EjbLocalRef) {
-            EjbLocalRef ejbRef = (EjbLocalRef) ref;
-            refName = getUniqueName(getWebApp(), "EjbLocalRef", "EjbRefName", //NOI18N
-                    ejbRef.getEjbRefName());
-            ejbRef.setEjbRefName(refName);
+        
+        MetadataModel<EjbJarMetadata> ejbReferenceMetadataModel = ejbReference.getEjbModule().getMetadataModel();
+        final String[] ejbName = new String[1];
+        FileObject ejbReferenceEjbClassFO = ejbReferenceMetadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
+            public FileObject run(EjbJarMetadata metadata) throws Exception {
+                ejbName[1] = metadata.findByEjbClass(ejbReference.getEjbClass()).getEjbName();
+                return metadata.findResource(ejbReference.getEjbClass().replace('.', '/') + ".java");
+            }
+        });
+
+        Project project = FileOwnerQuery.getOwner(ejbReferenceEjbClassFO);
+        AntArtifact[] antArtifacts = AntArtifactQuery.findArtifactsByType(project, JavaProjectConstants.ARTIFACT_TYPE_JAR);
+        boolean hasArtifact = (antArtifacts != null && antArtifacts.length > 0);
+        final AntArtifact moduleJarTarget = hasArtifact ? antArtifacts[0] : null;
+        // only first URI is taken, if more of them are defined, just first one is taken
+        String[] names = new String[] { "" };
+        if (moduleJarTarget != null) {
+            names = moduleJarTarget.getArtifactLocations()[0].getPath().split("/");  //NOI18N
+        }
+
+        String jarName = names[names.length - 1] + "#";
+        final String ejbLink = jarName + ejbName[1];
+        
+        if (local) {
+            refName = getUniqueName(getWebApp(), "EjbLocalRef", "EjbRefName", ejbRefName); //NOI18N
             // EjbLocalRef can come from Ejb project
             try {
                 EjbLocalRef newRef = (EjbLocalRef)webApp.createBean("EjbLocalRef"); //NOI18N
-                try {
-                    newRef.setAllDescriptions(ejbRef.getAllDescriptions());
-                } catch (VersionNotSupportedException ex) {
-                    newRef.setDescription(ejbRef.getDefaultDescription());
-                }
-                newRef.setEjbLink(ejbRef.getEjbLink());
-                newRef.setEjbRefName(ejbRef.getEjbRefName());
-                newRef.setEjbRefType(ejbRef.getEjbRefType());
-                newRef.setLocal(ejbRef.getLocal());
-                newRef.setLocalHome(ejbRef.getLocalHome());
+                newRef.setEjbLink(ejbLink);
+                newRef.setEjbRefName(refName);
+                newRef.setEjbRefType(ejbReference.getEjbRefType());
+                newRef.setLocal(ejbReference.getLocal());
+                newRef.setLocalHome(ejbReference.getLocalHome());
                 getWebApp().addEjbLocalRef(newRef);
+            } catch (ClassNotFoundException ex){}
+        } else {
+            refName = getUniqueName(getWebApp(), "EjbRef", "EjbRefName", ejbRefName); //NOI18N
+            // EjbRef can come from Ejb project
+            try {
+                EjbRef newRef = (EjbRef)webApp.createBean("EjbRef"); //NOI18N
+                newRef.setEjbRefName(refName);
+                newRef.setEjbRefType(ejbReference.getEjbRefType());
+                newRef.setHome(ejbReference.getRemoteHome());
+                newRef.setRemote(ejbReference.getRemote());
+                getWebApp().addEjbRef(newRef);
             } catch (ClassNotFoundException ex){}
         }
         
@@ -123,7 +141,7 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
         if (cpExtender != null) {
             try {
                 AntArtifactChooser.ArtifactItem artifactItems[] = new AntArtifactChooser.ArtifactItem [1];
-                artifactItems[0] = new AntArtifactChooser.ArtifactItem(target, target.getArtifactLocation());
+                artifactItems[0] = new AntArtifactChooser.ArtifactItem(moduleJarTarget, moduleJarTarget.getArtifactLocation());
                 cpExtender.addAntArtifacts(WebProjectProperties.JAVAC_CLASSPATH, artifactItems, WebProjectProperties.TAG_WEB_MODULE_LIBRARIES);
             } catch (IOException ioe) {
                 ErrorManager.getDefault().notify(ioe);
@@ -192,7 +210,7 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
         }
     }
     
-    public String addResourceRef(ResourceRef ref, FileObject referencingFile, String referencingClass) throws IOException {
+    public String addResourceRef(ResourceReference ref, FileObject referencingFile, String referencingClass) throws IOException {
         WebApp wa = getWebApp();
         String resourceRefName = ref.getResRefName();
         // see if jdbc resource has already been used in the app
@@ -212,36 +230,15 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
         }
         if (!isResourceRefUsed(wa, ref)) {
             resourceRefName = getUniqueName(wa, "ResourceRef", "ResRefName", ref.getResRefName()); //NOI18N
-            ref.setResRefName(resourceRefName);
-            wa.addResourceRef(ref);
+            ResourceRef resourceRef = createResourceRef();
+            EnterpriseReferenceSupport.populate(ref, resourceRefName, resourceRef);
+            wa.addResourceRef(resourceRef);
             writeDD(referencingFile, referencingClass);
         }
         return resourceRefName;
     }
     
-    public ResourceRef createResourceRef(String className) throws IOException {
-        ResourceRef ref = null;
-        try {
-            ref = (ResourceRef) getWebApp().createBean("ResourceRef");
-        } catch (ClassNotFoundException cnfe) {
-            IOException ioe = new IOException();
-            ioe.initCause(cnfe);
-            throw ioe;
-        }
-        return ref;
-    }
-    
-    private String getUniqueName(WebApp wa, String beanName,
-            String property, String originalValue) {
-        String proposedValue = originalValue;
-        int index = 1;
-        while (wa.findBeanByName(beanName, property, proposedValue) != null) {
-            proposedValue = originalValue+Integer.toString(index++);
-        }
-        return proposedValue;
-    }
-    
-    public String addDestinationRef(MessageDestinationRef ref, FileObject referencingFile, String referencingClass) throws IOException {
+    public String addDestinationRef(MessageDestinationReference ref, FileObject referencingFile, String referencingClass) throws IOException {
         try {
             // do not add if there is already an existing destination ref (see #85673)
             for (MessageDestinationRef mdRef : getWebApp().getMessageDestinationRef()){
@@ -255,10 +252,11 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
         
         String refName = getUniqueName(getWebApp(), "MessageDestinationRef", "MessageDestinationRefName", //NOI18N
                 ref.getMessageDestinationRefName());
-        
-        ref.setMessageDestinationRefName(refName);
+
+        MessageDestinationRef messageDestinationRef = createDestinationRef();
+        EnterpriseReferenceSupport.populate(ref, refName, messageDestinationRef);
         try {
-            getWebApp().addMessageDestinationRef(ref);
+            getWebApp().addMessageDestinationRef(messageDestinationRef);
             writeDD(referencingFile, referencingClass);
         } catch (VersionNotSupportedException ex){
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -266,16 +264,32 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
         return refName;
     }
     
-    public MessageDestinationRef createDestinationRef(String className) throws IOException {
-        MessageDestinationRef ref = null;
+    public ResourceRef createResourceRef() throws IOException {
         try {
-            ref = (MessageDestinationRef) getWebApp().createBean("MessageDestinationRef");
-        } catch (ClassNotFoundException cnfe) {
-            IOException ioe = new IOException();
-            ioe.initCause(cnfe);
-            throw ioe;
+            return (ResourceRef) getWebApp().createBean("ResourceRef");
+        } catch (ClassNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
         }
-        return ref;
+        return null;
+    }
+ 
+    public MessageDestinationRef createDestinationRef() throws IOException {
+        try {
+            return (org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef) getWebApp().createBean("MessageDestinationRef");
+        } catch (ClassNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
+
+    private String getUniqueName(WebApp wa, String beanName,
+            String property, String originalValue) {
+        String proposedValue = originalValue;
+        int index = 1;
+        while (wa.findBeanByName(beanName, property, proposedValue) != null) {
+            proposedValue = originalValue+Integer.toString(index++);
+        }
+        return proposedValue;
     }
     
     private static boolean isDescriptorMandatory(String j2eeVersion) {
@@ -293,7 +307,7 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
      * @param resRef resource reference to find
      * @return true id resource reference was found, false otherwise
      */
-    private static boolean isResourceRefUsed(WebApp webApp, ResourceRef resRef) {
+    private static boolean isResourceRefUsed(WebApp webApp, ResourceReference resRef) {
         String resRefName = resRef.getResRefName();
         String resRefType = resRef.getResType();
         for (ResourceRef existingRef : webApp.getResourceRef()) {

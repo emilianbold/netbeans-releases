@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import javax.lang.model.element.Modifier;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
@@ -35,18 +36,24 @@ import org.openide.filesystems.FileObject;
  */
 public class HomeMethodGenerator extends AbstractMethodGenerator {
     
-    private HomeMethodGenerator(EntityAndSession ejb, FileObject ejbClassFileObject) {
-        super(ejb, ejbClassFileObject, null);
+    private HomeMethodGenerator(String ejbClass, FileObject ejbClassFileObject) {
+        super(ejbClass, ejbClassFileObject);
     }
     
-    public static HomeMethodGenerator create(EntityAndSession ejb, FileObject ejbClassFileObject) {
-        return new HomeMethodGenerator(ejb, ejbClassFileObject);
+    public static HomeMethodGenerator create(String ejbClass, FileObject ejbClassFileObject) {
+        return new HomeMethodGenerator(ejbClass, ejbClassFileObject);
     }
 
     public void generate(MethodModel methodModel, boolean generateLocal, boolean generateRemote) throws IOException {
 
+        Map<String, String> interfaces = getInterfaces();
+        String local = interfaces.get(EntityAndSession.LOCAL);
+        String localHome = interfaces.get(EntityAndSession.LOCAL_HOME);
+        String remote = interfaces.get(EntityAndSession.REMOTE);
+        String remoteHome = interfaces.get(EntityAndSession.HOME);
+
         // local interface
-        if (generateLocal && ejb.getLocalHome() != null) {
+        if (generateLocal && localHome != null) {
             MethodModel methodModelCopy = MethodModel.create(
                     methodModel.getName(),
                     methodModel.getReturnType(),
@@ -55,12 +62,12 @@ public class HomeMethodGenerator extends AbstractMethodGenerator {
                     methodModel.getExceptions(),
                     Collections.<Modifier>emptySet()
                     );
-            FileObject fileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, ejb.getLocalHome());
-            addMethod(methodModelCopy, fileObject, ejb.getLocalHome());
+            FileObject fileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, localHome);
+            addMethod(methodModelCopy, fileObject, localHome);
         }
         
         // remote interface
-        if (generateRemote && ejb.getHome() != null) {
+        if (generateRemote && remoteHome != null) {
             List<String> exceptions = exceptions = new ArrayList<String>(methodModel.getExceptions());
             if (!methodModel.getExceptions().contains("java.rmi.RemoteException")) {
                 exceptions.add("java.rmi.RemoteException");
@@ -73,8 +80,8 @@ public class HomeMethodGenerator extends AbstractMethodGenerator {
                     exceptions,
                     Collections.<Modifier>emptySet()
                     );
-            FileObject fileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, ejb.getHome());
-            addMethod(methodModelCopy, fileObject, ejb.getHome());
+            FileObject fileObject = _RetoucheUtil.resolveFileObjectForClass(ejbClassFileObject, remoteHome);
+            addMethod(methodModelCopy, fileObject, remoteHome);
         }
 
         // ejb class
@@ -86,7 +93,7 @@ public class HomeMethodGenerator extends AbstractMethodGenerator {
                 methodModel.getExceptions(),
                 Collections.singleton(Modifier.PUBLIC)
                 );
-        addMethod(methodModelCopy, ejbClassFileObject, ejb.getEjbClass());
+        addMethod(methodModelCopy, ejbClassFileObject, ejbClass);
 
     }
     

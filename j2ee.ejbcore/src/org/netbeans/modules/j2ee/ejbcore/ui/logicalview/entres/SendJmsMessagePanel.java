@@ -109,27 +109,16 @@ public class SendJmsMessagePanel extends javax.swing.JPanel {
     public String getServiceLocator() {
         return slPanel.classSelected();
     }
-    
+
     /**
-     * This method will be probably removed, see #103097.
+     * Return project holding MDB if MDB from some project is used, null otherwise.
      */
-    public JMSDestination getJmsDestination(final Project actualProject) {
-        assert actualProject != null;
-        
-        // project
-        Project p = null;
+    public Project getMdbHolderProject() {
         if (mdbRadio.isSelected()) {
-            SendJMSMessageUiSupport.MdbHolder mdbHolder = 
-                    (SendJMSMessageUiSupport.MdbHolder) mdbCombo.getSelectedItem();
-            p = mdbHolder.getProject();
+            SendJMSMessageUiSupport.MdbHolder mdbHolder = (SendJMSMessageUiSupport.MdbHolder) mdbCombo.getSelectedItem();
+            return mdbHolder.getProject();
         }
-        MessageDestination messageDestination = getDestination();
-        String type = MessageDestination.Type.QUEUE.equals(messageDestination.getType())
-                ? "javax.jms.Queue" : "javax.jms.Topic";
-        return new JMSDestination(
-                messageDestination.getName(),
-                p != null ? p : actualProject,
-                type);
+        return null;
     }
     
     private void initialize() {
