@@ -16,8 +16,13 @@
  */
 package org.netbeans.modules.web.refactoring;
 
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.util.TreePath;
 import java.io.IOException;
+import javax.lang.model.element.Element;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -34,7 +39,6 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.refactoring.rename.WebXmlRename;
 import org.netbeans.modules.web.refactoring.safedelete.WebXmlSafeDelete;
 import org.netbeans.modules.web.refactoring.whereused.WebXmlWhereUsed;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -49,15 +53,15 @@ public class WebRefactoringFactory implements RefactoringPluginFactory{
     }
     
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
-
-        FileObject sourceFO = refactoring.getRefactoringSource().lookup(FileObject.class);
-        if (sourceFO == null){
+        
+        TreePathHandle handle = resolveTreePathHandle(refactoring);
+        if (handle == null){
             return null;
         }
+        
+        FileObject sourceFO = handle.getFileObject();
         FileObject ddFile = WebModule.getWebModule(sourceFO).getDeploymentDescriptor();
-        Project project = FileOwnerQuery.getOwner(sourceFO);
-        ClassPathProvider classPathProvider = project.getLookup().lookup(ClassPathProvider.class);
-        String oldFqn = classPathProvider.findClassPath(sourceFO, ClassPath.SOURCE).getResourceName(sourceFO, '.', false);
+        String clazz = resolveClass(handle);
         
         WebApp webApp = null;
         try{
@@ -68,16 +72,71 @@ public class WebRefactoringFactory implements RefactoringPluginFactory{
         
         if (refactoring instanceof RenameRefactoring){
             RenameRefactoring rename = (RenameRefactoring) refactoring;
-            return new WebXmlRename(oldFqn, rename, webApp, ddFile);
+            return new WebXmlRename(clazz, rename, webApp, ddFile);
         } if (refactoring instanceof SafeDeleteRefactoring){
             SafeDeleteRefactoring safeDelete = (SafeDeleteRefactoring) refactoring;
-            return new WebXmlSafeDelete(ddFile, webApp, oldFqn, safeDelete);
+            return new WebXmlSafeDelete(ddFile, webApp, clazz, safeDelete);
         } if (refactoring instanceof WhereUsedQuery){
             WhereUsedQuery whereUsedQuery = (WhereUsedQuery) refactoring;
-            return new WebXmlWhereUsed(ddFile, webApp, oldFqn, whereUsedQuery);
+            return new WebXmlWhereUsed(ddFile, webApp, clazz, whereUsedQuery);
         }
         
         return null;
     }
     
+    private TreePathHandle resolveTreePathHandle(final AbstractRefactoring refactoring){
+        
+        TreePathHandle tph = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
+        if (tph != null) {
+            return tph;
+        }
+        
+        final TreePathHandle[] result = new TreePathHandle[1];
+        try{
+            JavaSource source = JavaSource.forFileObject(refactoring.getRefactoringSource().lookup(FileObject.class));
+            
+            source.runUserActionTask(new CancellableTask<CompilationController>() {
+                public void cancel() {
+                }
+                public void run(CompilationController co) throws Exception {
+                    co.toPhase(JavaSource.Phase.RESOLVED);
+                    CompilationUnitTree cut = co.getCompilationUnit();
+                    result[0] = TreePathHandle.create(TreePath.getPath(cut, cut.getTypeDecls().get(0)), co);
+                }
+                
+            }, true);
+        }catch(IOException ioe){
+            Exceptions.printStackTrace(ioe);
+        }
+        
+        return result[0];
+    }
+    
+    
+    /**
+     * @return the fully qualified name of the class that the given
+     * TreePathHandle represents or null if the FQN could not be resolved.
+     */ 
+    private String resolveClass(final TreePathHandle treePathHandle){
+        
+        final String[] result = new String[1];
+        
+        try{
+            JavaSource source = JavaSource.forFileObject(treePathHandle.getFileObject());
+            source.runUserActionTask(new CancellableTask<CompilationController>() {
+                
+                public void cancel() {
+                }
+                
+                public void run(CompilationController parameter) throws Exception {
+                    parameter.toPhase(JavaSource.Phase.RESOLVED);
+                    Element element = treePathHandle.resolveElement(parameter);
+                    result[0] = element.asType().toString();
+                }
+            }, true);
+        }catch(IOException ioe){
+            Exceptions.printStackTrace(ioe);
+        }
+        return result[0];
+    }
 }

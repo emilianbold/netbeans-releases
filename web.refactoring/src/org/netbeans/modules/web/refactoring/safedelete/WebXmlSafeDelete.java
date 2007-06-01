@@ -111,6 +111,7 @@ public class WebXmlSafeDelete extends WebXmlRefactoring{
             return MessageFormat.format(NbBundle.getMessage(WebXmlSafeDelete.class, "TXT_WebXmlServletSafeDelete"), args);
         }
         
+        
         protected void undo() {
             webApp.addServlet(servlet);
         }
