@@ -383,6 +383,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
                 <friend>org.netbeans.modules.xml.wsdl.refactoring</friend>
                 <friend>org.netbeans.modules.xml.wsdlextui</friend>
                 <friend>org.netbeans.modules.xslt.project</friend>
+                <friend>org.netbeans.modules.bpel.editors.api</friend>
                 <package>org.netbeans.modules.xml.wsdl.ui.actions</package>
                 <package>org.netbeans.modules.xml.wsdl.ui.api.property</package>
                 <package>org.netbeans.modules.xml.wsdl.ui.netbeans.module</package>
