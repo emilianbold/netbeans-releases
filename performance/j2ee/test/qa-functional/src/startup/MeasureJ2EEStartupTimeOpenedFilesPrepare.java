@@ -19,18 +19,15 @@
 
 package startup;
 
-import java.io.PrintStream;
-
-import org.netbeans.jellytools.*;
-import org.netbeans.jellytools.actions.EditAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.SourcePackagesNode;
-
 import org.netbeans.jemmy.operators.*;
-
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
 
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
@@ -44,14 +41,6 @@ import org.netbeans.junit.ide.ProjectSupport;
  * @author Marian.Mirilovic@sun.com
  */
 public class MeasureJ2EEStartupTimeOpenedFilesPrepare extends JellyTestCase {
-    
-    /** Error output from the test. */
-    protected static PrintStream err;
-    
-    /** Logging output from the test. */
-    protected static PrintStream log;
-
-    
     
     /** Define testcase
      * @param testName name of the testcase
@@ -67,18 +56,16 @@ public class MeasureJ2EEStartupTimeOpenedFilesPrepare extends JellyTestCase {
         TestSuite suite = new NbTestSuite();
         suite.addTest(new IDESetupTest("testCloseMemoryToolbar"));
         suite.addTest(new IDESetupTest("closeAllDocuments"));
+        suite.addTest(new IDESetupTest("testAddAppServer"));
         suite.addTest(new MeasureJ2EEStartupTimeOpenedFilesPrepare("testOpenProjects"));
         suite.addTest(new MeasureJ2EEStartupTimeOpenedFilesPrepare("openFiles"));
         return suite;
     }
     
-    
+    @Override
     public void setUp() {
-//        err = System.out;
-        err = getLog();
-        log = getRef();
+        System.out.println("########  "+getName()+"  ########");
     }
-
     
     public void testOpenProjects() {
         ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/startup/TestStartupApp");
@@ -122,8 +109,9 @@ public class MeasureJ2EEStartupTimeOpenedFilesPrepare extends JellyTestCase {
             {"TestStartupEJB1","Enterprise Beans|TestSession2SB"},
             {"TestStartupEJB1","Enterprise Beans|TestMessageMDB"},
             {"TestStartupEJB1","Enterprise Beans|TestEntityEB"},
-            {"TestStartupEJB2","Web Services|TestWebService1"},
-            {"TestStartupEJB2","Web Services|TestWebService2"}
+// TODO - uncomment when Web Services node becomes fixed
+//            {"TestStartupEJB2","Web Services|TestWebService1"},
+//            {"TestStartupEJB2","Web Services|TestWebService2"}
         };
         
         Node[] openFileNodes = new Node[files_path.length];

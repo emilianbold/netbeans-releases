@@ -19,19 +19,31 @@
 
 package startup;
 
-import org.netbeans.jellytools.*;
+import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.operators.*;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JLabelOperator;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.jemmy.operators.JMenuItemOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 
-import org.netbeans.junit.ide.ProjectSupport;
 
-public class IDESetupTest extends org.netbeans.jellytools.JellyTestCase {
+public class IDESetupTest extends JellyTestCase {
     
     public IDESetupTest(java.lang.String testName) {
         super(testName);
     }
 
+    @Override
+    public void setUp() {
+        System.out.println("########  "+getName()+"  ########");
+    }
     
     public void closeAllDocuments(){
         new CloseAllDocumentsAction().perform();

@@ -161,7 +161,7 @@ Microsystems, Inc. All Rights Reserved.
 
     
     <!-- MEASURE STARTUP -->
-    <testbag testattribs="measure_all or measure_startup" prio="101" executor="measure_startup_opened_files_prepare" compiler="qa-performance-startup-compiler"  name="Prepare IDE for measure startup time with J2EE projects">
+    <testbag testattribs="measure_all or measure_startup or measure_startup_j2ee" prio="101" executor="measure_startup_opened_files_prepare" compiler="qa-performance-startup-compiler"  name="Prepare IDE for measure startup time with J2EE projects">
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="startup/MeasureJ2EEStartupTimeOpenedFilesPrepare.class"/>
@@ -169,7 +169,7 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
     
-    <testbag testattribs="measure_all or measure_startup" prio="102" executor="measure_startup_opened_files" compiler="qa-performance-startup-compiler"  name="Measure IDE startup time with J2EE projects">
+    <testbag testattribs="measure_all or measure_startup  or measure_startup_j2ee" prio="102" executor="measure_startup_opened_files" compiler="qa-performance-startup-compiler"  name="Measure IDE startup time with J2EE projects">
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="startup/MeasureJ2EEStartupTime.class/testStartIDEWithOpenedFiles"/>
@@ -177,7 +177,7 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
     
-    <testbag testattribs="measure_all or measure_startup  or measure_startup_web" prio="103" executor="measure_startup_opened_files_prepare" compiler="qa-performance-startup-compiler"  name="Prepare IDE for measure startup time with web projects">
+    <testbag testattribs="measure_all or measure_startup or measure_startup_web" prio="103" executor="measure_startup_opened_files_prepare" compiler="qa-performance-startup-compiler"  name="Prepare IDE for measure startup time with web projects">
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="startup/MeasureJ2EEStartupTimeWithWeb.class"/>
