@@ -40,7 +40,8 @@ import static org.netbeans.modules.j2ee.jpa.model.JPAAnnotations.*;
 public class LegalCombinationOfAnnotations extends JPAClassRule {
     //TODO: Add more rules
     private static Collection<IllegalCombination> illegalClassAnnotationCombinations = Arrays.asList(
-            new IllegalCombination(Collections.singleton(ENTITY), Arrays.asList(EMBEDDABLE, MAPPED_SUPERCLASS))
+            new IllegalCombination(Collections.singleton(ENTITY), Arrays.asList(EMBEDDABLE, MAPPED_SUPERCLASS)),
+            new IllegalCombination(Collections.singleton(TABLE), Collections.singleton(MAPPED_SUPERCLASS))
             );
     private static Collection<IllegalCombination> illegalAttrAnnotationCombinations = Arrays.asList(
             );
