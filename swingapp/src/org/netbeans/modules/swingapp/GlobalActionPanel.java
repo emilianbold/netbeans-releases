@@ -40,12 +40,16 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import java.awt.event.MouseAdapter;
 import java.beans.PropertyVetoException;
+import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.form.FormDataObject;
@@ -98,7 +102,8 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         actionTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         actionTable.setDefaultRenderer(Icon.class, new IconTableCellRenderer());
         actionTable.setRowHeight(18);
-//        actionTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        jSplitPane1.setDividerLocation(-1);
+        actionTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         
         actionTable.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
@@ -667,14 +672,15 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         actionTable.setModel(new TableSorter(new FilteredTableModel(realModel),actionTable.getTableHeader()));
 //        actionTable.setModel(realModel);
         filterTable();
-        // set the icon and task widths
+        
+        // reconfigure the column widths and positions
+        initColumnSizes(actionTable);
         actionTable.getColumnModel().getColumn(ActionTableModel.ICON_COLUMN).setPreferredWidth(30);
         actionTable.getColumnModel().getColumn(ActionTableModel.TASK_COLUMN).setPreferredWidth(30);
         // move around
         actionTable.getColumnModel().moveColumn(ActionTableModel.ICON_COLUMN,3);
         actionTable.getColumnModel().moveColumn(ActionTableModel.TASK_COLUMN,4);
         actionTable.getColumnModel().moveColumn(6,5);
-        actionTable.getColumnModel().getColumn(6).setPreferredWidth(150);
     }
     
     // rescan for actions, reload the class combo, and call reloadTable();
@@ -900,5 +906,65 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     private static String getLocalizedString(String key) {
         return NbBundle.getMessage(ActionPropertyEditorPanel.class, "GlobalActionPanel."+key);
     }
+    
+    private static void initColumnSizes(JTable table) {
+        TableModel model = table.getModel();
+        TableColumn column = null;
+        Component comp = null;
+        int headerWidth = 0;
+        int cellWidth = 0;
+        int cols = model.getColumnCount();
+        int rows = model.getRowCount();
+        
+        //Object[] longValues = model.longValues;
+        
+        TableCellRenderer headerRenderer =
+            table.getTableHeader().getDefaultRenderer();
+
+        // for each column
+        for (int i = 0; i < cols; i++) {
+            column = table.getColumnModel().getColumn(i);
+            
+            //find the longest item in that column. Only works with strings
+            // for non-strings it will just use the first cell in that column
+            Object longest = null;
+            for(int j =0; j<rows; j++) {
+                Object test = model.getValueAt(j, i);
+                if(longest == null) { 
+                    longest = test; 
+                    continue;
+                }
+                if(longest instanceof String && test instanceof String) {
+                    if(((String)test).length() > ((String)longest).length()) {
+                        longest = test;
+                    }
+                }
+            }
+            // skip this column if nothing found for longest
+            if(longest == null) continue;
+            
+            comp = headerRenderer.getTableCellRendererComponent(
+                                 table, column.getHeaderValue(),
+                                 false, false, 0, 0);
+            headerWidth = comp.getPreferredSize().width;
+
+            comp = table.getDefaultRenderer(model.getColumnClass(i)).
+                             getTableCellRendererComponent(
+                                 table, longest,
+                                 false, false, 0, i);
+            cellWidth = comp.getPreferredSize().width;
+            cellWidth+=5; // a little extra space to make it look better
+
+            if (DEBUG) {
+                System.out.println("Initializing width of column "
+                                   + i + ". "
+                                   + "headerWidth = " + headerWidth
+                                   + "; cellWidth = " + cellWidth);
+            }
+
+            column.setPreferredWidth(Math.max(headerWidth, cellWidth));
+        }
+    }
+    
     
 }
