@@ -1072,6 +1072,9 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         String classname = getSelectedClassname();
         if(classname == null) { return false; }
         if(classname.trim().equals("")) { return false; }
+        
+        ActionManager am = ActionManager.getActionManager(sourceFile);
+        if(am.getFileForClass(classname) == null) { return false; }
         return true;
     }
     
