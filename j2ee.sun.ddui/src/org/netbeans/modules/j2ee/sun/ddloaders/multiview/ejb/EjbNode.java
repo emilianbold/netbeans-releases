@@ -21,6 +21,8 @@ package org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.NamedBeanNode;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ServiceRefGroupNode;
+import org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule.EjbPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
@@ -32,7 +34,9 @@ public class EjbNode extends NamedBeanNode {
     // TODO session/entity/mdb specific icons
     public EjbNode(SectionNodeView sectionNodeView, final Ejb ejb, final ASDDVersion version) {
         super(sectionNodeView, ejb, Ejb.EJB_NAME, ICON_EJB_SESSION_NODE, version);
+        
         enableRemoveAction();
+        addChild(new ServiceRefGroupNode(sectionNodeView, ejb, version));
     }
 
     protected SectionNodeInnerPanel createNodeInnerPanel() {

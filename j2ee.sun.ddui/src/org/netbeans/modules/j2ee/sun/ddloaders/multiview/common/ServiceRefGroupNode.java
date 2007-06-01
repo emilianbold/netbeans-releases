@@ -23,6 +23,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.client.SunApplicationClient;
 import org.netbeans.modules.j2ee.sun.dd.api.common.ServiceRef;
+import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
@@ -52,32 +53,13 @@ public class ServiceRefGroupNode extends NamedBeanGroupNode {
         // TODO find a better way to do this for common beans.
         if(commonDD instanceof SunWebApp) {
             serviceRefs = ((SunWebApp) commonDD).getServiceRef();
-//        } else if(rootDD instanceof SunEjbJar) {
-//            EnterpriseBeans eb = ((SunEjbJar) rootDD).getEnterpriseBeans();
-//            if(eb != null) {
-//                Ejb [] ejbs = eb.getEjb();
-//                if(ejbs != null && ejbs.length > 0) {
-//                    serviceRefs = getServiceRefs(ejbs);
-//                }
-//            }
+        } else if(commonDD instanceof Ejb) {
+            serviceRefs = ((Ejb) commonDD).getServiceRef();
         } else if(commonDD instanceof SunApplicationClient) {
             serviceRefs = ((SunApplicationClient) commonDD).getServiceRef();
         }
         return serviceRefs;
     }
-
-//    private ServiceRef [] getServiceRefs(Ejb [] ejbs) {
-//        List<ServiceRef> serviceRefs = new ArrayList<ServiceRef>(5);
-//        for(int i = 0; i < ejbs.length; i++) {
-//            ServiceRef [] refs = ejbs[i].getServiceRef();
-//            if(refs != null && refs.length > 0) {
-//                for(int j = 0; j < refs.length; j++) {
-//                    serviceRefs.add(refs[j]);
-//                }
-//            }
-//        }
-//        return serviceRefs.toArray(new ServiceRef[serviceRefs.size()]);
-//    }
 
     protected CommonDDBean addNewBean() {
         ServiceRef newServiceRef = null;
@@ -87,14 +69,10 @@ public class ServiceRefGroupNode extends NamedBeanGroupNode {
             SunWebApp sunWebApp = (SunWebApp) commonDD;
             newServiceRef = sunWebApp.newServiceRef();
             sunWebApp.addServiceRef(newServiceRef);
-//        } else if(rootDD instanceof SunEjbJar) {
-//            EnterpriseBeans eb = ((SunEjbJar) rootDD).getEnterpriseBeans();
-//            if(eb != null) {
-//                Ejb [] ejbs = eb.getEjb();
-//                if(ejbs != null && ejbs.length > 0) {
-//                    serviceRefs = getServiceRefs(ejbs);
-//                }
-//            }
+        } else if(commonDD instanceof Ejb) {
+            Ejb ejb = (Ejb) commonDD;
+            newServiceRef = ejb.newServiceRef();
+            ejb.addServiceRef(newServiceRef);
         } else if(commonDD instanceof SunApplicationClient) {
             SunApplicationClient sunAppClient = (SunApplicationClient) commonDD;
             newServiceRef = sunAppClient.newServiceRef();
@@ -113,14 +91,9 @@ public class ServiceRefGroupNode extends NamedBeanGroupNode {
         if(commonDD instanceof SunWebApp) {
             SunWebApp sunWebApp = (SunWebApp) commonDD;
             sunWebApp.removeServiceRef(serviceRef);
-//        } else if(rootDD instanceof SunEjbJar) {
-//            EnterpriseBeans eb = ((SunEjbJar) rootDD).getEnterpriseBeans();
-//            if(eb != null) {
-//                Ejb [] ejbs = eb.getEjb();
-//                if(ejbs != null && ejbs.length > 0) {
-//                    serviceRefs = getServiceRefs(ejbs);
-//                }
-//            }
+        } else if(commonDD instanceof Ejb) {
+            Ejb ejb = (Ejb) commonDD;
+            ejb.removeServiceRef(serviceRef);
         } else if(commonDD instanceof SunApplicationClient) {
             SunApplicationClient sunAppClient = (SunApplicationClient) commonDD;
             sunAppClient.removeServiceRef(serviceRef);
