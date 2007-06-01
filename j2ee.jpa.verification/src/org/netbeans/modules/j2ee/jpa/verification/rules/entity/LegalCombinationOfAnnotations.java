@@ -22,13 +22,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeMirror;
+import org.netbeans.modules.j2ee.jpa.model.ModelUtils;
 import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule;
 import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule.ClassConstraints;
 import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
@@ -57,14 +54,14 @@ public class LegalCombinationOfAnnotations extends JPAClassRule {
     @Override public ErrorDescription[] apply(TypeElement subject, ProblemContext ctx){
         List<ErrorDescription> problemsFound = new ArrayList<ErrorDescription>();
         
-        Collection<String> annotationsOnClass = extractAnnotationNames(ctx, subject);
+        Collection<String> annotationsOnClass = ModelUtils.extractAnnotationNames(subject);
         
         for (IllegalCombination ic : illegalClassAnnotationCombinations){
             ic.check(ctx, subject, problemsFound, annotationsOnClass);
         }
         
         for (Element elem : subject.getEnclosedElements()){
-            Collection<String> annotationsOnElement = extractAnnotationNames(ctx, elem);
+            Collection<String> annotationsOnElement = ModelUtils.extractAnnotationNames(elem);
             
             for (IllegalCombination ic : illegalAttrAnnotationCombinations){
                 ic.check(ctx, elem, problemsFound, annotationsOnElement);
@@ -72,20 +69,6 @@ public class LegalCombinationOfAnnotations extends JPAClassRule {
         }
         
         return problemsFound.toArray(new ErrorDescription[problemsFound.size()]);
-    }
-    
-    private Collection<String> extractAnnotationNames(ProblemContext ctx, Element elem) {
-        Collection<String> annotationsOnElement = new LinkedList<String>();
-        
-        for (AnnotationMirror ann : elem.getAnnotationMirrors()){
-            TypeMirror annType = ann. getAnnotationType();
-            Element typeElem = ((DeclaredType)annType).asElement();
-            String typeName = ((TypeElement)typeElem).getQualifiedName().toString();
-            annotationsOnElement.add(typeName);
-            
-        }
-        
-        return annotationsOnElement;
     }
     
     private static class IllegalCombination{
@@ -109,8 +92,8 @@ public class LegalCombinationOfAnnotations extends JPAClassRule {
                             ErrorDescription error = createProblem(elem, ctx,
                                     NbBundle.getMessage(LegalCombinationOfAnnotations.class,
                                     "MSG_IllegalAnnotationCombination",
-                                    shortAnnotationName(ann),
-                                    shortAnnotationName(forbiddenAnn)));
+                                    ModelUtils.shortAnnotationName(ann),
+                                    ModelUtils.shortAnnotationName(forbiddenAnn)));
                             
                             errorList.add(error);
                         }
@@ -118,9 +101,5 @@ public class LegalCombinationOfAnnotations extends JPAClassRule {
                 }
             }
         }
-    }
-    
-    private static String shortAnnotationName(String annClass){
-        return "@" + annClass.substring(annClass.lastIndexOf(".") + 1); //NOI18N
     }
 }

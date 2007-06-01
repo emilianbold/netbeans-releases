@@ -20,10 +20,16 @@
 package org.netbeans.modules.j2ee.jpa.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -190,5 +196,22 @@ public class ModelUtils {
         }
         
         return scope.getEntityMappingsModel(null);
+    }
+    
+    public static Collection<String> extractAnnotationNames(Element elem) {
+        Collection<String> annotationsOnElement = new LinkedList<String>();
+        
+        for (AnnotationMirror ann : elem.getAnnotationMirrors()){
+            TypeMirror annType = ann. getAnnotationType();
+            Element typeElem = ((DeclaredType)annType).asElement();
+            String typeName = ((TypeElement)typeElem).getQualifiedName().toString();
+            annotationsOnElement.add(typeName);
+        }
+        
+        return annotationsOnElement;
+    }
+    
+    public static String shortAnnotationName(String annClass){
+        return "@" + annClass.substring(annClass.lastIndexOf(".") + 1); //NOI18N
     }
 }
