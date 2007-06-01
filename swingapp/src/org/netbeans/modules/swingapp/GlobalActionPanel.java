@@ -89,6 +89,12 @@ public class GlobalActionPanel extends javax.swing.JPanel {
             }
         }
     };
+    private PropertyChangeListener amListener = new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+            reloadTable();
+            reloadClassesCombo();
+        }
+    };
     
     private ActionTableModel realModel;
     
@@ -720,7 +726,19 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     }
     
     private void setSelectedProject(Project project) {
-        actionManager = ActionManager.getActionManager(project);
+        // refresh everything if the action manager changed
+        if(actionManager != ActionManager.getActionManager(project)) {
+            if(actionManager != null) {
+                actionManager.removePropertyChangeListener(amListener);
+                actionManager.removeActionChangedListener(actChangeListener);
+            }
+            actionManager = ActionManager.getActionManager(project);
+            if(actionManager != null) {
+                actionManager.addPropertyChangeListener(amListener);
+                actionManager.addActionChangedListener(actChangeListener);
+            }
+        }
+        
         reloadClassesCombo();
         classCombo.setSelectedItem(SHOW_ALL_CLASSES);
         reloadTable();
@@ -777,8 +795,8 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
             System.out.println(s);
         }
     }
-    private PropertyChangeListener amListener;
     private void switchedToTopComponent(TopComponent active) {
+        p("switched to top component called. active = " + active);
         if(active == null) { return; }
         FormEditorSupport fes = FormEditorSupport.getFormEditor(active);
         if(fes == null) { return; }
@@ -788,14 +806,6 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
             return;
         }
         
-        if(amListener == null) {
-            amListener = new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    reloadTable();
-                    reloadClassesCombo();
-                }
-            };
-        }
 
         // refresh everything if the action manager changed
         if(actionManager != ActionManager.getActionManager(fo)) {
