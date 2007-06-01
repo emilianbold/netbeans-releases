@@ -150,6 +150,7 @@ public class AutoupdateCatalogParser {
             ERR.log (Level.FINER, "Successfully checked " + url); // NOI18N
 
             String content = sb.toString ();
+            ERR.log (Level.FINEST, "Read string " + sb); // NOI18N
             String time = null;
             int pos;
             if ((pos = content.indexOf (TIME_STAMP_ATTRIBUTE_NAME)) != -1) {
@@ -158,6 +159,7 @@ public class AutoupdateCatalogParser {
                     time = content.substring (0, pos - 1);
                 }
             }
+            ERR.log (Level.FINEST, "Transposed time " + time); // NOI18N
 
             DateFormat format = new SimpleDateFormat (TIME_STAMP_FORMAT);
             timeStamp = format.parse (time);

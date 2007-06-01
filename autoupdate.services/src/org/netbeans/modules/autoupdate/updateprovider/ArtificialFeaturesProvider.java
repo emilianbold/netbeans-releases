@@ -52,7 +52,7 @@ public class ArtificialFeaturesProvider implements UpdateProvider {
     private static final String FEATURES_CATEGORY = NbBundle.getMessage (ArtificialFeaturesProvider.class, "ArtificialFeaturesProvider_Features_Category");
         
     private final Collection<UpdateItem> originalItems;
-    private final Logger log = Logger.getLogger (ArtificialFeaturesProvider.class.getName ());
+    private static final Logger log = Logger.getLogger (ArtificialFeaturesProvider.class.getName ());
     
     public ArtificialFeaturesProvider (final Collection<UpdateItem> items) {
         originalItems = items;
@@ -201,15 +201,20 @@ public class ArtificialFeaturesProvider implements UpdateProvider {
         boolean expectingNumber = true;
 
         while (tok.hasMoreTokens ()) {
+            String toParse = tok.nextToken ();
             if (expectingNumber) {
                 expectingNumber = false;
 
-                int piece = Integer.parseInt (tok.nextToken ());
-                assert piece >= 0 : "Spec version component < 0: " + piece;
-                digits[i++] = piece;
+                try {
+                    int piece = Integer.parseInt (toParse);
+                    assert piece >= 0 : "Spec version component < 0: " + piece;
+                    digits[i++] = piece;
+                } catch (NumberFormatException nfe) {
+                    log.log (Level.INFO, "NumberFormatException while parsing " + version, nfe);
+                }
                 
             } else {
-                assert ".".equals (tok.nextToken ()) : "Expected dot in spec version: `" + version + "'";
+                assert ".".equals (toParse) : "Expected dot in spec version: `" + version + "'";
 
                 expectingNumber = true;
             }
