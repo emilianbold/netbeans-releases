@@ -19,6 +19,7 @@ package org.netbeans.modules.web.refactoring.safedelete;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.web.Filter;
 import org.netbeans.modules.j2ee.dd.api.web.FilterMapping;
 import org.netbeans.modules.j2ee.dd.api.web.Listener;
@@ -139,6 +140,7 @@ public class WebXmlSafeDelete extends WebXmlRefactoring{
             webApp.addServletMapping(mapping);
         }
     }
+
     private static class FilterRemoveElement extends WebRefactoringElement{
         
         private Filter filter;
@@ -180,6 +182,7 @@ public class WebXmlSafeDelete extends WebXmlRefactoring{
             return MessageFormat.format(NbBundle.getMessage(WebXmlSafeDelete.class, "TXT_WebXmlFilterMappingSafeDelete"), args);
         }
         
+        @Override
         protected void undo() {
             webApp.addFilterMapping(mapping);
         }
@@ -203,6 +206,7 @@ public class WebXmlSafeDelete extends WebXmlRefactoring{
             return MessageFormat.format(NbBundle.getMessage(WebXmlSafeDelete.class, "TXT_WebXmlListenerSafeDelete"), args);
         }
         
+        @Override
         protected void undo() {
             webApp.addListener(listener);
         }

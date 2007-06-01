@@ -17,6 +17,8 @@
 package org.netbeans.modules.web.refactoring.whereused;
 
 import java.text.MessageFormat;
+import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
+import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.web.Filter;
 import org.netbeans.modules.j2ee.dd.api.web.Listener;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
@@ -56,6 +58,22 @@ public class WebXmlWhereUsed extends WebXmlRefactoring{
         
         for (Listener listener : getListeners(clazzFqn)){
             refactoringElements.add(whereUsedQuery, new WhereUsedElement(webModel, webDD, "TXT_WebXmlListenerWhereUsed", clazzFqn));//NO18N
+        }
+        
+        for (EjbRef ejbRef : getEjbRefs(clazzFqn, true)){
+            refactoringElements.add(whereUsedQuery, new WhereUsedElement(webModel, webDD, "TXT_WebXmlRefRemoteWhereUsed", clazzFqn));//NO18N
+        }
+        
+        for (EjbRef ejbRef : getEjbRefs(clazzFqn, false)){
+            refactoringElements.add(whereUsedQuery, new WhereUsedElement(webModel, webDD, "TXT_WebXmlRefHomeWhereUsed", clazzFqn));//NO18N
+        }
+        
+        for (EjbLocalRef ejbLocalRef : getEjbLocalRefs(clazzFqn, true)){
+            refactoringElements.add(whereUsedQuery, new WhereUsedElement(webModel, webDD, "TXT_WebXmlRefLocalHomeWhereUsed", clazzFqn));//NO18N
+        }
+        
+        for (EjbLocalRef ejbLocalRef : getEjbLocalRefs(clazzFqn, true)){
+            refactoringElements.add(whereUsedQuery, new WhereUsedElement(webModel, webDD, "TXT_WebXmlRefLocalWhereUsed", clazzFqn));//NO18N
         }
         
         return null;

@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
+import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.web.Filter;
 import org.netbeans.modules.j2ee.dd.api.web.Listener;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
@@ -71,7 +73,8 @@ public class WebXmlRename extends WebXmlRefactoring{
     
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         
-        String newName = renameClass(oldFqn, rename.getNewName());
+        String newName = getNewFQN();
+        
         for (Servlet servlet : getServlets(oldFqn)){
             refactoringElements.add(rename, new ServletRenameElement(newName, oldFqn, webModel, webDD, servlet));
         }
@@ -84,12 +87,29 @@ public class WebXmlRename extends WebXmlRefactoring{
             refactoringElements.add(rename, new FilterRenameElement(newName, oldFqn, webModel, webDD, filter));
         }
         
+        for (EjbRef ejbRef : getEjbRefs(oldFqn, true)){
+            refactoringElements.add(rename, new EjbRemoteRefRenameElement(newName, oldFqn, webModel, webDD, ejbRef));
+        }
+        
+        for (EjbRef ejbRef : getEjbRefs(oldFqn, false)){
+            refactoringElements.add(rename, new EjbHomeRefRenameElement(newName, oldFqn, webModel, webDD, ejbRef));
+        }
+        
+        for (EjbLocalRef ejbLocalRef : getEjbLocalRefs(oldFqn, false)){
+            refactoringElements.add(rename, new EjbLocalRefRenameElement(newName, oldFqn, webModel, webDD, ejbLocalRef));
+        }
+        
+        for (EjbLocalRef ejbLocalRef : getEjbLocalRefs(oldFqn, true)){
+            refactoringElements.add(rename, new EjbLocalHomeRefRenameElement(newName, oldFqn, webModel, webDD, ejbLocalRef));
+        }
+        
         return null;
     }
     
-    public static String renameClass(String originalFullyQualifiedName, String newName){
-        int lastDot = originalFullyQualifiedName.lastIndexOf('.');
-        return (lastDot <= 0) ? newName : originalFullyQualifiedName.substring(0, lastDot + 1) + newName;
+    private String getNewFQN(){
+        String newName = rename.getNewName();
+        int lastDot = oldFqn.lastIndexOf('.');
+        return (lastDot <= 0) ? newName : oldFqn.substring(0, lastDot + 1) + newName;
     }
     
     private abstract static class WebRenameElement extends WebRefactoringElement{
@@ -123,6 +143,7 @@ public class WebXmlRename extends WebXmlRefactoring{
             return MessageFormat.format(NbBundle.getMessage(WebXmlRename.class, "TXT_WebXmlServletRename"), args);
         }
         
+        @Override
         protected void undo() {
             servlet.setServletClass(oldName);
         }
@@ -137,6 +158,7 @@ public class WebXmlRename extends WebXmlRefactoring{
             this.filter = filter;
         }
         
+        @Override
         protected void doChange() {
             filter.setFilterClass(newName);
         }
@@ -146,6 +168,7 @@ public class WebXmlRename extends WebXmlRefactoring{
             return MessageFormat.format(NbBundle.getMessage(WebXmlRename.class, "TXT_WebXmlFilterRename"), args);
         }
         
+        @Override
         protected void undo() {
             filter.setFilterClass(oldName);
         }
@@ -161,6 +184,7 @@ public class WebXmlRename extends WebXmlRefactoring{
             this.listener = listener;
         }
         
+        @Override
         protected void doChange() {
             listener.setListenerClass(newName);
         }
@@ -170,10 +194,110 @@ public class WebXmlRename extends WebXmlRefactoring{
             return MessageFormat.format(NbBundle.getMessage(WebXmlRename.class, "TXT_WebXmlListenerRename"), args);
         }
         
+        @Override
         protected void undo() {
             listener.setListenerClass(oldName);
         }
         
+    }
+
+    private static class EjbHomeRefRenameElement extends WebRenameElement{
+        
+        private EjbRef ejbRef;
+        
+        public EjbHomeRefRenameElement(String newName, String oldName, WebApp webApp, FileObject webDD, EjbRef ejbRef) {
+            super(newName, oldName, webApp, webDD);
+            this.ejbRef = ejbRef;
+        }
+        
+        @Override
+        protected void doChange() {
+            ejbRef.setHome(newName);
+        }
+        
+        public String getDisplayText() {
+            Object[] args = new Object [] {getParentFile().getNameExt(), oldName, newName};
+            return MessageFormat.format(NbBundle.getMessage(WebXmlRename.class, "TXT_WebXmlRefHomeRename"), args);
+        }
+        
+        @Override
+        protected void undo() {
+            ejbRef.setHome(oldName);
+        }
+    }
+    
+    private static class EjbRemoteRefRenameElement extends WebRenameElement{
+        
+        private EjbRef ejbRef;
+        
+        public EjbRemoteRefRenameElement(String newName, String oldName, WebApp webApp, FileObject webDD, EjbRef ejbRef) {
+            super(newName, oldName, webApp, webDD);
+            this.ejbRef = ejbRef;
+        }
+        
+        @Override
+        protected void doChange() {
+            ejbRef.setRemote(newName);
+        }
+        
+        public String getDisplayText() {
+            Object[] args = new Object [] {getParentFile().getNameExt(), oldName, newName};
+            return MessageFormat.format(NbBundle.getMessage(WebXmlRename.class, "TXT_WebXmlRefRemoteRename"), args);
+        }
+        
+        @Override
+        protected void undo() {
+            ejbRef.setRemote(oldName);
+        }
+    }
+    
+    private static class EjbLocalRefRenameElement extends WebRenameElement{
+        
+        private EjbLocalRef ejbLocalRef;
+        
+        public EjbLocalRefRenameElement(String newName, String oldName, WebApp webApp, FileObject webDD, EjbLocalRef ejbLocalRef) {
+            super(newName, oldName, webApp, webDD);
+            this.ejbLocalRef = ejbLocalRef;
+        }
+        
+        @Override
+        protected void doChange() {
+            ejbLocalRef.setLocal(newName);
+        }
+        
+        public String getDisplayText() {
+            Object[] args = new Object [] {getParentFile().getNameExt(), oldName, newName};
+            return MessageFormat.format(NbBundle.getMessage(WebXmlRename.class, "TXT_WebXmlRefLocalRename"), args);
+        }
+        
+        @Override
+        protected void undo() {
+            ejbLocalRef.setLocal(oldName);
+        }
+    }
+    private static class EjbLocalHomeRefRenameElement extends WebRenameElement{
+        
+        private EjbLocalRef ejbLocalRef;
+        
+        public EjbLocalHomeRefRenameElement(String newName, String oldName, WebApp webApp, FileObject webDD, EjbLocalRef ejbLocalRef) {
+            super(newName, oldName, webApp, webDD);
+            this.ejbLocalRef = ejbLocalRef;
+        }
+        
+        @Override
+        protected void doChange() {
+            ejbLocalRef.setLocalHome(newName);
+        }
+        
+        public String getDisplayText() {
+            Object[] args = new Object [] {getParentFile().getNameExt(), oldName, newName};
+            return MessageFormat.format(NbBundle.getMessage(WebXmlRename.class, "TXT_WebXmlRefLocalHomeRename"), args);
+        }
+        
+        @Override
+        protected void undo() {
+            ejbLocalRef.setLocalHome(oldName);
+        }
     }
     
 }
