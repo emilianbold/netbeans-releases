@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.compapp.test.ui.actions.TestCaseResultCookie;
 import org.netbeans.modules.compapp.test.ui.actions.TestCaseResultDiffAction;
 import org.netbeans.modules.compapp.test.ui.actions.TestCaseResultSaveAsOutputAction;
@@ -147,13 +148,17 @@ public class TestCaseResultNode extends FilterNode {
     }
         
     public void destroy() throws java.io.IOException {
-        TestcaseNode testCaseNode = getTestCaseNode();
+        final TestcaseNode testCaseNode = getTestCaseNode();
         
         super.destroy();
         
         // refresh diff view
         if (testCaseNode.isDiffTopComponentVisible()) {
-            testCaseNode.refreshDiffTopComponent();
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    testCaseNode.refreshDiffTopComponent();
+                }
+            });            
         }
     }
     

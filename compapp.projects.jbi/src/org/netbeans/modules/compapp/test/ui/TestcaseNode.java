@@ -30,14 +30,11 @@ import org.netbeans.modules.compapp.test.ui.actions.TestcaseDiffAction;
 import org.netbeans.modules.compapp.test.ui.actions.TestcaseTestAction;
 import java.awt.Image;
 import java.io.File;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.compapp.projects.jbi.JbiProject;
-import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
 import org.netbeans.modules.compapp.test.util.FileNodeUtil;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -412,7 +409,7 @@ public class TestcaseNode extends FilterNode {
         return ret;
     }
     
-    public FileObject getResultFileLocation() {
+    private FileObject getResultFileLocation() {
         FileObject actualFolder = null;
         
         FileObject resultsFolder = mProject.getTestResultsDirectory();
@@ -430,8 +427,8 @@ public class TestcaseNode extends FilterNode {
         return actualFolder;
     }
     
-    public List getSortedResultFileNameList(boolean showFailedOnly) {
-        ArrayList list = new ArrayList();
+    public List<String> getSortedResultFileNameList(boolean showFailedOnly) {
+        List<String> list = new ArrayList<String>();
         
         FileObject resultFileLocation = getResultFileLocation();
         if (resultFileLocation != null) {
@@ -449,28 +446,17 @@ public class TestcaseNode extends FilterNode {
         return list;
     }
     
-//    public TestCaseResultNode getLatestResultNode() {
     public FileObject getLatestResultFileObject() {
         FileObject resultFO = null;
         
-        List resultFileNames = getSortedResultFileNameList(false);
+        List<String> resultFileNames = getSortedResultFileNameList(false);
         int length = resultFileNames.size();
         if (length > 0) {
-            String latestResultFileName = (String) resultFileNames.get(length - 1);
+            String latestResultFileName = resultFileNames.get(length - 1);
             FileObject resultDir = getResultFileLocation();
             resultFO = resultDir.getFileObject(latestResultFileName);
-            
-//            Node[] childNodes = getChildren().getNodes();
-//            for (Node childNode : childNodes) {
-//                DataObject childDO = (DataObject) childNode.getLookup().lookup(DataObject.class);
-//                FileObject childFO = childDO.getPrimaryFile();
-//                if (childFO.getName().equals(resultFO.getName())) {
-//                    return (TestCaseResultNode) childNode;
-//                }
-//            }
         }
         
-//        return null;
         return resultFO;
     }
     
@@ -548,8 +534,7 @@ public class TestcaseNode extends FilterNode {
             mPropertyFileWrapper.loadProperties();
             // Notify Properties pane to repaint
             TestcaseNode.this.firePropertyChange(null, null, null);
-        }
-        
+        }        
     }
     
     // Until we provide Paste action in the context menu, paste or DnD is

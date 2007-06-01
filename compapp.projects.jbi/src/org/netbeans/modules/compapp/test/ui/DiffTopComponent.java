@@ -152,6 +152,10 @@ public class DiffTopComponent extends TopComponent {
     
     private JToolBar createToolBar() {
         JToolBar toolBar = new JToolBar();
+        toolBar.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(DiffTopComponent.class, "ACSN_DiffmToolBar")); // NOI18N
+        toolBar.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(DiffTopComponent.class, "ACSD_DiffmToolBar")); // NOI18N
         toolBar.addSeparator();
         mActualComboBox =  new JComboBox();
         mActualComboBox.setRenderer(new DefaultListCellRenderer() {
@@ -188,7 +192,8 @@ public class DiffTopComponent extends TopComponent {
         toolBar.addSeparator();
         toolBar.add(mRefreshAct);
         toolBar.add(Box.createHorizontalGlue());
-        toolBar.setBorderPainted(false);
+        toolBar.setBorderPainted(false);     
+        
         return toolBar;
     }
     
@@ -222,8 +227,6 @@ public class DiffTopComponent extends TopComponent {
             removeAll();
             setLayout(new BorderLayout());
             mToolBar = createToolBar();
-            mToolBar.getAccessibleContext().setAccessibleName(NbBundle.getMessage(DiffTopComponent.class, "ACSN_DiffmToolBar")); // NOI18N
-            mToolBar.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DiffTopComponent.class, "ACSD_DiffmToolBar")); // NOI18N
             //ActualComboBox
             List list = mTestcaseNode.getSortedResultFileNameList(true);
             int actualCount = list.size();
@@ -239,30 +242,32 @@ public class DiffTopComponent extends TopComponent {
                     mActualFileName = null;
                 }
             }
-            if (mActualFileName != null) {
-                mActualComboBox.setSelectedItem(mActualFileName);
-            }
-            mActualComboBox.addActionListener(mActualActionListener);
             
-            Diff diff = Diff.getDefault();
-            org.netbeans.api.diff.StreamSource expected = mTestcaseNode.getExpectedStreamSource();
-            org.netbeans.api.diff.StreamSource actual = mTestcaseNode.getActualStreamSource(mActualFileName);
-            mDiffView = diff.createDiff(actual, expected);
-            mDiffCount = mDiffView.getDifferenceCount();
-            mDiffNo = 0;
-            if (mDiffCount > 0) {
-                mDiffView.setCurrentDifference(mDiffNo);
+            if (mActualFileName != null) {
+                // set selection before adding action listener
+                mActualComboBox.setSelectedItem(mActualFileName);
+                mActualComboBox.addActionListener(mActualActionListener);
+                
+                Diff diff = Diff.getDefault();
+                org.netbeans.api.diff.StreamSource expected = mTestcaseNode.getExpectedStreamSource();
+                org.netbeans.api.diff.StreamSource actual = mTestcaseNode.getActualStreamSource(mActualFileName);
+                mDiffView = diff.createDiff(actual, expected);
+                mDiffCount = mDiffView.getDifferenceCount();
+                mDiffNo = 0;
+                if (mDiffCount > 0) {
+                    mDiffView.setCurrentDifference(mDiffNo);
+                }
+                mDiffComboBox.removeActionListener(mDiffActionListener);
+                mDiffComboBox.removeAllItems();
+                for (int i = 0; i < mDiffCount; i++) {
+                    mDiffComboBox.addItem(new Integer(i));
+                }
+                mDiffComboBox.addActionListener(mDiffActionListener);
+                add(mDiffView.getComponent(), BorderLayout.CENTER);
+                add(mToolBar, BorderLayout.NORTH);   
+                refreshButtons();            
+                setFocusable(true);
             }
-            mDiffComboBox.removeActionListener(mDiffActionListener);
-            mDiffComboBox.removeAllItems();
-            for (int i = 0; i < mDiffCount; i++) {
-                mDiffComboBox.addItem(new Integer(i));
-            }
-            mDiffComboBox.addActionListener(mDiffActionListener);
-            add(mToolBar, BorderLayout.NORTH);
-            add(mDiffView.getComponent(), BorderLayout.CENTER);
-            refreshButtons();
-            setFocusable(true);
             
             if (needsRevalidate) {
                 invalidate();
