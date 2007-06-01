@@ -28,6 +28,8 @@ import org.netbeans.modules.j2ee.jpa.model.ModelUtils;
 import org.netbeans.modules.j2ee.jpa.verification.JPAEntityAttributeCheck;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.common.Rule;
+import org.netbeans.modules.j2ee.jpa.verification.fixes.CreateOneToManyRelationshipHint;
+import org.netbeans.modules.j2ee.jpa.verification.fixes.CreateOneToOneRelationshipHint;
 import org.netbeans.modules.j2ee.jpa.verification.fixes.CreateUnidirOneToOneRelationship;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -51,15 +53,28 @@ public class RelationshipForEntityTypeAttrDefined extends JPAEntityAttributeChec
             if (entity != null){
                 ElementHandle<TypeElement> classHandle = ElementHandle.create(ctx.getJavaClass());
                 ElementHandle<Element> elemHandle = ElementHandle.create(attrib.getJavaElement());
+                String remoteClassName = ((TypeElement)typeElement).getQualifiedName().toString();
                 
                 Fix fix1 = new CreateUnidirOneToOneRelationship(ctx.getFileObject(),
                         classHandle, elemHandle);
+                
+                Fix fix2 = new CreateOneToOneRelationshipHint(ctx.getFileObject(),
+                        classHandle,
+                        ctx.getAccessType(),
+                        attrib.getName(),
+                        remoteClassName);
+                
+                Fix fix3 = new CreateOneToManyRelationshipHint(ctx.getFileObject(),
+                        classHandle,
+                        ctx.getAccessType(),
+                        attrib.getName(),
+                        remoteClassName);
                 
                 return new ErrorDescription[]{Rule.createProblem(attrib.getJavaElement(),
                         ctx, NbBundle.getMessage(RelationshipForEntityTypeAttrDefined.class,
                         "MSG_EntityRelationNotDefined"),
                         Severity.WARNING,
-                        Arrays.asList(fix1))};
+                        Arrays.asList(fix1, fix2, fix3))};
             }
         }
         

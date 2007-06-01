@@ -32,6 +32,8 @@ import org.netbeans.modules.j2ee.jpa.model.ModelUtils;
 import org.netbeans.modules.j2ee.jpa.verification.JPAEntityAttributeCheck;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.common.Rule;
+import org.netbeans.modules.j2ee.jpa.verification.fixes.CreateManyToManyRelationshipHint;
+import org.netbeans.modules.j2ee.jpa.verification.fixes.CreateManyToOneRelationshipHint;
 import org.netbeans.modules.j2ee.jpa.verification.fixes.CreateUnidirManyToOneRelationship;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -59,6 +61,7 @@ public class MVRelationshipForEntityTypeAttrDefined extends JPAEntityAttributeCh
                 
                 if (typeElement != null && typeElement.getKind() == ElementKind.CLASS){
                     Entity entity = ModelUtils.getEntity(ctx.getMetaData(), ((TypeElement)typeElement));
+                    String remoteClassName = ((TypeElement)typeElement).getQualifiedName().toString();
                     
                     if (entity != null){
                         ElementHandle<TypeElement> classHandle = ElementHandle.create(ctx.getJavaClass());
@@ -67,11 +70,23 @@ public class MVRelationshipForEntityTypeAttrDefined extends JPAEntityAttributeCh
                         Fix fix1 = new CreateUnidirManyToOneRelationship(ctx.getFileObject(),
                                 classHandle, elemHandle);
                         
+                        Fix fix2 = new CreateManyToOneRelationshipHint(ctx.getFileObject(),
+                                classHandle,
+                                ctx.getAccessType(),
+                                attrib.getName(),
+                                remoteClassName);
+                        
+                        Fix fix3 = new CreateManyToManyRelationshipHint(ctx.getFileObject(),
+                                classHandle,
+                                ctx.getAccessType(),
+                                attrib.getName(),
+                                remoteClassName);
+                        
                         return new ErrorDescription[]{Rule.createProblem(attrib.getJavaElement(),
                                 ctx, NbBundle.getMessage(MVRelationshipForEntityTypeAttrDefined.class,
                                 "MSG_MVEntityRelationNotDefined"),
                                 Severity.WARNING,
-                                Arrays.asList(fix1))};
+                                Arrays.asList(fix1, fix2, fix3))};
                     }
                 }
             }
