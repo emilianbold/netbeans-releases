@@ -26,7 +26,7 @@ import java.awt.*;
 /**
  * @author David Kaspar
  */
-public class OverlayLayout implements Layout {
+public final class OverlayLayout implements Layout {
 
     public void layout (Widget widget) {
         Dimension total = new Dimension ();
