@@ -184,15 +184,15 @@ public class SchemaSafeDeleteRefactoringPlugin extends SchemaRefactoringPlugin i
         transaction.register((XMLRefactoringPlugin)this, elements);
         refactoringElements.registerTransaction(transaction);
         
-         if (elements != null && elements.size() >0 )   {
-             for (SchemaRefactoringElement element : elements) {
-                 //System.out.println("SchemaSafeDeleteRefactoring::adding element");
-                 refactoringElements.add(delete, element);
-                 fireProgressListenerStep();
-              }
-         }
         
-       if(allErrors.size() > 0) {
+        for (SchemaRefactoringElement element : elements) {
+            //System.out.println("SchemaSafeDeleteRefactoring::adding element");
+             element.addTransactionObject(transaction);
+             refactoringElements.add(delete, element);
+             fireProgressListenerStep();
+         }
+                 
+        if(allErrors.size() > 0) {
             Problem problem = processErrors(allErrors, ui, inner);
             fireProgressListenerStop();
             return problem;

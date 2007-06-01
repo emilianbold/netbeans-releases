@@ -57,39 +57,7 @@ public class RefactoringUtil {
         }
     }
 
-   /* public static void prepareDescription(RenameRequest request, Class<? extends Model> referencingModelType) {
-        SchemaComponent target =  (SchemaComponent) request.getTarget();
-        for (UsageGroup usage : request.getUsages().getUsages()) {
-            if (! (referencingModelType.isAssignableFrom(usage.getModel().getClass()))) {
-                continue;
-            }
-            String ns = ((SchemaModel)target.getModel()).getEffectiveNamespace(target);
-            for (Object o : usage.getItems()) {
-                Usage i = (Usage) o; //strange i have to do this
-                String prefix = ((AbstractDocumentComponent)i.getComponent()).lookupPrefix(ns);
-                String refString = prefix + ":" + request.getNewName(); //NOI18N
-                //TODO a visitor to get the right attribute name from i.getComponent().
-                String refAttribute = "ref"; //NOI18N
-                String msg = NbBundle.getMessage(RefactoringUtil.class, 
-                        "MSG_SetReferenceStringTo", refAttribute, refString);
-                i.setRefactoringDescription(msg);
-            }
-        }
-    }
-
-    public static void prepareDescription(FileRenameRequest request, Class<? extends Model> referencingModelType) {
-        for (UsageGroup usage : request.getUsages().getUsages()) {
-            if (! (referencingModelType.isAssignableFrom(usage.getModel().getClass()))) {
-                continue;
-            }
-            for (Usage i : usage.getItems()) {
-                String refAttribute = getLocationReferenceAttributeName(i.getComponent());
-                String msg = NbBundle.getMessage(RefactoringUtil.class, 
-                        "MSG_SetLocationStringTo", refAttribute, getNewLocationValue(request, i.getComponent()));
-                i.setRefactoringDescription(msg);
-            }
-        }
-    }*/
+ 
     
     public static String getLocationReferenceAttributeName(Component usageComponent) {
         if (usageComponent instanceof org.netbeans.modules.xml.wsdl.model.Import) {
@@ -101,14 +69,4 @@ public class RefactoringUtil {
         }
     }
     
-    /*private static String getNewLocationValue(FileRenameRequest request, Component usageComponent) {
-        String current = ""; //NOI18N
-        if (usageComponent instanceof Import) {
-            current =((Import)usageComponent).getLocation();
-        } else if (usageComponent instanceof SchemaModelReference) {
-            current = ((SchemaModelReference)usageComponent).getSchemaLocation();
-        }        
-
-        return request.calculateNewLocationString(current);
-    }*/
-}
+ }

@@ -174,7 +174,7 @@ public class SchemaRenameRefactoringPlugin extends SchemaRefactoringPlugin  impl
             }
         }
        
-        if(findErrors != null && findErrors.size() > 0)
+        if(findErrors.size() > 0)
             return processErrors(findErrors);
         
         if(elements.size() > 0) {
@@ -187,16 +187,17 @@ public class SchemaRenameRefactoringPlugin extends SchemaRefactoringPlugin  impl
         //register with the gloabl XML transaction object
          transaction.register((XMLRefactoringPlugin)this, elements);
         
-        //register with the refactoring API
+        //register with the Refactoring API
         refactoringElements.registerTransaction(transaction);
         
-        if (elements.size() >0 )   {
-            for (RefactoringElementImplementation ug : elements) {
-              //  System.out.println("SchemaRenameRefactoring::adding element");
-                refactoringElements.add(request, ug);
-                fireProgressListenerStep();
-             }
-        }
+        
+        for (SchemaRefactoringElement elem : elements) {
+            //System.out.println("SchemaRenameRefactoring::adding element");
+            elem.addTransactionObject(transaction);
+            refactoringElements.add(request, elem);
+            fireProgressListenerStep();
+         }
+        
         
               
         fireProgressListenerStop();
@@ -214,8 +215,8 @@ public class SchemaRenameRefactoringPlugin extends SchemaRefactoringPlugin  impl
         for (Model model : models) {
                 if (obj instanceof Nameable ) {
                     new RenameReferenceVisitor().rename(model, modelsInRefactoring.get(model), request);
-                } else if (obj instanceof Model && request instanceof RenameRefactoring) {
-                    _refactorUsages(model, modelsInRefactoring.get(model), (RenameRefactoring)request);
+                } else if (obj instanceof Model ) {
+                     _refactorUsages(model, modelsInRefactoring.get(model), (RenameRefactoring)request);
                 }
            
         }
@@ -231,6 +232,8 @@ public class SchemaRenameRefactoringPlugin extends SchemaRefactoringPlugin  impl
                 model.startTransaction();
             }
             for (RefactoringElementImplementation u : elements) {
+                if ( !(u instanceof SchemaRefactoringElement) )
+                    continue;
                 SchemaModelReference ref = (SchemaModelReference) u.getLookup().lookup(SchemaModelReference.class);
                 if (ref!=null) {
                     String newLocation = SharedUtils.calculateNewLocationString(ref.getSchemaLocation(), request);
