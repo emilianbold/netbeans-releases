@@ -333,8 +333,26 @@ public class PropertySheet extends JPanel {
         }
     }
 
-    /** Enable/disable display of the description area */
-    void setDescriptionVisible(boolean val) {
+    
+    private boolean popupEnabled = true;
+    /**
+     * Set whether or not the popup menu should be available on
+     * right-click.
+     * @param val If true, right-clicking the property sheet will show a popup
+     *  offering sorting options, show/hide description area, etc.
+     * @since 6.9
+     */ 
+    public final void setPopupEnabled(boolean val) {
+        this.popupEnabled = val;
+    }
+    
+    /**
+     * Set the visibility of the description area.
+     * 
+     * @param val Whether or not it should be visible
+     * @since 6.9
+     */ 
+    public final void setDescriptionAreaVisible (boolean val) {
         if (isDescriptionVisible() != val) {
             int state = psheet.getState();
 
@@ -348,9 +366,13 @@ public class PropertySheet extends JPanel {
 
                 psheet.setState(newState);
             }
-
-            PropUtils.saveShowDescription(val);
         }
+    }
+ 
+    /** Enable/disable display of the description area */
+    void setDescriptionVisible(boolean val) {
+        setDescriptionAreaVisible (val);
+        PropUtils.saveShowDescription(val);
     }
 
     boolean isDescriptionVisible() {
@@ -766,6 +788,8 @@ public class PropertySheet extends JPanel {
     }
 
     final void showPopup(Point p) {
+        if( !popupEnabled )
+            return;
         JMenuItem helpItem = new JMenuItem();
         JRadioButtonMenuItem sortNamesItem = new JRadioButtonMenuItem();
         JRadioButtonMenuItem unsortedItem = new JRadioButtonMenuItem();
