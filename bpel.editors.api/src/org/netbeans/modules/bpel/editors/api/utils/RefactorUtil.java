@@ -19,12 +19,21 @@
 package org.netbeans.modules.bpel.editors.api.utils;
 
 import javax.swing.Icon;
+import java.beans.BeanInfo;
+import javax.swing.ImageIcon;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.BooleanExpr;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
+import org.netbeans.modules.xml.schema.ui.nodes.categorized.CategorizedSchemaNodeFactory;
+import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.NodesFactory;
 
 /**
  *
@@ -85,7 +94,14 @@ public class RefactorUtil {
     }
     
     public static Icon getIcon(Component component) {
+        // vlv
+        Node node = getNode(component);
+
+        if (node  != null) {
+          return new ImageIcon(node.getIcon(BeanInfo.ICON_COLOR_16x16));
+        }
         Icon icon = null;
+
         if (component instanceof BpelEntity) {
             org.netbeans.modules.bpel.editors.api.nodes.NodeType
                 bpelNodeType = org.netbeans.modules.bpel.editors.api.utils.
@@ -104,6 +120,19 @@ public class RefactorUtil {
                                             DEFAULT_BPEL_ENTITY_NODE.getIcon();
         
         return icon;
+    }
+
+    // vlv
+    private static Node getNode(Component component) {
+      if (component instanceof SchemaComponent) {
+        SchemaComponent schemaComponent = (SchemaComponent) component;
+        CategorizedSchemaNodeFactory factory = new CategorizedSchemaNodeFactory(schemaComponent.getModel(), Lookups.singleton(schemaComponent));
+        return factory.createNode(schemaComponent);
+      }
+      if (component instanceof WSDLComponent) {
+        return NodesFactory.getInstance().create(component);
+      }
+      return null;
     }
     
     private static String removeHtmlHeader(String htmlString) {
