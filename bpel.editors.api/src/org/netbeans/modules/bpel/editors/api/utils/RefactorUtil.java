@@ -48,12 +48,6 @@ public class RefactorUtil {
     }
     
     public static String getName(Component component) {
-        // vlv
-        Node node = getNode(component);
-
-        if (node  != null) {
-//          return node.getHtmlDisplayName();
-        }
         String name = null;
 
         if (component instanceof Named) {
@@ -195,6 +189,4 @@ public class RefactorUtil {
         
         return path.toString();
     }
-    
-
 }
