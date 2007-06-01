@@ -106,7 +106,7 @@ Microsystems, Inc. All Rights Reserved.
             
             <property name="xtest.enable.assertions" value="false" /> 
             <property name="xtest.ide.reuse.userdir" value="true" />
-            <property name="xtest.timeout" value="3600000" />
+            <property name="xtest.timeout" value="5000000" />
             <property name="xtest.userdata|com.sun.aas.installRoot" value="${j2ee.appserver.path}"/>
         </executeTests>
         
