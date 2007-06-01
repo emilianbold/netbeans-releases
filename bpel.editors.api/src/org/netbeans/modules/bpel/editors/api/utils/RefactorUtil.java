@@ -48,8 +48,14 @@ public class RefactorUtil {
     }
     
     public static String getName(Component component) {
-        assert component != null;
+        // vlv
+        Node node = getNode(component);
+
+        if (node  != null) {
+//          return node.getHtmlDisplayName();
+        }
         String name = null;
+
         if (component instanceof Named) {
             name = ((Named)component).getName();
         } else if (component instanceof BooleanExpr) {
