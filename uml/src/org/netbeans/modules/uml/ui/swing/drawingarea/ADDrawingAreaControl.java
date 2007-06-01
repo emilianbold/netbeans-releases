@@ -1,3 +1,4 @@
+
 /*
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
@@ -87,6 +88,7 @@ import com.tomsawyer.drawing.geometry.TSRect;
 import com.tomsawyer.editor.TSEEdge;
 import com.tomsawyer.editor.TSEEdgeLabel;
 import com.tomsawyer.editor.TSEGraph;
+import com.tomsawyer.editor.TSEGraphImageEncoder;
 import com.tomsawyer.editor.TSEGraphManager;
 import com.tomsawyer.editor.TSEGraphWindow;
 import com.tomsawyer.editor.TSEHitTesting;
@@ -133,6 +135,9 @@ import com.tomsawyer.util.TSProperty;
 import com.tomsawyer.xml.editor.TSEEnumerationTable;
 import com.tomsawyer.xml.editor.TSEVisualizationXMLReader;
 import com.tomsawyer.xml.editor.TSEVisualizationXMLWriter;
+import javax.imageio.stream.FileImageOutputStream;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.util.prefs.Preferences;
 import org.dom4j.Document;
 import org.dom4j.Node;
@@ -238,6 +243,7 @@ import org.netbeans.modules.uml.ui.products.ad.graphobjects.ETGraph;
 import org.netbeans.modules.uml.ui.products.ad.graphobjects.ETGraphManager;
 import org.netbeans.modules.uml.ui.products.ad.graphobjects.ETNode;
 import org.netbeans.modules.uml.ui.products.ad.graphobjects.ETNodeLabel;
+import org.netbeans.modules.uml.ui.products.ad.viewfactory.ETEGraphImageEncoder;
 import org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericEdgeLabelUI;
 import org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericEdgeUI;
 import org.netbeans.modules.uml.ui.products.ad.viewfactory.ETGenericGraphUI;
@@ -328,6 +334,7 @@ import org.netbeans.modules.uml.ui.swing.testbed.addin.menu.TestBedMenuManager;
 import org.netbeans.modules.uml.ui.swing.trackbar.JTrackBar;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
@@ -8798,18 +8805,6 @@ public class ADDrawingAreaControl extends ApplicationView
       return title;
    }
    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.uml.ui.swing.drawingarea.IAxDrawingAreaControl#showImageDialog()
-     */
-//   public void showImageDialog()
-//   {
-//		/*Smitha- Fix for the bug # 6276927*/
-//		if (this.saveAsImageDialog == null)
-//		{
-//			this.saveAsImageDialog = new TSESaveAsImageDialog(getOwnerFrame(), getExportAsImageTitle(), this.getGraphWindow(), TSESaveAsImageDialog.JPG_FORMAT | TSESaveAsImageDialog.SVG_FORMAT | TSESaveAsImageDialog.PNG_FORMAT );
-//		} //else  
-//	     this.saveAsImageDialog.setVisible(!this.saveAsImageDialog.isVisible());    
-//   }
    
    //JM: Fix for Bug#6283632 - begin
    public void showImageDialog() {
@@ -8830,7 +8825,7 @@ public class ADDrawingAreaControl extends ApplicationView
            super(ownerFrame, title, graphWindow, flags);
            if (super.type == null) {
                super.type = "jpg";
-           }
+           }   
            
            // reset the text for the fileName field
            String defaultFileName = RESOURCE_BUNDLE.getString("default.fileName");
@@ -8857,7 +8852,91 @@ public class ADDrawingAreaControl extends ApplicationView
            };
            super.getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(escape, "ESCAPE");
            super.getRootPane().getActionMap().put("ESCAPE", escapeAction);
+       
+           fileName.getDocument().addDocumentListener(new DocumentListener()
+           {
+               public void changedUpdate(DocumentEvent e)
+               {
+                   documentChanged();
+               }
+               public void insertUpdate(DocumentEvent e)
+               {
+                   documentChanged();
+               }
+               public void removeUpdate(DocumentEvent e)
+               {
+                   documentChanged();
+               }
+               private void documentChanged()
+               {  
+                   if (fileName.getText().trim().equals(""))
+                   {
+                       disable(okButton);
+                       return;
+                   }
+                   
+                   File file = new File(fileName.getText());
+                   
+                   if (!file.exists())
+                       enable(okButton);
+                   else if (file.isFile() && file.canWrite())
+                       enable(okButton); 
+                   else 
+                       disable(okButton);
+               }
+           });
+           
        }
+       
+       // provide custom image encoder to write image files #82394
+       public TSEGraphImageEncoder newGraphImageEncoder(TSEGraphWindow window)
+       {
+           return new ETEGraphImageEncoder(window);
+       }
+       
+       // override TSESaveAsImageDialog.onOK to workaround #82394
+       public boolean onOK()
+       {
+           if (!"jpg".equals(type))  // NOI18N
+               return super.onOK();
+           
+           boolean success = true;
+           try
+           {
+               File file = new File(fileName.getText());
+               if (file.exists() && !overWriteConfirm())
+                   return false;
+                
+               boolean visibleAreaOnly = visible.isSelected();
+               int zoomType = TSEGraphWindow.FIT_IN_WINDOW;
+               
+               if (actual.isSelected())
+                   zoomType = TSEGraphWindow.ACTUAL_SIZE;
+               else if (custom.isSelected())
+                   zoomType = TSEGraphWindow.CUSTOM_SIZE;
+               else if (zoomLevel.isSelected())
+                   zoomType = TSEGraphWindow.CURRENT_ZOOM_LEVEL;
+               
+               boolean grid = drawGrid.isSelected();
+               boolean selectedOnly = selected.isSelected();
+               float quality = qualityField.parse(qualityField.getText());
+               
+               
+               FileImageOutputStream fio = new FileImageOutputStream(new File(fileName.getText()));
+               ETEGraphImageEncoder encoder = new ETEGraphImageEncoder(getGraphWindow());
+               encoder.write("jpg", fio, visibleAreaOnly, zoomType, grid,      // NOI18N
+                       selectedOnly, quality, width.parse(width.getText()),
+                       height.parse(height.getText()));                    
+           }
+           catch(Exception e)
+           {
+               success = false;
+               ErrorManager.getDefault().notify(e);
+           }
+           return success;
+       }
+       
+       
    }
    //JM: Fix for Bug#6283632 - end
    
@@ -10477,7 +10556,7 @@ public class ADDrawingAreaControl extends ApplicationView
       boolean retVal = true;
       if (m_isDirty)
       {
-          
+//          getGraph().updateBounds();
           m_nZoomLevelFromArchive = this.getCurrentZoom();
           // Save the viewport center.
           IETRect logicalViewPort = getLogicalViewPortRect();
