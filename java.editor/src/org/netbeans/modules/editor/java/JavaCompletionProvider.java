@@ -1348,6 +1348,10 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 }
                             }
                     }
+                } else if (parent.getKind() == Tree.Kind.COMPILATION_UNIT && ((CompilationUnitTree)parent).getPackageName() == fa) {
+                    PackageElement pe = controller.getElements().getPackageElement(fullName(exp));
+                    if (pe != null)
+                        addPackageContent(env, pe, EnumSet.of(ElementKind.PACKAGE), null);
                 }
             }
         }
@@ -3660,6 +3664,18 @@ public class JavaCompletionProvider implements CompletionProvider {
             return false;
         }
         
+        private String fullName(Tree tree) {
+            switch (tree.getKind()) {
+            case IDENTIFIER:
+                return ((IdentifierTree)tree).getName().toString();
+            case MEMBER_SELECT:
+                String sname = fullName(((MemberSelectTree)tree).getExpression());
+                return sname == null ? null : sname + '.' + ((MemberSelectTree)tree).getIdentifier();
+            default:
+                return null;
+            }
+        }
+
         private Env getCompletionEnvironment(CompilationController controller, boolean upToOffset) throws IOException {
             int offset = caretOffset;
             String prefix = null;
