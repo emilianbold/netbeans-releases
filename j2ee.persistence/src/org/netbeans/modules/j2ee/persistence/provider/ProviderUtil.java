@@ -58,6 +58,7 @@ public class ProviderUtil {
     public static final Provider HIBERNATE_PROVIDER = new HibernateProvider();
     public static final Provider TOPLINK_PROVIDER = new ToplinkProvider();
     public static final Provider KODO_PROVIDER = new KodoProvider();
+    public static final Provider OPENJPA_PROVIDER = new OpenJPAProvider();
     public static final Provider DEFAULT_PROVIDER = new DefaultProvider();
     
     private ProviderUtil() {
@@ -606,7 +607,7 @@ public class ProviderUtil {
      * @return array of providers known to the IDE.
      */
     public static Provider[] getAllProviders() {
-        return new Provider[]{TOPLINK_PROVIDER, HIBERNATE_PROVIDER, KODO_PROVIDER};
+        return new Provider[]{TOPLINK_PROVIDER, HIBERNATE_PROVIDER, KODO_PROVIDER, OPENJPA_PROVIDER};
     }
     
     /**
