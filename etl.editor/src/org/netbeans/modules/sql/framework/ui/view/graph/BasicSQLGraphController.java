@@ -104,7 +104,7 @@ import org.netbeans.modules.sql.framework.ui.model.CollabSQLUIModel;
 import org.netbeans.modules.sql.framework.ui.model.SQLUIModel;
 import org.netbeans.modules.sql.framework.ui.view.join.JoinMainDialog;
 import org.netbeans.modules.sql.framework.ui.view.join.JoinUtility;
-//import org.netbeans.modules.db.api.explorer.DatabaseMetaDataTransfer;
+import org.netbeans.modules.db.api.explorer.DatabaseMetaDataTransfer;
 
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Logger;
@@ -143,198 +143,198 @@ public class BasicSQLGraphController implements IGraphController {
      * @param e DropTargetDropEvent
      */
     public void handleDrop(java.awt.dnd.DropTargetDropEvent e) {
-//        if (!isEditAllowed()) {
-//            return;
-//        }
-//        boolean dropStatus = false;
-//        Point loc = e.getLocation();
-//        if (e.isDataFlavorSupported(mDataFlavorArray[0])) {
-//            Connection conn = null;
-//            try {
-//                Transferable t = e.getTransferable();
-//                Object o = t.getTransferData(mDataFlavorArray[0]);
-//                if (o instanceof DatabaseMetaDataTransfer.Table) {
-//                    DatabaseConnection dbConn = ((DatabaseMetaDataTransfer.Table)o).getDatabaseConnection();
-//                    conn = ((DatabaseMetaDataTransfer.Table)o).getDatabaseConnection().getJDBCConnection();
-//                    String tableName = ((DatabaseMetaDataTransfer.Table)o).getTableName();
-//                    String schema = ((DatabaseMetaDataTransfer.Table)o).getDatabaseConnection().getSchema();
-//                    String url = ((DatabaseMetaDataTransfer.Table)o).getDatabaseConnection().getDatabaseURL();
-//                    String catalog = null;
-//                    try {
-//                        catalog = conn.getCatalog();
-//                    } catch (Exception ex) {
-//                        //ignore
-//                    }
-//                    String dlgTitle = null;
-//                    try {
-//                        dlgTitle = NbBundle.getMessage(BasicSQLGraphController.class, "TITLE_dlg_table_type");
-//                    } catch (MissingResourceException mre) {
-//                        dlgTitle = "Add a table";
-//                    }
-//                    
-//                    CollabSQLUIModel sqlModel = ((CollabSQLUIModel) collabModel);
-//                    TypeSelectorPanel selectorPnl = new TypeSelectorPanel(tableTypeSelected);
-//                    DialogDescriptor dlgDesc = null;
-//                    DBMetaData dbMeta = new DBMetaData();
-//                    dlgDesc = new DialogDescriptor(selectorPnl, dlgTitle, true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION,
-//                            DialogDescriptor.DEFAULT_ALIGN, null, null);
-//                    
-//                    Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
-//                    dlg.setVisible(true);
-//                    SQLDBTable sTable = null;
-//                    if (NotifyDescriptor.OK_OPTION == dlgDesc.getValue()) {
-//                        e.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
-//                        tableTypeSelected = selectorPnl.getSelectedType();
-//                        boolean isSource = false;
-//                        if (SQLConstants.SOURCE_TABLE == tableTypeSelected) {
-//                            isSource = true;
-//                        }
-//                        String[][] tableList = null;
-//                        try {
-//                            dbMeta.connectDB(conn);
-//                            schema = (schema == null)? "" : schema;
-//                            catalog = (catalog == null)? "" : catalog;
-//                            tableList = dbMeta.getTablesOnly(catalog, schema, "", false);
-//                        } catch (Exception ex) {
-//                            //ignore
-//                        }
-//                        Object dbTable = createTable(tableList, tableName, isSource);
-//                        List tbls = null;
-//                        if(isSource) {
-//                            tbls = sqlModel.getSQLDefinition().getSourceTables();
-//                        } else {
-//                            tbls = sqlModel.getSQLDefinition().getTargetTables();
-//                        }
-//                        
-//                        ((SQLDBTable)dbTable).setAliasUsed(true);
-//                        ((SQLDBTable)dbTable).setAliasName(generateTableAliasName(isSource, tbls));
-//                        DBConnectionDefinition def = null;
-//                        try {
-//                            def = SQLModelObjectFactory.getInstance().createDBConnectionDefinition(dbConn.getDisplayName(),
-//                                    dbMeta.getDBType(), dbConn.getDriverClass(), dbConn.getDatabaseURL(), dbConn.getUser(),
-//                                    dbConn.getPassword(), "Descriptive info here");
-//                        } catch (Exception ex) {
-//                            //ignore
-//                        }
-//                        SQLDBModel model = null;
-//                        if(isSource) {
-//                            model = SQLModelObjectFactory.getInstance()
-//                            .createDBModel(SQLConstants.SOURCE_DBMODEL);
-//                        } else {
-//                            model = SQLModelObjectFactory.getInstance()
-//                            .createDBModel(SQLConstants.TARGET_DBMODEL);
-//                        }
-//                        model.setModelName(dbConn.getDisplayName());
-//                        model.setConnectionDefinition(def);
-//                        dbTable = addTableColumns(dbMeta, dbTable, isSource);
-//                        ((SQLDBTable)dbTable).setEditable(true);
-//                        ((SQLDBTable)dbTable).setSelected(true);
-//                        model.addTable((SQLDBTable)dbTable);
-//                        if(isSource) {
-//                            sTable = (SQLDBTable) collabModel.addSourceTable((SQLDBTable)dbTable, loc);
-//                        } else {
-//                            sTable = (SQLDBTable) collabModel.addTargetTable((SQLDBTable)dbTable, loc);
-//                            RuntimeDatabaseModel rtModel = sqlModel.getSQLDefinition().getRuntimeDbModel();
-//                            if(rtModel == null) {
-//                                rtModel = new RuntimeDatabaseModelImpl();
-//                            }
-//                            RuntimeOutput rtOut = rtModel.getRuntimeOutput();
-//                            SQLDBColumn column = null;
-//                            if(rtOut == null) {
-//                                rtOut = new RuntimeOutputImpl();
-//                                // add STATUS
-//                                column = SQLModelObjectFactory.getInstance().createTargetColumn("STATUS", Types.VARCHAR, 0, 0, true);
-//                                column.setEditable(false);
-//                                rtOut.addColumn(column);
-//                                
-//                                // add STARTTIME
-//                                column = SQLModelObjectFactory.getInstance().createTargetColumn("STARTTIME", Types.TIMESTAMP, 0, 0, true);
-//                                column.setEditable(false);
-//                                rtOut.addColumn(column);
-//                                
-//                                // add ENDTIME
-//                                column = SQLModelObjectFactory.getInstance().createTargetColumn("ENDTIME", Types.TIMESTAMP, 0, 0, true);
-//                                column.setEditable(false);
-//                                rtOut.addColumn(column);
-//                            }
-//                            String argName = SQLObjectUtil.getTargetTableCountRuntimeOutput(
-//                                    (TargetTable) sTable);
-//                            column = SQLModelObjectFactory.getInstance().createTargetColumn(
-//                                    argName, Types.INTEGER, 0, 0, true);
-//                            column.setEditable(false);
-//                            rtOut.addColumn(column);
-//                            rtModel.addTable(rtOut);
-//                            sqlModel.getSQLDefinition().addObject(rtModel);
-//                        }
-//                        
-//                        SourceColumn runtimeArg = SQLObjectUtil.createRuntimeInput
-//                                (sTable, sqlModel.getSQLDefinition());
-//                        
-//                        if (runtimeArg != null && (RuntimeInput) runtimeArg.getParent() != null) {
-//                            RuntimeInput runtimeInput = (RuntimeInput) runtimeArg.getParent();
-//                            // if runtime input is not in SQL definition then add it
-//                            if ((sqlModel.getSQLDefinition().isTableExists(runtimeInput)) == null) {
-//                                sqlModel.getSQLDefinition().addObject((SQLObject)runtimeInput);
-//                                collabModel.addObject(runtimeInput);
-//                                SQLDataEvent evt = new SQLDataEvent(collabModel, runtimeInput , runtimeArg);
-//                                collabModel.fireChildObjectCreatedEvent(evt);
-//                            }
-//                        }
-//                        if(sqlModel.getSQLDefinition().getSourceTables().size() > 1) {
-//                            if(dbTable instanceof SourceTableImpl) {
-//                                NotifyDescriptor d = new NotifyDescriptor.Confirmation("Do you want to create a join?",
-//                                        "Confirm join creation", NotifyDescriptor.YES_NO_OPTION);
-//                                if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION) {
-//                                    JoinMainDialog.showJoinDialog(sqlModel.getSQLDefinition().getJoinSources(), null,
-//                                            this.viewC, true);
-//                                    if (JoinMainDialog.getClosingButtonState() == JoinMainDialog.OK_BUTTON) {
-//                                        SQLJoinView joinView = JoinMainDialog.getSQLJoinView();
-//                                        try {
-//                                            if (joinView != null) {
-//                                                JoinUtility.handleNewJoinCreation(joinView, JoinMainDialog.getTableColumnNodes(), this.viewC);
-//                                            }
-//                                        } catch (BaseException ex) {
-//                                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Error adding join view.", NotifyDescriptor.INFORMATION_MESSAGE));
-//                                            
-//                                            Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "JoinAction.actionPerformed", "error adding join view", ex);
-//                                        }
-//                                    }
-//                                }
-//                            }
-//                        }
-//                        collabModel.setDirty(true);
-//                        updateActions(collabModel);
-//                        dropStatus = true;
-//                    }
-//                } else {
-//                    e.rejectDrop();
-//                }
-//            } catch (IOException ex) {
-//                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught IOException while handling DnD.", ex);
-//                e.rejectDrop();
-//            } catch (UnsupportedFlavorException ex) {
-//                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught UnsupportedFlavorException while handling DnD.", ex);
-//                e.rejectDrop();
-//            } catch (BaseException ex) {
-//                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE));
-//                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught BaseException while handling DnD.", ex);
-//                e.rejectDrop();
-//            } catch(Exception ex) {
-//                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught Exception while handling DnD.", ex);
-//                e.rejectDrop();
-//            } finally {
-//                e.dropComplete(dropStatus);
-//                try {
-//                    if(conn != null) {
-//                        conn.close();
-//                    }
-//                } catch (SQLException ex) {
-//                    conn = null;
-//                }
-//            }
-//        } else {
-//            e.rejectDrop();
-//        }
+        if (!isEditAllowed()) {
+            return;
+        }
+        boolean dropStatus = false;
+        Point loc = e.getLocation();
+        if (e.isDataFlavorSupported(mDataFlavorArray[0])) {
+            Connection conn = null;
+            try {
+                Transferable t = e.getTransferable();
+                Object o = t.getTransferData(mDataFlavorArray[0]);
+                if (o instanceof DatabaseMetaDataTransfer.Table) {
+                    DatabaseConnection dbConn = ((DatabaseMetaDataTransfer.Table)o).getDatabaseConnection();
+                    conn = ((DatabaseMetaDataTransfer.Table)o).getDatabaseConnection().getJDBCConnection();
+                    String tableName = ((DatabaseMetaDataTransfer.Table)o).getTableName();
+                    String schema = ((DatabaseMetaDataTransfer.Table)o).getDatabaseConnection().getSchema();
+                    String url = ((DatabaseMetaDataTransfer.Table)o).getDatabaseConnection().getDatabaseURL();
+                    String catalog = null;
+                    try {
+                        catalog = conn.getCatalog();
+                    } catch (Exception ex) {
+                        //ignore
+                    }
+                    String dlgTitle = null;
+                    try {
+                        dlgTitle = NbBundle.getMessage(BasicSQLGraphController.class, "TITLE_dlg_table_type");
+                    } catch (MissingResourceException mre) {
+                        dlgTitle = "Add a table";
+                    }
+                    
+                    CollabSQLUIModel sqlModel = ((CollabSQLUIModel) collabModel);
+                    TypeSelectorPanel selectorPnl = new TypeSelectorPanel(tableTypeSelected);
+                    DialogDescriptor dlgDesc = null;
+                    DBMetaData dbMeta = new DBMetaData();
+                    dlgDesc = new DialogDescriptor(selectorPnl, dlgTitle, true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION,
+                            DialogDescriptor.DEFAULT_ALIGN, null, null);
+                    
+                    Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
+                    dlg.setVisible(true);
+                    SQLDBTable sTable = null;
+                    if (NotifyDescriptor.OK_OPTION == dlgDesc.getValue()) {
+                        e.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
+                        tableTypeSelected = selectorPnl.getSelectedType();
+                        boolean isSource = false;
+                        if (SQLConstants.SOURCE_TABLE == tableTypeSelected) {
+                            isSource = true;
+                        }
+                        String[][] tableList = null;
+                        try {
+                            dbMeta.connectDB(conn);
+                            schema = (schema == null)? "" : schema;
+                            catalog = (catalog == null)? "" : catalog;
+                            tableList = dbMeta.getTablesOnly(catalog, schema, "", false);
+                        } catch (Exception ex) {
+                            //ignore
+                        }
+                        Object dbTable = createTable(tableList, tableName, isSource);
+                        List tbls = null;
+                        if(isSource) {
+                            tbls = sqlModel.getSQLDefinition().getSourceTables();
+                        } else {
+                            tbls = sqlModel.getSQLDefinition().getTargetTables();
+                        }
+                        
+                        ((SQLDBTable)dbTable).setAliasUsed(true);
+                        ((SQLDBTable)dbTable).setAliasName(generateTableAliasName(isSource, tbls));
+                        DBConnectionDefinition def = null;
+                        try {
+                            def = SQLModelObjectFactory.getInstance().createDBConnectionDefinition(dbConn.getDisplayName(),
+                                    dbMeta.getDBType(), dbConn.getDriverClass(), dbConn.getDatabaseURL(), dbConn.getUser(),
+                                    dbConn.getPassword(), "Descriptive info here");
+                        } catch (Exception ex) {
+                            //ignore
+                        }
+                        SQLDBModel model = null;
+                        if(isSource) {
+                            model = SQLModelObjectFactory.getInstance()
+                            .createDBModel(SQLConstants.SOURCE_DBMODEL);
+                        } else {
+                            model = SQLModelObjectFactory.getInstance()
+                            .createDBModel(SQLConstants.TARGET_DBMODEL);
+                        }
+                        model.setModelName(dbConn.getDisplayName());
+                        model.setConnectionDefinition(def);
+                        dbTable = addTableColumns(dbMeta, dbTable, isSource);
+                        ((SQLDBTable)dbTable).setEditable(true);
+                        ((SQLDBTable)dbTable).setSelected(true);
+                        model.addTable((SQLDBTable)dbTable);
+                        if(isSource) {
+                            sTable = (SQLDBTable) collabModel.addSourceTable((SQLDBTable)dbTable, loc);
+                        } else {
+                            sTable = (SQLDBTable) collabModel.addTargetTable((SQLDBTable)dbTable, loc);
+                            RuntimeDatabaseModel rtModel = sqlModel.getSQLDefinition().getRuntimeDbModel();
+                            if(rtModel == null) {
+                                rtModel = new RuntimeDatabaseModelImpl();
+                            }
+                            RuntimeOutput rtOut = rtModel.getRuntimeOutput();
+                            SQLDBColumn column = null;
+                            if(rtOut == null) {
+                                rtOut = new RuntimeOutputImpl();
+                                // add STATUS
+                                column = SQLModelObjectFactory.getInstance().createTargetColumn("STATUS", Types.VARCHAR, 0, 0, true);
+                                column.setEditable(false);
+                                rtOut.addColumn(column);
+                                
+                                // add STARTTIME
+                                column = SQLModelObjectFactory.getInstance().createTargetColumn("STARTTIME", Types.TIMESTAMP, 0, 0, true);
+                                column.setEditable(false);
+                                rtOut.addColumn(column);
+                                
+                                // add ENDTIME
+                                column = SQLModelObjectFactory.getInstance().createTargetColumn("ENDTIME", Types.TIMESTAMP, 0, 0, true);
+                                column.setEditable(false);
+                                rtOut.addColumn(column);
+                            }
+                            String argName = SQLObjectUtil.getTargetTableCountRuntimeOutput(
+                                    (TargetTable) sTable);
+                            column = SQLModelObjectFactory.getInstance().createTargetColumn(
+                                    argName, Types.INTEGER, 0, 0, true);
+                            column.setEditable(false);
+                            rtOut.addColumn(column);
+                            rtModel.addTable(rtOut);
+                            sqlModel.getSQLDefinition().addObject(rtModel);
+                        }
+                        
+                        SourceColumn runtimeArg = SQLObjectUtil.createRuntimeInput
+                                (sTable, sqlModel.getSQLDefinition());
+                        
+                        if (runtimeArg != null && (RuntimeInput) runtimeArg.getParent() != null) {
+                            RuntimeInput runtimeInput = (RuntimeInput) runtimeArg.getParent();
+                            // if runtime input is not in SQL definition then add it
+                            if ((sqlModel.getSQLDefinition().isTableExists(runtimeInput)) == null) {
+                                sqlModel.getSQLDefinition().addObject((SQLObject)runtimeInput);
+                                collabModel.addObject(runtimeInput);
+                                SQLDataEvent evt = new SQLDataEvent(collabModel, runtimeInput , runtimeArg);
+                                collabModel.fireChildObjectCreatedEvent(evt);
+                            }
+                        }
+                        if(sqlModel.getSQLDefinition().getSourceTables().size() > 1) {
+                            if(dbTable instanceof SourceTableImpl) {
+                                NotifyDescriptor d = new NotifyDescriptor.Confirmation("Do you want to create a join?",
+                                        "Confirm join creation", NotifyDescriptor.YES_NO_OPTION);
+                                if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION) {
+                                    JoinMainDialog.showJoinDialog(sqlModel.getSQLDefinition().getJoinSources(), null,
+                                            this.viewC, true);
+                                    if (JoinMainDialog.getClosingButtonState() == JoinMainDialog.OK_BUTTON) {
+                                        SQLJoinView joinView = JoinMainDialog.getSQLJoinView();
+                                        try {
+                                            if (joinView != null) {
+                                                JoinUtility.handleNewJoinCreation(joinView, JoinMainDialog.getTableColumnNodes(), this.viewC);
+                                            }
+                                        } catch (BaseException ex) {
+                                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Error adding join view.", NotifyDescriptor.INFORMATION_MESSAGE));
+                                            
+                                            Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "JoinAction.actionPerformed", "error adding join view", ex);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        collabModel.setDirty(true);
+                        updateActions(collabModel);
+                        dropStatus = true;
+                    }
+                } else {
+                    e.rejectDrop();
+                }
+            } catch (IOException ex) {
+                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught IOException while handling DnD.", ex);
+                e.rejectDrop();
+            } catch (UnsupportedFlavorException ex) {
+                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught UnsupportedFlavorException while handling DnD.", ex);
+                e.rejectDrop();
+            } catch (BaseException ex) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE));
+                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught BaseException while handling DnD.", ex);
+                e.rejectDrop();
+            } catch(Exception ex) {
+                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught Exception while handling DnD.", ex);
+                e.rejectDrop();
+            } finally {
+                e.dropComplete(dropStatus);
+                try {
+                    if(conn != null) {
+                        conn.close();
+                    }
+                } catch (SQLException ex) {
+                    conn = null;
+                }
+            }
+        } else {
+            e.rejectDrop();
+        }
     }
     
     /**
