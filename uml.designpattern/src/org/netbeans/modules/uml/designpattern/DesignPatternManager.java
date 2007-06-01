@@ -607,7 +607,7 @@ public class DesignPatternManager implements IDesignPatternManager {
                 if( cpQuestionDialog != null ) {
                     int nResult = cpQuestionDialog.displayFromStrings("Default",
                             "DesignCenter|DesignPatternCatalog",
-                            "OverwriteParticipants",
+                            "UML_ShowMe_Overwrite_Existing_Participants",
                             "PSK_ALWAYS",
                             "PSK_NEVER",
                             "PSK_ASK",
