@@ -22,9 +22,11 @@ import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
 import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.NamedBeanGroupNode;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
 
@@ -83,6 +85,15 @@ public class DDSectionNodeView extends SectionNodeView {
      *  to ensure child nodes are up to date.
      */
     protected void checkChildren() {
+        // As long as NamedGroups have setExpanded = true, this is required to
+        // ensure initialization of the child nodes in the group.
+        final Children children = getRoot().getChildren();
+        final Node[] nodes = children.getNodes();
+        for(Node node: nodes) {
+            if(node instanceof NamedBeanGroupNode) {
+                ((NamedBeanGroupNode) node).checkChildren(null);
+            }
+        }
     }
     
 }

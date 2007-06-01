@@ -99,7 +99,7 @@ public abstract class NamedBeanNode extends BaseSectionNode {
         
         RemoveBeanAction(String actionText) {
             super(actionText);
-//            char mnem = NbBundle.getMessage(PortInfoGroupNode1.class,"MNE_RemovePortInfo").charAt(0);
+//            char mnem = NbBundle.getMessage(NamedBeanNode.class,"MNE_Remove").charAt(0);
 //            putValue(MNEMONIC_KEY, Integer.valueOf(mnem));
         }
         
@@ -112,7 +112,6 @@ public abstract class NamedBeanNode extends BaseSectionNode {
                     sunDO.modelUpdatedFromUI();
 //                    dataObject.setChangedFromUI(true);
             
-//                    CommonDDBean bean = (CommonDDBean) key;
                     Node parentNode = getParentNode();
                     if(parentNode instanceof NamedBeanGroupNode) {
                         NamedBeanGroupNode groupNode = (NamedBeanGroupNode) parentNode;

@@ -45,30 +45,5 @@ public class EnvironmentView extends DDSectionNodeView {
        
         setChildren(children);
     }
-    
-    protected void checkChildren() {
-//        EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
-//        Servlet [] servlets = sunWebApp.getServlet();
-//        
-//        if (enterpriseBeans != this.enterpriseBeans) {
-//            SectionNode rootNode = getRootNode();
-//            final Children children = rootNode.getChildren();
-//            final Node[] nodes = children.getNodes();
-//            for (int i = 0; i < nodes.length; i++) {
-//                Node node = nodes[i];
-//                if (node instanceof EnterpriseBeansNode) {
-//                    children.remove(new Node[]{node});
-//                }
-//            }
-//            if (enterpriseBeans != null) {
-//                enterpriseBeansNode = new EnterpriseBeansNode(this, enterpriseBeans);
-//                if (rootNode != null) {
-//                    rootNode.addChild(enterpriseBeansNode);
-//                    rootNode.populateBoxPanel();
-//                }
-//            }
-//            this.enterpriseBeans = enterpriseBeans;
-//        }
-    }
-    
+
 }

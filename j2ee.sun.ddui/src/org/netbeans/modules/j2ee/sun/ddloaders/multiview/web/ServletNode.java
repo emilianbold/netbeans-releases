@@ -34,7 +34,7 @@ public class ServletNode extends NamedBeanNode {
         super(sectionNodeView, servlet, Servlet.SERVLET_NAME, ICON_BASE_SERVLET_NODE, version);
         enableRemoveAction();
     }
-
+    
     protected SectionNodeInnerPanel createNodeInnerPanel() {
         return new ServletPanel(getSectionNodeView(), (Servlet) key, version);
     }

@@ -55,7 +55,6 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode {
     
     private volatile boolean doCheck = false;
     private volatile boolean checking = false;
-    private volatile boolean modelInitialized = false;
 
     private static AtomicInteger newBeanId = new AtomicInteger(1);
     
@@ -70,16 +69,6 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode {
         setExpanded(true);
     }
 
-    @Override
-    public void refreshSubtree() {
-        if(!modelInitialized) {
-            checkChildren(null);
-            modelInitialized = true;
-        }
-        
-        super.refreshSubtree();
-    }
-    
     /** Expected to be called from derived class constructor, if needed.
      */
     protected void enableAddAction(String addActionTitle) {
@@ -131,7 +120,7 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode {
         return innerPanel;
     }
     
-    void checkChildren(final CommonDDBean focusBean) {
+    public void checkChildren(final CommonDDBean focusBean) {
         Mutex.EVENT.readAccess(new Runnable() {
             public void run() {
                 doCheck = true;
@@ -164,7 +153,7 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode {
     }
     
     private void check(final CommonDDBean focusBean) {
-        Map nodeMap = new HashMap();
+        Map<Object, Node> nodeMap = new HashMap<Object, Node>();
         Children children = getChildren();
         Node[] nodes = children.getNodes();
         for (int i = 0; i < nodes.length; i++) {
