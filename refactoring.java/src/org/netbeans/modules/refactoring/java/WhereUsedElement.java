@@ -106,6 +106,8 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
             start = (int)sp.getEndPosition(unit, ((MemberSelectTree) t).getExpression());
         }
                 
+        assert start>0:"Cannot find start position in file " + unit.getSourceFile().getName() + "\n tree=" + tree.toString();
+        assert end>0:"Cannot find end position in file " + unit.getSourceFile().getName() + "\n tree=" + tree.toString();
         LineMap lm = tree.getCompilationUnit().getLineMap();
         long line = lm.getLineNumber(start);
         long endLine = lm.getLineNumber(end);
