@@ -98,6 +98,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
     private transient JButton nextMatch = null;
     private WeakReference refCallerTC;
     private boolean inited = false;
+    private Component customComponent;
 
     
     static Image PACKAGE_BADGE = Utilities.loadImage( "org/netbeans/spi/java/project/support/ui/packageBadge.gif" ); // NOI18N
@@ -569,6 +570,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             SwingUtilities.invokeLater(invalidate);
         }
     }
+
     private void refresh(final boolean showParametersPanel) {
         checkEventThread();
         if (!isQuery)
@@ -596,18 +598,18 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         setToolTipText("<html>" + description + "</html>"); // NOI18N
         final Collection elements = session.getRefactoringElements();
         setName(ui.getName());
-        Component c=null;
         if (ui instanceof RefactoringCustomUI) {
-            c = ((RefactoringCustomUI) ui).getCustomComponent(elements);
-            this.left.remove(c);
+            if (customComponent==null)
+                customComponent = ((RefactoringCustomUI) ui).getCustomComponent(elements);
+            this.left.remove(customComponent);
         }
         final ProgressHandle progressHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RefactoringPanel.class, isQuery ? "LBL_PreparingUsagesTree":"LBL_PreparingRefactoringTree"));
         if (currentView == GRAPHICAL) {
             assert ui instanceof RefactoringCustomUI;
-            assert c != null;
+            assert customComponent != null;
             RefactoringCustomUI cui = (RefactoringCustomUI) ui;
             this.left.remove(scrollPane);
-            this.left.add(c, BorderLayout.CENTER);
+            this.left.add(customComponent, BorderLayout.CENTER);
             UI.setComponentForRefactoringPreview(null);
             this.splitPane.validate();
             tree=null;
