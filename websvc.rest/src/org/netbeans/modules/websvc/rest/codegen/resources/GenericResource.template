@@ -15,22 +15,20 @@ import com.sun.ws.rest.api.HttpMethod;
 import com.sun.ws.rest.api.ProduceMime;
 import com.sun.ws.rest.api.ConsumeMime;
 import com.sun.ws.rest.api.core.HttpContext;
-import java.net.URI;
+import com.sun.ws.rest.api.representation.StringRepresentation;
 import javax.annotation.Resource;
 
 /**
- * Converter class for GoogleMap
+ * REST Web Service
  *
  * @author __USER__
  */
 
-public class Class {
+public class __NAME__ {
     @Resource
     private HttpContext context;
 
     /** Creates a new instance of __NAME__ */
-    public Class() {
+    public __NAME__() {
     }
-
-    
 }

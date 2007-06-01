@@ -465,7 +465,7 @@ public class JavaSourceHelper {
             for (int i = 0; i < parameters.length; i++) {
                 ModifiersTree paramModTree = maker.Modifiers(Collections.<Modifier>emptySet());
                 
-                if (paramAnnotations != null) {
+                if (paramAnnotations != null && i < paramAnnotations.length) {
                     String annotation = paramAnnotations[i];
                     Object annotationAttr = paramAnnotationAttrs[i];
                     

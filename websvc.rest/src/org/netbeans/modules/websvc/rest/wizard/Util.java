@@ -301,11 +301,4 @@ public class Util {
         setSteps(panels, steps, steps, 0);
     }
     
-
-    
-    public static String simpleClassName(String fqn) {
-        int lastDot = fqn.lastIndexOf('.');
-        return lastDot > 0 ? fqn.substring(lastDot + 1) : fqn;
-    }
-    
 }

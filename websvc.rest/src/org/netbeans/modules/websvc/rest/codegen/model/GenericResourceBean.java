@@ -34,14 +34,22 @@ import org.netbeans.modules.websvc.rest.codegen.model.GenericResourceBean.HttpMe
  */
 public class GenericResourceBean {
     public static enum HttpMethodType { GET, PUT, POST, DELETE }
-    public static String MIME_TYPE_TEXT = "text/plain";
-    public static String MIME_TYPE_TEXT_HTML = "text/html";
-    public static String MIME_TYPE_XML = "application/xml";
-    public static String MIME_TYPE_JASON = "application/json";
-    public static String[] supportedMimeTypes = new String[] { 
+    public static final String MIME_TYPE_TEXT = "text/plain";
+    public static final String MIME_TYPE_TEXT_HTML = "text/html";
+    public static final String MIME_TYPE_XML = "application/xml";
+    public static final String MIME_TYPE_JASON = "application/json";
+    public static final String[] supportedMimeTypes = new String[] { 
         MIME_TYPE_TEXT, 
-        MIME_TYPE_TEXT_HTML,
+        //MIME_TYPE_TEXT_HTML,
         //MIME_TYPE_XML
+    };
+    
+    public static final HttpMethodType[] CONTAINER_METHODS = new HttpMethodType[] {
+         HttpMethodType.GET, HttpMethodType.POST, HttpMethodType.DELETE 
+    };
+    
+    public static final HttpMethodType[] ITEM_METHODS = new HttpMethodType[] {
+         HttpMethodType.GET, HttpMethodType.PUT, HttpMethodType.DELETE 
     };
     
     private String name;
@@ -55,7 +63,7 @@ public class GenericResourceBean {
          this(name, packageName, uriTemplate, supportedMimeTypes, HttpMethodType.values());
      }
     
-    private GenericResourceBean(String name, String packageName, String uriTemplate, 
+    public GenericResourceBean(String name, String packageName, String uriTemplate, 
             String[] mediaTypes, 
             HttpMethodType[] methodTypes) {
         this.name = name;
@@ -97,8 +105,8 @@ public class GenericResourceBean {
         return methodTypes;
     }
 
-    public void addMethodType(HttpMethodType type) {
-        methodTypes.add(type);
+    public void setMethodTypes(HttpMethodType[] types) {
+        methodTypes = new HashSet(Arrays.asList(types));
     }
 
     private String[] uriParams = null;

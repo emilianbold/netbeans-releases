@@ -26,4 +26,9 @@ public class WizardProperties {
     public static final String ENTITY_CLASSES = "EntityClasses"; //NOI18N
     public static final String REST_CLASSES_PACKAGE = "RESTBean"; //NOI18N
     public static final String PERSISTENCE_UNIT_NAME = "PersistenceUnitName";       //NOI18N
+    public static final String RESOURCE_NAME = "ResourceName"; //NOI18N
+    public static final String RESOURCE_URI = "ResourceURI"; //NOI18N
+    public static final String CONTAINER_RESOURCE_NAME = "ContainerResourceName"; //NOI18N
+    public static final String CONTAINER_RESOURCE_URI = "ContainerResourceURI"; //NOI18N
+    public static final String GENERATE_CONTAINER = "GenerateContainer"; //NOI18N
 }
