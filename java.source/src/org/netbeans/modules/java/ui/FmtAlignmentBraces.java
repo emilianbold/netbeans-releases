@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.java.ui;
 
+import javax.swing.UIManager;
 import org.netbeans.api.java.source.CodeStyle.WrapStyle;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
 import static org.netbeans.modules.java.ui.FmtOptions.CategorySupport.OPTION_ID;
@@ -35,7 +36,12 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
     /** Creates new form FmtAlignmentBraces */
     public FmtAlignmentBraces() {
         initComponents();
-        
+        if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) {//NOI18N
+            newLinesPanel.setOpaque(false);
+            bracesGenerationPanel.setOpaque(false);
+            bracesPlacementPanel.setOpaque(false);
+            multilineAlignmentPanel.setOpaque(false);
+        }
         classDeclCombo.putClientProperty(OPTION_ID, classDeclBracePlacement);
         methodDeclCombo.putClientProperty(OPTION_ID, methodDeclBracePlacement);
         otherCombo.putClientProperty(OPTION_ID, otherBracePlacement);
@@ -138,7 +144,6 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
         setLayout(new java.awt.BorderLayout());
 
         bracesPlacementPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        bracesPlacementPanel.setOpaque(false);
         bracesPlacementPanel.setLayout(new java.awt.GridBagLayout());
 
         classDeclLabel.setLabelFor(classDeclCombo);
@@ -202,7 +207,6 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_ab_placementBorder"), bracesPlacementPanel); // NOI18N
 
         multilineAlignmentPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        multilineAlignmentPanel.setOpaque(false);
         multilineAlignmentPanel.setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(amMethodParamsCheckBox, org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_am_MethodParams")); // NOI18N
@@ -306,7 +310,6 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_ab_multilineAlignmentBodrer"), multilineAlignmentPanel); // NOI18N
 
         bracesGenerationPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        bracesGenerationPanel.setOpaque(false);
         bracesGenerationPanel.setLayout(new java.awt.GridBagLayout());
 
         ifBracesLabel.setLabelFor(ifBracesCombo);
@@ -388,7 +391,6 @@ public class FmtAlignmentBraces extends javax.swing.JPanel {
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_ab_generationBorder"), bracesGenerationPanel); // NOI18N
 
         newLinesPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        newLinesPanel.setOpaque(false);
         newLinesPanel.setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(nlElseCheckBox, org.openide.util.NbBundle.getMessage(FmtAlignmentBraces.class, "LBL_nl_Else")); // NOI18N
