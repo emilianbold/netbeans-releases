@@ -245,6 +245,7 @@ public final class LayerNode extends FilterNode {
                 return new SystemAction[] {
                     SystemAction.get(PickNameAction.class),
                     SystemAction.get(PickIconAction.class),
+                    SystemAction.get(OpenLayerFilesAction.class),
                 };
             }
         }
