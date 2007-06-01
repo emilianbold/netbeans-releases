@@ -54,7 +54,6 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.FindAction;
-import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -97,7 +96,9 @@ public final class Actions implements ActionProvider {
         "javadoc", // NOI18N
         // XXX WebProjectConstants.COMMAND_REDEPLOY
         // XXX should this really be here? perhaps not, once web part of #46886 is implemented...
-        "redeploy")); // NOI18N
+        "redeploy",
+        // XXX deploy action of EJB freeform project
+        "deploy")); // NOI18N
     
     private final FreeformProject project;
     
@@ -472,8 +473,6 @@ public final class Actions implements ActionProvider {
         // honor #57874 contract, see #58624:
         actions.add(ProjectNodeWrapper.GENERIC_PROJECTS_ACTIONS_MARKER);
         
-        actions.add(null);
-        actions.add(SystemAction.get(ToolsAction.class));
         actions.add(null);
         actions.add(CommonProjectActions.customizeProjectAction());
         return actions.toArray(new Action[actions.size()]);

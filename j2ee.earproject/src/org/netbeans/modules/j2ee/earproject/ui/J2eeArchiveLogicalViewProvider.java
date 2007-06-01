@@ -69,7 +69,6 @@ import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.ErrorManager;
 import org.openide.actions.FindAction;
-import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileStatusEvent;
@@ -502,7 +501,6 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
                 CommonProjectActions.deleteProjectAction(),
                 null,
                 SystemAction.get( FindAction.class ),
-                null,
             }));
             
            try {
@@ -515,9 +513,6 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
                     Lookup.Template query = new Lookup.Template(Object.class);
                     Lookup lookup = actionRegistry.getLookup();
                     Iterator it = lookup.lookup(query).allInstances().iterator();
-                    if (it.hasNext()) {
-                        actions.add(null);
-                    }
                     while (it.hasNext()) {
                         Object next = it.next();
                         if (next instanceof Action) {
@@ -532,8 +527,6 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
                 ErrorManager.getDefault().notify(ex);
             }
             
-            actions.add(null);
-            actions.add(SystemAction.get(ToolsAction.class));
             actions.add(null);
             
             if (broken) {

@@ -42,7 +42,6 @@ import javax.swing.JSeparator;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.ErrorManager;
-import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileStateInvalidException;
@@ -518,8 +517,6 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
                 }
             }
             
-            actions.add(null);
-            actions.add(SystemAction.get(ToolsAction.class));
             actions.add(null);
             
             if (brokenLinksAction != null && brokenLinksAction.isEnabled()) {

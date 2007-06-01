@@ -110,9 +110,6 @@ public final class ProjectNodeWrapper extends FilterNode implements Runnable, Fi
                         FolderLookup actionRegistry = new FolderLookup((DataFolder)dobj);
                         Lookup lookup = actionRegistry.getLookup();
                         Iterator<? extends Object> it = lookup.lookupAll(Object.class).iterator();
-                        if (it.hasNext()) {
-                            result.add(null);
-                        }
                         while (it.hasNext()) {
                             Object next = it.next();
                             if (next instanceof Action) {

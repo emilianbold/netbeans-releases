@@ -45,7 +45,6 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.SourceRoots;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.LogicalViewChildren;
-import org.openide.actions.ToolsAction;
 
 import org.openide.nodes.*;
 import org.openide.util.*;
@@ -500,9 +499,6 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
                     Lookup.Template query = new Lookup.Template(Object.class);
                     Lookup lookup = actionRegistry.getLookup();
                     Iterator it = lookup.lookup(query).allInstances().iterator();
-                    if (it.hasNext()) {
-                        actions.add(null);
-                    }
                     while (it.hasNext()) {
                         Object next = it.next();
                         if (next instanceof Action) {
@@ -517,8 +513,6 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
                 ErrorManager.getDefault().notify(ex);
             }
             
-            actions.add(null);
-            actions.add(SystemAction.get(ToolsAction.class));
             actions.add(null);
             
             if (brokenLinksAction != null && brokenLinksAction.isEnabled()) {

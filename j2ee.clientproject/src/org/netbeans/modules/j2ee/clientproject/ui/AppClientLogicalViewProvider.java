@@ -88,7 +88,6 @@ import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.ErrorManager;
 import org.openide.actions.FindAction;
-import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
@@ -542,9 +541,6 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                     Lookup.Template query = new Lookup.Template(Object.class);
                     Lookup lookup = actionRegistry.getLookup();
                     Iterator it = lookup.lookup(query).allInstances().iterator();
-                    if (it.hasNext()) {
-                        actions.add(null);
-                    }
                     while (it.hasNext()) {
                         Object next = it.next();
                         if (next instanceof Action) {
@@ -558,9 +554,6 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                 // data folder for existing fileobject expected
                 ErrorManager.getDefault().notify(ex);
             }
-            
-            actions.add(null);
-            actions.add(SystemAction.get(ToolsAction.class));
             
             actions.add(null);
             if (brokenLinksAction != null && brokenLinksAction.isEnabled()) {

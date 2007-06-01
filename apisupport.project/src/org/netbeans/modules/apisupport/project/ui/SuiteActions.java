@@ -40,7 +40,6 @@ import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.FindAction;
-import org.openide.actions.ToolsAction;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
@@ -86,14 +85,14 @@ public final class SuiteActions implements ActionProvider {
         actions.add(CommonProjectActions.openSubprojectsAction());
         actions.add(CommonProjectActions.closeProjectAction());
         actions.add(null);
-        actions.add(SystemAction.get(FindAction.class));
-        actions.add(null);
         actions.add(CommonProjectActions.renameProjectAction());
         actions.add(CommonProjectActions.moveProjectAction());
         actions.add(CommonProjectActions.deleteProjectAction());
+        
+        actions.add(null);
+        actions.add(SystemAction.get(FindAction.class));
         FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Projects/Actions"); // NOI18N
         if (fo != null && fo.isFolder()) {
-            actions.add(null);
             for (Object next : new FolderLookup(DataFolder.findFolder(fo)).getLookup().lookupAll(Object.class)) {
                 if (next instanceof Action) {
                     actions.add((Action) next);
@@ -102,8 +101,6 @@ public final class SuiteActions implements ActionProvider {
                 }
             }
         }
-        actions.add(null);
-        actions.add(SystemAction.get(ToolsAction.class));
         actions.add(null);
         actions.add(CommonProjectActions.customizeProjectAction());
         return actions.toArray(new Action[actions.size()]);

@@ -123,9 +123,6 @@ public class RootNode extends org.openide.nodes.AbstractNode {
                 Lookup.Template query = new Lookup.Template(Object.class);
                 Lookup lookup = actionRegistry.getLookup();
                 Iterator it = lookup.lookup(query).allInstances().iterator();
-                if (it.hasNext()) {
-                    actions.add(null);
-                }
                 while (it.hasNext()) {
                     Object next = it.next();
                     if (next instanceof Action) {
@@ -147,6 +144,7 @@ public class RootNode extends org.openide.nodes.AbstractNode {
 //        if (brokenServerAction.isEnabled()) {
 //            actions.add(brokenServerAction);
 //        }
+        actions.add(null);
         actions.add(CommonProjectActions.customizeProjectAction());
         
         return (Action[])actions.toArray(new Action[actions.size()]);
