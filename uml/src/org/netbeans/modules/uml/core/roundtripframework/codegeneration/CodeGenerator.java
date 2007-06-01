@@ -50,6 +50,7 @@ import org.netbeans.modules.uml.ui.support.ProgressDialogMessageKind;
 import org.netbeans.modules.uml.ui.support.messaging.IModalModeKind;
 import org.netbeans.modules.uml.ui.support.messaging.IProgressController;
 import org.netbeans.modules.uml.ui.support.messaging.IProgressDialog;
+import org.openide.util.NbPreferences;
 
 public class CodeGenerator implements ICodeGenerator, IProgressController
 {
@@ -670,20 +671,7 @@ public class CodeGenerator implements ICodeGenerator, IProgressController
 	 */
 	private String getAttrPrefixFromPreferences()
 	{
-	   String prefix = "";
-	   String prefName = "ATTRIBUTE_PREFIX";
-	   ICoreProduct pProduct = ProductHelper.getCoreProduct();
-	   if(pProduct != null)
-	   {
-		   IPreferenceManager2 pMan = pProduct.getPreferenceManager();
-		   if ( pMan != null )
-		   {
-		      String path = "RoundTrip|";
-		      path += getLanguageName();
-		      prefix = pMan.getPreferenceValue("Default", path, prefName);
-		   }
-	   }
-	   return prefix;
+	   return NbPreferences.forModule (CodeGenerator.class).get ("UML_ATTRIBUTE_PREFIX", "m"); // NOI18N
 	}
 	
 	private String getLanguageName()

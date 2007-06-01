@@ -70,9 +70,9 @@ public class Preferences {
     public static final String PSK_ALWAYS  = "PSK_ALWAYS";
 
     public static final String COLLECTION_OVERRIDE =
-                                "RoundTrip|Java|COLLECTION_OVERRIDE_DEFAULT";
+                                "UML_COLLECTION_OVERRIDE_DEFAULT";
     public static final String USE_GENERICS_DEFAULT =
-                                "RoundTrip|Java|USE_GENERICS_DEFAULT";
+                                "UML_USE_GENERICS_DEFAULT";
     public static final String RECONNECT_LINKS = "UML_Reconnect to Presentation Boundary" ;
 
     public static final String CONFIRM_SOURCE_DELETE =
@@ -218,9 +218,9 @@ public class Preferences {
             reconnectLinks = prefs.getBoolean(RECONNECT_LINKS, true);
             promptSaveWorkspace = true;
 
-            defaultElementName = NbBundle.getMessage (Preferences.class, "UNNAMED");
+            defaultElementName = NbBundle.getMessage (Preferences.class, "UNNAMED"); // NOI18N
             
-            collectionOverride = getPreference(COLLECTION_OVERRIDE);
+            collectionOverride = prefs.get(COLLECTION_OVERRIDE,"java.util.ArrayList"); // NOI18N
             confirmSourceDelete = getPreference(CONFIRM_SOURCE_DELETE);
 
             readWatchedPreferences();
@@ -375,8 +375,9 @@ public class Preferences {
     
     public static boolean getUseGenericsDefault()
     {
-        preferenceCache.remove(USE_GENERICS_DEFAULT);
-	return getBooleanPreference(USE_GENERICS_DEFAULT);
+        //kris richards - changing to use NbPreferences
+        //preferenceCache.remove(USE_GENERICS_DEFAULT);
+	return NbPreferences.forModule(Preferences.class).getBoolean("UML_USE_GENERICS_DEFAULT",true);
     }
 
 

@@ -165,14 +165,7 @@ public class RequestProcessorUtilities implements IRequestProcessorUtilities
      */
     public String getPreferenceValue(String prefName)
     {
-        IPreferenceManager2 pMan = getPreferenceManager();
-        if(pMan != null)
-        {
-            return pMan.getPreferenceValue(getPreferenceKey(), 
-                                            getPreferencePath(), 
-                                            prefName);
-        }
-        return null;
+        return NbPreferences.forModule (RequestProcessorUtilities.class).get (prefName, null) ;
     }
 
     /* (non-Javadoc)

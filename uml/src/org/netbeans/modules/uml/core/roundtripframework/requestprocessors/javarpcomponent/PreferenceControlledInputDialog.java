@@ -64,6 +64,7 @@ import org.netbeans.modules.uml.ui.support.applicationmanager.IProduct;
 import org.netbeans.modules.uml.ui.support.commondialogs.MessageDialogKindEnum;
 import org.netbeans.modules.uml.ui.support.commondialogs.MessageIconKindEnum;
 import org.netbeans.modules.uml.ui.swing.commondialogs.JCenterDialog;
+import org.openide.util.NbPreferences;
 
 
 public class PreferenceControlledInputDialog extends JCenterDialog
@@ -397,85 +398,33 @@ public class PreferenceControlledInputDialog extends JCenterDialog
 		this.retVal.dispose();
 	}
 		
-	public void setPreferenceValue( String sVal )
-	{
-		try
-		{
-			boolean autoUpdate =  getAutoUpdatePreference ();
-			if ( autoUpdate )
-		    {
-		    	// Get the preference manager
-		        IProduct  pProduct = ProductHelper.getProduct();
-				if(pProduct != null)
-				{
-		        	IPreferenceManager2 pManager = 
-		        		pProduct.getPreferenceManager();
-		        	
-		            if(pManager != null)
-		            {
-		               	pManager.setPreferenceValue( m_PrefKey, m_PrefPath, 
-		               									m_PrefName, sVal);
-		            }
-				}
-			}
-		}
-		catch( Exception e )
-		{
-			Log.stackTrace(e);
-		}
-	}
-	
-	public String getPreferenceValue()
-	{
-		String prefValue = null;
-		try
-		{
-	      // Get the preference manager
-			IProduct  pProduct = ProductHelper.getProduct();
-			if(pProduct != null)
-			{
-				IPreferenceManager2  pManager = pProduct.getPreferenceManager();
-				if(pManager != null)
-				{
-					try
-					{
-						prefValue = pManager.getPreferenceValue( m_PrefKey, 
-												m_PrefPath, m_PrefName);
-						// We can now overwrite the value passed in, 
-						// thereby overwriting a "default" value.
-						// That is why we have a second try/catch here.
-					}
-					catch( Exception e)
-					{
-						Log.stackTrace(e);
-					}
-				}
-			}
-		}
-		catch( Exception e )
-		{
-			Log.stackTrace(e);
-		}
-		return prefValue;
-	}
+	public void setPreferenceValue( String sVal ) {
+
+            boolean autoUpdate =  getAutoUpdatePreference();
+            if ( autoUpdate ) {
+                
+                NbPreferences.forModule(PreferenceControlledInputDialog.class).put(m_PrefName, sVal) ;
+            }
+
+        }
+
+	public String getPreferenceValue() {
+            return NbPreferences.forModule(PreferenceControlledInputDialog.class).get(m_PrefName, null) ;
+        }
 		
-	public void preferenceInformation ( String sKey, 
-										String sPath,
-										String sName,
-										boolean bAutoUpdatePreference )
-	{
-		try
-		{
-			setPrefKey( sKey);
-			setPrefPath( sPath);
-			setPrefName( sName);
-			setAutoUpdatePreference( bAutoUpdatePreference );
-		}
-		catch( Exception e)
-		{
-			Log.stackTrace(e);
-		}
-	}
+	public void preferenceInformation( String sKey,
+                String sPath,
+                String sName,
+                boolean bAutoUpdatePreference ) {
+            try {
+                setPrefKey( sKey);
+                setPrefPath( sPath);
+                setPrefName( sName);
+                setAutoUpdatePreference( bAutoUpdatePreference );
+            } catch( Exception e) {
+                Log.stackTrace(e);
+            }
+        }
 	
 	public void  setAutoUpdatePreference ( boolean bVal )
 	{

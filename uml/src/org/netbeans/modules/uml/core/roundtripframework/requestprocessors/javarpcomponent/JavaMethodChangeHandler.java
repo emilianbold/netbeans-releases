@@ -641,7 +641,7 @@ public class JavaMethodChangeHandler extends JavaChangeHandler implements IJavaM
 		            		
 							String prefKey = m_Utilities.getPreferenceKey();
 							String prefPath = m_Utilities.getPreferencePath();
-							String prefName = "SHOW_DUPE_OP_DIALOG";
+							String prefName = "UML_SHOW_DUPE_OP_DIALOG";
 		            		
 							pInput.setEditText ( newOpName.toString() );
 						    
@@ -2610,7 +2610,7 @@ public class JavaMethodChangeHandler extends JavaChangeHandler implements IJavaM
         		     	     	pDiag.setText(textID);
                 				String prefKey = m_Utilities.getPreferenceKey();
                 				String prefPath = m_Utilities.getPreferencePath();
-                				String prefName = "MODIFY_REDEFINING_METHOD";
+                				String prefName = "UML_MODIFY_REDEFINING_METHOD";
                 				pDiag.setAutoUpdatePreference(true);
                 				pDiag.display3( true, prefKey, prefPath, prefName,0);
 									boolean diagRetvalue = pDiag.getOptionSelect();

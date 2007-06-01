@@ -1309,13 +1309,9 @@ public class JavaRequestProcessor implements IJavaRequestProcessor
                 
                 else
                 {
-                    ICoreProduct prod = ProductRetriever.retrieveProduct();
-                    IPreferenceManager2 prefManager = prod.getPreferenceManager();
                     
-                    boolean showme = 
-                            NbPreferences.forModule (JavaRequestProcessor.class).getBoolean ("UML_ShowMe_Dont_Show_Filter_Warning_Dialog", true) ;
-                    
-                    String str = prefManager.getPreferenceValue("RoundTrip", "TransformWarning");
+                    String str = 
+                            NbPreferences.forModule (JavaRequestProcessor.class).get ("UML_ShowMe_Dont_Show_Filter_Warning_Dialog", "PSK_ASK") ;
                     
                     if (str != null && str.equals("PSK_NEVER"))
                     {

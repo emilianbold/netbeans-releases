@@ -5,6 +5,7 @@
  */
 package org.netbeans.modules.uml.core.roundtripframework.requestprocessors.javarpcomponent;
 
+import java.util.prefs.Preferences;
 import org.netbeans.modules.uml.core.coreapplication.IPreferenceManager2;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IClass;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumeration;
@@ -20,6 +21,7 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
+import org.openide.util.NbPreferences;
 
 /**
  * @author aztec
@@ -108,16 +110,16 @@ public class JavaClassChangeHandlerTestCase extends AbstractUMLTestCase
     */	
     public void testCreateDestructor()
     {
-        IPreferenceManager2 prefMan = ProductHelper.getPreferenceManager();
-        prefMan.setPreferenceValue("RoundTrip|Java","ADD_DTORS","PSK_YES");
-        String str = prefMan.getPreferenceValue("RoundTrip|Java", "ADD_DTORS");
+        Preferences prefs = NbPreferences.forModule (JavaClassChangeHandlerTestCase.class) ;
+        prefs.put ("UML_ADD_DTORS", "PSK_YES") ;
+        String str = prefs.get ("UML_ADD_DTORS", "PSK_YES") ;
         
         IClass clazz = createClass("AA");
         assertEquals(2, clazz.getOperations().size());
         assertEquals("AA", clazz.getOperations().get(0).getName());
         assertEquals("finalize", clazz.getOperations().get(1).getName());
         assertEquals(IVisibilityKind.VK_PROTECTED, clazz.getOperations().get(1).getVisibility());
-        prefMan.setPreferenceValue("RoundTrip|Java","ADD_DTORS","PSK_NO");
+        prefs.put ("UML_ADD_DTORS", "PSK_NO");
     }
     
     /* 

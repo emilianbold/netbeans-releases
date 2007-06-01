@@ -75,6 +75,7 @@ import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
 import org.netbeans.modules.uml.core.support.umlsupport.Log;
 import java.util.ArrayList;
 import java.util.List;
+import org.openide.util.NbPreferences;
 
 /**
  */
@@ -359,7 +360,7 @@ public class JavaChangeHandlerUtilities
      */
     public String attributePrefix()
     {
-        return getPreferenceValue("ATTRIBUTE_PREFIX");
+        return getPreferenceValue("UML_ATTRIBUTE_PREFIX");
     }
 
     /* (non-Javadoc)
@@ -367,7 +368,7 @@ public class JavaChangeHandlerUtilities
      */
     public boolean autoNameNavigableEndPreference()
     {
-        return getBooleanPreferenceValue("SET_NAVIGABLE_END_ROLE_NAME");
+        return getBooleanPreferenceValue("UML_SET_NAVIGABLE_END_ROLE_NAME");
     }
 
     /* (non-Javadoc)
@@ -1586,7 +1587,7 @@ public class JavaChangeHandlerUtilities
 
     public boolean createConstructorPreference()
     {
-        return getBooleanPreferenceValue("ADD_CTORS");
+        return getBooleanPreferenceValue("UML_ADD_CTORS");
     }
 
     public void createDestructor(IClassifier pClass)
@@ -1647,7 +1648,7 @@ public class JavaChangeHandlerUtilities
     
     public boolean createDestructorPreference ()
     {
-       return getBooleanPreferenceValue ( "ADD_DTORS" );
+       return getBooleanPreferenceValue ( "UML_ADD_DTORS" );
     }
     
     public ETList<IOperation> getDestructors(IClassifier  pClass)
@@ -1805,7 +1806,7 @@ public class JavaChangeHandlerUtilities
 
     public boolean createAccessorPreference()
     {
-        return getBooleanPreferenceValue("ADD_ACCESSORS");
+        return getBooleanPreferenceValue("UML_ADD_ACCESSORS");
     }
 
     public IDependency createRealization(
@@ -3504,7 +3505,8 @@ public class JavaChangeHandlerUtilities
      */
     public String readAccessorPrefix()
     {
-        return getPreferenceValue("READ_ACCESSOR_PREFIX");
+        //kris richards - change to NbPreferences
+        return NbPreferences.forModule(JavaChangeHandlerUtilities.class).get("UML_READ_ACCESSOR_PREFIX", "get");  // NOI18N
     }
 
     /* (non-Javadoc)
@@ -3512,7 +3514,7 @@ public class JavaChangeHandlerUtilities
      */
     public boolean removePrefixFromAccessor()
     {
-        return getBooleanPreferenceValue("NO_PREFIX_ON_ACCESSORS");
+        return true;
     }
 
     public String removePrefixFromAttributeName(String attrName)
@@ -3568,7 +3570,8 @@ public class JavaChangeHandlerUtilities
      */
     public String writeAccessorPrefix()
     {
-        return getPreferenceValue("WRITE_ACCESSOR_PREFIX");
+        //kris richards - change to NbPreferences
+        return NbPreferences.forModule(JavaChangeHandlerUtilities.class).get("UML_WRITE_ACCESSOR_PREFIX", "set");  // NOI18N
     }
 
     public boolean isMember(IOperation pItem, ETList < IOperation > pList)
