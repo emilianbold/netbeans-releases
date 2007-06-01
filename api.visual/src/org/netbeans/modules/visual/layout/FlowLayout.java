@@ -43,6 +43,7 @@ public final class FlowLayout implements Layout {
     public void layout (Widget widget) {
         int max = 0;
         Collection<Widget> children = widget.getChildren ();
+        Insets insets = widget.getBorder ().getInsets ();
         if (verticalOrientation) {
             for (Widget child : children) {
                 if (! child.isVisible ())
@@ -59,8 +60,8 @@ public final class FlowLayout implements Layout {
                 int y = preferredBounds.y;
                 int width = preferredBounds.width;
                 int height = preferredBounds.height;
-                int lx = - x;
-                int ly = pos - y;
+                int lx = - x + insets.left;
+                int ly = pos - y + insets.top;
                 switch (alignment) {
                     case CENTER:
                         lx += (max - width) / 2;
