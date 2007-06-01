@@ -380,18 +380,24 @@ public class CatalogModelImpl implements CatalogModel {
             //this might be a relative file location
             if(sourceFileObject == null)
                 throw new CatalogModelException(locationURI.toString()+" : Entry is relative but base file now known. Pass base file to the factory");
-            URI sourceFileObjectURI =  FileUtil.toFile(sourceFileObject).toURI();
-            URI resultURI = sourceFileObjectURI.resolve(locationURI);
-            try{
-                result = new File(resultURI);
-            } catch(Exception e){
-                throw new CatalogModelException(locationURI.toString()+" : Entry is relative but resolved entry is not absolute");
+            File sourceFile = FileUtil.toFile(sourceFileObject);
+            //IZ 104753
+            //In case of layer.xml defined sourceFileObject, FileUtil.toFile returns null.
+            
+            if (sourceFile != null) {
+            	URI sourceFileObjectURI = sourceFile.toURI();
+            	URI resultURI = sourceFileObjectURI.resolve(locationURI);
+            	try{
+            		result = new File(resultURI);
+            	} catch(Exception e){
+            		throw new CatalogModelException(locationURI.toString()+" : Entry is relative but resolved entry is not absolute");
+            	}
+            	if(result.isFile()){
+            		logger.exiting("CatalogModelImpl", "resolveUsingCatalog",result);
+            		return result;
+            	} else
+            		throw new FileNotFoundException(result.getAbsolutePath()+" Not Found.");
             }
-            if(result.isFile()){
-                logger.exiting("CatalogModelImpl", "resolveUsingCatalog",result);
-                return result;
-            } else
-                throw new FileNotFoundException(result.getAbsolutePath()+" Not Found.");
         }
         return null;
     }
