@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.web.jsf.navigation.graph;
 
+import org.netbeans.modules.web.jsf.navigation.graph.layout.FreePlaceNodesLayouter;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Image;

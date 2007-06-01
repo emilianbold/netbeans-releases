@@ -514,7 +514,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     }
     
     public final static FileObject getWebFolder( FileObject configFile ){
-        WebModule webModule = WebModule.getWebModule(configFile);        
+        WebModule webModule = WebModule.getWebModule(configFile);
         
         if ( webModule == null ) {
             return null;
@@ -548,8 +548,17 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         return PERSISTENCE_NEVER;
     }
     
+    LayoutUtility.LayoutType lastUsedLayout = LayoutUtility.LayoutType.GRID_GRAPH;
     public void layoutNodes() {
-        LayoutUtility.performLayout(scene, LayoutUtility.LayoutType.GRID_GRAPH);
+        LayoutUtility.LayoutType useLayout = null;
+        if( lastUsedLayout.equals(LayoutUtility.LayoutType.GRID_GRAPH )){
+                useLayout = LayoutUtility.LayoutType.FREE_PLACES_NODES;
+        }else {
+            useLayout = LayoutUtility.LayoutType.GRID_GRAPH;
+        }
+        
+        LayoutUtility.performLayout(scene, useLayout);
+        lastUsedLayout = useLayout;
     }
     
     

@@ -19,6 +19,8 @@
 package org.netbeans.modules.web.jsf.navigation.graph.layout;
 
 import org.netbeans.api.visual.graph.GraphPinScene;
+import org.netbeans.modules.web.jsf.navigation.graph.layout.FreePlaceNodesLayouter;
+import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 
 /**
  *
@@ -27,7 +29,7 @@ import org.netbeans.api.visual.graph.GraphPinScene;
 public class LayoutUtility<N, E, P> {
     
     public static enum LayoutType  {
-        GRID_GRAPH,  TREE_GRAPH
+        GRID_GRAPH,  TREE_GRAPH, FREE_PLACES_NODES
     }
     
     public  LayoutUtility() {
@@ -41,6 +43,11 @@ public class LayoutUtility<N, E, P> {
         case TREE_GRAPH:
             /* Tree Graph Layout Utility was taken from Tree Graph Layout as is incomplete.*/
             TreeGraphLayoutUtility.performLayout(graph);
+            break;
+        case FREE_PLACES_NODES:
+            /* Tree Graph Layout Utility was taken from Tree Graph Layout as is incomplete.*/
+            if ( graph instanceof PageFlowScene)
+                FreePlaceNodesLayouter.performLayout((PageFlowScene)graph);
             break;
         }
     }
