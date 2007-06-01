@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.editor.lib2;
 
-import com.sun.org.apache.bcel.internal.generic.LOOKUPSWITCH;
 import java.awt.Insets;
 import java.awt.Dialog;
 import java.awt.event.*;
