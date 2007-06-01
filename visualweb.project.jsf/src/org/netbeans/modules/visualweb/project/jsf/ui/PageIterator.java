@@ -130,9 +130,11 @@ public class PageIterator implements TemplateWizard.Iterator {
             }
 
             // Find a free page name
+            String ext = Templates.getTemplate(wizard).getExt();
+            String prefix = "jsp".equals(ext) ? "Page" : "Fragment"; // NOI18N
             for (int pageIndex = 1;; pageIndex++) {
-                String name = "Page" + pageIndex; // NOI18N
-                if ((jspDir.getFileObject(name + ".jsp") == null) && (jspDir.getFileObject(name + ".jspf") == null) &&
+                String name = prefix + pageIndex;
+                if ((jspDir.getFileObject(name + "." + ext) == null) &&
                     ((javaDir == null) || (javaDir.getFileObject(name + ".java") == null))) { // NOI18N
                     wizard.setTargetName(name);
                     return;
