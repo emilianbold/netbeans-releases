@@ -2777,7 +2777,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 String postfix = SPACE;
                 if (mth != null) {
                     Tree rt = ((MethodTree)mth.getLeaf()).getReturnType();
-                    if (rt.getKind() == Tree.Kind.PRIMITIVE_TYPE && ((PrimitiveTypeTree)rt).getPrimitiveTypeKind() == TypeKind.VOID)
+                    if (rt == null || rt.getKind() == Tree.Kind.PRIMITIVE_TYPE && ((PrimitiveTypeTree)rt).getPrimitiveTypeKind() == TypeKind.VOID)
                         postfix = SEMI;
                 }
                 results.add(JavaCompletionItem.createKeywordItem(RETURN_KEYWORD, postfix, offset, false));
