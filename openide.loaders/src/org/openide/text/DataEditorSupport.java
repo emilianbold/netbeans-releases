@@ -253,7 +253,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
         );
         
         //Report the document into the Timers&Counters window:
-        Logger.getLogger("TIMER").log(Level.FINE, "[M] Document", new Object[] {obj.getPrimaryFile(), doc});
+        Logger.getLogger("TIMER").log(Level.FINE, "Document", new Object[] {obj.getPrimaryFile(), doc});
         
         return doc;
     }
