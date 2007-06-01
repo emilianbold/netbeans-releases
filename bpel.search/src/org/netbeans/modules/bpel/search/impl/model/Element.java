@@ -36,7 +36,7 @@ final class Element extends SearchElement.Adapter {
 
   Element(Component component) {
     super(
-      getText(component),
+      getName(component),
       getToolTip(component),
       getIcon(component),
       getParent(component)); 
@@ -75,12 +75,12 @@ final class Element extends SearchElement.Adapter {
     return myComponent.hashCode();
   }
 
-  private static String getText(Component component) {
+  private static String getName(Component component) {
     return RefactorUtil.getName(component);
   }
 
   private static String getToolTip(Component component) {
-    return getText(component);
+    return getName(component);
   }
 
   private static SearchElement getParent(Component component) {

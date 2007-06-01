@@ -81,7 +81,7 @@ final class Tree extends JTree implements SearchListener {
   public void searchFound(SearchEvent event) {
     SearchElement element = event.getSearchElement();
 //out("Found: " + element);
-//out("       " + element.getText());
+//out("       " + element.getName());
     addElement(myRoot, element, getElements(element));
     myFoundCount++;
   }
@@ -639,7 +639,7 @@ final class Tree extends JTree implements SearchListener {
         tree, value, select, expanded, leaf, row, focus);
       SearchElement element =
         (SearchElement) ((DefaultMutableTreeNode) value).getUserObject();
-      setText(element.getText());
+      setText(element.getName());
       setToolTipText(element.getToolTip());
       setIcon(element.getIcon());
       return this;

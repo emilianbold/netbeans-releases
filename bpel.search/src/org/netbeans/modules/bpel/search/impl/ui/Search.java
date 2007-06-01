@@ -64,7 +64,8 @@ public final class Search extends PrintUI {
   }
 
   @Override
-  protected void updated() {
+  protected void updated()
+  {
     setItems(myTarget, myTargets);
   }
 
