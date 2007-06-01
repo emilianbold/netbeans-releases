@@ -31,12 +31,12 @@ Microsystems, Inc. All Rights Reserved.
   <property name="netbeans.javadoc.dir" location="${netbeans.build.dir}/javadoc"/>
   <property name="moduleCluster.file" location="${netbeans.dest.dir}/moduleCluster.properties"/>
 
-  <property file="${clusters.list.file}"/>
-  <property file="${moduleCluster.file}"/>
-
   <!-- Have to be read here, so that they will affect even module builds (e.g. when setting JDK): -->
   <property file="${nb_all}/nbbuild/user.build.properties"/>
   <property file="${nb_all}/nbbuild/site.build.properties"/>
-   
+  
+  <property file="${clusters.list.file}"/>
+  <property file="${moduleCluster.file}"/>
+
    <property name="test.dist.dir" location="${nb_all}/nbbuild/build/testdist"/>
 </project>
