@@ -870,13 +870,18 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         // listen for when projects close
         OpenProjects.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                Project[] open = OpenProjects.getDefault().getOpenProjects();
-                if(ActionManager.clearClosedProjects(open)) {
-                    reloadProjectsCombo();
-                }
+                checkOpenProjects();
             }
         });
+        checkOpenProjects();
         
+    }
+    
+    private void checkOpenProjects() {
+        Project[] open = OpenProjects.getDefault().getOpenProjects();
+        if(ActionManager.clearClosedProjects(open)) {
+            reloadProjectsCombo();
+        }
     }
     
     private void detachTopComponentsListener() {
