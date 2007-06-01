@@ -17,31 +17,32 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb;
+package org.netbeans.modules.j2ee.sun.ddloaders.multiview.appclient;
 
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
-import org.netbeans.modules.j2ee.sun.dd.api.ejb.SunEjbJar;
+import org.netbeans.modules.j2ee.sun.dd.api.client.SunApplicationClient;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.BaseSectionNode;
+import org.netbeans.modules.j2ee.sun.share.configbean.customizers.other.AppClientJWSPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.openide.util.NbBundle;
 
 /**
- * @author pfiala
  * @author Peter Williams
  */
-public class SunEjbJarDetailsNode extends BaseSectionNode {
+public class SunAppClientJWSNode extends BaseSectionNode {
 
-    SunEjbJarDetailsNode(SectionNodeView sectionNodeView, SunEjbJar sunEjbJar, final ASDDVersion version) {
-        super(sectionNodeView, true, sunEjbJar, version,
-                NbBundle.getMessage(SunEjbJarDetailsNode.class, "LBL_ModuleDetailsHeader"), 
+    SunAppClientJWSNode(SectionNodeView sectionNodeView, SunApplicationClient sunAppClient, final ASDDVersion version) {
+        super(sectionNodeView, true, sunAppClient, version,
+                NbBundle.getMessage(SunAppClientJWSNode.class, "LBL_JWSHeader"), 
                 ICON_BASE_MISC_NODE);
+        setExpanded(true);
         this.helpProvider = true;
     }
 
     @Override
     protected SectionNodeInnerPanel createNodeInnerPanel() {
         SectionNodeView sectionNodeView = getSectionNodeView();
-        return new SunEjbJarDetailsPanel(sectionNodeView, (SunEjbJar) key, version);
+        return new AppClientJWSPanel(sectionNodeView, (SunApplicationClient) key, version);
     }
 }

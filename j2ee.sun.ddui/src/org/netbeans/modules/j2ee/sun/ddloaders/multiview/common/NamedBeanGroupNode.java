@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.j2ee.sun.ddloaders.multiview.common;
 
-import java.awt.Component;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -27,7 +26,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JSeparator;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.common.PortInfo;
@@ -124,29 +122,9 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode {
         if(addBeanAction != null && nodePanel.getHeaderButtons() == null) {
             nodePanel.setHeaderActions(new Action [] { addBeanAction });
         }
-        nodePanel.setBorder(null);
-// What I want to do is this but getHeaderSeparator() is protected and deriving
-// is not possible either.
-//        nodePanel.getHeaderSeparator().setVisible(false);
-        setHeaderSeparatorVisibility(nodePanel, true);
         return nodePanel;
     }
     
-    /** Assumes the header separator is the first JSeparator child component.
-     * (there are three as of this writing.)
-     */ 
-    private void setHeaderSeparatorVisibility(SectionNodePanel panel, boolean visible) {
-        Component [] children = panel.getComponents();
-        if(children != null) {
-            for(int i = 0; i < children.length; i++) {
-                if(children[i] instanceof JSeparator) {
-                    children[i].setVisible(visible);
-                    break;
-                }
-            }
-        }
-    }
-
     @Override
     protected SectionNodeInnerPanel createNodeInnerPanel() {
         SectionNodeInnerPanel innerPanel = super.createNodeInnerPanel();

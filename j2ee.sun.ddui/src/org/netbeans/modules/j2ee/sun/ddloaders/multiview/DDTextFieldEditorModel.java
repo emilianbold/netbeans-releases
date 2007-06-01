@@ -18,6 +18,7 @@ package org.netbeans.modules.j2ee.sun.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
+import org.openide.ErrorManager;
 
 /**
  *
@@ -40,25 +41,48 @@ public abstract class DDTextFieldEditorModel extends TextItemEditorModel {
         this.attrProperty = ap;
     }
 
+    /** Override this to return the parent bean that this object manipulates.
+     */
     protected abstract CommonDDBean getBean();
+    
+    /** Override this if the parent really provides a wrapper for a child bean,
+     *  ala JavaWebStartAccess in SunApplicationClient or EnterpriseBeans in SunEjbJar.
+     * 
+     *  Used by setValue() method to ensure such child beans are created only when
+     *  needed.
+     */
+    protected CommonDDBean getBean(boolean create) {
+        return getBean();
+    }
 
     protected String getValue() {
-        if(attrProperty == null) {
-            return (String) getBean().getValue(nameProperty);
-        } else if(nameProperty == null) {
-            return (String) getBean().getAttributeValue(attrProperty);
-        } else {
-            return (String) getBean().getAttributeValue(nameProperty, attrProperty);
+        String result = null;
+        CommonDDBean bean = getBean();
+        if(bean != null) {
+            if(attrProperty == null) {
+                result = (String) bean.getValue(nameProperty);
+            } else if(nameProperty == null) {
+                result = bean.getAttributeValue(attrProperty);
+            } else {
+                result = bean.getAttributeValue(nameProperty, attrProperty);
+            }
         }
+        return result;
     }
 
     protected void setValue(String value) {
-        if(attrProperty == null) {
-            getBean().setValue(nameProperty, value);
-        } else if(nameProperty == null) {
-            getBean().setAttributeValue(attrProperty, value);
+        CommonDDBean bean = getBean(true);
+        if(bean != null) {
+            if(attrProperty == null) {
+                getBean().setValue(nameProperty, value);
+            } else if(nameProperty == null) {
+                getBean().setAttributeValue(attrProperty, value);
+            } else {
+                getBean().setAttributeValue(nameProperty, attrProperty, value);
+            }
         } else {
-            getBean().setAttributeValue(nameProperty, attrProperty, value);
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Unable to set property ("
+                    + nameProperty + ", " + attrProperty + ") -- bean is null");
         }
     }
 

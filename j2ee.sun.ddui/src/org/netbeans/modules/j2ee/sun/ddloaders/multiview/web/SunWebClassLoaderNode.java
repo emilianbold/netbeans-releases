@@ -39,6 +39,7 @@ public class SunWebClassLoaderNode extends BaseSectionNode {
         this.helpProvider = true;
     }
 
+    @Override
     protected SectionNodeInnerPanel createNodeInnerPanel() {
         SectionNodeView sectionNodeView = getSectionNodeView();
         return new SunWebClassLoaderPanel(sectionNodeView, (SunWebApp) key, version);

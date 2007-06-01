@@ -18,8 +18,11 @@
  */
 package org.netbeans.modules.j2ee.sun.ddloaders.multiview;
 
+import java.awt.Component;
+import javax.swing.JSeparator;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.xml.multiview.SectionNode;
+import org.netbeans.modules.xml.multiview.ui.SectionNodePanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.openide.nodes.Children;
 
@@ -62,4 +65,43 @@ public class BaseSectionNode extends SectionNode {
         this(sectionNodeView, false, key, version, title, iconBase);
     }
     
+    @Override
+    public SectionNodePanel getSectionNodePanel() {
+        SectionNodePanel nodePanel = super.getSectionNodePanel();
+        
+        /** Remove border and put back visible underbar under header when panel
+         *  is expanded.
+         */
+        if(isExpanded()) {
+            nodePanel.setBorder(null);
+            setHeaderSeparatorVisibility(nodePanel, true);
+        }
+        
+        return nodePanel;
+    }
+    
+    /**
+     * Hack: I wanted to reenable the visible separator bar underneath certain headers,
+     * which should be as simple as:
+     * 
+     *        nodePanel.getHeaderSeparator().setVisible(false);
+     * 
+     * but getHeaderSeparator() is protected and accessing via derivation is not
+     * possible either, so...
+     * 
+     * This code assumes the header separator is the first JSeparator child component.
+     * (there are three as of this writing) in the components that make up the header.
+     */ 
+    protected void setHeaderSeparatorVisibility(SectionNodePanel nodePanel, boolean visible) {
+        Component [] children = nodePanel.getComponents();
+        if(children != null) {
+            for(int i = 0; i < children.length; i++) {
+                if(children[i] instanceof JSeparator) {
+                    children[i].setVisible(visible);
+                    break;
+                }
+            }
+        }
+    }
+
 }
