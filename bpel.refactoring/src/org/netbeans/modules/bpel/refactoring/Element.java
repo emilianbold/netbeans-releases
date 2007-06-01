@@ -18,6 +18,9 @@
  */
 package org.netbeans.modules.bpel.refactoring;
 
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import javax.swing.Icon;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.openide.filesystems.FileObject;
@@ -32,6 +35,10 @@ import org.netbeans.modules.xml.xam.Component;
 
 import org.netbeans.modules.bpel.editors.api.utils.RefactorUtil;
 import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
+import org.openide.util.Exceptions;
+
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -87,11 +94,27 @@ final class Element
   public Object getUserObject() {
     return myComponent;
   }
+  
+  void setTransactionObject(XMLRefactoringTransaction transaction) {
+        this.myTransaction = transaction;
+    }
+  protected String getNewFileContent() {
+         if(myComponent.getModel() instanceof AbstractDocumentModel && myTransaction != null) {
+             try {
+                 
+                String refactoredString = myTransaction.refactorForPreview(myComponent.getModel());
+                return refactoredString;
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+               return null;
+           }
+         }
+         return null;
+    }
 
-  public void showPreview() {
-     UI.setComponentForRefactoringPreview(null);
-  }
+ 
   public void performChange() {}
 
   private Component myComponent;
-}
+  XMLRefactoringTransaction myTransaction;
+  }

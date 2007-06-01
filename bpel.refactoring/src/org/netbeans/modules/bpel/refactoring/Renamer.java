@@ -172,7 +172,8 @@ final class Renamer extends Plugin implements XMLRefactoringPlugin {
     transaction.register(this, elements);
     refactoringElements.registerTransaction(transaction);
 
-    for (RefactoringElementImplementation element : elements) {
+    for (Element element : elements) {
+      element.setTransactionObject(transaction);
       refactoringElements.add(myRequest, element);
     }      
     return null;
