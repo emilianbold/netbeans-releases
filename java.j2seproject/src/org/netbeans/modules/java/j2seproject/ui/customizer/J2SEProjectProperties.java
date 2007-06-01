@@ -706,7 +706,10 @@ public class J2SEProjectProperties {
         Set<File> roots = new HashSet<File>();
         for (DefaultTableModel model : new DefaultTableModel[] {SOURCE_ROOTS_MODEL, TEST_ROOTS_MODEL}) {
             for (Object row : model.getDataVector()) {
-                roots.add((File) ((Vector) row).elementAt(0));
+                File d = (File) ((Vector) row).elementAt(0);
+                if (/* #104996 */d.isDirectory()) {
+                    roots.add(d);
+                }
             }
         }
         v.setRoots(roots.toArray(new File[roots.size()]));
