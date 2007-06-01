@@ -57,8 +57,42 @@ public class TokenSequenceListTest extends NbTestCase {
         testHierarchy(TokenHierarchy.get(doc));
     }
     
+    public void testBoundaries() throws Exception {
+        ModificationTextDocument doc = new ModificationTextDocument();
+        doc.insertString(0, getText1(), null);
+        doc.putProperty(Language.class,TestTokenId.language());
+        
+        LanguagePath lp = LanguagePath.get(TestTokenId.language()).
+            embedded(TestJavadocTokenId.language()).
+            embedded(TestHTMLTagTokenId.language());
+        
+        TokenHierarchy<?> tokenHierarchy = TokenHierarchy.get(doc);
+        List<TokenSequence<? extends TokenId>> tsList = tokenHierarchy.tokenSequenceList(lp, 35, 48);
+
+        assertEquals(3, tsList.size());
+        TokenSequence<?> ts = tsList.get(0);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.TEXT, "tq", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.GT, ">", -1);
+
+        ts = tsList.get(1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.LT, "<", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.TEXT, "/tq", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.GT, ">", -1);
+
+        ts = tsList.get(2);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.LT, "<", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.TEXT, "code", -1);
+    }
+    
     private String getText1() {
-        return "ab/**<t> x*/c/**u<t2>v*/";
+        return "ab/**<t> x*/c/**u<t2>v*/jkl/**hey<tq>aaa</tq><code>sample</code>*/";
     }
 
     private void testHierarchy(TokenHierarchy<?> tokenHierarchy) throws Exception {
@@ -72,11 +106,17 @@ public class TokenSequenceListTest extends NbTestCase {
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.JAVADOC_COMMENT, "/**<t> x*/", 2);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "c", 12);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.JAVADOC_COMMENT, "/**u<t2>v*/", 13);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "jkl", 24);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.JAVADOC_COMMENT, "/**hey<tq>aaa</tq><code>sample</code>*/", 27);
 
-        // Collect both javadocs
+        // Collect all javadocs
         lp = lp.embedded(TestJavadocTokenId.language());
         tsList = tokenHierarchy.tokenSequenceList(lp, 0, Integer.MAX_VALUE);
-        assertEquals(2, tsList.size());
+        assertEquals(3, tsList.size());
         ts = tsList.get(0);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestJavadocTokenId.HTML_TAG, "<t>", 5);
@@ -92,11 +132,27 @@ public class TokenSequenceListTest extends NbTestCase {
         LexerTestUtilities.assertTokenEquals(ts,TestJavadocTokenId.HTML_TAG, "<t2>", -1);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestJavadocTokenId.IDENT, "v", -1);
+
+        ts = tsList.get(2);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestJavadocTokenId.IDENT, "hey", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestJavadocTokenId.HTML_TAG, "<tq>", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestJavadocTokenId.IDENT, "aaa", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestJavadocTokenId.HTML_TAG, "</tq>", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestJavadocTokenId.HTML_TAG, "<code>", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestJavadocTokenId.IDENT, "sample", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestJavadocTokenId.HTML_TAG, "</code>", -1);
         
         // Collect embedded html tags
         lp = lp.embedded(TestHTMLTagTokenId.language());
         tsList = tokenHierarchy.tokenSequenceList(lp, 0, Integer.MAX_VALUE);
-        assertEquals(2, tsList.size());
+        assertEquals(6, tsList.size());
         ts = tsList.get(0);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.LT, "<", -1);
@@ -110,6 +166,38 @@ public class TokenSequenceListTest extends NbTestCase {
         LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.LT, "<", -1);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.TEXT, "t2", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.GT, ">", -1);
+        
+        ts = tsList.get(2);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.LT, "<", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.TEXT, "tq", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.GT, ">", -1);
+        
+        ts = tsList.get(3);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.LT, "<", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.TEXT, "/tq", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.GT, ">", -1);
+        
+        ts = tsList.get(4);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.LT, "<", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.TEXT, "code", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.GT, ">", -1);
+        
+        ts = tsList.get(5);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.LT, "<", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.TEXT, "/code", -1);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.GT, ">", -1);
         

@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.ArrayUtilities;
 
@@ -119,10 +118,9 @@ public final class TokenListList extends AbstractList<TokenList<?>> {
                                 startTokenList, startOffset, Integer.MAX_VALUE);
                     if (wrapEnd)
                         endTokenList = SubSequenceTokenList.create(endTokenList, 0, endOffset);
-                    endIndex--;
-                    tss[endIndex] = LexerApiPackageAccessor.get().createTokenSequence(endTokenList);
-                    for (int i = 1; i < endIndex; i++) {
-                        tss[i] = LexerApiPackageAccessor.get().createTokenSequence(tll.get(i));
+                    tss[tss.length - 1] = LexerApiPackageAccessor.get().createTokenSequence(endTokenList);
+                    for (int i = 1; i < tss.length - 1; i++) {
+                        tss[i] = LexerApiPackageAccessor.get().createTokenSequence(tll.get(startIndex + i));
                     }
                                 
                 }
