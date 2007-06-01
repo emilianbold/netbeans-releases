@@ -44,15 +44,15 @@
     -->
     <target name="-pre-package">
         <move todir="${data.directory}">
-            <fileset dir="${data.directory}/apache-tomcat-6.0.10">
+            <fileset dir="${data.directory}/apache-tomcat-6.0.13">
                 <include name="**/*"/>
             </fileset>
         </move>
         
         <delete includeemptydirs="true">
             <fileset dir="${data.directory}">
-                <include name="apache-tomcat-6.0.10"/>
-                <include name="apache-tomcat-6.0.10/**"/>
+                <include name="apache-tomcat-6.0.13"/>
+                <include name="apache-tomcat-6.0.13/**"/>
             </fileset>
         </delete>
     </target>

@@ -21,7 +21,6 @@
 package org.netbeans.installer.wizard.components.panels.netbeans;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -76,6 +75,8 @@ import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiScrollPane;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
 import org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.ErrorMessagePanelSwingUi;
+import static org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.ErrorMessagePanelSwingUi.ERROR_ICON;
+import static org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.ErrorMessagePanelSwingUi.EMPTY_ICON;
 
 /**
  *
@@ -111,15 +112,18 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
     private Icon errorIcon;
     private Icon emptyIcon;
     
-    public NbCustomizeSelectionDialog(NbWelcomePanel panel, Runnable callback, List<RegistryNode> registryNodes) {
+    public NbCustomizeSelectionDialog(
+            final NbWelcomePanel panel, 
+            final Runnable callback, 
+            final List<RegistryNode> registryNodes) {
         this.panel = panel;
         this.callback = callback;
         this.registryNodes = registryNodes;
         
         errorIcon = new ImageIcon(
-                getClass().getClassLoader().getResource(ErrorMessagePanelSwingUi.ERROR_ICON));
+                getClass().getClassLoader().getResource(ERROR_ICON));
         emptyIcon = new ImageIcon(
-                getClass().getClassLoader().getResource(ErrorMessagePanelSwingUi.EMPTY_ICON));
+                getClass().getClassLoader().getResource(EMPTY_ICON));
         
         initComponents();
     }

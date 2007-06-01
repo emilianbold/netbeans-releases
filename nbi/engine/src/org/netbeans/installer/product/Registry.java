@@ -33,7 +33,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
-import org.netbeans.installer.downloader.DownloadManager;
 import org.netbeans.installer.product.components.Group;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.filters.OrFilter;
@@ -171,18 +170,30 @@ public class Registry {
         childProgress = new Progress();
         compositeProgress.addChild(childProgress, percentageChunk + percentageLeak);
         compositeProgress.setTitle("Loading local registry [" + localRegistryFile + "]");
-        loadProductRegistry(localRegistryFile.toURI().toString(), childProgress, RegistryType.LOCAL, false);
+        loadProductRegistry(
+                localRegistryFile.toURI().toString(), 
+                childProgress, 
+                RegistryType.LOCAL, 
+                false);
         
         childProgress = new Progress();
         compositeProgress.addChild(childProgress, percentageChunk);
         compositeProgress.setTitle("Loading bundled registry [" + bundledRegistryUri + "]");
-        loadProductRegistry(bundledRegistryUri, childProgress, RegistryType.BUNDLED, true);
+        loadProductRegistry(
+                bundledRegistryUri, 
+                childProgress, 
+                RegistryType.BUNDLED, 
+                true);
         
         for (String remoteRegistryURI: remoteRegistryUris) {
             childProgress = new Progress();
             compositeProgress.addChild(childProgress, percentageChunk);
             compositeProgress.setTitle("Loading remote registry [" + remoteRegistryURI + "]");
-            loadProductRegistry(remoteRegistryURI, childProgress, RegistryType.REMOTE, true);
+            loadProductRegistry(
+                    remoteRegistryURI, 
+                    childProgress, 
+                    RegistryType.REMOTE, 
+                    true);
         }
         
         validateDependencies();

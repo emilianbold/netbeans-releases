@@ -76,27 +76,100 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     getString("CL.install.error.files.permissions"), // NOI18N
                     e);
         }
-        //integrateWithIDE(progress, location);
+        
+        /////////////////////////////////////////////////////////////////////////////
+        // Reference: http://wiki.netbeans.org/wiki/view/TomcatAutoRegistration
+        try {
+            progress.setDetail(getString("CL.install.ide.integration")); // NOI18N
+            
+            final List<Product> ides = 
+                    Registry.getInstance().getProducts("nb-base");
+            for (Product ide: ides) {
+                if (ide.getStatus() == Status.INSTALLED) {
+                    final File nbLocation = ide.getInstallationLocation();
+                    
+                    if (nbLocation != null) {
+                        NetBeansUtils.setJvmOption(
+                                nbLocation,
+                                JVM_OPTION_AUTOREGISTER_HOME_NAME,
+                                location.getAbsolutePath(),
+                                true);
+                        NetBeansUtils.setJvmOption(
+                                nbLocation,
+                                JVM_OPTION_AUTOREGISTER_TOKEN_NAME,
+                                Long.toString(System.currentTimeMillis()),
+                                false);
+                        
+                        // if the IDE was installed in the same session as the
+                        // appserver, we should add its "product id" to the IDE
+                        if (ide.hasStatusChanged()) {
+                            NetBeansUtils.addPackId(
+                                    nbLocation,
+                                    PRODUCT_ID);
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new InstallationException(
+                    getString("CL.install.error.ide.integration"), // NOI18N
+                    e);
+        }
+        
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);
     }
     
     public void uninstall(
             final Progress progress) throws UninstallationException {
-        // no custom unconfiguration is needed
+        final File location = getProduct().getInstallationLocation();
+        
+        /////////////////////////////////////////////////////////////////////////////
+        try {
+            progress.setDetail(getString("CL.uninstall.ide.integration")); // NOI18N
+            
+            final List<Product> ides =
+                    Registry.getInstance().getProducts("nb-base");
+            for (Product ide: ides) {
+                if (ide.getStatus() == Status.INSTALLED) {
+                    final File nbLocation = ide.getInstallationLocation();
+                    
+                    if (nbLocation != null) {
+                        final String value = NetBeansUtils.getJvmOption(
+                                nbLocation,
+                                JVM_OPTION_AUTOREGISTER_HOME_NAME);
+                        
+                        if ((value != null) &&
+                                (value.equals(location.getAbsolutePath()))) {
+                            NetBeansUtils.removeJvmOption(
+                                    nbLocation,
+                                    JVM_OPTION_AUTOREGISTER_HOME_NAME);
+                            NetBeansUtils.removeJvmOption(
+                                    nbLocation,
+                                    JVM_OPTION_AUTOREGISTER_TOKEN_NAME);
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new UninstallationException(
+                    getString("CL.uninstall.error.ide.integration"), // NOI18N
+                    e);
+        }
         
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);
     }
     
-    public List<WizardComponent> getWizardComponents() {
+    public List<WizardComponent> getWizardComponents(
+            ) {
         return wizardComponents;
     }
     
     @Override
     public String getIcon() {
         if (SystemUtils.isWindows()) {
-            return "bin/tomcat5.exe";
+            return "bin/tomcat6.exe";
         } else {
             return null;
         }
@@ -107,12 +180,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             final Progress progress, 
             final File directory)  throws InstallationException {
         /////////////////////////////////////////////////////////////////////////////
-        // Based on the following wiki:
-        // http://wiki.netbeans.org/wiki/view/TomcatAutoRegistration
-        // TODO:
-        // Provide the similar method (or improve this one) for
-        //     unregistration by means of removing both of the options
-        
+        // Reference: http://wiki.netbeans.org/wiki/view/TomcatAutoRegistration
         try {
             progress.setDetail(getString("CL.install.ide.integration")); // NOI18N
             
@@ -153,4 +221,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     
     public static final String JVM_OPTION_AUTOREGISTER_HOME_NAME =
             "-Dorg.netbeans.modules.tomcat.autoregister.catalinaHome"; // NOI18N
+    
+    public static final String PRODUCT_ID = 
+            "TOMCAT"; // NOI18N
 }

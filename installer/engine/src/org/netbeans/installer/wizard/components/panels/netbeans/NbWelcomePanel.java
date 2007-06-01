@@ -63,6 +63,8 @@ public class NbWelcomePanel extends ErrorMessagePanel {
     private Registry bundledRegistry;
     private Registry defaultRegistry;
     
+    private boolean registriesFiltered;
+    
     public NbWelcomePanel() {
         setProperty(TITLE_PROPERTY,
                 DEFAULT_TITLE);
@@ -170,32 +172,39 @@ public class NbWelcomePanel extends ErrorMessagePanel {
     public boolean canExecuteBackward() {
         return canExecute();
     }
-    
+
     @Override
     public void initialize() {
         super.initialize();
         
-        // we need to apply additional filters to the components tree - filter out
-        // the components which are not present in the bundled registry (if it is
-        // available of course)
-        // if the bundled registry contains only one element - registry root,
-        // this means that we're running without any bundle, hence not filtering
-        // is required
-        if (bundledRegistry.getNodes().size() == 1) {
+        if (registriesFiltered) {
             return;
         }
         
-        for (Product product: defaultRegistry.getProducts()) {
-            if (bundledRegistry.getProduct(
-                    product.getUid(),
-                    product.getVersion()) == null) {
-                product.setVisible(false);
-                
-                if (product.getStatus() == Status.TO_BE_INSTALLED) {
+        // we need to apply additional filters to the components tree - filter out
+        // the components which are not present in the bundled registry; if the 
+        // bundled registry contains only one element - registry root, this means 
+        // that we're running without any bundle, hence not filtering is required;
+        // additionally, we should not be suggesting to install tomcat by default, 
+        // thus we should correct it's initial status
+        if (bundledRegistry.getNodes().size() > 1) {
+            for (Product product: defaultRegistry.getProducts()) {
+                if (bundledRegistry.getProduct(
+                        product.getUid(),
+                        product.getVersion()) == null) {
+                    product.setVisible(false);
+
+                    if (product.getStatus() == Status.TO_BE_INSTALLED) {
+                        product.setStatus(Status.NOT_INSTALLED);
+                    }
+                } else if (product.getUid().equals("tomcat") && 
+                        (product.getStatus() == Status.TO_BE_INSTALLED)) {
                     product.setStatus(Status.NOT_INSTALLED);
                 }
             }
         }
+        
+        registriesFiltered = true;
     }
     
     // private //////////////////////////////////////////////////////////////////////
@@ -442,7 +451,9 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             customizeDialog.requestFocus();
         }
         
-        private void populateList(List<RegistryNode> list, RegistryNode parent) {
+        private void populateList(
+                final List<RegistryNode> list, 
+                final RegistryNode parent) {
             final List<RegistryNode> groups = new LinkedList<RegistryNode>();
             
             for (RegistryNode node: parent.getChildren()) {

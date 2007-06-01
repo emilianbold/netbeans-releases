@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -62,15 +62,16 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     private List<WizardComponent> wizardComponents;
     
     // constructor //////////////////////////////////////////////////////////////////
-    public ConfigurationLogic() throws InitializationException {
+    public ConfigurationLogic(
+            ) throws InitializationException {
         wizardComponents = Wizard.loadWizardComponents(
                 WIZARD_COMPONENTS_URI,
                 getClass().getClassLoader());
     }
     
     // configuration logic implementation ///////////////////////////////////////////
-    public void install(final Progress progress)
-            throws InstallationException {
+    public void install(
+            final Progress progress) throws InstallationException {
         final File directory = getProduct().getInstallationLocation();
         
         final String username  = getProperty(ASPanel.USERNAME_PROPERTY);
@@ -83,9 +84,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 new File(getProperty(JdkLocationPanel.JDK_LOCATION_PROPERTY));
         
         final FilesList list = getProduct().getInstalledFiles();
-        
-        /////////////////////////////////////////////////////////////////////////////
-        
         
         /////////////////////////////////////////////////////////////////////////////
         try {
@@ -104,12 +102,12 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             map.put(HTTP_PORT_TOKEN,httpPort);
             map.put(ADMIN_PORT_TOKEN,adminPort);
             
-            FileUtils.modifyFile(new File(directory, BIN_SUBDIR),map);
-            FileUtils.modifyFile(new File(directory, CONFIG_SUBDIR),map);
-            FileUtils.modifyFile(new File(directory, DOCS_SUBDIR),map);
+            FileUtils.modifyFile(new File(directory, BIN_SUBDIR), map);
+            FileUtils.modifyFile(new File(directory, CONFIG_SUBDIR), map);
+            FileUtils.modifyFile(new File(directory, DOCS_SUBDIR), map);
             FileUtils.modifyFile(new File(directory, IMQ_SUBDIR), map);
-            FileUtils.modifyFile(new File(directory, JBI_SUBDIR),map);
-            FileUtils.modifyFile(new File(directory, DERBY_SUBDIR),map);
+            FileUtils.modifyFile(new File(directory, JBI_SUBDIR), map);
+            FileUtils.modifyFile(new File(directory, DERBY_SUBDIR), map);
             FileUtils.modifyFile(new File(directory, SAMPLES_SUBDIR), map);
             FileUtils.modifyFile(new File(directory, BLUEPRINTS_SUBDIR), map);
         } catch (IOException e) {
@@ -190,7 +188,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                         if (ide.hasStatusChanged()) {
                             NetBeansUtils.addPackId(
                                     nbLocation,
-                                    "SJSAS");
+                                    PRODUCT_ID);
                         }
                     }
                 }
@@ -217,21 +215,22 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         progress.setPercentage(Progress.COMPLETE);
     }
     
-    public void uninstall(final Progress progress)
-            throws UninstallationException {
+    public void uninstall(
+            final Progress progress) throws UninstallationException {
         File directory = getProduct().getInstallationLocation();
         
         /////////////////////////////////////////////////////////////////////////////
         try {
-            try {
-                progress.setDetail(getString("CL.uninstall.shortcuts.delete")); // NOI18N
-                modifyASLauncherFiles(directory, false);
-            } catch (NativeException e) {
-                throw new UninstallationException(
-                        getString("CL.uninstall.error.shortcuts.delete"), // NOI18N
-                        e);
-            }
-            
+            progress.setDetail(getString("CL.uninstall.shortcuts.delete")); // NOI18N
+            modifyASLauncherFiles(directory, false);
+        } catch (NativeException e) {
+            throw new UninstallationException(
+                    getString("CL.uninstall.error.shortcuts.delete"), // NOI18N
+                    e);
+        }
+        
+        /////////////////////////////////////////////////////////////////////////////
+        try {
             progress.setDetail(getString("CL.uninstall.ide.integration")); // NOI18N
             
             final List<Product> ides =
@@ -275,7 +274,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         progress.setPercentage(Progress.COMPLETE);
     }
     
-    public List<WizardComponent> getWizardComponents() {
+    public List<WizardComponent> getWizardComponents(
+            ) {
         return wizardComponents;
     }
     
@@ -284,7 +284,10 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         return false;
     }
     
-    private FilesList modifyASLauncherFiles(File location, boolean isCreate) throws NativeException {
+    // private //////////////////////////////////////////////////////////////////////
+    private FilesList modifyASLauncherFiles(
+            final File location,
+            final boolean isCreate) throws NativeException {
         FilesList list = new FilesList();
         try {
             LogManager.log("creating the application server launchers");//NOI18N
@@ -389,14 +392,22 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }
         return list;
     }
-    private void modifyShortcut(Shortcut shortcut, boolean create) throws NativeException {
+    
+    private void modifyShortcut(
+            final Shortcut shortcut,
+            final boolean create) throws NativeException {
         if(create) {
             SystemUtils.createShortcut(shortcut, LocationType.CURRENT_USER_START_MENU);
         } else {
             SystemUtils.removeShortcut(shortcut, LocationType.CURRENT_USER_START_MENU, true);
         }
     }
-    private Shortcut getIconShortcut(File file, String icon, String resourceName, File asLocation) {
+    
+    private Shortcut getIconShortcut(
+            final File file,
+            final String icon,
+            final String resourceName,
+            final File asLocation) {
         FileShortcut shortcut = new FileShortcut(
                 getString(resourceName), file);
         shortcut.setIcon(new File(asLocation,
@@ -589,4 +600,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     
     public static final String JVM_OPTION_NAME =
             "-Dcom.sun.aas.installRoot"; // NOI18N
+    
+    public static final String PRODUCT_ID =
+            "SJSAS"; // NOI18N
 }

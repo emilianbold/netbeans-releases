@@ -52,8 +52,10 @@ public class CreateNativeLauncherAction extends WizardAction {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public CreateNativeLauncherAction() {
-        setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
-        setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION);
+        setProperty(TITLE_PROPERTY, 
+                DEFAULT_TITLE);
+        setProperty(DESCRIPTION_PROPERTY, 
+                DEFAULT_DESCRIPTION);
     }
     
     public void execute() {
