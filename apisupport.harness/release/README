@@ -483,6 +483,10 @@ Note that <classpath> may contain Ant property references, so for a complex
 classpath, define it once in project.properties and use that property in
 <classpath> as well as in your Ant script.
 
+In order for the IDE to recognize references to those classes defined in the 
+<extra-compilation-unit>, you may also need add/modify your module's cp.extra
+property to include the value specified in the <package-root> element.
+
 If you export some API (declared in <public-packages> or <friend-packages>) and
 wish to be able to build Javadoc, just specify
 
@@ -538,7 +542,9 @@ code.name.base.dashes - your code name base as org-netbeans-modules-foo
 code.name.base.slashes - ditto, as org/netbeans/modules/foo
 
 cp.extra - extra JARs you have to compile module sources against. Rarely needed
-any more.
+any more, but if you have defined extra source trees with <extra-compilation-unit>,
+it may be necessary to add/modify this value to include the value specified in 
+its <package-root> element.
 
 extra.module.files - list of special files you build alongside your module JAR
 which you want to register for update tracking and include in your NBM.
