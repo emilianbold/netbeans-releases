@@ -39,9 +39,11 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.refactoring.xsd.FindSchemaUsageVisitor;
 import org.netbeans.modules.xml.wsdl.refactoring.xsd.SchemaUsageRefactoringEngine;
 import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.EmbeddableRoot;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.Referenceable;
+import org.netbeans.modules.xml.xam.dom.DocumentModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -155,7 +157,18 @@ public abstract class WSDLRefactoringPlugin extends ProgressProviderAdapter impl
      public Map<Model, Set<RefactoringElementImplementation>> getModelMap(List<RefactoringElementImplementation> elements){
         Map<Model, Set<RefactoringElementImplementation>> results = new HashMap<Model, Set<RefactoringElementImplementation>>();
         for(RefactoringElementImplementation element:elements){
-           Model model = (element.getLookup().lookup(Component.class)).getModel();
+           Component comp = element.getLookup().lookup(Component.class);
+           Model model = null;
+           if(comp instanceof org.netbeans.modules.xml.schema.model.Import){
+               //special case of embedded schema import statements in WSDLModel
+               //for embedded schema, group the RE impls by Foreign Model
+                  SchemaModel mod=  (SchemaModel)comp.getModel();
+                  Component wsdlImport =mod.getSchema().getForeignParent();
+                  if(wsdlImport != null) {
+                      model = wsdlImport.getModel();
+                  } 
+           } else 
+               model = comp.getModel();
            Set<RefactoringElementImplementation> elementsInModel = results.get(model);
            if(elementsInModel == null){
                elementsInModel = new HashSet<RefactoringElementImplementation>();

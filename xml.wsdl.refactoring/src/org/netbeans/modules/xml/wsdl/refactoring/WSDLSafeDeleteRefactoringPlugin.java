@@ -154,7 +154,7 @@ public class WSDLSafeDeleteRefactoringPlugin extends WSDLRefactoringPlugin imple
         }
        
         List<ErrorItem> allErrors = new ArrayList<ErrorItem>();
-        if(findErrors == null && findErrors.size() <= 0) {
+        if(findErrors.size() <= 0) {
             if(elements !=null && elements.size() > 0) {
                 List<Model> models = getModels(elements);
                 List<ErrorItem> errors = RefactoringUtil.precheckUsageModels(models, true);
@@ -164,7 +164,6 @@ public class WSDLSafeDeleteRefactoringPlugin extends WSDLRefactoringPlugin imple
                 
                 errors = SharedUtils.addCascadeDeleteErrors(models, WSDLModel.class);
                 if(errors != null && errors.size() > 0) {
-                    System.out.println("should have gotten errors here");
                     allErrors.addAll(errors);
                 }
             } 
@@ -177,15 +176,15 @@ public class WSDLSafeDeleteRefactoringPlugin extends WSDLRefactoringPlugin imple
         transaction.register((XMLRefactoringPlugin)this, elements);
         refactoringElements.registerTransaction(transaction);
         
-         if (elements != null && elements.size() >0 )   {
-             for (WSDLRefactoringElement element : elements) {
-                 System.out.println("WSDLSafeDeleteRefactoring::adding element");
-                 refactoringElements.add(delete, element);
-                 fireProgressListenerStep();
-              }
-         }
+        for (WSDLRefactoringElement element : elements) {
+             //System.out.println("WSDLSafeDeleteRefactoring::adding element");
+             element.addTransactionObject(transaction);
+             refactoringElements.add(delete, element);
+             fireProgressListenerStep();
+        }
+       
         
-       if(allErrors != null && allErrors.size() > 0) {
+       if(allErrors.size() > 0) {
             Problem problem = processErrors(allErrors, ui, inner);
             fireProgressListenerStop();
             return problem;

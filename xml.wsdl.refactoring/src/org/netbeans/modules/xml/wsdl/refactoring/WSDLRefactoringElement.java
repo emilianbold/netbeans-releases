@@ -14,8 +14,7 @@ import javax.swing.Action;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
-import org.netbeans.modules.refactoring.spi.ui.UI;
-import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
+import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLDataObject;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.NodesFactory;
@@ -23,6 +22,7 @@ import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.Referenceable;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.ui.actions.ShowSourceAction;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -30,6 +30,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.text.PositionBounds;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
@@ -44,7 +45,7 @@ public class WSDLRefactoringElement extends SimpleRefactoringElementImplementati
     Model model;
     Component comp;
     Node node;
-    
+    XMLRefactoringTransaction transaction;
     /**
      * Creates a new instance of WSDLRefactoringElement
      */
@@ -84,10 +85,7 @@ public class WSDLRefactoringElement extends SimpleRefactoringElementImplementati
         return source;
     }
   
-     public void showPreview() {
-        UI.setComponentForRefactoringPreview(null);
-     }
-     
+         
    
         
     public String getText() {
@@ -129,5 +127,25 @@ public class WSDLRefactoringElement extends SimpleRefactoringElementImplementati
      
      }
     
-         
+    
+    void addTransactionObject(XMLRefactoringTransaction transaction) {
+        this.transaction = transaction;
+    }
+    
+    protected String getNewFileContent() {
+       if(comp.getModel() instanceof AbstractDocumentModel && transaction != null) {
+             try {
+                 
+                String refactoredString = transaction.refactorForPreview(comp.getModel());
+                return refactoredString;
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+               return null;
+           }
+         }
+        
+         return null;
+    }
+     
+            
 }

@@ -107,13 +107,12 @@ public class WSDLWhereUsedRefactoringPlugin extends WSDLRefactoringPlugin {
         
         for (Component root : searchRoots) {
             List<WSDLRefactoringElement> elements = find(ref, root);
-                if (elements != null) {
-                    for (WSDLRefactoringElement  element : elements) {
-                        //System.out.println("WSDLWhereusedRefactoring::adding element");
-                        refactoringElements.add(query, element);
-                        fireProgressListenerStep();
-                    }
+                for (WSDLRefactoringElement  element : elements) {
+                    //System.out.println("WSDLWhereusedRefactoring::adding element");
+                    refactoringElements.add(query, element);
+                    fireProgressListenerStep();
                 }
+               
             }
         
         fireProgressListenerStop();

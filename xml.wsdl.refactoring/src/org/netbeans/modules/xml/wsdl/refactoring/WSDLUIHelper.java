@@ -135,7 +135,7 @@ public class WSDLUIHelper {
             SchemaComponent sc = (SchemaComponent) component;
             SchemaModel sm = sc.getModel();
             assert sm != null : "Given a dead component";
-            return null;
+           // return null;
            // UIHelper delegate = RefactoringManager.getInstance().getTargetComponentUIHelper(sm);
          //   if (delegate != null) {
          //       return delegate.getDisplayNode(component);
@@ -217,12 +217,12 @@ public class WSDLUIHelper {
 
         @Override
         public Action[] getActions(boolean b) {
-            return null;
+           return ACTIONS;
         }
 
         @Override
         public Action getPreferredAction() {
-            return null;
+            return ACTIONS[0];
         }
         
        

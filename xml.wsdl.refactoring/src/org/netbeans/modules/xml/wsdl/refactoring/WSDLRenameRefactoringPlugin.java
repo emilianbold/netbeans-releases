@@ -35,15 +35,11 @@ import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.refactoring.api.WhereUsedQuery;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.refactoring.spi.Transaction;
 import org.netbeans.modules.xml.refactoring.ErrorItem;
 import org.netbeans.modules.xml.refactoring.XMLRefactoringPlugin;
 import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
 import org.netbeans.modules.xml.refactoring.spi.RefactoringUtil;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
-import org.netbeans.modules.xml.refactoring.spi.UIHelper;
 import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.Import;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
@@ -55,11 +51,7 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Nameable;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Referenceable;
-import org.netbeans.modules.xml.xam.dom.DocumentModel;
-//import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
-//import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
+
 
 
 
@@ -158,13 +150,20 @@ public class WSDLRenameRefactoringPlugin extends WSDLRefactoringPlugin implement
         fireProgressListenerStart(ProgressEvent.START, -1);
         this.findErrors = new ArrayList<ErrorItem>();
         Set<Component> searchRoots = new HashSet<Component>();
-        //do we have any given search roots??
-        Component searchRoot = rename.getContext().lookup(Component.class);
         
-        if(searchRoot == null )
-            searchRoots = getSearchRoots(obj);
-        else
-            searchRoots.add(searchRoot);
+        //is the usage scope local
+        if(transaction.isLocal())
+            searchRoots = SharedUtils.getLocalSearchRoots(obj);
+        else {
+            //do we have any given search roots??
+            Component searchRoot = rename.getContext().lookup(Component.class);
+        
+            if(searchRoot == null )
+                searchRoots = getSearchRoots(obj);
+            else
+                searchRoots.add(searchRoot);
+        }
+        
         
         List<WSDLRefactoringElement> elements = new ArrayList<WSDLRefactoringElement>();
         for (Component root : searchRoots) {
@@ -175,7 +174,7 @@ public class WSDLRenameRefactoringPlugin extends WSDLRefactoringPlugin implement
         }
         
         //were there any errors during find??
-        if(findErrors != null && findErrors.size() > 0)
+        if(findErrors.size() > 0)
             return processErrors(findErrors);
         
         if(elements.size() > 0) {
@@ -190,13 +189,12 @@ public class WSDLRenameRefactoringPlugin extends WSDLRefactoringPlugin implement
         transaction.register((XMLRefactoringPlugin)this, elements);
         refactoringElements.registerTransaction(transaction);
         
-         if (elements.size() >0 )   {
-             for (WSDLRefactoringElement ug : elements) {
-                // System.out.println("WSDLRenameRefactoring::adding element");
-                 refactoringElements.add(rename, ug);
-                 fireProgressListenerStep();
-              }
+         for (WSDLRefactoringElement ug : elements) {
+             refactoringElements.add(rename, ug);
+             ug.addTransactionObject(transaction);
+             fireProgressListenerStep();
          }
+       
         
               
         fireProgressListenerStop();
@@ -252,8 +250,7 @@ public class WSDLRenameRefactoringPlugin extends WSDLRefactoringPlugin implement
                     new SchemaUsageRefactoringEngine()._refactorUsages(model, modelsInRefactoring.get(model), rename);
                 }
                     
-            }
-            
+            }       
             
             
         }
