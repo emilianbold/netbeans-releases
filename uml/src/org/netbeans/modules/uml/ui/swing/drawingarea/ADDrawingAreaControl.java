@@ -133,6 +133,7 @@ import com.tomsawyer.util.TSProperty;
 import com.tomsawyer.xml.editor.TSEEnumerationTable;
 import com.tomsawyer.xml.editor.TSEVisualizationXMLReader;
 import com.tomsawyer.xml.editor.TSEVisualizationXMLWriter;
+import java.util.prefs.Preferences;
 import org.dom4j.Document;
 import org.dom4j.Node;
 import org.netbeans.modules.uml.common.ETException;
@@ -337,6 +338,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
 /*
@@ -5808,40 +5810,41 @@ public class ADDrawingAreaControl extends ApplicationView
      */
    public String getPreferenceValue(String sPath, String sName)
    {
-      String sValue = "";
-      boolean bFoundInCache = false;
-      if(sPath != null && sName != null)
-      {
-         if (sPath.equals("Diagrams"))
-         {
-            if (m_CachedPreferences.get(sName) != null)
-            {
-               sValue = m_CachedPreferences.get(sName);
-               
-               bFoundInCache = true;
-            }
-         }
-      }
-      
-      if (!bFoundInCache)
-      {
-         IPreferenceManager2 pMgr = ProductHelper.getPreferenceManager();
-         if (pMgr != null)
-         {
-            String sData = pMgr.getPreferenceValue( sPath, sName);
-            if (sData != null && sData.length() > 0)
-            {
-               sValue = sData;
-            }
-         }
-         
-         // Add to our cache if the pref hive is Diagrams
-         if (sPath.equals("Diagrams"))
-         {
-            m_CachedPreferences.put(sName, sValue);
-         }
-      }
-      return sValue;
+       throw new UnsupportedOperationException ("this should never happen.") ;
+//      String sValue = "";
+//      boolean bFoundInCache = false;
+//      if(sPath != null && sName != null)
+//      {
+//         if (sPath.equals("Diagrams"))
+//         {
+//            if (m_CachedPreferences.get(sName) != null)
+//            {
+//               sValue = m_CachedPreferences.get(sName);
+//               
+//               bFoundInCache = true;
+//            }
+//         }
+//      }
+//      
+//      if (!bFoundInCache)
+//      {
+//         IPreferenceManager2 pMgr = ProductHelper.getPreferenceManager();
+//         if (pMgr != null)
+//         {
+//            String sData = pMgr.getPreferenceValue( sPath, sName);
+//            if (sData != null && sData.length() > 0)
+//            {
+//               sValue = sData;
+//            }
+//         }
+//         
+//         // Add to our cache if the pref hive is Diagrams
+//         if (sPath.equals("Diagrams"))
+//         {
+//            m_CachedPreferences.put(sName, sValue);
+//         }
+//      }
+//      return sValue;
    }
    
     /* (non-Javadoc)
@@ -6340,7 +6343,7 @@ public class ADDrawingAreaControl extends ApplicationView
                      {
                         String strKey = "Default";
                         String strPath = "Diagrams|SequenceDiagram";
-                        String strName = "DeleteCombinedFragments";
+                        String strName = "UML_ShowMe_Delete_Combined_Fragment_Messages";
                         String strAlsoQuestion = RESOURCE_BUNDLE.getString( "IDS_ALSO_DELETE_CF_MESSAGES" );
                         deleteWithAlsoResult = cpQuestionDialog.displayDeleteWithAlso(
                         strKey,
@@ -6366,7 +6369,7 @@ public class ADDrawingAreaControl extends ApplicationView
                      {
                         String bsKey = "Default";
                         String bsPath = "Diagrams|CollaborationDiagram";
-                        String bsName = "DeleteConnectorMessages";
+                        String bsName = "UML_ShowMe_Delete_Connector_Messages";
                         String bsAlsoQuestion = RESOURCE_BUNDLE.getString("IDS_ALSO_DELETE_MESSAGES");
                         deleteWithAlsoResult = cpQuestionDialog.displayDeleteWithAlso(
                         bsKey,
@@ -6870,8 +6873,10 @@ public class ADDrawingAreaControl extends ApplicationView
       int resultKind = SimpleQuestionDialogResultKind.SQDRK_RESULT_NO;
       
       // get preference for displaying a small amount of empty lists
-      String show = getPreferenceValue("Diagrams", "AskBeforeLayout");
-      if (show != null && show.equals("PSK_YES"))
+      //kris richards - "AskBeforeLayout" pref expuged. Set to true.
+      Preferences prefs = NbPreferences.forModule (ADDrawingAreaControl.class) ;
+      
+      if (prefs.getBoolean ("UML_Ask_Before_Layout", true))
       {
          // If we don't have any graph objects then don't bother asking
          boolean hasObjs = GetHelper.hasGraphObjects(m_GraphWindow);
@@ -6893,7 +6898,7 @@ public class ADDrawingAreaControl extends ApplicationView
             
             if(result.isChecked() == true)
             {
-               setPreferenceValue("Diagrams", "AskBeforeLayout", "PSK_NO" );
+               prefs.putBoolean ("UML_Ask_Before_Layout", false );
             }
             resultKind = result.getResult();
          }
@@ -7519,96 +7524,86 @@ public class ADDrawingAreaControl extends ApplicationView
      * @see org.netbeans.modules.uml.ui.swing.drawingarea.IAxDrawingAreaControl#preferencesChanged(com.embarcadero.describe.umlutils.IPropertyElement[])
      */
    // Font and Color are dropped from 6.2 due to new resource management
-   public boolean preferencesChanged(IPropertyElement[] pProperties)
-   {
-      if (m_ReadOnly)
-      {
-         return false;
-      }
-      
-      IDrawingAreaControl pAxDrawingArea = (IDrawingAreaControl)this;
-      boolean bDidChange = false;
-      PropertyElements pPropertyElements = new PropertyElements(pProperties);
-      
-      // Now see if aliased or show tagged values has changed
-      IPropertyElement pAliasPropertyElement = pPropertyElements.getElement("", "ShowAliasedNames", false);
-      
-      // Now see if aliased or show tagged values has changed
-      //kris richards - "DisplayTVs" pref expunged. Set to true.
-      //IPropertyElement pDisplayTVsPropertyElement = pPropertyElements.getElement("", "DisplayTVs", false);
-      
-      // Process the diagram preferences
-      ETList<IPropertyElement> diagramProps = new ETArrayList<IPropertyElement>();
-      
-      ETList<IPropertyElement> pPropertyElementList = pPropertyElements.getList();
-      int nCount = pPropertyElementList.size();
-      for(int i = 0; i < nCount; i++ )
-      {
-         IPropertyElement pElement = pPropertyElementList.get(i);
-         if( pElement != null)
-         {
-            IPropertyElement pParentElement = null;
-            String sParentName = "";
-            
-            pParentElement = pElement.getParent();
-            if (pParentElement != null)
-            {
-               sParentName = pParentElement.getName();
+   public boolean preferencesChanged(IPropertyElement[] pProperties) {
+       if (m_ReadOnly) {
+           return false;
+       }
+       
+       IDrawingAreaControl pAxDrawingArea = (IDrawingAreaControl)this;
+       boolean bDidChange = false;
+       PropertyElements pPropertyElements = new PropertyElements(pProperties);
+       
+       // Now see if aliased or show tagged values has changed
+       IPropertyElement pAliasPropertyElement = pPropertyElements.getElement("", "ShowAliasedNames", false);
+       
+       // Now see if aliased or show tagged values has changed
+       //kris richards - "DisplayTVs" pref expunged. Set to true.
+       //IPropertyElement pDisplayTVsPropertyElement = pPropertyElements.getElement("", "DisplayTVs", false);
+       
+       // Process the diagram preferences
+       ETList<IPropertyElement> diagramProps = new ETArrayList<IPropertyElement>();
+       
+       ETList<IPropertyElement> pPropertyElementList = pPropertyElements.getList();
+       int nCount = pPropertyElementList.size();
+       for(int i = 0; i < nCount; i++ ) {
+           IPropertyElement pElement = pPropertyElementList.get(i);
+           if( pElement != null) {
+               IPropertyElement pParentElement = null;
+               String sParentName = "";
                
-               if (sParentName.equals("Diagrams"))
-               {
-                  // Its something else
-                  diagramProps.add(pElement);
+               pParentElement = pElement.getParent();
+               if (pParentElement != null) {
+                   sParentName = pParentElement.getName();
+                   
+                   if (sParentName.equals("Diagrams")) {
+                       // Its something else
+                       diagramProps.add(pElement);
+                   }
                }
-            }
-         }
-      }
-      
-      // Process the diagram preferences
-      for(int j = 0; j < diagramProps.size(); j++)
-      {
-         IPropertyElement pElement = diagramProps.get(j);
-         if( pElement != null)
-         {
-            String sName = pElement.getName();
-            String sValue = pElement.getValue();
-            if( sName.length() > 0 && sValue.length() > 0)
-            {
-               m_CachedPreferences.put(sName, sValue);
-               bDidChange = true;
-            }
-         }
-      }
-      
-      // Handle the alias change if necessary.  Check ResizeOnAliasToggle preference to
-      // see if we need to resize them too.
-      if (pAliasPropertyElement != null)
-      {
-         syncElements(false);
-         
-         String sShowList = getPreferenceValue("Diagrams", "ResizeOnAliasToggle");
-         if (sShowList.equals("PSK_YES"))
-         {
-            // Resize all the elements
-            sizeToContents(false);
-         }
-         bDidChange = true;
-      }
-      //kris richards - "DisplayTVs" pref expunged. Set to true. So element not null.
-      else //if (pDisplayTVsPropertyElement != null)
-      {
-         syncElements(false);
-         bDidChange = true;
-      }
-      
-      if( bDidChange )
-      {
-         // properties have been set, mark this diagram dirty and invalidate
-         setIsDirty(true);
-         refresh(false);
-      }
-      
-      return true;
+           }
+       }
+       
+       // Process the diagram preferences
+       for(int j = 0; j < diagramProps.size(); j++) {
+           IPropertyElement pElement = diagramProps.get(j);
+           if( pElement != null) {
+               String sName = pElement.getName();
+               String sValue = pElement.getValue();
+               if( sName.length() > 0 && sValue.length() > 0) {
+                   m_CachedPreferences.put(sName, sValue);
+                   bDidChange = true;
+               }
+           }
+       }
+       
+       // Handle the alias change if necessary.  Check ResizeOnAliasToggle preference to
+       // see if we need to resize them too.
+       if (pAliasPropertyElement != null) {
+           syncElements(false);
+           
+           //kris richards - "AskBeforeLayout" pref expuged. Set to true.
+           Preferences prefs = NbPreferences.forModule(ADDrawingAreaControl.class) ;
+           
+           if (prefs.getBoolean("UML_Resize_with_Show_Aliases_Mode", true)) {
+               // Resize all the elements
+               sizeToContents(false);
+           }
+           bDidChange = true;
+       }
+       //kris richards - "DisplayTVs" pref expunged. Set to true. So element not null.
+       else //if (pDisplayTVsPropertyElement != null)
+       {
+           syncElements(false);
+           bDidChange = true;
+       }
+       
+       if( bDidChange ) {
+           // properties have been set, mark this diagram dirty and invalidate
+           setIsDirty(true);
+           refresh(false);
+       }
+       
+       return true;
    }
    
     /* (non-Javadoc)

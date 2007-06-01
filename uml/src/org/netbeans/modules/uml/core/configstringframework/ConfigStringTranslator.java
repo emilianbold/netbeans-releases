@@ -308,8 +308,6 @@ public class ConfigStringTranslator implements IConfigStringTranslator {
             addToMap("PSK_SELECTED", "IDS_STRING218");
             addToMap("PSK_SHOWEMPTYLISTS", "IDS_STRING219");
             addToMap("PSK_SHOWEMPTYLISTS_HLP", "IDS_STRING220");
-            addToMap("PSK_SHOWEDITTOOLTIP", "IDS_STRING221");
-            addToMap("PSK_SHOWEDITTOOLTIP_HLP", "IDS_STRING222");
             addToMap("PSK_SEQUENCEDIAGRAM", "IDS_STRING223");
             addToMap("PSK_SEQUENCEDIAGRAM_HLP", "IDS_STRING224");
             addToMap("PSK_CREATECLASS2", "IDS_STRING225");

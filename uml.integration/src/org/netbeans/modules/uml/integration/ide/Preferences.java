@@ -36,6 +36,7 @@ import org.netbeans.modules.uml.core.coreapplication.IPreferenceManager2;
 import org.netbeans.modules.uml.core.support.umlsupport.Log;
 import org.netbeans.modules.uml.core.support.umlutils.IPropertyElement;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  * Describe preference manager for preferences affecting integrations.
@@ -68,18 +69,12 @@ public class Preferences {
     public static final String PSK_NEVER  = "PSK_NEVER";
     public static final String PSK_ALWAYS  = "PSK_ALWAYS";
 
-    public static final String PROMPT_SAVE_WKS =
-                                "Workspace|ProjectSave";
-    public static final String DEFAULT_WKS_LOC =
-                                "Integrations|NewProject|DefaultWSLocation";
-    public static final String DEFAULT_ELEM_NAME =
-                                "NewProject|DefaultElementName";
     public static final String COLLECTION_OVERRIDE =
                                 "RoundTrip|Java|COLLECTION_OVERRIDE_DEFAULT";
     public static final String USE_GENERICS_DEFAULT =
                                 "RoundTrip|Java|USE_GENERICS_DEFAULT";
-    public static final String RECONNECT_LINKS =
-                                "Diagrams|ReconnectToNodeBoundary";
+    public static final String RECONNECT_LINKS = "UML_Reconnect to Presentation Boundary" ;
+
     public static final String CONFIRM_SOURCE_DELETE =
                    "ArtifactDeleteDeletesFile";
 
@@ -218,11 +213,13 @@ public class Preferences {
         try {
             clearCache();
 
-            reconnectLinks = getBooleanPreference(RECONNECT_LINKS);
-            promptSaveWorkspace = getBooleanPreference(PROMPT_SAVE_WKS);
+            java.util.prefs.Preferences prefs = NbPreferences.forModule (Preferences.class) ;
+            
+            reconnectLinks = prefs.getBoolean(RECONNECT_LINKS, true);
+            promptSaveWorkspace = true;
 
-            defaultWorkspaceLocation = getPreference(DEFAULT_WKS_LOC);
-            defaultElementName = getPreference(DEFAULT_ELEM_NAME);
+            defaultElementName = NbBundle.getMessage (Preferences.class, "UNNAMED");
+            
             collectionOverride = getPreference(COLLECTION_OVERRIDE);
             confirmSourceDelete = getPreference(CONFIRM_SOURCE_DELETE);
 
@@ -443,8 +440,8 @@ public class Preferences {
      *             .etw file.
      */
     public static void setDefaultWorkspacePath(String path) {
-        defaultWorkspaceLocation = path;
-        setPreference(DEFAULT_WKS_LOC, path);
+        //kris richards - this pref does not really exist.
+        throw new UnsupportedOperationException ("DefaultWSLocation pref is no long valid.");
     }
 
     /**

@@ -441,19 +441,7 @@ public class ActivityEdgeLabelManager extends ADLabelManager implements IActivit
 	 * from a signal to an invocation.
 	 */
 	protected boolean shouldShowInterruptibleEdgeLabel() {
-		boolean bShowLightning = false;
-
-		ICoreProduct prod = ProductRetriever.retrieveProduct();
-		if (prod != null) {
-			IPreferenceManager2 pPrefMgr = prod.getPreferenceManager();
-			if (pPrefMgr != null) {
-				String sPrefValue = pPrefMgr.getPreferenceValue("Diagrams|ActivityDiagram", "IndicateInterruptibleEdges");
-				if (sPrefValue.equals("PSK_YES")) {
-					bShowLightning = true;
-				}
-			}
-		}
-
-		return bShowLightning;
+		//kris richards - "IndicateInterruptibleEdges" pref expunged. Set to true.
+            return true ;
 	}
 }

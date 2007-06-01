@@ -71,19 +71,8 @@ public class ADDiagramCollaborationEngine extends ADCoreEngine implements IADCol
 	 */
 	private boolean isDefaultShowMessageNumbers()
 	{
-		boolean bDefaultShowMessageNumbers = false;
-   
-		IPreferenceManager2 pPrefMgr = ProductHelper.getPreferenceManager();
-		if (pPrefMgr != null)
-		{
-			String sPrefValue = pPrefMgr.getPreferenceValue("Diagrams|CollaborationDiagram", "DefaultShowMessageNumbers");
-			if (sPrefValue.equals("PSK_YES"))
-			{
-				bDefaultShowMessageNumbers = true;
-			}
-		}
-
-		return bDefaultShowMessageNumbers;
+            //kris richards - "DefaultShowMessageNumbers" pref expunged. Set to false.
+            return false;
 	}
 	
 	public boolean setSensitivityAndCheck(String id, ContextMenuActionClass pClass)

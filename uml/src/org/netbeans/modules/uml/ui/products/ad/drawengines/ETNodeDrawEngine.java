@@ -99,7 +99,9 @@ import com.tomsawyer.drawing.geometry.TSConstPoint;
 import com.tomsawyer.drawing.geometry.TSConstRect;
 import com.tomsawyer.drawing.geometry.TSRect;
 import com.tomsawyer.editor.TSTransform;
+import java.util.prefs.Preferences;
 import javax.swing.SwingConstants;
+import org.openide.util.NbPreferences;
 
 /**
  * @author Embarcadero Technologies Inc.
@@ -170,15 +172,15 @@ public abstract class ETNodeDrawEngine extends ETDrawEngine implements INodeDraw
    }
 
    // Get the user specified diagram preferences
-   private void getPreferences()
-   {
-      IPreferenceManager2 prefMan = ProductRetriever.retrieveProduct().getPreferenceManager();
-
-      this.getProperties().setProperty(PSK_SHOWSTEREOTYPEICONS, prefMan.getPreferenceValue("Diagrams", "ShowStereotypeIcons"));
-      this.getProperties().setProperty(PSK_SHOWEMPTYLISTS, prefMan.getPreferenceValue("Diagrams", "ShowEmptyLists"));
-      this.getProperties().setProperty(PSK_DISPLAYCOMPARTMENTTITLE, prefMan.getPreferenceValue("Diagrams", "ShowCompartmentTitles"));
-      this.getProperties().setProperty(PSK_AUTORESIZE, prefMan.getPreferenceValue("Diagrams", "AutoResize"));
-      this.getProperties().setProperty(PSK_SHOWEDITTOOLTIP, prefMan.getPreferenceValue("Diagrams", "ShowEditToolTip"));
+   private void getPreferences() {
+       
+       Preferences prefs = NbPreferences.forModule(ETNodeDrawEngine.class) ;
+       
+       this.getProperties().setProperty(PSK_SHOWSTEREOTYPEICONS, prefs.get("UML_Show_Stereotype_Icons", "PSK_YES"));
+       this.getProperties().setProperty(PSK_SHOWEMPTYLISTS, prefs.get("UML_Display_Empty_Lists", "PSK_YES"));
+       this.getProperties().setProperty(PSK_DISPLAYCOMPARTMENTTITLE, prefs.get("UML_Display_Compartment_Titles", "PSK_ALWAYS"));
+       this.getProperties().setProperty(PSK_AUTORESIZE, prefs.get("UML_Automatically_Size_Elements", "PSK_RESIZE_ASNEEDED"));
+       this.getProperties().setProperty(PSK_SHOWEDITTOOLTIP, "PSK_YES");
    }
 
    /**
@@ -336,7 +338,7 @@ public abstract class ETNodeDrawEngine extends ETDrawEngine implements INodeDraw
    {
       IPreferenceManager2 pMgr = ProductHelper.getPreferenceManager();
 
-      String sPreference = pMgr != null ? pMgr.getPreferenceValue("Diagrams", "AutoResize") : "PSK_RESIZE_ASNEEDED";
+      String sPreference = NbPreferences.forModule (ETNodeDrawEngine.class).get("UML_Automatically_Size_Elements","PSK_RESIZE_ASNEEDED");
 
       if (sPreference != null && sPreference.equals("PSK_RESIZE_UNLESSMANUAL"))
       {
@@ -1921,15 +1923,12 @@ public abstract class ETNodeDrawEngine extends ETDrawEngine implements INodeDraw
     */
    public Color getLightGradientFillColor()
    {
-       IPreferenceManager2 prefMan = ProductHelper.getPreferenceManager();
-       if (prefMan != null)
-       {
-           String prefVal = prefMan.getPreferenceValue("Diagrams", "ShowColorGradient");
-           if (("PSK_NO").equals(prefVal))
+       
+           if (! NbPreferences.forModule (ETNodeDrawEngine.class).getBoolean ("UML_Gradient_Background",true))
            {
                return getFillColor();
            }
-       }
+       
        return new Color(m_ResourceUser.getCOLORREFForStringID(m_nLightFillStringID));
    }
    

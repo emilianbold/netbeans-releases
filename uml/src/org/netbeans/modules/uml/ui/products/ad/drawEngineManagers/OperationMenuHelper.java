@@ -95,7 +95,8 @@ public class OperationMenuHelper
 		m_cpContextMenu = pContextMenu;
 		m_ETContextMenuHandler = pETContextMenuHandler;
 		m_cpOperationInvoked = pOperationInvoked;
-		m_bUserPrefOperationMenusGrouped = getPreferenceValue( "Diagrams|SequenceDiagram", "GroupOperations" ).equals("PSK_YES");
+                //kris richards - GroupOperations pref expunged. Set to true.
+		m_bUserPrefOperationMenusGrouped = true;
 		m_bUserPrefDisableVisibilities = getPreferenceValue( "Diagrams|SequenceDiagram", "RestrictOperationsByVisibility" ).equals("PSK_YES");
 		m_lOpGrpIndx = 0;
 		m_tsIsSenderGeneralization = TS_UNKNOWN;

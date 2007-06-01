@@ -51,6 +51,7 @@ import com.tomsawyer.editor.TSEImage;
 import com.tomsawyer.editor.graphics.TSEGraphics;
 //import com.tomsawyer.util.TSTransform;
 import com.tomsawyer.editor.TSTransform;
+import org.openide.util.NbPreferences;
 
 /**
  * @author Embarcadero Technologies Inc.
@@ -294,14 +295,7 @@ public class ETStereoTypeCompartment extends ETNameCompartment implements IADSte
 
    protected boolean showStereotypeIcons()
    {
-      IPreferenceManager2 prefMan = ProductHelper.getPreferenceManager();
-
-      String sData = "";
-      if (prefMan != null)
-      {
-         sData = prefMan.getPreferenceValue("Diagrams", "ShowStereotypeIcons");
-      }
-      return (sData != null && sData.equals("PSK_YES")) ? true : false;
+       return NbPreferences.forModule (ETStereoTypeCompartment.class).getBoolean ("UML_Show_Stereotype_Icons", true);
    }
 
    public boolean getShowStereotypeIcons()

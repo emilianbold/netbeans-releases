@@ -959,12 +959,9 @@ public class ADDiagramSequenceEngine extends ADCoreEngine implements IADSequence
      *
      * @return true if the preference indicates that we should show message numbers by default
      */
-    protected boolean isDefaultShowMessageNumbers()
-    {
-        String sShowList = getPreferenceValue( "Diagrams|SequenceDiagram",
-                "DefaultShowMessageNumbers" );
-        
-        return sShowList != null && sShowList.equals("PSK_YES");
+    protected boolean isDefaultShowMessageNumbers() {
+        //kris richards - "DefaultShowMessageNumbers" pref expunged. Set to false.
+        return false;
     }
     
     
@@ -1005,6 +1002,7 @@ public class ADDiagramSequenceEngine extends ADCoreEngine implements IADSequence
                         if( null == operationInvoked )
                         {
                             // Determine if the user wants to copy, move or cancel
+                            //kris richards - PROBLEM - need to remove this pref.
                             IPreferenceQuestionDialog questionDialog = new SwingPreferenceQuestionDialog();
                             if( questionDialog != null )
                             {
@@ -1014,7 +1012,7 @@ public class ADDiagramSequenceEngine extends ADCoreEngine implements IADSequence
                                 int nResult =
                                         questionDialog.displayFromStrings( "Default",
                                         "Diagrams|SequenceDiagram",
-                                        "ProcessInvokedOperation",
+                                        "UML_ShowMe_Move_Invoked_Operation",
                                         "PSK_ALWAYS",
                                         "PSK_NEVER",
                                         "PSK_ASK",
@@ -2090,7 +2088,7 @@ public class ADDiagramSequenceEngine extends ADCoreEngine implements IADSequence
                         int nResult =
                                 questionDialog.displayFromStrings( "Default",
                                 "Diagrams|SequenceDiagram",
-                                "CreateClassSymbols",
+                                "UML_ShowMe_Automatically_Create_Classifiers",
                                 "PSK_ALWAYS",
                                 "PSK_NEVER",
                                 "PSK_ASK",

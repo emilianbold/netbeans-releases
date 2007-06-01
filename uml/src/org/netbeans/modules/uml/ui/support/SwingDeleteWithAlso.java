@@ -70,21 +70,17 @@ public class SwingDeleteWithAlso extends JCenterDialog implements ItemListener
 	{
 		init( true );
 	}
-	public SwingDeleteWithAlso( String szDeleteConnectorMessages, String szAlsoQuestion, JDialog pParent )
-	{
-		init( szDeleteConnectorMessages.equals("PSK_ASK") );
-      
-      setCheckboxText(m_checkBoxAlso, szAlsoQuestion);
-
-      if( szDeleteConnectorMessages.equals("PSK_ALWAYS") )
-      {
-         m_checkBoxAlso.setSelected( true );
-      }
-      else if( szDeleteConnectorMessages.equals("PSK_NEVER") )
-      {
-         m_checkBoxAlso.setSelected( false );
-      }
-	}
+	public SwingDeleteWithAlso( String szDeleteConnectorMessages, String szAlsoQuestion, JDialog pParent ) {
+            init( szDeleteConnectorMessages.equals("PSK_ASK") );
+            
+            setCheckboxText(m_checkBoxAlso, szAlsoQuestion);
+            
+            if( szDeleteConnectorMessages.equals("PSK_ALWAYS") ) {
+                m_checkBoxAlso.setSelected( true );
+            } else if( szDeleteConnectorMessages.equals("PSK_NEVER") ) {
+                m_checkBoxAlso.setSelected( false );
+            }
+        }
 	
 	protected void init( boolean bDisplayExtraCheckboxes )
 	{

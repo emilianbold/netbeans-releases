@@ -332,18 +332,8 @@ public class SequenceDiagramGenerator implements ISequenceDiagramGenerator
      */
     private boolean showInteractionBoundary()
     {
-        boolean showIntBound = false;
-        IPreferenceManager2 prefMgr = ProductHelper.getPreferenceManager();
-        if (prefMgr != null)
-        {
-            String prefVal = prefMgr.getPreferenceValue("Default", "Diagrams|SequenceDiagram", "ShowInteractionBoundary");
-            
-            if (prefVal != null && prefVal.equals("PSK_YES"))
-            {
-                showIntBound = true;
-            }
-        }
-        return showIntBound;
+        //kris richards - "ShowInteractionBoundary" pref expunged. Set to false.
+        return false;
     }
     
     /**

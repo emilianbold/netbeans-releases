@@ -180,15 +180,8 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
 
    private void establishPreferences()
    {
-      IPreferenceManager2 prefMan = ProductHelper.getPreferenceManager();
-      if (prefMan != null)
-      {
-         String sData = prefMan.getPreferenceValue("Diagrams", "ShowEditToolTip");
-         if (sData != null && sData.equals("PSK_NO"))
-         {
-            m_ShowTooltips = false;
-         }
-      }
+      //kris richards - "ShowEditToolTip" pref expunged. Set to "PSK_YES".
+       //this method no longer does anything.
    }
 
    private class CutAction extends AbstractAction

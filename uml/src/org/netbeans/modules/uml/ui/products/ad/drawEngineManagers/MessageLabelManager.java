@@ -679,7 +679,8 @@ public class MessageLabelManager extends ADLabelManager {
 	// Retrieve the preference values
 	protected String getNewMessageAction() {
 
-		return getPreferenceValue("Diagrams|SequenceDiagram", "NewMessageAction");
+            //kris richards - "NewMessageAction" pref expunged. Set to PSK_DONOTHING.
+		return "PSK_DONOTHING";
 
 	}
 

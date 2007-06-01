@@ -34,7 +34,6 @@ import org.netbeans.modules.uml.core.support.umlsupport.IETSize;
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
 import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
-import org.netbeans.modules.uml.core.coreapplication.IPreferenceManager2;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
@@ -67,6 +66,8 @@ import com.tomsawyer.editor.TSEColor;
 import com.tomsawyer.editor.TSEFont;
 import com.tomsawyer.editor.graphics.TSEGraphics;
 import com.tomsawyer.editor.TSTransform;
+import java.util.prefs.Preferences;
+import org.openide.util.NbPreferences;
 
 /**
  * @author Embarcadero Technologies Inc
@@ -442,104 +443,100 @@ public abstract class ETListCompartment extends ETSimpleListCompartment implemen
     * is in pixels in client coordinates, e.g. the left edge of the control is position 0.  Default is -1 which does not position
     * the cursor (some translators may select a field by default).
     */
-   public long editCompartment(boolean bNew, int nKeyCode, int nShift, int nPos) 
-   {
-      // The default is to use the 1st editable compartment
-      IADEditableCompartment editableCompartment = getCompartmentByKind( IADEditableCompartment.class );
-      if( editableCompartment != null )
-      {
-         editableCompartment.editCompartment( bNew, nKeyCode, nShift, nPos );
-      }
-
-      return 0;
-   }
+        public long editCompartment(boolean bNew, int nKeyCode, int nShift, int nPos) {
+            // The default is to use the 1st editable compartment
+            IADEditableCompartment editableCompartment = getCompartmentByKind( IADEditableCompartment.class );
+            if( editableCompartment != null ) {
+                editableCompartment.editCompartment( bNew, nKeyCode, nShift, nPos );
+            }
+            
+            return 0;
+        }
 
 	public IETSize calculateOptimumSize(IDrawInfo pDrawInfo, boolean bAt100Pct) {
-
-		IETSize retValue = null;
-		int minWidth = 0;
-		int minHeight = 0;
-		int nNameHeight = 0;
-
-		TSEGraphics graphics = getGraphics(pDrawInfo);
-		
-		if (graphics != null) {
-			TSTransform transform =graphics.getTSTransform();
-			
-			// special handling if the compartment is not collapsed but is empty
-			boolean bDisplay = false;
-
-			ICoreProduct prod = ProductRetriever.retrieveProduct();
-			IPreferenceManager2 prefMan = prod.getPreferenceManager();
-
-			if (prefMan != null) {
-				String sShowList = prefMan.getPreferenceValue("Diagrams", "ShowEmptyLists");
-				if (sShowList != null && sShowList.equals("PSK_YES")) {
-					bDisplay = true;
-				}
-			}
-
-			// don't display if empty, determine if empty
-			if (!bDisplay) {
-				bDisplay = this.getNumCompartments() > 0;
-			}
-
-			if (bDisplay) 
-			{
-				// get preference for showing list titles
-				String sShowTitles = prefMan.getPreferenceValue("Diagrams", "ShowCompartmentTitles");
-
-				if (sShowTitles.equals("PSK_ALWAYS") || sShowTitles.equals("PSK_SELECTED")) {
-					// get height of title if present use list compartment title font for the title
-					IETSize titleSize = super.calculateOptimumSize(pDrawInfo, true);
-
-					// don't use the return value from above, if this compartment is collapsed they will always return 0
-					// use the internal stored value instead.
-					IETSize cachedOptimumSize = getCachedOptimumSize();
-					if (cachedOptimumSize != null) {
-						nNameHeight = cachedOptimumSize.getHeight();
-						minHeight = cachedOptimumSize.getHeight();
-						minWidth = cachedOptimumSize.getWidth();
-					}
-				}
-
-				// get height of visible compartments into m_maxHeight
-				calcLogicalHeight( pDrawInfo );
             
-            minHeight += m_maxHeight;
-            minWidth = Math.max( minWidth, m_maxWidth );
-
-				// add border indentation
-				int nIndent = BORDER_INDENT;
-
-				// add border spacing if there's anything there
-				if (minHeight > 0) 
-				{
-					// both sides are indented
-					minWidth += nIndent * 2;
-
-					// bottom is indented
-					minHeight += nIndent;
-				}
-
-				// if no title is shown, add some indent from the top of the compartment,
-				// otherwise the compartment list will be drawn immediately beneath the title
-				if (nNameHeight == 0) {
-					minHeight += nIndent;
-				}
-
-				m_maxHeight = Math.max(minHeight, 10);
-				m_maxWidth = minWidth;
-			}
-
-			// sizes calc'd above are at no zoom (100%)
-			internalSetOptimumSize(minWidth, minHeight);
-
-			// return zoomed size
-			retValue = bAt100Pct ? this.getOptimumSize(bAt100Pct) : this.scaleSize(m_cachedOptimumSize, transform);
-		}
-		return retValue;
-	}
+            IETSize retValue = null;
+            int minWidth = 0;
+            int minHeight = 0;
+            int nNameHeight = 0;
+            
+            TSEGraphics graphics = getGraphics(pDrawInfo);
+            
+            if (graphics != null) {
+                TSTransform transform =graphics.getTSTransform();
+                
+                // special handling if the compartment is not collapsed but is empty
+                boolean bDisplay = false;
+                Preferences prefs = NbPreferences.forModule(ETListCompartment.class) ;
+                
+                    String sShowList = prefs.get("UML_Display_Empty_Lists", "PSK_YES");
+                    if (sShowList != null && sShowList.equals("PSK_YES")) {
+                        bDisplay = true;
+                    }
+                
+                
+                // don't display if empty, determine if empty
+                if (!bDisplay) {
+                    bDisplay = this.getNumCompartments() > 0;
+                }
+                
+                if (bDisplay) {
+                    // get preference for showing list titles
+                    //kris richards - using NbPreferences
+                    
+                    String sShowTitles =
+                            prefs.get("UML_Display_Compartment_Titles", "PSK_ALWAYS");
+                    
+                    if (sShowTitles.equals("PSK_ALWAYS") || sShowTitles.equals("PSK_SELECTED")) {
+                        // get height of title if present use list compartment title font for the title
+                        IETSize titleSize = super.calculateOptimumSize(pDrawInfo, true);
+                        
+                        // don't use the return value from above, if this compartment is collapsed they will always return 0
+                        // use the internal stored value instead.
+                        IETSize cachedOptimumSize = getCachedOptimumSize();
+                        if (cachedOptimumSize != null) {
+                            nNameHeight = cachedOptimumSize.getHeight();
+                            minHeight = cachedOptimumSize.getHeight();
+                            minWidth = cachedOptimumSize.getWidth();
+                        }
+                    }
+                    
+                    // get height of visible compartments into m_maxHeight
+                    calcLogicalHeight( pDrawInfo );
+                    
+                    minHeight += m_maxHeight;
+                    minWidth = Math.max( minWidth, m_maxWidth );
+                    
+                    // add border indentation
+                    int nIndent = BORDER_INDENT;
+                    
+                    // add border spacing if there's anything there
+                    if (minHeight > 0) {
+                        // both sides are indented
+                        minWidth += nIndent * 2;
+                        
+                        // bottom is indented
+                        minHeight += nIndent;
+                    }
+                    
+                    // if no title is shown, add some indent from the top of the compartment,
+                    // otherwise the compartment list will be drawn immediately beneath the title
+                    if (nNameHeight == 0) {
+                        minHeight += nIndent;
+                    }
+                    
+                    m_maxHeight = Math.max(minHeight, 10);
+                    m_maxWidth = minWidth;
+                }
+                
+                // sizes calc'd above are at no zoom (100%)
+                internalSetOptimumSize(minWidth, minHeight);
+                
+                // return zoomed size
+                retValue = bAt100Pct ? this.getOptimumSize(bAt100Pct) : this.scaleSize(m_cachedOptimumSize, transform);
+            }
+            return retValue;
+        }
    
    /**
     * Calculates the scrollable height of all potentially visible compartments.  Call this 
@@ -631,92 +628,46 @@ public abstract class ETListCompartment extends ETSimpleListCompartment implemen
    }
 
 	private int drawName(IDrawInfo pDrawInfo, IETRect pBoundingRect) {
-		int retValue = 0;
-		TSEGraphics pGraphics = pDrawInfo.getTSEGraphics();
-		if (!this.m_collapsed && pGraphics != null) {
-			// check flag for drawing name
-			boolean bShowName = this.getShowName();
-
-			if (bShowName) {
-				ICoreProduct prod = ProductRetriever.retrieveProduct();
-				IPreferenceManager2 prefMan = prod.getPreferenceManager();
-
-				// get preference for showing list titles
-				String sShowTitles = prefMan != null ? prefMan.getPreferenceValue("Diagrams", "ShowCompartmentTitles") : "";
-
-				IETGraphObject graphObj = (getOwnerGraphObject() instanceof IETGraphObject)? (IETGraphObject)getOwnerGraphObject():null;
-				bShowName = sShowTitles.equals("PSK_ALWAYS") || 
-				(sShowTitles.equals("PSK_SELECTED") && (graphObj != null && graphObj.isSelected()));
-
-				if (bShowName) {
-					String sCompartmentName = getName();
-
-					if (sCompartmentName != null && sCompartmentName.length() > 0) {
-						Font originalFont = pGraphics.getFont();
-						pGraphics.setFont(m_staticTextFont.getScaledFont(pDrawInfo.getFontScaleFactor()));
-						pGraphics.setColor(this.m_defaultTextColor);
-
-						int left = (pBoundingRect.getIntX() + pBoundingRect.getIntWidth() / 2) - (pGraphics.getFontMetrics().stringWidth(sCompartmentName) / 2);
-						int top = pBoundingRect.getIntY() + pGraphics.getFontMetrics().getHeight();
-
-                  // draw the static text
-						pGraphics.drawString(sCompartmentName, left, top);
-                  
-						retValue = pGraphics.getFontMetrics().getHeight();
-						pGraphics.setFont(originalFont);
-					}
-				}
-			}
-		}
-
-		return retValue;
-	}
+            int retValue = 0;
+            TSEGraphics pGraphics = pDrawInfo.getTSEGraphics();
+            if (!this.m_collapsed && pGraphics != null) {
+                // check flag for drawing name
+                boolean bShowName = this.getShowName();
+                
+                if (bShowName) {
+                    Preferences prefs = NbPreferences.forModule(ETListCompartment.class) ;
+                    
+                    // get preference for showing list titles
+                    String sShowTitles = prefs.get("UML_Display_Compartment_Titles", "PSK_ALWAYS");
+                    
+                    IETGraphObject graphObj = (getOwnerGraphObject() instanceof IETGraphObject)? (IETGraphObject)getOwnerGraphObject():null;
+                    bShowName = sShowTitles.equals("PSK_ALWAYS") ||
+                            (sShowTitles.equals("PSK_SELECTED") && (graphObj != null && graphObj.isSelected()));
+                    
+                    if (bShowName) {
+                        String sCompartmentName = getName();
+                        
+                        if (sCompartmentName != null && sCompartmentName.length() > 0) {
+                            Font originalFont = pGraphics.getFont();
+                            pGraphics.setFont(m_staticTextFont.getScaledFont(pDrawInfo.getFontScaleFactor()));
+                            pGraphics.setColor(this.m_defaultTextColor);
+                            
+                            int left = (pBoundingRect.getIntX() + pBoundingRect.getIntWidth() / 2) - (pGraphics.getFontMetrics().stringWidth(sCompartmentName) / 2);
+                            int top = pBoundingRect.getIntY() + pGraphics.getFontMetrics().getHeight();
+                            
+                            // draw the static text
+                            pGraphics.drawString(sCompartmentName, left, top);
+                            
+                            retValue = pGraphics.getFontMetrics().getHeight();
+                            pGraphics.setFont(originalFont);
+                        }
+                    }
+                }
+            }
+            
+            return retValue;
+        }
 	
-   // Uncomment if you want to show the UI changes.
-//   private int calculateName(IDrawInfo pDrawInfo, IETRect pBoundingRect) {
-//		int retValue = 0;
-//		TSEGraphics pGraphics = pDrawInfo.getTSEGraphics();
-//		if (!this.m_collapsed && pGraphics != null) {
-//			// check flag for drawing name
-//			boolean bShowName = this.getShowName();
-//
-//			if (bShowName) {
-//				ICoreProduct prod = ProductRetriever.retrieveProduct();
-//				IPreferenceManager2 prefMan = prod.getPreferenceManager();
-//
-//				// get preference for showing list titles
-//				String sShowTitles = prefMan != null ? prefMan.getPreferenceValue("Diagrams", "ShowCompartmentTitles") : "";
-//
-//				IETGraphObject graphObj = (getOwnerGraphObject() instanceof IETGraphObject)? (IETGraphObject)getOwnerGraphObject():null;
-//				bShowName = sShowTitles.equals("PSK_ALWAYS") || 
-//				(sShowTitles.equals("PSK_SELECTED") && (graphObj != null && graphObj.isSelected()));
-//
-//				if (bShowName) {
-//					String sCompartmentName = getName();
-//
-//					if (sCompartmentName != null && sCompartmentName.length() > 0) {
-//						Font originalFont = pGraphics.getFont();
-//						pGraphics.setFont(m_staticTextFont.getScaledFont(pDrawInfo.getFontScaleFactor()));
-//						pGraphics.setColor(this.m_defaultTextColor);
-//
-//						int left = (pBoundingRect.getIntX() + pBoundingRect.getIntWidth() / 2) - (pGraphics.getFontMetrics().stringWidth(sCompartmentName) / 2);
-//						int top = pBoundingRect.getIntY() + pGraphics.getFontMetrics().getHeight();
-//
-//                  // CHANGED CHANGED
-//						// draw the static text
-//						//pGraphics.drawString(sCompartmentName, left, top);
-//                  // CHANGED CHANGED
-//                  
-//						retValue = pGraphics.getFontMetrics().getHeight();
-//						pGraphics.setFont(originalFont);
-//					}
-//				}
-//			}
-//		}
-//
-//		return retValue;
-//	}
-   
 	/**
 	 * Draws the entire scrollbar.
 	 */
@@ -726,53 +677,6 @@ public abstract class ETListCompartment extends ETSimpleListCompartment implemen
 
 		long nCount = this.getNumCompartments();
 
-		//		double zoomLevel = GetZoomLevel(pInfo);
-		//
-		//		if (m_bEnableScroll && nCount > 1 && (int (m_maxHeight * zoomLevel) > m_rcScrollBar.Height())) {
-		//			if (pOwnerNode() && pOwnerNodeView() && pOwnerNode() - > isSelected() && pOwnerNodeView() - > resizable()) {
-		//				// fetch draw area colors
-		//				ATLASSERT(m_Engine);
-		//
-		//				double nPoints = zoomLevel * SCROLLWIDTH;
-		//
-		//				// calc scrollbar's rect
-		//				CRect rcBar(m_rcScrollBar);
-		//				rcBar.left = rcBar.right - int (nPoints);
-		//				m_rcScrollBar.left = rcBar.left;
-		//
-		//				// calc rect for buttons
-		//				nPoints = zoomLevel * SCROLLBUTTONHEIGHT;
-		//
-		//				m_rcScrollDown = rcBar;
-		//				m_rcScrollDown.bottom = m_rcScrollDown.top + int (nPoints);
-		//
-		//				m_rcScrollUp = rcBar;
-		//				m_rcScrollUp.top = m_rcScrollUp.bottom - int (nPoints);
-		//
-		//				// adjust button heights if we're overlapping
-		//				if (m_rcScrollDown.bottom > m_rcScrollUp.top) {
-		//					// buttons overlap, squish them together
-		//					if ((m_rcScrollUp.bottom - m_rcScrollDown.top) >= nPoints) {
-		//						m_rcScrollDown.bottom = (m_rcScrollDown.top + m_rcScrollUp.bottom) / 2;
-		//						m_rcScrollUp.top = m_rcScrollDown.bottom;
-		//						DrawButton(pInfo, m_rcScrollUp, true);
-		//						DrawButton(pInfo, m_rcScrollDown, false);
-		//					}
-		//				} else {
-		//					// paint the track         
-		//					CBrush * pBrushH = pTSEDrawInfo - > dc().GetHalftoneBrush();
-		//					pTSEDrawInfo - > dc().FillRect(rcBar, pBrushH);
-		//
-		//					// draw up/down buttons
-		//					DrawButton(pInfo, m_rcScrollUp, true);
-		//					DrawButton(pInfo, m_rcScrollDown, false);
-		//
-		//					DrawThumb(pInfo);
-		//				}
-		//				bRetVal = true;
-		//				m_bScrollBarVisible = true;
-		//			}
-		//		}
 		return bRetVal;
 	}
 
@@ -782,58 +686,6 @@ public abstract class ETListCompartment extends ETSimpleListCompartment implemen
 	boolean drawButton(IDrawInfo pDrawInfo, ETRect rect, boolean bDirection) {
 		boolean bRetVal = true;
 
-		// grab colors off the dc
-		//		COLORREF clrBk = pTSEDrawInfo - > dc().GetBkColor();
-		//		COLORREF clrText = pTSEDrawInfo - > dc().GetTextColor();
-
-		// create background brush
-		//		CBrush br(clrBk);
-		//		CBrush * pOldBrush = (CBrush *) pTSEDrawInfo - > dc().SelectObject(& br);
-
-		//		double zoomLevel = GetZoomLevel(pInfo) * 2;
-		//		int nPoints = (int) zoomLevel;
-		//
-		//		// draw button outline
-		//		pTSEDrawInfo - > dc().RoundRect(rect, CPoint(nPoints, nPoints));
-		//
-		//		// shrink rect slightly for the arrowhead
-		//		nPoints = (int) zoomLevel;
-		//		rect.InflateRect(-nPoints, -nPoints);
-		//
-		//		CPoint pts[3];
-		//
-		//		// create pen and brush for drawing arrowhead
-		//		CPen pen(PS_SOLID, 1, clrText);
-		//		CPen * pOldPen = pTSEDrawInfo - > dc().SelectObject(& pen);
-		//
-		//		br.DeleteObject();
-		//		br.CreateSolidBrush(clrText);
-		//		pTSEDrawInfo - > dc().SelectObject(& br);
-		//
-		//		// set points of the arrow
-		//		pts[0].x = rect.left;
-		//		pts[0].y = rect.top;
-		//
-		//		pts[1].x = rect.right;
-		//		pts[1].y = rect.top;
-		//
-		//		pts[2].x = rect.left + rect.Width() / 2;
-		//		pts[2].y = rect.bottom;
-		//
-		//		if (!bDirection) {
-		//			// invert the arrow
-		//			pts[0].y = rect.bottom;
-		//			pts[1].y = rect.bottom;
-		//			pts[2].y = rect.top;
-		//		}
-		//
-		//		// draw arrowhead
-		//		pTSEDrawInfo - > dc().Polygon(pts, 3);
-		//
-		//		// clean up
-		//		pTSEDrawInfo - > dc().SelectObject(pOldPen);
-		//		pTSEDrawInfo - > dc().SelectObject(pOldBrush);
-
 		return bRetVal;
 	}
 
@@ -842,45 +694,6 @@ public abstract class ETListCompartment extends ETSimpleListCompartment implemen
 	 */
 	boolean drawThumb(IDrawInfo pDrawInfo) {
 		boolean bRetVal = true;
-
-		//		ATLASSERT(m_maxScrollPos > 0);
-		//		ATLASSERT(m_maxHeight > 0);
-		//
-		//		if (m_maxScrollPos > 0 && m_maxHeight > 0) {
-		//			// calc height of thumbbuttom
-		//			CRect rect(m_rcScrollBar);
-		//			rect.top = m_rcScrollDown.bottom;
-		//			rect.bottom = m_rcScrollUp.top;
-		//
-		//			// height of thumb is the percent of displayed area
-		//			double nZoomLevel = GetZoomLevel(pInfo);
-		//			double percent = double (m_rcViewport.Height()) / int (double (m_maxHeight) * nZoomLevel);
-		//			int nThumbSize = (int) (double (rect.Height()) * percent);
-		//
-		//			// position of thumb is percent of top hidden area
-		//			percent = double (m_nTopLogicalPos) / int (double (m_maxScrollPos) * nZoomLevel);
-		//			int nThumbPos = (int) (double (rect.Height()) * percent);
-		//
-		//			rect.top += nThumbPos;
-		//			rect.bottom = min(rect.top + nThumbSize, rect.bottom);
-		//
-		//			// grab colors off the dc
-		//			COLORREF clrBk = pTSEDrawInfo - > dc().GetBkColor();
-		//
-		//			// create background brush
-		//			CBrush br(clrBk);
-		//			CBrush * pOldBrush = (CBrush *) pTSEDrawInfo - > dc().SelectObject(& br);
-		//
-		//			// calc radius of corners
-		//			int nPoints = (int) nZoomLevel * 2;
-		//
-		//			// draw button outline
-		//			pTSEDrawInfo - > dc().RoundRect(rect, CPoint(nPoints, nPoints));
-		//			m_rcScrollThumb = rect;
-		//
-		//			// clean up
-		//			pTSEDrawInfo - > dc().SelectObject(pOldBrush);
-		//		}
 
 		return bRetVal;
 	}
