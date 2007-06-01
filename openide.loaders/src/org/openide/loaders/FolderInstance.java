@@ -32,6 +32,7 @@ import org.openide.cookies.InstanceCookie;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 /** Support class for creation of an object from the content
 * of a {@link DataObject.Container}. It implements
@@ -280,7 +281,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
     /** Overrides the instance finished to deal with
      * internal state correctly.
      */
-    public void waitFinished () {
+    public @Override void waitFinished() {
         boolean isLog = err.isLoggable(Level.FINE);
         for (;;) {
             err.fine("waitProcessingFinished on container"); // NOI18N
@@ -330,7 +331,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
     }
 
     /** Synchronously starts the creation of the instance. */
-    public void run () {
+    public @Override void run() {
         recreate ();
         instanceFinished ();
     }
@@ -368,7 +369,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
         InstanceCookie cookie;
         //Order of checking reversed first check cookie and then folder
         // test if we accept the instance
-        cookie = (InstanceCookie)dob.getCookie (InstanceCookie.class);
+        cookie = dob.getCookie(InstanceCookie.class);
         try {
             cookie = cookie == null ? null : acceptCookie (cookie);
             acceptType = 1;
@@ -383,7 +384,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
         }
         
         if (cookie == null) {
-            DataFolder folder = (DataFolder) dob.getCookie (DataFolder.class);
+            DataFolder folder = dob.getCookie(DataFolder.class);
             if (folder != null) {
                 HoldInstance previous = map.get (folder.getPrimaryFile ());
                 if (previous != null && previous.cookie != null) {
@@ -399,7 +400,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
         
         if (cookie == null) {
             // try also the container
-            DataObject.Container c = (DataObject.Container)dob.getCookie (DataObject.Container.class);
+            DataObject.Container c = dob.getCookie(DataObject.Container.class);
             if (c != null) {
                 cookie = acceptContainer (c);
                 acceptType = 4;
@@ -814,7 +815,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
         return err;
     }
     
-    public String toString () {
+    public @Override String toString() {
         return getClass ().getName () + "@" + Integer.toHexString (System.identityHashCode (this)) + "(" + this.container + ")"; // NOI18N
     }
     
@@ -945,9 +946,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
                 // for example FolderInstance ;-) attach itself for changes
                 // in the cookie
                 Task t = (Task)cookie;
-                t.addTaskListener (
-                    (TaskListener)org.openide.util.WeakListeners.create (TaskListener.class, this, t)
-                );
+                t.addTaskListener(WeakListeners.create(TaskListener.class, this, t));
             }
         }
 
