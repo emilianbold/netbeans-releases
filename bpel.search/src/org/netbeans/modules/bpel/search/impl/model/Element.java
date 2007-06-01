@@ -76,11 +76,11 @@ final class Element extends SearchElement.Adapter {
   }
 
   private static String getText(Component component) {
-    return RefactorUtil.getHtmlName(component);
+    return RefactorUtil.getName(component);
   }
 
   private static String getToolTip(Component component) {
-    return RefactorUtil.getHtmlName(component);
+    return getText(component);
   }
 
   private static SearchElement getParent(Component component) {
