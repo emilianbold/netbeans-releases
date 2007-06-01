@@ -3057,8 +3057,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                 } else if (type.getKind() == TypeKind.DECLARED) {
                     Elements elements = env.getController().getElements();
                     Types types = env.getController().getTypes();
-                    DeclaredType iterable = types.getDeclaredType(elements.getTypeElement(JAVA_LANG_ITERABLE)); //NOI18N
-                    if (types.isSubtype(type, iterable)) {
+                    TypeElement iterableTE = elements.getTypeElement(JAVA_LANG_ITERABLE); //NOI18N
+                    DeclaredType iterable = iterableTE != null ? types.getDeclaredType(iterableTE) : null;
+                    if (iterable != null && types.isSubtype(type, iterable)) {
                         Iterator<? extends TypeMirror> it = ((DeclaredType)type).getTypeArguments().iterator();
                         type = it.hasNext() ? it.next() : elements.getTypeElement(JAVA_LANG_OBJECT).asType(); //NOI18N
                     } else {

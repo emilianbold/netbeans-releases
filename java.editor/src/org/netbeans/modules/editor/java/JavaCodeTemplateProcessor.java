@@ -346,10 +346,13 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
 
     private VariableElement iterable() {
         if (initParsing()) {
-            TypeMirror iterableType = cInfo.getTypes().getDeclaredType(cInfo.getElements().getTypeElement("java.lang.Iterable")); //NOI18N
-            for (Element e : locals) {
-                if (e instanceof VariableElement && (e.asType().getKind() == TypeKind.ARRAY || cInfo.getTypes().isAssignable(e.asType(), iterableType)))
-                    return (VariableElement)e;
+            TypeElement iterableTE = cInfo.getElements().getTypeElement("java.lang.Iterable"); //NOI18N
+            if (iterableTE != null) {
+                TypeMirror iterableType = cInfo.getTypes().getDeclaredType(iterableTE);
+                for (Element e : locals) {
+                    if (e instanceof VariableElement && (e.asType().getKind() == TypeKind.ARRAY || cInfo.getTypes().isAssignable(e.asType(), iterableType)))
+                        return (VariableElement)e;
+                }
             }
         }
         return null;

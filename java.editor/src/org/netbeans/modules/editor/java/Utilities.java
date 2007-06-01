@@ -263,9 +263,10 @@ public class Utilities {
     private static List<String> varNamesForType(TypeMirror type, Types types, Elements elements) {
         switch (type.getKind()) {
             case ARRAY:
-                TypeMirror iterable = types.getDeclaredType(elements.getTypeElement("java.lang.Iterable")); //NOI18N
+                TypeElement iterableTE = elements.getTypeElement("java.lang.Iterable"); //NOI18N
+                TypeMirror iterable = iterableTE != null ? types.getDeclaredType(iterableTE) : null;
                 TypeMirror ct = ((ArrayType)type).getComponentType();
-                if (ct.getKind() == TypeKind.ARRAY && types.isSubtype(ct, iterable))
+                if (ct.getKind() == TypeKind.ARRAY && iterable != null && types.isSubtype(ct, iterable))
                     return varNamesForType(ct, types, elements);
                 List<String> vnct = new ArrayList<String>();
                 for (String name : varNamesForType(ct, types, elements))
@@ -298,7 +299,8 @@ public class Utilities {
                     al.add(sb.toString());
                 return al;
             case DECLARED:
-                iterable = types.getDeclaredType(elements.getTypeElement("java.lang.Iterable")); //NOI18N
+                iterableTE = elements.getTypeElement("java.lang.Iterable"); //NOI18N
+                iterable = iterableTE != null ? types.getDeclaredType(iterableTE) : null;
                 tn = ((DeclaredType)type).asElement().getSimpleName().toString();
                 if (tn.toUpperCase().contentEquals(tn))
                     return Collections.<String>singletonList(tn.toLowerCase());
@@ -310,7 +312,7 @@ public class Utilities {
                     al.add(tn);
                     sb.append(tn.charAt(0));
                 }
-                if (types.isSubtype(type, iterable)) {
+                if (iterable != null && types.isSubtype(type, iterable)) {
                     List<? extends TypeMirror> tas = ((DeclaredType)type).getTypeArguments();
                     if (tas.size() > 0) {
                         TypeMirror et = tas.get(0);
