@@ -80,7 +80,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         public Iterable<? extends CodeGenerator> create(CompilationController cc, TreePath path) throws IOException {
             path = Utilities.getPathElementOfKind(Tree.Kind.CLASS, path);
             if (path == null)
-                return null;
+                return Collections.emptySet();
             cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
             
             EqualsHashCodeGenerator gen = createEqualsHashCodeGenerator(cc, cc.getTrees().getElement(path));
