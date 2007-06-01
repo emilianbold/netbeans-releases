@@ -257,11 +257,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.modules.uml.ui.addins.diagramcreator</package>
                 <package>org.netbeans.modules.uml.ui.addins.eventlogger</package>
                 <package>org.netbeans.modules.uml.ui.addins.reguiaddin</package>
-                <package>org.netbeans.modules.uml.ui.addins.roseimport</package>
-                <package>org.netbeans.modules.uml.ui.addins.roseimport.parser</package>
-                <package>org.netbeans.modules.uml.ui.addins.roseimport.rosetranslator</package>
-                <package>org.netbeans.modules.uml.ui.addins.roseimport.rosetranslator.diagrams</package>
-                <package>org.netbeans.modules.uml.ui.addins.roseimport.xmiutils</package>
                 <package>org.netbeans.modules.uml.ui.controls.doccontrol</package>
                 <package>org.netbeans.modules.uml.ui.controls.drawingarea</package>
                 <package>org.netbeans.modules.uml.ui.controls.editcontrol</package>
@@ -289,6 +284,7 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.modules.uml.ui.products.ad.projecttreedefaultengine</package>
                 <package>org.netbeans.modules.uml.ui.products.ad.viewfactory</package>
                 <package>org.netbeans.modules.uml.ui.support</package>
+                <package>org.netbeans.modules.uml.ui.support.accessibility</package>
                 <package>org.netbeans.modules.uml.ui.support.applicationmanager</package>
                 <package>org.netbeans.modules.uml.ui.support.archivesupport</package>
                 <package>org.netbeans.modules.uml.ui.support.commondialogs</package>
@@ -307,6 +303,7 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.modules.uml.ui.support.viewfactorysupport</package>
                 <package>org.netbeans.modules.uml.ui.support.visitors</package>
                 <package>org.netbeans.modules.uml.ui.support.wizard</package>
+                <package>org.netbeans.modules.uml.ui.swing</package>
                 <package>org.netbeans.modules.uml.ui.swing.commondialogs</package>
                 <package>org.netbeans.modules.uml.ui.swing.drawingarea</package>
                 <package>org.netbeans.modules.uml.ui.swing.drawingarea.cursors</package>

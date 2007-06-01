@@ -52,8 +52,8 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
     <folder name="UML">
         <folder name="UMLOptions">
             <folder name="Panels">
-            <file name="CodeGenOptionsPanel.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.codegen.ui.CodeGenOptionsPanel"/>
+            <file name="DomainTemplatesOptionsPanel.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.codegen.ui.DomainTemplatesOptionsPanel"/>
             </file>
             </folder>
         </folder>
@@ -62,7 +62,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
         <folder name="org-netbeans-modules-uml-project">
             <folder name="Customizer">
                 <file name="Templates.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.codegen.ui.GenCodeTemplateCustomizerProvider.createTemplates"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.uml.codegen.ui.DomainTemplatesCustomizer.createTemplates"/>
                 </file>
             </folder>
         </folder>
