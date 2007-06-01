@@ -19,7 +19,9 @@
 
 package org.netbeans.modules.uml.propertysupport.options.panels;
 
-import javax.swing.JCheckBox;
+import java.util.prefs.Preferences;
+import javax.swing.JComboBox;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 /**
@@ -27,6 +29,7 @@ import org.openide.util.NbPreferences;
  * @author  krichard
  */
 public class ShowMeDialogsListPanel extends javax.swing.JPanel {
+    
     
     /** Creates new form ShowMeDialogsListPanel */
     public ShowMeDialogsListPanel() {
@@ -39,52 +42,68 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
      * This is called in the corresponding UMLOptionsPanel's update method.
      */
     public void load() {
-     
-        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("UML_ShowMe_Allow_Lengthy_Searches", true)) {
-            allowLengthyCB.setSelected(true);
-        }
-        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("UML_ShowMe_Automatically_Create_Classifiers", true)) {
-            autoCreateCB.setSelected(true);
-        }
-        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("UML_ShowMe_Delete_Combined_Fragment_Messages", true)) {
-            deleteCombinedFragCB.setSelected(true);
-        }
-        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("UML_ShowMe_Delete_Connector_Messages", true)) {
-            deleteConnectorCB.setSelected(true);
-        }
-        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("UML_ShowMe_Delete_File_when_Deleting_Artifacts", true)) {
-            deleteFileCB.setSelected(true);
-        }
-        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("UML_ShowMe_Dont_Show_Filter_Warning_Dialog", true)) {
-            filterWarningCB.setSelected(true);
-        }
-        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("UML_ShowMe_Modify_Redefined_Operations", true)) {
-            modifyCB.setSelected(true);
-        }
-        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("UML_ShowMe_Move_Invoked_Operation", true)) {
-            moveInvokedCB.setSelected(true);
-        }
-        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("UML_ShowMe_Overwrite_Existing_Participants", true)) {
-            overwriteCB.setSelected(true);
-        }
-        if (NbPreferences.forModule(ShowMeDialogsListPanel.class).getBoolean("UML_ShowMe_Transform_When_Elements_May_Be_Lost", true)) {
-            transformCB.setSelected(true);
-        }
+        
+        String s = "";
+        Preferences prefs = NbPreferences.forModule(ShowMeDialogsListPanel.class);
+       
+        s = prefs.get("UML_ShowMe_Allow_Lengthy_Searches", PSK_ASK);
+        allowLengthySearchesCB.setSelectedItem(s);
+        
+        s = prefs.get("UML_ShowMe_Automatically_Create_Classifiers", PSK_ASK);
+        autoCreateCB.setSelectedItem(s);
+        
+        s = prefs.get("UML_ShowMe_Delete_Combined_Fragment_Messages", PSK_ASK);
+        deleteCombFragCB.setSelectedItem(s);
+        
+        s = prefs.get("UML_ShowMe_Delete_Connector_Messages", PSK_ASK);
+        deleteConnectorCB.setSelectedItem(s);
+        
+        s = prefs.get("UML_ShowMe_Delete_File_when_Deleting_Artifacts", PSK_ASK);
+        deleteFileCB.setSelectedItem(s);
+        
+        s = prefs.get("UML_ShowMe_Dont_Show_Filter_Warning_Dialog", PSK_ASK);
+        filterWarningCB.setSelectedItem(s);
+        
+        s = prefs.get("UML_ShowMe_Modify_Redefined_Operations", PSK_ASK);
+        modifyCB.setSelectedItem(s);
+                
+        s = prefs.get("UML_ShowMe_Move_Invoked_Operation", PSK_ASK);
+        moveInvokedCB.setSelectedItem(s);
+        
+        s = prefs.get("UML_ShowMe_Overwrite_Existing_Participants", PSK_ASK);
+        overwriteCB.setSelectedItem(s);
+        
+        s = prefs.get("UML_ShowMe_Transform_When_Elements_May_Be_Lost", PSK_ASK);
+        transformCB.setSelectedItem(s);
+        
         
     }
     
     public void store() {
         
-        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("UML_ShowMe_Allow_Lengthy_Searches", allowLengthyCB.isSelected());
-        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("UML_ShowMe_Automatically_Create_Classifiers", autoCreateCB.isSelected());
-        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("UML_ShowMe_Delete_Combined_Fragment_Messages", deleteCombinedFragCB.isSelected());
-        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("UML_ShowMe_Delete_Connector_Messages", deleteConnectorCB.isSelected());
-        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("UML_ShowMe_Delete_File_when_Deleting_Artifacts", deleteFileCB.isSelected());
-        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("UML_ShowMe_Dont_Show_Filter_Warning_Dialog", filterWarningCB.isSelected());
-        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("UML_ShowMe_Modify_Redefined_Operations", modifyCB.isSelected());
-        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("UML_ShowMe_Move_Invoked_Operation", moveInvokedCB.isSelected());
-        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("UML_ShowMe_Overwrite_Existing_Participants", overwriteCB.isSelected());
-        NbPreferences.forModule(ShowMeDialogsListPanel.class).putBoolean("UML_ShowMe_Transform_When_Elements_May_Be_Lost", transformCB.isSelected());
+        Preferences prefs = NbPreferences.forModule(ShowMeDialogsListPanel.class);
+        int index = -1;
+        
+        index = allowLengthySearchesCB.getSelectedIndex() ;
+        prefs.put("UML_ShowMe_Allow_Lengthy_Searches", mappedChoices[index]);
+        index = autoCreateCB.getSelectedIndex() ;
+        prefs.put("UML_ShowMe_Automatically_Create_Classifiers", mappedChoices[index]);
+        index = deleteCombFragCB.getSelectedIndex() ;
+        prefs.put("UML_ShowMe_Delete_Combined_Fragment_Messages", mappedChoices[index]);
+        index = deleteConnectorCB.getSelectedIndex() ;
+        prefs.put("UML_ShowMe_Delete_Connector_Messages", mappedChoices[index]);
+        index = deleteFileCB.getSelectedIndex() ;
+        prefs.put("UML_ShowMe_Delete_File_when_Deleting_Artifacts", mappedChoices[index]);
+        index = filterWarningCB.getSelectedIndex() ;
+        prefs.put("UML_ShowMe_Dont_Show_Filter_Warning_Dialog", mappedChoices[index]);
+        index = modifyCB.getSelectedIndex() ;
+        prefs.put("UML_ShowMe_Modify_Redefined_Operations", mappedChoices[index]);
+        index = moveInvokedCB.getSelectedIndex() ;
+        prefs.put("UML_ShowMe_Move_Invoked_Operation", mappedChoices[index]);
+        index = overwriteCB.getSelectedIndex() ;
+        prefs.put("UML_ShowMe_Overwrite_Existing_Participants", mappedChoices[index]);
+        index = transformCB.getSelectedIndex() ;
+        prefs.put("UML_ShowMe_Transform_When_Elements_May_Be_Lost", mappedChoices[index]);
         
     }
     
@@ -96,148 +115,126 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        dialogListPanel = new javax.swing.JPanel();
-        deleteFileCB = new javax.swing.JCheckBox();
-        filterWarningCB = new javax.swing.JCheckBox();
-        transformCB = new javax.swing.JCheckBox();
-        modifyCB = new javax.swing.JCheckBox();
-        overwriteCB = new javax.swing.JCheckBox();
-        deleteConnectorCB = new javax.swing.JCheckBox();
-        autoCreateCB = new javax.swing.JCheckBox();
-        deleteCombinedFragCB = new javax.swing.JCheckBox();
-        moveInvokedCB = new javax.swing.JCheckBox();
-        allowLengthyCB = new javax.swing.JCheckBox();
-        buttonPanel = new javax.swing.JPanel();
-        deselectButton = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
         mainLabel = new javax.swing.JLabel();
-        jSeparator1 = new javax.swing.JSeparator();
         jSeparator2 = new javax.swing.JSeparator();
-
-        checkboxes = new JCheckBox[10];
-
-        checkboxes[0] = allowLengthyCB ;
-        checkboxes[1] = autoCreateCB ;
-        checkboxes[2] = deleteCombinedFragCB ;
-        checkboxes[3] = deleteConnectorCB ;
-        checkboxes[4] = deleteFileCB ;
-        checkboxes[5] = filterWarningCB ;
-        checkboxes[6] = modifyCB ;
-        checkboxes[7] = moveInvokedCB ;
-        checkboxes[8] = overwriteCB ;
-        checkboxes[9] = transformCB ;
-
-        deleteFileCB.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jCheckBox1.text_1")); // NOI18N
-        deleteFileCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        filterWarningCB.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jCheckBox2.text_1")); // NOI18N
-        filterWarningCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        transformCB.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jCheckBox3.text_1")); // NOI18N
-        transformCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        transformCB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                transformCBActionPerformed(evt);
-            }
-        });
-
-        modifyCB.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jCheckBox4.text_1")); // NOI18N
-        modifyCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        overwriteCB.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jCheckBox5.text_1")); // NOI18N
-        overwriteCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        deleteConnectorCB.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jCheckBox6.text_1")); // NOI18N
-        deleteConnectorCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        autoCreateCB.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jCheckBox7.text_1")); // NOI18N
-        autoCreateCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        deleteCombinedFragCB.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jCheckBox8.text")); // NOI18N
-        deleteCombinedFragCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        moveInvokedCB.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jCheckBox9.text")); // NOI18N
-        moveInvokedCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        allowLengthyCB.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jCheckBox10.text")); // NOI18N
-        allowLengthyCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        org.jdesktop.layout.GroupLayout dialogListPanelLayout = new org.jdesktop.layout.GroupLayout(dialogListPanel);
-        dialogListPanel.setLayout(dialogListPanelLayout);
-        dialogListPanelLayout.setHorizontalGroup(
-            dialogListPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(dialogListPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(dialogListPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(deleteFileCB)
-                    .add(filterWarningCB)
-                    .add(transformCB)
-                    .add(modifyCB)
-                    .add(overwriteCB)
-                    .add(deleteConnectorCB)
-                    .add(autoCreateCB)
-                    .add(deleteCombinedFragCB)
-                    .add(moveInvokedCB)
-                    .add(allowLengthyCB))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        dialogListPanelLayout.setVerticalGroup(
-            dialogListPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(dialogListPanelLayout.createSequentialGroup()
-                .add(deleteFileCB)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(filterWarningCB)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(transformCB)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(modifyCB)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(overwriteCB)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(deleteConnectorCB)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(autoCreateCB)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(deleteCombinedFragCB)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(moveInvokedCB)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(allowLengthyCB))
-        );
-
-        deselectButton.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jButton1.text")); // NOI18N
-        deselectButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                deselectButtonActionPerformed(evt);
-            }
-        });
-
-        jButton1.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jButton1.text_1")); // NOI18N
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
-
-        org.jdesktop.layout.GroupLayout buttonPanelLayout = new org.jdesktop.layout.GroupLayout(buttonPanel);
-        buttonPanel.setLayout(buttonPanelLayout);
-        buttonPanelLayout.setHorizontalGroup(
-            buttonPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(buttonPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(jButton1)
-                .add(17, 17, 17)
-                .add(deselectButton)
-                .addContainerGap(120, Short.MAX_VALUE))
-        );
-        buttonPanelLayout.setVerticalGroup(
-            buttonPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(buttonPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                .add(deselectButton)
-                .add(jButton1))
-        );
+        jPanel1 = new javax.swing.JPanel();
+        deleteFileCB = new JComboBox (displayChoices);
+        jLabel1 = new javax.swing.JLabel();
+        filterWarningCB = new JComboBox (displayChoices);
+        transformCB = new JComboBox (displayChoices);
+        modifyCB = new JComboBox (displayChoices);
+        overwriteCB = new JComboBox (displayChoices);
+        deleteConnectorCB = new JComboBox (displayChoices);
+        autoCreateCB = new JComboBox (displayChoices);
+        deleteCombFragCB = new JComboBox (displayChoices);
+        moveInvokedCB = new JComboBox (displayChoices);
+        allowLengthySearchesCB = new JComboBox (displayChoices);
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
+        jLabel10 = new javax.swing.JLabel();
 
         mainLabel.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "mainLabel.text")); // NOI18N
+
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabel1.text_3")); // NOI18N
+
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabel2.text_2")); // NOI18N
+
+        jLabel3.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabel3.text_2")); // NOI18N
+
+        jLabel4.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabel4.text_2")); // NOI18N
+
+        jLabel5.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabel5.text_2")); // NOI18N
+
+        jLabel6.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabel6.text_2")); // NOI18N
+
+        jLabel7.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabel7.text_2")); // NOI18N
+
+        jLabel8.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabel8.text_2")); // NOI18N
+
+        jLabel9.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabel9.text_1")); // NOI18N
+
+        jLabel10.setText(org.openide.util.NbBundle.getMessage(ShowMeDialogsListPanel.class, "jLabel10.text_2")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, moveInvokedCB, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, deleteCombFragCB, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, autoCreateCB, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, deleteConnectorCB, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, overwriteCB, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, modifyCB, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, transformCB, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, filterWarningCB, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, deleteFileCB, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, allowLengthySearchesCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 135, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel1)
+                    .add(jLabel2)
+                    .add(jLabel3)
+                    .add(jLabel4)
+                    .add(jLabel5)
+                    .add(jLabel6)
+                    .add(jLabel7)
+                    .add(jLabel8)
+                    .add(jLabel9)
+                    .add(jLabel10))
+                .addContainerGap(185, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(deleteFileCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel1))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(filterWarningCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel2))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(transformCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel3))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(modifyCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel4))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(overwriteCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel5))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(deleteConnectorCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel6))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(autoCreateCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel7))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(deleteCombFragCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel8))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(moveInvokedCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel9))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel10)
+                    .add(allowLengthySearchesCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(12, Short.MAX_VALUE))
+        );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -246,11 +243,9 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(mainLabel)
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 435, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(buttonPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jSeparator2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 435, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(dialogListPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(92, Short.MAX_VALUE))
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -259,60 +254,47 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jSeparator2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(dialogListPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(26, 26, 26)
-                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(1, 1, 1)
-                .add(buttonPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(31, Short.MAX_VALUE))
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(24, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-    
-    private void transformCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_transformCBActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_transformCBActionPerformed
-    
-private void deselectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deselectButtonActionPerformed
-    deselectAll() ;
-}//GEN-LAST:event_deselectButtonActionPerformed
 
-private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-    selectAll() ;
-}//GEN-LAST:event_jButton1ActionPerformed
-
-private void selectAll() {
-    for (JCheckBox box: checkboxes) {
-        box.setSelected(true);
-    }
     
-}
-
-private void deselectAll() {
-    for (JCheckBox box: checkboxes) {
-        box.setSelected(false);
-    }
+    private String PSK_ASK = "PSK_ASK" ;
+    private String PSK_ALWAYS = "PSK_ALWAYS" ;
+    private String PSK_NEVER = "PSK_NEVER" ;
     
-}
-
+    private String ASK = NbBundle.getMessage(ShowMeDialogsListPanel.class, "ASK") ;
+    private String ALWAYS = NbBundle.getMessage(ShowMeDialogsListPanel.class, "ALWAYS") ;
+    private String NEVER = NbBundle.getMessage(ShowMeDialogsListPanel.class, "NEVER") ;
+    
+    private String[] displayChoices = {ASK, ALWAYS, NEVER} ;
+    private String[] mappedChoices = {PSK_ASK, PSK_ALWAYS, PSK_NEVER} ;
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox allowLengthyCB;
-    private javax.swing.JCheckBox autoCreateCB;
-    private javax.swing.JPanel buttonPanel;
-    private javax.swing.JCheckBox deleteCombinedFragCB;
-    private javax.swing.JCheckBox deleteConnectorCB;
-    private javax.swing.JCheckBox deleteFileCB;
-    private javax.swing.JButton deselectButton;
-    private JCheckBox[] checkboxes = null ;
-    private javax.swing.JPanel dialogListPanel;
-    private javax.swing.JCheckBox filterWarningCB;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JComboBox allowLengthySearchesCB;
+    private javax.swing.JComboBox autoCreateCB;
+    private javax.swing.JComboBox deleteCombFragCB;
+    private javax.swing.JComboBox deleteConnectorCB;
+    private javax.swing.JComboBox deleteFileCB;
+    private javax.swing.JComboBox filterWarningCB;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JLabel mainLabel;
-    private javax.swing.JCheckBox modifyCB;
-    private javax.swing.JCheckBox moveInvokedCB;
-    private javax.swing.JCheckBox overwriteCB;
-    private javax.swing.JCheckBox transformCB;
+    private javax.swing.JComboBox modifyCB;
+    private javax.swing.JComboBox moveInvokedCB;
+    private javax.swing.JComboBox overwriteCB;
+    private javax.swing.JComboBox transformCB;
     // End of variables declaration//GEN-END:variables
     
 }
