@@ -20,6 +20,7 @@
 
 package org.netbeans.installer;
 
+import java.awt.HeadlessException;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -45,6 +46,7 @@ import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StreamUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.LogManager;
@@ -616,10 +618,23 @@ public class Installer implements FinishHandler {
         JFrame.setDefaultLookAndFeelDecorated(true);
         try {
             try {
-                UIManager.getInstalledLookAndFeels(); // this helps to avoid some
-                                                      // GTK L&F bugs for some 
-                                                      // locales
-                UIManager.setLookAndFeel(className);
+                try {
+                    UIManager.getInstalledLookAndFeels(); // this helps to avoid some
+                                                          // GTK L&F bugs for some 
+                                                          // locales
+                    UIManager.setLookAndFeel(className);
+                } catch (InternalError e) {
+                    System.err.println(e.getMessage());
+                    throw new InitializationException("Can`t initialiaze L&F",e);
+                } catch (ExceptionInInitializerError e) {                    
+                    Throwable cause = e.getCause();
+                    if(cause!=null && cause instanceof HeadlessException) {
+                        System.err.println(cause.getMessage());                
+                        throw new InitializationException("Can`t initialiaze L&F",e);
+                    } else {
+                        throw e;
+                    }
+                } 
             } catch (Exception e) {
                 // we're catching Exception here as pretty much anything can happen
                 // while setting the look and feel and we have no control over it
