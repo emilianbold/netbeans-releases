@@ -287,10 +287,11 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
                     Element selected = selectedElement.resolveElement(info);
                     if (selected.getKind() == ElementKind.PACKAGE || selected.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
-                        return new SafeDeleteUI(new FileObject[]{info.getFileObject()}, Collections.singleton(selectedElement));
-                    } else {
-                        return new SafeDeleteUI(new TreePathHandle[]{selectedElement}, info);
+                        if (info.getFileObject().getName().equals(selected.getSimpleName().toString())) {
+                            return new SafeDeleteUI(new FileObject[]{info.getFileObject()}, Collections.singleton(selectedElement));
+                        }
                     }
+                    return new SafeDeleteUI(new TreePathHandle[]{selectedElement}, info);
                 }
             };
         } else {
