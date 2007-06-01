@@ -78,15 +78,15 @@ nbexec=`echo "$progdir"/../platform*/lib/nbexec`
 
 case "`uname`" in
     Darwin*)
-        exec sh "$nbexec" \
-            --jdkhome "$jdkhome" \
-            -J-Dcom.apple.mrj.application.apple.menu.about.name="$APPNAME" \
-            -J-Xdock:name="$APPNAME" \
-            --branding "$APPNAME" \
-            --clusters "$clusters" \
-            --userdir "${userdir}" \
+        eval exec sh '"$nbexec"' \
+            --jdkhome '"$jdkhome"' \
+            -J-Dcom.apple.mrj.application.apple.menu.about.name='"$APPNAME"' \
+            -J-Xdock:name='"$APPNAME"' \
+            --branding '"$APPNAME"' \
+            --clusters '"$clusters"' \
+            --userdir '"${userdir}"' \
             ${default_options} \
-            $args
+            '$args'
         ;;
     *)  
        sh=sh
@@ -95,12 +95,12 @@ case "`uname`" in
        then
            sh=/bin/bash
        fi
-       exec $sh "$nbexec" \
-            --jdkhome "$jdkhome" \
-            --branding "$APPNAME" \
-            --clusters "$clusters" \
-            --userdir "${userdir}" \
+       eval exec $sh '"$nbexec"' \
+            --jdkhome '"$jdkhome"' \
+            --branding '"$APPNAME"' \
+            --clusters '"$clusters"' \
+            --userdir '"${userdir}"' \
             ${default_options} \
-            $args
+            '$args'
         ;;
 esac

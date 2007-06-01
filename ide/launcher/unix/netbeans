@@ -117,26 +117,26 @@ launchNbexec() {
 # but it doesn't get propagated into the executed java VM. 
 case "`uname`" in
     Darwin*)
-        launchNbexec \
-            --jdkhome "$netbeans_jdkhome" \
+        eval launchNbexec \
+            --jdkhome '"$netbeans_jdkhome"' \
             -J-Dcom.apple.mrj.application.apple.menu.about.name=NetBeans \
             -J-Xdock:name=NetBeans \
-            "-J-Xdock:icon=$progdir/../nb6.0/netbeans.icns" \
+            '"-J-Xdock:icon=$progdir/../nb6.0/netbeans.icns"' \
             --branding nb \
-            --clusters "$netbeans_clusters" \
+            --clusters '"$netbeans_clusters"' \
             -J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade \
             -J-Dnetbeans.accept_license_class=org.netbeans.license.AcceptLicense \
             ${netbeans_default_options} \
-            "$@"
+            '"$@"'
         ;;
     *)
-        launchNbexec \
-            --jdkhome "$netbeans_jdkhome" \
+        eval launchNbexec \
+            --jdkhome '"$netbeans_jdkhome"' \
             --branding nb \
-            --clusters "$netbeans_clusters" \
+            --clusters '"$netbeans_clusters"' \
             -J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade \
             -J-Dnetbeans.accept_license_class=org.netbeans.license.AcceptLicense \
             ${netbeans_default_options} \
-            "$@"
+            '"$@"'
         ;;
 esac
