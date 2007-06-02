@@ -40,8 +40,8 @@ public class GenericResourceBean {
     public static final String MIME_TYPE_JASON = "application/json";
     public static final String[] supportedMimeTypes = new String[] { 
         MIME_TYPE_TEXT, 
-        //MIME_TYPE_TEXT_HTML,
-        //MIME_TYPE_XML
+        MIME_TYPE_TEXT_HTML,
+        MIME_TYPE_XML
     };
     
     public static final HttpMethodType[] CONTAINER_METHODS = new HttpMethodType[] {
