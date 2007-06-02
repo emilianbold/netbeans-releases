@@ -45,6 +45,7 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
@@ -54,6 +55,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
 
     private static final String PROP_BUILD_DIR = "build.dir";   //NOI18N
     private static final String DIR_GEN_BINDINGS = "generated/addons" ; // NOI18N
+    private static RequestProcessor REQ_PROCESSOR = new RequestProcessor(); // No I18N
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     private List<PathResourceImplementation> resources;
@@ -140,10 +142,10 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                 cIndx = path.indexOf(child.getName());
                 pIndx = path.indexOf(parent.getName());
 
-                lastElem = ((cIndx + 1) == path.size()) ? true: false ;
+                lastElem = ((pIndx + 1) == path.size()) ? true: false ;
                 
                 if (lastElem){
-                    if (pIndx == (cIndx + 1)){
+                    if (cIndx == -1){
                         firePropertyChange();                                            
                     }
                 } else{
@@ -223,9 +225,9 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                         this.paths,
                         (FileObject)fe.getSource(),
                         fe.getFile());
-                thread.start();
+                SourcePathImplementation.REQ_PROCESSOR.post(thread);
             }
-        }        
+        }                
     }
     
     /**
