@@ -1428,6 +1428,7 @@ private void templatesTableFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST
 //        }
 //    }
     
+    int rowLastClicked = -1;
     
     class NodeSelectionListener extends MouseAdapter
     {
@@ -1443,6 +1444,14 @@ private void templatesTableFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST
             int x = event.getX();
             int y = event.getY();
             int row = tree.getRowForLocation(x, y);
+            
+            if (row != rowLastClicked)
+            {
+                rowLastClicked = row;
+                return;
+            }
+
+            rowLastClicked = row;
             TreePath path = tree.getPathForRow(row);
             
             if (path != null)
@@ -1453,11 +1462,14 @@ private void templatesTableFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST
                 DomainTreeNode domainTreeNode = 
                     (DomainTreeNode)node.getUserObject();
                 
+                if (!domainTreeNode.isDomain())
+                    return;
+                
                 boolean isSelected = !(domainTreeNode.isChecked());
                 boolean state = isSelected;
 
                 // domain node checked/unchecked
-                if (domainTreeNode.getNodeType() == DomainTreeNode.NODE_DOMAIN)
+                if (domainTreeNode.isDomain())
                 {
                     updateCheckedTree(
                         state, 
@@ -1467,19 +1479,19 @@ private void templatesTableFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST
 
                 // family node checked/unchecked, so update all domain 
                 // children to have the same state as its parent
-                else if (node.getChildCount() > 0)
-                {
-                    for (int i=0; i < node.getChildCount(); i++)
-                    {
-                        DomainTreeNode childDomainTreeNode = 
-                            (DomainTreeNode)((DefaultMutableTreeNode)node
-                            .getChildAt(i)).getUserObject();
-                        
-                        updateCheckedTree(state, 
-                            childDomainTreeNode.getFamilyName() + ":" + // NOI18N
-                            childDomainTreeNode.getDomainName());
-                    }
-                }
+//                else if (node.getChildCount() > 0)
+//                {
+//                    for (int i=0; i < node.getChildCount(); i++)
+//                    {
+//                        DomainTreeNode childDomainTreeNode = 
+//                            (DomainTreeNode)((DefaultMutableTreeNode)node
+//                            .getChildAt(i)).getUserObject();
+//                        
+//                        updateCheckedTree(state, 
+//                            childDomainTreeNode.getFamilyName() + ":" + // NOI18N
+//                            childDomainTreeNode.getDomainName());
+//                    }
+//                }
 
                 setItemState(node, state);
                 ((DefaultTreeModel)tree.getModel()).nodeChanged(node);
@@ -1503,249 +1515,7 @@ private void templatesTableFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST
         else if (index > -1 && !checkedState)
             checkedTree.remove(index);
     }
-    
-//    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">  
-//    class CheckBoxNodeRenderer implements TreeCellRenderer
-//    {
-//        private JCheckBox leafRenderer = new JCheckBox();
-//        
-//        private DefaultTreeCellRenderer nonLeafRenderer = 
-//            new DefaultTreeCellRenderer();
-//        
-//        Color selBdrColor;
-//        Color selFG;
-//        Color selBG;
-//        Color txtFG;
-//        Color txtBG;
-//        
-//        protected JCheckBox getLeafRenderer()
-//        {
-//            return leafRenderer;
-//        }
-//        
-//        public CheckBoxNodeRenderer()
-//        {
-//            Boolean drawFocusBorder = (Boolean)UIManager
-//                .get("Tree.drawsFocusBorderAroundIcon"); // NOI18N
-//            
-//            leafRenderer.setFocusPainted(
-//                drawFocusBorder != null && drawFocusBorder.booleanValue());
-//            
-//            selBdrColor = UIManager.getColor("Tree.selectionBorderColor"); // NOI18N
-//            selFG = UIManager.getColor("Tree.selectionForeground"); // NOI18N
-//            selBG = UIManager.getColor("Tree.selectionBackground"); // NOI18N
-//            txtFG = UIManager.getColor("Tree.textForeground"); // NOI18N
-//            txtBG = UIManager.getColor("Tree.textBackground"); // NOI18N
-//        }
-//        
-//        public Component getTreeCellRendererComponent(
-//            JTree tree, 
-//            Object val,
-//            boolean isSelected, 
-//            boolean isExpanded, 
-//            boolean isLeaf, 
-//            int row,
-//            boolean hasFocus)
-//        {
-//            Component retComp;
-//
-//            if (isLeaf)
-//            {
-//                leafRenderer.setText(val.toString());
-//                leafRenderer.setSelected(false);
-//                leafRenderer.setEnabled(tree.isEnabled());
-//                
-//                if (isSelected)
-//                {
-//                    leafRenderer.setForeground(selFG);
-//                    leafRenderer.setBackground(selBG);
-//                }
-//                
-//                else
-//                {
-//                    leafRenderer.setForeground(txtFG);
-//                    leafRenderer.setBackground(txtBG);
-//                }
-//                
-//                if (val != null && 
-//                    val instanceof DomainTemplatesManagerPanel.CheckBoxNode)
-//                {
-//                    DomainTemplatesManagerPanel.CheckBoxNode node = 
-//                        (DomainTemplatesManagerPanel.CheckBoxNode) val;
-//
-//                    leafRenderer.setText(node.getText());
-//                    leafRenderer.setSelected(node.isSelected());
-//                }
-//                
-//                retComp = leafRenderer;
-//            }
-//            
-//            else
-//            {
-//                nonLeafRenderer.setClosedIcon(TEMPLATE_FAMILY_NODE_ICON);
-//                nonLeafRenderer.setOpenIcon(TEMPLATE_FAMILY_NODE_ICON);
-//
-//                retComp = nonLeafRenderer.getTreeCellRendererComponent(
-//                    tree, val, isSelected, isExpanded, isLeaf, row, hasFocus);
-//            }
-//            
-//            return retComp;
-//        }
-//    }
 
-//    // <editor-fold defaultstate="collapsed" desc=" Generated Code "> 
-//    class CheckBoxNodeEditor extends AbstractCellEditor 
-//        implements TreeCellEditor
-//    {
-//        CheckBoxNodeRenderer renderer = new CheckBoxNodeRenderer();
-//        JTree tree;
-//        
-//        public CheckBoxNodeEditor(JTree theTree)
-//        {
-//            tree = theTree;
-//        }
-//        
-//        public Object getCellEditorValue()
-//        {
-//            JCheckBox checkbox = renderer.getLeafRenderer();
-//            
-//            DomainTemplatesManagerPanel.CheckBoxNode checkBoxNode = 
-//                new DomainTemplatesManagerPanel.CheckBoxNode(
-//                    checkbox.getText(), checkbox.isSelected());
-//            
-//            return checkBoxNode;
-//        }
-//        
-//        public boolean isCellEditable(EventObject event)
-//        {
-//            boolean isEditable = false;
-//
-//            if (event instanceof MouseEvent)
-//            {
-//                MouseEvent mouseEvent = (MouseEvent) event;
-//                
-//                TreePath path = templatesTree.getPathForLocation(
-//                    mouseEvent.getX(), mouseEvent.getY());
-//                
-//                if (path != null)
-//                {
-//                    Object node = path.getLastPathComponent();
-//
-//                    if (node != null && node instanceof DefaultMutableTreeNode)
-//                    {
-//                        DefaultMutableTreeNode treeNode = 
-//                            (DefaultMutableTreeNode)node;
-//                        
-//                        isEditable = treeNode.isLeaf() && 
-//                            treeNode instanceof CheckBoxNode;
-//                    }
-//                }
-//            }
-//            
-//            return isEditable;
-//        }
-//        
-//        public Component getTreeCellEditorComponent(
-//            JTree tree, 
-//            Object value,
-//            boolean selected, 
-//            boolean expanded, 
-//            boolean leaf, 
-//            int row)
-//        {
-//            
-//            Component editor = renderer.getTreeCellRendererComponent(
-//                templatesTree, value, true, expanded, leaf, row, true);
-//            
-//            // editor always selected / focused
-//            ItemListener itemListener = new ItemListener()
-//            {
-//                public void itemStateChanged(ItemEvent itemEvent)
-//                {
-//                    TreePath path = templatesTree.getEditingPath();
-//                    
-//                    if (path != null)
-//                    {
-//                        Object node = path.getLastPathComponent();
-//                        if (node != null && node instanceof DefaultMutableTreeNode)
-//                         {
-//                            DefaultMutableTreeNode treeNode =
-//                                (DefaultMutableTreeNode)node;
-//                            
-//                            String family = ((DefaultMutableTreeNode)treeNode
-//                                .getParent()).getUserObject().toString();
-//                            
-//                            JCheckBox checkBox = (JCheckBox)itemEvent.getItem();
-//                            
-//                            String value = family + ":" + 
-//                                (checkBox).getText();
-//                            
-//                            int index = checkedTree.indexOf(value);
-//
-//                            // for debugging convenience
-//                            List<String> chTree = checkedTree;
-//                            String ctVal = null;
-//                            if (index > -1)
-//                                ctVal = chTree.get(index);
-//                            // remove when finished debugging
-//                            
-//                            if (index == -1 && checkBox.isSelected())
-//                                checkedTree.add(value);
-//                            
-//                            else if (index > -1 && !checkBox.isSelected())
-//                                checkedTree.remove(index);
-//                        }
-//                    }
-//                    
-//                    if (stopCellEditing())
-//                        fireEditingStopped();
-//                }
-//            };
-//            
-//            if (editor instanceof JCheckBox)
-//                ((JCheckBox) editor).addItemListener(itemListener);
-//            
-//            return editor;
-//        }
-//    }
-    
-//    class CheckBoxNode extends DefaultMutableTreeNode
-//    {
-//        String text;
-//        boolean selected;
-//        
-//        public CheckBoxNode(String text, boolean selected)
-//        {
-//            this.text = text;
-//            this.selected = selected;
-//        }
-//        
-//        public boolean isSelected()
-//        {
-//            return selected;
-//        }
-//        
-//        public void setSelected(boolean newValue)
-//        {
-//            selected = newValue;
-//        }
-//        
-//        public String getText()
-//        {
-//            return text;
-//        }
-//        
-//        public void setText(String newValue)
-//        {
-//            text = newValue;
-//        }
-//        
-//        public String toString()
-//        {
-//            return getText();
-//            // return getClass().getName() + "[" + text + "/" + selected + "]";
-//        }
-//    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
