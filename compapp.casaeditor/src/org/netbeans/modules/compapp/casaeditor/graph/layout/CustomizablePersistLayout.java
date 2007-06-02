@@ -119,7 +119,9 @@ public abstract class CustomizablePersistLayout implements Layout {
         final CasaModelGraphScene scene = (CasaModelGraphScene) widget.getScene();
         
         Object widgetObject = scene.findObject(widget);
-        if (scene.getSelectedObjects().contains(widgetObject)) {
+        if (
+                scene.getSelectedObjects().size() == 1 && 
+                scene.getSelectedObjects().contains(widgetObject)) {
             // If the widget is selected:
             // 1. we ensure there is enough space to fit it (widget may be new)
             // 2. we scroll to it if it is hidden
