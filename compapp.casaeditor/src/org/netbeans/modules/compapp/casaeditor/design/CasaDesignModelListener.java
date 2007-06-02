@@ -141,10 +141,11 @@ public class CasaDesignModelListener implements PropertyChangeListener {
                 mScene,
                 casaPort.getX(),
                 casaPort.getY());
+        // update selection before forcing the layout - 
+        // layout scrolls to selected object if necessary
+        mScene.updateSelectionAndRequestFocus(casaPort);
         // Force a layout to ensure the widget fits at the suggested location.
         mScene.progressiveRegionLayout(mScene.getBindingRegion(), true);
-        // update selection
-        mScene.updateSelectionAndRequestFocus(casaPort);
         
         CasaModelGraphUtilities.ensureVisibity(w);
     }
@@ -162,12 +163,13 @@ public class CasaDesignModelListener implements PropertyChangeListener {
                 mScene,
                 serviceUnit.getX(),
                 serviceUnit.getY());
+        // update selection before forcing the layout - 
+        // layout scrolls to selected object if necessary
+        mScene.updateSelectionAndRequestFocus(serviceUnit);
         // Force a layout to ensure the widget fits at the suggested location.
         mScene.progressiveRegionLayout(
                 serviceUnit.isInternal() ? mScene.getEngineRegion() : mScene.getExternalRegion(),
                 true);
-        // update selection
-        mScene.updateSelectionAndRequestFocus(serviceUnit);
         
         CasaModelGraphUtilities.ensureVisibity(w);
     }
