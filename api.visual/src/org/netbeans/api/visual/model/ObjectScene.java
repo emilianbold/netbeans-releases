@@ -516,7 +516,7 @@ public class ObjectScene extends Scene {
 
             setFocusedObject (object);
             if (object != null) {
-                if (getSelectedObjects ().contains (object))
+                if (! invertSelection  &&  getSelectedObjects ().contains (object))
                     return;
                 userSelectionSuggested (Collections.singleton (object), invertSelection);
             } else
