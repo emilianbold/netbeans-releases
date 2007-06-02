@@ -18,22 +18,34 @@
  */
 package org.netbeans.modules.search;
 
+import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import static java.util.logging.Level.FINER;
 
 /**
+ * Registry of {@code SearchScope}s.
+ * It holds information about registered {@code SearchScope}s
+ * and it informs listeners about changes of their state
+ * - see {@link #addChangeListener addChangeListener(...)},
+ * {@link #removeChangeListener removeChangeListener(...)}.
  *
  * @author  Marian Petras
  */
-public final class SearchScopeRegistry implements ChangeListener {
+public final class SearchScopeRegistry {
     
     private static SearchScopeRegistry instance;
+
+    private final Logger LOG = Logger.getLogger(
+            "org.netbeans.modules.search.FindAction_state");            //NOI18N
     
+    private SearchScopeChangeHandler scopeChangeHandler;
     private List<ChangeListener> changeListeners;
     private boolean applicable;
 
@@ -50,13 +62,38 @@ public final class SearchScopeRegistry implements ChangeListener {
     }
 
     private SearchScopeRegistry() { }
+
+    /*
+     * Critical sections (access to...):
+     *   - list of registered search scopes~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     *       + register/unregister [any -> AWT]
+     *       - has project search scope [AWT]
+     *   - global state (enabled/disabled)~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     *       + change of state of a single search scope [any -> AWT]
+     *       - has applicable search scope [AWT]
+     *   - list of registered change listeners~~~~~~~~~~~~~~~~~~~~~~~~
+     *       + add/remove change listener [AWT]
+     *       - notifications of changes of a global state [AWT]
+     */
     
-    public synchronized boolean hasApplicableSearchScope() {
+    public boolean hasApplicableSearchScope() {
+        assert EventQueue.isDispatchThread();
+
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("hasApplicableSearchScope");
+            LOG.finer(" - isListening(): " + isListening());
+            if (isListening()) {
+                LOG.finer(" - applicable: " + applicable);
+            }
+        }
+
         return isListening() ? applicable
                              : checkIsApplicable();
     }
     
-    synchronized Map<SearchScope, Boolean> getSearchScopes() {
+    Map<SearchScope, Boolean> getSearchScopes() {
+        assert EventQueue.isDispatchThread();
+
         Map<SearchScope, Boolean> clone
                 = new LinkedHashMap<SearchScope, Boolean>(searchScopes);
         if (!isListening()) {
@@ -68,6 +105,7 @@ public final class SearchScopeRegistry implements ChangeListener {
     }
     
     boolean hasProjectSearchScopes() {
+        assert EventQueue.isDispatchThread();
         return projectSearchScopesCount > 0;
     }
 
@@ -93,14 +131,63 @@ public final class SearchScopeRegistry implements ChangeListener {
         return false;
     }
 
-    public synchronized void registerSearchScope(SearchScope searchScope) {
-        if (isListening()) {
-            searchScopes.put(searchScope, searchScope.isApplicable());
-            searchScope.addChangeListener(this);
-            if (searchScope.isApplicable()) {
-                applicableSearchScopesCount++;
+    public final void registerSearchScope(SearchScope searchScope) {
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("register search scope " + searchScope);
+        }
+        registerOrUnregister(searchScope, true);
+    }
+
+    public final void unregisterSearchScope(SearchScope searchScope) {
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("unregister search scope " + searchScope);
+        }
+        registerOrUnregister(searchScope, false);
+    }
+
+    private void registerOrUnregister(SearchScope searchScope,
+                                      boolean register) {
+        SearchScopeRegistrator registrator
+                = new SearchScopeRegistrator(searchScope, register);
+        if (EventQueue.isDispatchThread()) {
+            registrator.run();
+        } else {
+            LOG.finer("- registration/unregistration postponed to AWT");
+            EventQueue.invokeLater(registrator);
+        }
+    }
+
+    private final class SearchScopeRegistrator implements Runnable {
+        private final SearchScope searchScope;
+        private final boolean register;    //false = unregister
+        SearchScopeRegistrator(SearchScope scope, boolean register) {
+            this.searchScope = scope;
+            this.register = register;
+        }
+        public void run() {
+            assert EventQueue.isDispatchThread();
+            if (register) {
+                registerSearchScopeAWT(searchScope);
+            } else {
+                unregisterSearchScopeAWT(searchScope);
             }
-            updateIsApplicableByCount();
+            LOG.finer("- registration/unregistration done");
+        }
+    }
+
+    private void registerSearchScopeAWT(SearchScope searchScope) {
+        assert EventQueue.isDispatchThread();
+
+        boolean needsUpdate = false;
+        if (isListening()) {
+            assert scopeChangeHandler != null;
+            boolean applicable = searchScope.isApplicable();
+            searchScopes.put(searchScope, applicable);
+            searchScope.addChangeListener(scopeChangeHandler);
+            if (applicable) {
+                applicableSearchScopesCount++;
+                needsUpdate = true;
+            }
         } else {
             searchScopes.put(searchScope, null);
         }
@@ -108,20 +195,33 @@ public final class SearchScopeRegistry implements ChangeListener {
         if (isProjectSearchScope(searchScope)) {
             projectSearchScopesCount++;
         }
+        if (needsUpdate) {
+            assert isListening();
+            updateIsApplicableByCount();
+        }
     }
     
-    public synchronized void unregisterSearchScope(SearchScope searchScope) {
-        searchScope.removeChangeListener(this);
+    public void unregisterSearchScopeAWT(SearchScope searchScope) {
+        assert EventQueue.isDispatchThread();
+
+        boolean needsUpdate = false;
         Boolean wasApplicable = searchScopes.remove(searchScope);
         if (isListening()) {
-            if (wasApplicable == Boolean.TRUE) {
+            assert scopeChangeHandler != null;
+            assert wasApplicable != null;
+            searchScope.removeChangeListener(scopeChangeHandler);
+            if (Boolean.TRUE.equals(wasApplicable)) {
                 applicableSearchScopesCount--;
+                needsUpdate = true;
             }
-            updateIsApplicableByCount();
         }
         
         if (isProjectSearchScope(searchScope)) {
             projectSearchScopesCount--;
+        }
+        if (needsUpdate) {
+            assert isListening();
+            updateIsApplicableByCount();
         }
     }
     
@@ -136,6 +236,9 @@ public final class SearchScopeRegistry implements ChangeListener {
         }
         
         this.applicable = applicable;
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("state changed to " + applicable);
+        }
         
         if ((changeListeners != null) && !changeListeners.isEmpty()) {
             final ChangeEvent e = new ChangeEvent(this);
@@ -146,64 +249,111 @@ public final class SearchScopeRegistry implements ChangeListener {
     }
     
     private void updateIsApplicableByCount() {
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("updateIsApplicableByCount()");
+            LOG.finer(" - applicableSearchScopesCount = "
+                                      + applicableSearchScopesCount);
+        }
         setApplicable(applicableSearchScopesCount > 0);
     }
     
-    private synchronized boolean checkIsApplicable() {
+    private boolean checkIsApplicable() {
+        assert EventQueue.isDispatchThread();
+        LOG.finer("checkIsApplicable()");
+
         for (SearchScope searchScope : searchScopes.keySet()) {
             if (searchScope.isApplicable()) {
+                LOG.finer(" - returning true");
                 return true;
             }
         }
+        LOG.finer(" - returning false");
         return false;
     }
+
+    final class SearchScopeChangeHandler implements ChangeListener, Runnable {
+        private final SearchScope searchScope;
+        private SearchScopeChangeHandler() {
+            this.searchScope = null;
+        }
+        private SearchScopeChangeHandler(SearchScope searchScope) {
+            this.searchScope = searchScope;
+        }
+        public void stateChanged(ChangeEvent e) {
+            assert e.getSource() instanceof SearchScope;
+            final SearchScope searchScope = (SearchScope) e.getSource();
+            if (EventQueue.isDispatchThread()) {
+                searchScopeStateChanged(searchScope);
+            } else {
+                EventQueue.invokeLater(
+                        new SearchScopeChangeHandler(searchScope));
+            }
+        }
+        public void run() {
+            assert searchScope != null;
+            searchScopeStateChanged(searchScope);
+        }
+    }
     
-    public final synchronized void stateChanged(ChangeEvent e) {
+    private void searchScopeStateChanged(SearchScope searchScope) {
+        assert EventQueue.isDispatchThread();
         if (!isListening()) {
             //ignore
         } else {
-            assert e.getSource() instanceof SearchScope;
-            SearchScope searchScope = (SearchScope) e.getSource();
             Boolean currValue = searchScopes.get(searchScope);
             assert currValue != null;
             boolean newValue = searchScope.isApplicable();
             if (newValue != currValue.booleanValue()) {
-                if (newValue) {
-                    applicableSearchScopesCount++;
-                } else {
-                    applicableSearchScopesCount--;
-                }
+                searchScopes.put(searchScope, newValue);    //auto-boxing
+                applicableSearchScopesCount += (newValue ? 1 : -1);
                 updateIsApplicableByCount();
             }
         }
     }
     
     private void startListening() {
-        assert Thread.currentThread().holdsLock(this);
+        assert EventQueue.isDispatchThread();
+        assert scopeChangeHandler == null;
+
+        LOG.finer("startListening()");
+
         applicableSearchScopesCount = 0;
+        scopeChangeHandler = new SearchScopeChangeHandler();
         for (SearchScope searchScope : searchScopes.keySet()) {
-            searchScope.addChangeListener(this);
+            searchScope.addChangeListener(scopeChangeHandler);
             boolean isApplicable = searchScope.isApplicable();
             searchScopes.put(searchScope, isApplicable);
             if (isApplicable) {
                 applicableSearchScopesCount++;
             }
         }
+        applicable = applicableSearchScopesCount > 0;
     }
     
     private void stopListening() {
-        assert Thread.currentThread().holdsLock(this);
+        assert EventQueue.isDispatchThread();
+
+        LOG.finer("stopListening()");
+
         for (SearchScope searchScope : searchScopes.keySet()) {
-            searchScope.removeChangeListener(this);
+            searchScope.removeChangeListener(scopeChangeHandler);
         }
+        scopeChangeHandler = null;
+        applicableSearchScopesCount = 0;
     }
     
     private boolean isListening() {
-        assert Thread.currentThread().holdsLock(this);
+        assert EventQueue.isDispatchThread();
         return changeListeners != null;
     }
 
-    public synchronized void addChangeListener(ChangeListener l) {
+    public void addChangeListener(ChangeListener l) {
+        assert EventQueue.isDispatchThread();
+
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("addChangeListener(" + l + ')');
+        }
+
         if (l == null) {
             throw new IllegalArgumentException("null");                 //NOI18N
         }
@@ -215,11 +365,16 @@ public final class SearchScopeRegistry implements ChangeListener {
         changeListeners.add(l);
         if (firstListener) {
             startListening();
-            applicable = checkIsApplicable();
         }
     }
 
-    public synchronized void removeChangeListener(ChangeListener l) {
+    public void removeChangeListener(ChangeListener l) {
+        assert EventQueue.isDispatchThread();
+
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("removeChangeListener(" + l + ')');
+        }
+
         if (l == null) {
             throw new IllegalArgumentException("null");                 //NOI18N
         }
