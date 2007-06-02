@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE apichanges PUBLIC "-//NetBeans//DTD API changes list 1.0//EN" "../../nbbuild/javadoctools/apichanges.dtd">
@@ -23,6 +23,37 @@ Microsystems, Inc. All Rights Reserved.
 <apidef name="nodes">Nodes API</apidef>
 </apidefs>
 <changes>
+    <change id="ChildFactory">
+        <api name="nodes"/>
+        <summary>API for Children objects that asynchronously compute keys/child
+            nodes and simplifies implementation of Children.Keys usages</summary>
+        <version major="7" minor="1"/>
+        <date day="20" month="3" year="2007"/>
+        <author login="tboudreau"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            Added the class 
+            <a href="@TOP@/org/openide/nodes/ChildFactory.html">ChildFactory</a>
+            and the method 
+            <a href="@TOP@/org/openide/nodes/Children.html#create(org.openide.nodes.ChildFactory, boolean)">Children.create(ChildFactory factory, boolean asynchronous)</a>
+            to the API.  This simplifies creation of Node children which need
+            to be computed on a background thread for performance reasons.
+            Anyone wishing to do this can simply extend ChildFactory and
+            pass that to Children.create() to automatically get a Node that will
+            display a Please Wait child node when first expanded.  A ChildFactory
+            can either compute all child nodes, or batch them in multiple
+            passes.
+            <p>
+            ChildFactory can also be used to implement synchronous children,
+            by setting the <code>asynchronous</code> parameter passed to
+            <code>Children.create()</code> to false.  This could replace most
+            common usages of Children.Keys, and make it easy to switch to
+            asynchronous child computation if that is determined to be
+            necessary for performance reasons.
+            </p>
+        </description>
+        <issue number="91529"/>
+    </change>
     <change id="GenericCookieSet">
         <api name="nodes"/>
         <summary>CookieSet can hold any objects and not just cookies</summary>

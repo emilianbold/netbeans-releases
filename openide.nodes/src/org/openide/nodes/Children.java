@@ -39,14 +39,23 @@ import java.util.logging.Logger;
 import org.openide.util.Enumerations;
 import org.openide.util.Mutex;
 
-/** Container for array of nodes.
-* Can be {@link Node#Node associated} with a node and then
-* all children in the array have that node set as a parent, and this list
-* will be returned as the node's children.
+/** 
+* Factory for the child Nodes of a Node.  Every Node has a Children object.
+* Children are initially un-initialized, and child Nodes are created on
+* demand when, for example, the Node is expanded in an Explorer view.
+* If you know your Node has no child nodes, pass <code>Children.LEAF</code>.
+* Typically a Children object will create a Collection of objects from
+* some data model, and create one or more Nodes for each object on demand.
+* 
+* If initializing the list of children of a Node is time-consuming (i.e. it
+* does I/O, parses a file or some other expensive operation), implement
+* ChildFactory and pass it to Children.create (theFactory, true) to have
+* the child nodes be computed asynchronously on a background thread.
 *
-* <p>Probably you want to subclass {@link Children.Keys}.
+* <p>In almost all cases you want to subclass ChildFactory and pass it to
+* Children.create(), or subclass {@link Children.Keys}.
 * Subclassing <code>Children</code> directly is not recommended.
-*
+* 
 * @author Jaroslav Tulach
 */
 public abstract class Children extends Object {
@@ -218,6 +227,35 @@ public abstract class Children extends Object {
         } finally {
             PR.exitReadAccess();
         }
+    }
+    
+    /**
+     * Create a <code>Children</code> object using the passed <code>ChildFactory</code>
+     * object.  The <code>ChildFactory</code> will be asked to create a list
+     * of model objects that are the children;  then for each object in the list,
+     * <code>ChildFactory.createNodesFor()</code> will be called to instantiate
+     * one or more <code>Node</code>s for that object.
+     * @param factory A ChildFactory which will provide child objects
+     * @param asynchronous If true, the ChildFactory will always be called to
+     *   create the list of keys on
+     *   a background thread, displaying a &quot;Please Wait&quot; child Node until
+     *   some or all child Nodes have been computed.  If so, 
+     *   when it is expanded, the Node that owns
+     *   the returned <code>Children</code> object will display a &quot;please wait&quot;
+     *   node while the children are computed in the background.  Pass true
+     *   for any case where computing child nodes is expensive and should
+     *   not be done in the event thread.
+     * @return A <code>Children</code> object which 
+     *   will invoke the ChildFactory instance as needed to supply model
+     *   objects and child nodes for it
+     * @throws IllegalStateException if the passed ChildFactory has already
+     *   been used in a previous call to <code>Children.create()</code>.
+     * @since 7.1
+     */ 
+    public static <T> Children create (ChildFactory <T> factory, boolean asynchronous) {
+        if (factory == null) throw new NullPointerException ("Null factory");
+        return asynchronous ? new AsynchChildren <T> (factory) : 
+            new SynchChildren <T> (factory);
     }
 
     /** Get the parent node of these children.
@@ -1913,6 +1951,12 @@ public abstract class Children extends Object {
     * given key changes (but the key stays the same), you can
     * call {@link #refreshKey}. Usually this is not necessary.
     * </ol>
+    * Note that for simple cases, it may be preferable to subclass
+    * <a href="ChildFactory.html">ChildFactory</a> and pass the result to
+    * <a href="Children.html#create(org.openide.nodes.ChildFactory, boolean)">
+    * create()</a>; doing so makes it easy to switch to using child
+    * nodes computed on a background thread if necessary for performance
+    * reasons.
      * @param T the type of the key
     */
     public static abstract class Keys<T> extends Children.Array {

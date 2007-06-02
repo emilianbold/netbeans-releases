@@ -1,0 +1,373 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+package org.openide.nodes;
+
+import java.awt.EventQueue;
+import java.beans.*;
+import java.util.*;
+import junit.framework.TestCase;
+import org.openide.nodes.*;
+import org.openide.nodes.NodeAdapter;
+import org.openide.util.NbBundle;
+
+/** Test for AsynchChildren, ChildFactory and SynchChildren.
+ *
+ * @author Tim Boudreau
+ */
+public class ChildFactoryTest extends TestCase {
+    
+    public ChildFactoryTest(String name) {
+        super(name);
+    }
+    
+    private ProviderImpl factory;
+    
+    private BatchProviderImpl factory2;
+    private AsynchChildren kids2;
+    private Node node2;
+    private AsynchChildren kids;
+    private Node node;
+    public void setUp() throws Exception {
+        factory = new ProviderImpl();
+        kids = new AsynchChildren(factory);
+        node = new AbstractNode(kids);
+        
+        factory2 = new BatchProviderImpl();
+        kids2 = new AsynchChildren(factory2);
+        node2 = new AbstractNode(kids2);
+    }
+    
+    public void testChildrenCreate() {
+        System.out.println("testChildrenCreate");
+        ChildFactory f = new ProviderImpl();
+        Children kids = Children.create(f, true);
+        assertTrue(kids instanceof AsynchChildren);
+        
+        ChildFactory ff = new ProviderImpl();
+        Children kids2 = Children.create(ff, false);
+        assertFalse(kids2 instanceof AsynchChildren);
+        assertTrue(kids2 instanceof SynchChildren);
+        
+        RuntimeException e = null;
+        Children kids3 = null;
+        try {
+            kids3 = Children.create(ff, true);
+        } catch (RuntimeException ex) {
+            e = ex;
+        }
+        assertNull(kids3);
+        assertNotNull("Exception should have been thrown creating two " +
+                "Children objects over the same ChildFactory", e);
+    }
+    
+    //A word of caution re adding tests:
+    //Almost anything (getNodes(), justCreateNodes(), etc. can trigger a
+    //fresh call to Children.addNotify().  Any test that expects a synchronous
+    //change in the child nodes as a result of having triggered a call
+    //to setKeys() is probably testing a race condition, not the behavior
+    //of the children implementation
+    
+    public void testGetNodesWaits() throws Exception {
+        System.out.println("testGetNodesWaits");
+        factory.wait = false;
+        kids.getNodes(false);
+        synchronized (factory.lock) {
+            factory.lock.wait(300);
+        }
+        Thread.currentThread().yield();
+        new NL(node);
+        Node[] n = kids.getNodes(true);
+        assertEquals(4, n.length);
+    }
+    
+    public void testInitialNodeIsWaitNode() throws Exception {
+        System.out.println("testInitialNodeIsWaitNode");
+        factory.wait = true;
+        kids.addNotify();
+        Node[] n = kids.getNodes(false);
+        factory.wait = false;
+        assertEquals(1, n.length);
+        assertEquals(NbBundle.getMessage(AsynchChildren.class, "LBL_WAIT"),
+                n[0].getDisplayName());
+        factory.wait = false;
+        synchronized (factory) {
+            factory.wait(2000);
+        }
+        for (int i = 0; i < 5 && n.length != 4; i++) {
+            n = kids.getNodes(true);
+            java.lang.Thread.currentThread().yield();
+        }
+        assertEquals(4, n.length);
+    }
+    
+    public void testBatch() throws Exception {
+        System.out.println("testBatch");
+        kids2.addNotify();
+        Thread.currentThread().yield();
+        synchronized (factory2.lock) {
+            factory2.lock.notifyAll();
+        }
+        new NL(node2);
+        Node[] n = n = kids2.getNodes(true);
+        assertEquals(4, n.length);
+        assertEquals(2, factory2.callCount);
+    }
+    
+    public void testSynchChildren() throws Exception {
+        System.out.println("testSynchChildren");
+        final SynchProviderImpl factory = new SynchProviderImpl();
+        final Children ch = Children.create(factory, false);
+        assertTrue(ch instanceof SynchChildren);
+        factory.assertCreateKeysNotCalled();
+        factory.assertCreateNodesForKeyNotCalled();
+        final Node nd = new AbstractNode(ch);
+        NodeAdapter adap = new NodeAdapter() {};
+        nd.addNodeListener(adap);
+        
+        EventQueue.invokeAndWait(new Runnable() {
+            public void run() {
+                ch.getNodes(true);
+            }
+        });
+        ((SynchChildren) ch).active = true;
+        synchronized (factory) {
+            factory.wait(1000);
+        }
+        factory.assertCreateKeysCalled();
+        factory.assertCreateNodesForKeyCalled();
+        Node[] nodes = nd.getChildren().getNodes(true);
+        assertEquals(factory.CONTENTS1.size(), nodes.length);
+        int ix = 0;
+        for (String s : factory.CONTENTS1) {
+            assertEquals(s, nodes[ix].getName());
+            ix++;
+        }
+        factory.switchChildren();
+        nodes = nd.getChildren().getNodes(true);
+        assertEquals(factory.CONTENTS2.size(), nodes.length);
+        ix = 0;
+        for (String s : factory.CONTENTS2) {
+            assertEquals(s, nodes[ix].getName());
+            ix++;
+        }
+    }
+    
+    public void testCancel() throws Exception {
+        System.out.println("testCancel");
+        Thread.interrupted();
+        factory.wait = true;
+        kids.addNotify();
+        Thread.currentThread().yield();
+        synchronized (factory.lock) {
+            factory.lock.wait(500);
+        }
+        kids.removeNotify();
+        factory.wait = false;
+        synchronized (factory) {
+            factory.wait(2000);
+        }
+        assertTrue(kids.cancelled);
+        assertTrue(factory.cancelled);
+    }
+    
+    static final class ProviderImpl extends ChildFactory <String> {
+        Object lock = new Object();
+        volatile boolean wait = false;
+        
+        public Node[] createNodesForKey(String key) {
+            AbstractNode nd = new AbstractNode(Children.LEAF);
+            nd.setDisplayName(key);
+            return new Node[] { nd };
+        }
+        
+        boolean cancelled = false;
+        public boolean createKeys(List <String> result) {
+            try {
+                while (wait) {
+                    Thread.currentThread().yield();
+                }
+                synchronized (lock) {
+                    lock.notifyAll();
+                }
+                if (Thread.interrupted()) {
+                    cancelled = true;
+                    return true;
+                }
+                result.add("A");
+                result.add("B");
+                result.add("C");
+                result.add("D");
+                if (Thread.interrupted()) {
+                    cancelled = true;
+                }
+                return true;
+            } finally {
+                synchronized (this) {
+                    notifyAll();
+                }
+            }
+        }
+    }
+    
+    static final class BatchProviderImpl extends ChildFactory <String> {
+        boolean firstCycle = true;
+        
+        public Node[] createNodesForKey(String key) {
+            AbstractNode nd = new AbstractNode(Children.LEAF);
+            nd.setDisplayName(key);
+            return new Node[] { nd };
+        }
+        
+        Object lock = new Object();
+        int callCount = 0;
+        public boolean createKeys(List <String> result) {
+            callCount++;
+            synchronized (lock) {
+                try {
+                    lock.wait(500);
+                } catch (InterruptedException ex) {
+                    //re-interrupt
+                    Thread.currentThread().interrupt();
+                }
+            }
+            if (Thread.interrupted()) {
+                return true;
+            }
+            boolean wasFirstCycle = firstCycle;
+            if (wasFirstCycle) {
+                result.add("A");
+                result.add("B");
+                firstCycle = false;
+                return false;
+            } else {
+                result.add("C");
+                result.add("D");
+            }
+            if (Thread.interrupted()) {
+                return true;
+            }
+            synchronized (this) {
+                notifyAll();
+            }
+            return true;
+        }
+    }
+    
+    private static final class NL implements NodeListener {
+        NL(Node n) {
+            n.addNodeListener(this);
+            try {
+                waitFor();
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            } catch (Exception e) {
+                throw new Error(e);
+            }
+        }
+        
+        NL() {
+            
+        }
+        
+        public void childrenAdded(NodeMemberEvent ev) {
+            go();
+        }
+        
+        public void childrenRemoved(NodeMemberEvent ev) {
+            go();
+        }
+        
+        public void childrenReordered(NodeReorderEvent ev) {
+            go();
+        }
+        
+        public void nodeDestroyed(NodeEvent ev) {
+        }
+        
+        public void propertyChange(PropertyChangeEvent arg0) {
+        }
+        
+        private void go() {
+            synchronized (this) {
+                notifyAll();
+            }
+        }
+        
+        void waitFor() throws Exception {
+            System.err.println("Enter waitfor");
+            synchronized (this) {
+                wait(1000);
+            }
+        }
+    }
+    
+    private static final class SynchProviderImpl extends ChildFactory <String> {
+        static List <String> CONTENTS1 = Arrays.<String>asList(new String[] {
+            "One", "Two", "Three", "Four"
+        });
+        static List <String> CONTENTS2 = Arrays.<String>asList(new String[] {
+            "Five", "Six", "Seven", "Eight", "Nine"
+        });
+        
+        boolean createNodesForKeyCalled = false;
+        public Node[] createNodesForKey(String key) {
+            createNodesForKeyCalled = true;
+            Node result = new AbstractNode(Children.LEAF);
+            result.setDisplayName(key);
+            result.setName(key);
+            return new Node[] { result };
+        }
+        
+        boolean createKeysCalled = false;
+        public boolean createKeys(List <String> toPopulate) {
+            createKeysCalled = true;
+            List <String> l = switched ? CONTENTS2 : CONTENTS1;
+            toPopulate.addAll(l);
+            return true;
+        }
+        
+        void assertCreateNodesForKeyNotCalled() {
+            assertFalse(createNodesForKeyCalled);
+        }
+        
+        void assertCreateKeysNotCalled() {
+            assertFalse(createKeysCalled);
+        }
+        
+        boolean assertCreateNodesForKeyCalled() {
+            boolean result = createNodesForKeyCalled;
+            createNodesForKeyCalled = false;
+            assertTrue(result);
+            return result;
+        }
+        
+        boolean assertCreateKeysCalled() {
+            boolean result = createKeysCalled;
+            createKeysCalled = false;
+            assertTrue(result);
+            return result;
+        }
+        
+        volatile boolean switched = false;
+        void switchChildren() {
+            switched = !switched;
+            refresh(true);
+        }
+    }
+}
