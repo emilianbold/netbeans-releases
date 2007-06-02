@@ -74,5 +74,10 @@ public abstract class SearchScope {
      * @return  {@code SearchInfo} defining the search scope
      */
     protected abstract SearchInfo getSearchInfo();
+
+    @Override
+    public String toString() {
+        return getDisplayName();
+    }
     
 }
