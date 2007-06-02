@@ -97,16 +97,10 @@ Microsystems, Inc. All Rights Reserved.
         
        <folder name="Other">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-            <file name="org-netbeans-core-actions-CopyProductInfoAction.instance"/>
         </folder> 
         
     </folder>
     
-    <folder name="Shortcuts">
-        <file name="O-F3.shadow">
-            <attr name="originalFile" stringvalue="Actions/Other/org-netbeans-core-actions-CopyProductInfoAction.instance"/>
-        </file>
-    </folder>
     
     <folder name="Menu">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>

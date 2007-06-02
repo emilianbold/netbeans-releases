@@ -19,12 +19,15 @@
 
 package org.netbeans.core.actions;
 
+import java.awt.Dialog;
+import javax.swing.JButton;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.Presenter;
 
-import org.netbeans.core.startup.Splash;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 
 /** The action that shows the AboutBox.
 *
@@ -37,10 +40,25 @@ public class AboutAction extends CallableSystemAction {
     }
 
     public void performAction () {
-        Splash.showAboutDialog(
-            org.openide.windows.WindowManager.getDefault ().getMainWindow (),
-            new org.netbeans.core.ui.ProductInformationPanel ()                
-        );
+        DialogDescriptor descriptor = new DialogDescriptor(
+            new org.netbeans.core.ui.ProductInformationPanel (),
+            NbBundle.getMessage(AboutAction.class, "About_title"),
+            true,
+                new Object[0],
+                null,
+                DialogDescriptor.DEFAULT_ALIGN,
+                null,
+                null);
+        Dialog dlg = null;
+        try {
+            dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+            dlg.setResizable(false);
+            dlg.setVisible(true);
+        } finally {
+            if (dlg != null) {
+                dlg.dispose();
+            }
+        }
     }
     
     protected boolean asynchronous() {
