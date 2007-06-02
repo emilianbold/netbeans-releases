@@ -288,14 +288,12 @@ Microsystems, Inc. All Rights Reserved.
         <file name="D-O.instance">
     	    <attr name="instanceClass" stringvalue="org.netbeans.modules.openfile.OpenFileAction"/>
 	</file>
-        <!--
         <file name="DS-F.shadow">
     	    <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-search-FindInFilesAction.instance"/>
 	</file>
         <file name="DS-H.shadow">
     	    <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-search-ReplaceInFilesAction.instance"/>
 	</file>
-        -->
         <file name="DS-0.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-search-ResultViewOpenAction.instance"/>
         </file>
