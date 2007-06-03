@@ -31,7 +31,6 @@ import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
-import org.netbeans.modules.web.project.jaxws.WebJAXWSMetadataFinder;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSClientSupport;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSSupport;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
@@ -349,7 +348,6 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             cpMod,
             new WebProjectOperations(this),
             new WebPersistenceProvider(this, evaluator(), cpProvider),
-            new WebJAXWSMetadataFinder(this),
             new WebPersistenceProviderSupplier(this),
             new WebEMGenStrategyResolver(),
             new WebJPADataSourceSupport(this), 

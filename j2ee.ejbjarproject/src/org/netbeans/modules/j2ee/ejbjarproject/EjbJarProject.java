@@ -43,7 +43,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.EjbJarProjectClassPathExtender;
-import org.netbeans.modules.j2ee.ejbjarproject.jaxws.EjbJAXWSMetadataFinder;
 import org.netbeans.modules.j2ee.ejbjarproject.jaxws.EjbProjectJAXWSClientSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.jaxws.EjbProjectJAXWSSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.queries.CompiledSourceForBinaryQuery;
@@ -326,7 +325,6 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 classpathExtender,
                 new EjbJarProjectOperations(this),
                 new EjbJarPersistenceProvider(this, evaluator(), cpProvider),
-                new EjbJAXWSMetadataFinder(this),
                 new EjbJarEMGenStrategyResolver(),
                 new EjbJarJPASupport(this),
                 new EjbJarServerStatusProvider(this),
