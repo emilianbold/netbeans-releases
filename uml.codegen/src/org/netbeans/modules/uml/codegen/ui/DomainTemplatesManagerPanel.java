@@ -179,7 +179,7 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
         if (isCustomizer)
         {
             DomainTreeNodeRendererEditor renderer = 
-                new DomainTreeNodeRendererEditor();
+                new DomainTreeNodeRendererEditor(this);
             
             templatesTree.setCellRenderer(renderer);
             templatesTree.setEditable(false);
@@ -1349,85 +1349,6 @@ private void templatesTableFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST
     }
 
     
-    
-    
-//    protected class CheckBoxTreeNode extends DefaultMutableTreeNode
-//    {
-//        /** selected state */
-//        public static final int SELECTED_STATE_ON  = 1;
-//        /** unselected state */
-//        public static final int SELECTED_STATE_OFF = 2;
-//        
-//        private int m_State = SELECTED_STATE_ON;
-////        private TreeNodeItem m_Item = null;
-////        private Icon m_Icon = null;
-//        
-//        public CheckBoxTreeNode(TreeNodeItem item)
-//        {
-//            setItem(item);
-//        }
-//        
-////        public CheckBoxTreeNode(TreeNodeItem item, Icon icon)
-////        {
-////            setIcon(icon);
-////            setItem(item);
-////        }
-//        
-//        public boolean isOn()
-//        {
-//            return m_State == SELECTED_STATE_ON;
-//        }
-//        
-//        public void setState(int value)
-//        {
-//            m_State = value;
-//        }
-//        
-////        public TreeNodeItem getItem()
-////        {
-////            return m_Item;
-////        }
-////        
-////        public void setItem(TreeNodeItem item)
-////        {
-////            m_Item = item;
-////            setState(item.getState());
-////        }
-//        
-//        public String getDisplayName()
-//        {
-//            String retVal = ""; //$NON-NLS-1$
-//
-//            if (m_Item != null)
-//                retVal = m_Item.getName();
-//            
-//            return retVal;
-//        }
-//        
-////        public Icon getIcon()
-////        {
-////            Icon retVal = null;
-////            
-////            if (getItem() != null)
-////                retVal = getItem().getIcon();
-////            
-////            if (retVal == null)
-////                retVal = m_Icon;
-////            
-////            return retVal;
-////        }
-////        
-////        public void setIcon(Icon value)
-////        {
-////            m_Icon = value;
-////        }
-//        
-//        public String toString()
-//        {
-//            return getDisplayName();
-//        }
-//    }
-    
     int rowLastClicked = -1;
     
     class NodeSelectionListener extends MouseAdapter
@@ -1444,6 +1365,12 @@ private void templatesTableFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST
             int x = event.getX();
             int y = event.getY();
             int row = tree.getRowForLocation(x, y);
+            
+            if (row == -1)
+            {
+                row = rowLastClicked;
+                return;
+            }
             
             if (row != rowLastClicked)
             {
