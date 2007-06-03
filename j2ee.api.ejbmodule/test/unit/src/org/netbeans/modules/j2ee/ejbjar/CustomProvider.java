@@ -24,7 +24,6 @@ import java.util.HashMap;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.api.ejbjar.*;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
-import org.netbeans.modules.j2ee.metadata.MetadataUnit;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.spi.ejbjar.*;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
@@ -76,10 +75,6 @@ public class CustomProvider implements EjbJarProvider {
         }
 
         public FileObject[] getJavaSources() {
-            return null;
-        }
-
-        public MetadataUnit getMetadataUnit() {
             return null;
         }
 

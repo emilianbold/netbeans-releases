@@ -22,7 +22,6 @@ package org.netbeans.modules.websvc.api.webservices;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.j2ee.metadata.MetadataUnit;
 import org.netbeans.modules.websvc.webservices.WebServicesSupportAccessor;
 import org.netbeans.modules.websvc.spi.webservices.*;
 import org.openide.filesystems.FileObject;
@@ -42,7 +41,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
  *
  * @author Peter Williams
  */
-public final class WebServicesSupport implements MetadataUnit {
+public final class WebServicesSupport {
     
     private WebServicesSupportImpl impl;
     private static final Lookup.Result implementations =
@@ -148,14 +147,6 @@ public final class WebServicesSupport implements MetadataUnit {
     
     public void addServiceImpl(String serviceName, FileObject configFile, boolean fromWSDL, String[] wscompileFeatures) {
         impl.addServiceImpl(serviceName, configFile, fromWSDL,wscompileFeatures);
-    }
-
-    public FileObject getDeploymentDescriptor() {
-        return getWebservicesDD();
-    }
-
-    public ClassPath getClassPath() {
-        return impl.getClassPath();
     }
     
 }

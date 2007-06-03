@@ -24,7 +24,6 @@ import java.util.Iterator;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.metadata.ClassPathSupport;
-import org.netbeans.modules.j2ee.metadata.MetadataUnit;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.web.webmodule.WebModuleAccessor;
 import org.netbeans.modules.web.spi.webmodule.*;
@@ -54,7 +53,7 @@ import org.openide.util.Lookup;
  *
  * @author  Pavel Buzek
  */
-public final class WebModule implements MetadataUnit {
+public final class WebModule {
     
     //TO-DO: the J2EE_13_LEVEL and J2EE_14_LEVEL constants should be got from org.netbeans.modules.j2ee.common.J2eeProjectConstants 
     public static final String J2EE_13_LEVEL = "1.3"; //NOI18N

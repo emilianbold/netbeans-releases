@@ -21,7 +21,6 @@ package org.netbeans.modules.j2ee.dd.api.webservices;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigDecimal;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -30,20 +29,17 @@ import org.netbeans.modules.schema2beans.Common;
 import org.openide.filesystems.*;
 import org.xml.sax.*;
 import java.util.Map;
-import org.netbeans.modules.j2ee.metadata.MetadataUnit;
 import org.w3c.dom.Document;
 
 public final class DDProvider {
     
     private static final DDProvider ddProvider = new DDProvider();
     private Map ddMap;
-    private Map<MetadataUnit, Webservices> annotationDDMap;
     
     /** Creates a new instance of WebSvcModule */
     private DDProvider() {
         //ddMap=new java.util.WeakHashMap(5);
         ddMap = new java.util.HashMap(5);
-        annotationDDMap = new java.util.WeakHashMap<MetadataUnit, Webservices>(5);
     }
     
     /**
@@ -54,18 +50,6 @@ public final class DDProvider {
         return ddProvider;
     }
     
-    public Webservices getMergedDDRoot(MetadataUnit mu) throws IOException {
-        if (mu == null) {
-            return null;
-        }
-        Webservices xmlRoot = getDDRoot(mu.getDeploymentDescriptor());
-        //  for J2ee 1.4 and lower delegate to XML-only method
-        if (xmlRoot != null && !xmlRoot.getVersion().equals(new BigDecimal(Webservices.VERSION_1_2))) {
-            return xmlRoot;
-        }
-        return null;
-    }
-
     /**
      * Returns the root of deployment descriptor bean graph for given file object.
      * The method is useful for clints planning to read only the deployment descriptor

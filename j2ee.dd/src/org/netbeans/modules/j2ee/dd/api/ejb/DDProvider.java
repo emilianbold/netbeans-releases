@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.j2ee.dd.api.ejb;
 
-import org.netbeans.modules.j2ee.metadata.MetadataUnit;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -67,13 +66,11 @@ public final class DDProvider {
     private static final String EJB_11_DOCTYPE = "-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 1.1//EN"; //NOI18N
     private static final DDProvider ddProvider = new DDProvider();
     private Map ddMap;
-    private Map<MetadataUnit, EjbJar> annotationDDMap;
 
     /** Creates a new instance of EjbModule */
     private DDProvider() {
         //ddMap=new java.util.WeakHashMap(5);
         ddMap = new HashMap(5);
-        annotationDDMap = new WeakHashMap<MetadataUnit, EjbJar>(5);
     }
 
     /**
@@ -84,12 +81,6 @@ public final class DDProvider {
         return ddProvider;
     }
 
-    public List<EjbJar> getRoots() {
-        synchronized (this) {
-            return new ArrayList(annotationDDMap.values());
-        }
-    }
-    
     // used in: ddapi, ddloaders, ejbfreeform
     /**
      * Returns the root of deployment descriptor bean graph for given file object.
