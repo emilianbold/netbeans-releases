@@ -98,6 +98,8 @@ sitelocal=$(dirname $0)/build-site-local.sh
 if [ -f $sitelocal ]
 then
     . $sitelocal
+else 
+    echo "No build-site-local.sh file found, running with default settings." 1>&2
 fi
 
 if [ -z "$sources" ]
