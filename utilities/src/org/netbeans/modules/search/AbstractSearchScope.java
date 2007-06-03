@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.search;
 
+import java.awt.EventQueue;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +43,9 @@ public abstract class AbstractSearchScope extends SearchScope {
 
     protected AbstractSearchScope() { }
     
-    protected final synchronized boolean isApplicable() {
+    protected final boolean isApplicable() {
+        assert EventQueue.isDispatchThread();
+
         return isListening() ? applicable : checkIsApplicable();
     }
 
@@ -72,11 +75,14 @@ public abstract class AbstractSearchScope extends SearchScope {
     protected abstract void stopListening();
     
     protected final boolean isListening() {
-        assert Thread.currentThread().holdsLock(this);
+        assert EventQueue.isDispatchThread();
+
         return changeListeners != null;
     }
 
-    protected synchronized void addChangeListener(ChangeListener l) {
+    protected void addChangeListener(ChangeListener l) {
+        assert EventQueue.isDispatchThread();
+
         if (l == null) {
             throw new IllegalArgumentException("null");                 //NOI18N
         }
@@ -92,7 +98,9 @@ public abstract class AbstractSearchScope extends SearchScope {
         }
     }
 
-    protected synchronized void removeChangeListener(ChangeListener l) {
+    protected void removeChangeListener(ChangeListener l) {
+        assert EventQueue.isDispatchThread();
+
         if (l == null) {
             throw new IllegalArgumentException("null");                 //NOI18N
         }
