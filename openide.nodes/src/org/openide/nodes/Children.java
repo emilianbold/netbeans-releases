@@ -233,24 +233,24 @@ public abstract class Children extends Object {
      * Create a <code>Children</code> object using the passed <code>ChildFactory</code>
      * object.  The <code>ChildFactory</code> will be asked to create a list
      * of model objects that are the children;  then for each object in the list,
-     * <code>ChildFactory.createNodesFor()</code> will be called to instantiate
+     * {@link ChildFactory#createNodesFor} will be called to instantiate
      * one or more <code>Node</code>s for that object.
-     * @param factory A ChildFactory which will provide child objects
-     * @param asynchronous If true, the ChildFactory will always be called to
+     * @param factory a factory which will provide child objects
+     * @param asynchronous If true, the factory will always be called to
      *   create the list of keys on
-     *   a background thread, displaying a &quot;Please Wait&quot; child Node until
-     *   some or all child Nodes have been computed.  If so, 
-     *   when it is expanded, the Node that owns
-     *   the returned <code>Children</code> object will display a &quot;please wait&quot;
+     *   a background thread, displaying a &quot;Please Wait&quot; child node until
+     *   some or all child nodes have been computed. If so,
+     *   when it is expanded, the node that owns
+     *   the returned <code>Children</code> object will display a &quot;Please Wait&quot;
      *   node while the children are computed in the background.  Pass true
      *   for any case where computing child nodes is expensive and should
      *   not be done in the event thread.
-     * @return A <code>Children</code> object which 
-     *   will invoke the ChildFactory instance as needed to supply model
+     * @return a children object which
+     *   will invoke the factory instance as needed to supply model
      *   objects and child nodes for it
-     * @throws IllegalStateException if the passed ChildFactory has already
-     *   been used in a previous call to <code>Children.create()</code>.
-     * @since 7.1
+     * @throws IllegalStateException if the passed factory has already
+     *   been used in a previous call to this method
+     * @since org.openide.nodes 7.1
      */ 
     public static <T> Children create (ChildFactory <T> factory, boolean asynchronous) {
         if (factory == null) throw new NullPointerException ("Null factory");

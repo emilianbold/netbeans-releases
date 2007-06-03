@@ -51,7 +51,7 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
     }
     
     volatile boolean initialized = false;
-    protected void addNotify() {
+    protected @Override void addNotify() {
         if ((!initialized && task.isFinished()) || cancelled) {
             cancelled = false;
             Node n = factory.getWaitNode();
@@ -62,7 +62,7 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
         }
     }
     
-    protected void removeNotify() {
+    protected @Override void removeNotify() {
         cancelled = true;
         task.cancel();
         initialized = false;
@@ -92,14 +92,14 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
         }
     }
     
-    public Node[] getNodes(boolean optimalResult) {
+    public @Override Node[] getNodes(boolean optimalResult) {
         if (optimalResult) {
             task.waitFinished();
         }
         return super.getNodes();
     }
     
-    @SuppressWarnings("unchecked") //NOI18N
+    @SuppressWarnings("unchecked") // Union2<T,Node> undesirable since refresh could not use raw keys list
     protected Node[] createNodes(Object key) {
         if (factory.isWaitNode(key)) {
             return new Node[] { (Node) key };

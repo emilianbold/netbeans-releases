@@ -27,7 +27,7 @@ import java.util.List;
  *
  * @author Tim Boudreau
  */
-final class SynchChildren <T> extends Children.Keys <Object> implements ChildFactory.Observer {
+final class SynchChildren<T> extends Children.Keys<T> implements ChildFactory.Observer {
     private final ChildFactory<T> factory;
     
     /** Creates a new instance of SynchChildren
@@ -40,19 +40,18 @@ final class SynchChildren <T> extends Children.Keys <Object> implements ChildFac
     }
     
     volatile boolean active = false;
-    protected void addNotify() {
+    protected @Override void addNotify() {
         active = true;
         refresh(true);
     }
     
-    protected void removeNotify() {
+    protected @Override void removeNotify() {
         active = false;
         setKeys(Collections.<T>emptyList());
     }
     
-    @SuppressWarnings("unchecked") //NOI18N
-    protected Node[] createNodes(Object key) {
-        return factory.createNodesForKey((T) key);
+    protected Node[] createNodes(T key) {
+        return factory.createNodesForKey(key);
     }
     
     public void refresh(boolean immediate) {

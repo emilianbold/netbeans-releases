@@ -43,23 +43,23 @@ public class ChildFactoryTest extends TestCase {
     private Node node2;
     private AsynchChildren kids;
     private Node node;
-    public void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         factory = new ProviderImpl();
-        kids = new AsynchChildren(factory);
+        kids = new AsynchChildren<String>(factory);
         node = new AbstractNode(kids);
         
         factory2 = new BatchProviderImpl();
-        kids2 = new AsynchChildren(factory2);
+        kids2 = new AsynchChildren<String>(factory2);
         node2 = new AbstractNode(kids2);
     }
     
     public void testChildrenCreate() {
         System.out.println("testChildrenCreate");
-        ChildFactory f = new ProviderImpl();
+        ChildFactory<?> f = new ProviderImpl();
         Children kids = Children.create(f, true);
         assertTrue(kids instanceof AsynchChildren);
         
-        ChildFactory ff = new ProviderImpl();
+        ChildFactory<?> ff = new ProviderImpl();
         Children kids2 = Children.create(ff, false);
         assertFalse(kids2 instanceof AsynchChildren);
         assertTrue(kids2 instanceof SynchChildren);
@@ -111,7 +111,7 @@ public class ChildFactoryTest extends TestCase {
         }
         for (int i = 0; i < 5 && n.length != 4; i++) {
             n = kids.getNodes(true);
-            java.lang.Thread.currentThread().yield();
+            Thread.currentThread().yield();
         }
         assertEquals(4, n.length);
     }
@@ -190,7 +190,7 @@ public class ChildFactoryTest extends TestCase {
         Object lock = new Object();
         volatile boolean wait = false;
         
-        public Node[] createNodesForKey(String key) {
+        public @Override Node[] createNodesForKey(String key) {
             AbstractNode nd = new AbstractNode(Children.LEAF);
             nd.setDisplayName(key);
             return new Node[] { nd };
@@ -228,7 +228,7 @@ public class ChildFactoryTest extends TestCase {
     static final class BatchProviderImpl extends ChildFactory <String> {
         boolean firstCycle = true;
         
-        public Node[] createNodesForKey(String key) {
+        public @Override Node[] createNodesForKey(String key) {
             AbstractNode nd = new AbstractNode(Children.LEAF);
             nd.setDisplayName(key);
             return new Node[] { nd };
@@ -326,7 +326,7 @@ public class ChildFactoryTest extends TestCase {
         });
         
         boolean createNodesForKeyCalled = false;
-        public Node[] createNodesForKey(String key) {
+        public @Override Node[] createNodesForKey(String key) {
             createNodesForKeyCalled = true;
             Node result = new AbstractNode(Children.LEAF);
             result.setDisplayName(key);
