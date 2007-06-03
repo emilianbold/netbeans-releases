@@ -22,6 +22,7 @@ package org.netbeans.modules.editor.mimelookup.impl;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -91,6 +92,7 @@ public final class CompoundFolderChildren {
         
         synchronized (LOCK) {
             // Collect all children
+            List<FileObject> visibleFiles = new ArrayList<FileObject>();
             Map<String,FileObject> visible = new HashMap<String,FileObject>();
             Map<String,FileObject> hidden = new HashMap<String,FileObject>();
             
@@ -109,6 +111,7 @@ public final class CompoundFolderChildren {
                     if (!hidden.containsKey(name)) {
                         if (!visible.containsKey(name)) {
                             visible.put(name, f);
+                            visibleFiles.add(f);
                         }
                     }
                 }
@@ -157,7 +160,7 @@ public final class CompoundFolderChildren {
             List<FileObject> sorted;
             
             try {
-                sorted = Utilities.topologicalSort(visible.values(), edges);
+                sorted = Utilities.topologicalSort(visibleFiles, edges);
             } catch (TopologicalSortException e) {
                 LOG.log(Level.WARNING, "Can't sort folder children.", e); //NOI18N
                 sorted = NbCollections.checkedListByCopy(e.partialSort(), FileObject.class, true);

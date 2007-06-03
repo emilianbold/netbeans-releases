@@ -173,7 +173,56 @@ public class CompoundFolderChildrenTest extends NbTestCase {
         assertEquals("Wrong second file", fileName3, ((FileObject) files.get(1)).getNameExt());
         assertEquals("Wrong third file", fileName1, ((FileObject) files.get(2)).getNameExt());
     }
+
+    public void testSorting2() throws Exception {
+        // Create files
+        String fileName1 = "Zfile.instance";
+        String fileName2 = "Yfile.instance";
+        String fileName3 = "Xfile.instance";
+        TestUtilities.createFile(getWorkDir(), "Tmp/A/B/C/D/" + fileName1);
+        TestUtilities.createFile(getWorkDir(), "Tmp/A/B/" + fileName2);
+        TestUtilities.createFile(getWorkDir(), "Tmp/A/" + fileName3);
+
+        // Create compound children
+        CompoundFolderChildren cfch = new CompoundFolderChildren(new String [] { "Tmp/A/B/C/D", "Tmp/A/B", "Tmp/A" }, false);
+        List files = cfch.getChildren();
+
+        assertEquals("Wrong number of files", 3, files.size());
+        assertEquals("Wrong first file", fileName1, ((FileObject) files.get(0)).getNameExt());
+        assertEquals("Wrong second file", fileName2, ((FileObject) files.get(1)).getNameExt());
+        assertEquals("Wrong third file", fileName3, ((FileObject) files.get(2)).getNameExt());
+    }
     
+    // According to the weak stability clause in Utilities.topologicalSort this
+    // test could be failing. But it is the behavior we would like to have. The
+    // test seems to be passing, but probably just by sheer luck. In general U.tS
+    // could move file-1.instance anywhere it likes.
+    public void testSorting3() throws Exception {
+        // Create files
+        String fileName1 = "file-1.instance";
+        String fileName2 = "file-2.instance";
+        String fileName3 = "file-3.instance";
+        TestUtilities.createFile(getWorkDir(), "Tmp/A/B/C/D/" + fileName1);
+        TestUtilities.createFile(getWorkDir(), "Tmp/A/B/" + fileName2);
+        TestUtilities.createFile(getWorkDir(), "Tmp/A/" + fileName3);
+
+        // Set the sorting attributes
+        FileObject layer1 = Repository.getDefault().getDefaultFileSystem().findResource("Tmp/A/B/C/D");
+        FileObject layer2 = Repository.getDefault().getDefaultFileSystem().findResource("Tmp/A/B");
+        FileObject layer3 = Repository.getDefault().getDefaultFileSystem().findResource("Tmp/A");
+        
+        layer2.setAttribute("file-3.instance/file-2.instance", Boolean.TRUE);
+        
+        // Create compound children
+        CompoundFolderChildren cfch = new CompoundFolderChildren(new String [] { "Tmp/A/B/C/D", "Tmp/A/B", "Tmp/A" }, false);
+        List files = cfch.getChildren();
+
+        assertEquals("Wrong number of files", 3, files.size());
+        assertEquals("Wrong first file", fileName1, ((FileObject) files.get(0)).getNameExt());
+        assertEquals("Wrong second file", fileName3, ((FileObject) files.get(1)).getNameExt());
+        assertEquals("Wrong third file", fileName2, ((FileObject) files.get(2)).getNameExt());
+    }
+
     // test events
 
     private FileObject findFileByName(List files, String nameExt) {
