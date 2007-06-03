@@ -290,6 +290,7 @@ public abstract class Unit {
             return Unit.compareDisplayVersions (u1, u2);
         }
         
+        @Override
         public boolean canBeMarked () {
             return isUninstallAllowed ;
         }
