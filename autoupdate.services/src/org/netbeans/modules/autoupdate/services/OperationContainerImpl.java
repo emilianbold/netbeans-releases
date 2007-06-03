@@ -154,9 +154,9 @@ public final class OperationContainerImpl<Support> {
     
     public boolean isValid (UpdateUnit updateUnit, UpdateElement updateElement) {
         if (updateElement == null) {
-            throw new IllegalArgumentException ("UpdateElement cannot be null.");
+            throw new IllegalArgumentException ("UpdateElement cannot be null for UpdateUnit " + updateUnit);
         } else if (updateUnit == null) {
-            throw new IllegalArgumentException ("UpdateUnit cannot be null.");
+            throw new IllegalArgumentException ("UpdateUnit cannot be null for UpdateElement " + updateElement);
         }
         boolean isValid = false;
         switch (type) {
