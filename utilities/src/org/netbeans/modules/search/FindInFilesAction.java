@@ -20,6 +20,7 @@
 package org.netbeans.modules.search;
 
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -107,16 +108,16 @@ public class FindInFilesAction extends CallableSystemAction
 
     @Override
     public Component getToolbarPresenter() {
+        assert EventQueue.isDispatchThread();
         LOG.finer("FindInFilesAction.getMenuPresenter()");
-        synchronized (getLock()) {
-            Component presenter = getStoredToolbarPresenter();
-            if (putProperty(VAR_LISTENING, Boolean.TRUE) == null) {
-                SearchScopeRegistry.getInstance().addChangeListener(this);
-                putProperty(VAR_FIRST_ISENABLED, null);
-                updateState();
-            }
-            return presenter;
+
+        Component presenter = getStoredToolbarPresenter();
+        if (putProperty(VAR_LISTENING, Boolean.TRUE) == null) {
+            SearchScopeRegistry.getInstance().addChangeListener(this);
+            putProperty(VAR_FIRST_ISENABLED, null);
+            updateState();
         }
+        return presenter;
     }
 
     /**
@@ -129,7 +130,9 @@ public class FindInFilesAction extends CallableSystemAction
      * @return  existing presenter; or a new presenter if it did not exist
      */
     private Component getStoredToolbarPresenter() {
+        assert EventQueue.isDispatchThread();
         LOG.finer("FindInFilesAction.getStoredToolbarPresenter()");
+
         Object refObj = getProperty(VAR_TOOLBAR_COMP_REF);
         if (refObj != null) {
             Reference ref = (Reference) refObj;
@@ -154,7 +157,9 @@ public class FindInFilesAction extends CallableSystemAction
      * @see  #getStoredToolbarPresenter
      */
     private boolean checkToolbarPresenterExists() {
+        assert EventQueue.isDispatchThread();
         LOG.finer("FindInFilesAction.checkToolbarPresenterExists()");
+
         Object refObj = getProperty(VAR_TOOLBAR_COMP_REF);
         if (refObj == null) {
             return false;
@@ -167,58 +172,46 @@ public class FindInFilesAction extends CallableSystemAction
      * of open projecst and some project(s) is opened/closed.
      */
     public void stateChanged(ChangeEvent e) {
+        assert EventQueue.isDispatchThread();
         LOG.finer("FindInFilesAction.stateChanged()");
-        synchronized (getLock()) {
-            
-            /*
-             * Check whether listening on open projects is active.
-             * This block of code may be called even if listening is off.
-             * It can happen if this method's synchronized block contended
-             * for the lock with another thread which just switched listening
-             * off.
-             */
-            if (getProperty(VAR_LISTENING) == null) {
-                return;
-            }
-            
-            if (checkToolbarPresenterExists()) {
-                updateState();
-            } else {
-                SearchScopeRegistry.getInstance().removeChangeListener(this);
-                putProperty(VAR_LISTENING, null);
-                putProperty(VAR_TOOLBAR_COMP_REF, null);
-            }
+
+        /*
+         * Check whether listening on open projects is active.
+         */
+        if (getProperty(VAR_LISTENING) == null) {
+            return;
         }
         
+        if (checkToolbarPresenterExists()) {
+            updateState();
+        } else {
+            SearchScopeRegistry.getInstance().removeChangeListener(this);
+            putProperty(VAR_LISTENING, null);
+            putProperty(VAR_TOOLBAR_COMP_REF, null);
+        }
     }
 
     @Override
     public boolean isEnabled() {
+        assert EventQueue.isDispatchThread();
         LOG.finer("FindInFilesAction.isEnabled()");
-        synchronized (getLock()) {
-            if (getProperty(VAR_LISTENING) != null) {
-                return super.isEnabled();
-            } else if (getProperty(VAR_FIRST_ISENABLED) == null) {
-                return SearchScopeRegistry.getInstance().hasApplicableSearchScope();
-            } else {
-                /* first call of this method */
-                putProperty(VAR_FIRST_ISENABLED, null);
-                return false;
-            }
+
+        if (getProperty(VAR_LISTENING) != null) {
+            return super.isEnabled();
+        } else if (getProperty(VAR_FIRST_ISENABLED) == null) {
+            return SearchScopeRegistry.getInstance().hasApplicableSearchScope();
+        } else {
+            /* first call of this method */
+            putProperty(VAR_FIRST_ISENABLED, null);
+            return false;
         }
     }
     
     /**
      */
-    private synchronized void updateState() {
+    private void updateState() {
+        assert EventQueue.isDispatchThread();
         LOG.finer("FindInFilesAction.updateState()");
-        
-        /*
-         * no extra synchronization needed - the method is called
-         * only from synchronized blocks of the following methods:
-         *    propertyChange(...)
-         *    getToolbarPresenter()
-         */
         
         final boolean enabled
                 = SearchScopeRegistry.getInstance().hasApplicableSearchScope();
@@ -247,6 +240,8 @@ public class FindInFilesAction extends CallableSystemAction
 
     /** Perform this action. */
     public void performAction() {
+        assert EventQueue.isDispatchThread();
+
         String msg = Manager.getInstance().mayStartSearching();
         if (msg != null) {
             /*
