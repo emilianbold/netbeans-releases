@@ -33,7 +33,6 @@ import org.openide.cookies.SaveCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebserviceDescription;
@@ -82,8 +81,8 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URLConnection;
 import java.util.ArrayList;
-import javax.swing.DefaultListModel;
 import javax.swing.ListModel;
+import javax.swing.table.TableModel;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -91,9 +90,6 @@ import org.netbeans.modules.websvc.core.WebServiceReference;
 import org.netbeans.modules.websvc.core.WebServiceTransferable;
 import org.netbeans.modules.websvc.jaxrpc.actions.RegenerateFromWsdlAction;
 import org.netbeans.modules.websvc.jaxrpc.actions.RegenerateFromWsdlCookie;
-//import org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookie;
-//import org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookieImpl;
-//import org.netbeans.modules.websvc.core.wseditor.support.WSEditAttributesAction;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.execution.ExecutorTask;
 import org.openide.nodes.Node;
@@ -146,19 +142,19 @@ public class WebServiceNode extends AbstractNode implements WSRegisterCookie, Ja
     
     private OpenCookie getOpenCookie() {
         OpenCookie oc = null;
-// Retouche
-//        JavaClass ce = getImplBeanClass(webServiceDescription);
-//        if (ce != null) {
-//            FileObject f = JavaModel.getFileObject(ce.getResource());
-//            if (f != null) {
-//                try {
-//                    DataObject d = DataObject.find(f);
-//                    oc = (OpenCookie)d.getCookie(OpenCookie.class);
-//                } catch (DataObjectNotFoundException de) {
-//                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, de.toString());
-//                }
-//            }
-//        }
+        // Retouche
+        //        JavaClass ce = getImplBeanClass(webServiceDescription);
+        //        if (ce != null) {
+        //            FileObject f = JavaModel.getFileObject(ce.getResource());
+        //            if (f != null) {
+        //                try {
+        //                    DataObject d = DataObject.find(f);
+        //                    oc = (OpenCookie)d.getCookie(OpenCookie.class);
+        //                } catch (DataObjectNotFoundException de) {
+        //                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, de.toString());
+        //                }
+        //            }
+        //        }
         return oc;
     }
     
@@ -167,9 +163,9 @@ public class WebServiceNode extends AbstractNode implements WSRegisterCookie, Ja
     }
     
     public Node.Cookie getCookie(Class type){
-       // if(type == EditWSAttributesCookie.class){
-       //     return new EditWSAttributesCookieImpl(this, null);
-       //}
+        // if(type == EditWSAttributesCookie.class){
+        //     return new EditWSAttributesCookieImpl(this, null);
+        //}
         return super.getCookie(type);
     }
     
@@ -312,42 +308,42 @@ public class WebServiceNode extends AbstractNode implements WSRegisterCookie, Ja
     
     //Need a better way to get the package, maybe pass it(???)
     private String getPackageName() {
-// Retouche
-//        String implClassName = getImplBeanClass(webServiceDescription).getName();
-//        int index = implClassName.lastIndexOf(".");
-//        return implClassName.substring(0, index).replace('.', '/');
+        // Retouche
+        //        String implClassName = getImplBeanClass(webServiceDescription).getName();
+        //        int index = implClassName.lastIndexOf(".");
+        //        return implClassName.substring(0, index).replace('.', '/');
         return "";
     }
-
-// Retouche
-//    private JavaClass getImplBeanClass(WebserviceDescription webServiceDescription) {
-//        PortComponent portComponent = webServiceDescription.getPortComponent(0); //assume one port per ws
-//        ServiceImplBean serviceImplBean = portComponent.getServiceImplBean();
-//        String link =serviceImplBean.getServletLink();
-//        if(link == null) {
-//            link = serviceImplBean.getEjbLink();
-//        }
-//        WebServicesSupport wsSupport = WebServicesSupport.getWebServicesSupport(srcRoot);
-//        String implBean = wsSupport.getImplementationBean(link);
-//        if(implBean != null) {
-//            JavaClass javaClass = JMIUtils.findClass(implBean,srcRoot);
-//            return javaClass;
-//        }
-//        return null;
-////    }
-//    
-//    private void addImplClassToContent(final InstanceContent content, final WebserviceDescription webServiceDescription) {
-//        RequestProcessor.getDefault().post(new Runnable() {
-//            public void run() {
-//                JavaMetamodel.getManager().waitScanFinished();
-//                JavaClass implBeanClass = getImplBeanClass(webServiceDescription);
-//                if (implBeanClass != null) {
-//                    content.add(implBeanClass);
-//                }
-//            }
-//            
-//        });
-//    }
+    
+    // Retouche
+    //    private JavaClass getImplBeanClass(WebserviceDescription webServiceDescription) {
+    //        PortComponent portComponent = webServiceDescription.getPortComponent(0); //assume one port per ws
+    //        ServiceImplBean serviceImplBean = portComponent.getServiceImplBean();
+    //        String link =serviceImplBean.getServletLink();
+    //        if(link == null) {
+    //            link = serviceImplBean.getEjbLink();
+    //        }
+    //        WebServicesSupport wsSupport = WebServicesSupport.getWebServicesSupport(srcRoot);
+    //        String implBean = wsSupport.getImplementationBean(link);
+    //        if(implBean != null) {
+    //            JavaClass javaClass = JMIUtils.findClass(implBean,srcRoot);
+    //            return javaClass;
+    //        }
+    //        return null;
+    ////    }
+    //
+    //    private void addImplClassToContent(final InstanceContent content, final WebserviceDescription webServiceDescription) {
+    //        RequestProcessor.getDefault().post(new Runnable() {
+    //            public void run() {
+    //                JavaMetamodel.getManager().waitScanFinished();
+    //                JavaClass implBeanClass = getImplBeanClass(webServiceDescription);
+    //                if (implBeanClass != null) {
+    //                    content.add(implBeanClass);
+    //                }
+    //            }
+    //
+    //        });
+    //    }
     
     private String getDefaultWSDLUrl(){
         J2eeModuleProvider provider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
@@ -372,11 +368,11 @@ public class WebServiceNode extends AbstractNode implements WSRegisterCookie, Ja
                 
             }
             
-	    try {
-		contextRoot = configSupport.getWebContextRoot();
-	    } catch (ConfigurationException e) {
-		// TODO context path could not be read, the user should be notified about it
-	    }
+            try {
+                contextRoot = configSupport.getWebContextRoot();
+            } catch (ConfigurationException e) {
+                // TODO context path could not be read, the user should be notified about it
+            }
             if(contextRoot != null && contextRoot.startsWith("/")){
                 contextRoot = contextRoot.substring(1);
             }
@@ -507,39 +503,39 @@ public class WebServiceNode extends AbstractNode implements WSRegisterCookie, Ja
         for(int j = 0; j < handlers.length; j++) {
             handlerList.add(handlers[j].getHandlerClass());
         }
-        final MessageHandlerPanel panel = new MessageHandlerPanel(project, (String[])handlerList.toArray(new String[handlerList.size()]), false, wsName);
+        final MessageHandlerPanel panel = new MessageHandlerPanel(project, handlerList, false, wsName);
         String title = NbBundle.getMessage(WebServiceNode.class,"TTL_MessageHandlerPanel");
         DialogDescriptor dialogDesc = new DialogDescriptor(panel, title, true,
                 new ActionListener(){
             public void actionPerformed(ActionEvent evt) {
                 if(evt.getSource() == NotifyDescriptor.OK_OPTION) {
-                    DefaultListModel listModel = panel.getListModel();
+                    
+                    if(!panel.isChanged()) return;
+                    
+                    //refresh handlers
+                    PortComponentHandler[] handlers = portComponent.getHandler();
+                    for(int j = 0; j < handlers.length; j++){
+                        PortComponentHandler handler = handlers[j];
+                        String clsName = handler.getHandlerClass();
+                        portComponent.removeHandler(handler);
+                    }
+                    TableModel tableModel = panel.getHandlerTableModel();
                     try{
-                        //add new handlers
-                        for(int i = 0; i < listModel.getSize(); i++){
-                            String className = (String)listModel.getElementAt(i);
-                            if(isNewHandler(className, portComponent)){
+                        //add handlers
+                        for(int i = 0; i < tableModel.getRowCount(); i++){
+                            String className = (String)tableModel.getValueAt(i, 0);
                                 PortComponentHandler handler = (PortComponentHandler)webServices.createBean("PortComponentHandler");
                                 handler.setHandlerName(className);
                                 handler.setHandlerClass(className);
                                 portComponent.addHandler(handler);
-                            }
                         }
-                        //remove handlers that have been deleted
-                        PortComponentHandler[] handlers = portComponent.getHandler();
-                        for(int j = 0; j < handlers.length; j++){
-                            PortComponentHandler handler = handlers[j];
-                            String clsName = handler.getHandlerClass();
-                            if(!isInModel(clsName, listModel)){
-                                portComponent.removeHandler(handler);
-                            }
-                        }
+                        
                         webServices.write(wsSupport.getWebservicesDD());
                         //configuration.write(configFO);
                     }catch(ClassNotFoundException e){
-                        throw new RuntimeException(e.getMessage());
+                        ErrorManager.getDefault().notify(e);
                     } catch(IOException e){
-                        throw new RuntimeException(e.getMessage());
+                        ErrorManager.getDefault().notify(e);
                     }
                 }
             }

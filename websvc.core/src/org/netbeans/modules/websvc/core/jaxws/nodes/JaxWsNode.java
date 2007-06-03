@@ -655,7 +655,7 @@ public class JaxWsNode extends AbstractNode implements JaxWsWsdlCookie, JaxWsTes
             }
         }
         final MessageHandlerPanel panel = new MessageHandlerPanel(project,
-                (String[])handlerClasses.toArray(new String[handlerClasses.size()]), true, service.getName());
+               handlerClasses, true, service.getName());
         String title = NbBundle.getMessage(JaxWsNode.class,"TTL_MessageHandlerPanel");
         DialogDescriptor dialogDesc = new DialogDescriptor(panel, title);
         dialogDesc.setButtonListener(new HandlerButtonListener( panel,

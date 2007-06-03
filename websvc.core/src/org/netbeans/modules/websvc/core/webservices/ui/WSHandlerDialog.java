@@ -24,7 +24,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
@@ -57,6 +59,14 @@ public class WSHandlerDialog {
     private SelectHandlerPanel sPanel;
     private AddMessageHandlerDialogDesc dlgDesc;
     private boolean isJaxWS;
+    private Map<String, Integer> handlerMap;
+    
+    //Handler types
+    public static final int JAXWS_LOGICAL_HANDLER = 1;
+    public static final int JAXWS_MESSAGE_HANDLER = 2;
+    public static final int JAXRPC_MESSAGE_HANDLER = 3;
+    public static final int INVALID_HANDLER = -1;
+    
     /**
      * Creates a new instance of WSHandlerDialog
      */
@@ -65,6 +75,7 @@ public class WSHandlerDialog {
         sPanel = new SelectHandlerPanel(project);
         dlgDesc = new AddMessageHandlerDialogDesc(sPanel);
         dialog = DialogDisplayer.getDefault().createDialog(dlgDesc);
+        handlerMap = new TreeMap<String, Integer>();
     }
     
     public void show(){
@@ -75,18 +86,8 @@ public class WSHandlerDialog {
         return dlgDesc.getValue() == DialogDescriptor.OK_OPTION;
     }
     
-    public Set<String> getSelectedClasses(){
-        Set<String> selectedClasses = new HashSet<String>();
-        Node[] nodes = sPanel.getSelectedNodes();
-        for(int i = 0; i < nodes.length; i++) {
-            FileObject fo = getFileObjectFromNode(nodes[i]);
-            if (fo!=null) {
-                ClassPath classPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-                String handlerClassName = classPath.getResourceName(fo, '.', false);
-                selectedClasses.add(handlerClassName);
-            }
-        }
-        return selectedClasses;
+    public Map<String, Integer> getSelectedClasses(){
+        return handlerMap;
     }
     
     private FileObject getFileObjectFromNode(Node n) {
@@ -133,7 +134,7 @@ public class WSHandlerDialog {
                             accepted = false;
                             break;
                         }
-                        final boolean[] isHandler = new boolean[]{false};
+                        final int[] handlerType = new int[]{JAXWS_LOGICAL_HANDLER};
                         
                         JavaSource javaSource = JavaSource.forFileObject(javaClassFo);
                         if(javaSource == null){
@@ -146,7 +147,7 @@ public class WSHandlerDialog {
                         CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
                             public void run(CompilationController controller) throws IOException {
                                 controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                                if (isHandler(controller)) isHandler[0]=true;
+                                handlerType[0] = getHandlerType(controller, isJaxWS);
                             }
                             public void cancel() {}
                         };
@@ -156,11 +157,18 @@ public class WSHandlerDialog {
                             ErrorManager.getDefault().notify(ex);
                         }
                         
-                        if(!isHandler[0]) {
+                        if(handlerType[0] == INVALID_HANDLER) {
                             errMsg = NbBundle.getMessage(WSHandlerDialog.class,
                                     "NotHandlerClass_msg");
                             accepted = false;
                             break;
+                        } else{
+                            FileObject fo = getFileObjectFromNode(node);
+                            if (fo!=null) {
+                                ClassPath classPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+                                String handlerClassName = classPath.getResourceName(fo, '.', false);
+                                handlerMap.put(handlerClassName, handlerType[0]);
+                            }
                         }
                     }
                     if (!accepted) {
@@ -176,45 +184,44 @@ public class WSHandlerDialog {
                 }
             }
         }
-        
-        private boolean isHandler(CompilationController cc) throws IOException {
-            SourceUtils srcUtils = SourceUtils.newInstance(cc);
-            if (srcUtils!=null) {
-                TypeMirror classMirror = srcUtils.getTypeElement().asType();
-                
-                if(isJaxWS) {
-                    // test if class extends "javax.xml.ws.handler.LogicalHandler<C extends javax.xml.ws.handler.LogicalMessageContext>"
-                    TypeElement handlerElement = cc.getElements().getTypeElement("javax.xml.ws.handler.LogicalHandler"); //NOI18N
-                    DeclaredType handlerType=null;
-                    if (handlerElement!=null) {
-                        TypeElement messageContextElement = cc.getElements().getTypeElement("javax.xml.ws.handler.LogicalMessageContext"); //NOI18N
-                        WildcardType wildcardType = cc.getTypes().getWildcardType(messageContextElement.asType(), null);
-                        handlerType = cc.getTypes().getDeclaredType(handlerElement, wildcardType);
-                    }
-                    if (handlerType!=null && cc.getTypes().isSubtype(classMirror, handlerType)) {
-                        return true;
-                    }
-                    // test if class extends "javax.xml.ws.handler.Handler<C extends javax.xml.ws.handler.MessageContext>"
-                    handlerElement = cc.getElements().getTypeElement("javax.xml.ws.handler.Handler"); //NOI18N
-                    handlerType=null;
-                    if (handlerElement!=null) {
-                        TypeElement messageContextElement = cc.getElements().getTypeElement("javax.xml.ws.handler.MessageContext"); //NOI18N
-                        WildcardType wildcardType = cc.getTypes().getWildcardType(messageContextElement.asType(), null);
-                        handlerType = cc.getTypes().getDeclaredType(handlerElement, wildcardType);
-                    }
-                    if (handlerType!=null && cc.getTypes().isSubtype(classMirror, handlerType)) {
-                        return true;
-                    }
+    }
+    public static int getHandlerType(CompilationController cc, boolean isJaxWS) throws IOException {
+        SourceUtils srcUtils = SourceUtils.newInstance(cc);
+        if (srcUtils!=null) {
+            TypeMirror classMirror = srcUtils.getTypeElement().asType();
+            
+            if(isJaxWS) {
+                // test if class extends "javax.xml.ws.handler.LogicalHandler<C extends javax.xml.ws.handler.LogicalMessageContext>"
+                TypeElement handlerElement = cc.getElements().getTypeElement("javax.xml.ws.handler.LogicalHandler"); //NOI18N
+                DeclaredType handlerType=null;
+                if (handlerElement!=null) {
+                    TypeElement messageContextElement = cc.getElements().getTypeElement("javax.xml.ws.handler.LogicalMessageContext"); //NOI18N
+                    WildcardType wildcardType = cc.getTypes().getWildcardType(messageContextElement.asType(), null);
+                    handlerType = cc.getTypes().getDeclaredType(handlerElement, wildcardType);
                 }
-                else {
-                    // test if class extends "javax.xml.rpc.handler.Handler"
-                    TypeElement handlerElement = cc.getElements().getTypeElement("javax.xml.rpc.handler.Handler"); //NOI18N 
-                    if (handlerElement!=null && cc.getTypes().isSubtype(classMirror, handlerElement.asType())) {
-                        return true;
-                    }
+                if (handlerType!=null && cc.getTypes().isSubtype(classMirror, handlerType)) {
+                    return JAXWS_LOGICAL_HANDLER;
+                }
+                // test if class extends "javax.xml.ws.handler.Handler<C extends javax.xml.ws.handler.MessageContext>"
+                handlerElement = cc.getElements().getTypeElement("javax.xml.ws.handler.Handler"); //NOI18N
+                handlerType=null;
+                if (handlerElement!=null) {
+                    TypeElement messageContextElement = cc.getElements().getTypeElement("javax.xml.ws.handler.MessageContext"); //NOI18N
+                    WildcardType wildcardType = cc.getTypes().getWildcardType(messageContextElement.asType(), null);
+                    handlerType = cc.getTypes().getDeclaredType(handlerElement, wildcardType);
+                }
+                if (handlerType!=null && cc.getTypes().isSubtype(classMirror, handlerType)) {
+                    return JAXWS_MESSAGE_HANDLER;
+                }
+            } else {
+                // test if class extends "javax.xml.rpc.handler.Handler"
+                TypeElement handlerElement = cc.getElements().getTypeElement("javax.xml.rpc.handler.Handler"); //NOI18N
+                if (handlerElement!=null && cc.getTypes().isSubtype(classMirror, handlerElement.asType())) {
+                    return JAXRPC_MESSAGE_HANDLER;
                 }
             }
-            return false;
         }
+        return INVALID_HANDLER;
     }
+    // }
 }

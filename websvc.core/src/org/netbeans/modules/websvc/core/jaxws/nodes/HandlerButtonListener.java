@@ -36,6 +36,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.swing.DefaultListModel;
 import javax.swing.ListModel;
+import javax.swing.table.TableModel;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -86,6 +87,7 @@ public class HandlerButtonListener implements ActionListener{
     }
     public void actionPerformed(ActionEvent evt) {
         if(evt.getSource() == NotifyDescriptor.OK_OPTION) {
+            if(!panel.isChanged()) return;
             if (isNew) {
                 //add annotation
                 String servicehandlerFileName = service.getName() + "_handler"; //NOI18N
@@ -102,9 +104,9 @@ public class HandlerButtonListener implements ActionListener{
                             AssignmentTree attr1 = make.Assignment(make.Identifier("file"), make.Literal(handlerFileName + ".xml"));
                             attrs.add(attr1);
                             AnnotationTree chainAnnotation = make.Annotation(
-                                    make.QualIdent(chainElement), 
+                                    make.QualIdent(chainElement),
                                     attrs
-                            );
+                                    );
                             ClassTree javaClass = genUtils.getClassTree();
                             ClassTree modifiedClass = genUtils.addAnnotation(javaClass, chainAnnotation);
                             workingCopy.rewrite(javaClass, modifiedClass);
@@ -116,7 +118,7 @@ public class HandlerButtonListener implements ActionListener{
                 try {
                     targetSource.runModificationTask(modificationTask).commit();
                 } catch(IOException exp) {
-                        ErrorManager.getDefault().notify(exp);
+                    ErrorManager.getDefault().notify(exp);
                 }
                 
                 handlerFO = parent.getFileObject(handlerFileName, "xml");
@@ -138,24 +140,24 @@ public class HandlerButtonListener implements ActionListener{
                     return; //TODO handle this
                 }
             }
-            DefaultListModel listModel = panel.getListModel();
+            
+            
             chain = handlerChains.getHandlerChains()[0];
-            //add new handlers
-            for(int i = 0; i < listModel.getSize(); i++){
-                String className = (String)listModel.getElementAt(i);
-                if(isNewHandler(className, chain)){
+            
+            //refresh handlers
+            Handler[] handlers = chain.getHandlers();
+            for(int i = 0; i < handlers.length; i++){
+                chain.removeHandler(handlers[i].getHandlerClass());
+            }
+            
+            TableModel tableModel = panel.getHandlerTableModel();
+            if(tableModel.getRowCount() > 0){
+                for(int i = 0; i < tableModel.getRowCount(); i++){
+                    String className = (String)tableModel.getValueAt(i, 0);
                     chain.addHandler(className, className);
                 }
             }
-            //remove handlers that have been deleted
-            Handler[] handlers = chain.getHandlers();
-            for(int j = 0; j < handlers.length; j++){
-                Handler handler = handlers[j];
-                String clsName = handler.getHandlerClass();
-                if(!isInModel(clsName, listModel)){
-                    chain.removeHandler(clsName);
-                }
-            }
+            
             //if handler chain has no handlers, delete the annotation
             // and delete the handler xml file
             FileLock lock = null;
@@ -173,12 +175,12 @@ public class HandlerButtonListener implements ActionListener{
                                 ClassTree classTree = genUtils.getClassTree();
                                 AnnotationTree anotTree = (AnnotationTree)workingCopy.getTrees().getTree(genUtils.getTypeElement(),chainAnnotation);
                                 ClassTree modifiedClass = make.Class(
-                                    make.removeModifiersAnnotation(classTree.getModifiers(), anotTree),
-                                    classTree.getSimpleName(),
-                                    classTree.getTypeParameters(),
-                                    classTree.getExtendsClause(),
-                                    (List<ExpressionTree>)classTree.getImplementsClause(),
-                                    classTree.getMembers());
+                                        make.removeModifiersAnnotation(classTree.getModifiers(), anotTree),
+                                        classTree.getSimpleName(),
+                                        classTree.getTypeParameters(),
+                                        classTree.getExtendsClause(),
+                                        (List<ExpressionTree>)classTree.getImplementsClause(),
+                                        classTree.getMembers());
                                 workingCopy.rewrite(classTree, modifiedClass);
                             }
                         }
@@ -189,7 +191,7 @@ public class HandlerButtonListener implements ActionListener{
                 try {
                     targetSource.runModificationTask(modificationTask).commit();
                 } catch(IOException exp) {
-                        ErrorManager.getDefault().notify(exp);
+                    ErrorManager.getDefault().notify(exp);
                 }
                 
                 //delete the handler xml file
