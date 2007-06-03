@@ -45,9 +45,10 @@ public class LayoutUtility<N, E, P> {
             TreeGraphLayoutUtility.performLayout(graph);
             break;
         case FREE_PLACES_NODES:
+            TreeGraphLayoutUtility.performLayout(graph); //Putting this in temporarily.
             /* Tree Graph Layout Utility was taken from Tree Graph Layout as is incomplete.*/
-            if ( graph instanceof PageFlowScene)
-                FreePlaceNodesLayouter.performLayout((PageFlowScene)graph);
+//            if ( graph instanceof PageFlowScene)
+//                FreePlaceNodesLayouter.performLayout((PageFlowScene)graph);
             break;
         }
     }
