@@ -97,7 +97,7 @@ public class DatabaseManager implements ParserManagerListener {
                     SyntaxContext sc = SyntaxContext.create (doc, astPath);
                     String name = ((String) feature.getValue ("name", sc)).trim ();
                     String type = (String) feature.getValue ("type", sc);
-                    if (name != null && !name.isEmpty ()) {
+                    if (name != null && name.length() > 0) {
                         //S ystem.out.println("add " + name + " " + item);
                         String local = (String) feature.getValue ("local", sc);
                         if (local != null) {
