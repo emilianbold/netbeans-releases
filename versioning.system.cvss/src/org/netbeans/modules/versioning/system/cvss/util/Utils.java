@@ -305,7 +305,7 @@ public class Utils {
      * returns its parent directory's sticky info, if any.  
      * 
      * @param file file to examine
-     * @return String sticky information for a file (with leading D or T specifier) or null 
+     * @return String sticky information for a file (without leading N, D or T specifier) or null 
      */ 
     public static String getSticky(File file) {
         if (file == null) return null;
@@ -316,13 +316,17 @@ public class Utils {
             return null;
         }
         if (file.isDirectory()) {
-            return CvsVersioningSystem.getInstance().getAdminHandler().getStickyTagForDirectory(file);
+            String std = CvsVersioningSystem.getInstance().getAdminHandler().getStickyTagForDirectory(file);
+            if (std != null) {
+                std = std.substring(1);
+            }
+            return std;
         }
         Entry entry = info.getEntry(file);
         if (entry != null) {
             String stickyInfo = null;
-            if (entry.getTag() != null) stickyInfo = "T" + entry.getTag(); // NOI18N
-            else if (entry.getDate() != null) stickyInfo = "D" + entry.getDateFormatted(); // NOI18N
+            if (entry.getTag() != null) stickyInfo = entry.getTag(); // NOI18N
+            else if (entry.getDate() != null) stickyInfo = entry.getDateFormatted(); // NOI18N
             return stickyInfo;
         }
         return null;

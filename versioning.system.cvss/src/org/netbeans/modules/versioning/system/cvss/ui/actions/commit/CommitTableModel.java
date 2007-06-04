@@ -122,7 +122,7 @@ class CommitTableModel extends AbstractTableModel {
             return nodes[rowIndex].getName();
         } else if (col.equals(CommitSettings.COLUMN_NAME_STICKY)) {
             String sticky = Utils.getSticky(nodes[rowIndex].getFile());
-            return sticky == null ? "" : sticky.substring(1); // NOI18N
+            return sticky == null ? "" : sticky; // NOI18N
         } else if (col.equals(CommitSettings.COLUMN_NAME_STATUS)) {
             return nodes[rowIndex].getInformation().getStatusText();
         } else if (col.equals(CommitSettings.COLUMN_NAME_ACTION)) {

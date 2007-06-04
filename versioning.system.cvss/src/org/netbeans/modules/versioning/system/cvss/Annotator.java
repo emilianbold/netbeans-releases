@@ -214,9 +214,7 @@ public class Annotator {
             }
         }
         String stickyString = Utils.getSticky(file);
-        if (stickyString != null) {
-            stickyString = stickyString.substring(1);
-        } else {
+        if (stickyString == null) {
             stickyString = ""; // NOI18N
         }
 

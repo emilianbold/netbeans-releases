@@ -148,8 +148,6 @@ public class SyncFileNode extends AbstractNode {
         if (sticky == null) {
             if ((sticky = Utils.getSticky(node.getFile())) == null) {
                 sticky = ""; // NOI18N
-            } else {
-                sticky = sticky.substring(1);
             }
         }
         return sticky == null || sticky.length() == 0 ? "" : sticky; // NOI18N

@@ -184,7 +184,6 @@ public class CommitAction extends AbstractSystemAction {
                 dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title"), contentTitle));
                 errorLabel = ""; // NOI18N
             } else {
-                stickyTag = stickyTag.substring(1);
                 dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title_Branch"), contentTitle, stickyTag));
                 String msg = MessageFormat.format(loc.getString("MSG_CommitForm_InfoBranch"), stickyTag);
                 errorLabel = "<html><font color=\"#002080\">" + msg + "</font></html>"; // NOI18N
