@@ -23,9 +23,9 @@ import java.util.*;
 
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBindingInfo;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiDefaultComponentInfo;
-import org.netbeans.modules.xml.wsdl.ui.view.wizard.ExtensibilityElementTemplateFactory;
-import org.netbeans.modules.xml.wsdl.ui.view.wizard.TemplateGroup;
-import org.netbeans.modules.xml.wsdl.ui.view.wizard.localized.LocalizedTemplateGroup;
+import org.netbeans.modules.xml.wsdl.bindingsupport.template.ExtensibilityElementTemplateFactory;
+import org.netbeans.modules.xml.wsdl.bindingsupport.template.TemplateGroup;
+import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.LocalizedTemplateGroup;
 import org.openide.nodes.Index;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
