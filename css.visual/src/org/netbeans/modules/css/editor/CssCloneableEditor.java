@@ -17,30 +17,19 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- * CssCloneableEditor.java
- *
- * Created on January 26, 2005, 9:37 PM
- */
-
 package org.netbeans.modules.css.editor;
-import org.netbeans.modules.css.visual.model.CssMetaModel;
-import org.netbeans.modules.css.visual.model.CssStyleData;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
+
 import org.openide.text.CloneableEditor;
 import org.openide.util.HelpCtx;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 /**
  * CSS Cloneable Editor TopComponent
  * @author Winston Prakash
+ * @author Marek Fukala
  * @version 1.0
  */
-public class CssCloneableEditor extends CloneableEditor{
 
-    DataObject dataObject = null;
+public class CssCloneableEditor extends CloneableEditor{
 
     public CssCloneableEditor() {
         super();
@@ -51,43 +40,17 @@ public class CssCloneableEditor extends CloneableEditor{
     }
 
     public HelpCtx getHelpCtx() {
+        //TODO marek: what to do with the help ID????
         return new HelpCtx("projrave_ui_elements_editors_about_css_editor") ; // NOI18N
-    }
-
-    public void setDataObject(DataObject dObject){
-        if(dataObject == null){
-            dataObject = dObject;
-            CssMetaModel.setDataObject(dataObject);
-        }
-    }
-
-    public void componentOpened(){
-        super.componentOpened();
-        CssMetaModel.setDataObject(dataObject);
-//        TopComponent properties = WindowManager.getDefault().findTopComponent("csspreviewTC"); // NOI18N
-//        if (properties != null) {
-//            properties.open();
-//            properties.requestVisible();
-//        }
     }
 
     public void componentActivated(){
         super.componentActivated();
-        CssMetaModel.setDataObject(dataObject);
-//        TopComponent properties = WindowManager.getDefault().findTopComponent("csspreviewTC"); // NOI18N
-//        if (properties != null) {
-//            properties.requestVisible();
-//        }
+        ((CssEditorSupport)cloneableEditorSupport()).cssTCActivated(this);
     }
-
-    public void componentClosed(){
-       super.componentClosed();
-       CssMetaModel.removeDataObject(dataObject);
-       dataObject = null;
-    }
-
-    public void setCssStyleData(CssStyleData cssStyleData){
-//        CssSelectorNode cssSelectorNode = new CssSelectorNode(dataObject,cssStyleData);
-//        setActivatedNodes(new Node[]{cssSelectorNode});
+    
+    public void componentDeactivated(){
+        super.componentDeactivated();
+        ((CssEditorSupport)cloneableEditorSupport()).cssTCDeactivated(this);
     }
 }

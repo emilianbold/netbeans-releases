@@ -33,11 +33,14 @@ import org.openide.nodes.Children;
  * @author Winston Prakash
  * @version 1.0
  */
-public class CssDataNode extends DataNode{
+public class CssDataNode extends DataNode {
+    
     private static final String IMAGE_ICON_BASE = "org/netbeans/modules/css/resources/css.gif";
+    
     /** Creates a new instance of CssDataNode */
     public CssDataNode(CssDataObject cssDataObject) {
         super(cssDataObject, Children.LEAF);
         setIconBaseWithExtension(IMAGE_ICON_BASE);
     }
+    
 }

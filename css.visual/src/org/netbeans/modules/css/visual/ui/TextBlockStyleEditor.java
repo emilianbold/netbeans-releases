@@ -26,7 +26,7 @@
 package org.netbeans.modules.css.visual.ui;
 
 import org.netbeans.modules.css.visual.model.CssProperties;
-import org.netbeans.modules.css.visual.model.CssStyleData;
+import org.netbeans.modules.css.model.CssRuleContent;
 import org.netbeans.modules.css.visual.model.PropertyData;
 import org.netbeans.modules.css.visual.model.PropertyWithUnitData;
 import org.netbeans.modules.css.visual.model.TextBlockData;
@@ -147,48 +147,48 @@ public class TextBlockStyleEditor extends StyleEditor {
         lineHeightCombo.setModel(lineHeightList);
         lineHeightUnitCombo.setModel(textBlockModel.getTextBlockUnitList());
   
-        textIndentCombo.getEditor().getEditorComponent().addFocusListener(new FocusAdapter() {
-            public void focusGained(FocusEvent evt) {
-                errorLabel.setText(CssStyleData.PREVIEW_NOT_SUPPORTED);
-            }
-            public void focusLost(FocusEvent evt) {
-                errorLabel.setText("");
-            }
-        });
-        
-        directionCombo.addFocusListener(new FocusAdapter() {
-            public void focusGained(FocusEvent evt) {
-                errorLabel.setText(CssStyleData.PREVIEW_NOT_SUPPORTED);
-            }
-            public void focusLost(FocusEvent evt) {
-                errorLabel.setText("");
-            }
-        });
-        
-        letterSpacingCombo.getEditor().getEditorComponent().addFocusListener(new FocusAdapter() {
-            public void focusGained(FocusEvent evt) {
-                errorLabel.setText(CssStyleData.PREVIEW_NOT_SUPPORTED);
-            }
-            public void focusLost(FocusEvent evt) {
-                errorLabel.setText("");
-            }
-        });
-        
-        wordSpacingCombo.getEditor().getEditorComponent().addFocusListener(new FocusAdapter() {
-            public void focusGained(FocusEvent evt) {
-                errorLabel.setText(CssStyleData.PREVIEW_NOT_SUPPORTED);
-            }
-            public void focusLost(FocusEvent evt) {
-                errorLabel.setText("");
-            }
-        });
+//        textIndentCombo.getEditor().getEditorComponent().addFocusListener(new FocusAdapter() {
+//            public void focusGained(FocusEvent evt) {
+//                errorLabel.setText(CssStyleData.PREVIEW_NOT_SUPPORTED);
+//            }
+//            public void focusLost(FocusEvent evt) {
+//                errorLabel.setText("");
+//            }
+//        });
+//        
+//        directionCombo.addFocusListener(new FocusAdapter() {
+//            public void focusGained(FocusEvent evt) {
+//                errorLabel.setText(CssStyleData.PREVIEW_NOT_SUPPORTED);
+//            }
+//            public void focusLost(FocusEvent evt) {
+//                errorLabel.setText("");
+//            }
+//        });
+//        
+//        letterSpacingCombo.getEditor().getEditorComponent().addFocusListener(new FocusAdapter() {
+//            public void focusGained(FocusEvent evt) {
+//                errorLabel.setText(CssStyleData.PREVIEW_NOT_SUPPORTED);
+//            }
+//            public void focusLost(FocusEvent evt) {
+//                errorLabel.setText("");
+//            }
+//        });
+//        
+//        wordSpacingCombo.getEditor().getEditorComponent().addFocusListener(new FocusAdapter() {
+//            public void focusGained(FocusEvent evt) {
+//                errorLabel.setText(CssStyleData.PREVIEW_NOT_SUPPORTED);
+//            }
+//            public void focusLost(FocusEvent evt) {
+//                errorLabel.setText("");
+//            }
+//        });
     }
     
     /**
      * Set the CSS Properties Values from the CssStyleData data structure
      * to the GUI components.
      */
-    protected void setCssPropertyValues(CssStyleData cssStyleData){
+    protected void setCssPropertyValues(CssRuleContent cssStyleData){
         removeCssPropertyChangeListener();
         
         String  horizontalAlign = cssStyleData.getProperty(CssProperties.TEXT_ALIGN);

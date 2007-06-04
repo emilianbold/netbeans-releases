@@ -25,6 +25,7 @@
 
 package org.netbeans.modules.css.visual.model;
 
+import org.netbeans.modules.css.model.CssRuleContent;
 import javax.swing.DefaultComboBoxModel;
 
 /**
@@ -63,7 +64,7 @@ public class PropertyWithUnitData extends PropertyData{
     }
 
     public void clear(){
-      setValue(CssStyleData.NOT_SET);
+      setValue(CssRuleContent.NOT_SET);
       setUnit("px"); //NOI18N
     }
 

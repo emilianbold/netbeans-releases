@@ -40,6 +40,8 @@ import javax.swing.JFileChooser;
  */
 public class Utilities {
     
+    public static final String VISUAL_EDITOR_LOGGER = "css.visual";
+    
     /**
      * This does a special instantiation of JFileChooser
      * to workaround floppy access bug 5037322.

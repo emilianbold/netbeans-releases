@@ -25,7 +25,7 @@
 
 package org.netbeans.modules.css.visual.ui;
 
-import org.netbeans.modules.css.visual.model.CssStyleData;
+import org.netbeans.modules.css.model.CssRuleContent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -45,13 +45,18 @@ abstract public class StyleEditor extends JPanel {
 
     boolean listenerAdded = false;
 
+    /** Called by StyleBuilderPanel to set the UI panel property values. */
+    public void setContent(CssRuleContent ruleContent) {
+        setCssPropertyValues(ruleContent);
+    }
+    
     /**
      * Overriden by the subclasses
      * - Remove the property change listener
      * - Set the values from CSS data to GUI elements
      * - Set back the CSS property change listener
      */
-    abstract protected void setCssPropertyValues(CssStyleData styleData);
+    abstract protected void setCssPropertyValues(CssRuleContent styleData);
 
     PropertyChangeSupport cssPropertyChangeSupport() {
         if(cssPropertyChangeSupport == null) {
@@ -63,7 +68,7 @@ abstract public class StyleEditor extends JPanel {
     /**
      * Set the CSS property change listener
      */
-    public void setCssPropertyChangeListener(CssStyleData styleData){
+    public void setCssPropertyChangeListener(CssRuleContent styleData){
         // We don't want the property change listener added more than
         // once accidently
         synchronized(StyleEditor.class){
@@ -131,16 +136,16 @@ abstract public class StyleEditor extends JPanel {
     }
 
     static class CssPropertyChangeListener implements PropertyChangeListener{
-        CssStyleData cssStyleData;
+        CssRuleContent cssStyleData;
 
         public CssPropertyChangeListener(){
         }
 
-        public CssPropertyChangeListener(CssStyleData styleData){
+        public CssPropertyChangeListener(CssRuleContent styleData){
             cssStyleData = styleData;
         }
 
-        public void setCssStyleData(CssStyleData styleData){
+        public void setCssStyleData(CssRuleContent styleData){
             cssStyleData = styleData;
         }
 

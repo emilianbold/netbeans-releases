@@ -25,7 +25,7 @@
 package org.netbeans.modules.css.visual.ui;
 
 import org.netbeans.modules.css.Utilities;
-import org.netbeans.modules.css.visual.model.CssMetaModel;
+//import org.netbeans.modules.css.visual.model.CssMetaModel;
 import java.awt.Component;
 import java.io.File;
 import javax.swing.JFileChooser;
@@ -50,7 +50,8 @@ public class BackgroundImageUrlDialog { //extends URLPanel{
         JFileChooser fileChooser = Utilities.getJFileChooser();
         File currDir = null;
         try{
-            FileObject fo = CssMetaModel.getDataObject().getPrimaryFile();
+            //FileObject fo = CssMetaModel.getDataObject().getPrimaryFile();
+            FileObject fo = null; //TODO: marek: recode!!!!!!!!!!!!!!!1
             currDir = FileUtil.toFile(fo).getParentFile();
             if (currDir == null) currDir = new File(System.getProperty("user.home")); //NOI18N
             if (currDir != null ) fileChooser.setCurrentDirectory(currDir);

@@ -28,7 +28,7 @@ package org.netbeans.modules.css.visual.ui;
 import org.netbeans.modules.css.visual.model.ClipData;
 import org.netbeans.modules.css.visual.model.ClipModel;
 import org.netbeans.modules.css.visual.model.CssProperties;
-import org.netbeans.modules.css.visual.model.CssStyleData;
+import org.netbeans.modules.css.model.CssRuleContent;
 import org.netbeans.modules.css.visual.model.PositionData;
 import org.netbeans.modules.css.visual.model.PositionModel;
 import org.netbeans.modules.css.visual.model.PropertyData;
@@ -172,7 +172,7 @@ public class PositionStyleEditor extends StyleEditor {
      * Set the CSS Properties Values from the CssStyleData data structure
      * to the GUI components.
      */
-    protected void setCssPropertyValues(CssStyleData cssStyleData){
+    protected void setCssPropertyValues(CssRuleContent cssStyleData){
         removeCssPropertyChangeListener();
         String  positionMode = cssStyleData.getProperty(CssProperties.POSITION);
         if(positionMode != null){

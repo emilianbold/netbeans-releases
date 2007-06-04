@@ -17,16 +17,9 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- * CssDataObject.java
- *
- * Created on December 8, 2004, 11:04 PM
- */
-
 package org.netbeans.modules.css.loader;
 
 import org.netbeans.modules.css.editor.CssEditorSupport;
-import org.netbeans.modules.css.visual.model.CssMetaModel;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
@@ -46,12 +39,8 @@ public class CssDataObject extends MultiDataObject{
     /** Creates a new instance of CssDataObject */
     public CssDataObject(FileObject fileObject, UniFileLoader loader) throws DataObjectExistsException{
         super(fileObject, loader);
-        
         CookieSet cookieSet = getCookieSet();
         cookieSet.add(new CssEditorSupport(this));
-        // XXX This is an ugly hack for some classes to get the
-        // DataObject. Find other neat ways. (I hate this, but time is running out)
-        CssMetaModel.setDataObject(this);
     }
 
     protected Node createNodeDelegate() {

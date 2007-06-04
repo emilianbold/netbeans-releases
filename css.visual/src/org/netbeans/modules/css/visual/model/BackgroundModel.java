@@ -25,6 +25,7 @@
 
 package org.netbeans.modules.css.visual.model;
 
+import org.netbeans.modules.css.model.CssRuleContent;
 import javax.swing.DefaultComboBoxModel;
 
 /**
@@ -54,7 +55,7 @@ public class BackgroundModel {
     public static class BackgroundRepeatList extends DefaultComboBoxModel{
         public BackgroundRepeatList(){
             String[] propValues = CssProperties.getCssPropertyValues(CssProperties.BACKGROUND_REPEAT);
-            addElement(CssStyleData.NOT_SET);
+            addElement(CssRuleContent.NOT_SET);
             for(int i=0; i< propValues.length; i++){
                 addElement(propValues[i]);
             }
@@ -64,7 +65,7 @@ public class BackgroundModel {
     public static class BackgroundScrollList extends DefaultComboBoxModel{
         public BackgroundScrollList(){
             String[] propValues = CssProperties.getCssPropertyValues(CssProperties.BACKGROUND_ATTACHMENT);
-            addElement(CssStyleData.NOT_SET);
+            addElement(CssRuleContent.NOT_SET);
             for(int i=0; i< propValues.length; i++){
                 addElement(propValues[i]);
             }
@@ -74,11 +75,11 @@ public class BackgroundModel {
     public static class BackgroundPositionList extends DefaultComboBoxModel{
         public BackgroundPositionList(){
             String[] propValues = CssProperties.getCssPropertyValues(CssProperties.BACKGROUND_POSITION);
-            addElement(CssStyleData.NOT_SET);
+            addElement(CssRuleContent.NOT_SET);
             for(int i=0; i< propValues.length; i++){
                 addElement(propValues[i]);
             }
-            addElement(CssStyleData.VALUE);
+            addElement(CssRuleContent.VALUE);
         }
     }
 

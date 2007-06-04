@@ -26,10 +26,10 @@
 package org.netbeans.modules.css.visual.ui;
 
 import org.netbeans.modules.css.visual.model.CssProperties;
-import org.netbeans.modules.css.visual.model.CssStyleData;
+import org.netbeans.modules.css.model.CssRuleContent;
 import java.awt.BorderLayout;
 import java.awt.FontMetrics;
-import org.netbeans.modules.css.visual.model.CssStyleData;
+import org.netbeans.modules.css.model.CssRuleContent;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -63,7 +63,7 @@ public class MarginStyleEditor extends StyleEditor {
      * Set the CSS Properties Values from the CssStyleData data structure
      * to the GUI components.
      */
-    protected void setCssPropertyValues(CssStyleData cssStyleData){
+    protected void setCssPropertyValues(CssRuleContent cssStyleData){
         removeCssPropertyChangeListener();
         marginDataTable.setCssPropertyValues(cssStyleData);
         setCssPropertyChangeListener(cssStyleData);
@@ -124,7 +124,7 @@ public class MarginStyleEditor extends StyleEditor {
             getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MarginDataTable.class, "MARGIN_STYLE_TABLE_ACCESS_DESC"));
         }
         
-        protected void setCssPropertyValues(CssStyleData cssStyleData){
+        protected void setCssPropertyValues(CssRuleContent cssStyleData){
             
             // Set the value for the Margin
             String topMargin = cssStyleData.getProperty(CssProperties.MARGIN_TOP);

@@ -25,6 +25,7 @@
 
 package org.netbeans.modules.css.visual.model;
 
+import org.netbeans.modules.css.model.CssRuleContent;
 import javax.swing.DefaultComboBoxModel;
 
 /**
@@ -60,7 +61,7 @@ public class PositionModel {
 
     public static class PositionList extends DefaultComboBoxModel{
         public PositionList(){
-            addElement(CssStyleData.NOT_SET);
+            addElement(CssRuleContent.NOT_SET);
             addElement("1"); //NOI18N
             addElement("2"); //NOI18N
             addElement("3"); //NOI18N
@@ -69,13 +70,13 @@ public class PositionModel {
             addElement("6"); //NOI18N
             addElement("8"); //NOI18N
             addElement("10"); //NOI18N
-            addElement(CssStyleData.VALUE);
+            addElement(CssRuleContent.VALUE);
         }
     }
 
     public static class SizeList extends DefaultComboBoxModel{
         public SizeList(){
-            addElement(CssStyleData.NOT_SET);
+            addElement(CssRuleContent.NOT_SET);
             addElement("1"); //NOI18N
             addElement("2"); //NOI18N
             addElement("3"); //NOI18N
@@ -84,13 +85,13 @@ public class PositionModel {
             addElement("6"); //NOI18N
             addElement("8"); //NOI18N
             addElement("10"); //NOI18N
-            addElement(CssStyleData.VALUE);
+            addElement(CssRuleContent.VALUE);
         }
     }
 
     public static class ModeList extends DefaultComboBoxModel{
         public ModeList(){
-            addElement(CssStyleData.NOT_SET);
+            addElement(CssRuleContent.NOT_SET);
             String[] propValues = CssProperties.getCssPropertyValues(CssProperties.POSITION);
             for(int i=0; i< propValues.length; i++){
                 addElement(propValues[i]);
@@ -100,7 +101,7 @@ public class PositionModel {
 
     public static class ZIndexList extends DefaultComboBoxModel{
         public ZIndexList(){
-            addElement(CssStyleData.NOT_SET);
+            addElement(CssRuleContent.NOT_SET);
             addElement("1"); //NOI18N
             addElement("2"); //NOI18N
             addElement("3"); //NOI18N
@@ -109,13 +110,13 @@ public class PositionModel {
             addElement("6"); //NOI18N
             addElement("8"); //NOI18N
             addElement("10"); //NOI18N
-            addElement(CssStyleData.VALUE);
+            addElement(CssRuleContent.VALUE);
         }
     }
 
     public static class VisibilityList extends DefaultComboBoxModel{
         public VisibilityList(){
-            addElement(CssStyleData.NOT_SET);
+            addElement(CssRuleContent.NOT_SET);
             String[] propValues = CssProperties.getCssPropertyValues(CssProperties.VISIBILITY);
             for(int i=0; i< propValues.length; i++){
                 addElement(propValues[i]);
@@ -125,7 +126,7 @@ public class PositionModel {
 
     public static class ClipList extends DefaultComboBoxModel{
         public ClipList(){
-            addElement(CssStyleData.NOT_SET);
+            addElement(CssRuleContent.NOT_SET);
             addElement("1"); //NOI18N
             addElement("2"); //NOI18N
             addElement("3"); //NOI18N
@@ -134,7 +135,7 @@ public class PositionModel {
             addElement("6"); //NOI18N
             addElement("8"); //NOI18N
             addElement("10"); //NOI18N
-            addElement(CssStyleData.VALUE);
+            addElement(CssRuleContent.VALUE);
         }
     }
 

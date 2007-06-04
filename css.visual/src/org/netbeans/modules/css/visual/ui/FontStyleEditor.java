@@ -26,7 +26,7 @@
 package org.netbeans.modules.css.visual.ui;
 
 import org.netbeans.modules.css.visual.model.CssProperties;
-import org.netbeans.modules.css.visual.model.CssStyleData;
+import org.netbeans.modules.css.model.CssRuleContent;
 import org.netbeans.modules.css.visual.model.FontModel;
 import org.netbeans.modules.css.visual.model.PropertyData;
 import org.netbeans.modules.css.visual.model.PropertyWithUnitData;
@@ -49,71 +49,75 @@ import org.openide.util.NbBundle;
  * @author  Winston Prakash
  * @version 1.0
  */
-public class FontStyleEditor extends StyleEditor implements PropertyChangeListener {
-
+public class FontStyleEditor extends StyleEditor {
+    
     ColorSelectionField colorField =  new ColorSelectionField();
     TextDecorationData textDecorationData = new TextDecorationData();
-
+    
     FontModel fontModel = new FontModel();
     DefaultListModel fontFamilies = fontModel.getFontFamilySetList();
-
+    
     DefaultListModel fontSizes;
     DefaultComboBoxModel fontSizeUnits;
     DefaultComboBoxModel fontStyles;
     DefaultComboBoxModel fontWeights;
     DefaultComboBoxModel fontVariants;
-
+    
     String temporaryFontSet = null;
-
+    
     /** Creates new form FontStyleEditor */
     public FontStyleEditor() {
         setName("fontStyleEditor"); //NOI18N
         setDisplayName(NbBundle.getMessage(FontStyleEditor.class, "FONT_EDITOR_DISPNAME"));
         initComponents();
         colorSelectionPanel.add(colorField,BorderLayout.CENTER);
-        colorField.addPropertyChangeListener(this);
+        colorField.addPropertyChangeListener("color", new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                setFontColor();
+            }
+        });//NOI18N
         initialize();
     }
-
+    
     private void initialize(){
         // Set the font family to the GUI
         fontModel = new FontModel();
         fontFamilies = fontModel.getFontFamilySetList();
         fontFaceList.setModel(fontFamilies);
-
+        
         // Set the font size to the GUI
         fontSizes= fontModel.getFontSizeList();
         fontSizeList.setModel(fontSizes);
-
+        
         fontSizeUnits= fontModel.getFontSizeUnitList();
         fontSizeUnitCombo.setModel(fontSizeUnits);
         fontSizeUnitCombo.setSelectedItem("px");
-
+        
         // Set the font Style to the GUI
         fontStyles = fontModel.getFontStyleList();
         fontStyleComboBox.setModel(fontStyles);
-
+        
         // Set the font Weight to the GUI
         fontWeights = fontModel.getFontWeightList();
         fontWeightComboBox.setModel(fontWeights);
-
+        
         // Set the font Variant to the GUI
         fontVariants = fontModel.getFontVariantList();
         fontVariantComboBox.setModel(fontVariants);
-
+        
         FontMetrics fontMetrics = fontSizeField.getFontMetrics(fontSizeField.getFont());
         int width = fontMetrics.stringWidth((String) fontSizes.get(0)) + 10;
         int height = (fontMetrics.getHeight() + 10) > 25 ? fontMetrics.getHeight() + 10 : 25;
-        fontSizeField.setPreferredSize(new Dimension (width, height));
+        fontSizeField.setPreferredSize(new Dimension(width, height));
     }
-
+    
     /**
      * Set the CSS Properties Values from the CssStyleData data structure
      * to the GUI components.
      */
-    protected void setCssPropertyValues(CssStyleData cssStyleData){
+    protected void setCssPropertyValues(CssRuleContent cssStyleData){
         removeCssPropertyChangeListener();
-
+        
         String fontFamily = cssStyleData.getProperty(CssProperties.FONT_FAMILY);
         if(fontFamily != null){
             // This is a work around. Since batik parser puts the quotes around
@@ -225,15 +229,10 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
         if(textColor != null){
             colorField.setColorString(textColor);
         }else{
-            colorField.setColorString(CssStyleData.NOT_SET);
+            colorField.setColorString(CssRuleContent.NOT_SET);
         }
         
         setCssPropertyChangeListener(cssStyleData);
-    }
-    
-    /** Listens to the color property change in the color chooser filed */
-    public void propertyChange(PropertyChangeEvent evt) {
-        setFontColor();
     }
     
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
@@ -242,19 +241,21 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
 
         mainPanel = new javax.swing.JPanel();
         fontFamilyPanel = new javax.swing.JPanel();
-        fontLabel = new javax.swing.JLabel();
         fontFaceScroll = new javax.swing.JScrollPane();
         fontFaceList = new javax.swing.JList();
         fontChosenField = new javax.swing.JTextField();
         fontFamilyButton = new javax.swing.JButton();
         fontSizePanel = new javax.swing.JPanel();
-        sizeLabel = new javax.swing.JLabel();
         fontSizeField = new javax.swing.JTextField();
         fontSizeUnitCombo = new javax.swing.JComboBox();
         fontSizeScroll = new javax.swing.JScrollPane();
         fontSizeList = new javax.swing.JList();
         styleMainPanel = new javax.swing.JPanel();
-        stylePanel = new javax.swing.JPanel();
+        decorationPanel = new javax.swing.JPanel();
+        underlineCheckbox = new javax.swing.JCheckBox();
+        strikethroughCheckbox = new javax.swing.JCheckBox();
+        overlineCheckbox = new javax.swing.JCheckBox();
+        noDecorationCheckbox = new javax.swing.JCheckBox();
         styleLabel = new javax.swing.JLabel();
         fontStyleComboBox = new javax.swing.JComboBox();
         weightLabel = new javax.swing.JLabel();
@@ -263,44 +264,24 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
         fontVariantComboBox = new javax.swing.JComboBox();
         colorLabel = new javax.swing.JLabel();
         colorSelectionPanel = new javax.swing.JPanel();
-        decorationPanel = new javax.swing.JPanel();
-        decorationLabel = new javax.swing.JLabel();
-        underlineCheckbox = new javax.swing.JCheckBox();
-        strikethroughCheckbox = new javax.swing.JCheckBox();
-        overlineCheckbox = new javax.swing.JCheckBox();
-        noDecorationCheckbox = new javax.swing.JCheckBox();
-        errorPanel = new javax.swing.JPanel();
-        errorLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.BorderLayout());
 
         mainPanel.setLayout(new java.awt.BorderLayout());
 
+        fontFamilyPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         fontFamilyPanel.setLayout(new java.awt.GridBagLayout());
 
-        fontFamilyPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        fontLabel.setLabelFor(fontChosenField);
-        fontLabel.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "Font_Family"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        fontFamilyPanel.add(fontLabel, gridBagConstraints);
-
         fontFaceList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        fontFaceList.setVisibleRowCount(5);
         fontFaceList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 fontFaceListValueChanged(evt);
             }
         });
-
         fontFaceScroll.setViewportView(fontFaceList);
-        fontFaceList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontFamilyList"));
-        fontFaceList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontFamilyListAccessibleDescription"));
+        fontFaceList.getAccessibleContext().setAccessibleName(null);
+        fontFaceList.getAccessibleContext().setAccessibleDescription(null);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -322,18 +303,16 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         fontFamilyPanel.add(fontChosenField, gridBagConstraints);
-        fontChosenField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "chosenFontsAccessibleName"));
-        fontChosenField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "ChosenFontAccessibleDescription"));
+        fontChosenField.getAccessibleContext().setAccessibleName(null);
+        fontChosenField.getAccessibleContext().setAccessibleDescription(null);
 
-        fontFamilyButton.setMnemonic(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_FAMILY_EDIT_BTN_MNEMONIC").charAt(0));
-        fontFamilyButton.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "EDIT"));
+        fontFamilyButton.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "EDIT")); // NOI18N
         fontFamilyButton.setMargin(new java.awt.Insets(4, 4, 4, 4));
         fontFamilyButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 fontFamilyButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -341,23 +320,12 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         fontFamilyPanel.add(fontFamilyButton, gridBagConstraints);
-        fontFamilyButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "EditChosenFontsAccessibleDescription"));
+        fontFamilyButton.getAccessibleContext().setAccessibleDescription(null);
 
         mainPanel.add(fontFamilyPanel, java.awt.BorderLayout.CENTER);
 
-        fontSizePanel.setLayout(new java.awt.GridBagLayout());
-
         fontSizePanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        sizeLabel.setLabelFor(fontSizeField);
-        sizeLabel.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_SIZE"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        fontSizePanel.add(sizeLabel, gridBagConstraints);
+        fontSizePanel.setLayout(new java.awt.GridBagLayout());
 
         fontSizeField.setHorizontalAlignment(javax.swing.JTextField.LEFT);
         fontSizeField.addActionListener(new java.awt.event.ActionListener() {
@@ -375,7 +343,6 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
                 fontSizeFieldKeyTyped(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -384,34 +351,33 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
         gridBagConstraints.weightx = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         fontSizePanel.add(fontSizeField, gridBagConstraints);
-        fontSizeField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "ChosenFontSizeAccessibleName"));
-        fontSizeField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("ChosenFontSizeAccessibleDescription"));
+        fontSizeField.getAccessibleContext().setAccessibleName(null);
+        fontSizeField.getAccessibleContext().setAccessibleDescription(null);
 
         fontSizeUnitCombo.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 fontSizeUnitComboItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         fontSizePanel.add(fontSizeUnitCombo, gridBagConstraints);
-        fontSizeUnitCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontSizeUnitListAccessibleName"));
-        fontSizeUnitCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontSizeUnitListAccessibleDescription"));
+        fontSizeUnitCombo.getAccessibleContext().setAccessibleName(null);
+        fontSizeUnitCombo.getAccessibleContext().setAccessibleDescription(null);
 
         fontSizeList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        fontSizeList.setVisibleRowCount(5);
         fontSizeList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 fontSizeListValueChanged(evt);
             }
         });
-
         fontSizeScroll.setViewportView(fontSizeList);
-        fontSizeList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontSizeListAccessibleName"));
-        fontSizeList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontSizeListAccessibleDesription"));
+        fontSizeList.getAccessibleContext().setAccessibleName(null);
+        fontSizeList.getAccessibleContext().setAccessibleDescription(null);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -426,18 +392,41 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
 
         styleMainPanel.setLayout(new java.awt.BorderLayout(20, 0));
 
-        stylePanel.setLayout(new java.awt.GridBagLayout());
+        decorationPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        stylePanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        underlineCheckbox.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_UNDERLINE")); // NOI18N
+        underlineCheckbox.setMargin(new java.awt.Insets(0, 2, 0, 2));
+        underlineCheckbox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                underlineCheckboxItemStateChanged(evt);
+            }
+        });
+
+        strikethroughCheckbox.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_STRIKETHROUGH")); // NOI18N
+        strikethroughCheckbox.setMargin(new java.awt.Insets(0, 2, 0, 2));
+        strikethroughCheckbox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                strikethroughCheckboxItemStateChanged(evt);
+            }
+        });
+
+        overlineCheckbox.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_OVERLINE")); // NOI18N
+        overlineCheckbox.setMargin(new java.awt.Insets(0, 2, 0, 2));
+        overlineCheckbox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                overlineCheckboxItemStateChanged(evt);
+            }
+        });
+
+        noDecorationCheckbox.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "NO_DECORATION_1")); // NOI18N
+        noDecorationCheckbox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                noDecorationCheckboxItemStateChanged(evt);
+            }
+        });
+
         styleLabel.setLabelFor(fontStyleComboBox);
-        styleLabel.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_STYLE"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        stylePanel.add(styleLabel, gridBagConstraints);
+        styleLabel.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_STYLE")); // NOI18N
 
         fontStyleComboBox.setMinimumSize(new java.awt.Dimension(150, 20));
         fontStyleComboBox.addItemListener(new java.awt.event.ItemListener() {
@@ -456,25 +445,8 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
             }
         });
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
-        stylePanel.add(fontStyleComboBox, gridBagConstraints);
-        fontStyleComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "STYLE_LIST_ACCES_NAME"));
-        fontStyleComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontStyleSelectionAccessibleDescription"));
-
         weightLabel.setLabelFor(fontWeightComboBox);
-        weightLabel.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_WEIGHT"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        stylePanel.add(weightLabel, gridBagConstraints);
+        weightLabel.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_WEIGHT")); // NOI18N
 
         fontWeightComboBox.setMinimumSize(new java.awt.Dimension(150, 20));
         fontWeightComboBox.addItemListener(new java.awt.event.ItemListener() {
@@ -493,26 +465,8 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
             }
         });
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
-        stylePanel.add(fontWeightComboBox, gridBagConstraints);
-        fontWeightComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontWeightSelectionAccessibleName"));
-        fontWeightComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontWeightSelectionAccessibleDescription"));
-
         variantLabel.setLabelFor(fontVariantComboBox);
-        variantLabel.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_VARIANT"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        stylePanel.add(variantLabel, gridBagConstraints);
-        variantLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontVariantSelectionAccessibleDescription"));
+        variantLabel.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_VARIANT")); // NOI18N
 
         fontVariantComboBox.setMinimumSize(new java.awt.Dimension(150, 20));
         fontVariantComboBox.addItemListener(new java.awt.event.ItemListener() {
@@ -534,128 +488,86 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
             }
         });
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
-        stylePanel.add(fontVariantComboBox, gridBagConstraints);
-        fontVariantComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontVariantSelectionAccessibleName"));
-        fontVariantComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontVariantSelectionAccessibleDescription"));
-
         colorLabel.setLabelFor(colorSelectionPanel);
-        colorLabel.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_COLOR"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        stylePanel.add(colorLabel, gridBagConstraints);
+        colorLabel.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_COLOR")); // NOI18N
 
         colorSelectionPanel.setLayout(new java.awt.BorderLayout());
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
-        stylePanel.add(colorSelectionPanel, gridBagConstraints);
+        org.jdesktop.layout.GroupLayout decorationPanelLayout = new org.jdesktop.layout.GroupLayout(decorationPanel);
+        decorationPanel.setLayout(decorationPanelLayout);
+        decorationPanelLayout.setHorizontalGroup(
+            decorationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(decorationPanelLayout.createSequentialGroup()
+                .add(decorationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(decorationPanelLayout.createSequentialGroup()
+                        .add(decorationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(styleLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 47, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(fontStyleComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(decorationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(fontWeightComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(weightLabel))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(decorationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(variantLabel)
+                            .add(fontVariantComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(decorationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(colorSelectionPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 137, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(colorLabel)))
+                    .add(decorationPanelLayout.createSequentialGroup()
+                        .add(underlineCheckbox)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(overlineCheckbox)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(noDecorationCheckbox)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(strikethroughCheckbox)))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        decorationPanelLayout.setVerticalGroup(
+            decorationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(decorationPanelLayout.createSequentialGroup()
+                .add(decorationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(styleLabel)
+                    .add(weightLabel)
+                    .add(variantLabel)
+                    .add(colorLabel))
+                .add(decorationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(decorationPanelLayout.createSequentialGroup()
+                        .add(6, 6, 6)
+                        .add(decorationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(fontWeightComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(fontVariantComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(fontStyleComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(decorationPanelLayout.createSequentialGroup()
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(colorSelectionPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(decorationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(underlineCheckbox)
+                    .add(overlineCheckbox)
+                    .add(strikethroughCheckbox)
+                    .add(noDecorationCheckbox)))
+        );
 
-        styleMainPanel.add(stylePanel, java.awt.BorderLayout.WEST);
-
-        decorationPanel.setLayout(new java.awt.GridBagLayout());
-
-        decorationPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        decorationLabel.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_DECORATION"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        decorationPanel.add(decorationLabel, gridBagConstraints);
-
-        underlineCheckbox.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_UNDERLINE"));
-        underlineCheckbox.setMargin(new java.awt.Insets(0, 2, 0, 2));
-        underlineCheckbox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                underlineCheckboxItemStateChanged(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
-        decorationPanel.add(underlineCheckbox, gridBagConstraints);
-        underlineCheckbox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontUnderlineAccessibleDescription"));
-
-        strikethroughCheckbox.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_STRIKETHROUGH"));
-        strikethroughCheckbox.setMargin(new java.awt.Insets(0, 2, 0, 2));
-        strikethroughCheckbox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                strikethroughCheckboxItemStateChanged(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
-        decorationPanel.add(strikethroughCheckbox, gridBagConstraints);
-        strikethroughCheckbox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontStrikeThroughAccessibleDescription"));
-
-        overlineCheckbox.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_OVERLINE"));
-        overlineCheckbox.setMargin(new java.awt.Insets(0, 2, 0, 2));
-        overlineCheckbox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                overlineCheckboxItemStateChanged(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
-        decorationPanel.add(overlineCheckbox, gridBagConstraints);
-        overlineCheckbox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontOverlineAccessibleDescription"));
-
-        noDecorationCheckbox.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "NO_DECORATION"));
-        noDecorationCheckbox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                noDecorationCheckboxItemStateChanged(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
-        decorationPanel.add(noDecorationCheckbox, gridBagConstraints);
-        noDecorationCheckbox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontNoDecorationAccessibleDescription"));
+        underlineCheckbox.getAccessibleContext().setAccessibleDescription(null);
+        strikethroughCheckbox.getAccessibleContext().setAccessibleDescription(null);
+        overlineCheckbox.getAccessibleContext().setAccessibleDescription(null);
+        noDecorationCheckbox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontNoDecorationAccessibleDescription")); // NOI18N
+        fontStyleComboBox.getAccessibleContext().setAccessibleName(null);
+        fontStyleComboBox.getAccessibleContext().setAccessibleDescription(null);
+        fontWeightComboBox.getAccessibleContext().setAccessibleName(null);
+        fontWeightComboBox.getAccessibleContext().setAccessibleDescription(null);
+        variantLabel.getAccessibleContext().setAccessibleDescription(null);
+        fontVariantComboBox.getAccessibleContext().setAccessibleName(null);
+        fontVariantComboBox.getAccessibleContext().setAccessibleDescription(null);
 
         styleMainPanel.add(decorationPanel, java.awt.BorderLayout.CENTER);
 
         mainPanel.add(styleMainPanel, java.awt.BorderLayout.SOUTH);
 
         add(mainPanel, java.awt.BorderLayout.NORTH);
-
-        errorPanel.setLayout(new java.awt.BorderLayout());
-
-        errorPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 10, 1, 1));
-        errorLabel.setForeground(new java.awt.Color(0, 0, 153));
-        errorPanel.add(errorLabel, java.awt.BorderLayout.CENTER);
-
-        add(errorPanel, java.awt.BorderLayout.CENTER);
-
     }// </editor-fold>//GEN-END:initComponents
     
     private void noDecorationCheckboxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_noDecorationCheckboxItemStateChanged
@@ -676,8 +588,7 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
     }//GEN-LAST:event_noDecorationCheckboxItemStateChanged
     
     private void fontVariantComboBoxFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fontVariantComboBoxFocusGained
-        errorLabel.setText(CssStyleData.PREVIEW_NOT_SUPPORTED);
-    }//GEN-LAST:event_fontVariantComboBoxFocusGained
+            }//GEN-LAST:event_fontVariantComboBoxFocusGained
     
     private void strikethroughCheckboxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_strikethroughCheckboxItemStateChanged
         textDecorationData.enableLineThrough((evt.getStateChange() == evt.SELECTED));
@@ -701,7 +612,6 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
     }//GEN-LAST:event_fontVariantComboBoxItemStateChanged
     
     private void fontVariantComboBoxFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fontVariantComboBoxFocusLost
-        errorLabel.setText("");
         setFontVariant();
     }//GEN-LAST:event_fontVariantComboBoxFocusLost
     
@@ -838,16 +748,12 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel colorLabel;
     private javax.swing.JPanel colorSelectionPanel;
-    private javax.swing.JLabel decorationLabel;
     private javax.swing.JPanel decorationPanel;
-    private javax.swing.JLabel errorLabel;
-    private javax.swing.JPanel errorPanel;
     private javax.swing.JTextField fontChosenField;
     private javax.swing.JList fontFaceList;
     private javax.swing.JScrollPane fontFaceScroll;
     private javax.swing.JButton fontFamilyButton;
     private javax.swing.JPanel fontFamilyPanel;
-    private javax.swing.JLabel fontLabel;
     private javax.swing.JTextField fontSizeField;
     private javax.swing.JList fontSizeList;
     private javax.swing.JPanel fontSizePanel;
@@ -859,11 +765,9 @@ public class FontStyleEditor extends StyleEditor implements PropertyChangeListen
     private javax.swing.JPanel mainPanel;
     private javax.swing.JCheckBox noDecorationCheckbox;
     private javax.swing.JCheckBox overlineCheckbox;
-    private javax.swing.JLabel sizeLabel;
     private javax.swing.JCheckBox strikethroughCheckbox;
     private javax.swing.JLabel styleLabel;
     private javax.swing.JPanel styleMainPanel;
-    private javax.swing.JPanel stylePanel;
     private javax.swing.JCheckBox underlineCheckbox;
     private javax.swing.JLabel variantLabel;
     private javax.swing.JLabel weightLabel;

@@ -25,6 +25,8 @@
 
 package org.netbeans.modules.css.visual.model;
 
+import org.netbeans.modules.css.model.CssRuleContent;
+
 /**
  * Data Structure to hold the value of a property
  * @author  Winston Prakash
@@ -35,12 +37,12 @@ public class PropertyData {
     /**
      * Holds value of property value.
      */
-    protected String value=CssStyleData.NOT_SET;
+    protected String value=CssRuleContent.NOT_SET;
 
 
     public String toString(){
         String valueString = value;
-        if (value.startsWith(CssStyleData.NOT_SET) || value.startsWith(CssStyleData.VALUE)){
+        if (value.startsWith(CssRuleContent.NOT_SET) || value.startsWith(CssRuleContent.VALUE)){
             valueString = "";
         }
         return valueString;
@@ -67,8 +69,8 @@ public class PropertyData {
 
 
     public boolean hasValue(){
-        if (value.equals("") || value.startsWith(CssStyleData.NOT_SET) ||
-                value.startsWith(CssStyleData.VALUE)){
+        if (value.equals("") || value.startsWith(CssRuleContent.NOT_SET) ||
+                value.startsWith(CssRuleContent.VALUE)){
             return false;
         }else{
             return true;

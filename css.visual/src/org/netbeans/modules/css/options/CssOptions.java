@@ -26,8 +26,6 @@
 package org.netbeans.modules.css.options;
 
 import org.netbeans.modules.css.editor.CssEditorKit;
-import java.util.MissingResourceException;
-import org.netbeans.editor.LocaleSupport;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -40,29 +38,10 @@ import org.openide.util.NbBundle;
 public class CssOptions extends BaseOptions {
     private static final String HELP_ID = "editing.editor.css"; // NOI18N
 
-    /**
-     * CSS option editor gets the locale for the Coloring Token Names displayed
-     * in the Option Editor
-     */
-    public static final LocaleSupport.Localizer localizer = new LocaleSupport.Localizer() {
-        public String getString(String key) {
-            try {
-                return NbBundle.getBundle(CssOptions.class).getString(key);
-            } catch(MissingResourceException mre) {
-                return null;
-            }
-        }
-    };
-
     /** Creates a new instance of CssOptions */
     public CssOptions() {
         super(CssEditorKit.class, "CSS"); //NOI18N
-        LocaleSupport.addLocalizer(localizer);
     }
-
-//    protected Class getDefaultIndentEngineClass() {
-//        return CssIndentEngine.class;
-//    }
 
     /** Set the display name that will appear in the option editor*/
     public String displayName() {

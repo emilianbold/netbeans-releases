@@ -25,7 +25,7 @@
 
 package org.netbeans.modules.css.visual.ui;
 
-import org.netbeans.modules.css.visual.model.CssStyleData;
+import org.netbeans.modules.css.model.CssRuleContent;
 import org.openide.util.NbBundle;
 
 /**
@@ -46,7 +46,7 @@ public class OtherStyleEditor extends StyleEditor {
      * Set the CSS Properties Values from the CssStyleData data structure
      * to the GUI components.
      */
-    protected void setCssPropertyValues(CssStyleData cssStyleData){
+    protected void setCssPropertyValues(CssRuleContent cssStyleData){
         removeCssPropertyChangeListener();
         // Set the values here
         setCssPropertyChangeListener(cssStyleData);

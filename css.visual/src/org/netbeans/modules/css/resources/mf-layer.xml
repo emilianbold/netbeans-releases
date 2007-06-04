@@ -17,34 +17,63 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
 <filesystem>
     
-    <!--<folder name="Windows2">
-        <folder name="Modes">
-            <file name="csspreview.wsmode" url="csspreview.wsmode"/>
-            <file name="cssEV.wsmode" url="cssEV.wsmode"/>
-            <folder name="navigator">
-                <file name="csspreviewTC.wstcref" url="csspreviewTC.wstcref"/>
-                <file name="cssEVTC.wstcref" url="cssEVTC.wstcref"/>
+    <folder name="Actions">
+        <folder name="Window">
+            <file name="org-netbeans-modules-css-visual-ui-StyleBuilderAction.instance"/>
+            <file name="org-netbeans-modules-css-visual-ui-preview-CssPreviewAction.instance"/>
+        </folder>
+    </folder>
+
+    <folder name="Menu">
+        <folder name="Window">
+            <folder name="Other">
+                <attr name="ShowGlobalActionTableAction.shadow/CssPreviewAction.shadow" boolvalue="true"/>
+                <file name="CssPreviewAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-css-visual-ui-preview-CssPreviewAction.instance"/>
+                </file>
+                <attr name="CssPreviewAction.shadow/StyleBuilderAction.shadow" boolvalue="true"/>
+                <file name="StyleBuilderAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-css-visual-ui-StyleBuilderAction.instance"/>
+                </file>
             </folder>
         </folder>
+    </folder>
+    
+    <folder name="Windows2">
         <folder name="Components">
-            <file name="csspreviewTC.settings" url="csspreviewTC.xml"/>
-            <file name="cssEVTC.settings" url="cssEVTC.xml"/>
+            <file name="StyleBuilderTC.settings" url="StyleBuilderTCSettings.xml"/>
+            <file name="CssPreviewTC.settings" url="CssPreviewTCSettings.xml"/>
         </folder>
-    </folder>-->
+        <folder name="Modes">
+            <file name="CssPreviewTCWsmode.wsmode" url="CssPreviewTCWsmode.xml"/>
+            <folder name="CssPreviewTCWsmode">
+                <file name="CssPreviewTC.wstcref" url="CssPreviewTCWstcref.xml"/>
+            </folder>
+            <file name="StyleBuilderTCWsmode.wsmode" url="StyleBuilderTCWsmode.xml"/>
+            <folder name="StyleBuilderTCWsmode">
+                <file name="StyleBuilderTC.wstcref" url="StyleBuilderTCWstcref.xml"/>
+            </folder>
+        </folder>
+        <folder name="Groups">
+            <file name="Csswsgrp.wsgrp" url="Csswsgrp.xml"/>
+            <folder name="Csswsgrp">
+                <file name="CssPreviewTC.wstcgrp" url="CssPreviewTCWstcgrp.xml"/>
+                <file name="StyleBuilderTC.wstcgrp" url="StyleBuilderTCwstcgrp.xml"/>
+            </folder>
+        </folder>
+    </folder>
     
     <folder name="Templates">
         <folder name="Other">
             <attr name="xhtml.xhtml/CascadeStyleSheet.css" boolvalue="true"/>
             <file name="CascadeStyleSheet.css" url="CascadeStyleSheet.css.template">
-                <attr name="template" boolvalue="true" />
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.css.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/css/resources/css.gif" />
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/css/resources/CSS_template.html" />
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.css.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/css/resources/css.gif"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/css/resources/CSS_template.html"/>
             </file>
         </folder>
     </folder>
@@ -117,12 +146,16 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="org-openide-actions-PasteAction.instance/CssSeparator1.instance" boolvalue="true"/>
                     <file name="create-rule"/>
                     <attr name="CssSeparator1.instance/create-rule" boolvalue="true"/>
+                    <file name="check-style"/>
+                    <attr name="create-rule/check-style" boolvalue="true"/>
+                    <file name="copy-html-style"/>
+                    <attr name="check-style/copy-html-style" boolvalue="true"/>
+                    <file name="copy-xml-style"/>
+                    <attr name="copy-html-style/copy-xml-style" boolvalue="true"/>
                     <file name="SeparatorFolding.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>
-                    
-                    <attr name="create-rule/SeparatorFolding.instance" boolvalue="true"/>
-                    
+                    <attr name="copy-xml-style/SeparatorFolding.instance" boolvalue="true"/>
                     <file name="generate-fold-popup"/>
                     <attr name="SeparatorFolding.instance/generate-fold-popup" boolvalue="true"/>
                     <file name="format"/>
@@ -131,9 +164,7 @@ Microsystems, Inc. All Rights Reserved.
                 <folder name="Toolbars">
                     <folder name="Default">
                         <file name="create-rule"/>
-                        <file name="org-netbeans-modules-css-actions-CssStyleBuilderViewAction.instance"/>
-                        <attr name="create-rule/org-netbeans-modules-css-actions-CssStyleBuilderViewAction.instance" boolvalue="true"/>
-                        <attr name="org-netbeans-modules-css-actions-CssStyleBuilderViewAction.instance/Separator1.instance" boolvalue="true"/>
+                        <attr name="create-rule/Separator1.instance" boolvalue="true"/>
                     </folder>
                 </folder>
             </folder>

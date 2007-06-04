@@ -28,7 +28,7 @@ package org.netbeans.modules.css.visual.ui;
 import org.netbeans.modules.css.visual.model.BackgroundModel;
 import org.netbeans.modules.css.visual.model.BackgroundPositionData;
 import org.netbeans.modules.css.visual.model.CssProperties;
-import org.netbeans.modules.css.visual.model.CssStyleData;
+import org.netbeans.modules.css.model.CssRuleContent;
 import org.netbeans.modules.css.visual.model.PropertyData;
 import org.netbeans.modules.css.visual.model.PropertyData;
 import java.awt.BorderLayout;
@@ -47,7 +47,7 @@ import org.openide.util.NbBundle;
  * @author  Winston Prakash
  * @version 1.0
  */
-public class BackgroundStyleEditor extends StyleEditor implements PropertyChangeListener{
+public class BackgroundStyleEditor extends StyleEditor {
 
     static File currentFile = null;
 
@@ -60,7 +60,11 @@ public class BackgroundStyleEditor extends StyleEditor implements PropertyChange
         setDisplayName(NbBundle.getMessage(BackgroundStyleEditor.class, "BACKGROUND_EDITOR_DISPNAME"));
         initComponents();
         colorSelectionPanel.add(colorField,BorderLayout.CENTER);
-        colorField.addPropertyChangeListener(this);
+        colorField.addPropertyChangeListener("color", new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                setBackgroundColor();
+            }
+        });
         initialize();
 
         // Add editor listeners to the horizontal position combobox
@@ -112,7 +116,7 @@ public class BackgroundStyleEditor extends StyleEditor implements PropertyChange
      * Set the CSS Properties Values from the CssStyleData data structure
      * to the GUI components.
      */
-    protected void setCssPropertyValues(CssStyleData cssStyleData){
+    protected void setCssPropertyValues(CssRuleContent cssStyleData){
         removeCssPropertyChangeListener();
         
         // Set the Bckground Color to the GUI
@@ -120,7 +124,7 @@ public class BackgroundStyleEditor extends StyleEditor implements PropertyChange
         if(backGroundColor != null){
             colorField.setColorString(backGroundColor);
         }else{
-            imageFileField.setText(CssStyleData.NOT_SET);
+            imageFileField.setText(CssRuleContent.NOT_SET);
         }
         
         // Set the Bckground Image name to the GUI
@@ -135,7 +139,7 @@ public class BackgroundStyleEditor extends StyleEditor implements PropertyChange
                 imageFileField.setText(backGroundImage);
             }
         }else{
-            imageFileField.setText(CssStyleData.NOT_SET);
+            imageFileField.setText(CssRuleContent.NOT_SET);
         }
         
         String backGroundRepeat = cssStyleData.getProperty(CssProperties.BACKGROUND_REPEAT);
@@ -164,11 +168,6 @@ public class BackgroundStyleEditor extends StyleEditor implements PropertyChange
             verticalPosComboBox.setSelectedIndex(0);
         }
         setCssPropertyChangeListener(cssStyleData);
-    }
-    
-    /** Listens to the color property change in the color chooser filed */
-    public void propertyChange(PropertyChangeEvent evt) {
-        setBackgroundColor();
     }
     
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
@@ -500,13 +499,13 @@ public class BackgroundStyleEditor extends StyleEditor implements PropertyChange
         PropertyData backgroundImageData = new PropertyData();
         String imgPath = imageFileField.getText();
         if((imgPath == null) || (imgPath.equals(""))) {
-            imgPath = CssStyleData.NOT_SET;
+            imgPath = CssRuleContent.NOT_SET;
             imageFileField.setText(imgPath);
         }
-        if(!imgPath.equals(CssStyleData.NOT_SET)){
+        if(!imgPath.equals(CssRuleContent.NOT_SET)){
             backgroundImageData.setValue("url(" + imgPath + ")"); //NOI18N
         }else{
-            backgroundImageData.setValue(CssStyleData.NOT_SET);
+            backgroundImageData.setValue(CssRuleContent.NOT_SET);
         }
         cssPropertyChangeSupport().firePropertyChange(CssProperties.BACKGROUND_IMAGE, null, backgroundImageData.toString());
     }

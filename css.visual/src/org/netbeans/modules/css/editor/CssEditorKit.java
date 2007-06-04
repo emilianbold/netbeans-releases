@@ -17,33 +17,27 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- * CssEditorKit.java
- *
- * Created on December 9, 2004, 5:02 PM
- */
-
 package org.netbeans.modules.css.editor;
 
 import org.netbeans.modules.css.actions.CssRuleCreateAction;
-import java.awt.Component;
 import javax.swing.Action;
-import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import javax.swing.text.TextAction;
-import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.css.actions.CheckStyleAction;
+import org.netbeans.modules.css.actions.CopyStyleAction;
 import org.netbeans.modules.languages.dataobject.LanguagesEditorKit;
 
 /**
  * Editor kit implementation for a document of content type "text/css"
+ * 
  * @author Winston Prakash
+ * @author Marek Fukala
+ * 
  * @version 1.0
  */
 public class CssEditorKit  extends LanguagesEditorKit {
 
     public static final String CSS_MIME_TYPE = "text/x-css"; // NOI18N
-
-    public static final String createRuleAction = "create-rule"; // NOI18N
 
     /** Creates a new instance of CssEditorKit */
     public CssEditorKit() {
@@ -51,11 +45,7 @@ public class CssEditorKit  extends LanguagesEditorKit {
     }
 
     public Document createDefaultDocument() {
-        Document doc = new NbEditorDocument(getClass()){
-            public Component createEditor(JEditorPane editorPane) {
-                return new CssCustomEditor(editorPane);
-            }
-        };
+        Document doc = super.createDefaultDocument();
         initDocument(doc); //schliemann hack
         return doc;
     }
@@ -69,7 +59,10 @@ public class CssEditorKit  extends LanguagesEditorKit {
 
     protected Action[] createActions() {
         Action[] cssEditorActions = new Action[] {
-            new CssRuleCreateAction()
+            new CssRuleCreateAction(),
+            new CheckStyleAction(),
+            new CopyStyleAction.HTML(),
+            new CopyStyleAction.XML()
         };
         return TextAction.augmentList(super.createActions(), cssEditorActions);
     }

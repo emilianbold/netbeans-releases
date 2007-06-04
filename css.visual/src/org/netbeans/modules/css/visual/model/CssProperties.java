@@ -126,7 +126,7 @@ public final class CssProperties {
     
     public final static String STYLE = "style"; //NOI18N
     
-    private static Set cssPropertyNames = new  TreeSet();
+    private static Set<String> cssPropertyNames = new  TreeSet<String>();
     private static void setCssPropertyNames(){
         cssPropertyNames.add(BACKGROUND);
         cssPropertyNames.add(BACKGROUND_ATTACHMENT);
@@ -206,7 +206,7 @@ public final class CssProperties {
         cssPropertyNames.add(COLOR);
     }
     
-    static List cssLengthUnits = new ArrayList();
+    static List<String> cssLengthUnits = new ArrayList<String>();
     private static void setCssLengthUnitNames(){
         cssLengthUnits.add("px"); //NOI18N
         cssLengthUnits.add("%"); //NOI18N
@@ -218,7 +218,7 @@ public final class CssProperties {
         cssLengthUnits.add("picas"); //NOI18N
     }
     
-    private static List backgroundRepeatValues = new ArrayList();
+    private static List<String> backgroundRepeatValues = new ArrayList<String>();
     private static void setBackgroundRepeatValues(){
         backgroundRepeatValues.add("repeat"); //NOI18N
         backgroundRepeatValues.add("repeat-x"); //NOI18N
@@ -226,7 +226,7 @@ public final class CssProperties {
         backgroundRepeatValues.add("inherit"); //NOI18N
     }
     
-    private static List backgroundPositionValues = new ArrayList();
+    private static List<String> backgroundPositionValues = new ArrayList<String>();
     private static void setBackgroundPositionValues(){
         backgroundPositionValues.add("center"); //NOI18N
         backgroundPositionValues.add("left"); //NOI18N
@@ -236,7 +236,7 @@ public final class CssProperties {
         backgroundPositionValues.add("inherit"); //NOI18N
     }
     
-    private static List backgroundAttachmentValues = new ArrayList();
+    private static List<String> backgroundAttachmentValues = new ArrayList<String>();
     private static void setBackgroundAttachmentValues(){
         backgroundAttachmentValues.add("none"); //NOI18N
         backgroundAttachmentValues.add("scroll"); //NOI18N
@@ -244,7 +244,7 @@ public final class CssProperties {
         backgroundAttachmentValues.add("inherit"); //NOI18N
     }
     
-    private static List fontStyleValues = new ArrayList();
+    private static List<String> fontStyleValues = new ArrayList<String>();
     private static void setFontStyleValues(){
         fontStyleValues.add("normal"); //NOI18N
         fontStyleValues.add("italic"); //NOI18N
@@ -252,14 +252,14 @@ public final class CssProperties {
         fontStyleValues.add("inherit"); //NOI18N
     }
     
-    private static List fontVariantValues = new ArrayList();
+    private static List<String> fontVariantValues = new ArrayList<String>();
     private static void setFontVariantValues(){
         fontVariantValues.add("normal"); //NOI18N
         fontVariantValues.add("small-caps"); //NOI18N
         fontVariantValues.add("inherit"); //NOI18N
     }
     
-    private static List fontWeightValues = new ArrayList();
+    private static List<String> fontWeightValues = new ArrayList<String>();
     private static void setFontWeightValues(){
         fontWeightValues.add("normal"); //NOI18N
         fontWeightValues.add("bold"); //NOI18N
@@ -277,14 +277,14 @@ public final class CssProperties {
         fontWeightValues.add("inherit"); //NOI18N
     }
     
-    private static List directionValues = new ArrayList();
+    private static List<String> directionValues = new ArrayList<String>();
     private static void setDirectionValues(){
         directionValues.add("ltr"); //NOI18N
         directionValues.add("rtl"); //NOI18N
         directionValues.add("inherit"); //NOI18N
     }
     
-    private static List textAlignValues = new ArrayList();
+    private static List<String> textAlignValues = new ArrayList<String>();
     private static void setTextAlignValues(){
         textAlignValues.add("left"); //NOI18N
         textAlignValues.add("right"); //NOI18N
@@ -292,7 +292,7 @@ public final class CssProperties {
         textAlignValues.add("inherit"); //NOI18N
     }
     
-    private static List textDecorationValues = new ArrayList();
+    private static List<String> textDecorationValues = new ArrayList<String>();
     private static void setTextDecorationValues(){
         textDecorationValues.add("none"); //NOI18N
         textDecorationValues.add("underline"); //NOI18N
@@ -301,7 +301,7 @@ public final class CssProperties {
         textDecorationValues.add("inherit"); //NOI18N
     }
     
-    private static List verticalAlignValues = new ArrayList();
+    private static List<String> verticalAlignValues = new ArrayList<String>();
     private static void setVerticalAlignValues(){
         verticalAlignValues.add("baseline"); //NOI18N
         verticalAlignValues.add("sub"); //NOI18N
@@ -314,7 +314,7 @@ public final class CssProperties {
         verticalAlignValues.add("inherit"); //NOI18N
     }
     
-    private static List positionValues = new ArrayList();
+    private static List<String> positionValues = new ArrayList<String>();
     private static void setPositionValues(){
         positionValues.add("static"); //NOI18N
         positionValues.add("relative"); //NOI18N
@@ -322,7 +322,7 @@ public final class CssProperties {
         positionValues.add("inherit"); //NOI18N
     }
     
-    private static List visiblityValues = new ArrayList();
+    private static List<String> visiblityValues = new ArrayList<String>();
     private static void setVisiblityValues(){
         visiblityValues.add("visible"); //NOI18N
         visiblityValues.add("hidden"); //NOI18N
@@ -330,7 +330,7 @@ public final class CssProperties {
         visiblityValues.add("inherit"); //NOI18N
     }
     
-    private static List borderStyleValues = new ArrayList();
+    private static List<String> borderStyleValues = new ArrayList<String>();
     private static void setBorderStyleValues(){
         borderStyleValues.add("none"); //NOI18N
         borderStyleValues.add("hidden"); //NOI18N
@@ -345,7 +345,7 @@ public final class CssProperties {
         borderStyleValues.add("inherit"); //NOI18N
     }
     
-    private static List colorValues = new ArrayList();
+    private static List<String> colorValues = new ArrayList<String>();
     private static void setColorValues(){
         colorValues.add("aqua"); //NOI18N
         colorValues.add("black"); //NOI18N
@@ -366,7 +366,7 @@ public final class CssProperties {
         colorValues.add("yellow"); //NOI18N
     }
     
-    private static Map colorNameHexMap = new HashMap();
+    private static Map<String, String> colorNameHexMap = new HashMap<String, String>();
     private static void setColorNameHexMap(){
         colorNameHexMap.put("black","#000000"); //NOI18N
         colorNameHexMap.put("gray","#808080"); //NOI18N
@@ -387,7 +387,7 @@ public final class CssProperties {
         colorNameHexMap.put("aqua","#00FFFF"); //NOI18N
     }
     
-    private static List fontFamilyValues = new ArrayList();
+    private static List<String> fontFamilyValues = new ArrayList<String>();
     private static void setFontFamilyValues(){
         fontFamilyValues.add("serif"); //NOI18N
         fontFamilyValues.add("sans-serif"); //NOI18N
@@ -395,7 +395,7 @@ public final class CssProperties {
         fontFamilyValues.add("fantasy"); //NOI18N
     }
     
-    private static List webFontValues = new ArrayList();
+    private static List<String> webFontValues = new ArrayList<String>();
     private static void setWebFontValues(){
         webFontValues.add("Arial Black"); //NOI18N
         webFontValues.add("Cosmic Sans"); //NOI18N
@@ -407,7 +407,7 @@ public final class CssProperties {
         webFontValues.add("Minion Web"); //NOI18N
     }
     
-    private static List fontFamiliySetValues = new ArrayList();
+    private static List<String> fontFamiliySetValues = new ArrayList<String>();
     private static void setFontFamiliySetValues(){
         // Do not keep spaces between commas. Batik parser automatically
         // removes the spaces.
@@ -424,7 +424,7 @@ public final class CssProperties {
         fontFamiliySetValues.add("fantasy"); //NOI18N
     }
     
-    private static List fontSizeValues = new ArrayList();
+    private static List<String> fontSizeValues = new ArrayList<String>();
     private static void setFontSizeValues(){
         fontSizeValues.add("8"); //NOI18N
         fontSizeValues.add("10"); //NOI18N

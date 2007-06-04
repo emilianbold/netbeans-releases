@@ -25,6 +25,7 @@
 
 package org.netbeans.modules.css.visual.model;
 
+import org.netbeans.modules.css.model.CssRuleContent;
 import java.util.StringTokenizer;
 import javax.swing.DefaultComboBoxModel;
 
@@ -141,14 +142,14 @@ public class BackgroundPositionData {
     public String toString(){
         String bgPosition = "";
 
-        if (!(horizontalValue.equals("") || horizontalValue.startsWith(CssStyleData.NOT_SET))){
+        if (!(horizontalValue.equals("") || horizontalValue.startsWith(CssRuleContent.NOT_SET))){
             bgPosition += horizontalValue;
             if(Utils.isInteger(horizontalValue)){
                 bgPosition += horizontalUnit;
             }
         }
 
-        if (!(verticalValue.equals("") || verticalValue.startsWith(CssStyleData.NOT_SET))){
+        if (!(verticalValue.equals("") || verticalValue.startsWith(CssRuleContent.NOT_SET))){
             if(bgPosition.equals("")){
                 bgPosition = "left" + " " + verticalValue; //NOI18N
             }else{
