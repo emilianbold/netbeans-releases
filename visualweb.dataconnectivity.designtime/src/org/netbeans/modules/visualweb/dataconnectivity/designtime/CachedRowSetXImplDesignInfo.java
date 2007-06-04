@@ -24,7 +24,7 @@ import com.sun.rowset.CachedRowSetImpl;
  *
  * @author David
  */
-public class CachedRowSetxImplDesignInfo implements DesignInfo {
+public class CachedRowSetXImplDesignInfo implements DesignInfo {
 
     public CachedRowSetxImplDesignInfo() {
         
