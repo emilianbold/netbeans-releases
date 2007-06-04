@@ -46,6 +46,16 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-refactoring-java-api-ui-UseSuperTypeAction.instance">
                  <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.useSuperTypeAction"/>
             </file>
+            <!--
+            <attr name="org-netbeans-modules-refactoring-java-api-ui-UseSuperTypeAction.instance/LastSeparator.instance" boolvalue="true"/>
+            <file name="org-netbeans-modules-refactoring-java-api-ui-InnerToOuterAction.instance">
+                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.innerToOuterAction"/>
+            </file>
+            -->
+         <attr name="org-netbeans-modules-refactoring-java-api-ui-UseSuperTypeAction.instance/org-netbeans-modules-refactoring-java-api-ui-ChangeParametersAction.instance" boolvalue="true"/>
+            <file name="org-netbeans-modules-refactoring-java-api-ui-ChangeParametersAction.instance">
+                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.changeParametersAction"/>
+            </file>
 
         </folder>    
      </folder>   
