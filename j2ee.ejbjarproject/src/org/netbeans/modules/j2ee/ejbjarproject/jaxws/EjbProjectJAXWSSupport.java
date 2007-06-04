@@ -22,7 +22,9 @@ package org.netbeans.modules.j2ee.ejbjarproject.jaxws;
 import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
@@ -124,6 +126,10 @@ public class EjbProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
             }
         }
         super.addService(serviceName, serviceImpl, isJsr109);
+    }
+
+    public MetadataModel<WebservicesMetadata> getWebservicesMetadataModel() {
+        return project.getEjbModule().getDeploymentDescriptor(WebservicesMetadata.class);
     }
     
 }

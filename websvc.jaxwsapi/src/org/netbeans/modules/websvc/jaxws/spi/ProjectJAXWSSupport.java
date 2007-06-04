@@ -33,6 +33,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.stream.StreamSource;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
@@ -395,4 +397,11 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
      * @param name service "display" name
      */
     public abstract String getWsdlLocation(String serviceName);
+
+    /**
+     * Returns a metadata model of a webservices deployment descriptor
+     *
+     * @return metadata model of a webservices deployment descriptor
+     */
+    public abstract MetadataModel<WebservicesMetadata> getWebservicesMetadataModel();
 }

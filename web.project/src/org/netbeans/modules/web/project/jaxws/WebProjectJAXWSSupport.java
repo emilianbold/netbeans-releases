@@ -35,6 +35,8 @@ import org.netbeans.modules.j2ee.dd.api.web.Listener;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.ProjectWebModule;
 import org.netbeans.modules.web.project.WebProject;
@@ -430,6 +432,10 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
             }
         }
         super.addService(serviceName, serviceImpl, isJsr109);
+    }
+
+    public MetadataModel<WebservicesMetadata> getWebservicesMetadataModel() {
+        return project.getWebModule().getDeploymentDescriptor(WebservicesMetadata.class);
     }
     
 }

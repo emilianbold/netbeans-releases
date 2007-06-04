@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.websvc.jaxws.JAXWSSupportAccessor;
 import org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportImpl;
 import org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportProvider;
@@ -219,5 +221,13 @@ public final class JAXWSSupport {
      */    
     public FileObject getDeploymentDescriptorFolder(){
         return impl.getDeploymentDescriptorFolder();
+    }
+    /**
+     * Returns a metadata model of a webservices deployment descriptor
+     *
+     * @return metadata model of a webservices deployment descriptor
+     */
+    public MetadataModel<WebservicesMetadata> getWebservicesMetadataModel() {
+        return impl.getWebservicesMetadataModel();
     }
 }

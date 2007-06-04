@@ -22,6 +22,8 @@ package org.netbeans.modules.websvc.jaxws.spi;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 
@@ -147,5 +149,12 @@ public interface JAXWSSupportImpl {
      * Returns the directory that contains the deployment descriptor in the project
      */
     public FileObject getDeploymentDescriptorFolder();
+
+    /**
+     * Returns a metadata model of a webservices deployment descriptor
+     *
+     * @return metadata model of a webservices deployment descriptor
+     */
+    public MetadataModel<WebservicesMetadata> getWebservicesMetadataModel();
     
 }
