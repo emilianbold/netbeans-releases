@@ -28,9 +28,9 @@ package org.netbeans.modules.xml.wsdl.ui.view;
 import javax.swing.ButtonGroup;
 import javax.swing.JRadioButton;
 
-import org.netbeans.modules.xml.wsdl.ui.view.wizard.ExtensibilityElementTemplateFactory;
-import org.netbeans.modules.xml.wsdl.ui.view.wizard.TemplateType;
-import org.netbeans.modules.xml.wsdl.ui.view.wizard.localized.LocalizedTemplate;
+import org.netbeans.modules.xml.wsdl.bindingsupport.template.ExtensibilityElementTemplateFactory;
+import org.netbeans.modules.xml.wsdl.bindingsupport.template.TemplateType;
+import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.LocalizedTemplate;
 
 /**
  *

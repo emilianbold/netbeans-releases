@@ -205,6 +205,14 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.xml.wsdl.bindingsupport</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.xml.wsdl.extensions</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -355,34 +363,11 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>com.gestalt.netbeans.modules.wsdlextensions.sip</friend>
-                <friend>com.gestalt.netbeans.modules.wsdlextensions.uddi</friend>
-                <friend>com.gestalt.netbeans.modules.wsdlextensions.xmpp</friend>
-                <friend>com.gestalt.netbeans.modules.wsdlextensions.rss</friend>
-                <friend>it.imolinfo.jbi4cics.netbeansplugin.wsdlextension</friend>
-                <friend>it.imolinfo.jbi4corba.netbeansplugin.wsdlextension</friend>
                 <friend>org.netbeans.modules.compapp.casaeditor</friend>
-                <friend>org.netbeans.modules.script.project</friend>
-                <friend>org.netbeans.modules.wsdlextensions.dcom</friend>
-                <friend>org.netbeans.modules.wsdlextensions.email</friend>
-                <friend>org.netbeans.modules.wsdlextensions.file</friend>
-                <friend>org.netbeans.modules.wsdlextensions.ftp</friend>
-                <friend>org.netbeans.modules.wsdlextensions.hl7</friend>
-                <friend>org.netbeans.modules.wsdlextensions.jdbc</friend>
-                <friend>org.netbeans.modules.wsdlextensions.jms</friend>
-                <friend>org.netbeans.modules.wsdlextensions.ldap</friend>
-                <friend>org.netbeans.modules.wsdlextensions.mq</friend>
-                <friend>org.netbeans.modules.wsdlextensions.msmq</friend>
-                <friend>org.netbeans.modules.wsdlextensions.sag</friend>
-                <friend>org.netbeans.modules.wsdlextensions.sap</friend>
-                <friend>org.netbeans.modules.wsdlextensions.smtp</friend>
-                <friend>org.netbeans.modules.wsdlextensions.snmp</friend>
-                <friend>org.netbeans.modules.wsdlextensions.swift</friend>
-                <friend>org.netbeans.modules.wsdlextensions.tcpip</friend>
-                <friend>org.netbeans.modules.wsdlextensions.ims</friend>
                 <friend>org.netbeans.modules.xml.wsdl.refactoring</friend>
                 <friend>org.netbeans.modules.xml.wsdlextui</friend>
                 <friend>org.netbeans.modules.xslt.project</friend>
+                <friend>org.netbeans.modules.script.project</friend>
                 <friend>org.netbeans.modules.bpel.editors.api</friend>
                 <package>org.netbeans.modules.xml.wsdl.ui.actions</package>
                 <package>org.netbeans.modules.xml.wsdl.ui.api.property</package>
@@ -390,8 +375,6 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
                 <package>org.netbeans.modules.xml.wsdl.ui.spi</package>
                 <package>org.netbeans.modules.xml.wsdl.ui.view</package>
                 <package>org.netbeans.modules.xml.wsdl.ui.view.treeeditor</package>
-                <package>org.netbeans.modules.xml.wsdl.ui.view.wizard</package>
-                <package>org.netbeans.modules.xml.wsdl.ui.view.wizard.localized</package>
                 <package>org.netbeans.modules.xml.wsdl.ui.wizard</package>
             </friend-packages>
         </data>

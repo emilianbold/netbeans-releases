@@ -35,12 +35,13 @@ import javax.swing.ComboBoxModel;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JTextField;
+
+import org.netbeans.modules.xml.wsdl.bindingsupport.template.ExtensibilityElementTemplateFactory;
+import org.netbeans.modules.xml.wsdl.bindingsupport.template.TemplateGroup;
+import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.LocalizedTemplate;
+import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.LocalizedTemplateGroup;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPQName;
 
-import org.netbeans.modules.xml.wsdl.ui.view.wizard.ExtensibilityElementTemplateFactory;
-import org.netbeans.modules.xml.wsdl.ui.view.wizard.TemplateGroup;
-import org.netbeans.modules.xml.wsdl.ui.view.wizard.localized.LocalizedTemplate;
-import org.netbeans.modules.xml.wsdl.ui.view.wizard.localized.LocalizedTemplateGroup;
 
 /**
  *

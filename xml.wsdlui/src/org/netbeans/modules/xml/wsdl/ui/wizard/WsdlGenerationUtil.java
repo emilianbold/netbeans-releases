@@ -29,13 +29,14 @@
 package org.netbeans.modules.xml.wsdl.ui.wizard;
 
 import javax.xml.namespace.QName;
+
+import org.netbeans.modules.xml.wsdl.bindingsupport.template.ExtensionAttrType;
+import org.netbeans.modules.xml.wsdl.bindingsupport.template.ExtensionElementType;
+import org.netbeans.modules.xml.wsdl.bindingsupport.template.WsdlElementType;
+import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.LocalizedTemplate;
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.ui.view.wizard.ExtensionAttrType;
-import org.netbeans.modules.xml.wsdl.ui.view.wizard.ExtensionElementType;
-import org.netbeans.modules.xml.wsdl.ui.view.wizard.WsdlElementType;
-import org.netbeans.modules.xml.wsdl.ui.view.wizard.localized.LocalizedTemplate;
 
 /**
  *

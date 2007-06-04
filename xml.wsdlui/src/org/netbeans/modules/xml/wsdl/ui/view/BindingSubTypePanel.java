@@ -33,13 +33,10 @@ import java.util.List;
 
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
-import javax.swing.ButtonModel;
-import org.netbeans.modules.xml.wsdl.ui.view.wizard.ExtensibilityElementTemplateFactory;
 
-import org.netbeans.modules.xml.wsdl.ui.view.wizard.TemplateGroup;
-import org.netbeans.modules.xml.wsdl.ui.view.wizard.TemplateType;
-import org.netbeans.modules.xml.wsdl.ui.view.wizard.localized.LocalizedTemplate;
-import org.netbeans.modules.xml.wsdl.ui.view.wizard.localized.LocalizedTemplateGroup;
+import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.LocalizedTemplate;
+import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.LocalizedTemplateGroup;
+
 
 /**
  *
@@ -47,12 +44,9 @@ import org.netbeans.modules.xml.wsdl.ui.view.wizard.localized.LocalizedTemplateG
  */
 public class BindingSubTypePanel extends javax.swing.JPanel {
     
-    private String namespace;
-    private TemplateGroup group;
-    
     private LocalizedTemplateGroup mLtg;
     
-    private List<TemplatePanel> mPanels = new ArrayList();
+    private List<TemplatePanel> mPanels = new ArrayList<TemplatePanel>();
     
     private ActionListener mButtonActionListener;
     
