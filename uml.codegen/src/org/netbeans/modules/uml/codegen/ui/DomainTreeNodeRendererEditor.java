@@ -18,11 +18,11 @@
  */
 package org.netbeans.modules.uml.codegen.ui;
 
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import javax.swing.JCheckBox;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTree;
 import javax.swing.UIManager;
@@ -38,17 +38,36 @@ import org.netbeans.modules.uml.ui.swing.SelectableLabel;
 public class DomainTreeNodeRendererEditor extends JPanel
     implements TreeCellRenderer
 {
-    protected JCheckBox check = null;
-    protected SelectableLabel label = null;
+    protected JCheckBox checkBox = null;
+    protected SelectableLabel selectLabel = null;
     
     public DomainTreeNodeRendererEditor()
     {
-        setLayout(null);
-        add(check = new JCheckBox());
-        check.setLocation(50, 0);
-        add(label = new SelectableLabel());
-        check.requestFocus();
-        setOpaque(false);
+        checkBox = new javax.swing.JCheckBox();
+        checkBox.setBorder(
+            javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        checkBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
+        selectLabel = new SelectableLabel();
+        selectLabel.setText("");
+
+        org.jdesktop.layout.GroupLayout layout = 
+            new org.jdesktop.layout.GroupLayout(this);
+        
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(checkBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(selectLabel))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(checkBox)
+                .add(selectLabel))
+        );
     }
     
     public Component getTreeCellRendererComponent(
@@ -60,97 +79,56 @@ public class DomainTreeNodeRendererEditor extends JPanel
         int row, 
         boolean hasFocus)
     {
-        initializeControl(value, tree, isSelected, hasFocus);
-        return this;
-    }
-    
-    protected void initializeControl(
-        Object value,
-        JTree tree,
-        boolean isSelected,
-        boolean hasFocus)
-    {
         setEnabled(tree.isEnabled());
 
         DomainTreeNode node = (DomainTreeNode)
             ((DefaultMutableTreeNode)value).getUserObject();
 
-        label.setSelected(isSelected);
-        label.setFocus(hasFocus);
-
-        
         if (node.isDomain())
         {
-            check.setVisible(true);
-            check.setSelected(node.isChecked());
+            checkBox.setVisible(true);
+            checkBox.setSelected(node.isChecked());
         }
         
         else
-            check.setVisible(false);
+            checkBox.setVisible(false);
         
-        label.setFont(tree.getFont());
-        label.setText(" " + node.getDisplayName());
+        selectLabel.setSelected(isSelected);
+        selectLabel.setFont(tree.getFont());
+        selectLabel.setText(node.getDisplayName());
         
         if (isSelected)
         {
-            label.setSelectedBackground(UIManager.getColor("Tree.selectionBackground"));
-            label.setForeground(UIManager.getColor("Tree.selectionForeground"));
+            selectLabel.setSelectedBackground(
+                UIManager.getColor("Tree.selectionBackground")); // NOI18N
+            selectLabel.setForeground(
+                UIManager.getColor("Tree.selectionForeground")); // NOI18N
         }
         
         else
         {
-            label.setForeground(UIManager.getColor("Tree.textForeground"));
+            selectLabel.setForeground(
+                UIManager.getColor("Tree.textForeground")); // NOI18N
         }
+        
+        return this;
     }
+    
     
     public Dimension getPreferredSize()
     {
-        if (check.isVisible())
-        {
-            Dimension dimCheck = check.getPreferredSize();
-            Dimension dimLabel = label.getPreferredSize();
-
-            return new Dimension(
-                dimCheck.width + dimLabel.width,
-                dimCheck.height < dimLabel.height
-                    ? dimLabel.height + 20 : dimCheck.height + 20);
-        }
+        Dimension newDim = new Dimension();
         
-        else
-        {
-            Dimension dimLabel = label.getPreferredSize();
-            return new Dimension(dimLabel.width, dimLabel.height);
-        }
+        double width = checkBox.getPreferredSize().getWidth() +
+            selectLabel.getPreferredSize().getWidth();
+        
+        double height = checkBox.getPreferredSize().getHeight() +
+            selectLabel.getPreferredSize().getHeight();
+        
+        newDim.setSize(width, height);
+        return newDim;
     }
     
-    public void doLayout()
-    {
-        if (check.isVisible())
-        {
-            Dimension dimCheck = check.getPreferredSize();
-            Dimension dimLabel = label.getPreferredSize();
-            int yCheck = 0;
-            int yLabel = 0;
-
-            if (dimCheck.height < dimLabel.height)
-                yCheck = (dimLabel.height - dimCheck.height) / 2;
-
-            else
-                yLabel = (dimCheck.height - dimLabel.height) / 2;
-
-            check.setLocation(0, yCheck);
-            check.setBounds(0, yCheck, dimCheck.width, dimCheck.height);
-            label.setLocation(dimCheck.width, yLabel);
-            label.setBounds(dimCheck.width, yLabel, dimLabel.width, dimLabel.height);
-        }
-
-        else
-        {
-            Dimension dimLabel = label.getPreferredSize();
-            label.setLocation(0, dimLabel.height);
-            label.setBounds(0, 0, dimLabel.width, dimLabel.height);
-        }
-    }
     
     public void setBackground(Color color)
     {
@@ -159,5 +137,4 @@ public class DomainTreeNodeRendererEditor extends JPanel
         
         super.setBackground(color);
     }
-    
 }
