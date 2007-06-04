@@ -24,6 +24,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -101,8 +102,9 @@ public abstract class CreateClassFix implements Fix {
         this.numTypeParameters = numTypeParameters;
     }
     
-    protected ClassTree createConstructor(WorkingCopy working, ClassTree targetTree) {
+    protected ClassTree createConstructor(WorkingCopy working, TreePath targetTreePath) {
         TreeMaker make = working.getTreeMaker();
+        ClassTree targetTree = (ClassTree)targetTreePath.getLeaf();
         boolean removeDefaultConstructor = (kind == ElementKind.INTERFACE) || (kind == ElementKind.ANNOTATION_TYPE);
         
         if (argumentNames != null) {
@@ -119,7 +121,7 @@ public abstract class CreateClassFix implements Fix {
             
             MethodTree constr = make.Method(make.Modifiers(EnumSet.of(Modifier.PUBLIC/*!!!*/)), "<init>", null, Collections.<TypeParameterTree>emptyList(), argTypes, Collections.<ExpressionTree>emptyList(), "{}" /*XXX*/, null);
             
-            targetTree = GeneratorUtils.insertClassMember(working, targetTree, constr);
+            targetTree = GeneratorUtils.insertClassMember(working, targetTreePath, constr);
             
             removeDefaultConstructor = true;
         }
@@ -248,7 +250,7 @@ public abstract class CreateClassFix implements Fix {
                     parameter.toPhase(Phase.RESOLVED);
                     
                     ClassTree source = (ClassTree) parameter.getCompilationUnit().getTypeDecls().get(0);
-                    ClassTree nue = createConstructor(parameter, source);
+                    ClassTree nue = createConstructor(parameter, TreePath.getPath(parameter.getCompilationUnit(), source));
                     
                     parameter.rewrite(source, nue);
                 }
@@ -300,7 +302,7 @@ public abstract class CreateClassFix implements Fix {
                         return;
                     }
                     
-                    ClassTree targetTree = working.getTrees().getTree(targetType);
+                    TreePath targetTree = working.getTrees().getPath(targetType);
                     
                     if (targetTree == null) {
                         ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve target tree: " + targetType.getQualifiedName() + ".");
@@ -311,9 +313,9 @@ public abstract class CreateClassFix implements Fix {
                     MethodTree constr = make.Method(make.Modifiers(EnumSet.of(Modifier.PUBLIC)), "<init>", null, Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), "{}" /*XXX*/, null);
                     ClassTree innerClass = make.Class(make.Modifiers(modifiers), name, Collections.<TypeParameterTree>emptyList(), null, Collections.<Tree>emptyList(), Collections.<Tree>singletonList(constr));
                     
-                    innerClass = createConstructor(working, innerClass);
+                    innerClass = createConstructor(working, new TreePath(targetTree, innerClass));
                     
-                    working.rewrite(targetTree, GeneratorUtils.insertClassMember(working, targetTree, innerClass));
+                    working.rewrite(targetTree.getLeaf(), GeneratorUtils.insertClassMember(working, targetTree, innerClass));
                 }
             }).commit();
             

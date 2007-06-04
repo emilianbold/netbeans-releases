@@ -68,6 +68,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
@@ -87,14 +88,16 @@ public class GeneratorUtils {
     private GeneratorUtils() {
     }
     
-    public static ClassTree insertClassMember(WorkingCopy copy, ClassTree clazz, Tree member) {
+    public static ClassTree insertClassMember(WorkingCopy copy, TreePath path, Tree member) {
+        assert path.getLeaf().getKind() == Tree.Kind.CLASS;
+        TreeUtilities tu = copy.getTreeUtilities();
         int idx = 0;
-        for (Tree tree : clazz.getMembers()) {
-            if (ClassMemberComparator.compare(member, tree) < 0)
+        for (Tree tree : ((ClassTree)path.getLeaf()).getMembers()) {
+            if (!tu.isSynthetic(new TreePath(path, tree)) && ClassMemberComparator.compare(member, tree) < 0)
                 break;
             idx++;
         }
-        return copy.getTreeMaker().insertClassMember(clazz, idx, member);        
+        return copy.getTreeMaker().insertClassMember((ClassTree)path.getLeaf(), idx, member);        
     }
     
     public static List<? extends ExecutableElement> findUndefs(CompilationInfo info, TypeElement impl) {

@@ -24,6 +24,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -137,7 +138,7 @@ public final class CreateMethodFix implements Fix {
                     return;
                 }
                 
-                ClassTree targetTree = working.getTrees().getTree(targetType);
+                TreePath targetTree = working.getTrees().getPath(targetType);
                 
                 if (targetTree == null) {
                     ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve target tree: " + targetType.getQualifiedName() + ".");
@@ -169,7 +170,7 @@ public final class CreateMethodFix implements Fix {
                 MethodTree mt = make.Method(make.Modifiers(modifiers), name, returnType != null ? make.Type(returnType) : null, Collections.<TypeParameterTree>emptyList(), argTypes, Collections.<ExpressionTree>emptyList(), body, null);
                 ClassTree decl = GeneratorUtils.insertClassMember(working, targetTree, mt);
                 
-                working.rewrite(targetTree, decl);
+                working.rewrite(targetTree.getLeaf(), decl);
             }
         }).commit();
         
