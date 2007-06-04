@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -26,6 +26,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
+import org.netbeans.core.api.multiview.MultiViewHandler;
+import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
@@ -35,7 +37,6 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.UndoRedo;
-import org.openide.cookies.EditorCookie.Observable;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node.Cookie;
@@ -106,7 +107,6 @@ public class JSFConfigEditorSupport extends DataEditorSupport
     
     @Override
     protected Pane createPane() {
-        //StrutsConfigDataObjectContext context = new StrutsConfigDataObjectContextImpl(getDataObject());
         JSFConfigEditorContext context = new JSFConfigEditorContextImpl((JSFConfigDataObject)getDataObject());
         ArrayList<MultiViewDescription> descriptions =
                 new ArrayList<MultiViewDescription> (JSFConfigEditorViewFactorySupport.createViewDescriptions(context));
@@ -172,6 +172,7 @@ public class JSFConfigEditorSupport extends DataEditorSupport
      * Save document using encoding declared in XML prolog if possible otherwise
      * at UTF-8 (in such case it updates the prolog).
      */
+    @Override
     public void saveDocument() throws java.io.IOException {
         final javax.swing.text.StyledDocument doc = getDocument();
         String defaultEncoding = "UTF-8"; // NOI18N
@@ -300,6 +301,7 @@ public class JSFConfigEditorSupport extends DataEditorSupport
      * @return true if the environment accepted being marked as modified
      *    or false if it has refused and the document should remain unmodified
      */
+    @Override
     protected boolean notifyModified() {
         boolean notif = super.notifyModified();
         if (!notif){
@@ -311,6 +313,7 @@ public class JSFConfigEditorSupport extends DataEditorSupport
     }
     
     /** Overrides superclass method. Adds removing of save cookie. */
+    @Override
     protected void notifyUnmodified() {
         super.notifyUnmodified();
         updateDisplayName();
@@ -339,6 +342,7 @@ public class JSFConfigEditorSupport extends DataEditorSupport
         }
     }
     
+    @Override
     public void open() {
         super.open();
         // parse once after opening the document
@@ -346,7 +350,29 @@ public class JSFConfigEditorSupport extends DataEditorSupport
         updateDisplayName();
     }
     
+    @Override
+    public void edit(){
+        // open the top component
+        open();
+        
+        // ask for opening the last (source) editor
+        runInAwtDispatchThread(new Runnable() {
+            public void run() {       
+                MultiViewHandler handler = MultiViews.findMultiViewHandler(mvtc);
+                handler.requestVisible(handler.getPerspectives()[handler.getPerspectives().length - 1]);
+                mvtc.requestActive();
+            }
+        });
+    }
     
+    private  static void runInAwtDispatchThread(Runnable runnable) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            runnable.run();
+        } else {
+            SwingUtilities.invokeLater(runnable);
+        }
+        
+    }
     private static class XmlEnv extends DataEditorSupport.Env {
         
         private static final long serialVersionUID = -800036748848958489L;
@@ -382,6 +408,7 @@ public class JSFConfigEditorSupport extends DataEditorSupport
          * reference would not permit this environment to be serialized.
          * @return the editor support
          */
+        @Override
         public org.openide.windows.CloneableOpenSupport findCloneableOpenSupport() {
             return (JSFConfigEditorSupport) getDataObject().getCookie(JSFConfigEditorSupport.class);
         }

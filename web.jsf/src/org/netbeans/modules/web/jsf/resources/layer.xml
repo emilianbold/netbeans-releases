@@ -154,7 +154,9 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="x-jsf+xml">
                 <folder name="Actions">
                     <file name="org-openide-actions-OpenAction.instance"/>
-                    <attr name="org-openide-actions-OpenAction.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
+                    <attr name="org-openide-actions-OpenAction.instance/org-openide-actions-EditAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-EditAction.instance"/>
+                    <attr name="org-openide-actions-EditAction.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
                     <file name="org-openide-actions-FileSystemAction.instance"/>
                     <attr name="org-openide-actions-FileSystemAction.instance/sep-1.instance" boolvalue="true"/>
                     <file name="sep-1.instance">
