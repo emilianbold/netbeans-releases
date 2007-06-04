@@ -39,7 +39,7 @@ Microsystems, Inc. All Rights Reserved.
              compiler="qa-perf-compiler" executor="ide_performance" name="Measure Open Files" >
 	<testset dir="qa-functional/src">
 	    <patternset>
-		<include name="gui/MeasureOpenFiles.class"/>
+		<include name="gui/MeasureWebActions.class"/>
 	    </patternset>
 	</testset>
     </testbag>
@@ -48,7 +48,7 @@ Microsystems, Inc. All Rights Reserved.
              compiler="qa-perf-compiler" executor="ide_performance" name="Measure Node Popup" >
 	<testset dir="qa-functional/src">
 	    <patternset>
-		<include name="gui/MeasureNodePopup.class"/>
+		<include name="gui/MeasureWebDialogs.class"/>
 	    </patternset>
 	</testset>
     </testbag>
@@ -57,35 +57,17 @@ Microsystems, Inc. All Rights Reserved.
              compiler="qa-perf-compiler" executor="ide_performance" name="Measure Runtime Node Popup" >
 	<testset dir="qa-functional/src">
 	    <patternset>
-		<include name="gui/MeasureRuntimeNodePopup.class"/>
+		<include name="gui/MeasureWebMenus.class"/>
 	    </patternset>
 	</testset>
     </testbag>
 
-    <testbag testattribs="measure_once or measure_ui or measure_editor or measure_editor_once" prio="7"
-             compiler="qa-perf-compiler" executor="ide_performance" name="Measure JSP Editor" >
-	<testset dir="qa-functional/src">
-	    <patternset>
-		<include name="gui/MeasureEditor.class"/>
-	    </patternset>
-	</testset>
-    </testbag>
-
-    <testbag testattribs="measure_once or measure_ui or measure_webactions" prio="9"
-             compiler="qa-perf-compiler" executor="ide_performance" name="Measure Web Actions" >
-	<testset dir="qa-functional/src">
-	    <patternset>
-		<include name="gui/MeasureWebActions.class"/>
-	    </patternset>
-	</testset>
-    </testbag>
-    
     <!-- 2nd round -->    
     <testbag testattribs="measure_ui or measure_openfiles" prio="12"
              compiler="qa-perf-compiler" executor="ide_performance" name="Measure Open Files" >
 	<testset dir="qa-functional/src">
 	    <patternset>
-		<include name="gui/MeasureOpenFiles.class"/>
+		<include name="gui/MeasureWebActions.class"/>
 	    </patternset>
 	</testset>
     </testbag>
@@ -94,7 +76,7 @@ Microsystems, Inc. All Rights Reserved.
              compiler="qa-perf-compiler" executor="ide_performance" name="Measure Node Popup" >
 	<testset dir="qa-functional/src">
 	    <patternset>
-		<include name="gui/MeasureNodePopup.class"/>
+		<include name="gui/MeasureWebDialogs.class"/>
 	    </patternset>
 	</testset>
     </testbag>
@@ -103,25 +85,7 @@ Microsystems, Inc. All Rights Reserved.
              compiler="qa-perf-compiler" executor="ide_performance" name="Measure Runtime Node Popup" >
 	<testset dir="qa-functional/src">
 	    <patternset>
-		<include name="gui/MeasureRuntimeNodePopup.class"/>
-	    </patternset>
-	</testset>
-    </testbag>
-
-    <testbag testattribs="measure_ui or measure_editor" prio="17"
-             compiler="qa-perf-compiler" executor="ide_performance" name="Measure JSP Editor" >
-	<testset dir="qa-functional/src">
-	    <patternset>
-		<include name="gui/MeasureEditor.class"/>
-	    </patternset>
-	</testset>
-    </testbag>
-
-    <testbag testattribs="measure_ui or measure_webactions" prio="19"
-             compiler="qa-perf-compiler" executor="ide_performance" name="Measure Web Actions" >
-	<testset dir="qa-functional/src">
-	    <patternset>
-		<include name="gui/MeasureWebActions.class"/>
+		<include name="gui/MeasureWebMenus.class"/>
 	    </patternset>
 	</testset>
     </testbag>
@@ -131,7 +95,7 @@ Microsystems, Inc. All Rights Reserved.
              compiler="qa-perf-compiler" executor="ide_performance" name="Measure Open Files" >
 	<testset dir="qa-functional/src">
 	    <patternset>
-		<include name="gui/MeasureOpenFiles.class"/>
+		<include name="gui/MeasureWebActions.class"/>
 	    </patternset>
 	</testset>
     </testbag>
@@ -140,7 +104,7 @@ Microsystems, Inc. All Rights Reserved.
              compiler="qa-perf-compiler" executor="ide_performance" name="Measure Node Popup" >
 	<testset dir="qa-functional/src">
 	    <patternset>
-		<include name="gui/MeasureNodePopup.class"/>
+		<include name="gui/MeasureWebDialogs.class"/>
 	    </patternset>
 	</testset>
     </testbag>
@@ -149,25 +113,7 @@ Microsystems, Inc. All Rights Reserved.
              compiler="qa-perf-compiler" executor="ide_performance" name="Measure Runtime Node Popup" >
 	<testset dir="qa-functional/src">
 	    <patternset>
-		<include name="gui/MeasureRuntimeNodePopup.class"/>
-	    </patternset>
-	</testset>
-    </testbag>
-
-    <testbag testattribs="measure_ui or measure_editor" prio="27"
-             compiler="qa-perf-compiler" executor="ide_performance" name="Measure JSP Editor" >
-	<testset dir="qa-functional/src">
-	    <patternset>
-		<include name="gui/MeasureEditor.class"/>
-	    </patternset>
-	</testset>
-    </testbag>
-
-    <testbag testattribs="measure_ui or measure_webactions" prio="29"
-             compiler="qa-perf-compiler" executor="ide_performance" name="Measure Web Actions" >
-	<testset dir="qa-functional/src">
-	    <patternset>
-		<include name="gui/MeasureWebActions.class"/>
+		<include name="gui/MeasureWebMenus.class"/>
 	    </patternset>
 	</testset>
     </testbag>
