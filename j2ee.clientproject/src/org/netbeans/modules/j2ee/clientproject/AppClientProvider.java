@@ -47,6 +47,7 @@ import org.netbeans.modules.j2ee.dd.api.client.AppClientMetadata;
 import org.netbeans.modules.j2ee.dd.api.client.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
+import org.netbeans.modules.j2ee.dd.spi.client.AppClientMetadataModelFactory;
 import org.netbeans.modules.j2ee.dd.spi.webservices.WebservicesMetadataModelFactory;
 //import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
 import org.netbeans.modules.j2ee.deployment.common.api.EjbChangeDescriptor;
@@ -70,7 +71,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.NotImplementedException;
-import org.openide.util.WeakListeners;
 
 /**
  * @author jungi
@@ -84,6 +84,7 @@ public final class AppClientProvider extends J2eeModuleProvider
     private final AntProjectHelper helper;
     private final ClassPathProviderImpl cpProvider;
     
+    private MetadataModel<AppClientMetadata> appClientMetadataModel;
     private MetadataModel<WebservicesMetadata> webservicesMetadataModel;
     
     private PropertyChangeSupport propertyChangeSupport;
@@ -228,16 +229,30 @@ public final class AppClientProvider extends J2eeModuleProvider
     
     public <T> MetadataModel<T> getDeploymentDescriptor(Class<T> type) {
         if (type == AppClientMetadata.class) {
-            // TODO MetadataModel: uncomment when ready
-            // TODO MetadataModel: also uncomment in AppClientProviderTest.testMetadataModel()
-            // return (MetadataModel<T>) project.getAPICar().getMetadataModel();
-            throw new NotImplementedException();
+            @SuppressWarnings("unchecked") // NOI18N
+            MetadataModel<T> model = (MetadataModel<T>)getMetadataModel();
+            return model;
         } else if (type == WebservicesMetadata.class) {
             @SuppressWarnings("unchecked") // NOI18N
             MetadataModel<T> model = (MetadataModel<T>)getWebservicesMetadataModel();
             return model;
         }
         return null;
+    }
+    
+    private synchronized MetadataModel<AppClientMetadata> getMetadataModel() {
+        if (appClientMetadataModel == null) {
+            FileObject ddFO = getDeploymentDescriptor();
+            File ddFile = ddFO != null ? FileUtil.toFile(ddFO) : null;
+            MetadataUnit metadataUnit = MetadataUnit.create(
+                cpProvider.getProjectSourcesClassPath(ClassPath.BOOT),
+                cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
+                cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
+                // XXX: add listening on deplymentDescriptor
+                ddFile);
+            appClientMetadataModel = AppClientMetadataModelFactory.createMetadataModel(metadataUnit);
+        }
+        return appClientMetadataModel;
     }
     
     private synchronized MetadataModel<WebservicesMetadata> getWebservicesMetadataModel() {

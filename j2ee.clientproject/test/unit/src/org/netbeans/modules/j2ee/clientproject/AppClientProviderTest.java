@@ -79,7 +79,7 @@ public class AppClientProviderTest extends NbTestCase {
         Project project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
         J2eeModuleProvider provider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
         J2eeModule j2eeModule = provider.getJ2eeModule();
-        // assertNotNull(j2eeModule.getDeploymentDescriptor(AppClientMetadata.class));
+        assertNotNull(j2eeModule.getDeploymentDescriptor(AppClientMetadata.class));
         assertNotNull(j2eeModule.getDeploymentDescriptor(WebservicesMetadata.class));
     }
     

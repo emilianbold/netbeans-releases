@@ -172,6 +172,7 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.modules.j2ee.dd.api.ejb</package>
                 <package>org.netbeans.modules.j2ee.dd.api.web</package>
                 <package>org.netbeans.modules.j2ee.dd.spi</package>
+                <package>org.netbeans.modules.j2ee.dd.spi.client</package>
                 <package>org.netbeans.modules.j2ee.dd.spi.ejb</package>
                 <package>org.netbeans.modules.j2ee.dd.spi.web</package>
             </public-packages>
