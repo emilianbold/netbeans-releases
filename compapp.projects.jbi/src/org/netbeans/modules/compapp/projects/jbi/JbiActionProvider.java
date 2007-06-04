@@ -57,11 +57,13 @@ import java.util.Properties;
 import java.awt.Dialog;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildListener;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildTask;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectHelper;
 import org.netbeans.modules.compapp.projects.jbi.api.ProjectValidator;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Task;
 import org.openide.util.TaskListener;
 
 
@@ -246,18 +248,27 @@ public class JbiActionProvider implements ActionProvider {
         }
         
         final JbiBuildListener jbiBuildListener = getBuildListener(command);
-        if (jbiBuildListener != null) {
-            jbiBuildListener.buildStarted();
-        }
 
         try {
             final ExecutorTask executorTask = ActionUtils.runTarget(findBuildXml(), targetNames, p);
             if (jbiBuildListener != null) {
+                
+                JbiBuildTask buildTask = new JbiBuildTask() {
+                    public boolean isFinished() {
+                        return executorTask.isFinished();
+                    }
+                    public int getResult() {
+                        return executorTask.result();
+                    }
+                };
+                jbiBuildListener.buildStarted(buildTask);
+                
                 executorTask.addTaskListener(new TaskListener() {
-                    public void taskFinished(org.openide.util.Task task) {
+                    public void taskFinished(Task task) {
                         jbiBuildListener.buildCompleted(executorTask.result() == 0);
                     }
                 });
+                
             }
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);

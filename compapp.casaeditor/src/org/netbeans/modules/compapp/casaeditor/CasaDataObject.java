@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JComponent;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphUtilities;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildListener;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildTask;
 import org.netbeans.modules.print.spi.PrintProvider;
 import org.netbeans.modules.print.spi.PrintProviderCookie;
 import org.openide.cookies.SaveCookie;
@@ -170,11 +171,11 @@ public class CasaDataObject extends MultiDataObject {
     
     
     private class JbiBuildCookie implements Node.Cookie, JbiBuildListener {
-        public void buildStarted() {
+        public void buildStarted(JbiBuildTask task) {
             mIsBuilding = true;
             if (editorSupport != null && editorSupport.getScene() != null) {
                 // Immediately disable edits to the scene.
-                CasaModelGraphUtilities.setSceneEnabled(editorSupport.getScene(), false);
+                CasaModelGraphUtilities.setSceneEnabled(editorSupport.getScene(), task);
             }
         }
         public void buildCompleted(boolean isSuccessful) {

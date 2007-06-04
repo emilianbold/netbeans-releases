@@ -48,6 +48,7 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServi
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaProvides;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaRegion;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildTask;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiDefaultComponentInfo;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
@@ -416,13 +417,21 @@ public class CasaModelGraphUtilities {
         }
     }
     
+    public static void setSceneEnabled(CasaModelGraphScene scene, JbiBuildTask task) {
+        Chain priorActions = scene.getPriorActions();
+        WaitMessageHandler.addToScene(scene, task);
+        if (!priorActions.getActions().contains(DISABLER)) {
+            priorActions.addAction(0, DISABLER);
+        }
+    }
+    
     public static void setSceneEnabled(CasaModelGraphScene scene, boolean isEnabled) {
         Chain priorActions = scene.getPriorActions();
         if (isEnabled) {
             priorActions.removeAction(DISABLER);
             WaitMessageHandler.removeFromScene(scene);
         } else {
-            WaitMessageHandler.addToScene(scene);
+            WaitMessageHandler.addToScene(scene, null);
             if (!priorActions.getActions().contains(DISABLER)) {
                 priorActions.addAction(0, DISABLER);
             }

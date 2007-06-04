@@ -16,25 +16,16 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.compapp.projects.jbi.api;
 
 /**
- * A listener that is interested in execution of compapp's build-related 
- * Ant tasks. 
  *
- * @author jqian
+ * @author Josh Sandusky
  */
-public interface JbiBuildListener {
+public interface JbiBuildTask {
+
+    boolean isFinished();
     
-    /**
-     * Notified before a compapp's build-related Ant task gets started.
-     */
-    void buildStarted(JbiBuildTask task);
-    
-    /**
-     * Notified after a compapp's build-related Ant task is compleleted.
-     */
-    void buildCompleted(boolean isSuccessful);
+    int getResult();
     
 }
