@@ -299,7 +299,7 @@ public class MenuEditLayer extends JPanel {
                 }
                 
             };
-//            formDesigner.addPropertyChangeListener("activatedNodes",selectionListener);
+            formDesigner.addPropertyChangeListener("activatedNodes",selectionListener);
         };
     }
     
@@ -446,18 +446,20 @@ public class MenuEditLayer extends JPanel {
     }
     
     private void setSelectedComponent(RADComponent comp) {
-        JComponent c = (JComponent) formDesigner.getComponent(comp);
-        
-        if(selectedComponent != null) {
-            selectedComponent.setBorder(UNSELECTED_BORDER);
-        }
-        selectedComponent = c;
-        if(selectedComponent != null) {
-            selectedComponent.setBorder(SELECTED_BORDER);
-            makeSureShowingOnScreen(comp,selectedComponent);
-            if(selectedComponent instanceof JMenu) {
-                JMenu menu = (JMenu) selectedComponent;
-                showMenuPopup(menu);
+        if(this.isMenuRelatedRADComponent(comp)) {
+            JComponent c = (JComponent) formDesigner.getComponent(comp);
+
+            if(selectedComponent != null) {
+                selectedComponent.setBorder(UNSELECTED_BORDER);
+            }
+            selectedComponent = c;
+            if(selectedComponent != null) {
+                selectedComponent.setBorder(SELECTED_BORDER);
+                makeSureShowingOnScreen(comp,selectedComponent);
+                if(selectedComponent instanceof JMenu) {
+                    JMenu menu = (JMenu) selectedComponent;
+                    showMenuPopup(menu);
+                }
             }
         }
         repaint();
