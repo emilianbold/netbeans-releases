@@ -83,6 +83,5 @@ cd $NB_ALL/nbbuild
 
 #Remove the build helper files
 rm -f netbeans/nb.cluster.*
-rm -f netbeans/moduleCluster.properties
 rm -f netbeans/module_tracking.xml
 rm -f netbeans/build_info
