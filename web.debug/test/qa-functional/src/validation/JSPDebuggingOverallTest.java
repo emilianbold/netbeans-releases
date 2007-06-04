@@ -114,7 +114,7 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
             ProjectSupport.openProject(new File(getDataDir(), projects[i]));
         }
         // Set as Main Project
-        String setAsMainProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_SetAsMainProjectAction_Name")
+        String setAsMainProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_SetAsMainProjectAction_Name");
         new Action(null, setAsMainProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME));
         // not display browser on run
         // open project properties
