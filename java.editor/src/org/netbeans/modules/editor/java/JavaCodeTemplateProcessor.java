@@ -114,7 +114,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 CodeTemplateParameter param = entry.getKey();
                 TypeMirror tm = param2types.get(param);
                 TreePath tp = cInfo.getTreeUtilities().pathFor(request.getInsertTextOffset() + param.getInsertTextOffset());
-                CharSequence typeName = imp.resolveImport(tp, (DeclaredType)tm);
+                CharSequence typeName = imp.resolveImport(tp, tm);
                 if (CAST.equals(param2hints.get(param))) {
                     param.setValue("(" + typeName + ")"); //NOI18N
                 } else if (INSTANCE_OF.equals(param2hints.get(param))) {
@@ -143,7 +143,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     if (ve != null) {
                         param2hints.put(param, INSTANCE_OF);
                         TypeMirror tm = ve.getEnclosingElement().asType();
-                        if (tm.getKind() == TypeKind.DECLARED)
+                        if (containsDeclaredType(tm))
                             param2types.put(param, tm);
                         return Utilities.getTypeName(tm, true) + "." + ve.getSimpleName();
                     } else {
@@ -170,7 +170,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     String value = Utilities.getTypeName(tm, true).toString();
                     if (value != null) {
                         param2hints.put(param, TYPE);
-                        if (tm.getKind() == TypeKind.DECLARED)
+                        if (containsDeclaredType(tm))
                             param2types.put(param, tm);
                         return value;
                     }
@@ -183,7 +183,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     String value = Utilities.getTypeName(tm, true).toString();
                     if (value != null) {
                         param2hints.put(param, ITERABLE_ELEMENT_TYPE);
-                        if (tm.getKind() == TypeKind.DECLARED)
+                        if (containsDeclaredType(tm))
                             param2types.put(param, tm);
                         return value;
                     }
@@ -196,7 +196,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     String value = Utilities.getTypeName(tm, true).toString();
                     if (value != null) {
                         param2hints.put(param, LEFT_SIDE_TYPE);
-                        if (tm.getKind() == TypeKind.DECLARED)
+                        if (containsDeclaredType(tm))
                             param2types.put(param, tm);
                         return value;
                     }
@@ -209,7 +209,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     String value = Utilities.getTypeName(tm, true).toString();
                     if (value != null) {
                         param2hints.put(param, RIGHT_SIDE_TYPE);
-                        if (tm.getKind() == TypeKind.DECLARED)
+                        if (containsDeclaredType(tm))
                             param2types.put(param, tm);
                         return value;
                     }
@@ -224,7 +224,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     String value = Utilities.getTypeName(tm, true).toString();
                     if (value != null) {
                         param2hints.put(param, CAST);
-                        if (tm.getKind() == TypeKind.DECLARED)
+                        if (containsDeclaredType(tm))
                             param2types.put(param, tm); //NOI18N
                         return "(" + value + ")"; //NOI18N
                     }
@@ -242,7 +242,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     String value = Utilities.getTypeName(tm, true).toString();
                     if (value != null) {
                         param2hints.put(param, UNCAUGHT_EXCEPTION_TYPE);
-                        if (tm.getKind() == TypeKind.DECLARED)
+                        if (containsDeclaredType(tm))
                             param2types.put(param, tm);
                         return value;
                     }
@@ -521,6 +521,17 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
         } catch (Exception e) {
         }
         return null;
+    }
+    
+    private boolean containsDeclaredType(TypeMirror type) {
+        switch(type.getKind()) {
+        case ARRAY:
+            return containsDeclaredType(((ArrayType)type).getComponentType());
+        case DECLARED:
+            return true;
+        default:
+            return false;
+        }
     }
     
     private boolean initParsing() {
