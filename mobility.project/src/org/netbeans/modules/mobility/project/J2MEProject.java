@@ -194,7 +194,7 @@ public final class J2MEProject implements Project, AntProjectListener {
         configHelper = new ProjectConfigurationsHelper(helper, this);
         genFilesHelper = new GeneratedFilesHelper(helper);
         midletsCacheHelper = new MIDletsCacheHelper(helper, configHelper);
-        
+        helper.addAntProjectListener(new CDCMainClassHelper(helper));
         pcs = new PropertyChangeSupport(this);
         fileBuiltQuery = new FileBuiltQueryImpl(helper, configHelper);
         this.lookup = this.createLookup(aux);
