@@ -81,7 +81,6 @@ public class ConvertorAndValidatorTest extends javax.swing.JFrame {
     private void initComponents() {
         bindingContext = new javax.beans.binding.BindingContext();
 
-        myBean1 = new data.MyBean();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
@@ -276,7 +275,6 @@ private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
-    private data.MyBean myBean1;
     private javax.beans.binding.BindingContext bindingContext;
     // End of variables declaration//GEN-END:variables
     
