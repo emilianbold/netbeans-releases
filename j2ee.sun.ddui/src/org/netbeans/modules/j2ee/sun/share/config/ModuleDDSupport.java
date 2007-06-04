@@ -111,7 +111,8 @@ public class ModuleDDSupport implements PropertyChangeListener {
         // what do I do here?
         RootInterface retVal = null;
         //try {
-            retVal = provider.getJ2eeModule().getDeploymentDescriptor(ddLoc);
+//        !PW deprecated (as will be this code very soon.
+//            retVal = provider.getJ2eeModule().getDeploymentDescriptor(ddLoc);
 //        } catch (Throwable t) {
 //            t.printStackTrace();
 //        }
