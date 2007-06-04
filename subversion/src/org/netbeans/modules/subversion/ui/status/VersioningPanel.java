@@ -320,7 +320,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
      * Performs the "cvs update" command on all diplayed roots.
      */ 
     private void onUpdateAction() {      
-        UpdateAction.performUpdate(context);
+        UpdateAction.performUpdate(context, parentTopComponent.getContentTitle());
         parentTopComponent.contentRefreshed();
     }
     

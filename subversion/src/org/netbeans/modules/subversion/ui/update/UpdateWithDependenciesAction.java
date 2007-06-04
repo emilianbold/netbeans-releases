@@ -29,8 +29,6 @@ import org.openide.util.RequestProcessor;
 import java.util.*;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnClientFactory;
 
 /**
  * Updates selected projects and all projects they depend on.
@@ -96,6 +94,6 @@ public class UpdateWithDependenciesAction extends ContextAction {
             }
         }
         Context context = SvnUtils.getProjectsContext(projectsToUpdate.toArray(new Project[projectsToUpdate.size()]));
-        UpdateAction.performUpdate(context);
+        UpdateAction.performUpdate(context, getContextDisplayName(nodes));
     }
 }

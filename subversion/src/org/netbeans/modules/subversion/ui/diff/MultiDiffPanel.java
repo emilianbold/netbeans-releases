@@ -373,7 +373,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
     }
 
     private void onUpdateButton() {
-        UpdateAction.performUpdate(context);
+        UpdateAction.performUpdate(context, contextName);
     }
     
     private void onCommitButton() {

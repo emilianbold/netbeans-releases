@@ -26,8 +26,6 @@ import javax.swing.*;
 import org.netbeans.modules.subversion.ui.commit.ConflictResolvedAction;
 import org.netbeans.spi.diff.*;
 
-import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.util.*;
 import org.openide.windows.TopComponent;
 import org.openide.filesystems.*;
@@ -156,7 +154,6 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
      */
     private Difference[] copyParts(boolean generateDiffs, File source,
                                    File dest, boolean leftPart) throws IOException {
-        //System.out.println("copyParts("+generateDiffs+", "+source+", "+dest+", "+leftPart+")");
         BufferedReader r = new BufferedReader(new FileReader(source));
         BufferedWriter w = new BufferedWriter(new FileWriter(dest));
         ArrayList<Difference> diffList = null;
@@ -464,10 +461,8 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
         }
         
         public void write(String str) throws IOException {
-            //System.out.println("MergeConflictFileWriter.write("+str+")");
             super.write(str);
             lineNumber += numChars('\n', str);
-            //System.out.println("  lineNumber = "+lineNumber+", current conflict start = "+conflicts[currentConflict].getFirstStart());
             if (currentConflict < conflicts.length && lineNumber >= conflicts[currentConflict].getFirstStart()) {
                 writeConflict(conflicts[currentConflict]);
                 currentConflict++;
@@ -475,7 +470,6 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
         }
         
         private void writeConflict(Difference conflict) throws IOException {
-            //System.out.println("MergeConflictFileWriter.writeConflict('"+conflict.getFirstText()+"', '"+conflict.getSecondText()+"')");
             super.write(CHANGE_LEFT + leftName + "\n"); // NOI18N
             super.write(conflict.getFirstText());
             super.write(CHANGE_DELIMETER + "\n"); // NOI18N

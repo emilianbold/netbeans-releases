@@ -26,16 +26,22 @@ import org.netbeans.modules.subversion.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.Utils;
+import org.netbeans.modules.versioning.util.VersioningOutputManager;
 import org.openide.nodes.Node;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.RequestProcessor;
+import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 import org.tigris.subversion.svnclientadapter.utils.SVNStatusUtils;
@@ -80,13 +86,13 @@ public class UpdateAction extends ContextAction {
         final Context ctx = getContext(nodes);
         ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
             public void perform() {
-                update(ctx, this);
+                update(ctx, this, getContextDisplayName(nodes));
             }
-        };            
+        };                    
         support.start(createRequestProcessor(nodes));
     }
 
-    private static void update(Context ctx, SvnProgressSupport progress) {
+    private static void update(Context ctx, SvnProgressSupport progress, String contextDisplayName) {
                
         File[] roots = ctx.getRootFiles();
         
@@ -117,8 +123,10 @@ public class UpdateAction extends ContextAction {
                         
         
         SvnClient client;
+        UpdateOutputListener listener = new UpdateOutputListener();
         try {
-            client = Subversion.getInstance().getClient(repositoryUrl);
+            client = Subversion.getInstance().getClient(repositoryUrl);            
+            client.addNotifyListener(listener);            
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
@@ -126,15 +134,27 @@ public class UpdateAction extends ContextAction {
 
         try {                    
             updateRoots(recursiveFiles, progress, client, true);
-            if(progress.isCanceled()) {
+            if(progress.isCanceled()) {                
                 return;
             }
             updateRoots(flatFiles, progress, client, false);
         } catch (SVNClientException e1) {
             progress.annotate(e1);
+        } finally {            
+            openResults(listener.getResults(), repositoryUrl, contextDisplayName);                
         }
     }
 
+    private static void openResults(final List<FileUpdateInfo> resultsList, final SVNUrl url, final String contextDisplayName) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                UpdateResults results = new UpdateResults(resultsList, url, contextDisplayName);
+                VersioningOutputManager vom = VersioningOutputManager.getInstance();
+                vom.addComponent(url.toString() + "-UpdateExecutor", results); // NOI18N
+            }
+        });
+    }
+    
     private static void updateRoots(List<File> roots, SvnProgressSupport support, SvnClient client, boolean recursive) throws SVNClientException {
         boolean conflict = false;
 roots_loop:        
@@ -161,7 +181,7 @@ roots_loop:
         return;
     }
 
-    public static void performUpdate(final Context context) {                
+    public static void performUpdate(final Context context, final String contextDisplayName) {                
         if(!Subversion.getInstance().checkClientAvailable()) {            
             return;
         }
@@ -180,10 +200,50 @@ roots_loop:
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         SvnProgressSupport support = new SvnProgressSupport() {
             public void perform() {
-                update(context, this);
+                update(context, this, contextDisplayName);
             }
         };
         support.start(rp, repository, org.openide.util.NbBundle.getMessage(UpdateAction.class, "MSG_Update_Progress")); // NOI18N
     }
+    
+    private static class UpdateOutputListener implements ISVNNotifyListener {
 
+        private List<FileUpdateInfo> results;        
+        
+        public void setCommand(int command) {
+        }
+
+        public void logCommandLine(String str) {
+        }
+
+        public void logMessage(String logMsg) {
+            FileUpdateInfo[] fuis = FileUpdateInfo.createFromLogMsg(logMsg);
+            if(fuis != null) {
+                for(FileUpdateInfo fui : fuis) {
+                    if(fui != null) getResults().add(fui);
+                }                
+            }                 
+        }
+
+        public void logError(String str) {
+        }
+
+        public void logRevision(long rev, String str) {
+        }
+
+        public void logCompleted(String str) {
+        }
+
+        public void onNotify(File file, SVNNodeKind kind) {            
+        }
+        
+        List<FileUpdateInfo> getResults() {
+            if(results == null) {
+                results = new ArrayList<FileUpdateInfo>();
+            }
+            return results;
+        }
+        
+    };
+    
 }

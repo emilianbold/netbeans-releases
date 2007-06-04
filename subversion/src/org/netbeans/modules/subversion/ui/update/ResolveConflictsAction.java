@@ -21,8 +21,6 @@ package org.netbeans.modules.subversion.ui.update;
 
 import java.io.*;
 import org.netbeans.modules.subversion.*;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
@@ -58,6 +56,10 @@ public class ResolveConflictsAction extends ContextAction {
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         File[] files = cache.listFiles(ctx, FileInformation.STATUS_VERSIONED_CONFLICT);
 
+        resolveConflicts(files);
+    }
+
+    static void resolveConflicts(File[] files) {
         if (files.length == 0) {
             NotifyDescriptor nd = new NotifyDescriptor.Message(org.openide.util.NbBundle.getMessage(ResolveConflictsAction.class, "MSG_NoConflictsFound")); // NOI18N
             DialogDisplayer.getDefault().notify(nd);
@@ -67,9 +69,9 @@ public class ResolveConflictsAction extends ContextAction {
                 ResolveConflictsExecutor executor = new ResolveConflictsExecutor(file);
                 executor.exec();
             }
-        }
+        }        
     }
-
+    
     public boolean asynchronous() {
         return false;
     }
