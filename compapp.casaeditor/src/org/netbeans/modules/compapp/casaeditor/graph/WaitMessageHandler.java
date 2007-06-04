@@ -30,6 +30,7 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.compapp.casaeditor.Utilities;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
+import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphUtilities;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildTask;
 import org.openide.util.NbBundle;
 
@@ -66,13 +67,9 @@ public class WaitMessageHandler {
     public static void removeFromScene(CasaModelGraphScene scene) {
         Widget messageWidget = getBuildMessageWidget(scene);
         if (messageWidget != null) {
-            removeWidgetFromScene(scene, messageWidget);
+            scene.getDragLayer().removeChild(messageWidget);
+            scene.validate();
         }
-    }
-    
-    private static void removeWidgetFromScene(CasaModelGraphScene scene, Widget widget) {
-        scene.getDragLayer().removeChild(widget);
-        scene.validate();
     }
     
     private static class WaitMessageWidget extends LabelWidget {
@@ -154,21 +151,14 @@ public class WaitMessageHandler {
         private void startAnimation() {
             if (mAnimationText != null) {
                 Runnable animator = new Runnable() {
-                    
                     private int mAnimationIndex = 0;
-                    
+                    private boolean isForcingCleanup = false;
+                    private int mForcedCleanupDelay = 0;
                     public void run() {
                         do {
-                            
-                            if (
-                                    mBuildTask != null &&
-                                    mBuildTask.isFinished()) {
-                                WaitMessageHandler.removeWidgetFromScene(
-                                        (CasaModelGraphScene) getScene(),
-                                        WaitMessageWidget.this);
-                            }
-                            
+                            checkTaskFinished();
                             try {
+                                mForcedCleanupDelay += 800;
                                 Thread.sleep(800);
                                 if (mCurrentAnimator == this) {
                                     SwingUtilities.invokeLater(new Runnable() {
@@ -192,6 +182,25 @@ public class WaitMessageHandler {
                             mAnimationIndex = (mAnimationIndex + 1) % mAnimationText.length;
                         } finally {
                             mIsLockPosition = false;
+                        }
+                    }
+                    private void checkTaskFinished() {
+                        if (
+                                !isForcingCleanup &&
+                                mBuildTask != null &&
+                                mBuildTask.isFinished()) {
+                            // The standard task listener should fire a completion
+                            // notification, but sometimes this does not happen.
+                            // We give the task listener a few seconds but if it
+                            // does not fire then we force the cleanup.
+                            isForcingCleanup = true;
+                            mForcedCleanupDelay = 0;
+                        } else if (isForcingCleanup && mForcedCleanupDelay >= 3000) {
+                            if (mCurrentAnimator == this) {
+                                CasaModelGraphUtilities.setSceneEnabled(
+                                        (CasaModelGraphScene) getScene(),
+                                        true);
+                            }
                         }
                     }
                 };
