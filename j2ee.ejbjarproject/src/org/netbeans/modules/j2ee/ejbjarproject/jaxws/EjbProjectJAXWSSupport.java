@@ -129,7 +129,7 @@ public class EjbProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
     }
 
     public MetadataModel<WebservicesMetadata> getWebservicesMetadataModel() {
-        return project.getEjbModule().getDeploymentDescriptor(WebservicesMetadata.class);
+        return project.getEjbModule().getWebservicesMetadataModel();
     }
     
 }
