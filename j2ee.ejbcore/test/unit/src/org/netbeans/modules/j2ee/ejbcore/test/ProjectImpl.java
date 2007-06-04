@@ -28,7 +28,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
@@ -226,10 +225,10 @@ public final class ProjectImpl implements Project {
         
         public EnterpriseReferenceContainerImpl() {}
         
-        public String addEjbReference(EjbReference ref, String ejbRefName, FileObject referencingFile, String referencingClass, AntArtifact target) throws IOException {            throw new UnsupportedOperationException("Not supported yet.");
+        public String addEjbReference(EjbReference ref, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {            throw new UnsupportedOperationException("Not supported yet.");
         }
         
-        public String addEjbLocalReference(EjbReference localRef, String ejbRefName, FileObject referencingFile, String referencingClass, AntArtifact target) throws IOException {
+        public String addEjbLocalReference(EjbReference localRef, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
         
