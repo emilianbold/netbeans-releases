@@ -1,0 +1,299 @@
+# The contents of this file are subject to the terms of the Common Development
+# and Distribution License (the License). You may not use this file except in
+# compliance with the License.
+#
+# You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+# or http://www.netbeans.org/cddl.txt.
+#
+# When distributing Covered Code, include this CDDL Header Notice in each file
+# and include the License file at http://www.netbeans.org/cddl.txt.
+# If applicable, add the following below the CDDL Header, with the fields
+# enclosed by brackets [] replaced by your own identifying information:
+# "Portions Copyrighted [year] [name of copyright owner]"
+#
+# The Original Software is NetBeans. The Initial Developer of the Original
+# Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+# Microsystems, Inc. All Rights Reserved.
+
+# very simple GSP syntax highlighting, modified HTML.nbs
+
+TOKEN:html_text: ( [^"<" " " "\t" "\n" "\r"]+ )
+TOKEN:html_whitespace: ( [" " "\t" "\n" "\r"]+ )
+TOKEN:html_comment: ( "<!--" - "-->" )
+
+TOKEN:html_element_start: ( "<" ):<IN_ELEMENT_START>
+TOKEN:html_end_element_start: ( "</" ):<IN_ELEMENT_START>
+
+TOKEN:gsp_element_start: ( "<g:" ):<IN_GSP_ELEMENT_START>
+TOKEN:gsp_end_element_start: ( "<g:" ):<IN_GSP_ELEMENT_START>
+
+<IN_ELEMENT_START>:TOKEN:html_element_name: ( "SCRIPT" ):<IN_SCRIPT_ELEMENT>
+<IN_ELEMENT_START>:TOKEN:html_element_name: ( "script" ):<IN_SCRIPT_ELEMENT>
+<IN_ELEMENT_START>:TOKEN:html_element_name: ( "STYLE" ):<IN_STYLE_ELEMENT>
+<IN_ELEMENT_START>:TOKEN:html_element_name: ( "style" ):<IN_STYLE_ELEMENT>
+<IN_ELEMENT_START>:TOKEN:html_element_name: ( "!"? ["a"-"z" "A"-"Z"]["a"-"z" "A"-"Z" "0"-"9"]* ):<IN_ELEMENT>
+
+<IN_GSP_ELEMENT_START>:TOKEN:gsp_element_name: ( ["a"-"z" "A"-"Z"]["a"-"z" "A"-"Z" "0"-"9"]* ):<IN_GSP_ELEMENT>
+
+<IN_SCRIPT_ELEMENT> {
+    TOKEN:html_element_end: ( ">" ):<DEFAULT>
+    TOKEN:html_end_element_end: ( "/>" ):<DEFAULT>
+    TOKEN:html_operator: ( "=" )
+    TOKEN:html_attribute_value: ( "\"text/javascript\"" ):<IN_JAVASCRIPT>
+    TOKEN:html_attribute_value: ( "\"javascript\"" ):<IN_JAVASCRIPT>
+    TOKEN:html_attribute_value: ( "\"JavaScript\"" ):<IN_JAVASCRIPT>
+    TOKEN:html_attribute_value: ( "\"JAVASCRIPT\"" ):<IN_JAVASCRIPT>
+    TOKEN:html_attribute_value: ( "\"" [^ "\"" "\n" "\r"]* "\"" )    
+    TOKEN:html_attribute_name: ( ["a"-"z" "A"-"Z"]["a"-"z" "A"-"Z" "0"-"9" "-" "_" ":"]* )
+    TOKEN:html_whitespace2: ( [" " "\t" "\n" "\r"]+ )
+}
+
+<IN_STYLE_ELEMENT> {
+    TOKEN:html_element_end: ( "/"? ">" ):<DEFAULT>
+    TOKEN:html_operator: ( "=" )
+    TOKEN:html_attribute_value: ( "\"text/css\"" ):<IN_CSS>
+#    TOKEN:html_attribute_value: ( "\"" [^ "\""]* "\"" )
+    TOKEN:html_attribute_name: ( ["a"-"z" "A"-"Z"]["a"-"z" "A"-"Z" "0"-"9" "-" "_" ":"]* )
+    TOKEN:html_whitespace2: ( [" " "\t" "\n" "\r"]+ )
+}
+
+<IN_JAVASCRIPT> {
+    TOKEN:html_element_end: ( ">" ):<JAVASCRIPT>
+    TOKEN:html_end_element_end: ( "/>" ):<DEFAULT>
+    TOKEN:html_operator: ( "=" )
+    TOKEN:html_attribute_value: ( "\"" [^ "\"" "\n" "\r"]* "\"" )
+    TOKEN:html_attribute_name: ( ["a"-"z" "A"-"Z"]["a"-"z" "A"-"Z" "0"-"9" "-" "_" ":"]* )
+    TOKEN:html_whitespace2: ( [" " "\t" "\n" "\r"]* )
+}
+
+<IN_CSS> {
+    TOKEN:html_element_end: ( ">" ):<CSS>
+    TOKEN:html_end_element_end: ( "/>" ):<DEFAULT>
+    TOKEN:html_operator: ( "=" )
+    TOKEN:html_attribute_value: ( "\"" [^ "\"" "\n" "\r"]* "\"" )
+    TOKEN:html_attribute_name: ( ["a"-"z" "A"-"Z"]["a"-"z" "A"-"Z" "0"-"9" "-" "_" ":"]* )
+    TOKEN:html_whitespace2: ( [" " "\t" "\n" "\r"]+ )
+}
+
+<IN_ELEMENT> {
+    TOKEN:html_attribute_name: ( ["a"-"z" "A"-"Z"]["a"-"z" "A"-"Z" "0"-"9" "-" "_" ":"]* ):<IN_ATTRIBUTE>
+    TOKEN:html_attribute_value: ( "\"" [^ "\"" "\n" "\r"]* "\"" )
+    TOKEN:html_whitespace2: ( [" " "\t" "\n" "\r"]+ )
+    TOKEN:html_element_end: ( ">" ):<DEFAULT>
+    TOKEN:html_end_element_end: ( "/>" ):<DEFAULT>
+}
+
+<IN_GSP_ELEMENT> {
+    TOKEN:html_attribute_name: ( ["a"-"z" "A"-"Z"]["a"-"z" "A"-"Z" "0"-"9" "-" "_" ":"]* ):<IN_ATTRIBUTE>
+    TOKEN:html_attribute_value: ( "\"" [^ "\"" "\n" "\r"]* "\"" )
+    TOKEN:html_whitespace2: ( [" " "\t" "\n" "\r"]+ )
+    TOKEN:gsp_element_end: ( ">" ):<DEFAULT>
+    TOKEN:gsp_end_element_end: ( "/>" ):<DEFAULT>
+}
+
+#attribute + "=" ? ###
+
+<IN_ATTRIBUTE> {
+    TOKEN:html_operator: ( "=" ):<IN_ATTRIBUTE2>
+    TOKEN:html_whitespace2: ( [" " "\t" "\n" "\r"]+ )
+    TOKEN:html_element_end: ( ">" ):<DEFAULT>
+    TOKEN:html_end_element_end: ( "/>" ):<DEFAULT>
+    TOKEN:html_attribute_name: ( ["a"-"z" "A"-"Z"]["a"-"z" "A"-"Z" "0"-"9" "-" "_" ":"]* )
+    TOKEN:html_attribute_value: ( "\"" [^ "\"" "\n" "\r"]* "\"" )
+}
+
+#attribute value ###
+
+<IN_ATTRIBUTE2> {
+    TOKEN:html_attribute_value: ( "\"" [^ "\"" "\n" "\r"]* "\"" ):<IN_ELEMENT>
+    TOKEN:html_attribute_value: ( "\'" [^ "\"" "\n" "\r"]* "\'" ):<IN_ELEMENT>
+    TOKEN:html_attribute_value: ( ["0"-"9" "a"-"z" "A"-"Z" "-" "_"]+ ):<IN_ELEMENT>
+    TOKEN:html_whitespace2: ( [" " "\t" "\n" "\r"]+ )
+}
+
+#embeded languages ###
+
+TOKEN:javascript: {
+    start_state:"JAVASCRIPT";
+#    call:org.netbeans.modules.languages.html.HTML.readJavaScript;
+    end_state:"DEFAULT";
+}
+TOKEN:css: {
+    start_state:"CSS";
+#    call:org.netbeans.modules.languages.html.HTML.readCSS;
+    end_state:"DEFAULT";
+}
+
+SKIP:javascript
+IMPORT:javascript: {
+    mimeType:"text/javascript";
+    background_color:"#E6E6FF";
+}
+SKIP:css
+IMPORT:css: {
+    mimeType:"text/x-css";
+    background_color:"#E6FFE6";
+}
+
+
+########### grammar ############################################################
+
+SKIP:html_whitespace
+SKIP:html_whitespace2
+SKIP:html_comment
+
+S = tags;
+tags = startTag tags;
+tags = endTag tags;
+tags = gspStartTag tags;
+tags = gspEndTag tags;
+tags = etext tags;
+tags = ; 
+startTag = <html_element_start> <html_element_name> attributes ( <html_element_end> | <html_end_element_end> );
+endTag = <html_end_element_start> <html_element_name> attributes <html_element_end>;
+gspStartTag = <gsp_element_start> <gsp_element_name> attributes ( <gsp_element_end> | <gsp_end_element_end> );
+gspEndTag = <gsp_end_element_start> <gsp_element_name> attributes <gsp_element_end>;
+attributes = attribute attributes1;
+attributes = ;
+attributes1 = attribute attributes1;
+attributes1 = ;
+attribute = <html_attribute_name>;
+attribute = <html_attribute_value>;
+attribute = <html_attribute_name> <html_operator,'='> <html_attribute_value>;
+etext = <html_text> etext1;
+etext1 = <html_text> etext1;
+etext1 = ;
+
+#AST {
+#    process:org.netbeans.modules.languages.html.HTML.process;
+#}
+
+########### indentation ########################################################
+
+REFORMAT:startTag:"i++"
+REFORMAT:endTag:"--i"
+REFORMAT:simpleTag:"i"
+REFORMAT:etext:"i"
+REFORMAT:text:" "
+#REFORMAT:element:"i"
+REFORMAT:html_comment:"i"
+REFORMAT:unpairedStartTag:"i"
+#REFORMAT:html_attribute_name:" "
+REFORMAT:html_operator:""
+REFORMAT:html_attribute_value:""
+REFORMAT:html_element_end:""
+REFORMAT:attributes:">b "
+REFORMAT:attribute:"b"
+
+
+########### colors #############################################################
+
+#COLOR:element: {
+#    default_coloring:"keyword";
+#}
+COLOR:html_element_start: {
+    default_coloring:"keyword";
+}
+COLOR:html_end_element_start: {
+    default_coloring:"keyword";
+}
+COLOR:html_element_name: {
+    default_coloring:"keyword";
+}
+COLOR:html_element_end: {
+    default_coloring:"keyword";
+}
+COLOR:html_end_element_end: {
+    default_coloring:"keyword";
+}
+COLOR:html_attribute_value: {
+    default_coloring:"string";
+}
+
+COLOR:gsp_element_start: {
+    foreground_color: "blue";
+    font_type: "bold";
+}
+COLOR:gsp_end_element_start: {
+    foreground_color: "blue";
+    font_type: "bold";
+}
+COLOR:gsp_element_name: {
+    foreground_color: "blue";
+    font_type: "bold";
+}
+COLOR:gsp_element_end: {
+    foreground_color: "blue";
+    font_type: "bold";
+}
+COLOR:gsp_end_element_end: {
+    foreground_color: "blue";
+    font_type: "bold";
+}
+COLOR:gsp_attribute_value: {
+    default_coloring:"string";
+}
+
+########### code folding #######################################################
+
+FOLD:tag: {
+    fold_display_name:"<$startTag.html_element_name$>...</$startTag.html_element_name$>";
+    expand_type_action_name:"Expand HTML Tag";
+    collapse_type_action_name:"Collapse HTML Tag";
+}
+
+
+########### navigator ##########################################################
+
+#NAVIGATOR:tag: {
+#    display_name: "$startTag.html_element_name$";
+#    tooltip: "$$";
+#    icon: "/org/netbeans/modules/languages/html/htmlTag.png";
+#}
+#NAVIGATOR:unpairedStartTag: {
+#    display_name: "$html_element_name$";
+#    tooltip: "$$";
+#    icon: "/org/netbeans/modules/languages/html/htmlTag.png";
+#}
+#NAVIGATOR:unpairedEndTag: {
+#    display_name: "$html_element_name$";
+#    tooltip: "$$";
+#    icon: "/org/netbeans/modules/languages/html/htmlTag.png";
+#}
+
+
+########### other ##############################################################
+
+#COMPLETE "\":\""
+#COMPLETE "':'"
+#COMPLETE org.netbeans.modules.languages.html.HTML.complete
+
+#INDENT org.netbeans.modules.languages.html.HTML.indent
+
+#HYPERLINK:attribute_value: org.netbeans.modules.languages.html.HTML.hyperlink
+
+MARK:unpairedStartTag: {
+    type:"Warning";
+    message:"Unfinished tag.";
+}
+MARK:unpairedEndTag: {
+    type:"Error";
+    message:"Unpaired end tag.";
+}
+MARK:html_ERROR: {
+    type:"Error";
+    message:"Unpaired end tag.";
+}
+MARK:error: {
+    type:"Error";
+    message:"Unexpected character.";
+}
+
+PROPERTIES {
+    ignoreCase:"true";
+}
+
+COMMENT_LINE {
+    prefix:"<!--";
+    suffix:"-->";
+}
