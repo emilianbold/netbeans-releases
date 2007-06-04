@@ -1,7 +1,7 @@
 Source: netbeans5.5
 Section: devel
 Priority: optional
-Maintainer: Marek Slama <mslama@netbeans.org>
+Maintainer: Marek Slama <marek.slama@sun.com>
 Build-Depends: cdbs (>= 0.4.23-1.1), debhelper (>= 5), rsync, unzip
 Standards-Version: 3.7.2
 
