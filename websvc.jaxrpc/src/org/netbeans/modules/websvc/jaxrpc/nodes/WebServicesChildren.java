@@ -22,6 +22,8 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebserviceDescription;
+import org.netbeans.modules.j2ee.dd.api.webservices.PortComponent;
+import org.netbeans.modules.j2ee.dd.api.webservices.ServiceImplBean;
 import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
@@ -37,16 +39,17 @@ import java.beans.PropertyChangeListener;
 public class WebServicesChildren extends Children.Keys implements PropertyChangeListener{
     Webservices webServices;
     WebServicesSupport wsSupport;
-    FileObject srcRoot;
+    FileObject[] srcRoots;
     DDProvider wsDDProvider;
     FileObject ddFolder;
     FileChangeListener ddFolderListener;
     
-    public WebServicesChildren(FileObject srcRoot) {
-        this.srcRoot = srcRoot;
-        Project project = FileOwnerQuery.getOwner(srcRoot);
+    public WebServicesChildren(FileObject[] srcRoots) {
+        this.srcRoots = srcRoots;
+        assert srcRoots!=null&&srcRoots.length>0;
+        Project project = FileOwnerQuery.getOwner(srcRoots[0]);
         this.wsSupport = WebServicesSupport.
-        getWebServicesSupport(project.getProjectDirectory());
+                getWebServicesSupport(project.getProjectDirectory());
         this.wsDDProvider = DDProvider.getDefault();
         ddFolderListener = new DDFolderFileChangeListener();
     }
@@ -60,13 +63,12 @@ public class WebServicesChildren extends Children.Keys implements PropertyChange
         if(ddFolder != null) {
             ddFolder.addFileChangeListener(ddFolderListener);
             FileObject wsDD = ddFolder.getFileObject("webservices", "xml");
-
+            
             if(wsDD != null){
                 try {
                     webServices = wsDDProvider.getDDRoot(wsSupport.getWebservicesDD());
                     webServices.addPropertyChangeListener(this);
-                }
-                catch(java.io.IOException e) {
+                } catch(java.io.IOException e) {
                     webServices = null;
                     //Don't do anything
                     //FIX-ME: Log
@@ -89,15 +91,14 @@ public class WebServicesChildren extends Children.Keys implements PropertyChange
         List keys = new ArrayList();
         try {
             webServices = wsDDProvider.getDDRoot(wsSupport.getWebservicesDD());
-        }
-        catch(java.io.IOException e) {
+        } catch(java.io.IOException e) {
             webServices = null;
             //Don't do anything
             //FIX-ME: Log
         }
         if (webServices != null) {
             WebserviceDescription[] webServiceDescriptions
-            = webServices.getWebserviceDescription();
+                    = webServices.getWebserviceDescription();
             for (int i = 0; i < webServiceDescriptions.length; i++) {
                 WebserviceDescription webServiceDescription = webServiceDescriptions[i];
                 WebServiceWrapper key = new WebServiceWrapper(webServiceDescription);
@@ -121,7 +122,7 @@ public class WebServicesChildren extends Children.Keys implements PropertyChange
             if(obj instanceof WebServiceWrapper) {
                 WebServiceWrapper otherObject = (WebServiceWrapper)obj;
                 return this.getWebServiceDescription().getWebserviceDescriptionName().
-                equals(otherObject.getWebServiceDescription().getWebserviceDescriptionName());
+                        equals(otherObject.getWebServiceDescription().getWebserviceDescriptionName());
             }
             return false;
         }
@@ -132,11 +133,29 @@ public class WebServicesChildren extends Children.Keys implements PropertyChange
         
     }
     
+    private FileObject getImplBeanClass(FileObject srcRoot, WebserviceDescription webServiceDescription) {
+        PortComponent portComponent = webServiceDescription.getPortComponent(0); //assume one port per ws
+        ServiceImplBean serviceImplBean = portComponent.getServiceImplBean();
+        String link =serviceImplBean.getServletLink();
+        if(link == null) {
+            link = serviceImplBean.getEjbLink();
+        }
+        WebServicesSupport wsSupport = WebServicesSupport.getWebServicesSupport(srcRoot);
+        String implBean = wsSupport.getImplementationBean(link);
+        return srcRoot.getFileObject(implBean.replace('.','/').concat(".java"));
+    }
+    
     protected Node[] createNodes(Object key) {
         if(key instanceof WebServiceWrapper) {
-            WebServiceWrapper wrapper =
-            (WebServiceWrapper)key;            
-            return new Node[] {new WebServiceNode(webServices, wrapper.getWebServiceDescription(), srcRoot)};
+            WebServiceWrapper wrapper = (WebServiceWrapper)key;
+            WebserviceDescription description = wrapper.getWebServiceDescription();
+            for(FileObject srcRoot:srcRoots){
+                FileObject implBean = getImplBeanClass(srcRoot,description);
+                if(implBean!=null) {
+                    return new Node[] {new WebServiceNode(webServices,
+                            wrapper.getWebServiceDescription(), srcRoot, implBean)};
+                }
+            }
         }
         return new Node[0];
     }
@@ -153,15 +172,14 @@ public class WebServicesChildren extends Children.Keys implements PropertyChange
                     webServices = wsDDProvider.getDDRoot(wsSupport.getWebservicesDD());
                     //FIX-ME: change to WeakListener
                     webServices.addPropertyChangeListener(WebServicesChildren.this);
-                }
-                catch(java.io.IOException e) {
+                } catch(java.io.IOException e) {
                     webServices = null;
                     //Don't do anything
                     //FIX-ME: Log
                 }
-
+                
             }
         }
     }
-
+    
 }

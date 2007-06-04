@@ -41,7 +41,7 @@ public class WebServicesRootNode extends AbstractNode {
     private static Icon openedFolderIconCache;	
     
     public WebServicesRootNode(FileObject srcRoot) {
-		super((srcRoot != null) ? new WebServicesChildren(srcRoot) : Children.LEAF, createLookup(srcRoot));
+		super((srcRoot != null) ? new WebServicesChildren(new FileObject[]{srcRoot}) : Children.LEAF, createLookup(srcRoot));
         setDisplayName(NbBundle.getBundle(WebServicesRootNode.class).getString("LBL_WebServices"));
     }
     

@@ -18,11 +18,6 @@
  */
 package org.netbeans.modules.websvc.jaxrpc.nodes;
 
-// Retouche
-//import org.netbeans.jmi.javamodel.JavaClass;
-//import org.netbeans.modules.j2ee.common.JMIUtils;
-//import org.netbeans.modules.javacore.api.JavaModel;
-//import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.websvc.jaxrpc.actions.JaxRpcWsdlCookie;
@@ -92,6 +87,8 @@ import org.netbeans.modules.websvc.jaxrpc.actions.RegenerateFromWsdlAction;
 import org.netbeans.modules.websvc.jaxrpc.actions.RegenerateFromWsdlCookie;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.execution.ExecutorTask;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 
 public class WebServiceNode extends AbstractNode implements WSRegisterCookie, JaxRpcWsdlCookie,
@@ -99,26 +96,27 @@ public class WebServiceNode extends AbstractNode implements WSRegisterCookie, Ja
     Webservices webServices;
     WebserviceDescription webServiceDescription;
     FileObject srcRoot;
+    FileObject implClass;
     WebServicesSupport wsSupport;
     String wsName;
     Project project;
     
-    public WebServiceNode(Webservices webServices, WebserviceDescription webServiceDescription, FileObject srcRoot) {
-        this(new InstanceContent(), webServices, webServiceDescription, srcRoot);
+    public WebServiceNode(Webservices webServices, WebserviceDescription webServiceDescription, FileObject srcRoot, FileObject implBean) {
+        this(new InstanceContent(), webServices, webServiceDescription, srcRoot, implBean);
     }
     
-    private WebServiceNode(InstanceContent content, Webservices webServices, WebserviceDescription webServiceDescription, FileObject srcRoot) {
-        super(new WebServiceChildren(webServiceDescription, srcRoot), new AbstractLookup(content));
+    private WebServiceNode(InstanceContent content, Webservices webServices, WebserviceDescription webServiceDescription, FileObject srcRoot, FileObject implClass) {
+        super(new WebServiceChildren(webServiceDescription, srcRoot, implClass), new AbstractLookup(content));
         this.webServices = webServices;
         this.webServiceDescription = webServiceDescription;
         this.srcRoot = srcRoot;
+        this.implClass=implClass;
         this.wsSupport = WebServicesSupport.getWebServicesSupport(srcRoot);
         project = FileOwnerQuery.getOwner(srcRoot);
         wsName = webServiceDescription.getWebserviceDescriptionName();
         setDisplayName(wsName);
         setName(wsName);
         content.add(this);
-        //addImplClassToContent(content,webServiceDescription);
     }
     
     public Image getIcon(int type){
@@ -142,19 +140,14 @@ public class WebServiceNode extends AbstractNode implements WSRegisterCookie, Ja
     
     private OpenCookie getOpenCookie() {
         OpenCookie oc = null;
-        // Retouche
-        //        JavaClass ce = getImplBeanClass(webServiceDescription);
-        //        if (ce != null) {
-        //            FileObject f = JavaModel.getFileObject(ce.getResource());
-        //            if (f != null) {
-        //                try {
-        //                    DataObject d = DataObject.find(f);
-        //                    oc = (OpenCookie)d.getCookie(OpenCookie.class);
-        //                } catch (DataObjectNotFoundException de) {
-        //                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, de.toString());
-        //                }
-        //            }
-        //        }
+        if (implClass != null) {
+            try {
+                DataObject d = DataObject.find(implClass);
+                oc = (OpenCookie)d.getCookie(OpenCookie.class);
+            } catch (DataObjectNotFoundException de) {
+                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, de.toString());
+            }
+        }
         return oc;
     }
     
@@ -308,43 +301,11 @@ public class WebServiceNode extends AbstractNode implements WSRegisterCookie, Ja
     
     //Need a better way to get the package, maybe pass it(???)
     private String getPackageName() {
-        // Retouche
-        //        String implClassName = getImplBeanClass(webServiceDescription).getName();
-        //        int index = implClassName.lastIndexOf(".");
-        //        return implClassName.substring(0, index).replace('.', '/');
-        return "";
+        String implClassName = FileUtil.getRelativePath(srcRoot,implClass);
+        int index = implClassName.lastIndexOf(".");
+        return implClassName.substring(0, index).replace('.', '/');
     }
-    
-    // Retouche
-    //    private JavaClass getImplBeanClass(WebserviceDescription webServiceDescription) {
-    //        PortComponent portComponent = webServiceDescription.getPortComponent(0); //assume one port per ws
-    //        ServiceImplBean serviceImplBean = portComponent.getServiceImplBean();
-    //        String link =serviceImplBean.getServletLink();
-    //        if(link == null) {
-    //            link = serviceImplBean.getEjbLink();
-    //        }
-    //        WebServicesSupport wsSupport = WebServicesSupport.getWebServicesSupport(srcRoot);
-    //        String implBean = wsSupport.getImplementationBean(link);
-    //        if(implBean != null) {
-    //            JavaClass javaClass = JMIUtils.findClass(implBean,srcRoot);
-    //            return javaClass;
-    //        }
-    //        return null;
-    ////    }
-    //
-    //    private void addImplClassToContent(final InstanceContent content, final WebserviceDescription webServiceDescription) {
-    //        RequestProcessor.getDefault().post(new Runnable() {
-    //            public void run() {
-    //                JavaMetamodel.getManager().waitScanFinished();
-    //                JavaClass implBeanClass = getImplBeanClass(webServiceDescription);
-    //                if (implBeanClass != null) {
-    //                    content.add(implBeanClass);
-    //                }
-    //            }
-    //
-    //        });
-    //    }
-    
+        
     private String getDefaultWSDLUrl(){
         J2eeModuleProvider provider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
         InstanceProperties instanceProperties = provider.getInstanceProperties();
@@ -524,10 +485,10 @@ public class WebServiceNode extends AbstractNode implements WSRegisterCookie, Ja
                         //add handlers
                         for(int i = 0; i < tableModel.getRowCount(); i++){
                             String className = (String)tableModel.getValueAt(i, 0);
-                                PortComponentHandler handler = (PortComponentHandler)webServices.createBean("PortComponentHandler");
-                                handler.setHandlerName(className);
-                                handler.setHandlerClass(className);
-                                portComponent.addHandler(handler);
+                            PortComponentHandler handler = (PortComponentHandler)webServices.createBean("PortComponentHandler");
+                            handler.setHandlerName(className);
+                            handler.setHandlerClass(className);
+                            portComponent.addHandler(handler);
                         }
                         
                         webServices.write(wsSupport.getWebservicesDD());
@@ -562,9 +523,6 @@ public class WebServiceNode extends AbstractNode implements WSRegisterCookie, Ja
     }
     
     public void regenerate() {
-        // Retouche
-        //String implClassName = getImplBeanClass(webServiceDescription).getName();
-        
         NotifyDescriptor.Confirmation notifyDesc =
                 new NotifyDescriptor.Confirmation(NbBundle.getMessage(WebServiceNode.class, "MSG_CONFIRM_REFRESH_IMPL" ),
                 NotifyDescriptor.YES_NO_OPTION);

@@ -28,6 +28,13 @@
                 </file>
             </folder>
         </folder>
+        <folder name="org-netbeans-modules-web-project">
+            <folder name="Nodes">
+                <attr name="org-netbeans-modules-web-project-ui-DocBaseNodeFactory.instance/org-netbeans-modules-websvc-jaxrpc-nodes-JaxRpcWebServiceNodeFactory.instance" boolvalue="true"/>
+                <file name="org-netbeans-modules-websvc-jaxrpc-nodes-JaxRpcWebServiceNodeFactory.instance"/>
+                <attr name="org-netbeans-modules-websvc-jaxrpc-nodes-JaxRpcWebServiceNodeFactory.instance/org-netbeans-modules-web-project-ui-ConfFilesNodeFactory.instance" boolvalue="true"/>
+            </folder>
+        </folder>
     </folder>
 
 </filesystem>
