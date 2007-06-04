@@ -136,24 +136,40 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-          <test-dependencies>
-              <test-type>
-                  <name>unit</name>
-                  <test-dependency>
-                      <code-name-base>org.netbeans.modules.j2ee.api.ejbmodule</code-name-base>
-                      <recursive/>
-                      <compile-dependency/>
-                  </test-dependency>
-              </test-type>
-              <test-type>
-                  <name>qa-functional</name>
-              </test-type>
+            <test-dependencies>
+                <test-type>
+                    <name>unit</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.j2ee.api.ejbmodule</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                </test-type>
+                <test-type>
+                    <name>qa-functional</name>
+                </test-type>
             </test-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.identity.profile.ui</friend>
+                <friend>org.netbeans.modules.j2ee.archive</friend>
+                <friend>org.netbeans.modules.j2ee.clientproject</friend>
+                <friend>org.netbeans.modules.j2ee.dd.webservice</friend>
+                <friend>org.netbeans.modules.j2ee.ddloaders</friend>
+                <friend>org.netbeans.modules.j2ee.earproject</friend>
+                <friend>org.netbeans.modules.j2ee.ejbcore</friend>
+                <friend>org.netbeans.modules.j2ee.ejbfreeform</friend>
+                <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
+                <friend>org.netbeans.modules.j2ee.performancetests</friend>
+                <friend>org.netbeans.modules.j2ee.refactoring</friend>
+                <friend>org.netbeans.modules.web.project</friend>
+                <friend>org.netbeans.modules.websvc.core</friend>
+                <friend>org.netbeans.modules.websvc.dev</friend>
+                <friend>org.netbeans.modules.websvc.jaxrpc</friend>
+                <friend>org.netbeans.modules.websvc.wsitconf</friend>
                 <package>org.netbeans.modules.j2ee.api.ejbjar</package>
                 <package>org.netbeans.modules.j2ee.spi.ejbjar</package>
                 <package>org.netbeans.modules.j2ee.spi.ejbjar.support</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>
