@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
+import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.netbeans.modules.web.jsf.navigation.pagecontentmodel.PageContentModel;
 import org.netbeans.modules.web.jsf.navigation.pagecontentmodel.PageContentModelProvider;
 import org.openide.filesystems.FileChangeAdapter;
@@ -31,7 +32,7 @@ public class VWPContentModelProvider implements PageContentModelProvider{
     
     /** Creates a new instance of PageContentProviderImpl */
     public VWPContentModelProvider() {
-//        System.out.println("You found me.");
+        //        System.out.println("You found me.");
     }
     
     public PageContentModel getPageContentModel(FileObject fileObject) {
@@ -40,24 +41,25 @@ public class VWPContentModelProvider implements PageContentModelProvider{
         if( model != null )
             return model;
         
-        FacesModelSet modelset = FacesModelSet.getInstance(fileObject);
-        if( modelset !=  null ){
-            facesModel = modelset.getFacesModel(fileObject);
-            if ( facesModel != null ) {
-                model =  new VWPContentModel(facesModel, fileObject.getName());
-                map.put(fileObject, model);
-                fileObject.addFileChangeListener( new FileChangeAdapter () {
-                    @Override
-                    public void fileDeleted(FileEvent fe) {
-                        FileObject fileObj = fe.getFile();
-                        map.remove(fileObj);
-                        super.fileDeleted(fe);
-                    }                    
-                });
-                return model;
+        if ( JsfProjectUtils.isJsfProjectFile(fileObject) ) {
+            FacesModelSet modelset = FacesModelSet.getInstance(fileObject);
+            if( modelset !=  null ){
+                facesModel = modelset.getFacesModel(fileObject);
+                if ( facesModel != null ) {
+                    model =  new VWPContentModel(facesModel, fileObject.getName());
+                    map.put(fileObject, model);
+                    fileObject.addFileChangeListener( new FileChangeAdapter() {
+                        @Override
+                        public void fileDeleted(FileEvent fe) {
+                            FileObject fileObj = fe.getFile();
+                            map.remove(fileObj);
+                            super.fileDeleted(fe);
+                        }
+                    });
+                }
             }
         }
-        return null;        
+        return model;
     }
     
     
