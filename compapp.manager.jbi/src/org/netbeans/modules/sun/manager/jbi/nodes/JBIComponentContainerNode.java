@@ -197,10 +197,12 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
         
         if (docBuilder != null) {
             for (File file : files) {
+                // do some simple validation
                 boolean isRightType = false;
                 
+                JarFile jf = null;
                 try {
-                    JarFile jf = new JarFile(file);
+                    jf = new JarFile(file); 
                     JarEntry je = (JarEntry) jf.getEntry("META-INF/jbi.xml"); // NOI18N
                     if (je != null) {
                         InputStream is = jf.getInputStream(je);
@@ -227,7 +229,15 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
                 } catch (SAXException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    e.printStackTrace(); 
+                } finally {
+                    if (jf != null) {
+                        try {
+                            jf.close();
+                        } catch (IOException e) {
+                            ; // ignore
+                        }
+                    }                    
                 }
             }
         }
