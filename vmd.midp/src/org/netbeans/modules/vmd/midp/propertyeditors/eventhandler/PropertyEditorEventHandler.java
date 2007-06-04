@@ -33,6 +33,7 @@ import javax.swing.JRadioButton;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
@@ -59,8 +60,7 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
     private static final String DO_NOTHING = NbBundle.getMessage(PropertyEditorEventHandler.class, "LBL_NOTHING_ACTION"); // NOI18N
     
     private final CustomEditor customEditor;
-    private DesignDocument document;
-    private DesignComponent component;
+    private long componentID;
     
     private PropertyEditorEventHandler() {
         Collection<PropertyEditorElementFactory> factories = Lookup.getDefault().lookup(new Lookup.Template(PropertyEditorElementFactory.class)).allInstances();
@@ -77,8 +77,10 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
     }
     
     public Component getCustomEditor() {
+        final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
         document.getTransactionManager().readAccess(new Runnable() {
             public void run() {
+                DesignComponent component = document.getComponentByUID(componentID);
                 PropertyValue value = null;
                 Iterator<DesignComponent> iterator = component.getComponents().iterator();
                 if (iterator.hasNext()) {
@@ -90,13 +92,13 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
                 DesignComponent pointsCategory = MidpDocumentSupport.getCategoryComponent(document, PointsCategoryCD.TYPEID);
                 List<DesignComponent> displayables = DocumentSupport.gatherAllComponentsOfTypeID(displayableCategory, DisplayableCD.TYPEID);
                 customEditor.updateModels(displayables, PropertyEditorEventHandlerElement.MODEL_TYPE_DISPLAYABLES, value);
-
+                
                 List<DesignComponent> alerts = DocumentSupport.gatherAllComponentsOfTypeID(displayableCategory, AlertCD.TYPEID);
                 List<DesignComponent> displExceptAlerts = new ArrayList<DesignComponent>(displayables.size() - alerts.size());
                 displExceptAlerts.addAll(displayables);
                 displExceptAlerts.removeAll(alerts);
                 customEditor.updateModels(displExceptAlerts, PropertyEditorEventHandlerElement.MODEL_TYPE_DISPLAYABLES_WITHOUT_ALERTS, value);
-
+                
                 List<DesignComponent> points = DocumentSupport.gatherAllComponentsOfTypeID(pointsCategory, CallPointCD.TYPEID);
                 List<DesignComponent> methods = DocumentSupport.gatherAllComponentsOfTypeID(pointsCategory, MethodPointCD.TYPEID);
                 List<DesignComponent> pointsAndMethods = new ArrayList<DesignComponent>(points.size() + methods.size());
@@ -118,33 +120,33 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
     
     public String getAsText() {
         final String[] string = new String[1];
-        if (component != null) {
-            document.getTransactionManager().readAccess(new Runnable() {
-                public void run() {
-                    Iterator<DesignComponent> iterator = component.getComponents().iterator();
-                    if (!iterator.hasNext()) {
-                        string[0] = DO_NOTHING;
+        final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
+        document.getTransactionManager().readAccess(new Runnable() {
+            public void run() {
+                DesignComponent component = document.getComponentByUID(componentID);
+                Iterator<DesignComponent> iterator = component.getComponents().iterator();
+                if (!iterator.hasNext()) {
+                    string[0] = DO_NOTHING;
+                } else {
+                    DesignComponent eventHandler = iterator.next();
+                    InfoPresenter presenter = eventHandler.getPresenter(InfoPresenter.class);
+                    if (presenter != null) {
+                        string[0] = presenter.getDisplayName(InfoPresenter.NameType.PRIMARY);
                     } else {
-                        DesignComponent eventHandler = iterator.next();
-                        InfoPresenter presenter = eventHandler.getPresenter(InfoPresenter.class);
-                        if (presenter != null) {
-                            string[0] = presenter.getDisplayName(InfoPresenter.NameType.PRIMARY);
-                        } else {
-                            throw new IllegalStateException("No infoPresenter for " + eventHandler); // NOI18N
-                        }
+                        throw new IllegalStateException("No infoPresenter for " + eventHandler); // NOI18N
                     }
                 }
-            });
-        }
+            }
+        });
         return string[0];
     }
     
     public void init(DesignComponent component) {
-        document = component.getDocument();
-        this.component = component;
+        this.componentID = component.getComponentID();
     }
     
     public boolean executeInsideWriteTransaction() {
+        DesignComponent component = ActiveDocumentSupport.getDefault().getActiveDocument().getComponentByUID(componentID);
         customEditor.createEventHandler(component);
         return false;
     }

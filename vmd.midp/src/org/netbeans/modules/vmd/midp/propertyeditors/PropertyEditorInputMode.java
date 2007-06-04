@@ -44,10 +44,10 @@ import org.openide.util.NbBundle;
  */
 public class PropertyEditorInputMode  extends PropertyEditorUserCode {
     
-    private static final String[] PREDEFINED_INPUT_MODES = {"UCB_BASIC_LATIN",
-        "UCB_GREEK", "UCB_CYRILLIC", "UCB_ARMENIAN", "UCB_HEBREW", "UCB_ARABIC",
-        "UCB_DEVANAGARI", "UCB_BENGALI", "UCB_THAI", "UCB_HIRAGANA", "UCB_KATAKANA",
-        "UCB_HANGUL_SYLLABLES"};
+    private static final String[] PREDEFINED_INPUT_MODES = {"UCB_BASIC_LATIN", // NOI18N
+        "UCB_GREEK", "UCB_CYRILLIC", "UCB_ARMENIAN", "UCB_HEBREW", "UCB_ARABIC", // NOI18N
+        "UCB_DEVANAGARI", "UCB_BENGALI", "UCB_THAI", "UCB_HIRAGANA", "UCB_KATAKANA", // NOI18N
+        "UCB_HANGUL_SYLLABLES"}; // NOI18N
     
     private List<PropertyEditorElement> elements;
     
