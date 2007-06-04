@@ -272,7 +272,6 @@ public class JsfProjectUtils {
             version = "2.0"; // NOI18N
         }
         if (version != null) {
-            version = "4.0-import"; // NOI18N
             setProjectVersion(project, version);
             if (propName.equals(JsfProjectConstants.PROP_JSF_PROJECT_VERSION)) { // NOI18N
                 ret = version;
