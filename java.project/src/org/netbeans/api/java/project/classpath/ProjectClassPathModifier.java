@@ -19,12 +19,9 @@
 
 package org.netbeans.api.java.project.classpath;
 
-import java.io.Externalizable;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -81,7 +78,7 @@ public class ProjectClassPathModifier {
                 return result;
             }
         }
-        throw new UnsupportedOperationException ();
+        throw new UnsupportedOperationException("No PCPE/PCPMI found for " + classPathType + " in " + projectArtifact); // NOI18N
     }
     
     
