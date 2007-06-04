@@ -174,6 +174,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     private int autoModEndOffset;
     
     private boolean pleaseWaitDisplayed = false;
+    private String completionShortcut = null;
     
     private CompletionImpl() {
         Registry.addChangeListener(this);
@@ -218,7 +219,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                     }
                 }
                 layout.showCompletion(Collections.singletonList(waitText),
-                        null, -1, CompletionImpl.this, false, 0);
+                        null, -1, CompletionImpl.this, null, 0);
                 pleaseWaitDisplayed = true;
             }
         });
@@ -562,7 +563,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
             }
         } else {
             completionCancel();
-            layout.showCompletion(Collections.singletonList(NO_SUGGESTIONS), null, -1, CompletionImpl.this, false, 0);
+            layout.showCompletion(Collections.singletonList(NO_SUGGESTIONS), null, -1, CompletionImpl.this, null, 0);
             pleaseWaitDisplayed = false;
         }
     }
@@ -767,7 +768,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 }
                 
                 int selectedIndex = getCompletionPreSelectionIndex(sortedResultItems);
-                layout.showCompletion(noSuggestions ? Collections.singletonList(NO_SUGGESTIONS) : sortedResultItems, displayTitle, displayAnchorOffset, CompletionImpl.this, queryType == CompletionProvider.COMPLETION_QUERY_TYPE, selectedIndex);
+                layout.showCompletion(noSuggestions ? Collections.singletonList(NO_SUGGESTIONS) : sortedResultItems, displayTitle, displayAnchorOffset, CompletionImpl.this, queryType == CompletionProvider.COMPLETION_QUERY_TYPE ? completionShortcut : null, selectedIndex);
                 pleaseWaitDisplayed = false;
 
                 // Show documentation as well if set by default
@@ -1118,12 +1119,18 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
     private void installKeybindings() {
         actionMap = new ActionMap();
         inputMap = new InputMap();
+        completionShortcut = null;
         
         // Register completion show
         KeyStroke[] keys = findEditorKeys(ExtKit.completionShowAction, KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_MASK));
         for (int i = 0; i < keys.length; i++) {
             inputMap.put(keys[i], COMPLETION_SHOW);
+            if (completionShortcut == null) {
+                completionShortcut = getKeyStrokeAsText(keys[i]);
+            }
         }
+        if (completionShortcut == null)
+            completionShortcut = "\'Ctrl+SPACE\'";
         actionMap.put(COMPLETION_SHOW, new CompletionShowAction(CompletionProvider.COMPLETION_QUERY_TYPE));
 
         // Register all completion show
@@ -1148,6 +1155,31 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         actionMap.put(TOOLTIP_SHOW, new ToolTipShowAction());
     }
     
+    private static String getKeyStrokeAsText (KeyStroke keyStroke) {
+        int modifiers = keyStroke.getModifiers ();
+        StringBuffer sb = new StringBuffer ();
+        sb.append('\'');
+        if ((modifiers & InputEvent.CTRL_DOWN_MASK) > 0)
+            sb.append ("Ctrl+"); //NOI18N
+        if ((modifiers & InputEvent.ALT_DOWN_MASK) > 0)
+            sb.append ("Alt+"); //NOI18N
+        if ((modifiers & InputEvent.SHIFT_DOWN_MASK) > 0)
+            sb.append ("Shift+"); //NOI18N
+        if ((modifiers & InputEvent.META_DOWN_MASK) > 0)
+            sb.append ("Meta+"); //NOI18N
+        if (keyStroke.getKeyCode () != KeyEvent.VK_SHIFT &&
+            keyStroke.getKeyCode () != KeyEvent.VK_CONTROL &&
+            keyStroke.getKeyCode () != KeyEvent.VK_META &&
+            keyStroke.getKeyCode () != KeyEvent.VK_ALT &&
+            keyStroke.getKeyCode () != KeyEvent.VK_ALT_GRAPH
+        )
+            sb.append (org.openide.util.Utilities.keyToString (
+                KeyStroke.getKeyStroke (keyStroke.getKeyCode (), 0)
+            ));
+        sb.append('\'');
+        return sb.toString ();
+    }
+
     /**
      * Notify that a particular completion result set has just been finished.
      * <br>

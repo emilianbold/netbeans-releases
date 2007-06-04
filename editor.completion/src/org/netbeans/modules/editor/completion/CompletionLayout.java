@@ -109,8 +109,8 @@ public final class CompletionLayout {
     }
 
     public void showCompletion(List data, String title, int anchorOffset,
-    ListSelectionListener listSelectionListener, boolean showShortcutHints, int selectedIndex) {
-        completionPopup.show(data, title, anchorOffset, listSelectionListener, showShortcutHints, selectedIndex);
+    ListSelectionListener listSelectionListener, String shortcutHint, int selectedIndex) {
+        completionPopup.show(data, title, anchorOffset, listSelectionListener, shortcutHint, selectedIndex);
         if (!visiblePopups.contains(completionPopup))
             visiblePopups.push(completionPopup);
     }
@@ -270,7 +270,7 @@ public final class CompletionLayout {
         private CompletionScrollPane completionScrollPane;
         
         public void show(List data, String title, int anchorOffset,
-        ListSelectionListener listSelectionListener, boolean showShortcutHints, int selectedIndex) {
+        ListSelectionListener listSelectionListener, String shortcutHint, int selectedIndex) {
             
 	    JTextComponent editorComponent = getEditorComponent();
 	    if (editorComponent == null) {
@@ -280,7 +280,7 @@ public final class CompletionLayout {
             Dimension lastSize;
             int lastAnchorOffset = getAnchorOffset();
 
-            if (isVisible() && ((getContentComponent() == completionScrollPane)^(showShortcutHints))) {
+            if (isVisible() && ((getContentComponent() == completionScrollPane)^(shortcutHint != null))) {
                 lastSize = getContentComponent().getSize();
                 resetPreferredSize();
 
@@ -308,7 +308,7 @@ public final class CompletionLayout {
                     }
                 );
                 
-                if (showShortcutHints) {
+                if (shortcutHint != null) {
                     JPanel panel = new JPanel();
                     panel.setLayout(new BorderLayout());
                     panel.add(completionScrollPane, BorderLayout.CENTER);
@@ -317,7 +317,7 @@ public final class CompletionLayout {
                             BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(0, 1, 1, 1, Color.gray), BorderFactory.createEmptyBorder(2, 2, 2, 2))));
                     label.setFont(label.getFont().deriveFont((float)label.getFont().getSize() - 2));
                     label.setHorizontalAlignment(SwingConstants.RIGHT);
-                    label.setText(NbBundle.getMessage(CompletionLayout.class, "TXT_completion_shrtcut_tips")); //NOI18N
+                    label.setText(NbBundle.getMessage(CompletionLayout.class, "TXT_completion_shortcut_tips", shortcutHint)); //NOI18N
                     panel.add(label, BorderLayout.SOUTH);
                     setContentComponent(panel);
                 } else {
