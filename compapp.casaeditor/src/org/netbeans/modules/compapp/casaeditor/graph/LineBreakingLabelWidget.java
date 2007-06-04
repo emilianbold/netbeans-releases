@@ -147,7 +147,9 @@ public class LineBreakingLabelWidget extends Widget {
         mTextColor = color;
         if (mLabelWidgets != null) {
             for (LabelWidget labelWidget : mLabelWidgets) {
-                getScene().getSceneAnimator().animateForegroundColor(labelWidget, color);
+                labelWidget.setForeground(color);
+                // forego the animation, this seems to not work reliably
+//                getScene().getSceneAnimator().animateForegroundColor(labelWidget, color);
             }
         }
     }
