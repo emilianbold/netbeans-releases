@@ -99,10 +99,14 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
         final Difference[] diffs = copyParts(true, file, f1, true);
         if (diffs.length == 0) {
             try {
-            ConflictResolvedAction.perform(file);  // remove conflict status
+                ConflictResolvedAction.perform(file);  // remove conflict status
             } catch (SVNClientException ex) {
                 // XXX consolidate with the progresssuport
                 SvnClientExceptionHandler.notifyException(ex, true, true);
+            } finally {
+                if (lock != null) {
+                    lock.releaseLock();
+                }
             }
             return;
         }
