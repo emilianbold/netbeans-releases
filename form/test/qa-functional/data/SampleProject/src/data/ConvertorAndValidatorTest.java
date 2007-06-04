@@ -240,14 +240,6 @@ private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {
     modifyLabelText(jLabel6);
 }
 
-
-private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {                                         
-    System.out.println(myBean1.getMyProp());
-    myBean1.setMyProp("foo");
-    System.out.println(myBean1.getMyProp());    
-}
-
-
     /**
      * @param args the command line arguments
      */
