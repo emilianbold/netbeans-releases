@@ -1326,7 +1326,7 @@ public class EditorContextImpl extends EditorContext {
                         if (c == ';' || c == ',') { // we have it, but there might be '=' sign somewhere before
                             int endOffset = --offset;
                             int setOffset = -1;
-                            while((c = text.charAt(offset)) != ';' && c != ',' && c != '\n' && c != '\r') {
+                            while(offset >= 0 && (c = text.charAt(offset)) != ';' && c != ',' && c != '\n' && c != '\r') {
                                 if (c == '=') setOffset = offset;
                                 offset--;
                             }
@@ -1335,8 +1335,9 @@ public class EditorContextImpl extends EditorContext {
                             } else {
                                 offset = endOffset;
                             }
-                            while (Character.isWhitespace(text.charAt(offset))) offset--;
+                            while (offset >= 0 && Character.isWhitespace(text.charAt(offset))) offset--;
                         }
+                        if (offset < 0) offset = 0;
                          
                         Tree tree = ci.getTreeUtilities().pathFor(offset).getLeaf();
                         if (tree.getKind() == Tree.Kind.VARIABLE) {
