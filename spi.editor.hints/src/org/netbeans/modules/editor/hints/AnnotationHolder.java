@@ -34,6 +34,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -44,6 +45,8 @@ import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
@@ -69,14 +72,14 @@ import org.openide.text.NbDocument;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
-
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class AnnotationHolder implements ChangeListener, PropertyChangeListener {
+public class AnnotationHolder implements ChangeListener, PropertyChangeListener, DocumentListener {
     
     final static Map<Severity, Coloring> COLORINGS;
     
@@ -146,6 +149,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener 
         this.file = file;
         this.od = od;
         this.doc = doc;
+        this.doc.addDocumentListener(this);
         editorCookie.addPropertyChangeListener(WeakListeners.propertyChange(this, editorCookie));
         this.editorCookie = editorCookie;
         
@@ -215,6 +219,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener 
         }
         
         file2Holder.remove(file);
+        doc.removeDocumentListener(this);
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
@@ -250,6 +255,67 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener 
                 return ;
             }
         });
+    }
+    
+    public void insertUpdate(DocumentEvent e) {
+        int line = NbDocument.findLineNumber((StyledDocument) doc, e.getOffset());
+        
+        handleChange(line, 0);
+    }
+    
+    public void removeUpdate(DocumentEvent e) {
+        DocumentEvent.ElementChange change = e.getChange(doc.getDefaultRootElement());
+        
+        if (change != null) {
+            handleChange(change.getIndex(), change.getChildrenRemoved().length - 1);
+        } else {
+            int line = NbDocument.findLineNumber((StyledDocument) doc, e.getOffset());
+            
+            handleChange(line, 0);
+        }
+    }
+    
+    private synchronized void handleChange(int start, int size) {
+        size = size < 0 ? 0 : size;
+        try {
+            Set<Integer> modifiedLines = new HashSet<Integer>();
+            
+            for (int line = start; line <= (start + size); line++) {
+                List<ErrorDescription> eds = line2Errors.get(line);
+                
+                if (eds == null || eds.isEmpty())
+                    continue ;
+                
+                eds = new LinkedList<ErrorDescription>(eds);
+                
+                for (ErrorDescription ed : eds) {
+                    for (Integer i : errors2Lines.remove(ed)) {
+                        line2Errors.get(i).remove(ed);
+                        modifiedLines.add(i);
+                    }
+                    for (List<ErrorDescription> edsForLayer : layer2Errors.values()) {
+                        edsForLayer.remove(ed);
+                    }
+                }
+                
+                line2Errors.remove(line);
+            }
+            
+            for (Integer line : modifiedLines) {
+                updateAnnotationOnLine(line);
+                updateHighlightsOnLine(line);
+            }
+            
+            doUpdateHighlight(file);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    public void changedUpdate(DocumentEvent e) {
+        //ignored
     }
     
     private void updateVisibleRanges() {
@@ -293,22 +359,22 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener 
         List<ErrorDescription> errorsToUpdate = new ArrayList<ErrorDescription>();
         
         synchronized (this) {
-            for (int cntr = startLine; cntr <= endLine; cntr++) {
-                List<ErrorDescription> errors = line2Errors.get(cntr);
-                
-                if (errors != null) {
+        for (int cntr = startLine; cntr <= endLine; cntr++) {
+            List<ErrorDescription> errors = line2Errors.get(cntr);
+            
+            if (errors != null) {
                     errorsToUpdate.addAll(errors);
                 }
             }
         }
         
         for (ErrorDescription e : errorsToUpdate) {
-            LazyFixList l = e.getFixes();
-            
-            if (l.probablyContainsFixes() && !l.isComputed())
-                l.getFixes();
-        }
-    }
+                    LazyFixList l = e.getFixes();
+                    
+                    if (l.probablyContainsFixes() && !l.isComputed())
+                        l.getFixes();
+                }
+            }
     
     private List<ErrorDescription> getErrorsForLayer(String layer) {
         List<ErrorDescription> errors = layer2Errors.get(layer);
