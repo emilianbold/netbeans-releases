@@ -19,11 +19,18 @@
 
 package org.netbeans.modules.form;
 
+import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  * Holds information about one refactoring. Knows the type of refactoring change,
@@ -49,22 +56,14 @@ public class RefactoringInfo {
     private AbstractRefactoring refactoring;
     private ChangeType changeType;
     private FileObject primaryFile; // the source file where the refactoring change originated
-//    private String oldClassName;
     private String oldName;
-//    private String newName;
     private Map<FileObject,FormRefactoringUpdate> fileToUpdateMap = new HashMap<FileObject,FormRefactoringUpdate>();
 
     RefactoringInfo(AbstractRefactoring refactoring, ChangeType changeType, FileObject primaryFile, String oldName) {
-        assert isJavaFile(primaryFile);
         this.refactoring = refactoring;
         this.changeType = changeType;
         this.primaryFile = primaryFile;
         this.oldName = oldName;
-//        if (changeType == ChangeType.CLASS_RENAME) {
-//            ClassPath cp = ClassPath.getClassPath(primaryFile, ClassPath.SOURCE);
-//            oldClassName = cp.getResourceName(primaryFile, '.', false);
-//            oldName = primaryFile.getName();
-//        }
     }
 
     AbstractRefactoring getRefactoring() {
@@ -87,22 +86,39 @@ public class RefactoringInfo {
         this.oldName = oldName;
     }
 
-//    void setNewName(String newName) {
-//        this.newName = newName;
-//    }
-
     String getOldName() {
         return oldName;
     }
 
     String getNewName() {
-        return refactoring instanceof RenameRefactoring ? ((RenameRefactoring)refactoring).getNewName() : null;
-//        return newName;
+        if (refactoring instanceof RenameRefactoring) {
+            // return the new name of the file/element
+            return ((RenameRefactoring)refactoring).getNewName();
+        } else if (refactoring instanceof MoveRefactoring) {
+            // return full class name of the java file on its new location
+            FileObject targetFolder = getTargetFolder((MoveRefactoring)refactoring);
+            if (targetFolder != null) {
+                String pkg = ClassPath.getClassPath(targetFolder, ClassPath.SOURCE)
+                    .getResourceName(targetFolder, '.', false);
+                return (pkg != null && pkg.length() > 0)
+                       ? pkg + "." + primaryFile.getName() // NOI18N
+                       : primaryFile.getName();
+            }
+        }
+        return null;
     }
 
-//    public String getOriginalClassName() {
-//        return originalClassName;
-//    }
+    FileObject getTargetFolder(MoveRefactoring refactoring) {
+        URL targetURL = refactoring.getTarget().lookup(URL.class);
+        FileObject targetFolder = null;
+        try {
+            File f = FileUtil.normalizeFile(new File(targetURL.toURI()));
+            targetFolder = FileUtil.toFileObject(f);
+        } catch (URISyntaxException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return targetFolder != null && targetFolder.isFolder() ? targetFolder : null;
+    }
 
     public FormRefactoringUpdate getUpdateForFile(FileObject fo, boolean create) {
         FormRefactoringUpdate update = fileToUpdateMap.get(fo);

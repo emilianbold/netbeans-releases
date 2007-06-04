@@ -155,10 +155,6 @@ final class DesignResourceMap extends ResourceMap {
         return idx < 0 ? bundleName : bundleName.substring(idx+1);
     }
 
-    private int getStorageLevel() {
-        return storageLevel;
-    }
-
     private BundleStructure[] getBundles() {
         List<String> bundleNames = null;
         for (int i=0; i < bundles.length; i++) {
@@ -266,8 +262,8 @@ final class DesignResourceMap extends ResourceMap {
 
     /**
      * Collects all keys that matches given regular expression (String.matches
-     * method is used). Based on the wholeChain parameter it scans the whole
-     * chain of resource maps, or just on (one level).
+     * method is used). Based on the wholeChain parameter it either scans the
+     * whole chain of resource maps, or just one level.
      * @param regex a regular expression the collected keys should match
      * @param wholeChain if true, this resource maps and all parents are scanned;
      *        if false, only this resource map is scanned

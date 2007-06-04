@@ -1129,7 +1129,8 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
     }
 
     protected Node.Property[] createSyntheticProperties() {
-        return FormEditor.getCodeGenerator(formModel).getSyntheticProperties(this);
+        CodeGenerator codeGen = FormEditor.getCodeGenerator(formModel);
+        return codeGen != null ? codeGen.getSyntheticProperties(this) : new Node.Property[0];
     }
 
     private void createBeanProperties() {

@@ -343,7 +343,7 @@ public class ResourceSupport {
             droppedValues.clear();
     }
 
-    private void switchFormToPlainValues(boolean cancelInjection) {
+    private void switchFormToPlainValues(boolean cancelInjection, String originalBundleName) {
         for (RADComponent metacomp : formModel.getAllComponents()) {
             for (FormProperty prop : getComponentResourceProperties(metacomp, VALID_RESOURCE_VALUE, false)) {
                 Object value = getAutoValue(prop);
@@ -356,7 +356,9 @@ public class ResourceSupport {
                             prop.setValue(new FormProperty.ValueWithEditor(
                                     i18nValue.getValue(), prop.findDefaultEditor()));
                             i18nService.update(i18nValue, null,
-                                               getSrcDataObject(), getI18nBundleName(), null, true);
+                                               getSrcDataObject(),
+                                               originalBundleName != null ? originalBundleName : getI18nBundleName(),
+                                               null, true);
                         }
                         else if (value instanceof ResourceValue) {
                             ResourceValue resValue = (ResourceValue) value;
@@ -426,7 +428,7 @@ public class ResourceSupport {
 
     public static void formRenamed(FormModel formModel, String oldName) {
         ResourceSupport support = FormEditor.getResourceSupport(formModel);
-        if (support.isAutoMode()) {
+        if (support.getAutoMode() == AUTO_I18N) { // [in other auto modes the keys don't include class name]
             support.renameDefaultKeys(oldName);
         }
     }
@@ -519,6 +521,22 @@ public class ResourceSupport {
             }
             prop.setChangeFiring(fire);
         }
+    }
+
+    public static void formMoved(FormModel formModel, FileObject oldFolder) {
+        ResourceSupport support = FormEditor.getResourceSupport(formModel);
+        if (support.getAutoMode() == AUTO_I18N) { // [in other auto modes the entire properties file is moved]
+            support.moveFormI18n(oldFolder);
+        }
+    }
+
+    private void moveFormI18n(FileObject oldFolder) {
+        String oldPkg = getPkgResourceName(oldFolder);
+        String newPkg = getPkgResourceName(getSourceFile());
+        String newBundle = getI18nBundleName();
+        String oldBundle = oldPkg + newBundle.substring(newPkg.length());
+        switchFormToPlainValues(false, oldBundle);
+        switchFormToResources();
     }
 
     public static void loadInjectedResources(RADComponent metacomp) {
@@ -796,9 +814,8 @@ public class ResourceSupport {
             return false;
     }
 
-    private void changeBundle(String newBundle) {
-        switchFormToPlainValues(false);
-        formModel.getSettings().setFormBundle(newBundle);
+    private void bundleChanged(String oldBundle) {
+        switchFormToPlainValues(false, oldBundle);
         String oldLocale = designLocale;
         setDesignLocale(""); // NOI18N
         FormEditor.getFormEditor(formModel).getFormRootNode()
@@ -1172,13 +1189,8 @@ public class ResourceSupport {
         if (bundleName == null) {
             if (defaultI18nBundle == null) {
                 FileObject file = getSourceFile();
-                ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
-                if (cp == null)
-                    return null;
-
-                String resName = cp.getResourceName(file.getParent());
-                defaultI18nBundle = resName != null && resName.length() > 0 ?
-                        resName + "/" + DEFAULT_BUNDLE_NAME : DEFAULT_BUNDLE_NAME; // NOI18N
+                defaultI18nBundle = composeBundleName(getPkgResourceName(getSourceFile()),
+                                                      DEFAULT_BUNDLE_NAME);
                 // [we could also search for another properties file in the package
                 // (what if there is properties file not for i18n?),
                 // or try to remember last specified properties file for another form in this package]
@@ -1186,6 +1198,20 @@ public class ResourceSupport {
             bundleName = defaultI18nBundle;
         }
         return bundleName;
+    }
+
+    private static String getPkgResourceName(FileObject fo) {
+        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+        if (cp != null) {
+            return cp.getResourceName(fo.isFolder() ? fo : fo.getParent());
+        } else {
+            return null;
+        }
+    }
+
+    private static String composeBundleName(String pkgResName, String bundleSimpleName) {
+        return pkgResName != null && pkgResName.length() > 0
+                ? pkgResName + "/" + bundleSimpleName : bundleSimpleName; // NOI18N
     }
 
     private static boolean isResourceType(Class type) {
@@ -1260,7 +1286,7 @@ public class ResourceSupport {
                     formModel.getSettings().setResourceAutoMode(autoMode);
 
                     if (autoMode == AUTO_OFF)
-                        switchFormToPlainValues(wasInjection);
+                        switchFormToPlainValues(wasInjection, null);
                     else
                         switchFormToResources();
 
@@ -1292,14 +1318,15 @@ public class ResourceSupport {
             FormUtils.getBundleString("HINT_FORM_BUNDLE")) // NOI18N
         {
             public void setValue(Object value) {
-                Object oldValue = getI18nBundleName();
+                String oldValue = getI18nBundleName();
                 if ((oldValue == null && value != null) || !oldValue.equals(value)) {
                     String resourceName = (String) value;
                     if (resourceName != null && resourceName.toLowerCase().endsWith(".properties")) { // NOI18N
                         resourceName = resourceName.substring(
                                 0, resourceName.length()-".properties".length()); // NOI18N
                     }
-                    changeBundle(resourceName);
+                    formModel.getSettings().setFormBundle(resourceName);
+                    bundleChanged(oldValue);
                     formModel.fireSyntheticPropertyChanged(null, PROP_FORM_BUNDLE, oldValue, value);
                     FormEditor.getFormEditor(formModel).getFormRootNode()
                             .firePropertyChangeHelper(PROP_FORM_BUNDLE, oldValue, value);

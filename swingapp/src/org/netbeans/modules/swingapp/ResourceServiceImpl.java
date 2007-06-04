@@ -33,7 +33,6 @@ import java.util.Set;
 import org.netbeans.modules.form.ResourcePanel;
 import org.netbeans.modules.form.ResourceService;
 import org.netbeans.modules.form.ResourceValue;
-import org.netbeans.modules.properties.BundleStructure;
 import org.netbeans.modules.properties.LocalePanel;
 import org.netbeans.modules.properties.PropertiesDataObject;
 import org.openide.DialogDescriptor;
@@ -52,20 +51,14 @@ import org.openide.util.NbBundle;
  */
 public class ResourceServiceImpl implements ResourceService {
 
-    private static class ChangeInfo {
-        private String key;
-        private Object[] originalData; // if null, the key was just added
-        private BundleStructure bundle;
-    }
-
     public ResourceValue get(String key, Class type, String localeSuffix, FileObject srcFile) {
-        DesignResourceMap resMap = ResourceUtils.getDesignResourceMap(srcFile);
+        DesignResourceMap resMap = ResourceUtils.getDesignResourceMap(srcFile, true);
         resMap.setLocalization(localeSuffix);
         return resMap.getResourceValue(key, type);
     }
 
     public Collection<String> findKeys(String keyRegex, FileObject srcFile) {
-        return ResourceUtils.getDesignResourceMap(srcFile).collectKeys(keyRegex, true);
+        return ResourceUtils.getDesignResourceMap(srcFile, true).collectKeys(keyRegex, true);
     }
 
     public ResourceValue create(String key, Class type, Object value, String stringValue, FileObject srcFile) {
@@ -94,7 +87,7 @@ public class ResourceServiceImpl implements ResourceService {
     public ResourceValue switchLocale(ResourceValue resource, String localeSuffix) {
         if (resource instanceof ResourceValueImpl) {
             ResourceValueImpl resValue = (ResourceValueImpl) resource;
-            DesignResourceMap resMap = ResourceUtils.getDesignResourceMap(resValue.getSourceFile());
+            DesignResourceMap resMap = ResourceUtils.getDesignResourceMap(resValue.getSourceFile(), true);
             resMap.setLocalization(localeSuffix);
             return resMap.getResourceValue(resValue.getKey(), resValue.getValueType());
         }
@@ -112,7 +105,7 @@ public class ResourceServiceImpl implements ResourceService {
     public String[][] getAvailableLocales(FileObject srcFile) {
         Set<String> localeSet = new HashSet<String>();
         Map<String, MultiDataObject.Entry> entries = new HashMap<String, MultiDataObject.Entry>();
-        for (MultiDataObject.Entry locEntry : ResourceUtils.getDesignResourceMap(srcFile).collectLocaleEntries()) {
+        for (MultiDataObject.Entry locEntry : ResourceUtils.getDesignResourceMap(srcFile, true).collectLocaleEntries()) {
             String locale = org.netbeans.modules.properties.Util.getLocaleSuffix(locEntry);
             if (!localeSet.contains(locale)) {
                 localeSet.add(locale);
@@ -130,7 +123,7 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     public java.awt.Component getCreateLocaleComponent(final PropertyEditor prEd, FileObject srcFile) {
-        DesignResourceMap resMap = ResourceUtils.getDesignResourceMap(srcFile);
+        DesignResourceMap resMap = ResourceUtils.getDesignResourceMap(srcFile,true);
         String bundleName = resMap.getBundleNames().get(0);
         PropertiesDataObject dobj = resMap.getRepresentativeDataObject();
         if (dobj == null) {
@@ -182,18 +175,21 @@ public class ResourceServiceImpl implements ResourceService {
         ResourceValueImpl newRes = (ResourceValueImpl) newValue;
 
         if (oldRes != null && (newRes == null || !oldRes.getKey().equals(newRes.getKey()))) {
-            ResourceUtils.getDesignResourceMap(oldRes.getSourceFile()).removeResourceValue(oldRes);
+            ResourceUtils.getDesignResourceMap(oldRes.getSourceFile(), true).removeResourceValue(oldRes);
         }
 
         if (newRes != null) {
-            DesignResourceMap resMap = ResourceUtils.getDesignResourceMap(newRes.getSourceFile());
+            DesignResourceMap resMap = ResourceUtils.getDesignResourceMap(newRes.getSourceFile(), true);
             resMap.setLocalization(localeSuffix);
             resMap.addResourceValue(newRes); // this also reads the value back
         }
     }
 
     public void autoSave(FileObject srcFile) {
-        ResourceUtils.getDesignResourceMap(srcFile).save();
+        DesignResourceMap resMap = ResourceUtils.getDesignResourceMap(srcFile, false);
+        if (resMap != null) {
+            resMap.save();
+        }
     }
 
     public void close(FileObject srcFile) {
@@ -232,6 +228,6 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     public ResourcePanel createResourcePanel(Class valueType, FileObject srcFile) {
-        return new ResourcePanelImpl(ResourceUtils.getDesignResourceMap(srcFile), valueType);
+        return new ResourcePanelImpl(ResourceUtils.getDesignResourceMap(srcFile, true), valueType);
     }
 }

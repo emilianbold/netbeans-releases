@@ -99,9 +99,12 @@ class ResourceUtils {
      * and registers a new one if not created yet.
      * @return DesignResourceMap for given source file
      */
-    static DesignResourceMap getDesignResourceMap(FileObject srcFile) {
-        DesignResourceMap resMap = resources != null ? resources.get(srcFile) : null;
-        return resMap != null ? resMap : createDesignResourceMap(srcFile, null);
+    static DesignResourceMap getDesignResourceMap(FileObject srcFile, boolean createNew) {
+        DesignResourceMap resMap = (resources != null) ? resources.get(srcFile) : null;
+        if (resMap == null && createNew) {
+            resMap = createDesignResourceMap(srcFile, null);
+        }
+        return resMap;
     }
 
     static DesignResourceMap getAppDesignResourceMap(Project project) {
@@ -204,6 +207,16 @@ class ResourceUtils {
             }
         }
         return null;
+    }
+
+    static PropertiesDataObject getPropertiesDataObject(FileObject srcFile) {
+        ClassPath cp = ClassPath.getClassPath(srcFile, ClassPath.SOURCE);
+        if (cp == null) {
+            return null;
+        }
+        String srcClassName = cp.getResourceName(srcFile, '.', false);
+        String bundleName = getBundleName(srcClassName);
+        return getPropertiesDataObject(srcFile, bundleName, false);
     }
 
     /**

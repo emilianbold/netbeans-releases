@@ -233,7 +233,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
             ProxyAction oldAction = action;
             action = (ProxyAction)object;
             ActionManager am = ActionManager.getActionManager(getSourceFile());
-            action.setResourceMap(ResourceUtils.getDesignResourceMap(getSourceFile()));
+            action.setResourceMap(ResourceUtils.getDesignResourceMap(getSourceFile(), true));
             if(!am.actionsMatch(oldAction,action)){
                 if (oldAction != null) {
                     am.removeRADComponent(oldAction, radComponent);
@@ -323,7 +323,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
                     || (className.length() != srcFile.getName().length()
                     && className.charAt(className.length() - srcFile.getName().length() - 1) != '.');
             action.setAppWide(appWide);
-            action.setResourceMap(ResourceUtils.getDesignResourceMap(srcFile));
+            action.setResourceMap(ResourceUtils.getDesignResourceMap(srcFile, true));
             action.loadFromResourceMap();
             setValue(action);
         }
@@ -411,7 +411,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         ResourceValueImpl val;
         
         FileObject fileInProject = getSourceFile();
-        DesignResourceMap map = ResourceUtils.getDesignResourceMap(fileInProject);
+        DesignResourceMap map = ResourceUtils.getDesignResourceMap(fileInProject, true);
         
         String actionKey = action.getId() + ".Action"; // NOI18N
         //save properties

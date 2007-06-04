@@ -963,7 +963,7 @@ public class ActionManager {
     public void deleteAction(ProxyAction action) {
         String defClass = action.getClassname();
         FileObject file = getFileForClass(defClass);
-        DesignResourceMap map = ResourceUtils.getDesignResourceMap(file);
+        DesignResourceMap map = ResourceUtils.getDesignResourceMap(file, true);
         //String actionKey = action.getId()+".Action";
         //ResourceValueImpl res = map.getResourceValue(actionKey+".text",String.class);
         
@@ -1135,7 +1135,7 @@ public class ActionManager {
                                 ProxyAction action = new ProxyAction(classElement.getQualifiedName().toString(),
                                         el.getSimpleName().toString());
                                 initActionFromSource(action, el, ann);
-                                action.setResourceMap(ResourceUtils.getDesignResourceMap(sourceFile));
+                                action.setResourceMap(ResourceUtils.getDesignResourceMap(sourceFile, true));
                                 action.loadFromResourceMap();
                                 if (list == null) {
                                     list = new ArrayList<ProxyAction>();

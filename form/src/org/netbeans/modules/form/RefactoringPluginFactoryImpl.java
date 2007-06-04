@@ -24,6 +24,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -41,11 +42,11 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
- * Entry point for refactoring, registered in META-INF. Whenever a refactoring
- * is about to start, createInstance is called where we analyze the type of
- * refactoring and attach RefactoringInfo object to the refactoring, which can
- * be later accessed from various places where we prepare or perform additional
- * changes.
+ * Entry point for refactoring, registered in META-INF/services. Whenever
+ * a refactoring is about to start, createInstance is called where we analyze
+ * the type of refactoring and attach RefactoringInfo object to the refactoring,
+ * which can be later accessed from various places where we prepare or perform
+ * the additional changes in forms and resources.
  * 
  *  @author Tomas Pavek
  */
@@ -60,6 +61,10 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
         FileObject primaryFile = null;
         String oldName = null;
 
+        // we must do some more analysis here, though would be better to do it
+        // in the plugin's prepare method, but we can't be sure the guarded
+        // handler is not called sooner from java plugin than our plugin
+
         if (refactoring instanceof RenameRefactoring) {
             Lookup sourceLookup = refactoring.getRefactoringSource();
             FileObject file = sourceLookup.lookup(FileObject.class);
@@ -70,7 +75,8 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
             // is renamed then file == null
 
             if (file != null && RefactoringInfo.isJavaFile(file)) {
-                // renaming a java file (can be a form, or a component used in a form, or both)
+                // renaming a java file within the same package
+                // (can be a form, or a component used in a form, or both)
                  if (isOnSourceClasspath(file)) {
                     changeType = RefactoringInfo.ChangeType.CLASS_RENAME;
                     primaryFile = file;
@@ -135,6 +141,8 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
                 // moving a java file (between packages)
                 changeType = RefactoringInfo.ChangeType.CLASS_MOVE;
                 primaryFile = file;
+                ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
+                oldName = cp.getResourceName(file, '.', false);
             }
         } else if (refactoring instanceof SingleCopyRefactoring) {
             FileObject file = refactoring.getRefactoringSource().lookup(FileObject.class);
@@ -142,6 +150,8 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
                 // moving a java file (between packages)
                 changeType = RefactoringInfo.ChangeType.CLASS_COPY;
                 primaryFile = file;
+                ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
+                oldName = cp.getResourceName(file, '.', false);
             }
         }
 
@@ -184,10 +194,40 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
         }
 
         public Problem prepare(RefactoringElementsBag refactoringElements) {
-            // even if guarded blocks were not affected directly we might want some changes
+            // even if guarded blocks are not affected directly we might want some changes
             if (refInfo.isForm()) {
-                refactoringElements.registerTransaction(
-                        refInfo.getUpdateForFile(refInfo.getPrimaryFile(), true));
+                FormRefactoringUpdate update = refInfo.getUpdateForFile(refInfo.getPrimaryFile(), true);
+                switch (refInfo.getChangeType()) {
+                case CLASS_RENAME: // renaming form class, always needs to load - auto-i18n
+                    if (!update.prepareForm(true)) {
+                        return new Problem(true, "Error loading form. Cannot update generated code.");
+                    }
+                    break;
+                case CLASS_MOVE:
+                    update.prepareForm(false); // make sure we have the form before
+                      // it is moved so we don't have to look for the new file later
+                    break;
+                // for VARIABLE_RENAME and EVENT_HANDLER_RENAME we don't know yet
+                // if they affect the form - guarded block handler will take care
+                }
+                // add placeholder element for the preview
+                refactoringElements.add(refInfo.getRefactoring(), update.getPreviewElement());
+//                refactoringElements.registerTransaction(update);
+                refactoringElements.addFileChange(refInfo.getRefactoring(), update);
+            } else if (refInfo.getChangeType() == RefactoringInfo.ChangeType.PACKAGE_RENAME
+                       || refInfo.getChangeType() == RefactoringInfo.ChangeType.FOLDER_RENAME) {
+                boolean anyForm = false;
+                for (FileObject fo : refInfo.getPrimaryFile().getChildren()) {
+                    if (RefactoringInfo.isJavaFileOfForm(fo)) {
+                        anyForm = true;
+                        FormRefactoringUpdate update = refInfo.getUpdateForFile(fo, true);
+//                        refactoringElements.registerTransaction(update);
+                        refactoringElements.addFileChange(refInfo.getRefactoring(), update);
+                    }
+                }
+                if (anyForm) {
+                    // TODO add refactoring element informing about updating references to resources in GUI forms in this package
+                }
             }
             return null;
         }

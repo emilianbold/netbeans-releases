@@ -85,6 +85,7 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.text.PositionRef;
+import org.openide.util.Exceptions;
 import org.openide.util.UserQuestionException;
 import org.openide.util.Utilities;
 import org.openide.windows.CloneableOpenSupport;
@@ -418,7 +419,60 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         
         return docLoadTask;
     }
-    
+
+    public FormEditor reloadFormEditor() {
+        FormDesigner formDesigner = getFormEditor(true).getFormDesigner();
+        if (formDesigner == null) {
+            formDesigner = (FormDesigner)multiviewTC.getClientProperty("formDesigner"); // NOI18N
+        }
+        if(formDesigner==null) {
+            // if formDesigner is null then it haven't been activated yet...
+            return null;
+        }
+
+        getFormEditor().closeForm();
+        formEditor = null;
+
+        formDesigner.reset(getFormEditor(true));
+        getFormEditor().setFormDesigner(formDesigner);
+        if(formDesigner.isShowing()) {
+            // load the form only if its open
+            loadForm();
+            FormEditor formEditor = getFormEditor();
+            formEditor.reportErrors(FormEditor.LOADING);
+            if (!formEditor.isFormLoaded()) { // there was a loading error
+                formDesigner.removeAll();
+            } else {
+                formDesigner.initialize();
+            }
+        }
+        return getFormEditor();
+    }
+
+    public void closeFormEditor() {
+        if (isOpened()) {
+            final FormDesigner formDesigner = formEditor.getFormDesigner();
+            formEditor.closeForm();
+            Runnable run = new Runnable() {
+                public void run() {
+                    if (formDesigner != null) {
+                        formDesigner.reset(formEditor); // might be reused
+                    }
+                    selectJavaEditor();
+                }
+            };
+            if (EventQueue.isDispatchThread()) {
+                run.run();
+            } else {
+                try             {
+                    java.awt.EventQueue.invokeAndWait(run);
+                } catch (Exception ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                }
+            }
+        }
+    }
+
     protected void notifyClosed() {
         opened.remove(this);
         if (opened.isEmpty()) {

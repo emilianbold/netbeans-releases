@@ -19,21 +19,23 @@
 
 package org.netbeans.modules.form;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import org.netbeans.api.editor.guards.SimpleSection;
+import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.GuardedBlockHandler;
 import org.netbeans.modules.refactoring.spi.GuardedBlockHandlerFactory;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.Transaction;
 import org.openide.filesystems.FileObject;
-import org.openide.text.PositionBounds;
-import org.openide.util.Lookup;
 
 /**
  * Used by java refactoring to delegate changes in guarded blocks. Registered
- * in META-INF.
+ * in META-INF/services. Creates one GuardedBlockHandlerImpl instance per form.
  * 
  * @author Tomas Pavek
  */
@@ -50,6 +52,7 @@ public class GuardedBlockHandlerFactoryImpl implements GuardedBlockHandlerFactor
     private static class GuardedBlockHandlerImpl implements GuardedBlockHandler {
 
         private RefactoringInfo refInfo;
+        private GuardedBlockUpdate guardedUpdate;
 
         private boolean first = true;
 
@@ -66,71 +69,168 @@ public class GuardedBlockHandlerFactoryImpl implements GuardedBlockHandlerFactor
 
             FileObject changedFile = proposedChange.getParentFile();
             FormRefactoringUpdate update = refInfo.getUpdateForFile(changedFile, true);
+            update.setGaurdedCodeChanging(true);
             boolean preloadForm = false;
+            boolean canRegenerate = false;
 
-            if (refInfo.getPrimaryFile().equals(changedFile)) {
+            if (refInfo.getPrimaryFile().equals(changedFile) && refInfo.isForm()) { // the change started in this form
                 switch (refInfo.getChangeType()) {
                 case VARIABLE_RENAME: // renaming field or local variable of initComponents
-                case CLASS_RENAME: // renaming form class, need to regenarate use of MyForm.this
+//                case CLASS_RENAME: // renaming form class, need to regenarate use of MyForm.this
                 case EVENT_HANDLER_RENAME: // renaming event handler - change the method and calls
                     preloadForm = true;
+                    canRegenerate = true;
                     break;
+                case CLASS_MOVE:
+                    // can't preload the form - it must be loaded
+                    // and regenareted *after* moved to the new location
+                    canRegenerate = true;
                 }
+            } else { // change originated in another class
+                if (first) {
+                    // add the preview element for the overall guarded block change
+                    // (for direct form change it was added by our plugin)
+                    replacements.add(update.getPreviewElement());
+                    first = false;
+                }
+                // other changes may render the form unloadable (missing component
+                // classes), will change the .form file directly...
             }
-            // other changes may render the form unloadable (missing component classes)
-            // TODO: close design if opened (switch to source) for such forms
-            // will change the .form file directly...
 
             // load the form in advance to be sure it can be loaded
-            if (preloadForm && !update.loadForm()) {
+            if (preloadForm && !update.prepareForm(true)) {
                 return new Problem(true, "Error loading form. Cannot update generated code.");
             }
 
-            // but otherwise do nothing - just make sure the update transaction is registered
-            transactions.add(update);
-
-            if (first) {
-                // add one placeholder "refactoring element" that will represent
-                // the guarded code update in the refactoring preview
-                replacements.add(new PlaceholderRefactoringElement(proposedChange.getParentFile()));
-                first = false; // one is enough...
+            if (!canRegenerate) { // guarded block gets changed but it is not safe to load the form
+                // remember the change and modify the guarded block directly later
+                ModificationResult.Difference diff = proposedChange.getLookup().lookup(ModificationResult.Difference.class);
+                if (diff != null) {
+                    if (guardedUpdate == null) {
+                        guardedUpdate = new GuardedBlockUpdate(
+                                update.getFormDataObject().getFormEditorSupport());
+                    }
+                    guardedUpdate.addChange(diff);
+                    transactions.add(guardedUpdate);
+                }
             }
 
+//            // make sure the form update transaction is registered // [is this needed??]
+            // we must add some transaction or element so it looks like we care
+            // about this guarded block change...
+            transactions.add(update);
+
             return null;
         }
     }
 
-    private static class PlaceholderRefactoringElement extends SimpleRefactoringElementImplementation {
-        private FileObject file;
-        PlaceholderRefactoringElement(FileObject fo) {
-            file = fo;
+    // -----
+
+    /**
+     * A transaction for updating guarded blocks directly with changes that came
+     * from java refactoring. I.e. no regenerating by form editor.
+     */
+    private static class GuardedBlockUpdate implements Transaction {
+        private FormEditorSupport formEditorSupport;
+        private List<GuardedBlockInfo> guardedInfos; // there can be multiple guarded blocks affected
+
+        GuardedBlockUpdate(FormEditorSupport fes) {
+            this.formEditorSupport = fes;
+            guardedInfos = new ArrayList<GuardedBlockInfo>(2);
+            guardedInfos.add(new GuardedBlockInfo(fes.getInitComponentSection()));
+            guardedInfos.add(new GuardedBlockInfo(fes.getVariablesSection()));
         }
 
-        public String getText() {
-            return "Guarded update";
+        void addChange(ModificationResult.Difference diff) {
+            for (GuardedBlockInfo block : guardedInfos) {
+                if (block.containsPosition(diff)) {
+                    block.addChange(diff);
+                    break;
+                }
+            }
         }
 
-        public String getDisplayText() {
-            return "Update generated code in guarded blocks";
+        public void commit() {
+            for (GuardedBlockInfo block : guardedInfos) {
+                String newText = block.getNewSectionText();
+                if (newText != null) {
+                    formEditorSupport.getGuardedSectionManager()
+                        .findSimpleSection(block.getName())
+                            .setText(newText);
+                }
+            }
         }
 
-        public void performChange() {
-        }
-
-        public Object getComposite() {
-            return getParentFile();
-        }
-
-        public FileObject getParentFile() {
-            return file;
-        }
-
-        public PositionBounds getPosition() {
-            return null;
-        }
-
-        public Lookup getLookup() {
-            return Lookup.EMPTY;
+        public void rollback() {
+            for (GuardedBlockInfo block : guardedInfos) {
+                formEditorSupport.getGuardedSectionManager()
+                    .findSimpleSection(block.getName())
+                        .setText(block.originalText);
+            }
         }
     }
+
+    /**
+     * Collects all changes for one guarded block.
+     */
+    private static class GuardedBlockInfo {
+        private String blockName;
+        private int originalPosition;
+        private String originalText;
+
+        /**
+         * Represents one change in the guarded block.
+         */
+        private static class ChangeInfo {
+            private int startPos;
+            private int length;
+            private String newText;
+            ChangeInfo(int startPos, int len, String newText) {
+                this.startPos = startPos;
+                this.length = len;
+                this.newText = newText;
+            }
+        }
+
+        private List<ChangeInfo> changes = new LinkedList<ChangeInfo>();
+
+        GuardedBlockInfo(SimpleSection section) {
+            blockName = section.getName();
+            originalPosition = section.getStartPosition().getOffset();
+            originalText = section.getText();
+        }
+
+        boolean containsPosition(ModificationResult.Difference diff) {
+            int pos = diff.getStartPosition().getOffset();
+            return pos >= originalPosition && pos < originalPosition + originalText.length();
+        }
+
+        void addChange(ModificationResult.Difference diff) {
+            changes.add(new ChangeInfo(
+                    diff.getStartPosition().getOffset() - originalPosition,
+                    diff.getOldText().length(),
+                    diff.getNewText()));
+        }
+
+        String getName() {
+            return blockName;
+        }
+
+        String getNewSectionText() {
+            if (changes.size() > 0) {
+                StringBuilder buf = new StringBuilder();
+                int lastOrigPos = 0;
+                for (ChangeInfo change : changes) {
+                    buf.append(originalText.substring(lastOrigPos, change.startPos));
+                    buf.append(change.newText);
+                    lastOrigPos = change.startPos + change.length;
+                }
+                buf.append(originalText.substring(lastOrigPos));
+                return buf.toString();
+            } else {
+                return null;
+            }
+        }
+    }
+
 }
