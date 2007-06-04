@@ -18,11 +18,6 @@
  */
 package org.netbeans.modules.compapp.casaeditor.model.casa;
 
-import java.util.List;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.Consumes;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.Endpoint;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.Provides;
-
 /**
  *
  * @author jqian
@@ -35,14 +30,16 @@ public interface CasaPort extends CasaComponent {
     public static final String CONSUMES_PROPERTY = "consumes";          // NOI18N
     public static final String PROVIDES_PROPERTY = "provides";          // NOI18N
     
-//    public static final String BINDINGTYPE_PROPERTY = "bindingType";    // NOI18N
+    // The bindingType can not be derived by its binding component name, e.g.,  
+    // both SOAP and HTTP type shared the same binding component, sun-http-binding.
+    public static final String BINDINGTYPE_PROPERTY = "bindingType";    // NOI18N
 //    public static final String PORTTYPE_PROPERTY = "portType";          // NOI18N
 //
 //    String getPortType();
 //    void setPortType(String portType);
 //    
-//    String getBindingType();
-//    void setBindingType(String bindingType);
+    String getBindingType();
+    void setBindingType(String bindingType);
     
     int getX();
     void setX(int x);

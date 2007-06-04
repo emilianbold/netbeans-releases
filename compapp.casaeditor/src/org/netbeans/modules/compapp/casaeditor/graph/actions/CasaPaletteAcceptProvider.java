@@ -236,7 +236,7 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
             case WSDL_BINDINGS :
                 point = getScene().getBindingRegion().convertSceneToLocal(point);
                 mModel.addCasaPort(
-                        //selNode.getTitle(),
+                        selNode.getTitle(),
                         selNode.getComponentName(),
                         point.x,
                         point.y);

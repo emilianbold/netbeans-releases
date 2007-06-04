@@ -124,6 +124,7 @@ public class AddWSDLPortsAction extends AbstractAction {
                     String selectedItem = panel.getSelectedItem();
                     JbiBindingInfo info = portMap.get(selectedItem);
                     model.addCasaPort(
+                            info.getBindingName(),
                             info.getBcName(),
                             location.x,
                             location.y);

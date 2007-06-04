@@ -119,13 +119,13 @@ public class CasaWrapperModel extends CasaModelImpl {
     // mapping WSDL port link hrefs to WSDL components
     private Map<String, Object> cachedWSDLComponents = new HashMap<String, Object>();
     
-    // mapping binding component name to binding type, 
-    // e.x, "sun-smtp-binding" -> "smtp".
-    private Map<String, String> bcName2BindingType;
-    
-    // mapping binding type to binding component name, 
-    // e.x, "smtp" -> "sun-smtp-binding".
-    private Map<String, String> bindingType2BcName;
+//    // mapping binding component name to binding type, 
+//    // e.x, "sun-smtp-binding" -> "smtp".
+//    private Map<String, String> bcName2BindingType;
+//    
+//    // mapping binding type to binding component name, 
+//    // e.x, "smtp" -> "sun-smtp-binding".
+//    private Map<String, String> bindingType2BcName;
     
     
     /** Creates a new instance of CasaWrapperModel */
@@ -139,10 +139,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             ex.printStackTrace();
         }
         
-        buildBindingComponentMaps();
-        
-        FileObject fo = org.openide.filesystems.Repository.getDefault().getDefaultFileSystem().findResource("Editors");
-//        System.out.println(fo);
+//        buildBindingComponentMaps();
     }
         
     public void removePropertyChangeListener(final PropertyChangeListener pcl) {
@@ -213,8 +210,12 @@ public class CasaWrapperModel extends CasaModelImpl {
     }
     
     public String getBindingType(final CasaPort casaPort) {
-        String bcName = getBindingComponentName(casaPort);
-        return bcName2BindingType.get(bcName);
+        String bindingType = casaPort.getBindingType();
+        if (bindingType == null) {
+            String bcCompName = getBindingComponentName(casaPort);
+            bindingType = getDefaultBindingComponents().get(bcCompName);
+        }
+        return bindingType;
     }
 
     /**
@@ -885,21 +886,41 @@ public class CasaWrapperModel extends CasaModelImpl {
         return null;
     }
         
+//    // FIXME: should we get bcs from design time or run time?
+//    private void buildBindingComponentMaps() {
+//        bcName2BindingType = new HashMap<String, String>();
+//        bindingType2BcName = new HashMap<String, String>();
+//        
+//        JbiDefaultComponentInfo bcinfo =
+//                JbiDefaultComponentInfo.getJbiDefaultComponentInfo();
+//        assert bcinfo != null;
+//        
+//        for (JbiBindingInfo bi : bcinfo.getBindingInfoList()) {
+//            String bcName = bi.getBcName();
+//            String bindingName = bi.getBindingName();
+//            bcName2BindingType.put(bcName, bindingName);
+//            bindingType2BcName.put(bindingName, bcName);
+//        }
+//    }
+    
+    // mapping bc namspace to bc name?
+    private Map<String, String> bcNameMap;
+    
     // FIXME: should we get bcs from design time or run time?
-    private void buildBindingComponentMaps() {
-        bcName2BindingType = new HashMap<String, String>();
-        bindingType2BcName = new HashMap<String, String>();
-        
-        JbiDefaultComponentInfo bcinfo =
-                JbiDefaultComponentInfo.getJbiDefaultComponentInfo();
-        assert bcinfo != null;
-        
-        for (JbiBindingInfo bi : bcinfo.getBindingInfoList()) {
-            String bcName = bi.getBcName();
-            String bindingName = bi.getBindingName();
-            bcName2BindingType.put(bcName, bindingName);
-            bindingType2BcName.put(bindingName, bcName);
+    public Map<String, String> getDefaultBindingComponents() {
+        if (bcNameMap == null) {
+            bcNameMap = new HashMap<String, String>();
+            
+            JbiDefaultComponentInfo bcinfo = 
+                    JbiDefaultComponentInfo.getJbiDefaultComponentInfo();
+            assert bcinfo != null;
+            
+            List<JbiBindingInfo> bcList = bcinfo.getBindingInfoList();
+            for (JbiBindingInfo bi : bcList) {
+                bcNameMap.put(bi.getBcName(), bi.getBindingName());
+            }
         }
+        return bcNameMap;
     }
     
     /**
@@ -1104,7 +1125,7 @@ public class CasaWrapperModel extends CasaModelImpl {
     /**
      * Adds a new WSDL endpoint.
      */
-    public CasaPort addCasaPort(String componentName, int x, int y) {
+    public CasaPort addCasaPort(String componentType, String componentName, int x, int y) {
         
         // 1. Update casa wsdl
         WSDLModel casaWSDLModel = getCasaWSDLModel(true); 
@@ -1150,7 +1171,7 @@ public class CasaWrapperModel extends CasaModelImpl {
                 
         String tns = casaWSDLModel.getDefinitions().getTargetNamespace(); 
 
-        return addCasaPortToModel(componentName, 
+        return addCasaPortToModel(componentType, componentName, 
                 new QName(""),  // empty interface qname
                 new QName(tns, newServiceName), 
                 newPortName, portHref, null, x, y);
@@ -1210,7 +1231,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             if (bi == null) {
                 return null;
             }
-
+            String componentType = bi.getBindingName();
             String componentName = bi.getBcName();
             String newServiceName = ((Service) (port.getParent())).getName();
             String newPortName = port.getName();            
@@ -1234,7 +1255,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             Definitions definitions = port.getModel().getDefinitions();
             String tns = definitions.getTargetNamespace();
             String newInterfaceName = port.getBinding().get().getType().get().getName();
-            return addCasaPortToModel(componentName, 
+            return addCasaPortToModel(componentType, componentName, 
                     new QName(tns, newInterfaceName),
                     new QName(tns, newServiceName), 
                     newPortName, portHref, port, x, y);
@@ -1246,7 +1267,8 @@ public class CasaWrapperModel extends CasaModelImpl {
         return null;
     }
     
-    private CasaPort addCasaPortToModel(String componentName,
+    private CasaPort addCasaPortToModel(String componentType, 
+            String componentName,
             QName newInterfaceQName,
             QName newServiceQName, String newPortName,
             String portHref, Port port, int x, int y) {
@@ -1277,7 +1299,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         casaPort.setY(y);
 //        casaPort.setBindingState("unbound");
 //        casaPort.setPortType("");
-//        casaPort.setBindingType(componentType);
+        casaPort.setBindingType(componentType);
         
         // 3. Add casa port link
         CasaLink link = casaFactory.createCasaLink();
@@ -2536,13 +2558,14 @@ public class CasaWrapperModel extends CasaModelImpl {
             // cascade the change in this case.
             
         } else {
-            CasaBindingComponentServiceUnit bcSU =
-                    (CasaBindingComponentServiceUnit) casaPort.getParent().getParent();
-            String bcName = bcSU.getComponentName();
-            String bindingType = bcName2BindingType.get(bcName);
+//            CasaBindingComponentServiceUnit bcSU =
+//                    (CasaBindingComponentServiceUnit) casaPort.getParent().getParent();
+//            String bcName = bcSU.getComponentName();
+//            String bindingType = bcName2BindingType.get(bcName);
             
             try {
-                populateBindingAndPort(casaPort, port, interfaceQName, bindingType);
+                populateBindingAndPort(casaPort, port, interfaceQName, 
+                        casaPort.getBindingType());
             } catch (RuntimeException e) { 
                 // TODO: we need better transaction rollback handling.
                 startTransaction();
