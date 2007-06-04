@@ -435,7 +435,7 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
     }
 
     public MetadataModel<WebservicesMetadata> getWebservicesMetadataModel() {
-        return project.getWebModule().getDeploymentDescriptor(WebservicesMetadata.class);
+        return project.getWebModule().getWebservicesMetadataModel();
     }
     
 }

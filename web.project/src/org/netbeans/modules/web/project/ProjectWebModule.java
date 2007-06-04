@@ -401,7 +401,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
         return webAppMetadataModel;
     }
     
-    private synchronized MetadataModel<WebservicesMetadata> getWebservicesMetadataModel() {
+    public synchronized MetadataModel<WebservicesMetadata> getWebservicesMetadataModel() {
         if (webservicesMetadataModel == null) {
             FileObject ddFO = getDD();
             File ddFile = ddFO != null ? FileUtil.toFile(ddFO) : null;
