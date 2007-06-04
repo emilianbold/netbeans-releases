@@ -197,12 +197,16 @@ public final class ModuleDeleterImpl  {
             assert file.exists () : "File " + file + " exists.";
             if (file.exists ()) {
                 err.log(Level.FINE, "File " + file + " is deleted.");
-                FileLock lock = null;
                 try {
                     FileObject fo = FileUtil.toFileObject (file);
-                    lock = (fo != null) ? fo.lock() : null;
                     //assert fo != null || !file.exists() : file.getAbsolutePath();
-                    file.delete();
+                    if (fo != null) {
+                        fo.lock().releaseLock();
+                    }
+                    File f = file;
+                    while (f.delete()) {
+                        f = f.getParentFile(); // remove empty dirs too
+                    }
                 } catch (IOException ioe) {
                     assert false : "Waring: IOException " + ioe.getMessage () + " was caught. Propably file lock on the file.";
                     err.log(Level.FINE,
@@ -211,10 +215,6 @@ public final class ModuleDeleterImpl  {
                     err.log(Level.FINE,
                             "Try call File.deleteOnExit() on " + file);
                     file.deleteOnExit ();
-                } finally {
-                    if (lock != null) {
-                        lock.releaseLock();
-                    }
                 }
             }
         }
