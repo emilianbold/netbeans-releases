@@ -593,7 +593,7 @@ public class Language extends org.netbeans.api.languages.Language {
             getMimeType (),
             getParser (), 
             new StringInput (sb.toString ()),
-            getSkipTokenTypes ()
+            Collections.emptySet ()
         );
         ASTNode root = getAnalyser ().read (ti, true);
         Feature astProperties = getFeature ("AST");

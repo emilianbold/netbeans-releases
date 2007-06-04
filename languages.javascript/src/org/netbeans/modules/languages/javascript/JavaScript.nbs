@@ -156,7 +156,8 @@ SKIP:js_line_comment
 
 S = (SourceElement)+;
 SourceElement = Statement;
-FormalParameterList = [<js_identifier> ("," <js_identifier>)*]; 
+FormalParameterList = [Parameter ("," Parameter)*]; 
+Parameter = <js_identifier>;
 
 Statement = EmptyStatement | ExpressionStatement | VariableStatement | 
     Block | LabelledStatement | IfStatement | SwitchStatement | 
@@ -165,7 +166,8 @@ Statement = EmptyStatement | ExpressionStatement | VariableStatement |
     ThrowStatement | TryStatement;
 Block = "{" (Statement)* "}";
 VariableStatement = "var" VariableDeclaration ("," VariableDeclaration)* [";"];
-VariableDeclaration = <js_identifier> [Initializer];
+VariableDeclaration = VariableName [Initializer];
+VariableName = <js_identifier>;
 Initializer = "=" AssignmentExpression;
 EmptyStatement = ";";
 ExpressionStatement = ExpressionInitial [";"];
@@ -300,54 +302,25 @@ COLOR:js_separator: {
     color_name: "js_operator";
 }
 
-COLOR:FunctionName: {
-    color_name: "js_method";
-    default_coloring: "default";
-    condition:org.netbeans.modules.languages.javascript.JavaScript.isUsedMethod;
-    font_type: "bold";
-}
+#COLOR:FunctionName: {
+#    color_name: "js_method";
+#    default_coloring: "default";
+#    condition:org.netbeans.modules.languages.javascript.JavaScript.isUsedMethod;
+#    font_type: "bold";
+#}
 
-COLOR:FunctionName: {
-    color_name: "js_unused_method";
-    default_coloring: "default";
-    condition:org.netbeans.modules.languages.javascript.JavaScript.isUnusedMethod;
-    font_type: "bold";
-    foreground_color: "0x737373";
-}
+#COLOR:FunctionName: {
+#    color_name: "js_unused_method";
+#    default_coloring: "default";
+#    condition:org.netbeans.modules.languages.javascript.JavaScript.isUnusedMethod;
+#    font_type: "bold";
+#    foreground_color: "0x737373";
+#}
 COLOR:js_regularExpression: {
     font_type: "bold";
     foreground_color: "0x006f00";
 }
 
-COLOR:js_identifier: {
-    color_name: "js_function_parameter";
-    default_coloring: "default";
-    condition:org.netbeans.modules.languages.javascript.JavaScript.isFunctionParameter;
-    foreground_color: "0xA06001";
-}
-
-COLOR:js_identifier: {
-    color_name: "js_unused_function_parameter";
-    default_coloring: "default";
-    condition:org.netbeans.modules.languages.javascript.JavaScript.isUnusedFunctionParameter;
-    foreground_color: "0x737373";
-}
-
-COLOR:js_identifier: {
-    color_name: "js_local_variable";
-    default_coloring: "default";
-    font_type: "bold";
-    condition:org.netbeans.modules.languages.javascript.JavaScript.isLocalVariable;
-    foreground_color: "0x098618";
-}
-
-COLOR:js_identifier: {
-    color_name: "js_unused_local_variable";
-    default_coloring: "default";
-    font_type: "bold";
-    condition:org.netbeans.modules.languages.javascript.JavaScript.isUnusedLocalVariable;
-    foreground_color: "0x737373";
-}
 
 ########### indentation ########################################################
  
@@ -408,22 +381,30 @@ COMPLETION:js_identifier, js_keyword, js_whitespace, js_operator, js_separator, 
     text1:org.netbeans.modules.languages.javascript.JavaScript.completionItems;
 }
 
-#STORE:VariableDeclaration: {
-#    context:"Folder,Block";
-#    name:"$js_identifier$";
-#}
+SEMANTIC_DECLARATION:VariableName: {
+    name:"$$";
+    type:"field";
+    local:"method";
+}
+SEMANTIC_DECLARATION:FunctionName: {
+    name:"$$";
+    type:"method";
+}
+SEMANTIC_DECLARATION:Parameter: {
+    name:"$$";
+    type:"parameter";
+}
+SEMANTIC_CONTEXT:Block
 
-#STORE:FunctionDeclaration: {
-#    context:"Folder,Block";
-#    name:"$js_identifier$";
-#}
+SEMANTIC_CONTEXT:FunctionDeclaration: {
+    type:"method";
+}
+SEMANTIC_USAGE:js_identifier: {
+    name:"$$";
+}
 
-#STORE:PropertyNameAndValue: {
-#    context:"Folder,Block";
-#    name:"$PropertyName$";
-#}
 
-HYPERLINK:js_identifier: org.netbeans.modules.languages.javascript.JavaScript.hyperlink
+#HYPERLINK:js_identifier: org.netbeans.modules.languages.javascript.JavaScript.hyperlink
 
 COMPLETE "(:)"
 COMPLETE "{:}"
@@ -469,12 +450,12 @@ ACTION:run_script: {
     explorer:"false";
 }
 
-ACTION:goto_declaration: {
-    name:"LBL_GoToDeclaration";
-    performer:org.netbeans.modules.languages.javascript.JavaScript.performGoToDeclaration;
-    enabled:org.netbeans.modules.languages.javascript.JavaScript.enabledGoToDeclaration;
-    explorer:"false";
-}
+#ACTION:goto_declaration: {
+#    name:"LBL_GoToDeclaration";
+#    performer:org.netbeans.modules.languages.javascript.JavaScript.performGoToDeclaration;
+#    enabled:org.netbeans.modules.languages.javascript.JavaScript.enabledGoToDeclaration;
+#    explorer:"false";
+#}
 
 IMPORT:js_string: {
     mimeType:"text/x-string";

@@ -28,44 +28,12 @@ import java.util.ListIterator;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
-import org.netbeans.api.languages.ASTItem;
-import org.netbeans.api.languages.CharInput;
-import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
-import org.netbeans.api.languages.LibrarySupport;
-import org.netbeans.api.languages.ASTNode;
-import org.netbeans.api.languages.ASTPath;
-import org.netbeans.api.languages.SyntaxContext;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.api.languages.Context;
-import org.netbeans.api.languages.LibrarySupport;
-import org.netbeans.api.languages.SyntaxContext;
-import org.netbeans.api.languages.ASTNode;
-import org.netbeans.api.languages.ASTToken;
-import org.netbeans.modules.languages.javascript.api.JSFunction;
-import org.netbeans.modules.languages.javascript.api.JSItem;
-import org.netbeans.modules.languages.javascript.api.JSRoot;
-import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
-import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
-import org.openide.cookies.SaveCookie;
-import org.openide.loaders.DataObject;
-import org.openide.text.Line;
-import org.openide.text.NbDocument;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.text.BadLocationException;
@@ -74,10 +42,33 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.StyledDocument;
+
+import org.netbeans.api.languages.ASTItem;
+import org.netbeans.api.languages.CharInput;
+import org.netbeans.api.languages.LibrarySupport;
+import org.netbeans.api.languages.ASTNode;
+import org.netbeans.api.languages.ASTPath;
+import org.netbeans.api.languages.SyntaxContext;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.languages.Context;
+import org.netbeans.api.languages.LibrarySupport;
+import org.netbeans.api.languages.SyntaxContext;
+import org.netbeans.api.languages.ASTNode;
+import org.netbeans.api.languages.ASTToken;
+import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.editor.NbEditorUtilities;
+import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
+import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
+import org.openide.cookies.SaveCookie;
+import org.openide.loaders.DataObject;
+import org.openide.text.NbDocument;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
 import org.netbeans.api.languages.CompletionItem;
-import org.netbeans.modules.languages.javascript.api.JSParser;
-import org.netbeans.modules.languages.javascript.api.JSVariable;
-import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
 
@@ -183,26 +174,6 @@ public class JavaScript {
         };
     }
 
-    public static Runnable hyperlink (Context context) {
-        if (!(context instanceof SyntaxContext)) return null;
-        NbEditorDocument doc = (NbEditorDocument) context.getDocument ();
-        SyntaxContext scontext = (SyntaxContext) context;
-        ASTPath path = scontext.getASTPath ();
-        JSItem item = getDeclaration (path);
-        if (item == null) return null;
-        int offset = item.getOffset();
-        DataObject dobj = NbEditorUtilities.getDataObject (doc);
-        LineCookie lc = (LineCookie)dobj.getCookie(LineCookie.class);
-        Line.Set lineSet = lc.getLineSet();
-        final Line line = lineSet.getCurrent (NbDocument.findLineNumber (doc, offset));
-        final int column = NbDocument.findLineColumn (doc, offset);
-        return new Runnable () {
-            public void run () {
-                line.show (Line.SHOW_GOTO, column);
-            }
-        };
-    }
-    
     public static String functionName (SyntaxContext context) {
         ASTPath path = context.getASTPath ();
         ASTNode n = (ASTNode) path.getLeaf ();
@@ -262,12 +233,7 @@ public class JavaScript {
             SyntaxContext syntaxContext = (SyntaxContext) context;
             ASTPath path = ((SyntaxContext) context).getASTPath ();
             Document doc = syntaxContext.getDocument ();
-            Map<String,CompletionItem> members = getMembers (
-                path,
-                getDocumentName (doc)
-            );
             List<CompletionItem> result = new ArrayList<CompletionItem> ();
-            result.addAll (members.values ());
             FileObject fo = NbEditorUtilities.getFileObject (doc);
             //Collection<CompletionItem> globals = Index.getGlobalItems (fo, members.keySet ());
             //result.addAll (globals);
@@ -486,201 +452,10 @@ public class JavaScript {
             return false;
         }
     }
-    
-    public static void performGoToDeclaration (ASTNode node, JTextComponent comp) {
-        NbEditorDocument doc = (NbEditorDocument)comp.getDocument();
-        int position = comp.getCaretPosition();
-        ASTPath path = node.findPath(position);
-        JSItem item = getDeclaration (path);
-        if (item == null) return;
-        int offset = item.getOffset();
-        DataObject dobj = NbEditorUtilities.getDataObject (doc);
-        LineCookie lc = (LineCookie)dobj.getCookie(LineCookie.class);
-        Line.Set lineSet = lc.getLineSet();
-        Line line = lineSet.getCurrent(NbDocument.findLineNumber(doc, offset));
-        int column = NbDocument.findLineColumn (doc, offset);
-        line.show (Line.SHOW_GOTO, column);
-    }
-     
-    public static boolean enabledGoToDeclaration (ASTNode node, JTextComponent comp) {
-        int position = comp.getCaretPosition();
-        ASTPath path = node.findPath(position);
-        JSItem item = getDeclaration (path);
-        return item != null;
-    }
-    
-    public static boolean isUsedMethod (Context context) {
-        if (!(context instanceof SyntaxContext)) return false;
-        SyntaxContext scontext = (SyntaxContext)context;
-        ASTPath path = scontext.getASTPath ();
-        ASTNode n = (ASTNode) path.getLeaf ();
-        JSRoot root = getRoot ((ASTNode) path.getRoot ());
-        JSItem item = root.getItem (n.getAsText (), n.getOffset ());
-        if (item instanceof JSFunction)
-            return ((JSFunction) item).findUsages ().size () > 0;
-        if (item instanceof JSVariable)
-            return ((JSVariable) item).findUsages ().size () > 0;
-        return false;
-    }
-    
-    public static boolean isUnusedMethod (Context context) {
-        if (!(context instanceof SyntaxContext)) return false;
-        SyntaxContext scontext = (SyntaxContext)context;
-        ASTPath path = scontext.getASTPath ();
-        ASTNode n = (ASTNode) path.getLeaf ();
-        JSRoot root = getRoot ((ASTNode) path.getRoot ());
-        JSItem item = root.getItem (n.getAsText (), n.getOffset ());
-        if (item instanceof JSFunction)
-            return ((JSFunction) item).findUsages ().isEmpty ();
-        if (item instanceof JSVariable)
-            return ((JSVariable) item).findUsages ().isEmpty ();
-        return false;
-    }
-    
-    public static boolean isFunctionParameter (Context context) {
-        JSVariable variable =  getVariable (context);
-        if (variable == null) return false;
-        return variable.getType () == JSVariable.Type.PARAMETER;
-    }
-    
-    public static boolean isUnusedFunctionParameter (Context context) {
-        JSVariable variable =  getVariable (context);
-        if (variable == null) return false;
-        return variable.getType () == JSVariable.Type.PARAMETER &&
-            variable.findUsages ().isEmpty ();
-    }
-    
-    public static boolean isLocalVariable(Context context) {
-        JSVariable variable =  getVariable (context);
-        if (variable == null) return false;
-        return variable.getType () == JSVariable.Type.LOCAL;
-    }
-    
-    public static boolean isUnusedLocalVariable(Context context) {
-        JSVariable variable =  getVariable (context);
-        if (variable == null) return false;
-        return variable.getType () == JSVariable.Type.LOCAL &&
-            variable.findUsages ().isEmpty ();
-    }
 
     
     // helper methods ..........................................................
     
-    private static JSParser jsParser;
-    private static Map<ASTNode,JSRoot> astNodeToJSRoot = new WeakHashMap<ASTNode,JSRoot> ();
-    
-    public static JSRoot getRoot (ASTNode ast) {
-        JSRoot result = astNodeToJSRoot.get (ast);
-        if (result != null)
-            return result;
-        if (jsParser == null)
-            try {
-                jsParser = JSParser.create ();
-            } catch (LanguageDefinitionNotFoundException ex) {
-            }
-        result = jsParser.process (ast);
-        astNodeToJSRoot.put (ast, result);
-        //printRoots ();
-        return result;
-    }
-    
-    private static void printRoots () {
-        System.out.println("\nJSRoots:");
-        Iterator<JSRoot> it = astNodeToJSRoot.values ().iterator ();
-        while (it.hasNext ()) {
-            System.out.println("  " + it.next ());
-        }
-    }
-    
-    public static JSItem getDeclaration (ASTPath path) {
-        ASTItem leaf = path.getLeaf();
-        if (!(leaf instanceof ASTToken))
-            return null;
-        ASTToken token = (ASTToken) leaf;
-        ASTNode ast = (ASTNode) path.getRoot ();
-        JSRoot root = JavaScript.getRoot (ast);
-        return root.getItem (token.getIdentifier (), token.getOffset ());
-    }
-    
-    private static Map<String,CompletionItem> getMembers (ASTPath path, String title) {
-        Map<String,CompletionItem> result = new HashMap<String,CompletionItem> ();
-        JSRoot root = getRoot ((ASTNode) path.get (0));
-        Collection<JSItem> c = root.getItems (path.getLeaf ().getOffset ());
-        Iterator<JSItem> it = c.iterator ();
-        while (it.hasNext ()) {
-            JSItem item =  it.next ();
-            if (item instanceof JSVariable) {
-                JSVariable v = (JSVariable) item;
-                result.put (
-                    v.getName (),
-                    toCompletionItem (v, title)
-                );
-            } else
-            if (item instanceof JSFunction) {
-                JSFunction f = (JSFunction) item;
-                result.put (
-                    f.getName (),
-                    toCompletionItem (f, title)
-                );
-            }
-        }
-        return result;
-    }
-    
-    static CompletionItem toCompletionItem (JSItem item, String title) {
-        if (item instanceof JSVariable) {
-            JSVariable v = (JSVariable) item;
-            CompletionItem.Type type = null;
-            switch (v.getType ()) {
-            case LOCAL:
-                type = CompletionItem.Type.LOCAL;
-                break;
-            case PARAMETER:
-                type = CompletionItem.Type.PARAMETER;
-                break;
-            case GLOBAL:
-                type = CompletionItem.Type.FIELD;
-                break;
-            }
-            return CompletionItem.create (
-                v.getName (),
-                null,
-                title,
-                type,
-                1
-            );
-        } else
-        if (item instanceof JSFunction) {
-            JSFunction f = (JSFunction) item;
-            return CompletionItem.create (
-                f.getName (),
-                null,
-                title,
-                CompletionItem.Type.METHOD,
-                1
-            );
-        }
-        return null;
-    }
-    
-    private static String getDocumentName (Document doc) {
-        String name = (String) doc.getProperty ("title");
-        if (name == null) return null;
-        int i = name.lastIndexOf (File.separatorChar);
-        if (i > 0)
-            return name.substring (i + 1);
-        return name;
-    }
-    
-    private static JSVariable getVariable (Context context) {
-        if (!(context instanceof SyntaxContext)) return null;
-        SyntaxContext scontext = (SyntaxContext)context;
-        ASTPath path = scontext.getASTPath ();
-        JSItem item = getDeclaration (path);
-        if (item instanceof JSVariable) 
-            return (JSVariable) item;
-        return null;
-    }
     
     private static LibrarySupport library;
     

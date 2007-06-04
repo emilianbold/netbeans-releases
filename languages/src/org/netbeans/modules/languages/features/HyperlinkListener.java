@@ -36,6 +36,7 @@ import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.Highlighting;
 import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
@@ -48,6 +49,10 @@ import javax.swing.JEditorPane;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
+import org.openide.cookies.LineCookie;
+import org.openide.loaders.DataObject;
+import org.openide.text.Line;
+import org.openide.text.NbDocument;
 
 
 /**
@@ -62,16 +67,17 @@ MouseListener {
 
     public void mouseMoved (MouseEvent e) {
         JEditorPane c = (JEditorPane) e.getComponent ();
-        NbEditorDocument doc = (NbEditorDocument) c.getDocument ();
+        final NbEditorDocument doc = (NbEditorDocument) c.getDocument ();
         if (!e.isControlDown ()) {
             if (context != null)
                 removeHighlihgt (doc);
             return;
         }
 
+        int offset = c.viewToModel (e.getPoint ());
         Object[] r = findEvaluator (
             doc,
-            c.viewToModel (e.getPoint ())
+            offset
         );
 
         if (context != null && (r == null || context != r [0])) {
@@ -83,6 +89,33 @@ MouseListener {
             if (runnable != null) {
                 context = (Context) r [0];
                 highlight (doc);
+            }
+        } else {
+            try {
+                ASTNode ast = ParserManagerImpl.get (doc).getAST ();
+                if (ast != null) {
+                    DatabaseContext root = DatabaseManager.getRoot (ast);
+                    if (root != null) {
+                        final DatabaseItem item = root.getDatabaseItem (offset);
+                        if (item != null && item instanceof DatabaseUsage) {
+                            context = SyntaxContext.create (doc, ast.findPath (offset));
+                            highlight (doc);
+                            runnable = new Runnable () {
+                                public void run () {
+                                    DatabaseDefinition definition = ((DatabaseUsage) item).getDefinition ();
+                                    int definitionOffset = definition.getOffset ();
+                                    DataObject dobj = NbEditorUtilities.getDataObject (doc);
+                                    LineCookie lc = (LineCookie) dobj.getCookie (LineCookie.class);
+                                    Line.Set lineSet = lc.getLineSet ();
+                                    Line line = lineSet.getCurrent (NbDocument.findLineNumber (doc, definitionOffset));
+                                    int column = NbDocument.findLineColumn (doc, definitionOffset);
+                                    line.show (Line.SHOW_GOTO, column);
+                                }
+                            };
+                        }
+                    }
+                }
+            } catch (ParseException ex) {
             }
         }
         c.repaint ();
@@ -121,12 +154,12 @@ MouseListener {
             if (o instanceof ASTToken)
                 Highlighting.getHighlighting (doc).highlight (
                     (ASTToken) o,
-                    getHyperlinkPressedAS ()
+                    getHyperlinkAS ()
                 );
             else
                 Highlighting.getHighlighting (doc).highlight (
                     (ASTNode) o,
-                    getHyperlinkPressedAS ()
+                    getHyperlinkAS ()
                 );
         } else {
             if (doc instanceof NbEditorDocument)
@@ -142,7 +175,7 @@ MouseListener {
                 );
                 Highlighting.getHighlighting (doc).highlight (
                     stoken,
-                    getHyperlinkPressedAS ()
+                    getHyperlinkAS ()
                 );
             } finally {
                 if (doc instanceof NbEditorDocument)
@@ -177,7 +210,7 @@ MouseListener {
                 );
                 Highlighting.getHighlighting (doc).highlight (
                     stoken,
-                    getHyperlinkPressedAS ()
+                    getHyperlinkAS ()
                 );
             } finally {
                 if (doc instanceof NbEditorDocument)

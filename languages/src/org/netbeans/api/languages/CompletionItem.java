@@ -41,7 +41,7 @@ public class CompletionItem {
     public static CompletionItem create (
         String          text
     ) {
-        return new CompletionItem (text, null, null, null, 2);
+        return new CompletionItem (text, null, null, null, 200);
     }
     
     public static CompletionItem create (

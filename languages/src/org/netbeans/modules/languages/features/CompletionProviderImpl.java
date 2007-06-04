@@ -19,9 +19,11 @@
 
 package org.netbeans.modules.languages.features;
 
+import java.io.File;
 import java.util.ArrayList;
 import javax.swing.text.Document;
 import org.netbeans.api.languages.ASTItem;
+import org.netbeans.api.languages.CompletionItem.Type;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ParserManager;
@@ -40,12 +42,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.languages.Feature;
-import org.netbeans.modules.languages.Feature.Type;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.ParserManagerImpl;
-import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -374,13 +374,52 @@ public class CompletionProviderImpl implements CompletionProvider {
                 } catch (ParseException ex) {
                 }
             }
+            
+            DatabaseContext context = DatabaseManager.getRoot (node);
+            List<DatabaseDefinition> definitions = context.getAllVisibleDefinitions (offset);
+            String start = token.getIdentifier ().substring (0, offset - tokenOffset).trim ();
+            Iterator<DatabaseDefinition> it = definitions.iterator ();
+            while (it.hasNext ()) {
+                DatabaseDefinition definition =  it.next ();
+                Type type = null;
+                if ("local".equals (definition.getType ()))
+                    type = Type.LOCAL;
+                else
+                if ("parameter".equals (definition.getType ()))
+                    type = Type.PARAMETER;
+                else
+                if ("field".equals (definition.getType ()))
+                    type = Type.FIELD;
+                else
+                if ("method".equals (definition.getType ()))
+                    type = Type.METHOD;
+                CompletionSupport cs = new CompletionSupport (new org.netbeans.api.languages.CompletionItem (
+                    definition.getName (),
+                    null,
+                    getDocumentName (),
+                    type,
+                    100
+                ));
+                items.add (cs);
+                if (definition.getName ().startsWith (start))
+                    resultSet.addItem (cs);
+            }
         }
+        
+        private String getDocumentName () {
+            String name = (String) doc.getProperty ("title");
+            if (name == null) return null;
+            int i = name.lastIndexOf (File.separatorChar);
+            if (i > 0)
+                return name.substring (i + 1);
+            return name;
+        }        
 
         private void addTags (Feature feature, String start, Context context, Result resultSet) {
             int j = 1;
             while (true) {
                 if (context instanceof SyntaxContext &&
-                    feature.getType ("text" + j) == Type.STRING &&
+                    feature.getType ("text" + j) == Feature.Type.STRING &&
                     ((SyntaxContext) context).getASTPath ().getLeaf () instanceof ASTToken
                 ) {
                     j++;

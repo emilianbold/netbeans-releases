@@ -58,6 +58,7 @@ import org.netbeans.modules.languages.features.CommentCodeAction;
 import org.netbeans.modules.languages.features.ExpandFoldTypeAction;
 import org.netbeans.modules.languages.features.HyperlinkListener;
 import org.netbeans.modules.editor.NbEditorKit;
+import org.netbeans.modules.languages.features.DatabaseManager;
 import org.netbeans.modules.languages.features.IndentAction;
 import org.netbeans.modules.languages.features.LanguagesGenerateFoldPopupAction;
 import org.netbeans.modules.languages.features.MyFirstDrawLayer;
@@ -232,6 +233,7 @@ public class LanguagesEditorKit extends NbEditorKit {
             1500
         );
         new AnnotationManager (doc);
+        new DatabaseManager (doc);
     }
     
 //    public Syntax createSyntax (Document doc) {

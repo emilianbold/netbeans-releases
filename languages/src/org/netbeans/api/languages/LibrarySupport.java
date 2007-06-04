@@ -152,7 +152,7 @@ public abstract class LibrarySupport {
                         properties.get ("description"),
                         properties.get ("library"),
                         type,
-                        2
+                        200
                     ));
                 }
             }

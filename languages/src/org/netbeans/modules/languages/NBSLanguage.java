@@ -95,8 +95,10 @@ public class NBSLanguage {
                 "'PROPERTIES' |" +
                 "'REFORMAT' |" +
                 "'SELECTION' | " +
+                "'SEMANTIC_CONTEXT' | " +
+                "'SEMANTIC_DECLARATION' | " +
+                "'SEMANTIC_USAGE' | " +
                 "'SKIP' |" +
-                "'STORE' |" +
                 "'TOKEN' |" +
                 "'TOOLTIP'"
             ),

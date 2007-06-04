@@ -36,6 +36,8 @@ import javax.swing.text.Document;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.api.languages.ASTItem;
+import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.Context;
 import org.netbeans.api.languages.SyntaxContext;
@@ -68,7 +70,117 @@ public class ColorsManager {
             if (!f.getBoolean("condition", context, true)) continue;
             result.add(createColoring(f, null));
         }
+        ASTNode node = (ASTNode) path.getRoot ();
+        DatabaseContext root = DatabaseManager.getRoot (node);
+        if (root == null) return result;
+        ASTItem item = path.getLeaf ();
+        DatabaseItem i = root.getDatabaseItem (item.getOffset ());
+        if (i == null || i.getEndOffset () != item.getEndOffset ()) return result;
+        AttributeSet as = getAttributes (i);
+        if (as != null)
+            result.add (as);
         return result;
+    }
+    
+    private static AttributeSet getAttributes (DatabaseItem item) {
+        if (item instanceof DatabaseDefinition) {
+            DatabaseDefinition definition = (DatabaseDefinition) item;
+            if ("global_variable".equals (definition.getName ()))
+                System.out.println("");
+            if (definition.getUsages ().isEmpty ()) {
+                if ("parameter".equals (definition.getType ()))
+                    return getUnusedParameterAttributes ();
+                if ("variable".equals (definition.getType ()))
+                    return getUnusedLocalVariableAttributes ();
+                if ("field".equals (definition.getType ()))
+                    return getUnusedFieldAttributes ();
+            } else {
+                if ("parameter".equals (definition.getType ()))
+                    return getParameterAttributes ();
+                if ("variable".equals (definition.getType ()))
+                    return getLocalVariableAttributes ();
+                if ("field".equals (definition.getType ()))
+                    return getFieldAttributes ();
+            }
+        }
+        if (item instanceof DatabaseUsage) {
+            DatabaseUsage usage = (DatabaseUsage) item;
+            DatabaseDefinition definition = usage.getDefinition ();
+            if ("parameter".equals (definition.getType ()))
+                return getParameterAttributes ();
+            if ("local".equals (definition.getType ()))
+                return getLocalVariableAttributes ();
+            if ("field".equals (definition.getType ()))
+                return getFieldAttributes ();
+        }
+        return null;
+    }
+    
+    private static AttributeSet unusedParameterAttributeSet;
+    
+    private static AttributeSet getUnusedParameterAttributes () {
+        if (unusedParameterAttributeSet == null) {
+            SimpleAttributeSet sas = new SimpleAttributeSet ();
+            StyleConstants.setForeground (sas, new Color (115, 115, 115));
+            unusedParameterAttributeSet = sas;
+        }
+        return unusedParameterAttributeSet;
+    }
+    
+    private static AttributeSet parameterAttributeSet;
+    
+    private static AttributeSet getParameterAttributes () {
+        if (parameterAttributeSet == null) {
+            SimpleAttributeSet sas = new SimpleAttributeSet ();
+            StyleConstants.setForeground (sas, new Color (160, 96, 1));
+            parameterAttributeSet = sas;
+        }
+        return parameterAttributeSet;
+    }
+    
+    private static AttributeSet unusedLocalVariableAttributeSet;
+    
+    private static AttributeSet getUnusedLocalVariableAttributes () {
+        if (unusedLocalVariableAttributeSet == null) {
+            SimpleAttributeSet sas = new SimpleAttributeSet ();
+            StyleConstants.setForeground (sas, new Color (115, 115, 115));
+            unusedLocalVariableAttributeSet = sas;
+        }
+        return unusedLocalVariableAttributeSet;
+    }
+    
+    private static AttributeSet localVariableAttributeSet;
+    
+    private static AttributeSet getLocalVariableAttributes () {
+        if (localVariableAttributeSet == null) {
+            SimpleAttributeSet sas = new SimpleAttributeSet ();
+            localVariableAttributeSet = sas;
+        }
+        return localVariableAttributeSet;
+    }
+    
+    private static AttributeSet unusedFieldAttributeSet;
+    
+    private static AttributeSet getUnusedFieldAttributes () {
+        if (unusedFieldAttributeSet == null) {
+            SimpleAttributeSet sas = new SimpleAttributeSet ();
+            StyleConstants.setForeground (sas, new Color (115, 115, 115));
+            StyleConstants.setBold (sas, true);
+            unusedFieldAttributeSet = sas;
+        }
+        return unusedFieldAttributeSet;
+    }
+    
+    private static AttributeSet fieldAttributeSet;
+    
+    private static AttributeSet getFieldAttributes () {
+        if (fieldAttributeSet == null) {
+            SimpleAttributeSet sas = new SimpleAttributeSet ();
+            StyleConstants.setForeground (sas, new Color (9, 134, 24));
+            StyleConstants.setBold (sas, true);
+            fieldAttributeSet = sas;
+        }
+        return fieldAttributeSet;
     }
     
     public static void initColorings(Language l) {
