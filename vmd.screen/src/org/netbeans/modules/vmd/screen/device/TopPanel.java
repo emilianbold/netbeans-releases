@@ -86,6 +86,7 @@ public class TopPanel extends JPanel {
             }
 
             public void mousePressed (MouseEvent e) {
+               
                 if (injectorWindow (e, false))
                     return;
                 select (e);
@@ -102,22 +103,22 @@ public class TopPanel extends JPanel {
             }
 
             public void mouseEntered (MouseEvent e) {
-                hover (e);
+                hover (e.getPoint());
             }
 
             public void mouseExited (MouseEvent e) {
-                hover (e);
+                hover (e.getPoint());
             }
 
         });
 
         addMouseMotionListener (new MouseMotionListener() {
             public void mouseDragged (MouseEvent e) {
-                hover (e);
+                hover (e.getPoint());
             }
 
             public void mouseMoved (MouseEvent e) {
-                hover (e);
+                hover (e.getPoint());
             }
         });
 
@@ -130,6 +131,7 @@ public class TopPanel extends JPanel {
             }
 
             public void dragOver (DropTargetDragEvent dtde) {
+                hover (dtde.getLocation());
                 if (isAcceptable (dtde.getLocation (), dtde.getTransferable ()))
                     dtde.acceptDrag (DnDConstants.ACTION_COPY_OR_MOVE);
                 else
@@ -238,8 +240,8 @@ public class TopPanel extends JPanel {
         });
     }
 
-    public void hover (final MouseEvent e) {
-        lastHoverPoint = e != null ? e.getPoint () : null;
+    public void hover (final Point point) {
+        lastHoverPoint = point != null ? point : null;
         final DesignDocument document = devicePanel.getController ().getDocument ();
         if (lastHoverPoint != null  &&  document != null)
             document.getTransactionManager ().writeAccess (new Runnable() {
@@ -254,7 +256,7 @@ public class TopPanel extends JPanel {
                         Shape shape = property.getSelectionShape ();
                         if (editorOrigin == null)
                             System.out.println();
-                        if (shape.contains (new Point (e.getX () - editorOrigin.x, e.getY () - editorOrigin.y))) {
+                        if (shape.contains (new Point (point.x - editorOrigin.x, point.y - editorOrigin.y))) {
                             hoverShape = new SelectionShape (editorOrigin.x, editorOrigin.y, shape, Long.MIN_VALUE, false);
                             return;
                         }
@@ -407,5 +409,4 @@ public class TopPanel extends JPanel {
         }
 
     }
-
 }

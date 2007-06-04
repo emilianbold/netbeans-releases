@@ -102,7 +102,9 @@ public class StringItemCD extends ComponentDescriptor {
             // delete
             DeleteDependencyPresenter.createNullableComponentReferencePresenter (PROP_FONT),
             // screen
-            new StringItemDisplayPresenter(),new MidpAcceptProducerKindPresenter().addType(FontCD.TYPEID, PROP_FONT),MidpAcceptTrensferableKindPresenter.createFontAcceptPresenter()
+            new StringItemDisplayPresenter(),
+            new MidpAcceptProducerKindPresenter().addType(FontCD.TYPEID, PROP_FONT),
+            MidpAcceptTrensferableKindPresenter.createFontAcceptPresenter()
        );   
     }
     

@@ -51,7 +51,6 @@ import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 
@@ -95,12 +94,13 @@ public abstract class FileAcceptPresenter extends AbstractAcceptPresenter {
     }
     
     public boolean isAcceptable(Transferable transferable) {
+        assert (!extensionsMap.isEmpty());
         String fe = getFileExtension(transferable);
+
         if (fe == null)
             return false;
         fe = ignoreExtFileCase(fe);
         TypeID typeID = extensionsMap.get(fe);
-        
         if (typeID != null)
             return true;
         return false;
@@ -125,7 +125,7 @@ public abstract class FileAcceptPresenter extends AbstractAcceptPresenter {
         return new ComponentProducer.Result(newComponent);
     }
     
-    private String getFileExtension(Transferable transferable) {
+    protected String getFileExtension(Transferable transferable) {
         for (DataFlavor df : transferable.getTransferDataFlavors()) {
             if (df != df.javaFileListFlavor)
                 continue;
@@ -143,13 +143,9 @@ public abstract class FileAcceptPresenter extends AbstractAcceptPresenter {
             Set<FileObject> filesToScan = getFoldersToScan();
             boolean hasExtension = false;
             for (FileObject f : filesToScan) {
-                try {
-                    if (isParent(DataObject.find(f), FileUtil.toFileObject(file))) {
-                        hasExtension = true;
-                        break;
-                    }
-                } catch (DataObjectNotFoundException ex) {
-                    Exceptions.printStackTrace(ex);
+                if (FileUtil.isParentOf(f, FileUtil.toFileObject(file))) {
+                    hasExtension = true;
+                    break;
                 }
             }
             if (!hasExtension)
@@ -241,16 +237,6 @@ public abstract class FileAcceptPresenter extends AbstractAcceptPresenter {
             filesToScan.add((g.getRootFolder()));
         }
         return filesToScan;
-    }
-    
-    private boolean isParent(DataObject rootDataObject, FileObject childFileObject) {
-        Node[] children = rootDataObject.getNodeDelegate().getChildren().getNodes();
-        for (Node node : children) {
-            DataObject nodeDataObject = (DataObject) node.getLookup().lookup(DataObject.class);
-            if (nodeDataObject.files().contains(childFileObject) || isParent(nodeDataObject, childFileObject))
-                return true;
-        }
-        return false;
     }
     
     private String createFilePath(DataObject rootDataObject, DataObject parentDataObject, FileObject childFileObject) {

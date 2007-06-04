@@ -111,6 +111,9 @@ public final class ListElementEventSourceCD extends ComponentDescriptor {
             // inspector
             InspectorPositionPresenter.create(new ComponentsCategoryPC(MidpInspectorSupport.TYPEID_ELEMENTS)),
             // accept
+            FileAcceptPresenter.create(ImageCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "png", "gif"),
+            MidpAcceptTrensferableKindPresenter.createFontAcceptPresenter(),
+            MidpAcceptTrensferableKindPresenter.createImageAcceptPresenter(),
             new AcceptTypePresenter(EventHandlerCD.TYPEID) {
                 protected boolean notifyAccepting (TypeID producerTypeID) {
                     DescriptorRegistry registry = getComponent().getDocument().getDescriptorRegistry();
@@ -162,7 +165,7 @@ public final class ListElementEventSourceCD extends ComponentDescriptor {
                 }
             },
             // screen
-            new ListElementEventSourceDisplayPresenter(),FileAcceptPresenter.create(ImageCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "png", "gif"),MidpAcceptTrensferableKindPresenter.createFontAcceptPresenter(),MidpAcceptTrensferableKindPresenter.createImageAcceptPresenter()
+            new ListElementEventSourceDisplayPresenter()
         );
     }
 

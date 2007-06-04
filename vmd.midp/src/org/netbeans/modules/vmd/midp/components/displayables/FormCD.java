@@ -49,12 +49,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.vmd.api.model.ComponentProducer.Result;
-import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
-import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
-import org.netbeans.modules.vmd.midp.components.items.ImageItemCD;
-import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
-import org.netbeans.modules.vmd.midp.general.FileAcceptPresenter;
 
 
 /**
@@ -110,6 +104,7 @@ public final class FormCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
                 // accept
+                FormAcceptPresentersSupport.createImageItemFromImageAcceptPresenter("png","jpg","gif"),
                 new AcceptTypePresenter(ItemCD.TYPEID) {
             protected void notifyCreated(DesignComponent component) {
                 super.notifyCreated(component);
@@ -135,20 +130,5 @@ public final class FormCD extends ComponentDescriptor {
     
     private List<InspectorOrderingController> createOrderingArrayController() {
         return Collections.<InspectorOrderingController>singletonList(new ArrayPropertyOrderingController(PROP_ITEMS, 0, ItemCD.TYPEID));
-    }
-
-    private class ImageItemAcceptPresenter extends FileAcceptPresenter {
-        public Result accept(Transferable transferable) {
-            DesignDocument document = getComponent().getDocument();
-            Result result = super.accept(transferable);
-            DesignComponent component = result.getComponents().iterator().next();
-            ComponentProducer ip = DocumentSupport.getComponentProducer(getComponent().getDocument(), ImageCD.TYPEID);
-            DesignComponent image = ip.createComponent(document).getComponents().iterator().next();
-            component.writeProperty(ImageItemCD.PROP_IMAGE, PropertyValue.createComponentReference(image));
-            image.writeProperty(ImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(getFilePath(transferable)));
-            MidpDocumentSupport.getCategoryComponent(document, ResourcesCategoryCD.TYPEID).addComponent(image);
-            getComponent().addComponent(component);
-            return new Result(component);
-        }
     }
 }

@@ -56,7 +56,7 @@ public class ImageItemCD extends ComponentDescriptor {
     
     public static final String PROP_ALT_TEXT = "altText"; // NOI18N
     public static final String PROP_IMAGE = ImageCD.PROP_IMAGE; // NOI18N
-
+    
     public TypeDescriptor getTypeDescriptor() {
         return new TypeDescriptor(ItemCD.TYPEID, TYPEID, true, true);
     }
@@ -108,9 +108,11 @@ public class ImageItemCD extends ComponentDescriptor {
                 createSetterPresenter(),
                 // delete
                 DeleteDependencyPresenter.createNullableComponentReferencePresenter (PROP_IMAGE),
+                //accept
+                FileAcceptPresenter.create(ImageItemCD.PROP_IMAGE, ImageCD.TYPEID, "jpg","gif","png"), //NOI18N
+                new MidpAcceptProducerKindPresenter().addType(ImageCD.TYPEID, PROP_IMAGE),
                 // screen
-                new ImageItemDisplayPresenter(),FileAcceptPresenter.create(ImageItemCD.PROP_IMAGE, ImageCD.TYPEID, "jpg","gif","png"),new MidpAcceptProducerKindPresenter().addType(ImageCD.TYPEID, PROP_IMAGE),
-                // screen
+                new ImageItemDisplayPresenter(),
                 new ImageItemInjectorPresenter ()
         );
     }

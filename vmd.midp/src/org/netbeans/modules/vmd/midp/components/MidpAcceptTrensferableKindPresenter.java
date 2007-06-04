@@ -58,6 +58,10 @@ public class MidpAcceptTrensferableKindPresenter extends AbstractAcceptPresenter
         return new MidpAcceptTrensferableKindPresenter().addType(FontCD.TYPEID, PROP_FONT);
     }
     
+    public static AbstractAcceptPresenter createImageItemFromImageAcceptPresenter() {
+        return new MidpAcceptTrensferableKindPresenter().addType(ImageCD.TYPEID, PROP_IMAGE);
+    }
+    
     private Map<TypeID, String> typesMap;
     private DesignComponent component;
     private String propertyName;

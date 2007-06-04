@@ -133,8 +133,9 @@ public final class DisplayableCD extends ComponentDescriptor {
             // action
             EditDependencyPresenter.createEditablePresenter(),    
             // accept
-            new DisplayableAccept.DisplayableCommandsAcceptPresenter (),new MidpAcceptProducerKindPresenter().addType(TickerCD.TYPEID, PROP_TICKER),
-//            new DisplayableAccept.DisplayableCommandsEventHandlerAcceptPresenter (),
+            new DisplayableAccept.DisplayableCommandsAcceptPresenter (),
+            MidpAcceptTrensferableKindPresenter.createTickerAcceptPresenter(),
+            //            new DisplayableAccept.DisplayableCommandsEventHandlerAcceptPresenter (),
             // flow
             new FlowInfoNodePresenter (),
             new FlowDisplayableCommandPinOrderPresenter (),
@@ -155,8 +156,7 @@ public final class DisplayableCD extends ComponentDescriptor {
             // screen
             new DisplayableDisplayPresenter(),
             new DisplayableResourceCategoriesPresenter(),
-            new TickerInjectorPresenter (),MidpAcceptTrensferableKindPresenter.createTickerAcceptPresenter()
-
+            new TickerInjectorPresenter ()
         );
     }
     

@@ -28,7 +28,6 @@ import org.netbeans.modules.vmd.midp.components.items.ImageItemCD;
 
 import javax.swing.*;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
-import org.netbeans.modules.vmd.midp.components.items.GaugeCD;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.netbeans.modules.vmd.midp.screen.display.property.ResourcePropertyEditor;
 import org.openide.util.Utilities;

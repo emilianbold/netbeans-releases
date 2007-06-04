@@ -21,6 +21,9 @@
 package org.netbeans.modules.vmd.screen.resource;
 
 import java.awt.dnd.DragGestureEvent;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
@@ -41,6 +44,8 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DragGestureListener;
 import java.awt.dnd.DragSource;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetListener;
 import java.awt.dnd.InvalidDnDOperationException;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -63,18 +68,20 @@ public class ResourceItemPanel extends JLabel implements MouseListener {
     private boolean hovered;
     private DragSource dragSource;
     private DragListener listener;
+    private DropTarget dropTarget;
     
     public ResourceItemPanel(DesignComponent component) {
         this.component = component;
         setOpaque(false);
         setBackground(Color.WHITE);
         addMouseListener(this);
-        dragSource = new DragSource();
         listener =  new DragListener();
         initDragAndDrop();
     }
     
-    protected void initDragAndDrop() {
+    private void initDragAndDrop() {
+        dragSource = new DragSource();
+        dropTarget = new DropTarget(this, new DropListener());
         dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_COPY_OR_MOVE, listener);
     }
     
@@ -125,16 +132,16 @@ public class ResourceItemPanel extends JLabel implements MouseListener {
     }
     
     public void mousePressed(MouseEvent e) {
-        if (e.isPopupTrigger ()) {
-            doSelect (e);
-            Utilities.actionsToPopup(ActionsSupport.createActionsArray(component), this).show (this, e.getX (), e.getY ());
+        if (e.isPopupTrigger()) {
+            doSelect(e);
+            Utilities.actionsToPopup(ActionsSupport.createActionsArray(component), this).show(this, e.getX(), e.getY());
         }
     }
     
     public void mouseReleased(MouseEvent e) {
-        if (e.isPopupTrigger ()) {
-            doSelect (e);
-            Utilities.actionsToPopup(ActionsSupport.createActionsArray(component), this).show (this, e.getX (), e.getY ());
+        if (e.isPopupTrigger()) {
+            doSelect(e);
+            Utilities.actionsToPopup(ActionsSupport.createActionsArray(component), this).show(this, e.getX(), e.getY());
         }
     }
     
@@ -156,9 +163,11 @@ public class ResourceItemPanel extends JLabel implements MouseListener {
     }
     
     private class DragListener implements DragGestureListener {
-        
+        private ScreenTransferable flavor;
+                
         public void dragGestureRecognized(DragGestureEvent dgEvent) {
-            final ScreenFlavor flavor = new ScreenFlavor(component);
+             if (flavor == null)
+                 flavor = new ScreenTransferable(component);
             try {
                 dgEvent.startDrag(null , flavor);
             } catch (InvalidDnDOperationException e) {
@@ -167,11 +176,35 @@ public class ResourceItemPanel extends JLabel implements MouseListener {
         }
     }
     
-    public class ScreenFlavor implements Transferable {
+    private class DropListener implements DropTargetListener {
+        
+        public void dragEnter(DropTargetDragEvent dtde) {
+            hovered = true;
+            resolveBorder();
+        }
+        
+        public void dragOver(DropTargetDragEvent dtde) {
+            dtde.rejectDrag();
+        }
+        
+        public void dropActionChanged(DropTargetDragEvent dtde) {
+        }
+        
+        public void dragExit(DropTargetEvent dte) {
+            hovered = false;
+            resolveBorder();
+        }
+        
+        public void drop(DropTargetDropEvent dtde) {
+        }
+        
+    }
+    
+    private class ScreenTransferable implements Transferable {
         private DataFlavor dataFlavor;
         private DesignComponent component;
         
-        public ScreenFlavor(DesignComponent component) {
+        public ScreenTransferable(DesignComponent component) {
             dataFlavor = new DesignComponentDataFlavor(component);
             this.component = component;
         }
@@ -192,5 +225,5 @@ public class ResourceItemPanel extends JLabel implements MouseListener {
             return component;
         }
     }
-
+    
 }

@@ -126,8 +126,6 @@ public final class ListCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
                 // accept
-                
-                // accept
                 new AcceptTypePresenter(ListElementEventSourceCD.TYPEID) {
                     protected void notifyCreated (DesignComponent component) {
                         super.notifyCreated (component);

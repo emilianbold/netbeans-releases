@@ -48,7 +48,7 @@ import org.openide.util.datatransfer.NewType;
  *
  * @author Karol Harezlak
  */
-public final class InspectorWrapperTree implements FolderRegistry.Listener/*, ActiveViewSupport.Listener */{
+public final class InspectorWrapperTree implements FolderRegistry.Listener {
     
     private Collection<InspectorFolder> globalFolders;
     private FolderRegistry registry;

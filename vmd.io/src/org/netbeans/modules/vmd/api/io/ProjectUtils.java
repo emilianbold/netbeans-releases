@@ -78,6 +78,8 @@ public final class ProjectUtils {
      * @throws NullPointerException when the context parameter is null
      */
     public static Project getProject(DataObjectContext context) {
+        if (context == null)
+            return null;
         return getProject(context.getDataObject());
     }
     

@@ -25,7 +25,6 @@ import org.netbeans.modules.vmd.api.model.Presenter;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Collection;
-import java.util.Collections;
 
 /**
  * A base presenter for the device display component. This presenter occupies the whole device display visible in the screen editor and

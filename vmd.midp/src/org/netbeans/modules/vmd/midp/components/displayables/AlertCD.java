@@ -138,7 +138,11 @@ public final class AlertCD extends ComponentDescriptor {
             // flow
             new FlowAlertViaPinOrderPresenter (),
             // screen
-            new AlertDisplayPresenter(),new MidpAcceptProducerKindPresenter().addType(ImageCD.TYPEID, PROP_IMAGE),FileAcceptPresenter.create(ImageCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "png", "gif"),MidpAcceptTrensferableKindPresenter.createImageAcceptPresenter()
+            new AlertDisplayPresenter(),
+            //accept
+            new MidpAcceptProducerKindPresenter().addType(ImageCD.TYPEID, PROP_IMAGE),
+            FileAcceptPresenter.create(ImageCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "png", "gif"),
+            MidpAcceptTrensferableKindPresenter.createImageAcceptPresenter()
         
         );
     }
