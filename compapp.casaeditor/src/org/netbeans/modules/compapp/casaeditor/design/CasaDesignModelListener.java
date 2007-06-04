@@ -28,6 +28,7 @@ import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidget;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidgetBinding;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidgetEngine;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaPinWidget;
+import org.netbeans.modules.compapp.casaeditor.graph.CasaRegionWidget;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConnection;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
@@ -199,6 +200,7 @@ public class CasaDesignModelListener implements PropertyChangeListener {
     private void addEndpoint(CasaEndpointRef endpoint) {
         CasaWrapperModel model = mScene.getModel();
         CasaPort casaPort = model.getCasaPort(endpoint);
+        CasaRegionWidget region = null;
         if (casaPort != null) {
             CasaModelGraphUtilities.createPin(
                     casaPort,
@@ -206,6 +208,7 @@ public class CasaDesignModelListener implements PropertyChangeListener {
                     endpoint.getEndpointName(),
                     mScene,
                     true);
+            region = mScene.getBindingRegion();
         } else {
             CasaServiceEngineServiceUnit serviceUnit = model.getCasaEngineServiceUnit(endpoint);
             CasaModelGraphUtilities.createPin(
@@ -215,9 +218,13 @@ public class CasaDesignModelListener implements PropertyChangeListener {
                     mScene,
                     true);
             CasaModelGraphUtilities.ensureVisibity(mScene.findWidget(serviceUnit));
+            region = serviceUnit.isInternal() ? 
+                mScene.getEngineRegion() : mScene.getExternalRegion();
         }
         // update selection
         mScene.updateSelectionAndRequestFocus(endpoint);
+        // Force a layout to ensure no overlap occurs after a pin is added.
+        mScene.progressiveRegionLayout(region, true);
     }
     
     private void renameEndpoint(CasaComponent component) {
