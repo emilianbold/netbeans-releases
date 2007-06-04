@@ -23,7 +23,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.ejbjar.CarAccessor;
 import org.netbeans.modules.j2ee.metadata.ClassPathSupport;
-import org.netbeans.modules.j2ee.metadata.MetadataUnit;
 import org.netbeans.modules.j2ee.spi.ejbjar.CarImplementation;
 import org.netbeans.modules.j2ee.spi.ejbjar.CarProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.CarsInProject;
@@ -47,7 +46,7 @@ import org.openide.util.Lookup;
  * @author Pavel Buzek
  * @author Lukas Jungmann
  */
-public final class Car implements MetadataUnit {
+public final class Car {
     private CarImplementation impl;
     private static final Lookup.Result<CarProvider> implementations =
         Lookup.getDefault().lookup(new Lookup.Template<CarProvider>(CarProvider.class));

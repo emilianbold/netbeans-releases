@@ -31,7 +31,6 @@ import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.impl.client.ClientParseUtils;
 import org.netbeans.modules.j2ee.dd.impl.client.AppClientProxy;
 import org.netbeans.modules.j2ee.dd.impl.common.DDUtils;
-import org.netbeans.modules.j2ee.metadata.MetadataUnit;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
@@ -53,12 +52,10 @@ public final class DDProvider {
     private final Map<URL, WeakReference<AppClientProxy>> ddMap;
     private final Map<URL, WeakReference<AppClient>> baseBeanMap;
     private final Map<URL, SAXParseException> errorMap;
-    private Map<MetadataUnit, AppClient> annotationDDMap;
     
     private DDProvider() {
         //ddMap=new WeakHashMap(5);
         ddMap = new HashMap<URL, WeakReference<AppClientProxy>>(5);
-        annotationDDMap = new HashMap<MetadataUnit, AppClient>(5);
         baseBeanMap = new HashMap<URL, WeakReference<AppClient>>(5);
         errorMap = new HashMap<URL, SAXParseException>(5);
         fileChangeListener = new FCA();
@@ -70,18 +67,6 @@ public final class DDProvider {
      */
     public static DDProvider getDefault() {
         return ddProvider;
-    }
-    
-    public AppClient getMergedDDRoot(MetadataUnit mu) throws IOException {
-        if (mu == null) {
-            return null;
-        }
-        AppClient xmlRoot = getDDRoot(mu.getDeploymentDescriptor());
-        //  for J2ee 1.4 and lower delegate to XML-only method
-        if (xmlRoot != null && !xmlRoot.getVersion().equals(new BigDecimal(AppClient.VERSION_5_0))) {
-            return xmlRoot;
-        }
-        return null;
     }
     
     /**

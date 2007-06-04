@@ -30,6 +30,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.clientproject.classpath.AppClientProjectClassPathExtender;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
 import org.netbeans.modules.j2ee.dd.api.client.AppClient;
+import org.netbeans.modules.j2ee.dd.api.client.DDProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
@@ -187,11 +188,11 @@ public class AppClientProjectOperations implements DeleteOperationImplementation
                     projectProps.put(AppClientProjectProperties.JAR_NAME, newName + ".jar"); //NOI18N
                 
                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
-                AppClient appClient = Utils.getAppClient(project);
-                appClient.setDisplayName(newName);
                 FileObject ddFO = project.getCarModule().getDeploymentDescriptor();
                 if (ddFO != null) {
                     try {
+                        AppClient appClient = DDProvider.getDefault().getDDRoot(ddFO);
+                        appClient.setDisplayName(newName);
                         appClient.write(ddFO);
                     } catch (IOException ioe) {
                         ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe);

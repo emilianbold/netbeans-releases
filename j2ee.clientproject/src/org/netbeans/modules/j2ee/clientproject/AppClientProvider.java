@@ -29,6 +29,8 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -42,6 +44,7 @@ import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectPro
 //import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.client.AppClient;
 import org.netbeans.modules.j2ee.dd.api.client.AppClientMetadata;
+import org.netbeans.modules.j2ee.dd.api.client.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
 import org.netbeans.modules.j2ee.dd.spi.webservices.WebservicesMetadataModelFactory;
@@ -293,8 +296,22 @@ public final class AppClientProvider extends J2eeModuleProvider
     }
     
     public String getModuleVersion() {
-        AppClient ac = Utils.getAppClient(project);
-        return (ac == null) ? AppClient.VERSION_1_4 /* fallback */ : ac.getVersion().toString();
+        // we don't want to use MetadataModel here as it can block
+        String version = null;
+        try {
+            FileObject ddFO = getDeploymentDescriptor();
+            if (ddFO != null) {
+                AppClient appClient = DDProvider.getDefault().getDDRoot(ddFO);
+                version = appClient.getVersion().toString();
+            }
+        } catch (IOException e) {
+            Logger.getLogger("global").log(Level.WARNING, null, e); // NOI18N
+        }
+        if (version == null) {
+            // XXX should return a version based on the Java EE version
+            version = AppClient.VERSION_5_0;
+        }
+        return version;
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
@@ -400,30 +417,22 @@ public final class AppClientProvider extends J2eeModuleProvider
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
+        // XXX need to listen on the module version
         getPropertyChangeSupport().addPropertyChangeListener(listener);
     }
 
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        synchronized (this) {
-            if (propertyChangeSupport == null) {
-                return;
-            }
+    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+        if (propertyChangeSupport == null) {
+            return;
         }
         propertyChangeSupport.removePropertyChangeListener(listener);
     }
     
-    private PropertyChangeSupport getPropertyChangeSupport() {
-        AppClient appClient = Utils.getAppClient(project);
-        synchronized (this) {
-            if (propertyChangeSupport == null) {
-                propertyChangeSupport = new PropertyChangeSupport(this);
-                if (appClient != null) {
-                    PropertyChangeListener l = (PropertyChangeListener) WeakListeners.create(PropertyChangeListener.class, this, appClient);
-                    appClient.addPropertyChangeListener(l);
-                }
-            }
-            return propertyChangeSupport;
+    private synchronized PropertyChangeSupport getPropertyChangeSupport() {
+        if (propertyChangeSupport == null) {
+            propertyChangeSupport = new PropertyChangeSupport(this);
         }
+        return propertyChangeSupport;
     }
     
     private static class IT implements Iterator {

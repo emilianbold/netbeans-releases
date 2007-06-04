@@ -51,25 +51,6 @@ public class Utils {
         return classpath.toString();
     }
     
-    /**
-     * Returns {@link AppClient} associated with the given project.
-     *
-     * @returns AppClient instance or <code>null</code>.
-     */
-    public static AppClient getAppClient(final AppClientProject project) {
-        AppClient result = null;
-        try {
-            Car apiCar = project.getAPICar();
-            if (apiCar.getDeploymentDescriptor() != null
-                    || apiCar.getJ2eePlatformVersion().equals(AppClientProjectProperties.JAVA_EE_5)) {
-                result = DDProvider.getDefault().getMergedDDRoot(apiCar);
-            }
-        } catch (IOException e) {
-            ErrorManager.getDefault().log(e.getLocalizedMessage());
-        }
-        return result;
-    }
-    
 //    public static void notifyError(Exception ex) {
 //        NotifyDescriptor ndd = new NotifyDescriptor.Message(ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE);
 //        DialogDisplayer.getDefault().notify(ndd);
