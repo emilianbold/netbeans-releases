@@ -417,6 +417,9 @@ Since version 2.1 the LabelWidget allows rendering vertical labels. It can be se
 <p>
 The <code>ImageWidget</code> represents an image. You can manipulate with the image using <code>getImage</code> and <code>setImage</code> methods or using a constructor parameter. The widget is not-opaque by default. The widget origin is top-left corner of the image.
 
+<p>
+The <code>ImageWidget</code> supports animated images. For proper work, do not load images using <code>Utilities.loadImage</code> because the method is producing static images. Instead use standard <code>Toolkit.createImage</code> method for loading.
+
 <h3><a name="WidgetDependency">Widget Dependency</a></h3>
 
 <p>

@@ -22,6 +22,7 @@ import org.openide.ErrorManager;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.ImageObserver;
 
 /**
  * A widget representing image. The origin of the widget is at its top-left corner.
@@ -34,6 +35,17 @@ public class ImageWidget extends Widget {
     private Image disabledImage;
     private int width, height;
     private boolean paintAsDisabled;
+    private ImageObserver observer = new ImageObserver() {
+        public boolean imageUpdate (Image img, int infoflags, int x, int y, int width, int height) {
+            System.out.println ("INFO: " + infoflags);
+            if ((infoflags & (ImageObserver.HEIGHT | ImageObserver.WIDTH)) != 0)
+                revalidate ();
+            else
+                repaint ();
+            getScene ().validate ();
+            return (infoflags & (ImageObserver.ABORT | ImageObserver.ERROR)) == 0;
+        }
+    };
 
     /**
      * Creates an image widget.
@@ -130,9 +142,9 @@ public class ImageWidget extends Widget {
                         ErrorManager.getDefault ().notify (e);
                     }
                 }
-                gr.drawImage (disabledImage, 0, 0, null);
+                gr.drawImage (disabledImage, 0, 0, observer);
             } else
-                gr.drawImage (image, 0, 0, null);
+                gr.drawImage (image, 0, 0, observer);
         }
     }
 
