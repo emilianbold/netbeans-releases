@@ -77,6 +77,13 @@ public interface SourceTable extends SQLDBTable, Cloneable, Comparable, SQLVisit
      * @return temp table name
      */
     public String getTemporaryTableName();
+    
+    /**
+     * get report group by object
+     * 
+     * @return SQLGroupBy
+     */
+    public SQLGroupBy getSQLGroupBy();    
 
     /**
      * get whether to Drop Staging table before extraction
@@ -175,6 +182,13 @@ public interface SourceTable extends SQLDBTable, Cloneable, Comparable, SQLVisit
      * @param used boolean
      */
     public void setUsedInJoin(boolean used);
+    
+    /**
+     * set group by object
+     * 
+     * @param groupBy - SQLGroupBy
+     */
+    public void setSQLGroupBy(SQLGroupBy groupBy);    
 
     /**
      * do source table validation

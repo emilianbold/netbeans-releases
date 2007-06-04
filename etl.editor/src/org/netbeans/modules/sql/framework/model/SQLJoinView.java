@@ -62,6 +62,13 @@ public interface SQLJoinView extends SQLContainerObject, SQLCanvasObject, SQLVis
     public List getSourceTables();
 
     public Collection getSQLJoinTables();
+    
+    /**
+     * get report group by object
+     * 
+     * @return SQLGroupBy
+     */
+    public SQLGroupBy getSQLGroupBy();    
 
     public boolean isSourceColumnVisible(SQLDBColumn table);
 
@@ -73,5 +80,12 @@ public interface SQLJoinView extends SQLContainerObject, SQLCanvasObject, SQLVis
      * @param aName alias name
      */
     public void setAliasName(String aName);
+    
+    /**
+     * set group by object
+     * 
+     * @param groupBy - SQLGroupBy
+     */
+    public void setSQLGroupBy(SQLGroupBy groupBy);    
 
 }
