@@ -54,7 +54,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.datatransfer.MultiTransferObject;
 
 /**
- *
+ *author
  * @author rdara
  */
 public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
@@ -301,9 +301,12 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
         ProjectManager pm = ProjectManager.getDefault();
         Project p = null;
         for (FileObject fo=obj.getPrimaryFile(); fo != null; fo=fo.getParent()) {
-            p = pm.findProject(fo);
-            if (p != null) {
-                return p;
+            
+            if(fo.isFolder() && fo != null) {
+                p = pm.findProject(fo);
+                if (p != null) {
+                    return p;
+                }
             }
         }
         return p;
