@@ -38,4 +38,8 @@ public class CreateManyToOneRelationshipHint extends AbstractCreateRelationshipH
         super(fileObject, classHandle, accessType, localAttrName, targetEntityClassName,
                 JPAAnnotations.MANY_TO_ONE, JPAAnnotations.ONE_TO_MANY);
     }
+    
+    @Override protected CreateRelationshipPanel.AvailableSelection getAvailableRelationTypeSelection() {
+        return CreateRelationshipPanel.AvailableSelection.OWNING_ONLY;
+    }
 }

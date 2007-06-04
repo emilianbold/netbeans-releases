@@ -20,7 +20,7 @@
 package org.netbeans.modules.j2ee.jpa.verification.fixes;
 
 import java.awt.Color;
-import java.util.Set;
+import java.util.Collection;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.border.Border;
@@ -40,7 +40,7 @@ import org.openide.util.Utilities;
 class CreateRelationshipPanel extends javax.swing.JPanel {
     public enum NameStatus {VALID, ILLEGAL_JAVA_ID, ILLEGAL_SQL_KEYWORD,  DUPLICATE};
     public enum AvailableSelection {INVERSE_ONLY, OWNING_ONLY, BOTH};
-    private Object availableFields[];
+    private Collection<String> availableFields;
     private DefaultComboBoxModel mdlAvailableFields = new DefaultComboBoxModel();
     private FieldNameValidator nameValidator = null;
     private Border brdrBlack = BorderFactory.createLineBorder(Color.BLACK);
@@ -94,6 +94,7 @@ class CreateRelationshipPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         buttonGroup1 = new javax.swing.ButtonGroup();
         buttonGroup2 = new javax.swing.ButtonGroup();
         radioPickUpExistingField = new javax.swing.JRadioButton();
@@ -110,16 +111,14 @@ class CreateRelationshipPanel extends javax.swing.JPanel {
 
         buttonGroup1.add(radioPickUpExistingField);
         radioPickUpExistingField.setSelected(true);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/verification/persistence/hints/Bundle"); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/jpa/verification/fixes/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(radioPickUpExistingField, bundle.getString("LBL_PickExistingField")); // NOI18N
-        radioPickUpExistingField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         radioPickUpExistingField.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         lstExistingFields.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         buttonGroup1.add(radioCreateNewField);
         org.openide.awt.Mnemonics.setLocalizedText(radioCreateNewField, bundle.getString("LBL_CreateNewField")); // NOI18N
-        radioCreateNewField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         radioCreateNewField.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         lblName.setLabelFor(txtNewFieldName);
@@ -130,6 +129,7 @@ class CreateRelationshipPanel extends javax.swing.JPanel {
 
         pnlErrorMsg.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         pnlErrorMsg.setFocusable(false);
+
         org.openide.awt.Mnemonics.setLocalizedText(lblErrorMsg, bundle.getString("MSG_IllegalJavaID")); // NOI18N
 
         lblError.setForeground(new java.awt.Color(255, 0, 51));
@@ -142,7 +142,7 @@ class CreateRelationshipPanel extends javax.swing.JPanel {
             .add(pnlErrorMsgLayout.createSequentialGroup()
                 .add(lblError)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(lblErrorMsg, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE)
+                .add(lblErrorMsg, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE)
                 .addContainerGap())
         );
         pnlErrorMsgLayout.setVerticalGroup(
@@ -157,12 +157,10 @@ class CreateRelationshipPanel extends javax.swing.JPanel {
         buttonGroup2.add(radioOwningSide);
         radioOwningSide.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(radioOwningSide, org.openide.util.NbBundle.getMessage(CreateRelationshipPanel.class, "CreateRelationshipPanel.radioOwningSide.text")); // NOI18N
-        radioOwningSide.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         radioOwningSide.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         buttonGroup2.add(radioInversedSide);
         org.openide.awt.Mnemonics.setLocalizedText(radioInversedSide, org.openide.util.NbBundle.getMessage(CreateRelationshipPanel.class, "CreateRelationshipPanel.radioInversedSide.text")); // NOI18N
-        radioInversedSide.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         radioInversedSide.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -175,7 +173,7 @@ class CreateRelationshipPanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(radioPickUpExistingField)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(lstExistingFields, 0, 291, Short.MAX_VALUE))
+                        .add(lstExistingFields, 0, 398, Short.MAX_VALUE))
                     .add(radioCreateNewField)
                     .add(layout.createSequentialGroup()
                         .add(17, 17, 17)
@@ -183,7 +181,7 @@ class CreateRelationshipPanel extends javax.swing.JPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, pnlErrorMsg, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(txtNewFieldName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 364, Short.MAX_VALUE)))
+                            .add(txtNewFieldName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 471, Short.MAX_VALUE)))
                     .add(radioOwningSide)
                     .add(radioInversedSide)
                     .add(jLabel1))
@@ -231,17 +229,17 @@ class CreateRelationshipPanel extends javax.swing.JPanel {
     private javax.swing.JTextField txtNewFieldName;
     // End of variables declaration//GEN-END:variables
     
-    public void setAvailableFields(Object availableFields[]){
+    public void setAvailableFields(Collection<String> availableFields){
         this.availableFields = availableFields;
         mdlAvailableFields.removeAllElements();
         
-        if (availableFields == null || availableFields.length == 0){
+        if (availableFields.size() == 0){
             setChoosingExistingFieldEnabled(false);
         } else{
             setChoosingExistingFieldEnabled(true);
             
-            for (int i = 0; i < availableFields.length; i++) {
-                mdlAvailableFields.addElement(availableFields[i]);
+            for (String fieldName : availableFields) {
+                mdlAvailableFields.addElement(fieldName);
             }
         }
     }
@@ -270,7 +268,7 @@ class CreateRelationshipPanel extends javax.swing.JPanel {
         this.nameValidator = nameValidator;
     }
     
-    public void setExistingFieldNames(Set<String> existingFieldNames){
+    public void setExistingFieldNames(Collection<String> existingFieldNames){
         nameValidator.setExistingFieldNames(existingFieldNames);
     }
     
@@ -341,13 +339,13 @@ class CreateRelationshipPanel extends javax.swing.JPanel {
     
     public static interface FieldNameValidator{
         public NameStatus checkName(String name);
-        public void setExistingFieldNames(Set<String> existingFieldNames);
+        public void setExistingFieldNames(Collection<String> existingFieldNames);
     }
     
     public static class DefaultFieldNameValidator implements FieldNameValidator{
-        private Set<String> existingFieldNames;
+        private Collection<String> existingFieldNames;
         
-        public void setExistingFieldNames(Set<String> existingFieldNames){
+        public void setExistingFieldNames(Collection<String> existingFieldNames){
             this.existingFieldNames = existingFieldNames;
         }
         
