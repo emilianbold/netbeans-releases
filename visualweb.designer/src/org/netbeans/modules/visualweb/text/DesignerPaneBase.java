@@ -37,6 +37,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Vector;
+import java.util.logging.Logger;
 
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
@@ -411,7 +412,9 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
      * <code>invalidate</code> is called after setting the UI.
      */
     public void updateUI() {
+        info("Updating UI, ui=" + ui); // TEMP
         setUI((DesignerPaneBaseUI)UIManager.getUI(this));
+        info("after update, ui=" + ui); // TEMP
         invalidate();
     }
 
@@ -1745,4 +1748,14 @@ public abstract class DesignerPaneBase extends JComponent implements Scrollable,
     /** XXX Escaping.
      * TODO Revise */
     public abstract void escape(long when);
+    
+    
+    private static void info(String message) {
+        Logger logger = getLogger();
+        logger.info(message);
+    }
+    
+    private static Logger getLogger() {
+        return Logger.getLogger(DesignerPaneBase.class.getName());
+    }
 }

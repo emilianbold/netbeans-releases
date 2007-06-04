@@ -36,6 +36,8 @@ import java.awt.event.MouseEvent;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TooManyListenersException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -55,7 +57,6 @@ import javax.swing.plaf.InputMapUIResource;
 import javax.swing.plaf.UIResource;
 import javax.swing.text.Keymap;
 
-import org.openide.ErrorManager;
 import org.w3c.dom.Element;
 
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
@@ -354,9 +355,9 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
             
             try {
                 dropTarget.addDropTargetListener(defaultDropTargetListener);
-            } catch (TooManyListenersException tmle) {
+            } catch (TooManyListenersException ex) {
                 // should not happen... swing drop target is multicast
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, tmle);
+                log(ex);
             }
         }
     }
@@ -408,6 +409,12 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
         if (editor.getTransferHandler() instanceof UIResource) {
             editor.setTransferHandler(null);
         }
+
+        // Unintall drop target listener too.        
+        DropTarget dropTarget = editor.getDropTarget();
+        if (dropTarget != null && defaultDropTargetListener != null) {
+            dropTarget.removeDropTargetListener(defaultDropTargetListener);
+       }
     }
     
     /**
@@ -870,8 +877,8 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
             
             try {
                 paintSafely(g);
-            } catch (Exception e) {
-                ErrorManager.getDefault().notify(e);
+            } catch (Exception ex) {
+                log(ex);
             } finally {
                 // XXX Gotta unlock using InsyncDocument instead!!!
                 // IF YOU GET HERE DURING DEBUGGING you just stepped over
@@ -1431,5 +1438,15 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
                 c.setCaretVisible(visible);
             }
         }
+    }
+    
+    
+    private static void log(Exception ex) {
+        Logger logger = getLogger();
+        logger.log(Level.INFO, null, ex);
+    }
+    
+    private static Logger getLogger() {
+        return Logger.getLogger(DesignerPaneUI.class.getName());
     }
 }

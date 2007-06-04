@@ -18,8 +18,6 @@
  */
 package org.netbeans.modules.visualweb.designer;
 
-import java.util.prefs.PreferenceChangeEvent;
-import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
@@ -47,6 +45,8 @@ import java.awt.geom.Rectangle2D;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.TooManyListenersException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 
@@ -213,8 +213,20 @@ public class DesignerPane extends org.netbeans.modules.visualweb.text.DesignerPa
      * is called after setting the UI.
      */
     public void updateUI() {
+        fine("Updating UI, ui=" + ui);
+        // XXX #105443 To pass the page box.
+        // XXX FIXME Move the pageBox field to the DesignerPane (wrong place in UI).
+        PageBox pageBox = ui instanceof DesignerPaneUI ? ((DesignerPaneUI)ui).getPageBox() : null;
+        fine("pageBox=" + pageBox); // TEMP
+        
         //setUI((DesignerPaneUI)UIManager.getUI(this));
         setUI(DesignerPaneUI.createUI(this));
+        fine("after update, ui=" + ui);
+        
+        if (pageBox != null && ui instanceof DesignerPaneUI) {
+            ((DesignerPaneUI)ui).setPageBox(pageBox);
+        }
+        
         invalidate();
     }
 
@@ -909,7 +921,7 @@ public class DesignerPane extends org.netbeans.modules.visualweb.text.DesignerPa
                         dtde.acceptDrag(dtde.getDropAction());
                     }
                 } catch (Throwable t) {
-                    org.openide.ErrorManager.getDefault().notify(t);
+                    log(t);
                 }
             }
 
@@ -1003,5 +1015,19 @@ public class DesignerPane extends org.netbeans.modules.visualweb.text.DesignerPa
             getDesignerPane().escape(evt.getWhen());
         }
     } // End of EscapeAction.
+
     
+    private static void fine(String message) {
+        Logger logger = getLogger();
+        logger.fine(message);
+    }
+    
+    private static void log(Throwable throwable) {
+        Logger logger = getLogger();
+        logger.log(Level.INFO, null, throwable);
+    }
+    
+    private static Logger getLogger() {
+        return Logger.getLogger(DesignerPane.class.getName());
+    }
 }
