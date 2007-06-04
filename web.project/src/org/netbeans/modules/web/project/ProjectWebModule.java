@@ -586,11 +586,9 @@ public final class ProjectWebModule extends J2eeModuleProvider
         getPropertyChangeSupport().addPropertyChangeListener(listener);
     }
 
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        synchronized (this) {
-            if (propertyChangeSupport == null) {
-                return;
-            }
+    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+        if (propertyChangeSupport == null) {
+            return;
         }
         propertyChangeSupport.removePropertyChangeListener(listener);
     }
