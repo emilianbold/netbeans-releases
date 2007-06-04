@@ -210,10 +210,8 @@ public final class CssPreviewTopComponent extends TopComponent {
             previewing = true;
         }
         
-        String ruleContent = content.selectedRule().ruleContent().toString();
-        ruleContent = ruleContent.replace('"', '\'');
-        String htmlCode = "<html> <body> <div style=\""+ ruleContent + "\">Sample Text</div> </body> </html>"; //NOI18N
-        
+        CharSequence htmlCode = CssPreviewGenerator.getPreviewCode(content);
+//        System.out.println("\n---------------------" + htmlCode + "\n---------------------");
         try {
             String relativeURL = null;
             FileObject source = content.fileObject();
@@ -238,9 +236,9 @@ public final class CssPreviewTopComponent extends TopComponent {
         repaint();
     }
     
-    private void setPreviewContent(String content, String relativeURL) throws Exception {
+    private void setPreviewContent(CharSequence content, String relativeURL) throws Exception {
         LOGGER.log(Level.INFO, "preview - setting content " + content);
-        previewPanel.panel().setDocument(new ByteArrayInputStream(content.getBytes()), relativeURL);
+        previewPanel.panel().setDocument(new ByteArrayInputStream(content.toString().getBytes()), relativeURL);
     }
     
     private void previewableSelected(final CssPreviewable previewable) {
