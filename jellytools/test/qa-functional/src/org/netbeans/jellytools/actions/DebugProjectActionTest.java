@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.actions;
@@ -99,9 +99,9 @@ public class DebugProjectActionTest extends JellyTestCase {
     
     /** Test performMenu */
     public void testPerformMenu() {
-        // Set Main Project
-        String setMainItem = Bundle.getString("org.netbeans.modules.project.ui.actions.Bundle", "LBL_SetMainProjectAction_Name");
-        new Action(null, setMainItem).perform(new ProjectsTabOperator().getProjectRootNode("SampleProject")); // NOI18N
+        // Set as Main Project
+        String setAsMainProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_SetAsMainProjectAction_Name");
+        new Action(null, setAsMainProjectItem).perform(new ProjectsTabOperator().getProjectRootNode("SampleProject")); // NOI18N
         new DebugProjectAction().performMenu();
     }
     
