@@ -24,6 +24,9 @@ import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.api.visual.vmd.VMDNodeWidget;
+import org.netbeans.api.visual.vmd.VMDFactory;
+import org.netbeans.api.visual.vmd.VMDConnectionWidget;
 
 import javax.swing.*;
 import java.awt.*;
@@ -38,116 +41,116 @@ import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.router.RouterFactory;
 import org.netbeans.api.visual.router.Router;
 
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableModel;
-
-import java.awt.Component;
-import java.awt.Point;
-
-import javax.swing.JList;
-
 /**
  * @author Jim Davidson
  */
 public class QBGraphScene extends GraphScene {
-
+    
     private LayerWidget 	mainLayer;
     private LayerWidget 	connectionLayer;
-
-    private WidgetAction 	moveAction = ActionFactory.createMoveAction ();
-    private WidgetAction 	mouseHoverAction = ActionFactory.createHoverAction (new MyHoverProvider ());
+    
+    private WidgetAction 	moveAction = ActionFactory.createMoveAction();
+    private WidgetAction 	mouseHoverAction = ActionFactory.createHoverAction(new MyHoverProvider());
     // private WidgetAction popupMenuAction = ActionFactory.createPopupMenuAction (new MyPopupProvider()) ;
-
+    
     private int 		pos = 0;
     
     private Router 		router;
- 
-    public QBGraphScene (QueryBuilderGraphFrame qbGF) {
-        mainLayer = new LayerWidget (this);
-        connectionLayer = new LayerWidget (this);
-        addChild (mainLayer);
-        addChild (connectionLayer);
-
-	router = RouterFactory.createOrthogonalSearchRouter (mainLayer, connectionLayer);
-        getActions().addAction (mouseHoverAction);
+    
+    public QBGraphScene(QueryBuilderGraphFrame qbGF) {
+        mainLayer = new LayerWidget(this);
+        connectionLayer = new LayerWidget(this);
+        addChild(mainLayer);
+        addChild(connectionLayer);
+        
+        router = RouterFactory.createOrthogonalSearchRouter(mainLayer, connectionLayer);
+        getActions().addAction(mouseHoverAction);
         // getActions().addAction(ActionFactory.createZoomAction());
-	// ToDo: qbGF has been passed in only to support the menu; eventually, merge QBGF into this
+        // ToDo: qbGF has been passed in only to support the menu; eventually, merge QBGF into this
         getActions().addAction(ActionFactory.createPopupMenuAction(qbGF));
     }
-
-    protected Widget attachNodeWidget (Object node) {
-	Widget widget = new Widget(this);
-	widget.setLayout(LayoutFactory.createVerticalFlowLayout());
-	widget.setBorder(BorderFactory.createLineBorder());
-	widget.getActions().addAction(moveAction);
-
-	ComponentWidget componentWidget = null;
-	LabelWidget label = null;
-
-	if (node instanceof QBNodeComponent) // we have a qbNodeComponent
-	{
-	    label = new LabelWidget(this, ((QBNodeComponent)node).getNodeName());
-	    componentWidget = new ComponentWidget(this, (QBNodeComponent)node);
-	}
-
-	label.setOpaque(true);
-	label.setBackground(Color.LIGHT_GRAY);
-	widget.addChild(label);
-
-	widget.addChild(componentWidget);
-
-	mainLayer.addChild (widget);
-	return widget;
+    
+    protected Widget attachNodeWidget(Object node) {
+        
+        VMDNodeWidget widget = new VMDNodeWidget(this);
+        // Widget widget = new Widget(this);
+        
+        widget.setLayout(LayoutFactory.createVerticalFlowLayout());
+        widget.setBorder(VMDFactory.createVMDNodeBorder());
+        widget.getActions().addAction(moveAction);
+        
+        ComponentWidget componentWidget = null;
+        // LabelWidget label = null;
+        
+        if (node instanceof QBNodeComponent) // we have a qbNodeComponent
+        {
+            // label = new LabelWidget(this, ((QBNodeComponent)node).getNodeName());
+            widget.setNodeName(((QBNodeComponent)node).getNodeName());
+            widget.setNodeType("Table");
+            componentWidget = new ComponentWidget(this, (QBNodeComponent)node);
+            componentWidget.setBorder(VMDFactory.createVMDNodeBorder());
+        }
+        
+        // 	label.setOpaque(true);
+        // 	label.setBackground(Color.LIGHT_GRAY);
+        // 	widget.addChild(label);
+        
+        widget.addChild(componentWidget);
+        
+        mainLayer.addChild(widget);
+        return widget;
     }
-
-    protected Widget attachEdgeWidget (Object edge) {
-	ConnectionWidget connectionWidget = new ConnectionWidget (this);
-//	connectionWidget.setRouter(router);
-        connectionLayer.addChild (connectionWidget);
+    
+    protected Widget attachEdgeWidget(Object edge) {
+        
+        VMDConnectionWidget connectionWidget = new VMDConnectionWidget(this, router);
+        // ConnectionWidget connectionWidget = new ConnectionWidget (this);
+        
+        // connectionWidget.setRouter(router);
+        connectionLayer.addChild(connectionWidget);
         return connectionWidget;
     }
-
-    protected void attachEdgeSourceAnchor (Object edge, Object oldSourceNode, Object sourceNode) {
-        ((ConnectionWidget) findWidget (edge)).setSourceAnchor (AnchorFactory.createRectangularAnchor (findWidget (sourceNode)));
+    
+    protected void attachEdgeSourceAnchor(Object edge, Object oldSourceNode, Object sourceNode) {
+        ((ConnectionWidget) findWidget(edge)).setSourceAnchor(AnchorFactory.createRectangularAnchor(findWidget(sourceNode)));
     }
-
-    protected void attachEdgeTargetAnchor (Object edge, Object oldTargetNode, Object targetNode) {
-        ((ConnectionWidget) findWidget (edge)).setTargetAnchor (AnchorFactory.createRectangularAnchor (findWidget (targetNode)));
+    
+    protected void attachEdgeTargetAnchor(Object edge, Object oldTargetNode, Object targetNode) {
+        ((ConnectionWidget) findWidget(edge)).setTargetAnchor(AnchorFactory.createRectangularAnchor(findWidget(targetNode)));
     }
-
-    public LayerWidget getMainLayer () {
+    
+    public LayerWidget getMainLayer() {
         return mainLayer;
     }
-
-    public LayerWidget getConnectionLayer () {
+    
+    public LayerWidget getConnectionLayer() {
         return connectionLayer;
     }
-
+    
     // Create a node using the contents of the QueryBuilderTable
-    public Widget addNode(String nodeName, QueryBuilderTableModel qbTableModel)
-    {
-	QBNodeComponent qbNC = new QBNodeComponent(nodeName, qbTableModel);
-	return this.addNode(qbNC);
+    public Widget addNode(String nodeName, QueryBuilderTableModel qbTableModel) {
+        QBNodeComponent qbNC = new QBNodeComponent(nodeName, qbTableModel);
+        return this.addNode(qbNC);
     }
-
+    
     private static class MyHoverProvider implements TwoStateHoverProvider {
-
-	public void unsetHovering (Widget widget) {
-	    widget.setBackground (Color.WHITE);
-	}
-
-	public void setHovering (Widget widget) {
-	    widget.setBackground (Color.CYAN);
-	}
+        
+        public void unsetHovering(Widget widget) {
+            widget.setBackground(Color.WHITE);
+        }
+        
+        public void setHovering(Widget widget) {
+            widget.setBackground(Color.CYAN);
+        }
     }
-
-//     private static class MyPopupMenuProvider implements PopupMenuProvider {
-
-// 	public JPopupMenu getPopupMenu (Widget widget, Point localLocation) {
-// 	    JPopupMenu popupMenu = new JPopupMenu ();
-// 	    popupMenu.add (new JMenuItem ("Open " + ((UMLClassWidget) widget).getClassName ()));
-// 	    return popupMenu;
-// 	}
-//     }
-
+    
+    //     private static class MyPopupMenuProvider implements PopupMenuProvider {
+    
+    // 	public JPopupMenu getPopupMenu (Widget widget, Point localLocation) {
+    // 	    JPopupMenu popupMenu = new JPopupMenu ();
+    // 	    popupMenu.add (new JMenuItem ("Open " + ((UMLClassWidget) widget).getClassName ()));
+    // 	    return popupMenu;
+    // 	}
+    //     }
+    
 }

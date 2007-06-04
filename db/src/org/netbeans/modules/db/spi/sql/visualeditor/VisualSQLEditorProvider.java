@@ -17,32 +17,27 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.db.sql.visualeditor.api;
+package org.netbeans.modules.db.spi.sql.visualeditor;
 
 import org.netbeans.api.db.explorer.DatabaseConnection;
 
 /**
- * Factory class for creating VisualSQLEditor instances.
+ * This interface provides a Visual SQL editor. It is used when the Database
+ * Explorer needs to open a Visual SQL editor, such as from the
+ * Design Query action. The implementation should be placed in the default lookup.
  *
  * @author Jim Davidson
  */
-public final class VisualSQLEditorFactory {
-    
-    /**
-     * Creates and returns a new VisualSQLEditor.
-     *
-     * @param dbconn the DatabaseConnection
-     * @param statement the initial SQL query to be loaded into the editor
-     * @param metadata metadata cache maintained by the client, or null.  If null, the VisualSQLEditor will
-     * fetch and manage its own metadata, using the DatabaseConnection
-     * @return the new VisualSQLEditor instance
-     *
-     */
-    public static VisualSQLEditor createVisualSQLEditor(DatabaseConnection dbconn, String statement, VisualSQLEditorMetaData metadata) {
-        return new VisualSQLEditor(dbconn, statement, metadata);
-    }
-    
-    // Private constructor
-    private VisualSQLEditorFactory(){};
-}
+public interface VisualSQLEditorProvider {
 
+    /**
+     * Opens a new SQL editor for the specified connection and containing the
+     * specified SQL statments and possibly executes them.
+     *
+     * @param dbconn the databaseconnection set as active in the SQL editor. The
+     *        statements are also executed against this connection.
+     * @param sql the SQL statements to be put in the editor
+     * @param execute whether to execute the SQL statements.
+     */
+    public void openVisualSQLEditor(DatabaseConnection dbconn, String sql);
+}

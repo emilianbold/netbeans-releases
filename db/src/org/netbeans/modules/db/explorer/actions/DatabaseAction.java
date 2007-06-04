@@ -27,58 +27,57 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 
 public class DatabaseAction extends CookieAction {
-
+    
     static final long serialVersionUID =2711301279685474175L;
-
+    
     protected static ResourceBundle bundle() {
         return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
     }
-
+    
     protected String aname;
     protected String nodename;
-
+    
     public String getName() {
         return aname;
     }
-
+    
     public void setName(String name) {
         aname = name;
     }
-
+    
     public String getNode() {
         return nodename;
     }
-
+    
     public void setNode(String name) {
         nodename = name;
     }
-
+    
     /** Help context where to find more about the paste type action.
-    * @return the help context for this action
-    */
+     * @return the help context for this action
+     */
     public HelpCtx getHelpCtx() {
-        return new HelpCtx ("dbexpovew");
+        return new HelpCtx("dbexpovew");
     }
-
+    
     protected Class[] cookieClasses() {
         return new Class[] {
-                   this.getClass()
-               };
+            this.getClass()
+        };
     }
-
+    
     protected int mode() {
         return MODE_ONE;
     }
-
+    
     protected boolean enable(Node[] activatedNodes) {
         return true;
     }
-
-    public void performAction (Node[] activatedNodes) {
+    
+    public void performAction(Node[] activatedNodes) {
     }
     
     protected boolean asynchronous() {
         return false;
     }
-
 }

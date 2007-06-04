@@ -22,53 +22,56 @@ package org.netbeans.modules.db.sql.visualeditor.querymodel;
  * Represents an identifier (schema/table/column name)
  */
 public class Identifier {
-
+    
     // Fields
     private String      _name;
     private boolean     _delimited;
-
-
+    
+    
     // Constructors
-
+    
     // Create an Identifier with delimiter status explicitly specified.
     // Only occurs when the parser has that information
     public Identifier(String name, boolean delimited) {
         _name = name;
         _delimited = delimited;
     }
-
-
+    
+    
     // Create an Identifier with delimiter status decided heuristically,
     // depending whether the name contains any special characters
     public Identifier(String name) {
         _name=name;
         _delimited = needsDelimited(name);
     }
-
-
+    
+    
     // Accessors
-
+    
     public String genText() {
         if (_delimited)
             return "\"" + _name + "\"";
         else
             return _name;
     }
-
-
+    
+    
     public String getName() {
         return _name;
     }
-
-
+    
+    
     /**
      * Returns true if the argument contains any non-word characters, which
      * will require it to be delimited.
      */
     private boolean needsDelimited(String name) {
-        String[] split=name.split("\\W");
-        return (split.length>1);
+        //        String[] split=name.split("\\W");
+        //        return (split.length>1);
+        // For consistency with Netbeans, mark all Identifiers as delimited for now.  
+        // See IZ# 87920.
+        return true;
     }
-
+    
 }
 

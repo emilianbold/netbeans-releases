@@ -1080,6 +1080,10 @@
 				name = "ExecuteCommand";
 				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
 			},
+			{
+				name = "DesignQuery";
+				class = org.netbeans.modules.db.explorer.actions.DesignQueryAction;
+			},
 			delimiter,
 			{
 				name = "RemoveTable";
@@ -1155,6 +1159,10 @@
 			{
 				name = "ExecuteCommand";
 				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
+			},
+			{
+				name = "DesignQuery";
+				class = org.netbeans.modules.db.explorer.actions.DesignQueryAction;
 			},
 			delimiter,
 			{
@@ -1253,6 +1261,10 @@
 			{
 				name = "ExecuteCommand";
 				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
+			},
+			{
+				name = "DesignQuery";
+				class = org.netbeans.modules.db.explorer.actions.DesignQueryAction;
 			},
 			delimiter,
 			{
@@ -1359,6 +1371,10 @@
 			{
 				name = "ExecuteCommand";
 				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
+			},
+			{
+				name = "DesignQuery";
+				class = org.netbeans.modules.db.explorer.actions.DesignQueryAction;
 			},
 			delimiter,
 			{

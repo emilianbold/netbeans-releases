@@ -17,32 +17,22 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.db.sql.visualeditor.api;
+package org.netbeans.modules.db.explorer.sql.visualeditor;
 
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.spi.sql.visualeditor.VisualSQLEditorProvider;
+import org.openide.util.Lookup;
 
 /**
- * Factory class for creating VisualSQLEditor instances.
  *
  * @author Jim Davidson
  */
-public final class VisualSQLEditorFactory {
-    
-    /**
-     * Creates and returns a new VisualSQLEditor.
-     *
-     * @param dbconn the DatabaseConnection
-     * @param statement the initial SQL query to be loaded into the editor
-     * @param metadata metadata cache maintained by the client, or null.  If null, the VisualSQLEditor will
-     * fetch and manage its own metadata, using the DatabaseConnection
-     * @return the new VisualSQLEditor instance
-     *
-     */
-    public static VisualSQLEditor createVisualSQLEditor(DatabaseConnection dbconn, String statement, VisualSQLEditorMetaData metadata) {
-        return new VisualSQLEditor(dbconn, statement, metadata);
-    }
-    
-    // Private constructor
-    private VisualSQLEditorFactory(){};
-}
+public class VisualSQLEditorSupport {
 
+    public static void openVisualSQLEditor(DatabaseConnection dbconn, String sql) {
+        VisualSQLEditorProvider provider = (VisualSQLEditorProvider)Lookup.getDefault().lookup(VisualSQLEditorProvider.class);
+        if (provider != null) {
+            provider.openVisualSQLEditor(dbconn, sql);
+        }
+    }
+}

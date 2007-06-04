@@ -215,6 +215,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../db/derby</project>
                 <project>../db/model</project>
                 <project>../db/sqleditor</project>
+                <project>../db/visualsqleditor</project>
                 <project>../debuggercore</project>
                 <project>../debuggercore/api</project>
                 <project>../debuggercore/viewmodel</project>
