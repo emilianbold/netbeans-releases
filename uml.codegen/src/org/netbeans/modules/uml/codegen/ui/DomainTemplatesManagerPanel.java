@@ -179,7 +179,7 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
         if (isCustomizer)
         {
             DomainTreeNodeRendererEditor renderer = 
-                new DomainTreeNodeRendererEditor(this);
+                new DomainTreeNodeRendererEditor();
             
             templatesTree.setCellRenderer(renderer);
             templatesTree.setEditable(false);
