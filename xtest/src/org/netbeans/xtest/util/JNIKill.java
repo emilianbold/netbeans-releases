@@ -116,7 +116,7 @@ public class JNIKill  {
                 }
             }
             // not possible to load library anyway
-            throw new UnsatisfiedLinkError("JNIKill: Platform '"+currentPlatform+"' is not supported by current implementation");
+            throw new UnsatisfiedLinkError("JNIKill: Problem while trying to load JNI kill library.");
         }
     }
     
