@@ -20,25 +20,12 @@
 package org.netbeans.modules.xml.wsdlextui.template;
 
 import java.io.InputStream;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
-import org.netbeans.modules.xml.wsdl.model.Binding;
-import org.netbeans.modules.xml.wsdl.model.BindingFault;
-import org.netbeans.modules.xml.wsdl.model.BindingInput;
-import org.netbeans.modules.xml.wsdl.model.BindingOperation;
-import org.netbeans.modules.xml.wsdl.model.BindingOutput;
-import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
-import org.netbeans.modules.xml.wsdl.model.Operation;
-import org.netbeans.modules.xml.wsdl.model.Port;
-import org.netbeans.modules.xml.wsdl.model.PortType;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding;
-import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBody;
 
-import org.netbeans.modules.xml.wsdl.ui.spi.ExtensibilityElementTemplateProvider;
-import org.netbeans.modules.xml.wsdl.ui.spi.ValidationInfo;
-import org.netbeans.modules.xml.xam.Reference;
+import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ExtensibilityElementTemplateProvider;
+import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ValidationInfo;
+import org.netbeans.modules.xml.wsdl.model.Binding;
+import org.netbeans.modules.xml.wsdl.model.Port;
 import org.openide.util.NbBundle;
 
 public class SoapTemplateProvider extends ExtensibilityElementTemplateProvider {

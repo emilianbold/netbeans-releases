@@ -37,7 +37,7 @@ import org.netbeans.modules.xml.wsdl.model.Output;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBody;
-import org.netbeans.modules.xml.wsdl.ui.spi.ValidationInfo;
+import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ValidationInfo;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.openide.util.NbBundle;
