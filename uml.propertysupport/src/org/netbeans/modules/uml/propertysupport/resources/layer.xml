@@ -37,7 +37,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
             <attr name="com-sun-tools-ide-uml-propertysupport-customizers-TestUseCaseSteps.shadow/org-netbeans-modules-autoupdate-catalog-ModuleCatalogAction.instance" boolvalue="true"/>
         </folder>
     </folder>
-    -->
+    
     <folder name="UI">
         <folder name="Services">
             <file name="org-netbeans-modules-uml-propertysupport-nodes-PreferenceNode.instance">
@@ -45,6 +45,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
             </file>
         </folder> 
     </folder>
+    -->
      <folder name="OptionsDialog">
         <file name="UMLOptionsCategory.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.propertysupport.options.UMLOptions"/>
