@@ -20,7 +20,7 @@
 package org.netbeans.modules.wsdlextensions.file.template;
 
 import java.io.InputStream;
-import org.netbeans.modules.xml.wsdl.ui.spi.ExtensibilityElementTemplateProvider;
+import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ExtensibilityElementTemplateProvider;
 import org.openide.util.NbBundle;
 
 public class FileTemplateProvider extends ExtensibilityElementTemplateProvider {
