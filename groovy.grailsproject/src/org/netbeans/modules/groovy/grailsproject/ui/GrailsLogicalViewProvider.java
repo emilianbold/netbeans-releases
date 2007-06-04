@@ -90,18 +90,6 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
             setProjectFiles(project);
         }
         
-        public Image getIcon(int type) {
-            return Utilities.loadImage("org/netbeans/modules/groovy/grailsproject/resources/GrailsIcon16x16.png");
-        }
-        
-        public Image getOpenedIcon(int type) {
-            return getIcon(type);
-        }
-        
-        public String getDisplayName() {
-            return project.getProjectDirectory().getName();
-        }
-        
         protected final void setProjectFiles(Project project) {
             Sources sources = ProjectUtils.getSources(project);  // returns singleton
             if (sourcesListener == null) {
