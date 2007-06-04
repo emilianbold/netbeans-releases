@@ -77,6 +77,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
             <file name="org-openide-actions-CustomizeAction.instance"/>
             <file name="org-netbeans-core-actions-HTMLViewAction.instance"/>
+            <file name="org-netbeans-core-actions-LogAction.instance"/>	 
         </folder>        
         
         <folder name="Tools">
@@ -178,6 +179,9 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="View">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
             <file name="org-netbeans-core-actions-HTMLViewAction.instance"/>
+            <attr name="org-netbeans-core-actions-HTMLViewAction.instance/org-netbeans-core-actions-LogAction.instance" boolvalue="true"/>
+            <attr name="org-netbeans-core-actions-LogAction.instance/Separator2.instance" boolvalue="true"/>
+            <file name="org-netbeans-core-actions-LogAction.instance"/>	 
         </folder>
         
         <attr name="View/GoTo" boolvalue="true"/>
