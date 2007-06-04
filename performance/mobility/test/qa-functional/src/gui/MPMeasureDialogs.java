@@ -38,6 +38,7 @@ public class MPMeasureDialogs  {
         suite.addTest(new SecurityManagerDialog("measureTime","Security Manager dialog open"));
         suite.addTest(new QuickRunDialog("measureTime","Quick Run dialog open"));
         suite.addTest(new ProjectPropertiesDialog("measureTime","Mobility project properties dialog open"));
+        suite.addTest(new CloseProjectProperty("measureTime","Close Project Property Dialog"));
         return suite;
     }
     
