@@ -817,14 +817,18 @@ public class FileObjects {
             try {
                 ZipEntry e = FastJar.getZipEntry (archiveFile, offset);
                 if (e != null) {
-                    return e.getSize();
-                }
-                else {
-                    return super.getSize();
+                    long size = e.getSize();
+                    //When there is no size, csize and CRC in the LOC table
+                    //delegate to super, needs to take it from the CEN table
+                    //but we don't have the offset in CEN table here.
+                    if (size != -1) {
+                        return size;
+                    }
                 }
             } catch (IOException e) {
-                return super.getSize();
+                //Handled below
             }
+            return super.getSize();
         }
     }
     
