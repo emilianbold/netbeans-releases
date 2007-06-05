@@ -35,11 +35,11 @@ import org.openide.util.Mutex;
  */
 public final class Install extends ModuleInstall {
 
-    public void restored() {
+    public @Override void restored() {
         final File install = NbPlatform.defaultPlatformLocation();
         if (install != null) {
-            ProjectManager.mutex().writeAccess(new Mutex.Action() {
-                public Object run() {
+            ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+                public Void run() {
                     EditableProperties p = PropertyUtils.getGlobalProperties();
                     String installS = install.getAbsolutePath();
                     p.setProperty("nbplatform.default.netbeans.dest.dir", installS); // NOI18N

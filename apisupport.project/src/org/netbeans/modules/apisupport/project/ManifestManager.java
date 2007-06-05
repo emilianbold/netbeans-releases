@@ -230,7 +230,7 @@ public final class ManifestManager {
             exportedPackages = EMPTY_EXPORTED_PACKAGES;
         } else {
             StringTokenizer tok = new StringTokenizer(exportsS, ", "); // NOI18N
-            List exports = new ArrayList(Math.max(tok.countTokens(), 1)); // List<PackageExport>
+            List<PackageExport> exports = new ArrayList<PackageExport>(Math.max(tok.countTokens(), 1));
             while (tok.hasMoreTokens()) {
                 String piece = tok.nextToken();
                 if (piece.endsWith(".*")) { // NOI18N
@@ -254,13 +254,13 @@ public final class ManifestManager {
             if (exports.isEmpty()) {
                 throw new IllegalArgumentException("Illegal OpenIDE-Module-Public-Packages: " + exportsS); // NOI18N
             }
-            exportedPackages = (PackageExport[])exports.toArray(new PackageExport[exports.size()]);
+            exportedPackages = exports.toArray(new PackageExport[exports.size()]);
         }
         return exportedPackages;
     }
     
     private static String[] parseFriends(final String friends) {
-        Set set = new HashSet();
+        Set<String> set = new HashSet<String>();
         StringTokenizer tok = new StringTokenizer(friends, ", "); // NOI18N
         while (tok.hasMoreTokens()) {
             String piece = tok.nextToken();
@@ -275,7 +275,7 @@ public final class ManifestManager {
         if (set.isEmpty()) {
             throw new IllegalArgumentException("Empty OpenIDE-Module-Friends: " + friends); // NOI18N
         }
-        return (String[]) set.toArray(new String[set.size()]);
+        return set.toArray(new String[set.size()]);
     }
     
     public String getCodeNameBase() {
@@ -341,7 +341,7 @@ public final class ManifestManager {
         if (moduleDependencies != null) {
             return Dependency.create(Dependency.TYPE_MODULE, moduleDependencies);
         } else {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
     }
     
@@ -369,7 +369,7 @@ public final class ManifestManager {
             return recursive;
         }
         
-        public String toString() {
+        public @Override String toString() {
             return "PackageExport[" + pkg + (recursive ? "/**" : "") + "]"; // NOI18N
         }
     }

@@ -183,10 +183,9 @@ public final class ProjectXMLManager {
             return this.directDeps;
         }
         this.customPlaf = customPlaf;
-        SortedSet<ModuleDependency> directDeps = new TreeSet(ModuleDependency.CNB_COMPARATOR);
+        SortedSet<ModuleDependency> directDeps = new TreeSet<ModuleDependency>(ModuleDependency.CNB_COMPARATOR);
         Element moduleDependencies = findModuleDependencies(getConfData());
         assert moduleDependencies != null : "Cannot find <module-dependencies> for: " + project;
-        List<Element> deps = Util.findSubElements(moduleDependencies);
         File prjDirF = project.getProjectDirectoryFile();
         ModuleList ml;
         if (customPlaf != null) {
@@ -194,9 +193,7 @@ public final class ProjectXMLManager {
         } else {
             ml = ModuleList.getModuleList(prjDirF);
         }
-        for (Iterator it = deps.iterator(); it.hasNext(); ) {
-            Element depEl = (Element)it.next();
-            
+        for (Element depEl : Util.findSubElements(moduleDependencies)) {
             Element cnbEl = findElement(depEl, ProjectXMLManager.CODE_NAME_BASE);
             String cnb = Util.findText(cnbEl);
             ModuleEntry me = ml.getEntry(cnb);
@@ -269,10 +266,9 @@ public final class ProjectXMLManager {
      * iterating and using <code>removeDependency</code> for every entry.
      */
     public void removeDependencies(Collection<ModuleDependency> depsToDelete) {
-        Set cnbsToDelete = new HashSet(depsToDelete.size());
-        for (Iterator it = depsToDelete.iterator(); it.hasNext(); ) {
-            cnbsToDelete.add(((ModuleDependency) it.next()).
-                    getModuleEntry().getCodeNameBase());
+        Set<String> cnbsToDelete = new HashSet<String>(depsToDelete.size());
+        for (ModuleDependency dep : depsToDelete) {
+            cnbsToDelete.add(dep.getModuleEntry().getCodeNameBase());
         }
         removeDependenciesByCNB(cnbsToDelete);
     }
@@ -284,9 +280,7 @@ public final class ProjectXMLManager {
     public void removeDependenciesByCNB(Collection<String> cnbsToDelete) {
         Element confData = getConfData();
         Element moduleDependencies = findModuleDependencies(confData);
-        List<Element> currentDeps = Util.findSubElements(moduleDependencies);
-        for (Iterator it = currentDeps.iterator(); it.hasNext(); ) {
-            Element dep = (Element)it.next();
+        for (Element dep : Util.findSubElements(moduleDependencies)) {
             Element cnbEl = findElement(dep, ProjectXMLManager.CODE_NAME_BASE);
             String cnb = Util.findText(cnbEl);
             if (cnbsToDelete.remove(cnb)) {
@@ -307,13 +301,13 @@ public final class ProjectXMLManager {
         Element confData = getConfData();
         Element moduleDependencies = findModuleDependencies(confData);
         List<Element> currentDeps = Util.findSubElements(moduleDependencies);
-        for (Iterator it = currentDeps.iterator(); it.hasNext(); ) {
-            Element dep = (Element) it.next();
+        for (Iterator<Element> it = currentDeps.iterator(); it.hasNext(); ) {
+            Element dep = it.next();
             Element cnbEl = findElement(dep, ProjectXMLManager.CODE_NAME_BASE);
             String cnb = Util.findText(cnbEl);
             if (cnb.equals(origDep.getModuleEntry().getCodeNameBase())) {
                 moduleDependencies.removeChild(dep);
-                Element nextDep = it.hasNext() ? (Element) it.next() : null;
+                Element nextDep = it.hasNext() ? it.next() : null;
                 createModuleDependencyElement(moduleDependencies, newDep, nextDep);
                 break;
             }
@@ -332,7 +326,7 @@ public final class ProjectXMLManager {
      * Adds given modules as module-dependencies for the project.
      */
     public void addDependencies(final Set<ModuleDependency> toAdd) throws IOException {
-        SortedSet deps = new TreeSet(getDirectDependencies());
+        SortedSet<ModuleDependency> deps = new TreeSet<ModuleDependency>(getDirectDependencies());
         if (deps.addAll(toAdd)) {
             replaceDependencies(deps);
         }
@@ -357,7 +351,7 @@ public final class ProjectXMLManager {
         assert before != null : "There must be " + PUBLIC_PACKAGES + " or " // NOI18N
                 + FRIEND_PACKAGES + " element according to XSD"; // NOI18N
         confData.insertBefore(moduleDependencies, before);
-        SortedSet<ModuleDependency> sortedDeps = new TreeSet(newDeps);
+        SortedSet<ModuleDependency> sortedDeps = new TreeSet<ModuleDependency>(newDeps);
         for (Iterator it = sortedDeps.iterator(); it.hasNext(); ) {
             ModuleDependency md = (ModuleDependency) it.next();
             createModuleDependencyElement(moduleDependencies, md, null);
@@ -385,10 +379,8 @@ public final class ProjectXMLManager {
         boolean wasRemoved = false;
         Element confData = getConfData();
         Element testModuleDependenciesEl = findTestDependenciesElement(confData);
-        List/*<Element>*/ testTypesList = Util.findSubElements(testModuleDependenciesEl);
         Element testTypeRemoveEl = null;
-        for (Iterator it = testTypesList.iterator(); it.hasNext(); ) {
-            Element type = (Element)it.next();
+        for (Element type : Util.findSubElements(testModuleDependenciesEl)) {
             Element nameEl = findElement(type, TEST_TYPE_NAME);
             String nameOfType = Util.findText(nameEl);
             if (testType.equals(nameOfType)) {
@@ -397,9 +389,7 @@ public final class ProjectXMLManager {
         }
         //found such a test type
         if (testTypeRemoveEl != null){
-            List/*<Element>*/ testDepList = Util.findSubElements(testTypeRemoveEl);
-            for (Iterator it = testDepList.iterator(); it.hasNext();) {
-                Element el = (Element) it.next();
+            for (Element el : Util.findSubElements(testTypeRemoveEl)) {
                 Element cnbEl = findElement(el, TEST_DEPENDENCY_CNB);
                 if(cnbEl == null) {
                     continue;   //name node, continue
@@ -428,14 +418,14 @@ public final class ProjectXMLManager {
                 " or " + UNIT + " tests"; // NOI18N
         File projectDir = FileUtil.toFile(project.getProjectDirectory());
         ModuleList ml = ModuleList.getModuleList(projectDir);
-        Map map = new HashMap(getTestDependencies(ml));
-        Set testDependenciesSet = (Set) map.get(testType);
+        Map<String,Set<TestModuleDependency>> map = new HashMap<String,Set<TestModuleDependency>>(getTestDependencies(ml));
+        Set<TestModuleDependency> testDependenciesSet = map.get(testType);
         if(testDependenciesSet == null) {
-            testDependenciesSet = new TreeSet();
+            testDependenciesSet = new TreeSet<TestModuleDependency>();
             map.put(testType, testDependenciesSet);
         } else {
-            testDependenciesSet = new TreeSet();
-            testDependenciesSet.addAll((Set) map.get(testType));
+            // XXX necessary to clone?
+            testDependenciesSet = new TreeSet<TestModuleDependency>(testDependenciesSet);
         }
         if (!testDependenciesSet.add(newTestDep)) {
             return; //nothing new to add, dep is already there, finished
@@ -454,10 +444,8 @@ public final class ProjectXMLManager {
             confData.insertBefore(testModuleDependenciesEl, before);
         }
         Element testTypeEl = null;
-        List listOfTestTypes = Util.findSubElements(testModuleDependenciesEl);
         //iterate through test types to determine if testType exist
-        for (Iterator it = listOfTestTypes.iterator(); it.hasNext();) {
-            Element tt = (Element) it.next();
+        for (Element tt : Util.findSubElements(testModuleDependenciesEl)) {
             Node nameNode = findElement(tt, "name");
             assert nameNode!=null : "should be some child with name";
             //Node nameNode = tt.getFirstChild();
@@ -527,11 +515,10 @@ public final class ProjectXMLManager {
     public Map<String,Set<TestModuleDependency>> getTestDependencies(final ModuleList ml) {
         Element testDepsEl = findTestDependenciesElement(getConfData());
         
-        Map<String,Set<TestModuleDependency>> testDeps = new HashMap();
+        Map<String,Set<TestModuleDependency>> testDeps = new HashMap<String,Set<TestModuleDependency>>();
         
         if (testDepsEl != null) {
-            for (Iterator typesIt = Util.findSubElements(testDepsEl).iterator(); typesIt.hasNext();) {
-                Element typeEl = (Element) typesIt.next();
+            for (Element typeEl : Util.findSubElements(testDepsEl)) {
                 Element testTypeEl = findElement(typeEl, TEST_TYPE_NAME);
                 String testType = null;
                 if (testTypeEl != null) {
@@ -540,9 +527,8 @@ public final class ProjectXMLManager {
                 if (testType == null) {
                     testType = TestModuleDependency.UNIT; // default variant
                 }
-                Set<TestModuleDependency> directTestDeps = new HashSet();
-                for (Iterator depsIt = Util.findSubElements(typeEl).iterator() ; depsIt.hasNext();) {
-                    Element depEl = (Element) depsIt.next();
+                Set<TestModuleDependency> directTestDeps = new HashSet<TestModuleDependency>();
+                for (Element depEl : Util.findSubElements(typeEl)) {
                     if (depEl.getTagName().equals(TEST_DEPENDENCY)) {
                         // parse test dep
                         Element cnbEl = findElement(depEl, TEST_DEPENDENCY_CNB);
@@ -683,11 +669,8 @@ public final class ProjectXMLManager {
         if (cpExtensions != null) {
             return cpExtensions;
         }
-        
-        List<Element> cpExtEls = Util.findSubElements(getConfData());
-        Set<String> binaryOrigs = new TreeSet();
-        for (Iterator it = cpExtEls.iterator(); it.hasNext(); ) {
-            Element cpExtEl = (Element) it.next();
+        Set<String> binaryOrigs = new TreeSet<String>();
+        for (Element cpExtEl : Util.findSubElements(getConfData())) {
             if (CLASS_PATH_EXTENSION.equals(cpExtEl.getTagName())) {
                 Element binOrigEl = findElement(cpExtEl, BINARY_ORIGIN);
                 if (binOrigEl != null) {
@@ -695,7 +678,7 @@ public final class ProjectXMLManager {
                 }
             }
         }
-        return cpExtensions = (String[]) binaryOrigs.toArray(new String[binaryOrigs.size()]);
+        return cpExtensions = binaryOrigs.toArray(new String[binaryOrigs.size()]);
     }
     
     /** Returns code-name-base. */
@@ -801,10 +784,8 @@ public final class ProjectXMLManager {
      * the recursivity flag set appropriately for returned entries.
      */
     private static Set<ManifestManager.PackageExport> findAllPackages(Element parent) {
-        Set<ManifestManager.PackageExport> packages = new HashSet();
-        List<Element> pkgEls = Util.findSubElements(parent);
-        for (Iterator it = pkgEls.iterator(); it.hasNext(); ) {
-            Element pkgEl = (Element) it.next();
+        Set<ManifestManager.PackageExport> packages = new HashSet<ManifestManager.PackageExport>();
+        for (Element pkgEl : Util.findSubElements(parent)) {
             if (PACKAGE.equals(pkgEl.getTagName())) {
                 packages.add(new ManifestManager.PackageExport(Util.findText(pkgEl), false));
             } else if (SUBPACKAGES.equals(pkgEl.getTagName())) {
@@ -824,7 +805,7 @@ public final class ProjectXMLManager {
      */
     public static ManifestManager.PackageExport[] findPublicPackages(final Element confData) {
         Element ppEl = findPublicPackagesElement(confData);
-        Set<ManifestManager.PackageExport> pps = new HashSet();
+        Set<ManifestManager.PackageExport> pps = new HashSet<ManifestManager.PackageExport>();
         if (ppEl != null) {
             pps.addAll(findAllPackages(ppEl));
         }
@@ -832,24 +813,20 @@ public final class ProjectXMLManager {
         if (ppEl != null) {
             pps.addAll(findAllPackages(ppEl));
         }
-        return pps.isEmpty() ? ManifestManager.EMPTY_EXPORTED_PACKAGES :
-            (ManifestManager.PackageExport[]) pps.toArray(new ManifestManager.PackageExport[pps.size()]);
+        return pps.isEmpty() ? ManifestManager.EMPTY_EXPORTED_PACKAGES : pps.toArray(new ManifestManager.PackageExport[pps.size()]);
     }
     
     /** Utility method for finding friend. */
     public static String[] findFriends(final Element confData) {
         Element friendsEl = findFriendsElement(confData);
         if (friendsEl != null) {
-            List<Element> friendEls = Util.findSubElements(friendsEl);
-            Set<String> friends = new TreeSet();
-            for (Iterator it = friendEls.iterator(); it.hasNext(); ) {
-                Element friendEl = (Element) it.next();
+            Set<String> friends = new TreeSet<String>();
+            for (Element friendEl : Util.findSubElements(friendsEl)) {
                 if (FRIEND.equals(friendEl.getTagName())) {
                     friends.add(Util.findText(friendEl));
                 }
             }
-            String[] result = new String[friends.size()];
-            return (String[]) friends.toArray(result);
+            return friends.toArray(new String[friends.size()]);
         }
         return null;
     }
