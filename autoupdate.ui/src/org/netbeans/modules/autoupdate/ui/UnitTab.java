@@ -50,6 +50,7 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -114,9 +115,14 @@ public class UnitTab extends javax.swing.JPanel {
         TableModel m = table.getModel ();
         assert m instanceof UnitCategoryTableModel : m + " instanceof UnitCategoryTableModel.";
         this.model = (UnitCategoryTableModel) m;
-        table.getSelectionModel ().setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
-        removeLocallyDownloaded = new RemoveLocallyDownloadedAction ();                
+        table.getSelectionModel ().setSelectionMode (ListSelectionModel.SINGLE_SELECTION);                        
         initComponents ();
+        //TODO: for WINDOWS - don't paint background and let visible the native look
+        /*
+        if (UIManager.getLookAndFeel().getName().toLowerCase().startsWith("windows")) {//NOI18N
+            setOpaque(false);
+        }
+         */ 
         spTab.setLeftComponent (new JScrollPane (table));
         spTab.setRightComponent (new JScrollPane (details,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
@@ -187,10 +193,10 @@ public class UnitTab extends javax.swing.JPanel {
         focusTable();
     }
     
-    private void addToToolbar(Action action) {
-        JButton button = new JButton(action);
+    private void prepareTopButton(Action action) {
+        JButton button = topButton;        
         button.setToolTipText((String)action.getValue(JComponent.TOOL_TIP_TEXT_KEY));
-        tbActions.add(button);
+        button.setAction(action);
     }
             
     @Override
@@ -231,7 +237,7 @@ public class UnitTab extends javax.swing.JPanel {
         TabAction[] forPopup = null;
         switch (model.getType ()) {
         case INSTALLED :
-            setTabActionDescription ("UnitTab_lTabActionDescription_Text_INSTALLED");
+            //setTabActionDescription ("UnitTab_lTabActionDescription_Text_INSTALLED");
             {
                 RowTabAction checkCategoryAction = new CheckCategoryAction ();
                 RowTabAction uncheckCategoryAction = new UncheckCategoryAction ();
@@ -250,11 +256,11 @@ public class UnitTab extends javax.swing.JPanel {
                 };
             }
             bTabAction.setAction (new UninstallAction ());
-            addToToolbar (refreshAction = new ReloadAction ());
+            prepareTopButton (refreshAction = new ReloadAction ());
             table.setEnableRenderer (new EnableRenderer ());
             break;
         case UPDATE :
-            setTabActionDescription ("UnitTab_lTabActionDescription_Text_UPDATE");
+            //setTabActionDescription ("UnitTab_lTabActionDescription_Text_UPDATE");
             {
                 RowTabAction selectCategoryAction = new CheckCategoryAction ();
                 RowTabAction deselectCategoryAction = new UncheckCategoryAction ();
@@ -267,10 +273,10 @@ public class UnitTab extends javax.swing.JPanel {
                 };
             }
             bTabAction.setAction (new UpdateAction ());
-            addToToolbar (refreshAction = new ReloadAction ());
+            prepareTopButton (refreshAction = new ReloadAction ());
             break;
         case AVAILABLE :
-            setTabActionDescription ("UnitTab_lTabActionDescription_Text_AVAILABLE");
+            //setTabActionDescription ("UnitTab_lTabActionDescription_Text_AVAILABLE");
             {
                 RowTabAction selectCategoryAction = new CheckCategoryAction ();
                 RowTabAction deselectCategoryAction = new UncheckCategoryAction ();
@@ -283,18 +289,19 @@ public class UnitTab extends javax.swing.JPanel {
                 };
             }
             bTabAction.setAction (new AvailableAction ());
-            addToToolbar (refreshAction = new ReloadAction ());
+            prepareTopButton (refreshAction = new ReloadAction ());
             break;
         case LOCAL :
-            setTabActionDescription ("UnitTab_lTabActionDescription_Text_LOCAL");
+            removeLocallyDownloaded = new RemoveLocallyDownloadedAction ();
+            //setTabActionDescription ("UnitTab_lTabActionDescription_Text_LOCAL");
             {
                 forPopup = new TabAction[] {
                     removeLocallyDownloaded, new CheckAction()
                 };
             }
             bTabAction.setAction (new LocalUpdateAction ());
-            addToToolbar (new AddLocallyDownloadedAction ());
-            addToToolbar (removeLocallyDownloaded);
+            prepareTopButton (new AddLocallyDownloadedAction ());
+            //addToToolbar (removeLocallyDownloaded);
             break;
         }
         model.addTableModelListener (new TableModelListener () {
@@ -304,7 +311,7 @@ public class UnitTab extends javax.swing.JPanel {
         });
         new PopupAction();
         table.addMouseListener (popupActionsSupport = new PopupActionSupport (forPopup));
-        
+        setTabActionDescription ("UnitTab_lTabActionDescription_Text");
         getDefaultAction ().setEnabled (model.getMarkedUnits ().size () > 0);
     }
     
@@ -382,7 +389,9 @@ public class UnitTab extends javax.swing.JPanel {
                         action = activateAction;
                     } else if (deactivateAction != null && deactivateAction.isEnabled()) {
                         action = deactivateAction;
-                    }                    
+                    } else if (removeLocallyDownloaded != null && removeLocallyDownloaded.isEnabled()) {
+                        action = removeLocallyDownloaded;
+                    }
                     showDetailsAtRow (selectedRow, action);                    
                 }
             }
@@ -436,7 +445,7 @@ public class UnitTab extends javax.swing.JPanel {
         lSearch = new javax.swing.JLabel();
         tfSearch = new javax.swing.JTextField();
         spTab = new javax.swing.JSplitPane();
-        tbActions = new MyToolBar();
+        topButton = new javax.swing.JButton();
 
         lTabActionDescription.setLabelFor(table);
 
@@ -448,10 +457,7 @@ public class UnitTab extends javax.swing.JPanel {
         spTab.setResizeWeight(0.5);
         spTab.setOneTouchExpandable(true);
 
-        tbActions.setBorder(null);
-        tbActions.setFloatable(false);
-        tbActions.setRollover(true);
-        tbActions.setOpaque(false);
+        org.openide.awt.Mnemonics.setLocalizedText(topButton, "jButton1");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -461,15 +467,16 @@ public class UnitTab extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(tbActions, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 55, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(topButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(lTabActionDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 428, Short.MAX_VALUE)
+                        .add(lTabActionDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 395, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(lSearch)
                         .add(4, 4, 4)
                         .add(tfSearch, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 114, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(spTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 662, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(bTabAction)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(lSelectionInfo, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 616, Short.MAX_VALUE)))
@@ -477,18 +484,19 @@ public class UnitTab extends javax.swing.JPanel {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
                     .add(tfSearch, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(lSearch)
-                    .add(tbActions, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(lTabActionDescription))
+                    .add(lTabActionDescription)
+                    .add(topButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(spTab)
+                .add(spTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 46, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(bTabAction)
-                    .add(lSelectionInfo, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 29, Short.MAX_VALUE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER, false)
+                    .add(bTabAction, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(lSelectionInfo, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 10, Short.MAX_VALUE))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -1039,7 +1047,7 @@ public class UnitTab extends javax.swing.JPanel {
         
         @Override
         protected boolean isVisible (Unit u) {
-            return  isEnabled();
+            return  false;
         }
     }
     
@@ -1152,7 +1160,7 @@ public class UnitTab extends javax.swing.JPanel {
         
         @Override
         protected boolean isVisible (Unit u) {
-            return  isEnabled();
+            return  false;
         }
     }
     
@@ -1330,15 +1338,14 @@ public class UnitTab extends javax.swing.JPanel {
     private class ReloadAction extends TabAction {
         Task reloadTask = null;
         public ReloadAction () {
-            super ("UnitTab_RefreshAction", KeyStroke.getKeyStroke (KeyEvent.VK_R, KeyEvent.CTRL_DOWN_MASK), null);
-            String picture = "newUpdates.gif";//NOI18N
+            super ("UnitTab_ReloadAction", KeyStroke.getKeyStroke (KeyEvent.VK_R, KeyEvent.CTRL_DOWN_MASK), null);
             String tooltip = NbBundle.getMessage (UnitTab.class, "UnitTab_Tooltip_RefreshAction");//NOI18N
-            StringBuilder sb = new StringBuilder ("/org/netbeans/modules/autoupdate/ui/resources/");//NOI18N
-            sb.append (picture);
-            //putValue(LARGE_ICON_KEY, new javax.swing.ImageIcon(getClass().getResource(sb.toString())));
-            putValue (SMALL_ICON, new javax.swing.ImageIcon (getClass ().getResource (sb.toString ())));
             putValue (TOOL_TIP_TEXT_KEY, tooltip);
-            putValue (NAME, "");//NOI18N
+            //StringBuilder sb = new StringBuilder ("/org/netbeans/modules/autoupdate/ui/resources/");//NOI18N
+            //String picture = "newUpdates.gif";//NOI18N            
+            //sb.append (picture);
+            //putValue (SMALL_ICON, new javax.swing.ImageIcon (getClass ().getResource (sb.toString ())));            
+            //putValue (NAME, "");//NOI18N
             setEnabled (false);
         }
         
@@ -1355,15 +1362,14 @@ public class UnitTab extends javax.swing.JPanel {
     
     private class AddLocallyDownloadedAction extends TabAction {
         public AddLocallyDownloadedAction () {
-            super ("UnitTab_AddLocallyDownloadedAction", KeyStroke.getKeyStroke (KeyEvent.VK_A, KeyEvent.CTRL_DOWN_MASK), null);
-            String picture = "add.png";//NOI18N
+            super ("UnitTab_AddLocallyDownloadedAction", null);
             String tooltip = NbBundle.getMessage (UnitTab.class, "UnitTab_Tooltip_AddAction_LOCAL");//NOI18N
-            StringBuilder sb = new StringBuilder ("/org/netbeans/modules/autoupdate/ui/resources/");//NOI18N
-            sb.append (picture);
-            //putValue(LARGE_ICON_KEY, new javax.swing.ImageIcon(getClass().getResource(sb.toString())));
-            putValue (SMALL_ICON, new javax.swing.ImageIcon (getClass ().getResource (sb.toString ())));
-            putValue (TOOL_TIP_TEXT_KEY, tooltip);
-            putValue (NAME, "");//NOI18N
+            putValue (TOOL_TIP_TEXT_KEY, tooltip);            
+            //String picture = "add.png";//NOI18N            
+            //StringBuilder sb = new StringBuilder ("/org/netbeans/modules/autoupdate/ui/resources/");//NOI18N
+            //sb.append (picture);
+            //putValue (SMALL_ICON, new javax.swing.ImageIcon (getClass ().getResource (sb.toString ())));            
+            //putValue (NAME, "");//NOI18N
         }
         
         public void performerImpl() {
@@ -1425,15 +1431,13 @@ public class UnitTab extends javax.swing.JPanel {
     
     private class RemoveLocallyDownloadedAction extends RowTabAction {
         public RemoveLocallyDownloadedAction () {
-            super ("UnitTab_AddLocallyDownloadedAction", KeyStroke.getKeyStroke (KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK), null);
-            String picture = "remove.png";//NOI18N
+            super ("UnitTab_RemoveLocallyDownloadedAction",  null);
             String tooltip = NbBundle.getMessage (UnitTab.class, "UnitTab_Tooltip_RemoveAction_LOCAL");//NOI18N
-            StringBuilder sb = new StringBuilder ("/org/netbeans/modules/autoupdate/ui/resources/");//NOI18N
-            sb.append (picture);
-            //putValue(LARGE_ICON_KEY, new javax.swing.ImageIcon(getClass().getResource(sb.toString())));
-            putValue (SMALL_ICON, new javax.swing.ImageIcon (getClass ().getResource (sb.toString ())));
-            putValue (TOOL_TIP_TEXT_KEY, tooltip);
-            putValue (NAME, "");//NOI18N
+            putValue (TOOL_TIP_TEXT_KEY, tooltip);            
+            //String picture = "remove.png";//NOI18N
+            //StringBuilder sb = new StringBuilder ("/org/netbeans/modules/autoupdate/ui/resources/");//NOI18N
+            //sb.append (picture);
+            //putValue (SMALL_ICON, new javax.swing.ImageIcon (getClass ().getResource (sb.toString ())));            
         }
         
         protected boolean isEnabled (Unit uu) {
@@ -1470,14 +1474,9 @@ public class UnitTab extends javax.swing.JPanel {
         }
                         
         protected String getContextName (Unit u) {
-            return "";//NOI18N
+            return getActionName();//NOI18N
         }
-        
-        @Override
-        protected String getActionName () {
-            return "";//NOI18N
-        }
-        
+                
         @Override
         protected boolean isVisible (Unit u) {
             return false;
@@ -1533,8 +1532,8 @@ public class UnitTab extends javax.swing.JPanel {
     private javax.swing.JLabel lSelectionInfo;
     private javax.swing.JLabel lTabActionDescription;
     private javax.swing.JSplitPane spTab;
-    private javax.swing.JToolBar tbActions;
     private javax.swing.JTextField tfSearch;
+    private javax.swing.JButton topButton;
     // End of variables declaration//GEN-END:variables
     
 }

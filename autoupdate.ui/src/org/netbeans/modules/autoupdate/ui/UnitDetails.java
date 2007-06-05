@@ -64,7 +64,7 @@ public class UnitDetails extends DetailsPanel{
             try {
                 boolean showDetailsForDevelopers = u.updateUnit != null && u.updateUnit.getInstalled() != null;
                 //text = "<h3>" + u.annotateDisplayName(u.annotate(XMLUtil.toElementContent(u.getDisplayName()))) + "</h3>"; // NOI18N
-                text = "<h3>" + u.annotate(XMLUtil.toElementContent(u.getDisplayName())) + "</h3>"; // NOI18N
+                text = u.annotate(XMLUtil.toElementContent(u.getDisplayName())); // NOI18N
                 setTitle(text);text = "";//NOI18N
                 setActionListener(action);
                 if (! showDetailsForDevelopers) {

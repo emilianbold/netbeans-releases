@@ -109,8 +109,12 @@ public class DetailsPanel extends JTextPane  {
     public void setTitle(String value) {
         getScrollPane().setColumnHeaderView(value != null ? header : null);
         getScrollPane().setCorner(JScrollPane.UPPER_RIGHT_CORNER, value != null ? rightCornerHeader : null);
-        if (value != null) {                        
-            this.title.setText("<html>"+value+"</html>");
+        if (value != null) {                            
+            if (value.length() > 30) {
+                title.setToolTipText(value);
+                value = value.substring(0, 30) + " ...";//NOI18N
+            }
+            title.setText("<html><h3>"+value+"</h3></html>");
         }
     }
     public void setActionListener(Action action) {
@@ -120,6 +124,14 @@ public class DetailsPanel extends JTextPane  {
             button.setAction(action);
         }
     }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        title.setEnabled(enabled);
+        button.setEnabled(enabled);
+    }
+ 
     
     javax.swing.JEditorPane getDetails() {
         return this;

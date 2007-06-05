@@ -80,8 +80,7 @@ public class UnitTable extends JTable {
     
     void setEnableRenderer (TableCellRenderer renderer) {
         enableRenderer = renderer;
-        //TODO: get rid of Active column in InstallTab for default view
-        if (true/*Utilities.modulesOnly()*/) {
+        if (Utilities.modulesOnly()) {
             TableColumnModel columnModel = getColumnModel ();
             columnModel.getColumn (3).setCellRenderer (renderer);
         }
