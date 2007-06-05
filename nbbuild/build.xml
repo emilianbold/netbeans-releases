@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
   <!ENTITY disallowed-links SYSTEM "javadoctools/disallowed-links.xml">
 ]>
 
-<project name="nbbuild" default="all" basedir=".">
+<project name="nbbuild" default="build-nozip" basedir=".">
 
   <import file="default.xml"/>
 
@@ -624,14 +624,6 @@ the ${netbeans.dest}/bin/ directory.
   <target name="build-cluster" depends="init">
     <run-depend-build clusters-to-build="${cluster-name}"/>
   </target>
-
-  <macrodef name="resolve">
-    <attribute name="name"/>
-    <attribute name="value"/>
-    <sequential>
-      <property name="@{name}" value="${@{value}}"/>
-    </sequential>
-  </macrodef>
 
   <macrodef name="run-depend-build">
     <attribute name="clusters-to-build"/>
@@ -1237,8 +1229,38 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <taskdef name="printcvsmodules" classname="org.netbeans.nbbuild.PrintCvsModules" classpath="nbantext.jar"/>
     <printcvsmodules modules="${fixedmodules},${modules}" cvsmodulesproperty="cvsmodules"/>
   </target>
+
+  <target name="checkout-cluster" depends="init-module-list" description="Checking out all CVS modules required for cluster.name cluster">
+    <taskdef name="printcvsmodules" classname="org.netbeans.nbbuild.PrintCvsModules" classpath="nbantext.jar"/>
+    <resolve name="cluster.modules" value="${cluster.name}"/>
+    <printcvsmodules modules="${cluster.modules}" cvsmodulesproperty="cvsmodules"/>
+      <!-- The following mess is an attempt to guess the correct CVSROOT and branch from the current checkout. -->
+      <loadfile srcfile="CVS/Root" property="cvsroot" failonerror="false">
+          <filterchain>
+              <striplinebreaks/>
+          </filterchain>
+      </loadfile>
+      <property name="cvsroot" value=":pserver:anoncvs@cvs.netbeans.org:/cvs"/>
+      <loadfile srcfile="CVS/Tag" property="cvstag" failonerror="false">
+          <filterchain> 
+              <tokenfilter delimoutput="">
+                  <containsregex pattern="^T(.+)" replace="\1"/>
+              </tokenfilter>
+          </filterchain>
+      </loadfile>
+      <property name="cvstag" value=""/>
+      <loadfile srcfile="CVS/Tag" property="cvsdate" failonerror="false">
+          <filterchain> 
+              <tokenfilter delimoutput="">
+                  <containsregex pattern="^D(.+)" replace="\1"/>
+              </tokenfilter>
+          </filterchain>
+      </loadfile>
+      <property name="cvsdate" value=""/>
+      <cvs command="checkout -P" compressionlevel="6" cvsroot="${cvsroot}" dest=".." package="${cvsmodules} core jemmy jellytools xtest" tag="${cvstag}" date="${cvsdate}" quiet="true" failonerror="true"/>
+  </target>
   
-  <target name="checkout" depends="print-cvs-modules" description="Check out all CVS modules which are needed to build (and test) the selected moduleconfig.">
+  <target name="checkout" depends="init-module-list,print-cvs-modules" description="Check out all CVS modules which are needed to build (and test) the selected moduleconfig.">
       <!-- The following mess is an attempt to guess the correct CVSROOT and branch from the current checkout. -->
       <loadfile srcfile="CVS/Root" property="cvsroot" failonerror="false">
           <filterchain>

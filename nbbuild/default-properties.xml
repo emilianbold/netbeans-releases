@@ -34,9 +34,23 @@ Microsystems, Inc. All Rights Reserved.
   <!-- Have to be read here, so that they will affect even module builds (e.g. when setting JDK): -->
   <property file="${nb_all}/nbbuild/user.build.properties"/>
   <property file="${nb_all}/nbbuild/site.build.properties"/>
-  
+
+  <macrodef name="resolve">
+    <attribute name="name"/>
+    <attribute name="value"/>
+    <sequential>
+      <property name="@{name}" value="${@{value}}"/>
+    </sequential>
+  </macrodef>
+ 
   <property file="${clusters.list.file}"/>
+
+  <resolve name="nb.clusters.list" value="clusters.config.${cluster.config}.list"/>
+
+  <property name="clusters.list" value="${nb.clusters.list},${clusters.extra.list}"/>
+
   <property file="${moduleCluster.file}"/>
 
-   <property name="test.dist.dir" location="${nb_all}/nbbuild/build/testdist"/>
+  <property name="test.dist.dir" location="${nb_all}/nbbuild/build/testdist"/>
+
 </project>
