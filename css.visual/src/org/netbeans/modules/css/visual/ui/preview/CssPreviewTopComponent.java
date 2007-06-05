@@ -70,11 +70,11 @@ public final class CssPreviewTopComponent extends TopComponent {
     
     private CssPreviewable.Listener PREVIEWABLE_LISTENER = new CssPreviewable.Listener() {
         public void activate(final Content content) {
-            LOGGER.log(Level.INFO, "Previewable activated - POSTING activate task " + content);
+            LOGGER.log(Level.FINE, "Previewable activated - POSTING activate task " + content);
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     preview(content);
-                    LOGGER.log(Level.INFO, "Previewable activated - " + content);
+                    LOGGER.log(Level.FINE, "Previewable activated - " + content);
                 }
             });
         }
@@ -83,7 +83,7 @@ public final class CssPreviewTopComponent extends TopComponent {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     showNoSelectedRulePanel();
-                    LOGGER.log(Level.INFO, "Preview deactivated");
+                    LOGGER.log(Level.FINE, "Preview deactivated");
                 }
             });
             
@@ -113,7 +113,7 @@ public final class CssPreviewTopComponent extends TopComponent {
                 for(Node n : activatedNodes) {
                     CssPreviewable previewable = n.getCookie(CssPreviewable.class);
                     if(previewable != null) {
-                        LOGGER.log(Level.INFO, "Previewable selected " + previewable);
+                        LOGGER.log(Level.FINE, "Previewable selected " + previewable);
                         previewableSelected(previewable);
                         break; //use the first selected previewable
                     }
@@ -137,7 +137,7 @@ public final class CssPreviewTopComponent extends TopComponent {
     private void showNoSelectedRulePanel() {
         if(previewing) {
             setName(DEFAULT_TC_NAME); //set default TC name
-            LOGGER.log(Level.INFO, "Previewable deactivated");
+            LOGGER.log(Level.FINE, "Previewable deactivated");
             remove(previewPanel);
             add(NO_PREVIEW_PANEL, BorderLayout.CENTER);
             previewing = false;
@@ -241,7 +241,7 @@ public final class CssPreviewTopComponent extends TopComponent {
     }
     
     private void setPreviewContent(CharSequence content, String relativeURL) throws Exception {
-        LOGGER.log(Level.INFO, "preview - setting content " + content);
+        LOGGER.log(Level.FINE, "preview - setting content " + content);
         previewPanel.panel().setDocument(new ByteArrayInputStream(content.toString().getBytes()), relativeURL);
     }
     
@@ -250,12 +250,12 @@ public final class CssPreviewTopComponent extends TopComponent {
             if(lastSelectedPreviewable.equals(previewable)) {
                 return ; //ignore
             } else {
-                LOGGER.log(Level.INFO, "removed listener from " + lastSelectedPreviewable);
+                LOGGER.log(Level.FINE, "removed listener from " + lastSelectedPreviewable);
                 lastSelectedPreviewable.removeListener(PREVIEWABLE_LISTENER);
             }
         }
         lastSelectedPreviewable = previewable;
-        LOGGER.log(Level.INFO, "added listener to " + previewable);
+        LOGGER.log(Level.FINE, "added listener to " + previewable);
         lastSelectedPreviewable.addListener(PREVIEWABLE_LISTENER);
         
         //preview the content is available

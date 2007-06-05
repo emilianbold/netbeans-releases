@@ -240,7 +240,7 @@ public class CssEditorSupport extends DataEditorSupport implements OpenCookie, E
     }
     
     private synchronized void updateSelectedRule(int dotPos) {
-        LOGGER.log(Level.INFO, "updateSelectedRule(" + dotPos + ")");
+        LOGGER.log(Level.FINE, "updateSelectedRule(" + dotPos + ")");
         if(getModel().rules() == null) {
             return ;//css not parsed yet, we need to wait for a parser event
         }
@@ -248,7 +248,7 @@ public class CssEditorSupport extends DataEditorSupport implements OpenCookie, E
         //find rule on the offset
         final CssRule selectedRule = getModel().ruleForOffset(dotPos);
         
-        LOGGER.log(Level.INFO, selectedRule == null ? "NO rule" : "found a rule");
+        LOGGER.log(Level.FINE, selectedRule == null ? "NO rule" : "found a rule");
         
         if(selectedRule == null) {
             //remove the listeners from selected
