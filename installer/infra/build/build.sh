@@ -35,6 +35,8 @@
 #OPENESB_BUILDS_HOST=
 #SJSAM_BUILDS_HOST=
 #
+#NB_FILES_PREFIX=
+#
 #JDK_HOME=
 #
 #CVS_ROOT=
@@ -118,6 +120,7 @@ ant build \
         \"-Doutput.dir=${OUTPUT_DIR}\" \
         \"-Dbinary.cache.host=${BINARY_CACHE_HOST}\" \
         \"-Dnb.builds.host=${NB_BUILDS_HOST}\" \
+        \"-Dnb.files.prefix=${NB_FILES_PREFIX}\" \
         \"-Dglassfish.builds.host=${GLASSFISH_BUILDS_HOST}\" \
         \"-Dopenesb.builds.host=${OPENESB_BUILDS_HOST}\" \
         \"-Dsjsam.builds.host=${SJSAM_BUILDS_HOST}\" \
