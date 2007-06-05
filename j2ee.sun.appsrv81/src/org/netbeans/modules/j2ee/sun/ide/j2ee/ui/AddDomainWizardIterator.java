@@ -39,6 +39,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.api.SunURIManager;
 import org.netbeans.modules.j2ee.sun.ide.editors.AdminAuthenticator;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.RunTimeDDCatalog;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.Utils;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.db.ExecSupport;
@@ -350,6 +351,8 @@ public final class AddDomainWizardIterator implements
                 domainDir);
         if (wizard.getProperty(TYPE) != REMOTE) {
             RegisterPointbase.getDefault().register((File) wizard.getProperty(PLATFORM_LOCATION));
+            instanceProperties.setProperty(DeploymentManagerProperties.HTTP_MONITOR_ATTR,
+                Boolean.TRUE.toString());            
         }
         RunTimeDDCatalog.getRunTimeDDCatalog().refresh();
         wizard.putProperty(USER_NAME,BLANK);
