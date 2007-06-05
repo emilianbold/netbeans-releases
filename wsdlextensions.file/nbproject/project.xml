@@ -44,7 +44,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.xml.wsdl.bindingsupport</code-name-base>
+                    <code-name-base>org.netbeans.modules.xml.wsdl.bindingsupport.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
