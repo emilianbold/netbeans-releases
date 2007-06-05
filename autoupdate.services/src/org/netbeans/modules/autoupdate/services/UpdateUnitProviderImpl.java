@@ -246,7 +246,7 @@ public final class UpdateUnitProviderImpl {
                 for (int i = 0; i < children.length; i++) {
                     UpdateProvider provider = loadProvider (children [i]);
                     if (provider != null && providerMap.containsKey (provider.getName ())) {
-                        err.log (Level.INFO, "Customized Provider " + provider.getName ());
+                        err.log (Level.FINE, "Customized Provider " + provider.getName ());
                     }
                     if (provider != null) {
                         providerMap.put (provider.getName (), provider);

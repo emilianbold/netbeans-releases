@@ -15,7 +15,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <filesystem>
@@ -26,28 +26,16 @@ Microsystems, Inc. All Rights Reserved.
     </folder>-->
 
     <folder name="AutoupdateType">
-      <attr name="hidden" boolvalue="true" />
-      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.updatecenters.resources.Bundle"/>
-      <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/updatecenters/resources/updateAction.gif"/>
-      <attr name="helpID" stringvalue="org.netbeans.modules.autoupdate.AutoupdateType"/>
-
       <!-- this ordering left because backward compatibility with deserialized autoupdate types -->
       <attr name="autoupdate_xml_type.settings/autoupdate_xml_type_1.settings" boolvalue="true" />
       <attr name="autoupdate_xml_type_1.settings/autoupdate_xml_type_2.settings" boolvalue="true" />
 
-      <file name="autoupdate_xml_type.settings" url="autoupdate_xml_type.settings">
+      <file name="dev-update-provider.settings" url="dev-update-provider.settings">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.updatecenters.resources.Bundle"/>
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/updatecenters/resources/updateAction.gif"/>
         <attr name="url_key" stringvalue="URL_Default_N"/>
         <attr name="enabled" boolvalue="true"/>
       </file>
-      
-      <!--<file name="dev-update-provider.settings" url="dev-update-provider.settings">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.updatecenters.resources.Bundle"/>
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/updatecenters/resources/updateAction.gif"/>
-        <attr name="url_key" stringvalue="URL_DevUpdateProvider"/>
-        <attr name="enabled" boolvalue="true"/>
-      </file>-->
       
     </folder>
     
