@@ -27,7 +27,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JFileChooser;
-import javax.swing.JPanel;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.subversion.Annotator;
 import org.netbeans.modules.subversion.Subversion;
@@ -167,7 +166,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
     }
     
     private void onManageConnClick() {
-        boolean ok = repository.show(NbBundle.getMessage(SvnOptionsController.class, "CTL_ManageConnections"), new HelpCtx(Repository.class));
+        boolean ok = repository.show(NbBundle.getMessage(SvnOptionsController.class, "CTL_ManageConnections"), new HelpCtx(Repository.class), true);
         if(!ok) {
             repository.refreshUrlHistory();
         }

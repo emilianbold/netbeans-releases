@@ -22,6 +22,7 @@ package org.netbeans.modules.subversion.ui.repository;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -41,6 +42,7 @@ import java.util.Set;
 import java.util.Vector;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -82,14 +84,14 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     
     public static final String PROP_VALID = "valid";                                                    // NOI18N
 
-    private String message;
-            
+    private String message;            
     private int modeMask;
+    private Dimension maxNeededSize;
     
     public Repository(String titleLabel) {
         this(0, titleLabel);
     }
-    
+            
     public Repository(int modeMask, String titleLabel) {
         
         this.modeMask = modeMask;
@@ -104,6 +106,11 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         repositoryPanel.tunnelHelpLabel.setVisible(isSet(FLAG_SHOW_HINTS));
         repositoryPanel.tipLabel.setVisible(isSet(FLAG_SHOW_HINTS));
         repositoryPanel.removeButton.setVisible(isSet(FLAG_SHOW_REMOVE));        
+        
+        // retrieve the dialog size for the largest configuration
+        updateVisibility("svn+");                                                                       // NOI18N
+        maxNeededSize = repositoryPanel.getPreferredSize();
+        updateVisibility();
     }
     
     public void selectUrl(SVNUrl url, boolean force) {
@@ -341,15 +348,18 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         }
         return editedRC;
     }
-    
-    /** Shows proper fields depending on Svn connection method. */
+
     private void updateVisibility() {
-        String selectedUrlString;
         try {
-            selectedUrlString = getUrlString();
+            updateVisibility(getUrlString());
         } catch (InterruptedException ex) {
             return;
-        }
+        }        
+    }   
+    
+    /** Shows proper fields depending on Svn connection method. */
+    private void updateVisibility(String selectedUrlString) {
+
         boolean authFields = false;
         boolean proxyFields = false;
         boolean sshFields = false;
@@ -385,17 +395,15 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         repositoryPanel.tunnelCommandTextField.setVisible(sshFields);        
         repositoryPanel.tunnelCommandLabel.setVisible(sshFields);        
         repositoryPanel.tunnelLabel.setVisible(sshFields);        
-        repositoryPanel.tunnelHelpLabel.setVisible(sshFields);        
-        
+        repositoryPanel.tunnelHelpLabel.setVisible(sshFields);       
+                
     }
 
     private String getSVNTunnelTip(String urlString) {
         String tunnelName = getTunnelName(urlString);
         return MessageFormat.format(SVN_SSH_URL_HELP, tunnelName).trim();
     }
-    
-    
-    
+            
     private String getTunnelName(String urlString) {
         int idx = urlString.indexOf(":", 4);
         if(idx < 0) {
@@ -561,10 +569,14 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         repositoryPanel.tunnelCommandTextField.setText(rc.getExternalCommand());           
     } 
 
-    public boolean show(String title, HelpCtx helpCtx) {
+    public boolean show(String title, HelpCtx helpCtx, boolean setMaxNeddedSize) {
         RepositoryDialogPanel corectPanel = new RepositoryDialogPanel();
         corectPanel.panel.setLayout(new BorderLayout());
-        corectPanel.panel.add(getPanel(), BorderLayout.NORTH);
+        JPanel p = getPanel();
+        if(setMaxNeddedSize) {
+            p.setPreferredSize(maxNeededSize);
+        }        
+        corectPanel.panel.add(p, BorderLayout.NORTH);
         DialogDescriptor dialogDescriptor = new DialogDescriptor(corectPanel, title); // NOI18N        
         showDialog(dialogDescriptor, helpCtx);
         return dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION;
