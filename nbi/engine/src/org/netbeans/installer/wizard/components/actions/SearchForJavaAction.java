@@ -26,8 +26,8 @@ import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
+import org.netbeans.installer.product.dependencies.InstallAfter;
 import org.netbeans.installer.utils.helper.Dependency;
-import org.netbeans.installer.utils.helper.DependencyType;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.LogManager;
@@ -140,7 +140,7 @@ public class SearchForJavaAction extends WizardAction {
                 getContext().
                 get(Product.class);
         for (Dependency dependency: product.getDependencies(
-                DependencyType.INSTALL_AFTER)) {
+                InstallAfter.class)) {
             if (dependency.getUid().equals(JDK_PRODUCT_UID)) {
                 for (Product jdk: Registry.getInstance().getProducts(JDK_PRODUCT_UID)) {
                     if (jdk.getStatus() == Status.TO_BE_INSTALLED) {

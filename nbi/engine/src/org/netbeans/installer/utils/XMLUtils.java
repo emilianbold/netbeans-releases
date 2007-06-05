@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -46,8 +47,10 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import org.netbeans.installer.product.dependencies.Conflict;
+import org.netbeans.installer.product.dependencies.InstallAfter;
+import org.netbeans.installer.product.dependencies.Requirement;
 import org.netbeans.installer.utils.helper.Dependency;
-import org.netbeans.installer.utils.helper.DependencyType;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.ParseException;
 import org.netbeans.installer.utils.exceptions.XMLException;
@@ -231,13 +234,13 @@ public abstract class XMLUtils {
     }
     
     public static int countDescendants(
-            final Element element, 
+            final Element element,
             final String... names) {
         return countDescendants(element, Arrays.asList(names));
     }
     
     public static int countDescendants(
-            final Element element, 
+            final Element element,
             final List<String> names) {
         int count = 0;
         for (Element child: getChildren(element)) {
@@ -252,8 +255,8 @@ public abstract class XMLUtils {
     }
     
     public static Element appendChild(
-            final Element element, 
-            final String name, 
+            final Element element,
+            final String name,
             final String text) {
         final Element child = element.getOwnerDocument().createElement(name);
         
@@ -266,8 +269,7 @@ public abstract class XMLUtils {
     // object <-> dom ///////////////////////////////////////////////////////////////
     public static Dependency parseDependency(
             final Element element) throws ParseException {
-        final DependencyType type =
-                StringUtils.parseDependencyType(element.getNodeName());
+        final String type = element.getNodeName();
         final String uid =
                 element.getAttribute("uid");
         final Version lower =
@@ -276,8 +278,32 @@ public abstract class XMLUtils {
                 Version.getVersion(element.getAttribute("version-upper"));
         final Version resolved =
                 Version.getVersion(element.getAttribute("version-resolved"));
-        
-        return new Dependency(type, uid, lower, upper, resolved);
+        Dependency dependency = null;
+        if(type.equals(Requirement.NAME)) {
+            /*
+            Element orElement = getChild(element, "or");
+            if(orElement!=null) {
+                List <Requirement> list = new ArrayList <Requirement> ();
+                for(Element el : getChildren(orElement)) {
+                    Dependency dep = parseDependency(el);
+                    if(dep instanceof Requirement) {
+                        list.add((Requirement)dep);
+                    } else {
+                        throw new ParseException("OR dependencies doesn`t support " +
+                                dep.getClass().getSimpleName());
+                    }
+                }
+                dependency = new Requirement(uid, lower, upper, resolved, list);
+            }*/
+            dependency = new Requirement(uid, lower, upper, resolved);
+        } else if(type.equals(Conflict.NAME)) {
+            dependency = new Conflict(uid, lower, upper, resolved);
+        } else if(type.equals(InstallAfter.NAME)) {
+            dependency = new InstallAfter(uid, lower, upper, resolved);
+        } else {
+            throw new ParseException("Unknown dependency : " + type);
+        }
+        return dependency;
     }
     
     public static Element saveDependency(
@@ -321,7 +347,7 @@ public abstract class XMLUtils {
         for (Dependency dependency: dependencies) {
             element.appendChild(saveDependency(
                     dependency,
-                    document.createElement(dependency.getType().toString())));
+                    document.createElement(dependency.getName())));
         }
         
         return element;

@@ -36,9 +36,9 @@ import org.netbeans.installer.infra.server.ejb.Manager;
 import org.netbeans.installer.infra.server.ejb.ManagerException;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Group;
+import org.netbeans.installer.product.dependencies.Requirement;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.helper.Dependency;
-import org.netbeans.installer.utils.helper.DependencyType;
 import org.netbeans.installer.utils.helper.Platform;
 
 /**
@@ -163,7 +163,7 @@ public class Components extends HttpServlet {
                 final Product product = products.get(i);
                 
                 List<List<Integer>> requirements = productRequirements.get(index);
-                for (Dependency requirement: product.getDependencies(DependencyType.REQUIREMENT)) {
+                for (Dependency requirement: product.getDependencies(Requirement.class)) {
                     List<Integer> requireeIds = new LinkedList<Integer>();
                     requirements.add(requireeIds);
                     for (Product requiree: registry.getProducts(requirement)) {

@@ -20,36 +20,30 @@
 
 package org.netbeans.installer.utils.helper;
 
+import org.netbeans.installer.product.components.Product;
+
 /**
  *
  * @author Kirill Sorokin
  */
-public class Dependency {
-    private DependencyType type;
-    
+
+public abstract class Dependency {    
     private String uid;
     private Version versionLower;
     private Version versionUpper;
     private Version versionResolved;
     
-    public Dependency(
-            final DependencyType type,
+    protected Dependency(
             final String uid,
             final Version versionLower,
             final Version versionUpper,
             final Version versionResolved) {
-        this.type             = type;
-        
         this.uid              = uid;
         this.versionLower     = versionLower;
         this.versionUpper     = versionUpper;
         this.versionResolved = versionResolved;
     }
-    
-    public DependencyType getType() {
-        return type;
-    }
-    
+   
     public String getUid() {
         return uid;
     }
@@ -69,4 +63,9 @@ public class Dependency {
     public void setVersionResolved(final Version version) {
         this.versionResolved = version;
     }
+    
+    public abstract String getName();
+    
+    public abstract boolean satisfies(Product product);    
+    
 }

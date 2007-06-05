@@ -41,7 +41,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.exceptions.ParseException;
-import org.netbeans.installer.utils.helper.DependencyType;
 import org.netbeans.installer.utils.helper.Platform;
 
 /**
@@ -544,17 +543,6 @@ public abstract class StringUtils {
         }
         
         throw new ParseException("Cannot parse status: " + string);
-    }
-    
-    public static DependencyType parseDependencyType(
-            final String string) throws ParseException {
-        for (DependencyType type: DependencyType.values()) {
-            if (type.getName().equals(string)) {
-                return type;
-            }
-        }
-        
-        throw new ParseException("Cannot parse dependency type: " + string);
     }
     
     /////////////////////////////////////////////////////////////////////////////////

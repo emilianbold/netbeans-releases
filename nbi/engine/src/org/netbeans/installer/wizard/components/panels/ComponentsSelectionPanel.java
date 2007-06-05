@@ -59,9 +59,10 @@ import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.RegistryNode;
 import org.netbeans.installer.product.components.Group;
+import org.netbeans.installer.product.dependencies.Conflict;
+import org.netbeans.installer.product.dependencies.Requirement;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.helper.Dependency;
-import org.netbeans.installer.utils.helper.DependencyType;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
@@ -283,7 +284,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             
             for (Product product: toInstall) {
                 for (Dependency requirement: product.getDependencies(
-                        DependencyType.REQUIREMENT)) {
+                        Requirement.class)) {
                     final List<Product> requirees =
                             registry.getProducts(requirement);
                     
@@ -306,7 +307,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                 }
                 
                 for (Dependency conflict: product.getDependencies(
-                        DependencyType.CONFLICT)) {
+                        Conflict.class)) {
                     final List<Product> conflictees = registry.getProducts(conflict);
                     
                     boolean satisfied = true;
@@ -337,7 +338,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                         continue;
                     }
                     
-                    for (Dependency requirement: dependent.getDependencies(DependencyType.REQUIREMENT)) {
+                    for (Dependency requirement: dependent.getDependencies(Requirement.class)) {
                         final List<Product> requirees = registry.getProducts(requirement);
                         
                         if (requirees.contains(product)) {
@@ -643,7 +644,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             // is an unsatisfied requirement - pick an appropriate
             // product and select it
             for (Dependency requirement: product.getDependencies(
-                    DependencyType.REQUIREMENT)) {
+                    Requirement.class)) {
                 final List<Product> requirees =
                         Registry.getInstance().getProducts(requirement);
                 

@@ -20,9 +20,7 @@
 
 package org.netbeans.installer.utils.helper;
 
-import org.netbeans.installer.utils.exceptions.ParseException;
-import org.netbeans.installer.utils.exceptions.UnrecognizedObjectException;
-
+@Deprecated
 public enum DependencyType {
     REQUIREMENT("requirement"),
     CONFLICT("conflict"),

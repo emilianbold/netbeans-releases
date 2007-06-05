@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -35,6 +35,9 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import org.netbeans.installer.product.components.Group;
 import org.netbeans.installer.product.components.Product;
+import org.netbeans.installer.product.dependencies.Conflict;
+import org.netbeans.installer.product.dependencies.InstallAfter;
+import org.netbeans.installer.product.dependencies.Requirement;
 import org.netbeans.installer.product.filters.OrFilter;
 import org.netbeans.installer.product.filters.ProductFilter;
 import org.netbeans.installer.product.filters.GroupFilter;
@@ -48,7 +51,6 @@ import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.helper.Dependency;
-import org.netbeans.installer.utils.helper.DependencyType;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
@@ -171,18 +173,18 @@ public class Registry {
         compositeProgress.addChild(childProgress, percentageChunk + percentageLeak);
         compositeProgress.setTitle("Loading local registry [" + localRegistryFile + "]");
         loadProductRegistry(
-                localRegistryFile.toURI().toString(), 
-                childProgress, 
-                RegistryType.LOCAL, 
+                localRegistryFile.toURI().toString(),
+                childProgress,
+                RegistryType.LOCAL,
                 false);
         
         childProgress = new Progress();
         compositeProgress.addChild(childProgress, percentageChunk);
         compositeProgress.setTitle("Loading bundled registry [" + bundledRegistryUri + "]");
         loadProductRegistry(
-                bundledRegistryUri, 
-                childProgress, 
-                RegistryType.BUNDLED, 
+                bundledRegistryUri,
+                childProgress,
+                RegistryType.BUNDLED,
                 true);
         
         for (String remoteRegistryURI: remoteRegistryUris) {
@@ -190,9 +192,9 @@ public class Registry {
             compositeProgress.addChild(childProgress, percentageChunk);
             compositeProgress.setTitle("Loading remote registry [" + remoteRegistryURI + "]");
             loadProductRegistry(
-                    remoteRegistryURI, 
-                    childProgress, 
-                    RegistryType.REMOTE, 
+                    remoteRegistryURI,
+                    childProgress,
+                    RegistryType.REMOTE,
                     true);
         }
         
@@ -216,14 +218,14 @@ public class Registry {
         progress.setPercentage(Progress.START);
         
         // remove installation data for all the products, if it still exists (should
-        // be removed right upon installation); we only remove the files if the 
-        // local uri is different from the remote one and is not contained in the 
-        // list of alternate uris -- as we could be useing a locally located remote 
+        // be removed right upon installation); we only remove the files if the
+        // local uri is different from the remote one and is not contained in the
+        // list of alternate uris -- as we could be useing a locally located remote
         // registry
         for (Product product: getProducts()) {
             for (ExtendedUri uri: product.getDataUris()) {
-                if ((uri.getLocal() != null) && 
-                        !uri.getLocal().equals(uri.getRemote()) && 
+                if ((uri.getLocal() != null) &&
+                        !uri.getLocal().equals(uri.getRemote()) &&
                         !uri.getAlternates().contains(uri.getLocal())) {
                     try {
                         FileUtils.deleteFile(new File(uri.getLocal()));
@@ -464,7 +466,7 @@ public class Registry {
     }
     
     private void validateRequirements(final Product product, final List<Product> prohibitedList) throws InitializationException {
-        for (Dependency requirement: product.getDependencies(DependencyType.REQUIREMENT)) {
+        for (Dependency requirement: product.getDependencies(Requirement.class)) {
             // get the list of products that satisfy the requirement
             final List<Product> requirees = queryProducts(new ProductFilter(
                     requirement.getUid(),
@@ -512,7 +514,7 @@ public class Registry {
     }
     
     private void validateConflicts(final Product product) throws InitializationException {
-        for (Dependency requirement: product.getDependencies(DependencyType.REQUIREMENT)) {
+        for (Dependency requirement: product.getDependencies(Requirement.class)) {
             // get the list of products that satisfy the requirement
             final List<Product> requirees = queryProducts(new ProductFilter(
                     requirement.getUid(),
@@ -520,7 +522,7 @@ public class Registry {
                     requirement.getVersionUpper(),
                     targetPlatform));
             
-            for (Dependency conflict: product.getDependencies(DependencyType.CONFLICT)) {
+            for (Dependency conflict: product.getDependencies(Conflict.class)) {
                 // get the list of products that satisfy the conflict
                 final List<Product> conflictees = queryProducts(new ProductFilter(
                         conflict.getUid(),
@@ -541,7 +543,7 @@ public class Registry {
     }
     
     private void validateInstallAfters(final Product product, final List<Product> prohibitedList) throws InitializationException {
-        for (Dependency installafter: product.getDependencies(DependencyType.INSTALL_AFTER)) {
+        for (Dependency installafter: product.getDependencies(InstallAfter.class)) {
             // get the list of products that satisfy the install-after dependency
             final List<Product> dependees = queryProducts(new ProductFilter(
                     installafter.getUid(),
@@ -554,8 +556,8 @@ public class Registry {
             // an exception
             for (Product requiree: dependees) {
                 for (Dependency dependency: requiree.getDependencies(
-                        DependencyType.REQUIREMENT,
-                        DependencyType.INSTALL_AFTER)) {
+                        Requirement.class,
+                        InstallAfter.class)) {
                     if (product.satisfies(dependency)) {
                         throw new InitializationException(
                                 "Cyclic dependency: " + product.getUid() +
@@ -646,7 +648,7 @@ public class Registry {
                     XMLUtils.getChild(registryElement, "properties");
             
             if (propertiesElement != null) {
-                final NbiProperties map = 
+                final NbiProperties map =
                         XMLUtils.parseNbiProperties(propertiesElement);
                 for (Object name: map.keySet()) {
                     if (!properties.containsKey(name)) {
@@ -889,8 +891,7 @@ public class Registry {
     }
     
     public List<Product> getProducts(final Dependency dependency) {
-        switch (dependency.getType()) {
-        case REQUIREMENT:
+        if(dependency instanceof Requirement) {
             if (dependency.getVersionResolved() != null) {
                 return queryProducts(new ProductFilter(
                         dependency.getUid(),
@@ -898,19 +899,20 @@ public class Registry {
                         dependency.getVersionResolved(),
                         targetPlatform));
             }
-        case CONFLICT:
+        }
+        if(dependency instanceof Requirement || dependency instanceof Conflict) {
             return queryProducts(new ProductFilter(
                     dependency.getUid(),
                     dependency.getVersionLower(),
                     dependency.getVersionUpper(),
                     targetPlatform));
-        case INSTALL_AFTER:
+        }
+        if(dependency instanceof InstallAfter) {
             return queryProducts(new ProductFilter(
                     dependency.getUid(),
                     targetPlatform));
-        default:
-            ErrorManager.notifyCritical("unknown dependency type");
         }
+        ErrorManager.notifyCritical("unknown dependency type");
         
         // the only way for us to reach this spot is to get to 'default:' in the
         // switch, but ErrorManager.notifyCritical() will cause a System.exit(),
@@ -984,8 +986,8 @@ public class Registry {
                 // dependencies which are planned for installation should be already
                 // present in the list
                 for (Dependency dependency: product.getDependencies(
-                        DependencyType.REQUIREMENT,
-                        DependencyType.INSTALL_AFTER)) {
+                        Requirement.class,
+                        InstallAfter.class)) {
                     for (Product dependee: getProducts(dependency)) {
                         if ((dependee.getStatus() == Status.TO_BE_INSTALLED) &&
                                 !currentList.contains(dependee)) {
@@ -1030,7 +1032,7 @@ public class Registry {
     
     // products /////////////////////////////////////////////////////////////////////
     public boolean satisfiesRequirement(final Product candidate, final Product product) {
-        for (Dependency requirement: product.getDependencies(DependencyType.REQUIREMENT)) {
+        for (Dependency requirement: product.getDependencies(Requirement.class)) {
             final List<Product> requirees = getProducts(requirement);
             
             for (Product requiree: requirees) {
@@ -1045,7 +1047,7 @@ public class Registry {
     }
     
     public boolean checkDependenciesForInstall(final Product product) {
-        for (Dependency requirement: product.getDependencies(DependencyType.REQUIREMENT)) {
+        for (Dependency requirement: product.getDependencies(Requirement.class)) {
             final List<Product> requirees = getProducts(requirement);
             boolean satisfied = false;
             
@@ -1060,7 +1062,7 @@ public class Registry {
             if (!satisfied) return false;
         }
         
-        for (Dependency conflict: product.getDependencies(DependencyType.CONFLICT)) {
+        for (Dependency conflict: product.getDependencies(Conflict.class)) {
             final List<Product> conflictees = getProducts(conflict);
             boolean satisfied = true;
             
@@ -1082,7 +1084,7 @@ public class Registry {
         for (Product product: getProducts()) {
             if ((product.getStatus() == Status.INSTALLED) ||
                     (product.getStatus() == Status.TO_BE_INSTALLED)) {
-                for (Dependency requirement: product.getDependencies(DependencyType.REQUIREMENT)) {
+                for (Dependency requirement: product.getDependencies(Requirement.class)) {
                     final List<Product> requirees = getProducts(requirement);
                     
                     for (Product requiree: requirees) {
@@ -1162,11 +1164,11 @@ public class Registry {
                     XMLUtils.getChild(element, "components");
             if (productsElement != null) {
                 for (Element productElement: XMLUtils.getChildren(productsElement)) {
-                    final String uid = 
+                    final String uid =
                             productElement.getAttribute("uid");
-                    final Version version = 
+                    final Version version =
                             Version.getVersion(productElement.getAttribute("version"));
-                    final List<Platform> platforms = 
+                    final List<Platform> platforms =
                             StringUtils.parsePlatforms(productElement.getAttribute("platform"));
                     
                     LogManager.log("        parsing component uid=" + uid + ", version=" + version);
@@ -1177,24 +1179,24 @@ public class Registry {
                         if (product != null) {
                             final Status status = StringUtils.parseStatus(productElement.getAttribute("status"));
                             switch (status) {
-                            case NOT_INSTALLED:
-                                continue;
-                            case TO_BE_INSTALLED:
-                                if (product.getStatus() != Status.INSTALLED) {
-                                    product.setStatus(status);
-                                } else {
+                                case NOT_INSTALLED:
                                     continue;
-                                }
-                                break;
-                            case INSTALLED:
-                                continue;
-                            case TO_BE_UNINSTALLED:
-                                if (product.getStatus() != Status.NOT_INSTALLED) {
-                                    product.setStatus(status);
-                                } else {
+                                case TO_BE_INSTALLED:
+                                    if (product.getStatus() != Status.INSTALLED) {
+                                        product.setStatus(status);
+                                    } else {
+                                        continue;
+                                    }
+                                    break;
+                                case INSTALLED:
                                     continue;
-                                }
-                                break;
+                                case TO_BE_UNINSTALLED:
+                                    if (product.getStatus() != Status.NOT_INSTALLED) {
+                                        product.setStatus(status);
+                                    } else {
+                                        continue;
+                                    }
+                                    break;
                             }
                             
                             final Element productPropertiesElement = XMLUtils.getChild(productElement, "properties");
@@ -1284,18 +1286,18 @@ public class Registry {
                             StringUtils.asString(component.getPlatforms(), " "));
                     
                     switch (component.getStatus()) {
-                    case INSTALLED:
-                        productNode.setAttribute(
-                                "status",
-                                Status.TO_BE_INSTALLED.toString());
-                        break;
-                    case NOT_INSTALLED:
-                        productNode.setAttribute(
-                                "status",
-                                Status.TO_BE_UNINSTALLED.toString());
-                        break;
-                    default:
-                        continue;
+                        case INSTALLED:
+                            productNode.setAttribute(
+                                    "status",
+                                    Status.TO_BE_INSTALLED.toString());
+                            break;
+                        case NOT_INSTALLED:
+                            productNode.setAttribute(
+                                    "status",
+                                    Status.TO_BE_UNINSTALLED.toString());
+                            break;
+                        default:
+                            continue;
                     }
                     
                     if (component.getProperties().size() > 0) {
