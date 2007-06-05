@@ -658,7 +658,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
             return 4;
     }
     
-    public synchronized void setErrorDescriptions(final String layer, final Collection<? extends ErrorDescription> errors) {
+    public void setErrorDescriptions(final String layer, final Collection<? extends ErrorDescription> errors) {
         doc.render(new Runnable() {
             public void run() {
                 try {
