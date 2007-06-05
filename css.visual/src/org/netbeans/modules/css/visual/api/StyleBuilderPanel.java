@@ -62,7 +62,7 @@ public final class StyleBuilderPanel extends JPanel {
 
     public void setContent(final CssRuleContent cssStyleData){
         for(int i=0; i< styleEditorList.size(); i++){
-            StyleEditor styleEitor = (StyleEditor)styleEditorList.get(i);
+            StyleEditor styleEitor = styleEditorList.get(i);
             styleEitor.setContent(cssStyleData);
         }
     }

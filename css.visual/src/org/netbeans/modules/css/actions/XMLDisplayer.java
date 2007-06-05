@@ -190,7 +190,7 @@ public class XMLDisplayer {
         public IOCtl (DataObject data, int line, int column)
         throws java.io.IOException {
             this.column = column;
-            LineCookie cookie = (LineCookie)data.getCookie(LineCookie.class);
+            LineCookie cookie = data.getCookie(LineCookie.class);
             if (cookie == null) {
                 throw new java.io.FileNotFoundException ();
             }

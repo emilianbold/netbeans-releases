@@ -473,46 +473,46 @@ public final class CssProperties {
      * @return Set of property names.
      */
     public static String[] getCssPropertyNames(){
-        return (String[]) cssPropertyNames.toArray(new String[cssPropertyNames.size()]);
+        return cssPropertyNames.toArray(new String[cssPropertyNames.size()]);
     }
     
     public static String[] getCssPropertyValues(String cssProperty) {
         if(BACKGROUND_REPEAT.equals(cssProperty)){
-            return (String[]) backgroundRepeatValues.toArray(new String[backgroundRepeatValues.size()]);
+            return backgroundRepeatValues.toArray(new String[backgroundRepeatValues.size()]);
         }else if(BACKGROUND_POSITION.equals(cssProperty)){
-            return (String[]) backgroundPositionValues.toArray(new String[backgroundPositionValues.size()]);
+            return backgroundPositionValues.toArray(new String[backgroundPositionValues.size()]);
         }else if(BACKGROUND_ATTACHMENT.equals(cssProperty)){
-            return (String[]) backgroundAttachmentValues.toArray(new String[backgroundAttachmentValues.size()]);
+            return backgroundAttachmentValues.toArray(new String[backgroundAttachmentValues.size()]);
         }else if(FONT_STYLE.equals(cssProperty)){
-            return (String[]) fontStyleValues.toArray(new String[fontStyleValues.size()]);
+            return fontStyleValues.toArray(new String[fontStyleValues.size()]);
         }else if(FONT_VARIANT.equals(cssProperty)){
-            return (String[]) fontVariantValues.toArray(new String[fontVariantValues.size()]);
+            return fontVariantValues.toArray(new String[fontVariantValues.size()]);
         }else if(FONT_WEIGHT.equals(cssProperty)){
-            return (String[]) fontWeightValues.toArray(new String[fontWeightValues.size()]);
+            return fontWeightValues.toArray(new String[fontWeightValues.size()]);
         }else if(DIRECTION.equals(cssProperty)){
-            return (String[]) directionValues.toArray(new String[directionValues.size()]);
+            return directionValues.toArray(new String[directionValues.size()]);
         }else if(TEXT_ALIGN.equals(cssProperty)){
-            return (String[]) textAlignValues.toArray(new String[textAlignValues.size()]);
+            return textAlignValues.toArray(new String[textAlignValues.size()]);
         }else if(TEXT_DECORATION.equals(cssProperty)){
-            return (String[]) textDecorationValues.toArray(new String[textDecorationValues.size()]);
+            return textDecorationValues.toArray(new String[textDecorationValues.size()]);
         }else if(VERTICAL_ALIGN.equals(cssProperty)){
-            return (String[]) verticalAlignValues.toArray(new String[verticalAlignValues.size()]);
+            return verticalAlignValues.toArray(new String[verticalAlignValues.size()]);
         }else if(POSITION.equals(cssProperty)){
-            return (String[]) positionValues.toArray(new String[positionValues.size()]);
+            return positionValues.toArray(new String[positionValues.size()]);
         }else if(VISIBILITY.equals(cssProperty)){
-            return (String[]) visiblityValues.toArray(new String[visiblityValues.size()]);
+            return visiblityValues.toArray(new String[visiblityValues.size()]);
         }else if(BORDER_STYLE.equals(cssProperty)){
-            return (String[]) borderStyleValues.toArray(new String[borderStyleValues.size()]);
+            return borderStyleValues.toArray(new String[borderStyleValues.size()]);
         }
         return new String[0];
     }
     
     public static String[] getCssLengthUnits() {
-        return (String[]) cssLengthUnits.toArray(new String[cssLengthUnits.size()]);
+        return cssLengthUnits.toArray(new String[cssLengthUnits.size()]);
     }
     
     public static String[] getColorValues() {
-        return (String[]) colorValues.toArray(new String[colorValues.size()]);
+        return colorValues.toArray(new String[colorValues.size()]);
     }
     
     public static Map getColorNameHexMap() {
@@ -520,18 +520,18 @@ public final class CssProperties {
     }
     
     public static String[] getFontFamilyValues() {
-        return (String[]) fontFamilyValues.toArray(new String[fontFamilyValues.size()]);
+        return fontFamilyValues.toArray(new String[fontFamilyValues.size()]);
     }
     
     public static String[] getWebFontValues() {
-        return  (String[]) webFontValues.toArray(new String[webFontValues.size()]);
+        return  webFontValues.toArray(new String[webFontValues.size()]);
     }
     
     public static String[] getFontFamilySetValues() {
-        return (String[]) fontFamiliySetValues.toArray(new String[fontFamiliySetValues.size()]);
+        return fontFamiliySetValues.toArray(new String[fontFamiliySetValues.size()]);
     }
     
     public static String[] getFontSizeValues() {
-        return (String[]) fontSizeValues.toArray(new String[fontSizeValues.size()]);
+        return fontSizeValues.toArray(new String[fontSizeValues.size()]);
     }
 }
