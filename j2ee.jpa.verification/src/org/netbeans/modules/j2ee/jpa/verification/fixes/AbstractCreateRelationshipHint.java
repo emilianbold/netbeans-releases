@@ -148,15 +148,8 @@ public abstract class AbstractCreateRelationshipHint implements Fix {
                 }
                 
                 owningSide = pnlPickOrCreateField.owningSide();
-                
-                // do not create field for self-reflective relationships - see #77435
-                //                if (!(javaClass.getName().equals(targetClass.getName()) && localFieldName.equals(fieldName))){
-                //                    createFieldOrPropertyAtTargetClass(owningSide, targetClass, fieldName);
-                //                }
-                
                 mappedBy = fieldName;
-            }
-            else {
+            } else {
                 mappedBy = null;
             }
         } else {
@@ -182,7 +175,8 @@ public abstract class AbstractCreateRelationshipHint implements Fix {
                 
                 TypeElement targetClass = ccontrol.getElements().getTypeElement(targetEntityClassName);
                 assert targetClass != null;
-                targetFileObject = org.netbeans.api.java.source.SourceUtils.getFile(targetClass);
+                targetFileObject = org.netbeans.api.java.source.SourceUtils.getFile(targetClass,
+                        ccontrol.getClasspathInfo());
                 
                 for (VariableElement field : ElementFilter.fieldsIn(targetClass.getEnclosedElements())){
                     fieldsExistingAtTargetClass.add(field.getSimpleName().toString());
@@ -294,94 +288,13 @@ public abstract class AbstractCreateRelationshipHint implements Fix {
             public void run(WorkingCopy workingCopy) throws Exception {
                 workingCopy.toPhase(JavaSource.Phase.RESOLVED);
                 
-                TypeElement localClass = classHandle.resolve(workingCopy);
-                
-                GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy, localClass);
-                
-                List<ExpressionTree> annArgs = null;
-                
-                if (owningSide){
-                    annArgs = Collections.singletonList(
-                            genUtils.createAnnotationArgument("mappedBy", mappedBy)); //NOI18N
-                }
-                else{
-                    annArgs = Collections.<ExpressionTree>emptyList();
-                }
-                
-                AnnotationTree ann = genUtils.createAnnotation(annotationClass, annArgs);
-                
-                if (accessType == AccessType.FIELD){
-                    VariableElement field = ModelUtils.getField(localClass, localAttrName);
-                    VariableTree fieldTree = (VariableTree) workingCopy.getTrees().getTree(field);
-                    VariableTree modifiedTree = genUtils.addAnnotation(fieldTree, ann);
-                    workingCopy.rewrite(fieldTree, modifiedTree);
-                } else { // accessType == AccessType.PROPERTY
-                    ExecutableElement accesor = ModelUtils.getAccesor(localClass, localAttrName);
-                    MethodTree fieldTree = (MethodTree) workingCopy.getTrees().getTree(accesor);
-                    MethodTree modifiedTree = genUtils.addAnnotation(fieldTree, ann);
-                    workingCopy.rewrite(fieldTree, modifiedTree);
-                }
-                
-                // Target Class
-                
-                TypeElement targetClass = workingCopy.getElements().getTypeElement(targetEntityClassName);
-                assert targetClass != null;
-                
-                ClassTree targetClassTree = workingCopy.getTrees().getTree(targetClass);
-                genUtils = GenerationUtils.newInstance(workingCopy, targetClass);
-                VariableTree targetField = null;
-                VariableElement targetFieldElem = ModelUtils.getField(targetClass, mappedBy);
-                Tree remoteFieldType = workingCopy.getTrees().getTree(localClass);
-                
-                if (targetFieldElem != null){
-                    targetField = (VariableTree) workingCopy.getTrees().getTree(targetFieldElem);
-                }
-                else{
-                    ModifiersTree modifiersTree = workingCopy.getTreeMaker().Modifiers(Collections.singleton(Modifier.PRIVATE));
-                    
-                    targetField = genUtils.createField(modifiersTree, mappedBy, remoteFieldType);
-                    
-                    workingCopy.rewrite(targetClassTree,
-                            genUtils.addClassFields(targetClassTree, Collections.singletonList(targetField)));
-                }
-                
-                MethodTree targetFieldAccesor = null;
-                ExecutableElement targetFieldAccesorElem = ModelUtils.getAccesor(targetClass, mappedBy);
-                
-                if (targetFieldAccesorElem != null){
-                    targetFieldAccesor = workingCopy.getTrees().getTree(targetFieldAccesorElem);
-                }
-                else{
-                    ModifiersTree modifiersTree = workingCopy.getTreeMaker().Modifiers(Collections.singleton(Modifier.PUBLIC));
-                    targetFieldAccesor = genUtils.createPropertyGetterMethod(modifiersTree, mappedBy, remoteFieldType);
-                    ClassTree modifiedClass = workingCopy.getTreeMaker().addClassMember(targetClassTree, targetFieldAccesor);
-                    MethodTree targetFieldMutator = genUtils.createPropertySetterMethod(modifiersTree, mappedBy, remoteFieldType);
-                    modifiedClass = workingCopy.getTreeMaker().addClassMember(modifiedClass, targetFieldMutator);
-                    workingCopy.rewrite(targetClassTree, modifiedClass);
-                }
-                
-                List<ExpressionTree> targetAnnArgs = null;
-                
-                if (!owningSide){
-                    targetAnnArgs = Collections.singletonList(
-                            genUtils.createAnnotationArgument("mappedBy", localAttrName)); //NOI18N
-                }
-                else{
-                    targetAnnArgs = Collections.<ExpressionTree>emptyList();
-                }
-                
-                AnnotationTree targetAnn = genUtils.createAnnotation(complimentaryAnnotationClassName, targetAnnArgs);
-                
-                if (accessType == AccessType.FIELD){ // TODO: Use accessType for target entity 
-                    VariableTree modifiedTree = genUtils.addAnnotation(targetField, ann);
-                    workingCopy.rewrite(targetField, modifiedTree);
-                } else { // accessType == AccessType.PROPERTY
-                    MethodTree modifiedTree = genUtils.addAnnotation(targetFieldAccesor, ann);
-                    workingCopy.rewrite(targetFieldAccesor, modifiedTree);
+                if (fileObject.equals(workingCopy.getFileObject())){
+                    modifyLocalClass(workingCopy, mappedBy, owningSide);
+                } else {
+                    modifyTargetClass(workingCopy, mappedBy, !owningSide);
                 }
             }
         };
-        
         
         ClasspathInfo cpi = ClasspathInfo.create(fileObject);
         JavaSource javaSource = JavaSource.create(cpi, fileObject, targetFileObject);
@@ -392,6 +305,99 @@ public abstract class AbstractCreateRelationshipHint implements Fix {
             JPAProblemFinder.LOG.log(Level.SEVERE, e.getMessage(), e);
         }
     }
+    
+    private void modifyLocalClass(WorkingCopy workingCopy, String mappedBy, boolean owningSide) throws IOException{
+        TypeElement localClass = classHandle.resolve(workingCopy);
+        
+        GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy, localClass);
+        
+        List<ExpressionTree> annArgs = null;
+        
+        if (!owningSide){
+            annArgs = Collections.singletonList(
+                    genUtils.createAnnotationArgument("mappedBy", mappedBy)); //NOI18N
+        } else{
+            annArgs = Collections.<ExpressionTree>emptyList();
+        }
+        
+        AnnotationTree ann = genUtils.createAnnotation(annotationClass, annArgs);
+        
+        if (accessType == AccessType.FIELD){
+            VariableElement field = ModelUtils.getField(localClass, localAttrName);
+            VariableTree fieldTree = (VariableTree) workingCopy.getTrees().getTree(field);
+            VariableTree modifiedTree = genUtils.addAnnotation(fieldTree, ann);
+            workingCopy.rewrite(fieldTree, modifiedTree);
+        } else { // accessType == AccessType.PROPERTY
+            ExecutableElement accesor = ModelUtils.getAccesor(localClass, localAttrName);
+            MethodTree fieldTree = (MethodTree) workingCopy.getTrees().getTree(accesor);
+            MethodTree modifiedTree = genUtils.addAnnotation(fieldTree, ann);
+            workingCopy.rewrite(fieldTree, modifiedTree);
+        }
+    }
+    
+    
+    private void modifyTargetClass(WorkingCopy workingCopy, String mappedBy, boolean owningSide) throws IOException{
+        TypeElement targetClass = workingCopy.getElements().getTypeElement(targetEntityClassName);
+        assert targetClass != null;
+        
+        ClassTree targetClassTree = workingCopy.getTrees().getTree(targetClass);
+        GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy, targetClass);
+        
+        String remoteFieldType = classHandle.getQualifiedName();
+        
+        if (isMultiValuedAtLocalEntity()){
+            remoteFieldType = String.format("java.util.List<%s>", remoteFieldType); //NOI18N
+        }
+        
+        VariableTree targetField = null;
+        VariableElement targetFieldElem = ModelUtils.getField(targetClass, mappedBy);
+        
+        if (targetFieldElem != null){
+            targetField = (VariableTree) workingCopy.getTrees().getTree(targetFieldElem);
+        } else{
+            ModifiersTree modifiersTree = workingCopy.getTreeMaker().Modifiers(Collections.singleton(Modifier.PRIVATE));
+            
+            targetField = genUtils.createField(modifiersTree, mappedBy, remoteFieldType);
+            
+            ClassTree modifiedClass = genUtils.addClassFields(targetClassTree, Collections.singletonList(targetField));
+            workingCopy.rewrite(targetClassTree, modifiedClass);
+            targetClassTree = modifiedClass;
+        }
+        
+        MethodTree targetFieldAccesor = null;
+        ExecutableElement targetFieldAccesorElem = ModelUtils.getAccesor(targetClass, mappedBy);
+        
+        if (targetFieldAccesorElem != null){
+            targetFieldAccesor = workingCopy.getTrees().getTree(targetFieldAccesorElem);
+        } else{
+            ModifiersTree modifiersTree = workingCopy.getTreeMaker().Modifiers(Collections.singleton(Modifier.PUBLIC));
+            targetFieldAccesor = genUtils.createPropertyGetterMethod(modifiersTree, mappedBy, remoteFieldType);
+            ClassTree modifiedClass = workingCopy.getTreeMaker().addClassMember(targetClassTree, targetFieldAccesor);
+            MethodTree targetFieldMutator = genUtils.createPropertySetterMethod(modifiersTree, mappedBy, remoteFieldType);
+            modifiedClass = workingCopy.getTreeMaker().addClassMember(modifiedClass, targetFieldMutator);
+            workingCopy.rewrite(targetClassTree, modifiedClass);
+        }
+        
+        List<ExpressionTree> targetAnnArgs = null;
+        
+        if (!owningSide){
+            targetAnnArgs = Collections.singletonList(
+                    genUtils.createAnnotationArgument("mappedBy", localAttrName)); //NOI18N
+        } else{
+            targetAnnArgs = Collections.<ExpressionTree>emptyList();
+        }
+        
+        AnnotationTree targetAnn = genUtils.createAnnotation(complimentaryAnnotationClassName, targetAnnArgs);
+        
+        if (accessType == AccessType.FIELD){ // TODO: Use accessType for target entity
+            VariableTree modifiedTree = genUtils.addAnnotation(targetField, targetAnn);
+            workingCopy.rewrite(targetField, modifiedTree);
+        } else { // accessType == AccessType.PROPERTY
+            MethodTree modifiedTree = genUtils.addAnnotation(targetFieldAccesor, targetAnn);
+            workingCopy.rewrite(targetFieldAccesor, modifiedTree);
+        }
+    }
+    
     
     protected String genDefaultFieldName() {
         String defaultFieldNameBase = getShortClassName(classHandle.getQualifiedName());
@@ -434,6 +440,11 @@ public abstract class AbstractCreateRelationshipHint implements Fix {
     
     protected boolean isMultiValuedAtTargetEntity(){
         return JPAAnnotations.MANY_TO_MANY.equals(complimentaryAnnotationClassName)
-                || JPAAnnotations.ONE_TO_MANY.equals(complimentaryAnnotationClassName);
+                || JPAAnnotations.MANY_TO_ONE.equals(complimentaryAnnotationClassName);
+    }
+    
+    protected boolean isMultiValuedAtLocalEntity(){
+        return JPAAnnotations.MANY_TO_MANY.equals(annotationClass)
+                || JPAAnnotations.MANY_TO_ONE.equals(annotationClass);
     }
 }
