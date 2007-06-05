@@ -460,6 +460,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         Set<ModuleDependency> result = new HashSet<ModuleDependency>(universeDependencies);
         if (filterExcludedModules && isSuiteComponent()) {
             SuiteProject suite = getSuite();
+            assert suite != null : "#105651: not really a suite in " + getHelper().getProjectDirectory();
             String[] disableModules = SuiteProperties.getArrayProperty(
                     suite.getEvaluator(), SuiteProperties.DISABLED_MODULES_PROPERTY);
             String[] enableClusters = SuiteProperties.getArrayProperty(
