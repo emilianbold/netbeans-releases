@@ -25,6 +25,7 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.util.Date;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
@@ -234,6 +235,15 @@ public final class UiUtils {
                     UIManager.getInstalledLookAndFeels();
                     
                     UIManager.setLookAndFeel(className);
+                    
+                    // workaround for the issue with further using JFileChooser 
+                    // in case of missing system icons 
+                    // Java Issue :
+                    // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6210674
+                    // NBI Issue :
+                    // http://www.netbeans.org/issues/show_bug.cgi?id=105065
+                    new JFileChooser();
+                    
                 } catch (Exception e) {
                     // we're catching Exception here as pretty much anything can happen
                     // while setting the look and feel and we have no control over it
