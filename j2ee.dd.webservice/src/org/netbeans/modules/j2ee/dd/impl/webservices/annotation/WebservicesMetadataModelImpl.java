@@ -59,7 +59,7 @@ public class WebservicesMetadataModelImpl implements MetadataModelImplementation
         if (ddRoot != null && ddRoot.getVersion().doubleValue() < 1.2) {
             root = ddRoot;
         } else {
-            root = new WebservicesImpl(helper);
+            root = WebservicesImpl.create(helper);
         }
         metadata = new WebservicesMetadataImpl(root);
     }

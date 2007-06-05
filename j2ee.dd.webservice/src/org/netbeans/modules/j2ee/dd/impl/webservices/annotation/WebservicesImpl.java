@@ -19,6 +19,7 @@
 package org.netbeans.modules.j2ee.dd.impl.webservices.annotation;
 
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
@@ -29,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.common.Icon;
 import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
@@ -50,13 +53,30 @@ import org.xml.sax.SAXParseException;
 public class WebservicesImpl implements Webservices {
 
     private final AnnotationModelHelper helper;
-    private final PersistentObjectManager<WebserviceDescriptionImpl> webserviceManager;
-    // private WebserviceDescription[] webServices;
+    private final PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
+    private volatile PersistentObjectManager<WebserviceDescriptionImpl> webserviceManager;
     
-    public WebservicesImpl(AnnotationModelHelper helper) {
-        this.helper=helper;
+    public static WebservicesImpl create(AnnotationModelHelper helper) {
+        WebservicesImpl instance = new WebservicesImpl(helper);
+        instance.initialize();
+        return instance;
+    }
+    
+    private WebservicesImpl(AnnotationModelHelper helper) {
+        this.helper = helper;
+    }
+    
+    /**
+     * Initializing outside the constructor to avoid escaping "this" from
+     * the constructor.
+     */
+    private void initialize() {
         webserviceManager = helper.createPersistentObjectManager(new WebserviceProvider());
-        // helper.addJavaContextListener(this);
+        webserviceManager.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                propChangeSupport.firePropertyChange("/webservices", null, null); // NOI18N
+            }
+        });
     }
     
     public BigDecimal getVersion() {
@@ -76,6 +96,14 @@ public class WebservicesImpl implements Webservices {
         return webserviceManager.getObjects().size();
     }
     
+    public void addPropertyChangeListener(PropertyChangeListener pcl) {
+        propChangeSupport.addPropertyChangeListener(pcl);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+        propChangeSupport.removePropertyChangeListener(pcl);
+    }
+
     // <editor-fold defaultstate="collapsed" desc="Not implemented methods">
     public Object clone() {
         throw new UnsupportedOperationException("Not supported yet.");
@@ -114,14 +142,6 @@ public class WebservicesImpl implements Webservices {
     }
 
     public void merge(RootInterface root, int mode) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void addPropertyChangeListener(PropertyChangeListener pcl) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener pcl) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
