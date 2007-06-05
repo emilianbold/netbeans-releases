@@ -67,7 +67,8 @@ public final class ClassMemberNavigatorJavaSourceFactory extends LookupBasedJava
 
         // Filter uninteresting files from the lookup
         for( FileObject fileObject : super.getFileObjects() ) {
-            if (!"text/x-java".equals(FileUtil.getMIMEType(fileObject)) && !"java".equals(fileObject.getExt())) {  //NOI18N
+            if (!"text/x-java".equals(FileUtil.getMIMEType(fileObject)) && !"java".equals(fileObject.getExt()) &&
+                !"application/x-class-file".equals(FileUtil.getMIMEType(fileObject)) && !"class".equals(fileObject.getExt())) {  //NOI18N
                 continue;
             }
             result.add(fileObject);

@@ -88,17 +88,9 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         rootDescription.subs = new ArrayList<Description>();
         
         // Get all outerclasses in the Compilation unit
-        CompilationUnitTree cuTree = info.getCompilationUnit();
-        List<? extends Tree> typeDecls = cuTree.getTypeDecls();
-        List<Element> elements = new ArrayList<Element>( typeDecls.size() );
-        TreePath cuPath = new TreePath( cuTree );
-        for( Tree t : typeDecls ) {
-            TreePath p = new TreePath( cuPath, t );
-            Element e = info.getTrees().getElement( p );
-            if ( e != null ) {
-                elements.add( e );
-            }
-        }
+        CompilationUnitTree cuTree = info.getCompilationUnit();        
+        List<? extends TypeElement> elements = info.getTopLevelElements();
+        
         pos = new HashMap<Element,Long>();
         if (!canceled.get()) {
             Trees trees = info.getTrees();
