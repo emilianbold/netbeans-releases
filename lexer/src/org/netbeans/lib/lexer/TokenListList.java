@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.ArrayUtilities;
 
@@ -48,7 +49,7 @@ public final class TokenListList extends AbstractList<TokenList<?>> {
     /** Explorers scanning the hierarchy. */
     private List<TokenListExplorer> explorers;
     
-    public static List<TokenSequence<?>> createTokenSequenceList(
+    public static List<TokenSequence<? extends TokenId>> createTokenSequenceList(
     TokenHierarchyOperation operation, LanguagePath languagePath, int startOffset, int endOffset) {
         TokenListList tll = operation.tokenListList(languagePath);
         // Only choose the token lists in the requested area
@@ -99,7 +100,8 @@ public final class TokenListList extends AbstractList<TokenList<?>> {
             
             assert (startIndex <= endIndex);
             if (endIndex - startIndex > 0) {
-                TokenSequence<?>[] tss = new TokenSequence[endIndex - startIndex];
+                @SuppressWarnings("unchecked")
+                TokenSequence<? extends TokenId>[] tss = new TokenSequence[endIndex - startIndex];
                 TokenList<?> startTokenList = tll.get(startIndex);
                 // Wrap the start token list if the startOffset lies inside it
                 boolean wrapStart = (startTokenList.startOffset() < startOffset)
@@ -130,7 +132,7 @@ public final class TokenListList extends AbstractList<TokenList<?>> {
             } // endIndex == startIndex => empty
         } // startIndex >= tll.size()
         // Return empty list
-        return Collections.emptyList();
+        return Collections.<TokenSequence<? extends TokenId>>emptyList();
     }
 
     public TokenListList(TokenHierarchyOperation<?,?> operation, LanguagePath languagePath) {
