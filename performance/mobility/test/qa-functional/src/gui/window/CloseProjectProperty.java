@@ -17,7 +17,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package gui.actions;
+package gui.window;
 
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NewFileWizardOperator;
