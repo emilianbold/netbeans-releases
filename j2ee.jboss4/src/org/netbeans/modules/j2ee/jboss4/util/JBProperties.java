@@ -103,6 +103,10 @@ public class JBProperties {
         return new File(ip.getProperty(PROP_ROOT_DIR));
     }
     
+    public File getLibsDir() {
+        return new File(getServerDir(), "lib"); // NOI18N
+    }
+    
     public boolean getProxyEnabled() {
         String val = ip.getProperty(PROP_PROXY_ENABLED);
         return val != null ? Boolean.valueOf(val).booleanValue()

@@ -301,6 +301,10 @@ class JBStartRunnable implements Runnable {
         fireStartProgressEvent(StateType.RUNNING, createProgressMessage("MSG_START_SERVER_IN_PROGRESS"));
 
         JBStartServer.ACTION_STATUS status = logWriter.start(serverProcess, startServer);
+        
+        // reset the need restart flag
+        dm.setNeedsRestart(false);
+        
         if (status == JBStartServer.ACTION_STATUS.SUCCESS) {
             fireStartProgressEvent(StateType.COMPLETED, createProgressMessage("MSG_SERVER_STARTED"));
         }

@@ -31,19 +31,16 @@ import javax.enterprise.deploy.spi.status.DeploymentStatus;
  */
 public class JBDeploymentStatus implements DeploymentStatus {
 
-    private ActionType action;
-    private CommandType command;
-    private StateType state;
-    
-    private String message;
+    private final ActionType action;
+    private final CommandType command;
+    private final StateType state;
+    private final String message;
     
     /** Creates a new instance of JBDeploymentStatus */
     public JBDeploymentStatus(ActionType action, CommandType command, StateType state, String message) {
-        
         this.action = action;
         this.command = command;
         this.state = state;
-        
         this.message = message;
     }
 

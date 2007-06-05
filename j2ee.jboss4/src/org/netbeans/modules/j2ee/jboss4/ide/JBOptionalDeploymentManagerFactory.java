@@ -24,6 +24,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
 import org.netbeans.modules.j2ee.jboss4.config.JBossDatasourceManager;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBInstantiatingIterator;
 import javax.enterprise.deploy.spi.DeploymentManager;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
@@ -72,5 +73,8 @@ public class JBOptionalDeploymentManagerFactory extends OptionalDeploymentManage
         return new JBossMessageDestinationDeployment(((JBDeploymentManager)dm).getUrl());
     }
     
+     public JDBCDriverDeployer getJDBCDriverDeployer(DeploymentManager dm) {
+         return new JBDriverDeployer((JBDeploymentManager) dm);
+     }
     
 }

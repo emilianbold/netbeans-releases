@@ -64,6 +64,7 @@ public class JBDeploymentManager implements DeploymentManager {
     private int debuggingPort = 8787;
     
     private InstanceProperties instanceProperties;
+    private boolean needsRestart;
     
     /**
      * Stores information about running instances. instance is represented by its InstanceProperties,
@@ -303,4 +304,19 @@ public class JBDeploymentManager implements DeploymentManager {
         return new JBProperties(this);
     }
     
+    /** 
+     * Mark the server with a needs restart flag. This may be needed 
+     * for instance when JDBC driver is deployed to a running server.
+     */ 
+    public synchronized void setNeedsRestart(boolean needsRestart) {
+        this.needsRestart = needsRestart;
+    }
+    
+    /** 
+     * Returns true if the server needs to be restarted. This may occur
+     * for instance when JDBC driver was deployed to a running server
+     */ 
+    public synchronized boolean getNeedsRestart() {
+        return needsRestart;
+    }
 }
