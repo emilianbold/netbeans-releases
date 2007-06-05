@@ -126,7 +126,7 @@ public class JsfFunctionalTest extends JellyTestCase{
         } else {
             tableOper.selectCell(0, 0);
         }
-        frameworkStep.finish();
+        frameworkStep.btFinish().pushNoBlock();
         // Opening Projects
         String openingProjectsTitle = Bundle.getString(
                 "org.netbeans.modules.project.ui.Bundle",
