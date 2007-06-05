@@ -115,9 +115,7 @@ public final class ElementHandle<T extends Element> {
                 assert signatures.length == 1;
                 return (T) getTypeElementByBinaryName (signatures[0], jt);
             case METHOD:
-            case CONSTRUCTOR:
-            case INSTANCE_INIT:
-            case STATIC_INIT:
+            case CONSTRUCTOR:            
             {
                 assert signatures.length == 3;
                 final TypeElement type = getTypeElementByBinaryName (signatures[0], jt);
@@ -128,6 +126,25 @@ public final class ElementHandle<T extends Element> {
                            String[] desc = ClassFileUtil.createExecutableDescriptor((ExecutableElement)member);
                            assert desc.length == 3;
                            if (this.signatures[1].equals(desc[1]) && this.signatures[2].equals(desc[2])) {
+                               return (T) member;
+                           }
+                       }
+                   }
+                }
+                break;
+            }
+            case INSTANCE_INIT:
+            case STATIC_INIT:
+            {
+                assert signatures.length == 2;
+                final TypeElement type = getTypeElementByBinaryName (signatures[0], jt);
+                if (type != null) {
+                   final List<? extends Element> members = type.getEnclosedElements();
+                   for (Element member : members) {
+                       if (this.kind == member.getKind()) {
+                           String[] desc = ClassFileUtil.createExecutableDescriptor((ExecutableElement)member);
+                           assert desc.length == 2;
+                           if (this.signatures[1].equals(desc[1])) {
                                return (T) member;
                            }
                        }
@@ -429,9 +446,13 @@ public final class ElementHandle<T extends Element> {
                     return new ElementHandle<TypeElement> (kind, descriptors);
                 case METHOD:
                 case CONSTRUCTOR:                
+                    if (descriptors.length != 3) {
+                        throw new IllegalArgumentException ();
+                    }
+                    return new ElementHandle<ExecutableElement> (kind, descriptors);
                 case INSTANCE_INIT:
                 case STATIC_INIT:
-                    if (descriptors.length != 3) {
+                    if (descriptors.length != 2) {
                         throw new IllegalArgumentException ();
                     }
                     return new ElementHandle<ExecutableElement> (kind, descriptors);

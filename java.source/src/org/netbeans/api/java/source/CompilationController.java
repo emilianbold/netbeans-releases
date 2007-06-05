@@ -24,6 +24,7 @@ import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import java.io.IOException;
 import java.util.List;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.swing.text.Document;
@@ -104,6 +105,19 @@ public class CompilationController extends CompilationInfo {
     @Override
     public CompilationUnitTree getCompilationUnit() {
         return this.delegate.getCompilationUnit();
+    }
+    
+    
+    /**
+     * Returns all top level elements defined in file for which this {@link CompilationController}
+     * was created. The {@link CompilationController} has to be in phase {@link JavaSource#Phase#ELEMENTS_RESOLVED}.
+     * @return list of top level elements, it may return null when this {@link CompilationController} is not
+     * in phase {@link JavaSource#Phase#ELEMENTS_RESOLVED} or higher.
+     * @throws IllegalStateException is thrown when the {@link JavaSource} was created with no files
+     * @since 0.14
+     */
+    public List<? extends TypeElement> getTopLevelElements () throws IllegalStateException {
+        return this.delegate.getTopLevelElements();
     }
 
     /**

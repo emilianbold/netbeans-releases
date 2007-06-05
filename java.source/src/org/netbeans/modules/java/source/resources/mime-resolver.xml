@@ -24,4 +24,8 @@ Microsystems, Inc. All Rights Reserved.
         <ext name="java"/>
         <resolver mime="text/x-java"/>
     </file>
+    <file>
+        <ext name="class"/>
+        <resolver mime="application/x-class-file"/>
+    </file>
 </MIME-resolver>

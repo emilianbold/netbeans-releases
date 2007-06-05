@@ -20,11 +20,18 @@
 package org.netbeans.api.java.source;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.model.JavacElements;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.swing.text.Document;
@@ -32,11 +39,13 @@ import javax.tools.DiagnosticListener;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 
 
@@ -144,6 +153,68 @@ public class CompilationInfo {
                 localErrors.add(m);
         }
         return localErrors;
+    }
+    
+    /**
+     * Returns all top level elements defined in file for which the {@link CompilationInfo}
+     * was created. The {@link CompilationInfo} has to be in phase {@link JavaSource#Phase#ELEMENTS_RESOLVED}.
+     * @return list of top level elements, it may return null when this {@link CompilationInfo} is not
+     * in phase {@link JavaSource#Phase#ELEMENTS_RESOLVED} or higher.
+     * @throws IllegalStateException is thrown when the {@link JavaSource} was created with no files
+     * @since 0.14
+     */
+    public List<? extends TypeElement> getTopLevelElements () throws IllegalStateException {
+        if (this.jfo == null) {
+            throw new IllegalStateException ();
+        }
+        List<TypeElement> result = new ArrayList<TypeElement>();
+        if (this.javaSource.isClassFile()) {
+            Elements elements = getElements();
+            assert elements != null;
+            assert this.javaSource.rootFo != null;
+            String name = FileObjects.convertFolder2Package(FileObjects.stripExtension(FileUtil.getRelativePath(javaSource.rootFo, fo)));
+            TypeElement e = ((JavacElements)elements).getTypeElementByBinaryName(name);
+            if (e != null) {                
+                if (!isLocal(e)) {
+                    result.add (e);
+                }
+            }
+        }
+        else {
+            CompilationUnitTree cu = getCompilationUnit();
+            if (cu == null) {
+                return null;
+            }
+            else {
+                final Trees trees = getTrees();
+                assert trees != null;
+                List<? extends Tree> typeDecls = cu.getTypeDecls();
+                TreePath cuPath = new TreePath(cu);
+                for( Tree t : typeDecls ) {
+                    TreePath p = new TreePath(cuPath,t);
+                    Element e = trees.getElement(p);
+                    if (e.getKind().isClass() || e.getKind().isInterface()) {
+                        result.add((TypeElement)e);
+                    }
+                }
+            }
+        }
+        return Collections.unmodifiableList(result);
+    }
+    
+    //todo: remove when Abort from javac is fixed
+    private static boolean isLocal (TypeElement sym) {
+        if  (sym.getQualifiedName().contentEquals("")) {    //NOI18N
+            return true;
+        }        
+        Element enclosing = sym.getEnclosingElement();
+        while (enclosing != null && enclosing.getKind() != ElementKind.PACKAGE) {
+            if (!enclosing.getKind().isClass() && !enclosing.getKind().isInterface()) {
+                return true;
+            }
+            enclosing = enclosing.getEnclosingElement();
+        }
+        return false;
     }
     
     public Trees getTrees() {

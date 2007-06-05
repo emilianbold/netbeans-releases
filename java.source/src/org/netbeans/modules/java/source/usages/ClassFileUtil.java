@@ -148,11 +148,11 @@ public class ClassFileUtil {
     
     public static String[] createExecutableDescriptor (final ExecutableElement ee) {
         assert ee != null;
-        final String[] result = new String[3];
+        final ElementKind kind = ee.getKind();
+        final String[] result = (kind == ElementKind.STATIC_INIT || kind == ElementKind.INSTANCE_INIT) ? new String[2] : new String[3];
         final Element enclosingType = ee.getEnclosingElement();
 	assert enclosingType instanceof TypeElement;
-        result[0] = encodeClassNameOrArray ((TypeElement)enclosingType);
-        final ElementKind kind = ee.getKind();
+        result[0] = encodeClassNameOrArray ((TypeElement)enclosingType);        
         if (kind == ElementKind.METHOD || kind == ElementKind.CONSTRUCTOR) {
             final StringBuilder retType = new StringBuilder ();
             if (kind == ElementKind.METHOD) {

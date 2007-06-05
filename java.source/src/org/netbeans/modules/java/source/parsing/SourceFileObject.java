@@ -92,7 +92,7 @@ public class SourceFileObject implements JavaFileObject, DocumentProvider {
         else {
             this.kind = Kind.OTHER;
         }
-        if (renderNow) {
+        if (renderNow && this.kind == Kind.SOURCE) {
             text = getCharContentImpl().toString();
         }
     }

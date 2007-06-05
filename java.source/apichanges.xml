@@ -83,6 +83,19 @@ is the proper place.
 
     <changes>
         
+        <change id="CompilationInfo-getTopLevelElements">
+            <api name="general"/>
+            <summary>Added a method to obtain top level elements defined in the source/class file.</summary>
+            <version major="0" minor="14"/>
+            <date day="5" month="6" year="2007"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+            <description>
+                Added a method to obtain top level elements defined in the given source or class file.
+            </description>
+            <issue number="93100"/>
+        </change>
+        
         <change id="TreePathHandle-create-Element">
             <api name="general"/>
             <summary>Added factory method which returns a new TreePathHandle for given Element and CompilationInfo.</summary>

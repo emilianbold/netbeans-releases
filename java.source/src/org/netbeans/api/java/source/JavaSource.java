@@ -47,6 +47,7 @@ import java.io.Writer;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -115,6 +116,7 @@ import org.netbeans.modules.java.source.util.LowMemoryEvent;
 import org.netbeans.modules.java.source.util.LowMemoryListener;
 import org.netbeans.modules.java.source.util.LowMemoryNotifier;
 import org.netbeans.modules.java.source.usages.SymbolClassReader;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -196,6 +198,7 @@ public final class JavaSource {
     private static final int CHANGE_EXPECTED = INVALID<<1;
     private static final int RESCHEDULE_FINISHED_TASKS = CHANGE_EXPECTED<<1;
     private static final int UPDATE_INDEX = RESCHEDULE_FINISHED_TASKS<<1;
+    private static final int IS_CLASS_FILE = UPDATE_INDEX<<1;
     
     private static final Pattern excludedTasks;
     private static final Pattern includedTasks;
@@ -262,7 +265,7 @@ public final class JavaSource {
     private final static ReentrantLock javacLock = new ReentrantLock (true);
     
     private final Collection<FileObject> files;
-    private final FileObject rootFo;
+    final FileObject rootFo;
     private final FileChangeListener fileChangeListener;
     private DocListener listener;
     private DataObjectListener dataObjectListener;
@@ -337,19 +340,37 @@ public final class JavaSource {
         if (!fileObject.isValid()) {
             return null;
         }
-        if (!"text/x-java".equals(FileUtil.getMIMEType(fileObject)) && !"java".equals(fileObject.getExt())) {  //NOI18N
-            //TODO: JavaSource cannot be created for all kinds of files, but text/x-java is too restrictive:
-            return null;
-        }        
-
-        Reference<JavaSource> ref = file2JavaSource.get(fileObject);
-        JavaSource js = ref != null ? ref.get() : null;
-
-        if (js == null) {
-            file2JavaSource.put(fileObject, new WeakReference<JavaSource>(js = create(ClasspathInfo.create(fileObject), fileObject)));
+        if ("text/x-java".equals(FileUtil.getMIMEType(fileObject)) || "java".equals(fileObject.getExt())) {  //NOI18N
+           Reference<JavaSource> ref = file2JavaSource.get(fileObject);
+            JavaSource js = ref != null ? ref.get() : null;
+            if (js == null) {
+                file2JavaSource.put(fileObject, new WeakReference<JavaSource>(js = create(ClasspathInfo.create(fileObject), fileObject)));
+            }
+            return js;
         }
-
-        return js;
+        if ("application/x-class-file".equals(FileUtil.getMIMEType(fileObject)) || "class".equals(fileObject.getExt())) {   //NOI18N
+            ClassPath bootPath = ClassPath.getClassPath(fileObject, ClassPath.BOOT);
+            ClassPath compilePath = ClassPath.getClassPath(fileObject, ClassPath.COMPILE);
+            if (compilePath == null) {
+                compilePath = ClassPathSupport.createClassPath(new URL[0]);
+            }
+            ClassPath srcPath = ClassPath.getClassPath(fileObject, ClassPath.SOURCE);
+            if (srcPath == null) {
+                srcPath = ClassPathSupport.createClassPath(new URL[0]);
+            }
+            ClassPath execPath = ClassPath.getClassPath(fileObject, ClassPath.EXECUTE);
+            if (execPath != null) {
+                bootPath = ClassPathSupport.createProxyClassPath(execPath, bootPath);
+            }
+            final ClasspathInfo info = ClasspathInfo.create(bootPath, compilePath, srcPath);
+            FileObject root = ClassPathSupport.createProxyClassPath(bootPath,compilePath,srcPath).findOwnerRoot(fileObject);
+            try {
+                return new JavaSource (info,fileObject,root);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        }
+        return null;        
     }
     
     /**
@@ -419,6 +440,21 @@ public final class JavaSource {
             this.rootFo = null;
         }
         this.classpathInfo.addChangeListener(WeakListeners.change(this.listener, this.classpathInfo));
+    }
+    
+    private JavaSource (final ClasspathInfo info, final FileObject classFileObject, final FileObject root) throws IOException {
+        assert info != null;
+        assert classFileObject != null;
+        assert root != null;
+        this.reparseDelay = REPARSE_DELAY;
+        this.files = Collections.<FileObject>singletonList(classFileObject);
+        this.fileChangeListener = new FileChangeListenerImpl ();
+        classFileObject.addFileChangeListener(FileUtil.weakFileChangeListener(this.fileChangeListener,classFileObject));
+        this.dataObjectListener = new DataObjectListener(classFileObject);
+        this.classpathInfo =  info;
+        this.rootFo = root;
+        this.classpathInfo.addChangeListener(WeakListeners.change(this.listener, this.classpathInfo));
+        this.flags|= IS_CLASS_FILE;
     }
        
     private static final Set<StackTraceElement> warnedAboutRunInEQ = new HashSet<StackTraceElement>();
@@ -1130,6 +1166,10 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         String message = phase2Message.get(phase);
         assert message != null;
         Logger.getLogger("TIMER").log(Level.FINE, message, new Object[] {source, time});
+    }
+    
+    boolean isClassFile () {
+        return (this.flags & IS_CLASS_FILE) != 0;
     }
     
     private static final RequestProcessor RP = new RequestProcessor ("JavaSource-event-collector",1);       //NOI18N

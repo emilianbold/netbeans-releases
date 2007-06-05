@@ -79,47 +79,49 @@ public final class Icons {
 		img = Utilities.loadImage( ICON_BASE + "interface"  + PNG_EXTENSION );
 		break;
 	    case FIELD:
-		img = Utilities.loadImage( getIconName( ICON_BASE + "field", PNG_EXTENSION, modifiers ) );
+		img = Utilities.loadImage( getIconName(elementKind, ICON_BASE + "field", PNG_EXTENSION, modifiers ) );
 		break;
 	    case ENUM_CONSTANT: 
 		img = Utilities.loadImage( ICON_BASE + "constant" + PNG_EXTENSION );
 		break;
 	    case CONSTRUCTOR:
-		img = Utilities.loadImage( getIconName( ICON_BASE + "constructor", PNG_EXTENSION, modifiers ) );
+		img = Utilities.loadImage( getIconName(elementKind, ICON_BASE + "constructor", PNG_EXTENSION, modifiers ) );
 		break;
 	    case STATIC_INIT: 	
-		img = Utilities.loadImage( getIconName( ICON_BASE + "initializer", PNG_EXTENSION, modifiers ) );      
+		img = Utilities.loadImage( getIconName(elementKind, ICON_BASE + "initializer", PNG_EXTENSION, modifiers ) );      
 		break;
 	    case METHOD: 	
-		img = Utilities.loadImage( getIconName( ICON_BASE + "method", PNG_EXTENSION, modifiers ) );      
+		img = Utilities.loadImage( getIconName(elementKind, ICON_BASE + "method", PNG_EXTENSION, modifiers ) );      
 		break;
 	    default:	
 	        img = null;
         }
-	
 	return img == null ? null : new ImageIcon (img);
         
     }
     
     // Private Methods ---------------------------------------------------------
            
-    private static String getIconName( String typeName, String extension, Collection<Modifier> modifiers ) {
+    private static String getIconName( ElementKind kind, String typeName, String extension, Collection<Modifier> modifiers ) {
         
         StringBuffer fileName = new StringBuffer( typeName );
         
         if ( modifiers.contains( Modifier.STATIC ) ) {
-            fileName.append( "Static" );
+            fileName.append( "Static" );                        //NOI18N
+        }
+        if (kind == ElementKind.STATIC_INIT || kind == ElementKind.INSTANCE_INIT) {
+            return fileName.append(extension).toString();
         }
         if ( modifiers.contains( Modifier.PUBLIC ) ) {
-            return fileName.append( "Public" ).append( extension ).toString();
+            return fileName.append( "Public" ).append( extension ).toString();      //NOI18N
         }
         if ( modifiers.contains( Modifier.PROTECTED ) ) {
-            return fileName.append( "Protected" ).append( extension ).toString();
+            return fileName.append( "Protected" ).append( extension ).toString();   //NOI18N
         }
         if ( modifiers.contains( Modifier.PRIVATE ) ) {
-            return fileName.append( "Private" ).append( extension ).toString();
+            return fileName.append( "Private" ).append( extension ).toString();     //NOI18N
         }
-        return fileName.append( "Package" ).append( extension ).toString();
+        return fileName.append( "Package" ).append( extension ).toString();         //NOI18N
                         
     }
     
