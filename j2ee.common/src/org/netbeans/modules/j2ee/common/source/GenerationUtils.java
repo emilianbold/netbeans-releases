@@ -455,6 +455,19 @@ public final class GenerationUtils extends SourceUtils {
      * @return the new field; never null.
      */
     public VariableTree createField(ModifiersTree modifiersTree, String fieldName, String fieldType) {
+        return createField(modifiersTree, fieldName, fieldType, null);
+    }
+
+    /**
+     * Creates a new field.
+     *
+     * @param  modifiersTree the field modifiers; cannot be null.
+     * @param  fieldType the fully-qualified name of the field type; cannot be null.
+     * @param  fieldName the field name; cannot be null.
+     * @param  expressionTree expression to initialize the field; can be null.
+     * @return the new field; never null.
+     */
+    public VariableTree createField(ModifiersTree modifiersTree, String fieldName, String fieldType, ExpressionTree expressionTree) {
         Parameters.notNull("modifiersTree", modifiersTree); // NOI18N
         Parameters.javaIdentifier("fieldName", fieldName); // NOI18N
         Parameters.notNull("fieldType", fieldType); // NOI18N
@@ -463,10 +476,8 @@ public final class GenerationUtils extends SourceUtils {
                 modifiersTree,
                 fieldName,
                 createType(fieldType),
-                null);
+                expressionTree);
     }
-
-    // MISSING createField(ModifiersTree, String, String, ExpressionTree)
 
     /**
      * Creates a new variable (a <code>VariableTree</code> with no
