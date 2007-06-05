@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -28,6 +28,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import org.apache.tools.ant.BuildException;
@@ -157,13 +158,13 @@ public class L10nTask extends MatchingTask {
             System.out.print(modules[i]+"\t");
         }
 
-        System.out.println("\ndistDir:\t"+distDir);
-        System.out.println("buildDir:\t"+buildDir);
-        System.out.println("localizableFile:\t"+localizableFile);
-        System.out.println("generatedFile:\t"+generatedFile);
-        System.out.println("changedFile:\t"+changedFile);
-        System.out.println("globalFile:\t"+globalFile);
-        System.out.println("buildNumber:\t"+buildNumber);
+        log("\ndistDir:\t"+distDir);
+        log("buildDir:\t"+buildDir);
+        log("localizableFile:\t"+localizableFile);
+        log("generatedFile:\t"+generatedFile);
+        log("changedFile:\t"+changedFile);
+        log("globalFile:\t"+globalFile);
+        log("buildNumber:\t"+buildNumber);
 
 
         CvsEntries ce;
@@ -171,21 +172,21 @@ public class L10nTask extends MatchingTask {
         p=this.getProject();
 
         for (int i=0; i<topdirs.length; i++) {
-            // if (DEBUG)  System.out.println("STARTING TOPDIR "+topdirs[i]);
+            // if (DEBUG)  log("STARTING TOPDIR "+topdirs[i]);
             for(int j=0; j<modules.length; j++) {
                 if (modules[j] != null && ! modules[j].equals("")) {
                     @SuppressWarnings("unchecked")
                     Hashtable<String,String> props = p.getProperties();
                     fullPropHash = props;
 
-                    // System.out.println("IN FOR MODULES "+modules[j]);
-                    // System.out.println("\tSTARTING MODULE "+modules[j]);
+                    // log("IN FOR MODULES "+modules[j]);
+                    // log("\tSTARTING MODULE "+modules[j]);
 
                     File f = new File(topdirs[i]+File.separator+modules[j]+File.separator+localizableFile);
-                    // System.out.println("Localizable file is: "+f.getAbsolutePath());
+                    // log("Localizable file is: "+f.getAbsolutePath());
 
                     if ( f.exists() ) {
-                        System.out.println("\t\tFILE exists"+topdirs[i]+File.separator+modules[j]+File.separator+localizableFile);
+                        log("\t\tFILE exists"+topdirs[i]+File.separator+modules[j]+File.separator+localizableFile);
                         File topDir = new File(topdirs[i]);
                         File modDir = new File(topdirs[i]+File.separator+modules[j]);
 
@@ -195,13 +196,13 @@ public class L10nTask extends MatchingTask {
                         localizableFiles = getLocalizableFiles(topDir, modules[j]);
                         if (localizableFiles == null ) {
                             if (DEBUG) {
-                                System.out.println("\t\tNo Localizable Files for this module."+topDir+File.separator+modules[j]);
+                                log("\t\tNo Localizable Files for this module."+topDir+File.separator+modules[j]);
                             }
                         } else {
 
                             //don't look for the generated Files if there are no localizableFiles
                             generatedFileHash = getGeneratedFiles(topDir, modules[j]);
-                            //if ( generatedFileHash == null ) { System. out.println("\t\tGENFILEHASH is null"); }
+                            //if ( generatedFileHash == null ) { log("\t\tGENFILEHASH is null"); }
 
                                         /* DO PRE PROCESSING
                                                 int lastSlashIndex;
@@ -221,17 +222,17 @@ public class L10nTask extends MatchingTask {
                                 // If it does not, assume we are dealing with a generated dir
                                 // which does not need to be examined by me.
                                 if ( ! new File(parentDirFullPath+"/CVS").exists() ) {
-                                    //System.out.println("CVSDIR doesn't exist ["+parentDirFullPath+"/CVS ]");
+                                    //log("CVSDIR doesn't exist ["+parentDirFullPath+"/CVS ]");
                                     // skip to the end of this loop
                                     //HEY!  there must be a cleaner way!!
-                                    System.out.println("This dir is a generated dir with no CVS dir "+parentDirFullPath);
+                                    log("This dir is a generated dir with no CVS dir "+parentDirFullPath);
 
                                 } else {
 
                                     // PRINT TO "allfiles" list.
                                     boolean success = printToAllFile(topdirs[i], modules[j], localizableFiles);
                                     if (! success) {
-                                        System.out.println("ERROR: Print to All File in "+topdirs[i]+", "+modules[j]+"failed.");
+                                        log("ERROR: Print to All File in "+topdirs[i]+", "+modules[j]+"failed.");
 
                                     }
 
@@ -248,7 +249,7 @@ public class L10nTask extends MatchingTask {
 
 
                                     String localizableFileOnly = localizableFiles[k].substring(localizableFiles[k].lastIndexOf(File.separator)+1);
-                                    if (localizableFileOnly == null) { System.out.println("NULL LOCALIZABLE FILE"); }
+                                    if (localizableFileOnly == null) { log("NULL LOCALIZABLE FILE"); }
 
                                     String ceRev = ce.getRevnoByFileName(localizableFileOnly);
 
@@ -261,11 +262,11 @@ public class L10nTask extends MatchingTask {
                                         // error.add(localizableFiles[k]);
 
                                     } else {
-                                        // System.out.println("CEREV: "+ceRev);
+                                        // log("CEREV: "+ceRev);
                                         // compare revnos
 
                                         String genRev = generatedFileHash.get(localizableFiles[k]);
-                                        // if (DEBUG) System.out.println("GENREV "+genRev + "\tFN: "+localizableFiles[k]);
+                                        // if (DEBUG) log("GENREV "+genRev + "\tFN: "+localizableFiles[k]);
 
                                         if ( genRev == null || ! ceRev.equals(genRev)) {
                                             //Update changed fileHash
@@ -276,7 +277,7 @@ public class L10nTask extends MatchingTask {
                                             generatedFileHash.put(localizableFiles[k], ceRev);
 
 
-                                            //if (DEBUG) System.out.println("I got this far, but there was nothing CHANGED: "+localizableFiles[k]);
+                                            //if (DEBUG) log("I got this far, but there was nothing CHANGED: "+localizableFiles[k]);
                                         }
                                     }
                                 }
@@ -288,12 +289,12 @@ public class L10nTask extends MatchingTask {
 
 
                             if (! success) {
-                                System.out.println("ERROR: Print to File in "+topdirs[i]+", "+modules[j]+"failed.");
+                                log("ERROR: Print to File in "+topdirs[i]+", "+modules[j]+"failed.");
                             }
 
                             // toDir should be build/topDir
                             // baseDir should be fullpathtoTopDir
-                            // if (DEBUG) System.out.println("BUILDDIR "+buildDir);
+                            // if (DEBUG) log("BUILDDIR "+buildDir);
                             File tDir = new File(buildDir+File.separator+topdirs[i]);
                             int lio = topdirs[i].lastIndexOf(File.separator);
                             String shortTopdir = topdirs[i].substring(lio+1);
@@ -320,7 +321,7 @@ public class L10nTask extends MatchingTask {
 
                             // Clean up before moving on.
 
-                            // if (DEBUG) System.out.println("CLEARING "+topdirs[i] + " " + modules[j]);
+                            // if (DEBUG) log("CLEARING "+topdirs[i] + " " + modules[j]);
                             generatedFileHash.clear();
                             changed.clear();
                             error.clear();
@@ -332,7 +333,7 @@ public class L10nTask extends MatchingTask {
         } //for topdirs
 
         // Tar everything
-        if (DEBUG) System.out.println("ABOUT TO MAKE THE BIG TAR: "+distDir+"/l10n-"+buildNumber+".tar.gz");
+        if (DEBUG) log("ABOUT TO MAKE THE BIG TAR: "+distDir+"/l10n-"+buildNumber+".tar.gz");
 
         // Check to make sure that the build dir exists,
         // & that there are little tars to tar... or we get a "basedir dne"
@@ -357,10 +358,10 @@ public class L10nTask extends MatchingTask {
                 gzip.setZipfile(new File(distDir+"/l10n-"+buildNumber+".tar.gz"));
                 gzip.execute();
             } else {
-                System.out.println("NO tar file, can't gzip"+buildDir+"/l10n-"+buildNumber+".tar");
+                log("NO tar file, can't gzip"+buildDir+"/l10n-"+buildNumber+".tar");
             }
         } else {
-            System.out.println("No files in builddir.  No kit to build");
+            log("No files in builddir.  No kit to build");
         }
 
 
@@ -371,8 +372,8 @@ public class L10nTask extends MatchingTask {
     public void mkTars(String srcDir, String fullTarfilePath, String fullIncludesFilePath, String module) {
         //String td = srcDir.substring(srcDir.lastIndexOf(File.separator)+1);
         if (DEBUG) {
-            // System.out.println("SRCDIR = "+srcDir);
-            //System.out.println("FULL TARFILE PATH = "+fullTarfilePath);
+            // log("SRCDIR = "+srcDir);
+            //log("FULL TARFILE PATH = "+fullTarfilePath);
         }
 
         File incBaseDir = new File(srcDir);
@@ -409,10 +410,10 @@ public class L10nTask extends MatchingTask {
                 for (int i=0; i<localizableFiles.length; i++) {
                     int lio = localizableFiles[i].lastIndexOf(fullTopDir);
                     if (lio >= 0) {
-                        String moduleFileName= localizableFiles[i].substring(lio+fullTopDir.length()+1);
+                        String moduleFileName= localizableFiles[i].substring(lio+fullTopDir.length()+1).replace(File.separatorChar, '/');
                         allWrite.write(moduleFileName+"\n");
                     } else {
-                        System.out.println("Error: NO TOPDIR HERE: "+ localizableFiles[i]+ " FTD: "+fullTopDir+" LIO "+lio);
+                        log("Error: NO TOPDIR HERE: "+ localizableFiles[i]+ " FTD: "+fullTopDir+" LIO "+lio);
                     }
 
                 }
@@ -420,7 +421,7 @@ public class L10nTask extends MatchingTask {
             allWrite.close();
 
         } catch (IOException ioe) {
-            System.out.println("IOException"+ioe);
+            log("IOException"+ioe);
             return false;
         }
         return true;
@@ -428,7 +429,7 @@ public class L10nTask extends MatchingTask {
     }
     public boolean printToFile(String fullTopDir, String module) {
 
-        // if (DEBUG) System.out.println("IN printToFile FULLTOPDIR"+fullTopDir+ " MODULE" + module);
+        // if (DEBUG) log("IN printToFile FULLTOPDIR"+fullTopDir+ " MODULE" + module);
 
         try {
 
@@ -448,31 +449,39 @@ public class L10nTask extends MatchingTask {
                 generatedFileHash = new Hashtable<String, String>();
             } else {
 
-                for (Enumeration<String> g = generatedFileHash.keys() ; g.hasMoreElements() ;) {
-                    String genFileKey = g.nextElement();
+                // sort the generatedFiles list
+                LinkedList<String> ll = new LinkedList<String>();
+                ll.addAll(generatedFileHash.keySet());
+                java.util.Collections.sort(ll);
+                Iterator<String> it = ll.listIterator();
+                while (it.hasNext()) {
+                    String genFileKey = it.next();
                     int lioTopDir =  genFileKey.lastIndexOf(topDir);
-                    String moduleFileName = genFileKey.substring(lioTopDir+topDir.length()+1) ;
+                    String moduleFileName = genFileKey.substring(lioTopDir+topDir.length()+1).replace(File.separatorChar, '/') ;
 
                     genWrite.write(moduleFileName+"\t"+generatedFileHash.get(genFileKey)+"\n");
                 }
 
-                // To make sure the changeFile & generatedFile appear in the tar,
-                // make them the first lines in the file.
-                for (Enumeration<String> c = changed.keys() ; c.hasMoreElements() ;) {
-                    String changedFileKey = c.nextElement();
+                // sort the changedFiles list
+                ll.clear();
+                ll.addAll(changed.keySet());
+                java.util.Collections.sort(ll);
+                it = ll.listIterator();
+                while (it.hasNext()) {
+                    String changedFileKey = it.next();
 
                     int lio = changedFileKey.lastIndexOf(topDir+File.separator+module);
                     String moduleFileName;
                     if (lio >= 0) {
 
-                        moduleFileName=changedFileKey.substring(changedFileKey.lastIndexOf(topDir+File.separator+module)+topDir.length()+1);
+                        moduleFileName=changedFileKey.substring(changedFileKey.lastIndexOf(topDir+File.separator+module)+topDir.length()+1).replace(File.separatorChar, '/');
                         changedWrite.write(moduleFileName+"\n");
                     } else {
                         // If we get here, the cache is probobly not really being cleared.
 
                         //The cache is not being cleared
                         // OR we have wild-card characters
-                        System.out.println("WARNING: L10n.list file error. Each item in your list should reference the current module.  If this is a global l10n file used over several modules use the property ${l10n-module} as a place-holder.  This error occurred in "+module+".");
+                        log("WARNING: L10n.list file error. Each item in your list should reference the current module.  If this is a global l10n file used over several modules use the property ${l10n-module} as a place-holder.  This error occurred in "+module+".");
                         // Contact program administrator.\r\t"+ changedFileKey+ "\r\tTD "+topDir+File.separator+module +" LIO "+lio);
                     }
 
@@ -486,7 +495,7 @@ public class L10nTask extends MatchingTask {
                 for (Enumeration e = error.elements(); e.hasMoreElements();) {
                     String ee = (String)e.nextElement();
                     errorWrite.write(ee+"\n");
-                    System.out.println("Error: "+ee);
+                    log("Error: "+ee);
                 }
                 errorWrite.close();
             }
@@ -497,7 +506,7 @@ public class L10nTask extends MatchingTask {
 
 
         } catch (IOException ioe) {
-            System.out.println("IOException printToFile()"+ioe);
+            log("IOException printToFile()"+ioe);
             return false;
         }
         return true;
@@ -516,7 +525,7 @@ public class L10nTask extends MatchingTask {
         StringBuffer sbe = new StringBuffer();
         String includeS="";
         String excludeS="";
-        // if (DEBUG) System.out.println("\t\tIN getLocalizableFiles(File "+topRoot.getName()+", " + module+")");
+        // if (DEBUG) log("\t\tIN getLocalizableFiles(File "+topRoot.getName()+", " + module+")");
 
         if( fullPropHash == null) {
             p = getProject() ;
@@ -529,14 +538,14 @@ public class L10nTask extends MatchingTask {
         try {
             File includes = new File(topRoot.getCanonicalPath() + File.separator + module + File.separator + localizableFile);
             if ( ! includes.exists() || includes.length() <= 0 ) {
-                //if (DEBUG) System.out.println("FILE IS too short to mess with "+ module);
+                //if (DEBUG) log("FILE IS too short to mess with "+ module);
                 return lfs;
             }
 
             try {
                 sbholder = processListFile(includes,module);
             } catch (java.io.IOException ioe) {
-                System.out.println("Error processing file. "+ioe);
+                log("Error processing file. "+ioe);
             }
 
             if (sbholder != null) {
@@ -547,8 +556,8 @@ public class L10nTask extends MatchingTask {
                 sbi.append(" "+includePattern);
 
                 if (DEBUG) {
-                    System.out.println("INC "+sbi.toString());
-                    System.out.println("EXC "+sbe.toString());
+                    log("INC "+sbi.toString());
+                    log("EXC "+sbe.toString());
                 }
             }
 
@@ -572,14 +581,14 @@ public class L10nTask extends MatchingTask {
             lfs = ds.getIncludedFiles();
 
             for (int k=0; k<lfs.length; k++) {
-                // if (DEBUG) System.out.println("\t\t\tLFS "+lfs[k]);
+                // if (DEBUG) log("\t\t\tLFS "+lfs[k]);
                 lfs[k] = topRoot+File.separator+lfs[k].trim();
                 //lfs[k] = topRoot+File.separator+lfs[k];
             }
 
-            // if (DEBUG) System.out.println("THERE ARE "+lfs.length + " FILES in INCL FILES");
+            // if (DEBUG) log("THERE ARE "+lfs.length + " FILES in INCL FILES");
         } catch(java.io.IOException e) {
-            System.out.println(e.getMessage());
+            log(e.getMessage());
         }
         return lfs;
     }
@@ -595,7 +604,7 @@ public class L10nTask extends MatchingTask {
         try {
 
             String topDirFullPath = topDir.getCanonicalPath();
-            // if (DEBUG) System.out.println("\t\ttopDirFullPath: "+topDirFullPath);
+            // if (DEBUG) log("\t\ttopDirFullPath: "+topDirFullPath);
 
             BufferedReader inBuff = new BufferedReader(new FileReader(new File(topDir+File.separator+mod,generatedFile)));
             boolean eof = false;
@@ -604,7 +613,7 @@ public class L10nTask extends MatchingTask {
                 if (line==null) {
                     eof = true;
                 } else {
-                    //System.out.println("LL "+ line);
+                    //log("LL "+ line);
 
                     int tabIndex = line.indexOf("\t");
                     if (tabIndex > 0) {
@@ -612,7 +621,7 @@ public class L10nTask extends MatchingTask {
                         String revision = line.substring(tabIndex+1);
                         h.put(topDirFullPath+File.separator+filename, revision);
                     } else {
-                        System.out.println("There's no tab in this line"+"["+line+"]");
+                        log("There's no tab in this line"+"["+line+"]");
 
                     }
 
@@ -625,7 +634,7 @@ public class L10nTask extends MatchingTask {
             // Adding all files to changed list."
             return(null);
         } catch(java.io.IOException e) {
-            System.out.println("IOException "+ e);
+            log("IOException "+ e);
         }
 
         return h;
@@ -643,7 +652,7 @@ public class L10nTask extends MatchingTask {
 
         if (false) {
             for (int j=0; j<tops.length; j++) {
-                System.out.println("TOPS "+tops[j]);
+                log("TOPS "+tops[j]);
             }
         }
 
@@ -658,15 +667,15 @@ public class L10nTask extends MatchingTask {
         while (st.hasMoreTokens()) {
             fullMod=st.nextToken().trim();;
 
-            // if (DEBUG) System.out.println("ITEM IN MODLIST: "+fullMod);
+            // if (DEBUG) log("ITEM IN MODLIST: "+fullMod);
 
-            int index = fullMod.indexOf(File.separator);
+            int index = fullMod.indexOf('/');
             if (index >= 0) {
                 //Check that the mod doesn't have a slash
                 // (if it does, keep only what is to the left of the slash)
                 fullMod=fullMod.substring(0,index);
 
-                // if (DEBUG) System.out.println("CHANGED FULLMOD & it's NOW "+fullMod);
+                // if (DEBUG) log("CHANGED FULLMOD & it's NOW "+fullMod);
             }
             modSet.add( fullMod );
         }
@@ -680,7 +689,7 @@ public class L10nTask extends MatchingTask {
     }
 
     public StringBuffer[] processListFile(File inc,String module) throws IOException {
-        System.out.println("Reading list file: "+inc.toString());
+        log("Reading list file: "+inc.toString());
         StringBuffer[] sbholder=new StringBuffer[2];
         StringBuffer sbi = new StringBuffer();
         StringBuffer sbe = new StringBuffer();
@@ -709,9 +718,9 @@ public class L10nTask extends MatchingTask {
                         res = line.substring(line.indexOf("}")+1);
                         pre= line.substring(0,line.indexOf("{")-1);
                         line=pre+value+res;
-                        // System.out.println("LINE is now "+line);
+                        // log("LINE is now "+line);
                     } else {
-                        System.out.println("Uninterpretable property in l10n file:"+inc.toString()+". "+propertyName+" Interpreting the entire line literally.");
+                        log("Uninterpretable property in l10n file:"+inc.toString()+". "+propertyName+" Interpreting the entire line literally.");
                         skipit=true;
                     }
                 }
@@ -722,7 +731,7 @@ public class L10nTask extends MatchingTask {
 
                     if (globalFile != null && ! globalFile.equals("")) {
                         if (readGlobalFile==true) {
-                            System.out.println("Already read it");
+                            log("Already read it");
                             //We did it once, don't do it again.
                             // just copy in the values.
                             sbi.append(" "+globalsbholder[0]);
@@ -755,7 +764,7 @@ public class L10nTask extends MatchingTask {
                 } else {
                     sbi.append(" "+line);
                 }
-                // System.out.println("GLOBAL"+line.indexOf("read global")+" EXCLUDES "+line.indexOf("exclude")+ "FILE"+inc.toString());
+                // log("GLOBAL"+line.indexOf("read global")+" EXCLUDES "+line.indexOf("exclude")+ "FILE"+inc.toString());
             } //while
             br.close();
         }
@@ -765,7 +774,7 @@ public class L10nTask extends MatchingTask {
     }
 
     public void setDistDir(String s) {
-        // if (DEBUG) System.out.println("DIST DIR SHOULD BE: "+s);
+        // if (DEBUG) log("DIST DIR SHOULD BE: "+s);
         this.distDir=s;
     }
     public void setBuildDir(String s) {
