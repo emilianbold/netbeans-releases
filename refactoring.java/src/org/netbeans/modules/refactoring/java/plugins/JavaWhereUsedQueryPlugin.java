@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
+import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;

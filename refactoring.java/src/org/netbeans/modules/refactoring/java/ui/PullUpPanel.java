@@ -78,9 +78,9 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
     private final TableModel tableModel;
     // pre-selected members (comes from the refactoring action - the elements
     // that should be pre-selected in the table of members)
-    private Set<MemberInfo> selectedMembers;
+    private Set<MemberInfo<ElementHandle>> selectedMembers;
     // target type to move the members to
-    private MemberInfo targetType;
+    private MemberInfo<ElementHandle> targetType;
     // data for the members table (first dimension - rows, second dimension - columns)
     // the columns are: 0 = Selected (true/false), 1 = Member (Java element), 2 = Make Abstract (true/false)
     private Object[][] members = new Object[0][0];
@@ -93,7 +93,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
      *      (determined by which nodes the action was invoked on - e.g. if it was
      *      invoked on a method, the method will be pre-selected to be pulled up)
      */
-    public PullUpPanel(PullUpRefactoring refactoring, Set<MemberInfo> selectedMembers, final ChangeListener parent) {
+    public PullUpPanel(PullUpRefactoring refactoring, Set<MemberInfo<ElementHandle>> selectedMembers, final ChangeListener parent) {
         this.refactoring = refactoring;
         this.tableModel = new TableModel();
         this.selectedMembers = selectedMembers;
@@ -123,7 +123,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                     MemberInfo[] minfo = new MemberInfo[supertypes.size()];
                     int i=0;
                     for (Element e: supertypes) {
-                        minfo[i++] = new MemberInfo(e, controller);
+                        minfo[i++] = MemberInfo.create(e, controller);
                     }
                     
                     TypeElement sourceTypeElement = (TypeElement) handle.resolveElement(controller);
@@ -142,7 +142,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                         // name from implements clause)
                         protected String extractText(Object value) {
                             String displayValue = super.extractText(value);
-                            if (value instanceof MemberInfo && (((MemberInfo)value).getType()==1)) {
+                            if (value instanceof MemberInfo && (((MemberInfo)value).getGroup()==MemberInfo.Group.IMPLEMENTS)) {
                                 displayValue = "implements " + displayValue; // NOI18N
                             }
                             return displayValue;
@@ -157,12 +157,10 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                             // make the checkbox checked (even if "Make Abstract" is not set)
                             // for non-static methods if the target type is an interface
-                            MemberInfo object = (MemberInfo) table.getModel().getValueAt(row, 1);
-                            if (object.getKind()== ElementKind.METHOD) {
-                                if (object.getKind()==ElementKind.METHOD) {
-                                    if (targetType.getKind().isInterface() && !((MemberInfo) object).getModifiers().contains(Modifier.STATIC) && !((MemberInfo) object).getModifiers().contains(Modifier.ABSTRACT)) {
-                                        value = Boolean.TRUE;
-                                    }
+                            MemberInfo<ElementHandle> object = (MemberInfo<ElementHandle>) table.getModel().getValueAt(row, 1);
+                            if (object.getElementHandle().getKind()== ElementKind.METHOD) {
+                                if (targetType.getElementHandle().getKind().isInterface() && !((MemberInfo) object).getModifiers().contains(Modifier.STATIC) && !((MemberInfo) object).getModifiers().contains(Modifier.ABSTRACT)) {
+                                    value = Boolean.TRUE;
                                 }
                             }
                             //`the super method automatically makes sure the checkbox is not visible if the
@@ -201,7 +199,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
      * of target type.
      * @return Target type.
      */
-    public MemberInfo getTargetType() {
+    public MemberInfo<ElementHandle> getTargetType() {
         return targetType;
     }
     
@@ -220,16 +218,16 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                 public void run(CompilationController parameter) throws Exception {
                     
                     // remeber if the target type is an interface (will be used in the loop)
-                    boolean targetIsInterface = targetType.getKind().isInterface();
+                    boolean targetIsInterface = targetType.getElementHandle().getKind().isInterface();
                     // go through all rows of a table and collect selected members
                     for (int i = 0; i < members.length; i++) {
                         // if the current row is selected, create MemberInfo for it and
                         // add it to the list of selected members
                         if (members[i][0].equals(Boolean.TRUE)) {
-                            MemberInfo element = (MemberInfo) members[i][1];
+                            MemberInfo<ElementHandle> element = (MemberInfo<ElementHandle>) members[i][1];
                             // for methods the makeAbstract is always set to true if the
                             // target type is an interface
-                            element.setUserData(Lookups.singleton(((element.getKind() == ElementKind.METHOD) && targetIsInterface) || ((Boolean) members[i][2]==null?Boolean.FALSE:(Boolean)members[i][2])));
+                            element.setMakeAbstract(((element.getElementHandle().getKind() == ElementKind.METHOD) && targetIsInterface) || ((Boolean) members[i][2]==null?Boolean.FALSE:(Boolean)members[i][2]));
                             list.add(element);
                         }
                     }
@@ -358,7 +356,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
          *      that are supertypes of source type (including the source type) and at the same time subtypes
          *      of the target type (excluding the target type).
          */
-        void update(final MemberInfo[] classes) {
+        void update(final MemberInfo<ElementHandle>[] classes) {
             JavaSource source = JavaSource.forFileObject(refactoring.getSourceType().getFileObject());
             try {
             source.runUserActionTask(new CancellableTask<CompilationController>() {
@@ -378,7 +376,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                     for (int i = 0; i < classes.length; i++) {
                         // collect interface names
                         for (TypeMirror tm: ((TypeElement) (classes[i].getElementHandle().resolve(info))).getInterfaces()) {
-                            MemberInfo ifcName = new MemberInfo(RetoucheUtils.typeToElement(tm, info), info, 1);
+                            MemberInfo ifcName = MemberInfo.create(RetoucheUtils.typeToElement(tm, info), info, MemberInfo.Group.IMPLEMENTS);
                             map.put(ifcName, new Object[] {Boolean.FALSE, ifcName, null});
                         }
                         // collect fields, methods and inner classes
@@ -390,7 +388,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                                 case STATIC_INIT:
                                 case INSTANCE_INIT: continue;
                                 default: {
-                                    MemberInfo mi = new MemberInfo(e, info);
+                                    MemberInfo mi = MemberInfo.create(e, info);
                                     map.put(mi, new Object[] {Boolean.FALSE, mi, (e.getKind() == ElementKind.METHOD) ? Boolean.FALSE : null});
                                 }
                             }
@@ -464,7 +462,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
     /** Model for combo box for choosing target type.
      */
     private class ComboModel extends AbstractListModel implements ComboBoxModel {
-        private final MemberInfo[] supertypes;
+        private final MemberInfo<ElementHandle>[] supertypes;
        
         /** Creates the combo model.
          * @param supertypes List of applicable supertypes that may be chosen to be
@@ -504,7 +502,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                             List classes = new ArrayList();
                             // add source type (it is always included)
                             Element e = refactoring.getSourceType().resolveElement(info);
-                            MemberInfo m = new MemberInfo(e, info);
+                            MemberInfo m = MemberInfo.create(e, info);
                             classes.add(m);
                             for (int i = 0; i < supertypes.length; i++) {
                                 TypeMirror targetTM = targetType.getElementHandle().resolve(info).asType();

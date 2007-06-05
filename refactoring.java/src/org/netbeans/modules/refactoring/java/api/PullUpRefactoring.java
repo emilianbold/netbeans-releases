@@ -69,7 +69,7 @@ public final class PullUpRefactoring extends AbstractRefactoring {
     /** Returns descriptors of the members to pull up.
      * @return Member descriptors.
      */
-    public MemberInfo[] getMembers() {
+    public MemberInfo<ElementHandle>[] getMembers() {
         // never return null
         return members == null ? EMPTY_MEMBERS : members;
     }
@@ -77,63 +77,7 @@ public final class PullUpRefactoring extends AbstractRefactoring {
     /** Sets members (using their descriptors) to pull up.
      * @param members Descriptors of members to be pulled up.
      */
-    public void setMembers(MemberInfo[] members) {
+    public void setMembers(MemberInfo<ElementHandle>[] members) {
         this.members = members;
     }
-    
-    // --- HELPER METHODS ------------------------------------------------------
-    
-//    /** Returns supertypes of the source type that the members could
-//     * be pull up to.
-//     * @return Supertypes available for pulling up members to.
-//     */
-//    public TreePathHandle[] collectSupertypes() {
-//        if (supertypes == null) {
-//            if (sourceType != null) {
-//                List list = new ArrayList();
-//                // collect all supertypes recursivelly using a helper method
-//                collectSupertypes(sourceType, list, new HashSet());
-//                supertypes = (JavaClass[]) list.toArray(new JavaClass[list.size()]);
-//            } else {
-//                supertypes = new JavaClass[0];
-//            }
-//        }
-//        return supertypes;
-//    }
-//    
-//    // helper method for collecting supertypes
-//    private static void collectSupertypes(JavaClass type, List result, Set visited) {
-//        JavaClass superClass = Utilities.getRealClass(type.getSuperClass());
-//        ArrayList supertypes = new ArrayList();
-//        
-//        // get superclass (if not visited already)
-//        if (superClass != null && visited.add(superClass)) {
-//            supertypes.add(superClass);
-//            // add it to the result set if its source is available
-//            if (Utilities.isFromSource(superClass) && !CheckUtils.isFromLibrary(superClass.getResource())) {
-//                result.add(superClass);
-//            }
-//        }
-//        
-//        // get all implemented super interfaces (if not visited already)
-//        for (Iterator it = type.getInterfaces().iterator(); it.hasNext();) {
-//            JavaClass ifc = Utilities.getRealClass((JavaClass) it.next());
-//            if (visited.add(ifc)) {
-//                supertypes.add(ifc);
-//                // add it to the result set if its source is available
-//                if (Utilities.isFromSource(ifc)) {
-//                    result.add(ifc);
-//                }
-//            }
-//        }
-//        
-//        // iterate through the collected direct supertypes
-//        // and collect their supertypes recursivelly
-//        // (this is done in a separate loop to preserve logical ordering
-//        // of the supertypes)
-//        for (Iterator it = supertypes.iterator(); it.hasNext();) {
-//            collectSupertypes((JavaClass) it.next(), result, visited);
-//        }
-//    }
-
 }

@@ -27,6 +27,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.ModificationResult.Difference;
@@ -34,11 +35,11 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
-import org.netbeans.modules.refactoring.java.DiffElement;
+import org.netbeans.modules.refactoring.java.api.DiffElement;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
-import org.netbeans.modules.refactoring.java.plugins.JavaRefactoringPlugin;
+import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -142,7 +143,7 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
             TypeElement sourceType = (TypeElement) refactoring.getSourceType().resolveElement(cc);
             Collection<Element> supers = RetoucheUtils.getSuperTypes(sourceType, cc);
             TypeElement targetType = (TypeElement) refactoring.getTargetType().resolve(cc);
-            MemberInfo[] members = refactoring.getMembers();
+            MemberInfo<ElementHandle>[] members = refactoring.getMembers();
 
             fireProgressListenerStart(AbstractRefactoring.PARAMETERS_CHECK, members.length + 1);
             // #1 - check whether the target type is a legal super type
@@ -161,7 +162,7 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
             for (int i = 0; i < members.length; i++) {
                 Element cls;
                 Element member = members[i].getElementHandle().resolve(cc);
-                if (members[i].getType()==0) {
+                if (members[i].getGroup()!=MemberInfo.Group.IMPLEMENTS) {
                     //                            // member is a feature (inner class, field or method)
                     //                            cls = member.getEnclosingElement();
                     //                        } else {

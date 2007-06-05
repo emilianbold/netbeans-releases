@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
+import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -30,7 +31,7 @@ import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
-import org.netbeans.modules.refactoring.java.DiffElement;
+import org.netbeans.modules.refactoring.java.api.DiffElement;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.PushDownRefactoring;
 import org.netbeans.modules.refactoring.java.plugins.PushDownTransformer;

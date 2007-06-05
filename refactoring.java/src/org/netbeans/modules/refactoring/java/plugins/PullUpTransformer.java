@@ -24,6 +24,7 @@ import com.sun.source.util.TreePath;
 import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.*;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
@@ -34,7 +35,7 @@ import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
  */
 public class PullUpTransformer extends SearchVisitor {
 
-    private MemberInfo[] members;
+    private MemberInfo<ElementHandle>[] members;
     private Element targetType;
     private PullUpRefactoring refactoring;
     public PullUpTransformer(PullUpRefactoring refactoring) {
@@ -56,11 +57,10 @@ public class PullUpTransformer extends SearchVisitor {
             //target type
             //add members
             for (int i = 0; i<members.length; i++) {
-                if (members[i].getType()==1) {
+                if (members[i].getGroup()==MemberInfo.Group.IMPLEMENTS) {
                     njuClass = make.addClassImplementsClause(njuClass, make.Identifier(members[i].getElementHandle().resolve(workingCopy)));
                 } else {
-                    Boolean b = members[i].getUserData().lookup(Boolean.class);
-                    if (b==null?Boolean.FALSE:b) {
+                    if (members[i].isMakeAbstract()) {
                         
                         if (!classIsAbstract) {
                             classIsAbstract = true;
@@ -93,7 +93,7 @@ public class PullUpTransformer extends SearchVisitor {
             }
         } else {
             for (int i=0; i<members.length; i++) {
-                if (members[i].getType()==1 ) {
+                if (members[i].getGroup()==MemberInfo.Group.IMPLEMENTS) {
                     for (Tree t:njuClass.getImplementsClause()) {
                         Element currentInterface = workingCopy.getTrees().getElement(TreePath.getPath(getCurrentPath(), t));
                         if (currentInterface.equals(members[i].getElementHandle().resolve(workingCopy))) {
@@ -105,8 +105,7 @@ public class PullUpTransformer extends SearchVisitor {
                     Element current = workingCopy.getTrees().getElement(getCurrentPath());
                     Element currentMember = members[i].getElementHandle().resolve(workingCopy);
                     if (currentMember.getEnclosingElement().equals(current)) {
-                        Boolean b = members[i].getUserData().lookup(Boolean.class);
-                        if (!(b==null?Boolean.FALSE:b)) {
+                        if (members[i].isMakeAbstract()) {
                             njuClass = make.removeClassMember(njuClass, workingCopy.getTrees().getTree(currentMember));
                             workingCopy.rewrite(tree, njuClass);
                         }

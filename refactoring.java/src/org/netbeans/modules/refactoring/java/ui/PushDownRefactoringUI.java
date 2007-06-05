@@ -59,7 +59,7 @@ public class PushDownRefactoringUI implements RefactoringUI {
      */
     public PushDownRefactoringUI(TreePathHandle[] selectedElements, CompilationInfo info) {
         initialMembers = new HashSet();
-        initialMembers.add(new MemberInfo(selectedElements[0].resolveElement(info),info));
+        initialMembers.add(MemberInfo.create(selectedElements[0].resolveElement(info),info));
         // compute source type and members that should be pre-selected from the
         // set of elements the action was invoked on
         

@@ -18,7 +18,7 @@
  */
 package org.netbeans.modules.refactoring.java.api;
 
-import java.util.Collection;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.openide.util.Lookup;
@@ -30,8 +30,8 @@ import org.openide.util.Lookup;
  */
 public class PushDownRefactoring extends AbstractRefactoring {
     
-    private static final MemberInfo[] EMPTY_MEMBERS = new MemberInfo[0];
-    private MemberInfo[] members;
+    private static final MemberInfo<ElementHandle>[] EMPTY_MEMBERS = new MemberInfo[0];
+    private MemberInfo<ElementHandle>[] members;
     
     /** Creates a new instance of PushDownRefactoring */
     public PushDownRefactoring(Lookup sourceType) {
@@ -42,7 +42,7 @@ public class PushDownRefactoring extends AbstractRefactoring {
     /** Returns descriptors of the members to pull up.
      * @return Member descriptors.
      */
-    public MemberInfo[] getMembers() {
+    public MemberInfo<ElementHandle>[] getMembers() {
         // never return null
         return members == null ? EMPTY_MEMBERS : members;
     }
@@ -50,7 +50,7 @@ public class PushDownRefactoring extends AbstractRefactoring {
     /** Sets members (using their descriptors) to pull up.
      * @members Descriptors of members to be pulled up.
      */
-    public void setMembers(MemberInfo[] members) {
+    public void setMembers(MemberInfo<ElementHandle>[] members) {
         this.members = members;
     }
     

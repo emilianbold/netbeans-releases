@@ -118,11 +118,11 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
             
             public void run(CompilationController controller) throws Exception {
                 controller.toPhase(JavaSource.Phase.RESOLVED);
-                List<MemberInfo> l = new ArrayList();
+                List<MemberInfo<ElementHandle>> l = new ArrayList();
                 TypeElement sourceTypeElement = (TypeElement) handle.resolveElement(controller);
                 sourceKind = sourceTypeElement.getKind();
                 for (TypeMirror tm:sourceTypeElement.getInterfaces()) {
-                    l.add(new MemberInfo(RetoucheUtils.typeToElement(tm, controller), controller, 1));
+                    l.add(MemberInfo.create(RetoucheUtils.typeToElement(tm, controller), controller, MemberInfo.Group.IMPLEMENTS));
                 }
                 for (Element m: sourceTypeElement.getEnclosedElements()) {
                     if (m.getKind() == ElementKind.CONSTRUCTOR || m.getKind() == ElementKind.STATIC_INIT || m.getKind() == ElementKind.INSTANCE_INIT) {
@@ -131,16 +131,16 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
                     if (m instanceof TypeElement && controller.getTypes().isSubtype(m.asType(), sourceTypeElement.asType())) {
                         continue;
                     }
-                    l.add(new MemberInfo(m,controller));
+                    l.add(MemberInfo.create(m,controller));
                 }
                 
                 Object[][] allMembers = new Object[l.size()][3];
                 int i = 0;
-                for (Iterator<MemberInfo> it = l.iterator(); it.hasNext(); ) {
-                    MemberInfo o = it.next();
+                for (Iterator<MemberInfo<ElementHandle>> it = l.iterator(); it.hasNext(); ) {
+                    MemberInfo<ElementHandle> o = it.next();
                     allMembers[i][0] = selectedMembers.contains(o) ? Boolean.TRUE : Boolean.FALSE;
                     allMembers[i][1] = o;
-                    allMembers[i][2] = o.getKind()==ElementKind.METHOD? Boolean.FALSE : null;
+                    allMembers[i][2] = o.getElementHandle().getKind()==ElementKind.METHOD? Boolean.FALSE : null;
                     i++;
                 }
                 members = new Object[i][3];
@@ -155,7 +155,7 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
                     protected String extractText(Object value) {
                         String displayValue = super.extractText(value);
                         
-                        if (value instanceof MemberInfo && ((MemberInfo) value).getType()==1) {
+                        if (value instanceof MemberInfo && ((MemberInfo) value).getGroup()==MemberInfo.Group.IMPLEMENTS) {
                             displayValue = "implements " + displayValue; // NOI18N
                         }
                         return displayValue;
@@ -169,10 +169,10 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
                     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                         // make the checkbox checked (even if "Make Abstract" is not set)
                         // for non-static methods if the target type is an interface
-                        MemberInfo object = (MemberInfo) table.getModel().getValueAt(row,
+                        MemberInfo<ElementHandle> object = (MemberInfo) table.getModel().getValueAt(row,
                                                                                      1);
 
-                        if (object.getKind()==ElementKind.METHOD) {
+                        if (object.getElementHandle().getKind()==ElementKind.METHOD) {
                             if (sourceKind.isInterface() && !((MemberInfo) object).getModifiers().contains(Modifier.STATIC)) {
                                 value = Boolean.TRUE;
                             }
@@ -217,7 +217,7 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
                 MemberInfo member;
                 member = (MemberInfo) element;
                 if (members[i][2]!=null)
-                        member.setUserData(Lookups.singleton(members[i][2]));
+                        member.setMakeAbstract((Boolean)members[i][2]);
                 list.add(member);
             }
         }

@@ -25,7 +25,7 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
-import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 
 /**
@@ -34,8 +34,8 @@ import org.netbeans.modules.refactoring.java.api.MemberInfo;
  */
 public class PushDownTransformer extends SearchVisitor {
 
-    private MemberInfo[] members;
-    public PushDownTransformer(MemberInfo members[]) {
+    private MemberInfo<ElementHandle>[] members;
+    public PushDownTransformer(MemberInfo<ElementHandle> members[]) {
         this.members = members;
     }
 
@@ -50,7 +50,7 @@ public class PushDownTransformer extends SearchVisitor {
             for (Tree t:njuClass.getImplementsClause()) {
                 Element currentInterface = workingCopy.getTrees().getElement(TreePath.getPath(getCurrentPath(), t));
                 for (int i=0; i<members.length; i++) {
-                    if (members[i].getType()==1 && currentInterface.equals(members[i].getElementHandle().resolve(workingCopy))) {
+                    if (members[i].getGroup()==MemberInfo.Group.IMPLEMENTS && currentInterface.equals(members[i].getElementHandle().resolve(workingCopy))) {
                         njuClass = make.removeClassImplementsClause(njuClass, t);
                         workingCopy.rewrite(tree, njuClass);
                     }
@@ -60,10 +60,8 @@ public class PushDownTransformer extends SearchVisitor {
             for (Tree t: njuClass.getMembers()) {
                 for (int i=0; i<members.length; i++) {
                     Element current = workingCopy.getTrees().getElement(TreePath.getPath(getCurrentPath(), t));
-                    if (members[i].getType()==0 && current.equals(members[i].getElementHandle().resolve(workingCopy))) {
-                        Boolean b = members[i].getUserData().lookup(Boolean.class);
-                        if (b==null?Boolean.FALSE:b) {
-                            
+                    if (members[i].getGroup()!=MemberInfo.Group.IMPLEMENTS && current.equals(members[i].getElementHandle().resolve(workingCopy))) {
+                        if (members[i].isMakeAbstract()) {
                             if (!classIsAbstract) {
                                 classIsAbstract = true;
                                 Set<Modifier> mod = new HashSet<Modifier>(njuClass.getModifiers().getFlags());
@@ -99,7 +97,7 @@ public class PushDownTransformer extends SearchVisitor {
             TypeMirror tm = el.asType();
             if (workingCopy.getTypes().isSubtype(tm, p.asType())) {
                 for (int i = 0; i<members.length; i++) {
-                    if (members[i].getType()==1) {
+                    if (members[i].getGroup()==MemberInfo.Group.IMPLEMENTS) {
                         njuClass = make.addClassImplementsClause(njuClass, make.Identifier(members[i].getElementHandle().resolve(workingCopy)));
                     } else {
                         njuClass = make.addClassMember(njuClass, workingCopy.getTrees().getTree(members[i].getElementHandle().resolve(workingCopy)));

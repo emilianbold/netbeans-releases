@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
+import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionStatementTree;
@@ -63,9 +64,10 @@ import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.DiffElement;
+import org.netbeans.modules.refactoring.java.api.DiffElement;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.ExtractSuperclassRefactoring;
+import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
@@ -173,7 +175,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
     }
 
     public Problem checkParameters() {
-        ExtractSuperclassRefactoring.MemberInfo[] members = refactoring.getMembers();
+        MemberInfo[] members = refactoring.getMembers();
         if (refactoring.getMembers().length == 0) {
             return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ExtractSuperClass_MembersNotAvailable")); // NOI18N);
         }
@@ -191,16 +193,16 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
         
         fireProgressListenerStart(AbstractRefactoring.PARAMETERS_CHECK, refactoring.getMembers().length);
         try {
-            for (ExtractSuperclassRefactoring.MemberInfo info : refactoring.getMembers()) {
+            for (MemberInfo info : refactoring.getMembers()) {
                 Problem p = null;
-                switch(info.group) {
+                switch(info.getGroup()) {
                 case FIELD:
-                    ElementHandle<VariableElement> vehandle = (ElementHandle<VariableElement>) info.handle;
+                    ElementHandle<VariableElement> vehandle = (ElementHandle<VariableElement>) info.getElementHandle();
                     VariableElement field = vehandle.resolve(javac);
                     p = checkFieldParameter(javac, field, members);
                     break;
                 case METHOD:
-                    ElementHandle<ExecutableElement> eehandle = (ElementHandle<ExecutableElement>) info.handle;
+                    ElementHandle<ExecutableElement> eehandle = (ElementHandle<ExecutableElement>) info.getElementHandle();
                     ExecutableElement method = eehandle.resolve(javac);
                     p = checkMethodParameter(javac, method, members);
                     break;
@@ -287,11 +289,11 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
         TypeMirror superClass = javaClass.getSuperclass();
         RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, result, superClass);
         
-        ExtractSuperclassRefactoring.MemberInfo[] members = refactoring.getMembers();
+        MemberInfo[] members = refactoring.getMembers();
         for (int i = 0; i < members.length && !typeArgs.isEmpty(); i++) {
-            if (members[i].group == ExtractSuperclassRefactoring.MemberInfo.Group.METHOD) {
+            if (members[i].getGroup() == MemberInfo.Group.METHOD) {
             // check methods
-            ElementHandle<ExecutableElement> handle = (ElementHandle<ExecutableElement>) members[i].handle;
+            ElementHandle<ExecutableElement> handle = (ElementHandle<ExecutableElement>) members[i].getElementHandle();
                 ExecutableElement elm = handle.resolve(javac);
             
                 RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, result, elm.getReturnType());
@@ -300,9 +302,9 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                     VariableElement param = paramIter.next();
                     RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, result, param.asType());
                 }
-            } else if (members[i].group == ExtractSuperclassRefactoring.MemberInfo.Group.IMPLEMENTS) {
+            } else if (members[i].getGroup() == MemberInfo.Group.IMPLEMENTS) {
                 // check implements
-                TypeMirrorHandle handle = (TypeMirrorHandle) members[i].handle;
+                TypeMirrorHandle handle = (TypeMirrorHandle) members[i].getElementHandle();
                 TypeMirror implemetz = handle.resolve(javac);
                 RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, result, implemetz);
             }
@@ -428,9 +430,9 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
             
             addConstructors(wc, sourceTypeElm, members);
             
-            for (ExtractSuperclassRefactoring.MemberInfo member : refactoring.getMembers()) {
-                if (member.group == ExtractSuperclassRefactoring.MemberInfo.Group.FIELD) {
-                    ElementHandle<VariableElement> handle = (ElementHandle<VariableElement>) member.handle;
+            for (MemberInfo member : refactoring.getMembers()) {
+                if (member.getGroup() == MemberInfo.Group.FIELD) {
+                    ElementHandle<VariableElement> handle = (ElementHandle<VariableElement>) member.getElementHandle();
                     VariableElement elm = handle.resolve(wc);
                     VariableTree tree = (VariableTree) wc.getTrees().getTree(elm);
                     // TODO: copying the tree is workaround for the issue #101395
@@ -443,11 +445,11 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                             tree.getInitializer()
                     );
                     members.add(copy);
-                } else if (member.group == ExtractSuperclassRefactoring.MemberInfo.Group.METHOD) {
-                    ElementHandle<ExecutableElement> handle = (ElementHandle<ExecutableElement>) member.handle;
+                } else if (member.getGroup() == MemberInfo.Group.METHOD) {
+                    ElementHandle<ExecutableElement> handle = (ElementHandle<ExecutableElement>) member.getElementHandle();
                     ExecutableElement elm = handle.resolve(wc);
                     MethodTree methodTree = (MethodTree) wc.getTrees().getTree(elm);
-                    if (member.makeAbstract && !elm.getModifiers().contains(Modifier.ABSTRACT)) {
+                    if (member.isMakeAbstract() && !elm.getModifiers().contains(Modifier.ABSTRACT)) {
                         methodTree = make.Method(
                                 makeAbstract(make, methodTree.getModifiers()),
                                 methodTree.getName(),
@@ -460,8 +462,8 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                     }
                     makeAbstract |= methodTree.getModifiers().getFlags().contains(Modifier.ABSTRACT);
                     members.add(methodTree);
-                } else if (member.group == ExtractSuperclassRefactoring.MemberInfo.Group.IMPLEMENTS) {
-                    TypeMirrorHandle handle = (TypeMirrorHandle) member.handle;
+                } else if (member.getGroup() == MemberInfo.Group.IMPLEMENTS) {
+                    TypeMirrorHandle handle = (TypeMirrorHandle) member.getElementHandle();
                     // XXX check if interface is not aready there; the templates might be changed by user :-(
                     TypeMirror implMirror = handle.resolve(wc);
                     implementsList.add(make.Type(implMirror));
@@ -656,21 +658,21 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
             wc.rewrite(classTree, nc);
         }
         
-        private List<Tree> getMembers2Remove(CompilationInfo javac,ExtractSuperclassRefactoring.MemberInfo[] members) {
+        private List<Tree> getMembers2Remove(CompilationInfo javac,MemberInfo[] members) {
             if (members == null || members.length == 0) {
                 return Collections.<Tree>emptyList();
             }
             List<Tree> result = new ArrayList<Tree>(members.length);
-            for (ExtractSuperclassRefactoring.MemberInfo member : members) {
-                if (member.group == ExtractSuperclassRefactoring.MemberInfo.Group.FIELD) {
-                    ElementHandle<VariableElement> handle = (ElementHandle<VariableElement>) member.handle;
+            for (MemberInfo member : members) {
+                if (member.getGroup() == MemberInfo.Group.FIELD) {
+                    ElementHandle<VariableElement> handle = (ElementHandle<VariableElement>) member.getElementHandle();
                     VariableElement elm = handle.resolve(javac);
                     assert elm != null;
                     Tree t = javac.getTrees().getTree(elm);
                     assert t != null;
                     result.add(t);
-                } else if (member.group == ExtractSuperclassRefactoring.MemberInfo.Group.METHOD && !member.makeAbstract) {
-                    ElementHandle<ExecutableElement> handle = (ElementHandle<ExecutableElement>) member.handle;
+                } else if (member.getGroup() == MemberInfo.Group.METHOD && !member.isMakeAbstract()) {
+                    ElementHandle<ExecutableElement> handle = (ElementHandle<ExecutableElement>) member.getElementHandle();
                     ExecutableElement elm = handle.resolve(javac);
                     assert elm != null;
                     Tree t = javac.getTrees().getTree(elm);
@@ -683,16 +685,16 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
             return result;
         }
         
-        private List<Tree> getImplements2Remove(CompilationInfo javac,ExtractSuperclassRefactoring.MemberInfo[] members, TypeElement clazz) {
+        private List<Tree> getImplements2Remove(CompilationInfo javac,MemberInfo[] members, TypeElement clazz) {
             if (members == null || members.length == 0) {
                 return Collections.<Tree>emptyList();
             }
             
             // resolve members to remove
             List<TypeMirror> memberTypes = new ArrayList<TypeMirror>(members.length);
-            for (ExtractSuperclassRefactoring.MemberInfo member : members) {
-                if (member.group == ExtractSuperclassRefactoring.MemberInfo.Group.IMPLEMENTS) {
-                    TypeMirrorHandle handle = (TypeMirrorHandle) member.handle;
+            for (MemberInfo member : members) {
+                if (member.getGroup() == MemberInfo.Group.IMPLEMENTS) {
+                    TypeMirrorHandle handle = (TypeMirrorHandle) member.getElementHandle();
                     TypeMirror tm = handle.resolve(javac);
                     memberTypes.add(tm);
                 }

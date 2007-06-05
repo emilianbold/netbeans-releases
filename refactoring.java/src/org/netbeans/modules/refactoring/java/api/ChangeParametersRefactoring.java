@@ -21,7 +21,6 @@ package org.netbeans.modules.refactoring.java.api;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.openide.util.lookup.Lookups;
 

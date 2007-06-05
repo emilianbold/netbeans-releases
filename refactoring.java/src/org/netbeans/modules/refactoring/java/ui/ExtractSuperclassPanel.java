@@ -30,9 +30,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.JPanel;
 import javax.swing.JTable;
@@ -46,11 +44,9 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.TypeMirrorHandle;
-import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.api.java.source.UiUtils.PrintPart;
 import org.netbeans.modules.refactoring.java.api.ExtractSuperclassRefactoring;
-import org.netbeans.modules.refactoring.java.api.ExtractSuperclassRefactoring.MemberInfo;
+import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -115,14 +111,14 @@ public class ExtractSuperclassPanel extends JPanel implements CustomRefactoringP
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 super.getTableCellRendererComponent(table, extractText(value), isSelected, hasFocus, row, column);
                 if (value instanceof MemberInfo) {
-                    setIcon(((MemberInfo) value).icon);
+                    setIcon(((MemberInfo) value).getIcon());
                 }
                 return this;
             }
             protected String extractText(Object value) {
                 String displayValue;
                 if (value instanceof MemberInfo) {
-                    displayValue = ((MemberInfo) value).htmlText;
+                    displayValue = ((MemberInfo) value).getHtmlText();
                 } else {
                     displayValue = String.valueOf(value);
                 }
@@ -157,7 +153,7 @@ public class ExtractSuperclassPanel extends JPanel implements CustomRefactoringP
     /** Getter used by the refactoring UI to get members to be pulled up.
      * @return Descriptors of members to be pulled up.
      */
-    public ExtractSuperclassRefactoring.MemberInfo[] getMembers() {
+    public MemberInfo[] getMembers() {
         List<MemberInfo> list = new ArrayList<MemberInfo>();
         // go through all rows of a table and collect selected members
         for (int i = 0; i < members.length; i++) {
@@ -165,12 +161,12 @@ public class ExtractSuperclassPanel extends JPanel implements CustomRefactoringP
             // add it to the list of selected members
             if (members[i][0].equals(Boolean.TRUE)) {
                 MemberInfo member = (MemberInfo) members[i][1];
-                member.makeAbstract = members[i][2] != null && ((Boolean) members[i][2]);
+                member.setMakeAbstract(members[i][2] != null && ((Boolean) members[i][2]));
                 list.add(member);
             }
         }
         // return the array of selected members
-        return (ExtractSuperclassRefactoring.MemberInfo[]) list.toArray(new ExtractSuperclassRefactoring.MemberInfo[list.size()]);
+        return (MemberInfo[]) list.toArray(new MemberInfo[list.size()]);
     }
     
     // --- GENERATED CODE ------------------------------------------------------
@@ -272,7 +268,7 @@ public class ExtractSuperclassPanel extends JPanel implements CustomRefactoringP
                     return false;
                 }
                 MemberInfo element = (MemberInfo) members[rowIndex][1];
-                return !(element.modifiers.contains(Modifier.STATIC) || element.modifiers.contains(Modifier.ABSTRACT));
+                return !(element.getModifiers().contains(Modifier.STATIC) || element.getModifiers().contains(Modifier.ABSTRACT));
             } else {
                 // column 0 is always editable, column 1 is never editable
                 return columnIndex == 0;
@@ -309,12 +305,7 @@ public class ExtractSuperclassPanel extends JPanel implements CustomRefactoringP
             for (Tree implTree : sourceTree.getImplementsClause()) {
                 TreePath implPath = javac.getTrees().getPath(javac.getCompilationUnit(), implTree);
                 TypeMirror implMirror = javac.getTrees().getTypeMirror(implPath);
-                result.add(MemberInfo.createImplements(
-                        TypeMirrorHandle.create(implMirror),
-                        "implements " + implTree.toString(), // NOI18N
-                        UiUtils.getElementIcon(ElementKind.INTERFACE, null),
-                        implTree.toString()
-                        ));
+                result.add(MemberInfo.create(implMirror, implTree,javac));
             }
             
             for (Tree member : sourceTree.getMembers()) {
@@ -326,23 +317,10 @@ public class ExtractSuperclassPanel extends JPanel implements CustomRefactoringP
                 if (memberElm == null)
                     continue;
                 
-                Set<Modifier> mods = memberElm.getModifiers();
-                
-                String format = PrintPart.NAME;
                 if (memberElm.getKind() == ElementKind.FIELD) {
-                    format += " : " + PrintPart.TYPE; // NOI18N
-                    result.add(MemberInfo.createField(
-                            (VariableElement) memberElm,
-                            UiUtils.getHeader(memberElm, javac, format),
-                            UiUtils.getElementIcon(memberElm.getKind(), mods)
-                            ));
+                    result.add(MemberInfo.create(memberElm, javac));
                 } else if (memberElm.getKind() == ElementKind.METHOD) {
-                    format += PrintPart.PARAMETERS + " : " + PrintPart.TYPE; // NOI18N
-                    result.add(MemberInfo.createMethod(
-                            (ExecutableElement) memberElm,
-                            UiUtils.getHeader(memberElm, javac, format),
-                            UiUtils.getElementIcon(memberElm.getKind(), mods)
-                            ));
+                    result.add(MemberInfo.create(memberElm,javac));
                 }
             }
             
@@ -350,10 +328,10 @@ public class ExtractSuperclassPanel extends JPanel implements CustomRefactoringP
             // now, create a tree map (to sort them) and create the table data
             Collections.sort(result, new Comparator<MemberInfo<?>>() {
                 public int compare(MemberInfo<?> mi1, MemberInfo<?> mi2) {
-                    int result = mi1.group.compareTo(mi2.group);
+                    int result = mi1.getGroup().compareTo(mi2.getGroup());
                     
                     if (result == 0) {
-                        result = mi1.name.compareTo(mi2.name);
+                        result = mi1.getName().compareTo(mi2.getName());
                     }
                     
                     return result;
@@ -364,8 +342,8 @@ public class ExtractSuperclassPanel extends JPanel implements CustomRefactoringP
                 members[i][0] = Boolean.FALSE;
                 MemberInfo<?> member = result.get(i);
                 members[i][1] = member;
-                if (member.group == MemberInfo.Group.METHOD) {
-                    members[i][2] = member.makeAbstract;
+                if (member.getGroup() == MemberInfo.Group.METHOD) {
+                    members[i][2] = member.isMakeAbstract();
                 } else {
                     members[i][2] = null;
                 }

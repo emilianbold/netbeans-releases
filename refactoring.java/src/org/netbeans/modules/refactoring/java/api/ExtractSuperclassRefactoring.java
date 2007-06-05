@@ -18,15 +18,7 @@
  */
 package org.netbeans.modules.refactoring.java.api;
 
-import java.util.Collections;
-import java.util.Set;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.VariableElement;
-import javax.swing.Icon;
-import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.openide.util.lookup.Lookups;
 
@@ -86,58 +78,5 @@ public final class ExtractSuperclassRefactoring extends AbstractRefactoring {
      */
     public void setMembers(MemberInfo[] members) {
         this.members = members;
-    }
-
-    
-    // --- HELPER METHODS ------------------------------------------------------
-//    
-//    public boolean acceptFeature(Feature feature) {
-//        return (((feature instanceof JavaClass) || (feature instanceof Field) || (feature instanceof Method)) && (!(Modifier.isPrivate(feature.getModifiers()))));
-//    }
-    
-    // --- HELPER CLASSES ------------------------------------------------------
-    
-    
-    /** Class describing a member to be extracted into the new super class.
-     */
-    public static final class MemberInfo<H> {
-        public final H handle;
-        public final String htmlText;
-        public final Icon icon;
-        public final String name;
-        public final Group group;
-        public boolean makeAbstract;
-        public final Set<Modifier> modifiers;
-        
-        public enum Group {
-            IMPLEMENTS, METHOD, FIELD;
-        }
-        
-        private MemberInfo(H handle, String htmlText, Icon icon, String name, Group group, Set<Modifier> modifiers, boolean makeAbstract) {
-            this.handle = handle;
-            this.htmlText = htmlText;
-            this.icon = icon;
-            this.name = name;
-            this.group = group;
-            this.modifiers = modifiers;
-            this.makeAbstract = makeAbstract;
-        }
-        
-        public static MemberInfo<ElementHandle<VariableElement>> createField(VariableElement elm, String htmlText, Icon icon) {
-            return new MemberInfo<ElementHandle<VariableElement>>(
-                    ElementHandle.<VariableElement>create(elm),
-                    htmlText, icon, elm.getSimpleName().toString(), Group.FIELD, elm.getModifiers(), false);
-        }
-        
-        public static MemberInfo<ElementHandle<ExecutableElement>> createMethod(ExecutableElement elm, String htmlText, Icon icon) {
-            return new MemberInfo<ElementHandle<ExecutableElement>>(
-                    ElementHandle.<ExecutableElement>create(elm),
-                    htmlText, icon, elm.getSimpleName().toString(), Group.METHOD,
-                    elm.getModifiers(), elm.getModifiers().contains(Modifier.ABSTRACT));
-        }
-        
-        public static MemberInfo<TypeMirrorHandle> createImplements(TypeMirrorHandle handle, String htmlText, Icon icon, String name) {
-            return new MemberInfo<TypeMirrorHandle>(handle, htmlText, icon, name, Group.IMPLEMENTS, Collections.<Modifier>emptySet(), false);
-        }
     }
 }

@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
+import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
@@ -27,7 +28,7 @@ import java.net.MalformedURLException;
 import java.util.*;
 import javax.swing.Action;
 import org.netbeans.api.java.source.*;
-import org.netbeans.modules.refactoring.java.DiffElement;
+import org.netbeans.modules.refactoring.java.api.DiffElement;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;

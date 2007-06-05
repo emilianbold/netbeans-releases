@@ -18,25 +18,22 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
+import org.netbeans.modules.refactoring.java.api.DiffElement;
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.logging.Logger;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.java.*;
-import org.netbeans.modules.refactoring.java.plugins.JavaRefactoringPlugin.TransformTask;
-import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
+import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;

@@ -33,23 +33,13 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.openide.util.lookup.Lookups;
 
-
-
-/*
- * UseSuperTypeRefactoring.java
- *
- * @author Bharath Ravi Kumar
- *
- * Created on June 20, 2005
- */
-
 /**
  * Replaces the type usages in a project with those
  * of the super type, where applicable
+ * @author Bharath Ravi Kumar
  */
 public final class UseSuperTypeRefactoring extends AbstractRefactoring{
     
-    private static final String JAVA_LANG_OBJECT = "java.lang.Object";
     private final TreePathHandle javaClassHandle;
     private ElementHandle superType;
     
