@@ -75,6 +75,7 @@ public class ConnectionWidget extends Widget {
     private Stroke stroke;
     private boolean paintControlPoints;
     private Color lineColor;
+    private Cursor controlPointsCursor;
 
     private Anchor.Entry sourceEntry;
     private Anchor.Entry targetEntry;
@@ -155,11 +156,29 @@ public class ConnectionWidget extends Widget {
 
     /**
      * Sets whether the control (and end) points are painted
-     * @param paintControlPoints
+     * @param paintControlPoints if true, then control points are painted
      */
     public final void setPaintControlPoints (boolean paintControlPoints) {
         this.paintControlPoints = paintControlPoints;
         repaint ();
+    }
+
+    /**
+     * Returns the cursor for control point.
+     * @return the cursor
+     * @since 2.3
+     */
+    public final Cursor getControlPointsCursor () {
+        return controlPointsCursor;
+    }
+
+    /**
+     * Sets a control points cursor. The cursor is used only when mouse is over a visible control point
+     * @param controlPointsCursor the control points cursor
+     * @since 2.3
+     */
+    public final void setControlPointsCursor (Cursor controlPointsCursor) {
+        this.controlPointsCursor = controlPointsCursor;
     }
 
     /**
@@ -580,6 +599,23 @@ public class ConnectionWidget extends Widget {
         }
 
         return -1;
+    }
+
+    /**
+     * Returns a cursor for a specified local location in the widget.
+     * If paintControlPoints is true and controlPointsCursor is non-null and local location is over a control point, then it return controlPointsCursor.
+     * Otherwise it return value from super.getCursorAt method.
+     * @param localLocation the local location
+     * @return the cursor
+     * @since 2.3
+     */
+    protected Cursor getCursorAt (Point localLocation) {
+        if (paintControlPoints) {
+            Cursor pointsCursor = getControlPointsCursor ();
+            if (pointsCursor != null  &&  getControlPointHitAt (localLocation) >= 0)
+                return pointsCursor;
+        }
+        return super.getCursorAt (localLocation);
     }
 
     /**

@@ -753,6 +753,15 @@ public class Widget {
     }
 
     /**
+     * Returns a mouse cursor for a specified local location in the widget.
+     * @return the mouse cursor; default implementation return value of cursor property.
+     * @since 2.3
+     */
+    protected Cursor getCursorAt (Point localLocation) {
+        return getCursor ();
+    }
+
+    /**
      * Returns a mouse cursor for the widget.
      * @return the mouse cursor
      */

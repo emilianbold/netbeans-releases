@@ -320,6 +320,9 @@ A widget placement is resolved by a layout associated to its parent widget. The 
 <td>getBorder<br>setBorder
 <td>Controls the widget border. <code>EmptyBorder</code> by default. See <a href="#Border">Border</a> section.
 <tr>
+<td>getCursor<br>setCursor
+<td>Controls the widget cursor. <code>null</code> by default.
+<tr>
 <td>getLayout<br>setLayout
 <td>Controls the widget layout. The layout defines placement of children. <code>AbsoluteLayout</code> by default. See <a href="#Layout">Layout</a> section.
 <tr>
@@ -400,6 +403,9 @@ A widget placement is resolved by a layout associated to its parent widget. The 
 <tr>
 <td>protected notifyAdded<br>protected notifyRemoved
 <td>Called to notify that a widget is being show or hidden in the view. Within these methods, do not modify the tree hierarchy of scene.
+<tr>
+<td>protected getCursorAt(Point localLocation)
+<td>Called to get a cursor of a specified local location of the widget.
 </table>
 
 <p>
@@ -1128,6 +1134,9 @@ Also there is the <code>lineColor</code> property. By default it is <code>null</
 
 <p>
 A connection can have assigned a source and a target <code>AnchorShape</code> and a end-point and control-point <code>PointShape</code>. Source AnchorShape is used for defining a shape of a source point. Target anchor shape is used for defining a shape of a target point. An end point shape is used defining a shape of first or last control point. A control point shape is used for defining a shape of other control points except first and last. There are 4 predefined anchor shapes: <code>AnchorShape.NONE</code>, <code>AnchorShape.TRIANGLE_HOLLOW</code>, <code>AnchorShape.TRIANGLE_FILLED</code>, <code>AnchorShape.TRIANGLE_OUT</code>. Other built-in anchor shapes can be created by <code>AnchorShapeFactory</code> class. There are 2 predefined point shapes: <code>PointShape.SQUARE_FILLED_BIG</code>, <code>PointShape.SQUARE_FILLED_SMALL</code>. Other built-in point shapes can be created using <code>PointShapeFactory</code> class.
+
+<p>
+There is a <code>controlPointsCursor</code> property which defines a mouse cursor when the mouse is over a visible control point.
 
 <h3><a name="Router">Router</a></h3>
 

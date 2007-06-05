@@ -502,7 +502,7 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
                     return true;
             }
             if (widget.isHitAt (point))
-                context.update (widget);
+                context.update (widget, point);
         }
 
 //        point.translate (location.x, location.y);
@@ -630,9 +630,9 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
         private Cursor cursor;
         private AccessibleContext accessibleContext;
 
-        public boolean update (Widget widget) {
+        public boolean update (Widget widget, Point localLocation) {
             if (cursor == null)
-                cursor = widget.getCursor ();
+                cursor = widget.getCursorAt (localLocation);
             if (toolTipText == null)
                 toolTipText = widget.getToolTipText ();
             if (accessibleContext == null)

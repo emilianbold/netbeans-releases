@@ -210,6 +210,21 @@
             <class package="org.netbeans.api.visual.action" name="ActionFactory" link="yes"/>
             <issue number="103289"/>
         </change>
+
+        <change>
+            <api name="general"/>
+            <summary>Widget.getCursorAt method introduced, ConnectionWidget.controlPointsCursor property added</summary>
+            <version major="2" minor="3"/>
+            <date day="5" month="6" year="2007"/>
+            <author login="dkaspar"/>
+            <compatibility addition="yes"/>
+            <description>
+                Now the mouse cursor is changed also based on its local location in a widget.
+		        Therefore ConnectionWidget has controlPointsCursor property which defines a cursor for mouse over control points.
+            </description>
+            <package name="org.netbeans.api.visual.widget" link="yes"/>
+            <issue number="104662"/>
+        </change>
     </changes>
 
     <htmlcontents>
