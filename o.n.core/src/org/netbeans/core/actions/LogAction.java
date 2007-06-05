@@ -20,6 +20,8 @@
 package org.netbeans.core.actions;
 
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -29,7 +31,6 @@ public class LogAction extends CallableSystemAction {
 
 
     public LogAction() {
-        // No icon in Tools menu.
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
@@ -45,7 +46,7 @@ public class LogAction extends CallableSystemAction {
 	try {
             p.showLogViewer();
 	} catch (java.io.IOException e) {
-            e.printStackTrace();
+            Logger.getLogger(LogAction.class.getName()).log(Level.INFO, "Showing IDE log action failed", e);
         }
     }
 
@@ -53,15 +54,15 @@ public class LogAction extends CallableSystemAction {
         return NbBundle.getMessage(LogAction.class, "MSG_LogTab_name"); // NOI18N
     }
 
-    public String iconResource() {
-        return "org/netbeans/modules/visualweb/ravehelp/dynamichelp/resources/log-file.gif"; // NOI18N
+    @Override public String iconResource() {
+        return "org/netbeans/core/resources/log-file.gif"; // NOI18N
     }
 
-    public HelpCtx getHelpCtx() {
+    @Override public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
-    public boolean asynchronous() {
+    @Override public boolean asynchronous() {
         return false ;
     }
 }

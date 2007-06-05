@@ -24,20 +24,17 @@
 package org.netbeans.core.actions;
 
 import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.io.File;
 import java.util.*;
 import java.io.*;
-import java.awt.Container;
 import org.openide.ErrorManager;
 import org.openide.filesystems.*;
 import org.openide.util.*;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.*;
+
 /** Connects the output stream of a file to the IDE output window.
  *
  * @author ludo
@@ -62,9 +59,9 @@ public class LogViewerSupport extends Thread {
 
 
     public void run() {
-        int MAX_LINES = 10000;
-        int LINES = 2000;
-        int OLD_LINES = 2000;
+        final int MAX_LINES = 10000;
+        final int LINES = 2000;
+        final int OLD_LINES = 2000;
         int lines;
         Ring ring = new Ring(OLD_LINES);
         int c;
