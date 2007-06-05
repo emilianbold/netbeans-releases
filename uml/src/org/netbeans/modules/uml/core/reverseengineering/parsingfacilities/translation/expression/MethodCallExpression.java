@@ -33,6 +33,7 @@ import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.IUMLPa
 import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.InstanceInformation;
 import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.MethodDeclaration;
 import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.ObjectInstanceInformation;
+import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.REClassLoader;
 import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.SymbolTable;
 import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.translation.statehandlers.ExpressionStateHandler;
 import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.translation.statehandlers.StateHandler;
@@ -226,16 +227,27 @@ public class MethodCallExpression extends ExpressionStateHandler
    {
       InstanceInformation retVal = null;
       
-      InstanceInformation instRef = m_InstanceExpression.sendOperationEvents(null, pThisPtr, symbolTable, pClassLoader, pDispatcher, pParentNode);
+      InstanceInformation instRef = 
+              m_InstanceExpression.sendOperationEvents(null, pThisPtr, symbolTable, 
+              pClassLoader, pDispatcher, pParentNode);
+      
       if(instRef == null)
       {
-          if (isStringConstant())
-              instRef = getStringInstance(pThisPtr);
+          if (isStringConstant()) {
+              //IREClass emptyStringClass = pClassLoader.loadClass("java::lang::String") ;              
+              instRef = getStringInstance(pClassLoader);
+              
+          }
           else
               instRef = getThisInstance(pThisPtr);
       }
-      ETList<ETPairT<InstanceInformation,String>> args = getArgumentInstances(retVal, pThisPtr, symbolTable, pClassLoader, pDispatcher, pParentNode);
-      MethodDeclaration declaration = getMethodDeclaration(instRef, pThisPtr, pClassLoader, args);
+      
+      ETList<ETPairT<InstanceInformation,String>> args = 
+              getArgumentInstances(retVal, pThisPtr, symbolTable, pClassLoader, pDispatcher, pParentNode);
+      
+      MethodDeclaration declaration = 
+              getMethodDeclaration(instRef, pThisPtr, pClassLoader, args);
+      
       try
       {
          if(declaration != null)
@@ -259,6 +271,7 @@ public class MethodCallExpression extends ExpressionStateHandler
             {
                lineNumber = m_MethodName.getLine();
             }
+            
             declaration.sendMethodCallEvent(pParentNode,
             (int) lineNumber,
             ref,
@@ -284,7 +297,7 @@ public class MethodCallExpression extends ExpressionStateHandler
         /* (non-Javadoc)
          * @see org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.translation.expression.IMethodCallExpression#stateComplete(java.lang.String)
          */
-   public void stateComplete(String stateName)
+public void stateComplete(String stateName)
    {
       if((m_DiscoverMethodName == true) &&  (m_OtherInstanceStates > 0))
       {
@@ -502,17 +515,23 @@ public class MethodCallExpression extends ExpressionStateHandler
       }
    }
    
-   public InstanceInformation getStringInstance(IREClass pThis)
+   public InstanceInformation getStringInstance(IREClassLoader pClassLoader)
    {
       ObjectInstanceInformation retVal = new ObjectInstanceInformation();
-      retVal.setInstanceOwner(pThis);
-      retVal.setInstanceType(pThis);
-      retVal.setInstanceName("");
+      
+//      retVal.setInstanceOwner(emptyStr);
+//      retVal.setInstanceType(emptyStr);
+      retVal.setInstanceName(""); 
+      
+      retVal.setInstantiatedType("java::lang::String", pClassLoader);
+      
       return retVal;
    }
+   
    public InstanceInformation getThisInstance(IREClass pThis)
    {
       ObjectInstanceInformation retVal = new ObjectInstanceInformation();
+      
       retVal.setInstanceOwner(pThis);
       retVal.setInstanceType(pThis);
       retVal.setInstanceName("<THIS>");
