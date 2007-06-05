@@ -21,7 +21,9 @@ package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 
 import java.util.Collection;
 import java.util.LinkedList;
+
 import javax.xml.namespace.QName;
+
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
@@ -35,6 +37,8 @@ import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
+
 
 /**
  *
@@ -109,7 +113,7 @@ public class MessagesUtils {
         }
         
         if (s == null) {
-            s = "<Undefined>"; // NOI18N
+            s = NbBundle.getMessage(MessagesUtils.class, "LBL_Undefined"); // NOI18N
         }
         
         return s;
@@ -152,7 +156,7 @@ public class MessagesUtils {
     
     
     public static SchemaComponent extractSchemaComponent(Node node) {
-        AXIComponent axiComponent = (AXIComponent) node.getLookup()
+        AXIComponent axiComponent = node.getLookup()
                 .lookup(AXIComponent.class);
 
         SchemaComponent schemaComponent = null;
@@ -160,7 +164,7 @@ public class MessagesUtils {
         if (axiComponent != null) {
             schemaComponent = axiComponent.getPeer();
         } else {
-            SchemaComponentReference reference = (SchemaComponentReference) 
+            SchemaComponentReference reference = 
                     node.getLookup().lookup(SchemaComponentReference.class);
 
             if (reference != null) {
@@ -168,7 +172,7 @@ public class MessagesUtils {
             }
 
             if (schemaComponent == null) {
-                schemaComponent = (SchemaComponent) node.getLookup()
+                schemaComponent = node.getLookup()
                         .lookup(SchemaComponent.class);
             }
         }
