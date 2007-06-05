@@ -365,10 +365,11 @@ public class PageFlowController {
         for( NavigationRule rule : rules ) {
             List<NavigationCase> navCases = rule.getNavigationCases();
             for( NavigationCase navCase : navCases ){
-                NavigationCaseEdge node = new NavigationCaseEdge(this, navCase);
+                NavigationCaseEdge node = new NavigationCaseEdge(this, navCase);                
                 navCase2NavCaseEdge.put(navCase, node);
-                
-                createEdge(node);
+                if( node.getFromViewId() != null  && node.getToViewId() != null){
+                    createEdge(node);
+                }
             }
         }
     }
