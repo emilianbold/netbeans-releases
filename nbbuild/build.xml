@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE someant  [
@@ -946,7 +946,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </exec>
   </target>
   
-  <target name="l10n-kit" depends="init" description="Builds the L10N kit">
+  <target name="l10n-kit" depends="bootstrap,init-module-list,set-buildnumber,init-tasks" description="Builds the L10N kit">
     <taskdef name="l10n" classname="org.netbeans.nbbuild.L10nTask"
              classpath="nbantext.jar"/>
     <delete dir="${l10n.dist.dir}"/>
@@ -960,6 +960,23 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
           builddir="tmp" buildnumber="${buildnumber}"
           excludepattern="**/ja/,**/*_ja.*"/>
     <delete dir="tmp"/>
+  </target>
+
+  <target name="l10n-kit-101067" depends="bootstrap,init-module-list,set-buildnumber,init-tasks" description="Builds the L10N kit using l10n.list of new scope (see issue 101067)">
+    <taskdef name="l10n101067" classname="org.netbeans.nbbuild.L10nTask101067"
+             classpath="nbantext.jar"/>
+    <delete dir="${l10n.dist.dir}"/>
+    <mkdir dir="${l10n.dist.dir}"/>
+    <delete dir="l10n-tmp"/>
+    <mkdir dir="l10n-tmp"/>
+    <property name="nbroot" location=".."/>
+    <l10n101067 topdirs="${nbroot}" modules="${fixedmodules},${modules}"
+                localizablefile="l10n-101067.list" generatedfile="l10n-101067.translated"
+                distdir="${l10n.dist.dir}" changedfile="l10n-101067.changed"
+                globalfile="l10n-global.list"
+                builddir="l10n-tmp" buildnumber="${buildnumber}"
+                excludepattern="**/ja/,**/*_ja.*"/>
+    <delete dir="l10n-tmp"/>
   </target>
 
   <target name="clean-external">
