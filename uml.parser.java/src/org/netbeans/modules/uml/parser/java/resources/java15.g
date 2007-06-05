@@ -794,8 +794,8 @@ annotationField!
 						 #(#[TYPE,"TYPE"],rt),
 						 i,amvi
 						 );}
-			|	v:variableDefinitions[#mods,#t] SEMI	// variable
-				{#annotationField = #v;}
+			|	v:variableDefinitions[#mods,#t] vs:SEMI	// variable
+				{#annotationField = #v; #v.addChild(#vs);}
 			)
 		)
 	;
@@ -852,8 +852,8 @@ enumConstantField!
 							 param,
 							 tc,
 							 s2);}
-			|	v:variableDefinitions[#mods,#t] SEMI
-				{#enumConstantField = #v;}
+			|	v:variableDefinitions[#mods,#t] vs:SEMI
+				{#enumConstantField = #v; #v.addChild(#vs);}
 			)
 		)
 
@@ -917,8 +917,8 @@ classField!
 									 param,
 									 tc,
 									 s2);}
-					|	v:variableDefinitions[#mods,#t] SEMI
-						{#classField = #v;}
+					|	v:variableDefinitions[#mods,#t] vs:SEMI
+						{#classField = #v; #v.addChild(#vs);}
 					)
 			)
 		)
@@ -965,8 +965,8 @@ interfaceField!
 							 IDENT,
 							 param,
 							 tc);}
-			|	v:variableDefinitions[#mods,#t] SEMI
-				{#interfaceField = #v;}
+			|	v:variableDefinitions[#mods,#t] vs:SEMI
+				{#interfaceField = #v; #v.addChild(#vs);} 
 			)
 		)
 	;
@@ -975,7 +975,7 @@ constructorBody
 	:	lc:LCURLY^ {#lc.setType(SLIST);}
 			( options { greedy=true; } : explicitConstructorInvocation)?
 			(statement)*
-		rc:RCURLY! //{#rc.setType(END_SLIST);}
+		rc:RCURLY //{#rc.setType(END_SLIST);}
 	;
 
 /** Catch obvious constructor calls, but not the expr.super(...) calls */
@@ -1124,7 +1124,7 @@ statement
 	// statements. Must backtrack to be sure. Could use a semantic
 	// predicate to test symbol table to see what the type was coming
 	// up, but that's pretty hard without a symbol table ;)
-	|	(declaration)=> declaration SEMI!
+	|	(declaration)=> declaration SEMI
 
 	// An expression statement. This could be a method call,
 	// assignment statement, or any other expression evaluated for

@@ -169,6 +169,10 @@ public class OperationStateHandler extends AttributeStateHandler
         {
             handleEndPostion(pToken);
         }
+        if("Method Body Start".equals(tokenType))
+        {
+            handleBodyStart(pToken);
+        }
         if("Parameter End".equals(tokenType))
         {
            long line = pToken.getLine();

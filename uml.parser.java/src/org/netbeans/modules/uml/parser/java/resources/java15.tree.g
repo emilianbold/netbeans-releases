@@ -396,7 +396,7 @@ methodDef
 variableDef
 {  mController.stateBegin("Variable Definition"); }
 
-   : #(VARIABLE_DEF modifiers typeSpec variableDeclarator varInitializer)
+   : #(VARIABLE_DEF modifiers typeSpec variableDeclarator varInitializer (s:SEMI {mController.tokenFound(#s, "Statement Terminator"); })?)
 
      { mController.stateEnd(); }
    ;

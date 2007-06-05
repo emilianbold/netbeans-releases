@@ -313,7 +313,9 @@ ${literal.getName()}
 
 <#macro idMarker elementInfo nestingLevel>
 <#if codegenOptions["GENERATE_MARKER_ID"]?? && codegenOptions["GENERATE_MARKER_ID"] >
+<@ident nestingLevel />// <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
 <@ident nestingLevel />// #[regen=yes,id=${elementInfo.getMarkerID()}]
+<@ident nestingLevel />// </editor-fold> 
 </#if>
 </#macro>
 

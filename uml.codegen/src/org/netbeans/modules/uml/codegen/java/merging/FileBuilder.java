@@ -23,7 +23,26 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+
+import org.dom4j.Node;
+
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.REIntegrationUtil;
 
 /**
  *  The class that perform actual merge of source files
@@ -37,59 +56,32 @@ public class FileBuilder
    private static final String SPACE = " ";
    private static final String NEWLINE ="\n";
    private static final int BUFFER_SIZE= 256;
-   private File newFile;
-   private File oldFile;
+   private String newFile;
+   private String oldFile;
    
    private RandomAccessFile raOldFile;
    private RandomAccessFile raNewFile;
    private PositionMapper posMapper = null;
-    //private long originalTopPos = 0;
-    //private long originalBottomPos = 0;
    
    public FileBuilder(String newFilename, String oldFilename)
    {
       if ( newFilename != null && newFilename.length() > 0 )
       {
-         newFile = new File(newFilename);
+         newFile = newFilename;
       }
       
       if ( oldFilename != null && oldFilename.length() > 0 )
       {
-         oldFile = new File(oldFilename);
+         oldFile = oldFilename;
       }
       
       init(newFile, oldFile);
    }
    
-   private void init(File newFile, File oldFile)
+   private void init(String newFile, String oldFile)
    {
       posMapper = new PositionMapper();
       
-      try
-      {
-         if (oldFile != null)
-         {
-            //Open files for random access
-            raOldFile = new RandomAccessFile(oldFile, "rw");    // for read only
-            //originalTopPos = this.getSrcTopPosition();
-            //originalBottomPos = this.getSrcBottomPosition();
-         }
-         
-         if (newFile != null)
-         {
-            raNewFile = new RandomAccessFile(newFile, "r");    // for read only
-         }
-      }
-      catch (FileNotFoundException ex)
-      {
-         //TODO: Display proper error message using NB style
-         ex.printStackTrace();
-      }
-      catch (Exception ex2)
-      {
-         //TODO: Display proper error message using NB style
-         ex2.printStackTrace();
-      }
    }
    
    /**
@@ -111,103 +103,12 @@ public class FileBuilder
      */
     public void replace(ElementDescriptor newElem, ElementDescriptor oldElem, int replacementType) 
     {
-      if (newElem == null)
-         return;
-      
-      long oldElemStartPos = getElemStartPosition(oldElem);
-      long oldElemEndPos = getElemEndPosition(oldElem);
-      
-      long newElemStartPos = getElemStartPosition(newElem);
-      long newElemEndPos = getElemEndPosition(newElem);
-      
-      byte[] replacingBuffer = null;
-      int numOfBytesReplaced = 0;
-      
-      try
-      {
-         if (newElemStartPos > -1 && newElemEndPos > -1 &&
-               newElemStartPos < newElemEndPos)
-         {
-            int newDataSize = (int)(newElemEndPos - newElemStartPos + 1);
-            replacingBuffer = new byte[newDataSize];
-            
-            if (raNewFile != null && raNewFile.length() > 0)
-            {
-               // read 'newDataSize' bytes from the new file starting at 'newElemStartPos'
-               raNewFile.seek(newElemStartPos);
-               numOfBytesReplaced = raNewFile.read(replacingBuffer);
-            }
-            
-            if (oldElemStartPos > -1 && oldElemEndPos > -1 &&
-                  oldElemStartPos < oldElemEndPos)
-            {
-               int oldDataSize = (int) (oldElemEndPos - oldElemStartPos + 1);
-               long mappedStartPos = posMapper.getMappedPositionFor(oldElemStartPos);
-               long mappedEndPos = posMapper.getMappedPositionFor(oldElemEndPos);
-               
-               long oldFileLen = this.raOldFile.length();
-               // Copy the data in the old file staring from 'oldElemEndPos + 1' till
-               // the EOF to a temporary file
-               File tempFile = this.createTempFile(FileUtil.toFileObject(oldFile).getName());
-               if (tempFile != null)
-               {
-                  RandomAccessFile tempOutput = new RandomAccessFile(tempFile, "rw");
-                  byte byteBuffer[] = new byte[this.BUFFER_SIZE];
-                  int bytesRead = 0;
-                  raOldFile.seek(mappedEndPos + 1);
-                  while (bytesRead  != -1)   // loop till EOF is reached
-                  {
-                     bytesRead = raOldFile.read(byteBuffer);
-                     if (bytesRead > 0)
-                     {
-                        tempOutput.write(byteBuffer, 0, bytesRead);
-                     }
-                  }
-                  // In the old file, replace the old Data with the new data starting
-                  // from the 'oldElemStartPos'
-                  
-                  raOldFile.seek(mappedStartPos);
-                  raOldFile.write(replacingBuffer, 0, numOfBytesReplaced);
-                  // write the data previously saved in the temporay file to the end
-                  // of the old file.
-                  bytesRead = 0;
-                  tempOutput.seek(0);
-                  while (bytesRead != -1)
-                  {
-                     bytesRead = tempOutput.read(byteBuffer);
-                     if (bytesRead > 0)
-                     {  // wrtie 'bytesRead' to the old file at the current position
-                        // of the file pointer
-                        raOldFile.write(byteBuffer, 0, bytesRead);
-                     }
-                  }
-                  // Done replacing.Reset the length of the old file to the position
-                  // of the current file pointer.
-                  // Close and delete the temporaty file
-                  long currentLen = raOldFile.getFilePointer();
-                  if (oldFileLen != currentLen)
-                  {
-                     raOldFile.setLength(currentLen);
-                     int bytesShift = newDataSize - oldDataSize;
-                     if (bytesShift != 0)
-                     {
-                        // keep track of changes made to the old file
-                        this.posMapper.addToMap(oldElemStartPos, bytesShift);
-                     }
-                  }
-                  
-                  tempOutput.close();
-                  tempFile.delete();
-               }
-            }
-         }
-      }
-      catch (IOException ex)
-      {
-         ex.printStackTrace();
-         completed();
-      }
-   }
+	if (newElem == null)
+	    return;
+	
+	mods.add(new ModDesc(ModDesc.REPLACE, newElem, oldElem, -1, replacementType));
+	  
+    }
       
    
    /**
@@ -218,112 +119,7 @@ public class FileBuilder
    
    public void remove(ElementDescriptor oldElem)
    {
-      try
-      {
-         long fileLen = raOldFile == null ? -1 : raOldFile.length();
-         if (oldElem == null || fileLen <= 0)
-         {
-            return;
-         }
-         
-         long startPos = getElemStartPosition(oldElem);
-         long endPos = getElemEndPosition(oldElem);
-         
-         if (startPos > -1 && endPos > -1 &&
-               startPos < endPos && fileLen >= endPos)
-         {
-            int removedBytes = (int) (endPos - startPos + 1);
-            long mappedStartPos = posMapper.getMappedPositionFor(startPos);
-            long mappedEndPos = posMapper.getMappedPositionFor(endPos);
-            
-            // Copy the data in the old file staring from 'mappedEndPos + 1' till
-            // the EOF to a temporary file
-            File tempFile = this.createTempFile(FileUtil.toFileObject(oldFile).getName());
-            if (tempFile != null)
-            {
-               RandomAccessFile tempOutput = new RandomAccessFile(tempFile, "rw");
-               byte byteBuffer[] = new byte[BUFFER_SIZE];
-               int bytesRead = 0;
-               raOldFile.seek(mappedEndPos + 1);
-               while (bytesRead  != -1)   // loop till EOF is reached
-               {
-                  bytesRead = raOldFile.read(byteBuffer);
-                  if (bytesRead > 0)
-                  {
-                     tempOutput.write(byteBuffer, 0, bytesRead);
-                  }
-               }
-               
-               // Rewrite the data previously saved in the temporay file to the
-               // file starting from the 'mappedStartPos'
-               String dataStr = null;
-               int count = 0;
-               bytesRead = 0;
-               byte outBuffer[] = null;
-               
-               tempOutput.seek(0);
-               raOldFile.seek(mappedStartPos);
-               while (bytesRead != -1)
-               {
-                  bytesRead = tempOutput.read(byteBuffer);
-                  if (bytesRead > 0)
-                  {
-                     // strip off the leading spaces (not the trailing spaces) of
-                     // the 1st patch of data read to prevent  multiple empty lines
-                     if (count == 0)
-                     {
-                        char aChar = ' ';
-                        dataStr = new String(byteBuffer, 0, bytesRead);
-                        int strLen = dataStr.length();
-                        for (int i = 0; i < strLen; i++)
-                        {
-                           aChar = dataStr.charAt(i);
-                           if (!Character.isWhitespace(aChar))
-                           {
-                              dataStr = dataStr.substring(i);
-                              break;
-                           }
-                        }
-                        if (dataStr.length() != strLen)
-                        {
-                           outBuffer = dataStr.getBytes();
-                           int removedSpaces = bytesRead - outBuffer.length;
-                           if (removedSpaces > 0)
-                           {
-                              //update the total number of bytes being removed
-                              removedBytes += removedSpaces;
-                           }
-                           raOldFile.write(outBuffer, 0, outBuffer.length);
-                        }
-                     }
-                     else
-                     {
-                        raOldFile.write(byteBuffer, 0, bytesRead);
-                     }
-                  }
-                  count++;
-               }
-               // Done removing. Reset the length of the old file to the position
-               // of the current file pointer.
-               // Close and delete the temporaty file
-               long currentLen = raOldFile.getFilePointer();
-               if (fileLen > currentLen)
-               {
-                  raOldFile.setLength(currentLen);
-                  // keep track of changes made to the old file
-                  this.posMapper.addToMap(startPos, -removedBytes);
-                  
-               }
-               tempOutput.close();
-               tempFile.delete();
-            }
-         }
-      }
-      catch (IOException ex)
-      {
-         ex.printStackTrace();
-         completed();
-      }
+       mods.add(new ModDesc(ModDesc.REMOVE, null, oldElem, -1, HEADER_AND_BODY));
    }
    
 
@@ -334,92 +130,29 @@ public class FileBuilder
     */
    public void add(ElementDescriptor newElem, ElementDescriptor oldParentElem)
    {
-      if (newElem == null)
-         return;
-      
-      long startPos = getElemStartPosition(newElem);
-      long endPos = getElemEndPosition(newElem);
-      int bytesAdded = 0;
-      try
+      String modelElemType = newElem.getModelElemType();
+      long insertPos = -1;
+      List<ElementDescriptor> c = getElementsSorted(oldParentElem);
+      ElementDescriptor oldElem = oldParentElem;
+      if ("Attribute".equals(modelElemType))
       {
-         if (startPos > -1 && endPos > -1 && startPos < endPos)
-         {
-            int addedSize = (int)(endPos - startPos + 1);
-            byte addedBuffer[] = new byte[addedSize];
-            
-            // read 'addedBytes' bytes from the new src file starting from 'startPos'
-            if (raNewFile != null && raNewFile.length() > 0)
-            {
-               raNewFile.seek(startPos);
-               bytesAdded = raNewFile.read(addedBuffer);
-            }
-            
-            if ( raOldFile != null)
-            {
-               long addPos = getInsertPosition(newElem, oldParentElem);
-               if (addPos != -1)
-               {
-                  // in old src file, save bytes from the 'addPos' till the end of
-                  // the file to a temporaty file before inserting the new entry
-                  File tempFile = this.createTempFile(FileUtil.toFileObject(oldFile).getName());
-                  if (tempFile != null)
-                  {
-                     RandomAccessFile tempOutput = new RandomAccessFile(tempFile, "rw");
-                     byte byteBuffer[] = new byte[this.BUFFER_SIZE];
-                     int bytesRead = 0;
-                     raOldFile.seek(addPos);
-                     while (bytesRead  != -1)   // loop till EOF is reached
-                     {
-                        bytesRead = raOldFile.read(byteBuffer);
-                        if (bytesRead > 0)
-                        {
-                           tempOutput.write(byteBuffer, 0, bytesRead);
-                        }
-                     }
-                     
-                     // Write the 'addedBuffer' to the old src file at 'addPos' position
-                     // Insert indentation in front and newline at the end
-                     byte indent[] = this.getIndentation(newElem);
-                     addedSize += indent.length;
-                     raOldFile.seek(addPos);
-                     raOldFile.write(indent, 0 , indent.length);
-                     raOldFile.write(addedBuffer, 0 , bytesAdded);
-                     if (newElem.getModelElemType().equals("Operation"))
-                     {
-                        byte newlines[] = NEWLINE.concat(NEWLINE).getBytes();
-                        raOldFile.write(newlines, 0 , newlines.length);
-                        addedSize += newlines.length;
-                     }
-                     
-                     // write the data previously saved in the temporay file to
-                     // the old file.
-                     bytesRead = 0;
-                     tempOutput.seek(0);
-                     while (bytesRead != -1)
-                     {
-                        bytesRead = tempOutput.read(byteBuffer);
-                        if (bytesRead > 0)
-                        {
-                           raOldFile.write(byteBuffer, 0, bytesRead);
-                        }
-                     }
-                     // keep track of changes made to the old file
-                     posMapper.addToMap(addPos, addedSize);
-                     
-                     // Done Adding.
-                     // Close and delete the temporaty file
-                     tempOutput.close();
-                     tempFile.delete();
-                  }
-               }
-            }
-         }
+	  if ( !( c == null || c.size() == 0)) {
+	      oldElem = c.get(0);
+	      mods.add(new ModDesc(ModDesc.INSERT_BEFORE, newElem, oldElem, insertPos, HEADER_AND_BODY));
+	  } else {
+	      insertPos = getSrcTopPosition(oldParentElem);
+	      mods.add(new ModDesc(ModDesc.INSERT_AFTER, newElem, oldElem, insertPos, HEADER_AND_BODY));
+	  }
       }
-      catch (IOException ex)
+      else  //if ("Operation".equals(modelElemType))
       {
-         ex.printStackTrace();
-         completed();
-      }
+	  if ( !( c == null || c.size() == 0)) {
+	      oldElem = c.get(c.size() - 1);
+	  } else {
+	      insertPos = getSrcTopPosition(oldParentElem);
+	  }
+	  mods.add(new ModDesc(ModDesc.INSERT_AFTER, newElem, oldElem, insertPos, HEADER_AND_BODY));      
+      } 
    }
    
     /**
@@ -428,6 +161,11 @@ public class FileBuilder
      *  fragment represented by oldElem in the old file
      */
     public void insert(ElementDescriptor newElem, ElementDescriptor oldElem, boolean after) {
+	if (after) {
+	    mods.add(new ModDesc(ModDesc.INSERT_AFTER, newElem, oldElem, -1, HEADER_AND_BODY));
+	} else {
+	    mods.add(new ModDesc(ModDesc.INSERT_BEFORE, newElem, oldElem, -1, HEADER_AND_BODY));
+	}      
     }
 
    /**
@@ -437,36 +175,52 @@ public class FileBuilder
     *  according to all previously posted requests.
     */
    public void completed()
+	throws IOException
    {
-      try
-      {
-         if (this.raOldFile != null)
-         {
-            this.raOldFile.close();
-         }
-         if (this.raNewFile != null)
-         {
-            this.raNewFile.close();
-         }
-      }
-      catch (IOException ex)
-      {
-         ex.printStackTrace();
-      }
+       String charset = REIntegrationUtil.getEncoding(newFile);
+       processNewFile(newFile, charset);
+       charset = REIntegrationUtil.getEncoding(oldFile);
+       
+       File of = new File(oldFile);
+       FileObject oldFO = FileUtil.toFileObject(of);
+       String name = of.getName();
+       String ext = oldFO.getExt();
+       String dir = of.getParent();
+       String tmpDir = System.getProperty("java.io.tmpdir");
+       File temp = File.createTempFile(name, ext, new File(new File(tmpDir).getCanonicalPath()));       
+       mergeOldFile(oldFile, temp.getCanonicalPath(), charset);
+       copyFile(temp, of);
+       temp.delete();
    }
    
+
+    private void copyFile(File from, File to)
+	throws IOException
+    {
+	BufferedInputStream r = new BufferedInputStream(new FileInputStream(from));
+	BufferedOutputStream w = new BufferedOutputStream(new FileOutputStream(to));
+	byte[] buff = new byte[8192];
+	int l = r.read(buff);
+	while(l > -1) {
+	    w.write(buff, 0, l);
+	    l = r.read(buff);
+	}
+	r.close();
+	w.close();
+    }
+
+
    private long getInsertPosition(ElementDescriptor elem, ElementDescriptor container)
-         throws IOException
    {
       String modelElemType = elem.getModelElemType();
       long insertPos = -1;
       if ("Attribute".equals(modelElemType))
       {
-         insertPos = posMapper.getMappedPositionFor(getSrcTopPosition(container));
+         insertPos = getSrcTopPosition(container);
       }
       else  //if ("Operation".equals(modelElemType))
       {
-         insertPos = posMapper.getMappedPositionFor(container.getEndPos());
+         insertPos = container.getEndPos();
       } 
       return insertPos;
    }
@@ -474,9 +228,33 @@ public class FileBuilder
    
    // Returns the position of the byte right next to the first left brace '{'.
    // In case, the left brace is not found, 0 is returned.
-   private long getSrcTopPosition(ElementDescriptor container) throws IOException
+   private long getSrcTopPosition(ElementDescriptor container) 
    {
-       return container.getPosition("Body Start") + 1;
+       return container.getPosition("Body Start");
+   }
+      
+
+   private static List<ElementDescriptor> getElementsSorted(ElementDescriptor container) 
+   {
+       ArrayList<ElementDescriptor> res = new ArrayList<ElementDescriptor>();
+       List nodes = container.getOwnedElements();
+       if (nodes == null) {
+	   return null;
+       }
+       for (Object n : nodes) {
+	   if (n instanceof Node) {
+	       res.add(new ElementDescriptor((Node)n));
+	   }	   
+       } 
+       Collections.sort(res, new Comparator<ElementDescriptor>()
+               {
+		   public int compare(ElementDescriptor d1, ElementDescriptor d2) {
+		       long s1 = getElemStartPosition(d1);
+		       long s2 = getElemStartPosition(d2);
+		       return (int) (s1 - s2);
+		   }	   
+	       });
+       return res;
    }
    
    
@@ -495,7 +273,7 @@ public class FileBuilder
       return indent.getBytes();
    }
    
-   private long getElemStartPosition(ElementDescriptor elem)
+   private static long getElemStartPosition(ElementDescriptor elem)
    {
       long startPos = elem.getStartPos();
       // check for comment, if exists, use the start posistion
@@ -514,39 +292,20 @@ public class FileBuilder
       return startPos;
    }
    
-   private long getElemEndPosition(ElementDescriptor elem)
+   private static long getElemEndPosition(ElementDescriptor elem)
    {
       String modelElemType = elem.getModelElemType();
       long endPos = -1;
-      if ("Attribute".equals(modelElemType))
-      {
-         long initValPos = elem.getPosition("InitialValue");
-         if (initValPos  == -1 )   // no initial value
-         {
-            endPos = elem.getPosition("Name") +
-                  elem.getLength("Name");        // including the ending ';'
-         }
-         else
-         {
-            endPos = initValPos + elem.getLength("InitialValue"); // including the ending ';'
-         }
-      }
-      else if ("Operation".equals(modelElemType))
-      {
-         // Currently the element descriptor of a constructor does not include
-         // end position. Return -1 for now.
-         boolean isConstructor = Boolean.parseBoolean(
-               elem.getModelElemAttribute("isConstructor"));
-         if (isConstructor)
-         {
-            endPos = -1;
-         }
-         else
-         {
-            endPos = elem.getEndPos();
-         }
-      }
+      endPos = elem.getEndPos();
       return endPos;
+   }
+   
+   
+   private static long getElemHeaderEndPosition(ElementDescriptor elem)
+   {
+      String modelElemType = elem.getModelElemType();
+      long pos = elem.getPosition("Body Start") - 1;
+      return pos;
    }
    
    
@@ -561,4 +320,299 @@ public class FileBuilder
       }
       return tempFile;
    }
+
+
+    ArrayList<ModDesc> mods = new ArrayList<ModDesc>();
+
+    private void processNewFile(String newFile, String charset)
+	throws IOException
+    {	
+	InputStreamReader r; 
+	if (charset != null) {
+	    r = new InputStreamReader(new FileInputStream(newFile), charset);
+	} else {
+	    r = new InputStreamReader(new FileInputStream(newFile));
+	}
+	BufferedReader br = new BufferedReader(r);
+	
+	Collections.sort(mods, new NewStartModDescComparator());
+	long pnt = -1;
+	for (ModDesc m : mods) {
+	    if (m.type == ModDesc.REMOVE) {
+		continue;
+	    }
+	    pnt++;
+	    StringBuffer espace = new StringBuffer();
+	    long startPnt = pnt; 
+	    int c = br.read();
+	    long start = pnt;
+	    long nli = -1;
+	    while(c > -1) {
+		if (pnt < m.newStart) {
+		    if (Character.isWhitespace((char)c)) {
+			espace.append((char)c);
+			if (nli == -1 && Character.getType((char)c) == Character.LINE_SEPARATOR) {
+			    nli = pnt;
+			} 
+		    } else {
+			espace.setLength(0);
+			start = pnt + 1;
+			nli = -1;
+		    }		   
+		//} else if (pnt == m.newStart) {		  
+		    
+		} else if (pnt <= m.newEnd) {
+		    espace.append((char)c);
+		    if (pnt == m.newEnd) {
+			String pc;
+			if (nli != -1) {
+			    pc = espace.substring((int)(nli - start));
+			} else {
+			    pc = espace.substring(0); //(int)(start - start));
+			}
+			m.storePatchContent(pc);
+			break;
+		    }
+		} else {		    
+		    break;
+		}		    		
+		pnt++;
+		c = br.read();
+	    }
+	}
+	br.close();
+    }
+    
+
+    private void mergeOldFile(String oldFileFrom, String oldFileTo, String charset) 
+	throws IOException
+    {
+	InputStreamReader r; 
+	OutputStreamWriter w; 
+	if (charset != null) {
+	    r = new InputStreamReader(new FileInputStream(oldFileFrom), charset);
+	    w = new OutputStreamWriter(new FileOutputStream(oldFileTo), charset);
+	} else {
+	    r = new InputStreamReader(new FileInputStream(oldFileFrom));
+	    w = new OutputStreamWriter(new FileOutputStream(oldFileTo));
+	}
+	BufferedReader br = new BufferedReader(r);
+	BufferedWriter bw = new BufferedWriter(w);
+	
+	Collections.sort(mods, new OldEdPointModDescComparator());
+	long pnt = -1;
+	long startPnt = -1;
+	int c = -1;
+	long start = -1;
+	long nli = -1;
+	StringBuffer espace = new StringBuffer();
+	Iterator<ModDesc> iter = mods.iterator();
+	ModDesc m = null;
+	if (iter.hasNext()) {
+	    m = iter.next();
+	}
+	pnt++;
+	startPnt = pnt; 
+	c = br.read();
+	start = pnt;
+	nli = -1;
+	while(c > -1) {
+	    if (m != null) {
+		if (pnt < m.oldEdPoint) {
+		    espace.append((char)c);
+		    if (Character.isWhitespace((char)c) || (pnt >= m.oldStart)) {
+			if (nli == -1 && Character.getType((char)c) == Character.LINE_SEPARATOR) {
+			    nli = pnt;
+			} 
+		    } else {
+			bw.write(espace.toString());
+			espace.setLength(0);
+			start = pnt + 1;
+			nli = -1;
+		    }		   
+		} else if (pnt == m.oldEdPoint) {
+		    long edpoint = m.oldEdPoint;
+		    int epnt;
+		    if (nli != -1) {
+			epnt = (int) (nli - start);
+		    } else {
+			epnt = 0; //(int) (start - start);
+		    }
+		    espace.append((char)c);
+		    StringBuffer es1 = new StringBuffer();
+		    bw.write(espace.substring(0, epnt));
+		    espace = new StringBuffer(espace.substring(epnt));
+		    //start = epnt;
+		    do
+		    {
+			if (m.type == ModDesc.INSERT_BEFORE) 
+			{
+			    bw.write(m.getPatchContent());
+			} 
+			else  if (m.type == ModDesc.INSERT_AFTER) 
+			{
+			    es1.append(espace.substring(espace.length() - 1));
+			    bw.write(espace.substring(0, espace.length() - 1));			
+			    espace.setLength(0);
+			    bw.write(m.getPatchContent());
+			} 
+			else if (m.type == ModDesc.REPLACE || m.type == ModDesc.REMOVE) 
+			{			
+			    if (m.type == ModDesc.REPLACE) 
+			    {
+				bw.write(m.getPatchContent());
+
+			    }
+			    espace.setLength(0);
+			    while (pnt < m.oldEnd) 
+			    {
+				pnt++;
+				c = br.read();
+			    }
+			} 	
+			if (iter.hasNext()) 
+			{
+			    m = iter.next();
+			} else {
+			    m = null;
+			}			    
+		    } 
+		    while (m != null && m.oldEdPoint == edpoint); 
+
+		    bw.write(espace.toString());
+		    bw.write(es1.toString());
+		    espace.setLength(0);
+		}
+	    } else {
+		bw.write((char)c);
+	    }
+	    pnt++;
+	    c = br.read();	    
+	}
+	br.close();
+	bw.close();
+    }
+
+
+    public static class NewStartModDescComparator implements Comparator<ModDesc>{
+	
+	public int compare(ModDesc m1, ModDesc m2) {
+	    if (m1.newStart < m2.newStart) {
+		return -1;
+	    } else if (m1.newStart > m2.newStart) {
+		return 1;
+	    } else {
+		return 0;
+	    }
+	}
+
+    }
+
+
+    public static class OldEdPointModDescComparator implements Comparator<ModDesc>{
+	
+	public int compare(ModDesc m1, ModDesc m2) {
+	    if (m1.oldEdPoint < m2.oldEdPoint) {
+		return -1;
+	    } else if (m1.oldEdPoint > m2.oldEdPoint) {
+		return 1;
+	    } else {
+		if (m1.type != m2.type) {
+		    return m1.type - m2.type;
+		} else {
+		    return new NewStartModDescComparator().compare(m1, m2);
+		}
+	    }
+	}
+
+    }
+
+
+    public static class ModDesc {
+	public static final int INSERT_AFTER = 1;
+	public static final int INSERT_BEFORE = 0;
+	public static final int REPLACE = 2;
+	public static final int REMOVE = 3;
+
+	int type;
+	ElementDescriptor newElem;
+	ElementDescriptor oldElem;
+	
+	long newStart;
+	long newEnd;
+	long oldStart;
+	long oldEnd;
+	long oldEdPoint;
+	int scope;
+
+	private String patchContent;
+
+	public ModDesc(int type, 
+		       ElementDescriptor newElem,
+		       ElementDescriptor oldElem,
+		       long oldEdPoint,
+		       int scope)
+	{
+	    this.type = type;
+	    this.newElem = newElem;
+	    this.oldElem = oldElem;
+	    this.scope = scope;
+
+	    if (type != REMOVE) {
+		newStart = getElemStartPosition(newElem);
+		if (scope == HEADER_AND_BODY) {
+		    newEnd = getElemEndPosition(newElem);
+		} 
+		else // if (scope == HEADER_ONLY) {
+		{
+		    newEnd = getElemHeaderEndPosition(newElem);
+		}		    
+	    } else {
+		newStart = -1;
+		newEnd = -1;
+	    }
+	    oldStart = getElemStartPosition(oldElem);
+	    if (scope == HEADER_AND_BODY) {
+		oldEnd = getElemEndPosition(oldElem);
+	    } 
+	    else // if (scope == HEADER_ONLY) {
+	    {
+		oldEnd = getElemHeaderEndPosition(oldElem);
+	    }		    
+	    if (oldEdPoint == -1) {
+		if ( type != INSERT_AFTER){
+		    this.oldEdPoint = oldStart;
+		} else {
+		    this.oldEdPoint = oldEnd + 1;
+		}
+	    } else {
+		this.oldEdPoint = oldEdPoint;
+	    }
+	}
+	
+	
+	String getPatchContent() {
+	    return patchContent;
+	}
+	
+	/**
+	 *  TBD it should go into temporary file
+	 */
+	void storePatchContent(String patch) {
+	    patchContent = patch;
+	}
+
+	public String toString() {
+	    return "type = "+type
+		+"\nnewElem = "+newElem
+		+"\nnewStart = "+newStart
+		+"\nnewEnd = "+newEnd
+		+"\noldElem = "+oldElem
+		+"\noldStart = "+oldStart
+		+"\noldEnd = "+oldEnd
+		+"\noldEdPoint = "+oldEdPoint;
+	}
+
+    }
+
 }

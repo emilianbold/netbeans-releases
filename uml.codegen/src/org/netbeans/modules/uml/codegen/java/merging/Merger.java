@@ -21,6 +21,7 @@ package org.netbeans.modules.uml.codegen.java.merging;
 
 
 import java.lang.ref.WeakReference;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -97,7 +98,9 @@ public class Merger implements IUMLParserEventsSink {
     }    
 
 
-    public void merge() {
+    public void merge() 
+	throws IOException
+    {
 
 	fileBuilder = new FileBuilder(newFile, oldFile);
 			    
@@ -128,7 +131,7 @@ public class Merger implements IUMLParserEventsSink {
 
 	mergeImports(newImports, oldImports, oldClass);
 	mergeTop(newClass, oldClass);
-
+	
 	fileBuilder.completed();
     }
 
@@ -729,7 +732,7 @@ public class Merger implements IUMLParserEventsSink {
 	    }
             
         } catch (Exception e) {
-            e.printStackTrace(System.out);;
+            e.printStackTrace(System.out);
         }
     }
 
@@ -755,7 +758,7 @@ public class Merger implements IUMLParserEventsSink {
 	    }
             
         } catch (Exception e) {
-            e.printStackTrace(System.out);;
+            e.printStackTrace(System.out);
         }
     }
     
@@ -763,7 +766,7 @@ public class Merger implements IUMLParserEventsSink {
     }
     
     public void onEndParseFile(String fileName, IResultCell cell) {
-	/*
+	/* 			
 	try {	
 	    fileName = fileName.replace('\\', '_');
 	    fileName = fileName.replace('/', '_');
@@ -773,7 +776,7 @@ public class Merger implements IUMLParserEventsSink {
 	} catch (Exception ex) {
 	    ex.printStackTrace(System.out);
 	}
-	*/
+	*/	
     }
     
     public void onError(IErrorEvent data, IResultCell cell) {

@@ -547,7 +547,7 @@ public class StateHandler
 					}
 		}
 		String[] markerValueNames 
-		    = new String[]{"Marker-regen", "Marker-regenBody", "Marker-id"};
+		    = new String[]{"Marker-regen", "Marker-regenbody", "Marker-id"};
 		for(String key : markerValueNames) 
 		{
 		    String value = pToken.getProperty(key);

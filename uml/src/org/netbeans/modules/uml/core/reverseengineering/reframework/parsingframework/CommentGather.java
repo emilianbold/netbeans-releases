@@ -24,6 +24,7 @@
  */
 package org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -80,7 +81,14 @@ public class CommentGather implements ICommentGather
 
 	boolean processingComment = false;
         String comment = "";
+
 	boolean markerFound = false;
+	boolean processAsUsually = false;
+        boolean processCached = false;
+	int state = 0;
+	CommonHiddenStreamToken cached1 = null;
+	CommonHiddenStreamToken cached2 = null;
+	Hashtable<String, String> parsedValues = null;
 
         while(pHiddenToken != null)
         {
@@ -88,13 +96,81 @@ public class CommentGather implements ICommentGather
 
             if(type == getSingleLineType() || type == getMultiLineType())
             {
-		Hashtable<String, String> parsedValues = new Hashtable<String, String>();
-		if (! markerFound && type == getSingleLineType() 
-		    && parseMarkerComment(pHiddenToken.getText(), parsedValues)) 
-		{
-		    storeMarkerComment(pHiddenToken, parsedValues, pDesc);
-		    markerFound = true;
-		} else {
+		processAsUsually = markerFound;		
+		// parsing id marker possibly enclosed into folding comment tags
+		if (! markerFound ) {
+		    processCached = false;
+		    if (type == getSingleLineType()) {
+			if (state == 0 || state == 1) {
+			    parsedValues = new Hashtable<String, String>();
+			}
+			if (state == 0) {
+			    cached1 = null;
+			    cached2 = null;			    
+			}
+			if (state == 0) {
+			    if (parseEditorFoldComment(pHiddenToken.getText(), false)) {
+				if (parseMarkerComment(pHiddenToken.getText(), parsedValues)) {
+				    cached2 = pHiddenToken;
+				    state = 2;
+				} else {
+				    cached1 = pHiddenToken;
+				    state = 1;
+				}			    
+			    } else if (parseMarkerComment(pHiddenToken.getText(), parsedValues)) {
+				storeMarkerComment(new CommonHiddenStreamToken[] {pHiddenToken}, 
+						   parsedValues, pDesc);
+				markerFound = true;
+			    } else {
+				processAsUsually = true;
+			    }
+			} else if (state == 1) {
+			    if (parseMarkerComment(pHiddenToken.getText(), parsedValues)) {
+				cached2 = pHiddenToken;
+				state = 2;
+			    } else {
+				processCached = true;
+				processAsUsually = true;
+				state = 0;
+			    }
+			} else if (state == 2) {
+			    if (parseEditorFoldComment(pHiddenToken.getText(), true)) {
+				storeMarkerComment
+				    (new CommonHiddenStreamToken[]{cached1, cached2, pHiddenToken}, 
+				     parsedValues, pDesc);
+			    } else {
+				storeMarkerComment
+				    (new CommonHiddenStreamToken[]{cached2}, 
+				     parsedValues, pDesc);
+				processCached = true;
+				processAsUsually = true;			    
+			    } 			
+			    markerFound = true;
+			}
+		    } else {
+			if (cached2 != null) {
+			    storeMarkerComment
+				(new CommonHiddenStreamToken[]{cached2}, 
+				 parsedValues, pDesc);
+			    markerFound = true;
+			}
+			processCached = true;
+			processAsUsually = true;			    			
+		    }
+		}   
+		if (cached1 != null && processCached ) {
+		    comment = cached1.getText() + comment;
+		    startLine = cached1.getLine();
+		    startColumn = cached1.getColumn();
+		    startPos = cached1.getPosition();
+		    
+		    String value = cached1.getText();
+		    length += value.length();
+		    
+		    processingComment = true;
+		}
+
+		if (processAsUsually) {
 		    comment = pHiddenToken.getText() + comment;
 		    startLine = pHiddenToken.getLine();
 		    startColumn = pHiddenToken.getColumn();
@@ -197,7 +273,40 @@ public class CommentGather implements ICommentGather
 	return true;
     }
 
-    private void storeMarkerComment(CommonHiddenStreamToken pHiddenToken, 
+
+    /**
+     *  parses (in a very ad-hoc style - don't want to call full-fledge 
+     *  XML parsing, thus user isn't supposed to alterate these lines too much) 
+     *  the <editor-fold> start and end line
+     */
+    public static boolean parseEditorFoldComment(String comment, 
+						 boolean open) 
+    {
+	if (comment == null) {
+	    return false;
+	}
+	String ln = comment.trim();
+	int cs = ln.indexOf("//");
+	if (cs == 0) {
+	    ln = ln.substring(cs + 2).trim();
+	} else {
+	    return false;
+	}
+
+	if (open) {
+	    if (ln.startsWith("<editor-fold")) {
+		return true;
+	    } 
+	} else {
+	    if (ln.indexOf("</editor-fold") > -1) {
+		return true;
+	    } 	    
+	}
+	return false;
+    }
+
+
+    private void storeMarkerComment(CommonHiddenStreamToken[] pHiddenTokens, 
 				    Hashtable<String, String> parsedValues, 
 				    ITokenDescriptor pDesc) 
     {
@@ -206,11 +315,19 @@ public class CommentGather implements ICommentGather
             pDesc.addProperty("Marker-"+key.toLowerCase(), parsedValues.get(key));       
 	}
 
-        String commentMarker = pHiddenToken.getText();
-        int startLineMarker   = pHiddenToken.getLine();
-        int startColumnMarker = pHiddenToken.getColumn();
-        long startPosMarker    = pHiddenToken.getPosition();
-        int lengthMarker      = commentMarker.length();
+        String commentMarker = "";
+        int startLineMarker   = -1;
+        int startColumnMarker = -1;
+        long startPosMarker    = -1;
+        int lengthMarker      = -1;
+
+	for (int i = 0; i < pHiddenTokens.length; i++) {
+	    commentMarker = pHiddenTokens[i].getText() + commentMarker;
+	    startLineMarker   = pHiddenTokens[i].getLine();
+	    startColumnMarker = pHiddenTokens[i].getColumn();
+	    startPosMarker    = pHiddenTokens[i].getPosition();
+	    lengthMarker      += pHiddenTokens[i].getText().length();
+	}
 
 	pDesc.addProperty("Marker-Comment", commentMarker);
 	pDesc.addProperty("Marker-CommentStartLine", String.valueOf(startLineMarker));

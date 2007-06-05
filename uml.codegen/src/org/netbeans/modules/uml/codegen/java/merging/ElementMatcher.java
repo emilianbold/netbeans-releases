@@ -254,14 +254,25 @@ public class ElementMatcher {
 
     public static boolean isRegenBody(IElement elem) 
     {
-	String regen = getMarkerValue(elem.getNode(), "regenBody");
-	if (regen != null 
-	    && ( regen.equalsIgnoreCase("yes") 
-		 || regen.equalsIgnoreCase("ok")))
+	String regen = getMarkerValue(elem.getNode(), "regenbody");
+	if (regen != null) 
 	{
-	    return true;
+	    if ( regen.equalsIgnoreCase("yes") 
+		 || regen.equalsIgnoreCase("true") 
+		 || regen.equalsIgnoreCase("ok"))
+	    {
+		return true;
+	    }
+	    else if ( regen.equalsIgnoreCase("false") 
+		      || regen.equalsIgnoreCase("no"))
+	    {
+		return false;
+	    }
 	}
-	return false;
+	if (elem instanceof IClassifier) {
+	    return false;
+	}
+	return true;
     }
 
     public static String getMarkerValue(Node elemNode, String markerValueName) 

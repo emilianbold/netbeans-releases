@@ -177,7 +177,8 @@ public interface JavaTreeParserTokenTypes {
 	int ESC = 172;
 	int HEX_DIGIT = 173;
 	int VOCAB = 174;
-	int EXPONENT = 175;
-	int FLOAT_SUFFIX = 176;
-	int LITERAL_const = 177;
+	int IDENT_LETTER = 175;
+	int EXPONENT = 176;
+	int FLOAT_SUFFIX = 177;
+	int LITERAL_const = 178;
 }
