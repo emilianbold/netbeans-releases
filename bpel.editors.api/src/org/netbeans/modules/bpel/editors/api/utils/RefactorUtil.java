@@ -121,6 +121,37 @@ public class RefactorUtil {
         
         return icon;
     }
+                        
+    // vlv
+    public static String getToolTip(Component component) {
+      String type = getType(component);
+
+      if (type != null) {
+        return type + " '" + getName(component) + "'";
+      }
+      return getName(component);
+    }
+
+    // vlv
+    private static String getType(Component component) {
+      String type = null;
+      
+      if (component instanceof BpelEntity) {
+        type = ((BpelEntity) component).getElementType().getName();
+      }
+      else if (component instanceof SchemaComponent) {
+        type = ((SchemaComponent) component).getComponentType().getName();
+      }
+      if (type == null) {
+        return null;
+      }
+      int k = type.lastIndexOf("."); // NOI18N
+
+      if (k == -1) {
+        return type;
+      }
+      return type.substring(k + 1);
+    }
 
     // vlv
     private static Node getNode(Component component) {

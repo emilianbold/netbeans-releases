@@ -80,7 +80,7 @@ final class Element extends SearchElement.Adapter {
   }
 
   private static String getToolTip(Component component) {
-    return getName(component);
+    return RefactorUtil.getToolTip(component);
   }
 
   private static SearchElement getParent(Component component) {
