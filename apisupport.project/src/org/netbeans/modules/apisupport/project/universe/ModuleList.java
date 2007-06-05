@@ -225,6 +225,12 @@ public final class ModuleList {
         // since those modules contribute sources for JARs which are used in unit test classpaths for stable modules.
         String clusterList = clusterProps.get("clusters.list"); // NOI18N
         if (clusterList == null) {
+            String config = clusterProps.get("cluster.config"); // NOI18N
+            if (config != null) {
+                clusterList = clusterProps.get("clusters.config." + config + ".list"); // NOI18N
+            }
+        }
+        if (clusterList == null) {
             throw new IOException("No ${nb.clusters.list} found in " + root); // NOI18N
         }
         StringTokenizer tok = new StringTokenizer(clusterList, ", "); // NOI18N

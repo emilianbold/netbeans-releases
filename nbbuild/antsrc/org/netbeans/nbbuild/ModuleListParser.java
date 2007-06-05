@@ -79,6 +79,12 @@ final class ModuleListParser {
             if (basedir != null) {
                 File basedirF = new File(basedir);
                 String clusterList = properties.get("nb.clusters.list");
+                if (clusterList == null) {
+                    String config = properties.get("cluster.config");
+                    if (config != null) {
+                        clusterList = properties.get("clusters.config." + config + ".list");
+                    }
+                }
                 if (clusterList != null) {
                     StringTokenizer tok = new StringTokenizer(clusterList, ", ");
                     while (tok.hasMoreTokens()) {

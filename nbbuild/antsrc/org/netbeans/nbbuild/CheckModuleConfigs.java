@@ -205,9 +205,9 @@ public final class CheckModuleConfigs extends Task {
     }
 
     private Map<String,Set<String>> loadModuleClusters(Map<String,String> clusterProperties, File clusterPropertiesFile) {
-        String l = clusterProperties.get("nb.clusters.list");
+        String l = clusterProperties.get("clusters.config.full.list");
         if (l == null) {
-            log(clusterPropertiesFile + ": warning: no definition for nb.clusters.list", Project.MSG_WARN);
+            log(clusterPropertiesFile + ": warning: no definition for clusters.config.full.list", Project.MSG_WARN);
             return Collections.emptyMap();
         }
         Map<String,Set<String>> clusters = new TreeMap<String,Set<String>>();
