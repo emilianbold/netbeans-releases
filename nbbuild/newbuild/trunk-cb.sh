@@ -66,6 +66,24 @@ fi
 
 ###################################################################
 #
+# Build all the components
+#
+###################################################################
+
+cd $TRUNK_CB_DIRNAME
+bash run-vw-sanity.sh
+ERROR_CODE=$?
+
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - VW sanity failed"
+#    exit $ERROR_CODE;
+fi
+
+
+
+
+###################################################################
+#
 # Pack all the components
 #
 ###################################################################
