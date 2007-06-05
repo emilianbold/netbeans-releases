@@ -294,7 +294,7 @@ public class VariablesNodeModel implements NodeModel {
         }
         if (o.toString().startsWith("SubArray")) // NOI18N
             return LOCAL;
-        if (o == "NoInfo" || o == "No current thread") // NOI18N
+        if (o == "NoInfo" || o == "No current thread" || o == "NativeMethodException") // NOI18N
             return null;
         throw new UnknownTypeException (o);
     }
