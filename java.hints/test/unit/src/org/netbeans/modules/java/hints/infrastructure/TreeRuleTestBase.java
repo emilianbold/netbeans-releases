@@ -141,18 +141,23 @@ public abstract class TreeRuleTestBase extends NbTestCase {
             }
         }
         
-        assertNotNull("Error: \"" + errorDescriptionToString + "\" not found.", toFix);
+        assertNotNull("Error: \"" + errorDescriptionToString + "\" not found. All ErrorDescriptions: " + errors.toString(), toFix);
         
         assertTrue("Must be computed", toFix.getFixes().isComputed());
         
         List<Fix> fixes = toFix.getFixes().getFixes();
+        List<String> fixNames = new LinkedList<String>();
         Fix toApply = null;
         
         for (Fix f : fixes) {
             if (fixDebugString.equals(toDebugString(info, f))) {
                 toApply = f;
             }
+            
+            fixNames.add(toDebugString(info, f));
         }
+        
+        assertNotNull("Cannot find fix to invoke: " + fixNames.toString(), toApply);
         
         toApply.implement();
         
