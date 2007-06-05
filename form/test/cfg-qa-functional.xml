@@ -23,6 +23,7 @@ Microsystems, Inc. All Rights Reserved.
    <testbag testattribs="issues" executor="ide" name="testbag_issues">
         <testset dir="qa-functional/src">
             <patternset>               
+                <include name="org/netbeans/qa/form/refactoring/RenameComponentVariableTest.class"/>
                 <include name="org/netbeans/qa/form/visualDevelopment/MenuAndPopupMenuTest.class"/>
                 <include name="org/netbeans/qa/form/issues/*.class"/>
                 <include name="org/netbeans/qa/form/undoredo/BaseTest.class"/>
@@ -37,8 +38,16 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
+
+    <testbag testattribs="jv" executor="ide" name="testbag_refactoring">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/qa/form/refactoring/RenameComponentVariableTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
     
-    <testbag testattribs="validation, jv" executor="ide" name="testbag_binding">
+    <testbag testattribs="validation" executor="ide" name="testbag_binding">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/binding/SimpleBeansBinding.class"/>

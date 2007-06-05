@@ -19,6 +19,11 @@
 
 package org.netbeans.qa.form;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import org.netbeans.jellytools.EditorOperator;
@@ -235,6 +240,18 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
     }
     
     /**
+     * Runs popoup command over node using NoBlockAction 
+     * @param popup command, ex.: "Add|Swing|Label"
+     * @param node to run action on
+     */
+    public void runNoBlockPopupOverNode(String actionName, Node node) {
+        Action act = new ActionNoBlock(null, actionName);
+        act.setComparator(new Operator.DefaultStringComparator(false, false));
+        act.perform(node);
+        // p(actionName);
+    }
+    
+    /**
      * Runs popup commands over node
      * @param array list of popup commands
      * @param node to run actions on
@@ -323,4 +340,62 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
     public static void waitAMoment() {
         waitNoEvent(MY_WAIT_MOMENT);
     }
+    
+    
+    /** Find msg string in file
+     * 
+     * @result boolean
+     */ 
+    public static boolean findInFile(String msg,String filePath) {
+        String content = getContents(new File(filePath));
+        return (content.indexOf(msg) != -1);
+    }
+    
+/**
+  * Fetch the entire contents of a text file, and return it in a String.
+  * This style of implementation does not throw Exceptions to the caller.
+  *
+  * @param aFile is a file which already exists and can be read.
+  */
+  static public String getContents(File aFile) {
+    //...checks on aFile are elided
+    StringBuffer contents = new StringBuffer();
+
+    //declared here only to make visible to finally clause
+    BufferedReader input = null;
+    try {
+      //use buffering, reading one line at a time
+      //FileReader always assumes default encoding is OK!
+      input = new BufferedReader( new FileReader(aFile) );
+      String line = null; //not declared within while loop
+      /*
+      * readLine is a bit quirky :
+      * it returns the content of a line MINUS the newline.
+      * it returns null only for the END of the stream.
+      * it returns an empty String if two newlines appear in a row.
+      */
+      while (( line = input.readLine()) != null){
+        contents.append(line);
+        contents.append(System.getProperty("line.separator"));
+      }
+    }
+    catch (FileNotFoundException ex) {
+      ex.printStackTrace();
+    }
+    catch (IOException ex){
+      ex.printStackTrace();
+    }
+    finally {
+      try {
+        if (input!= null) {
+          //flush and close both "input" and its underlying FileReader
+          input.close();
+        }
+      }
+      catch (IOException ex) {
+        ex.printStackTrace();
+      }
+    }
+    return contents.toString();
+  }    
 }
