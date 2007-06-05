@@ -60,11 +60,11 @@ import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.RegistryNode;
 import org.netbeans.installer.product.components.Group;
+import org.netbeans.installer.product.dependencies.Conflict;
 import org.netbeans.installer.product.dependencies.Requirement;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.helper.Dependency;
-import org.netbeans.installer.utils.helper.DependencyType;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
@@ -439,7 +439,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                 }
             }
             
-            for (Dependency conflict: product.getDependencies(DependencyType.CONFLICT)) {
+            for (Dependency conflict: product.getDependencies(Conflict.class)) {
                 List<Product> conflictees = registry.getProducts(conflict);
                 
                 boolean satisfied = true;
