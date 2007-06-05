@@ -225,6 +225,20 @@
             <package name="org.netbeans.api.visual.widget" link="yes"/>
             <issue number="104662"/>
         </change>
+
+        <change>
+            <api name="general"/>
+            <summary>ActionFactory.createMouseCenteredZoomAction method introduced</summary>
+            <version major="2" minor="3"/>
+            <date day="5" month="6" year="2007"/>
+            <author login="dkaspar"/>
+            <compatibility addition="yes"/>
+            <description>
+                ActionFactory.createMouseCenteredZoomAction method introduced.
+            </description>
+            <class package="org.netbeans.api.visual.action" name="ActionFactory" link="yes"/>
+            <issue number="104718"/>
+        </change>
     </changes>
 
     <htmlcontents>

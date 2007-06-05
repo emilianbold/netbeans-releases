@@ -1011,13 +1011,13 @@ The action allows to handle the single-click. It is similar to EditAction. It al
 <h3><a name="ZoomAction">ZoomAction</a></h3>
 
 <p>
-Created by: <code>ActionFactory.createZoomAction (zoomFactorMultiplier, animated)</code>, <code>ActionFactory.createCenteredZoomAction (zoomFactorMultiplier)</code>
+Created by: <code>ActionFactory.createZoomAction (zoomFactorMultiplier, animated)</code>, <code>ActionFactory.createCenteredZoomAction (zoomFactorMultiplier)</code>, <code>ActionFactory.createMouseCenteredZoomAction (zoomFactorMultiplier)</code>
 
 <p>
 The action allows to zoom the view using scrolling mouse-middle-button. The action is usually assigned to a Scene only. For correct functionality of the action, the JComponent has to be put into scrollable panel like JScrollPane.
 
 <p>
-While the <code>CenterZoomAction</code> is zooming, a view is still centered to the center of the view.
+While the <code>CenteredZoomAction</code> is zooming, a view is still centered to the center of the view. While the <code>MouseCenteredZoomAction</code> is zooming, a view is still centered to mouse cursor.
 
 <h3><a name="ExampleUsingActions">Example: Using Actions</a></h3>
 

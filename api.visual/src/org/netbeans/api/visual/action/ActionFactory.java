@@ -688,4 +688,15 @@ public final class ActionFactory {
         return new CenteredZoomAction (zoomMultiplier);
     }
 
+    /**
+     * Creates a action that controls a zoom factor of a scene where the action is assigned.
+     * During zooming the view will be centered to the mouse cursor.
+     * @param zoomMultiplier the zoom multiplier
+     * @return the zoom action
+     * @since 2.3
+     */
+    public static WidgetAction createMouseCenteredZoomAction (double zoomMultiplier) {
+        return new MouseCenteredZoomAction (zoomMultiplier);
+    }
+
 }
