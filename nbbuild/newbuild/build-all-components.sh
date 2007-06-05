@@ -13,7 +13,7 @@ cd  $NB_ALL
 ###################################################################
 
 #Build the NB IDE first - no validation tests!
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nozip > $IDE_BUILD_LOG 2>&1
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nozip
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
