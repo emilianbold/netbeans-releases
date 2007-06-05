@@ -29,7 +29,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Types;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
@@ -332,7 +334,8 @@ public class WebservicesImpl implements Webservices {
             final List<WebserviceDescriptionImpl> result = new ArrayList<WebserviceDescriptionImpl>();
             helper.getAnnotationScanner().findAnnotatedTypes("javax.jws.WebService",new TypeAnnotationHandler() { // NOI18N
                 public void typeAnnotation(TypeElement type, AnnotationMirror annotation) {
-                    result.add(new WebserviceDescriptionImpl(helper, type));
+                    if (type.getKind() != ElementKind.INTERFACE)
+                        result.add(new WebserviceDescriptionImpl(helper, type));
                 }
             });
             return result;
