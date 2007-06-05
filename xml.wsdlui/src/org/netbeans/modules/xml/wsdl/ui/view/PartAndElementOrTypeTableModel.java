@@ -36,11 +36,11 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableModel;
 
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
+import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.OperationPanel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -100,10 +100,10 @@ public class PartAndElementOrTypeTableModel extends AbstractTableModel {
             String oldPartName = (String) this.getValueAt(rowIndex, 0);
             if (oldPartName != null && oldPartName.equals(partName)) return;
             if(isPartNameExists(partName)) {
-                NotifyDescriptor.Message nd = new NotifyDescriptor.Message("Part \""+ partName + " is already exist ", NotifyDescriptor.WARNING_MESSAGE);
+                NotifyDescriptor.Message nd = new NotifyDescriptor.Message(NbBundle.getMessage(PartAndElementOrTypeTableModel.class, "ERR_MSG_PART_EXISTS", partName), NotifyDescriptor.WARNING_MESSAGE);
                 DialogDisplayer.getDefault().notify(nd);
             } else if(!isValidPartName(partName)) {
-                NotifyDescriptor.Message nd = new NotifyDescriptor.Message("Name \"" + partName + "\" is not a valid NCName", NotifyDescriptor.WARNING_MESSAGE);
+                NotifyDescriptor.Message nd = new NotifyDescriptor.Message(NbBundle.getMessage(OperationPanel.class, "ERR_MSG_INVALID_NAME" , partName), NotifyDescriptor.WARNING_MESSAGE);
                 DialogDisplayer.getDefault().notify(nd);
                 
             } else  {

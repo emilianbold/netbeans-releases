@@ -36,6 +36,8 @@ import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.Service;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.actions.NameGenerator;
+import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.OperationPanel;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -134,7 +136,7 @@ public class BindingConfigurationDialogPanel extends javax.swing.JPanel {
         try {
             boolean isValid  = org.netbeans.modules.xml.xam.dom.Utils.isValidNCName(text);
             if(!isValid) {
-                mErrorMessage = "Name \"" + text + "\" is not a valid NCName";
+                mErrorMessage = NbBundle.getMessage(OperationPanel.class, "ERR_MSG_INVALID_NAME" , text);
             } else {
                 mErrorMessage = null;
             }
@@ -235,7 +237,7 @@ public class BindingConfigurationDialogPanel extends javax.swing.JPanel {
             String text = doc.getText(0, doc.getLength());
             boolean isValid  = org.netbeans.modules.xml.xam.dom.Utils.isValidNCName(text);
             if(!isValid) {
-                commonMessagePanel1.setErrorMessage("Name \"" + text + "\" is not a valid NCName");
+                commonMessagePanel1.setErrorMessage(NbBundle.getMessage(OperationPanel.class, "ERR_MSG_INVALID_NAME" , text));
             } else {
                 commonMessagePanel1.setMessage("");
             }

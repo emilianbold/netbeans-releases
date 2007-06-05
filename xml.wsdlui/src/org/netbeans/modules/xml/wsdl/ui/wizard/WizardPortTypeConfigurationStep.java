@@ -30,9 +30,6 @@ package org.netbeans.modules.xml.wsdl.ui.wizard;
 
 import java.awt.Component;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -53,21 +50,15 @@ import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
 import org.netbeans.modules.xml.wsdl.ui.view.OperationType;
 import org.netbeans.modules.xml.wsdl.ui.view.PartAndElementOrTypeTableModel;
 import org.netbeans.modules.xml.wsdl.ui.view.PortTypeConfigurationPanel;
-import org.netbeans.modules.xml.xam.ModelSource;
-import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
+import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.OperationPanel;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.w3c.dom.Comment;
-import org.w3c.dom.Element;
 
 /**
  *
@@ -285,7 +276,7 @@ public class WizardPortTypeConfigurationStep implements WizardDescriptor.Finisha
             String text = doc.getText(0, doc.getLength());
             boolean isValid  = org.netbeans.modules.xml.xam.dom.Utils.isValidNCName(text);
             if(!isValid) {
-                mErrorMessage = "Name \"" + text + "\" is not a valid NCName";
+                mErrorMessage = NbBundle.getMessage(OperationPanel.class, "ERR_MSG_INVALID_NAME" , text);
             } else {
                 mErrorMessage = null;
             }

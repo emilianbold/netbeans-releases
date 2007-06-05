@@ -39,6 +39,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
+import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.OperationPanel;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -52,6 +53,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -297,7 +299,7 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
             String text = doc.getText(0, doc.getLength());
             boolean isValid  = org.netbeans.modules.xml.xam.dom.Utils.isValidNCName(text);
             if(!isValid) {
-                mErrorMessage = "Name \"" + text + "\" is not a valid NCName";
+                mErrorMessage = NbBundle.getMessage(OperationPanel.class, "ERR_MSG_INVALID_NAME" , text);
             } else {
                 mErrorMessage = null;
             }

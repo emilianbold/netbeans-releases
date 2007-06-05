@@ -24,16 +24,13 @@ import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 
 import javax.swing.Action;
 import javax.xml.XMLConstants;
-import javax.xml.namespace.QName;
 
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
@@ -48,7 +45,6 @@ import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.api.property.PropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.commands.NamedPropertyAdapter;
-import org.netbeans.modules.xml.wsdl.ui.commands.OtherAttributePropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElements;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.property.BaseAttributeProperty;
@@ -79,8 +75,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
-
-import com.sun.org.apache.xml.internal.utils.XMLChar;
 
 /**
  *
@@ -453,7 +447,7 @@ public class DefinitionsNode extends WSDLExtensibilityElementNode<Definitions> {
                 name = null;
             }
             
-            if (name != null && !XMLChar.isValidNCName(name)) {
+            if (name != null && org.netbeans.modules.xml.xam.dom.Utils.isValidNCName(name)) {
                 ErrorManager.getDefault().notify(new Exception(NbBundle.getMessage(DefinitionsNode.class, "ERR_MSG_INVALID_NMTOKEN")));
                 return;
             }

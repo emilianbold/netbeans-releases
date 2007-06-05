@@ -164,7 +164,7 @@ public class PortTypePanel extends javax.swing.JPanel {
         try {
             boolean isValid  = org.netbeans.modules.xml.xam.dom.Utils.isValidNCName(text);
             if(!isValid) {
-                mErrorMessage = "Name \"" + text + "\" is not a valid NCName";
+                mErrorMessage = NbBundle.getMessage(OperationPanel.class, "ERR_MSG_INVALID_NAME" , text);
             } else {
                 mErrorMessage = null;
             }
