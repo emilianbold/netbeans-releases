@@ -20,21 +20,24 @@
 package gui.actions;
 
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
-import org.netbeans.jellytools.NewFileWizardOperator;
+
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
-import org.netbeans.jellytools.actions.NewFileAction;
+//import org.netbeans.jellytools.actions.NewFileAction;
 
 
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import java.io.File;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.NbDialogOperator;
+
+
 /**
  * Test Reverse Engineering 
  *
@@ -42,9 +45,9 @@ import org.netbeans.jellytools.nodes.Node;
  */
 public class ReverseEngineering extends org.netbeans.performance.test.utilities.PerformanceTestCase {
 
-    private NewFileNameLocationStepOperator location;         
+            
     private static String testProjectName = "jEdit";  
-    private static String suffix;
+    private static long suffix;
     /**
      * Creates a new instance of ReverseEngineering
      * @param testName the name of the test
@@ -82,14 +85,19 @@ public class ReverseEngineering extends org.netbeans.performance.test.utilities.
         pNode.performPopupAction("Reverse Engineer...");
                
         new EventTool().waitNoEvent(1000);
-        location = new NewFileNameLocationStepOperator();
-        suffix = System.currentTimeMillis();  
-        location.txtObjectName().setText("jEdit-Model_"+ suffix); 
-        location.ok();
+        NbDialogOperator reng = new NbDialogOperator("Reverse Engineer");
+        suffix = System.currentTimeMillis(); 
+        JTextFieldOperator textProject = new JTextFieldOperator(reng,1);
+        textProject.clearText();
+        textProject.typeText("jEdit-Model_"+ suffix); 
+        reng.ok();
     
     }
     
     public ComponentOperator open(){
+            OutputOperator oot = new OutputOperator();
+            oot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",300000);
+
           OutputTabOperator asot = oot.getOutputTab("Reverse Engineering");
           asot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",300000);
           asot.waitText("Task Successful");  
