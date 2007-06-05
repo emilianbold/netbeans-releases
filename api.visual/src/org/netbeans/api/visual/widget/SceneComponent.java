@@ -34,11 +34,14 @@ import java.util.Map;
  */
 final class SceneComponent extends JComponent implements MouseListener, MouseMotionListener, KeyListener, MouseWheelListener,FocusListener, DropTargetListener {
 
+    private static final int AUTO_SHIFT = 32;
+
     private Scene scene;
     private Widget lockedWidget;
     private WidgetAction lockedAction;
     private long eventIDcounter = 0;
     private AccessibleContext accessibleContext;
+    private Point shiftedMouseLocation = new Point ();
 
     public SceneComponent (Scene scene) {
         this.scene = scene;
@@ -210,7 +213,11 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
     }
 
     private WidgetAction.State processLocationOperator (Operator operator, WidgetAction.WidgetLocationEvent event) {
-        event.setPoint (scene.convertViewToScene (event.getPoint ()));
+        Point viewPoint = event.getPoint ();
+        Point oldScenePoint = scene.convertViewToScene (viewPoint);
+        Point scenePoint = new Point (oldScenePoint);
+        scenePoint.translate (- shiftedMouseLocation.x, - shiftedMouseLocation.y);
+        event.setPoint (scenePoint);
 
         WidgetAction.State state;
         Point location;
@@ -246,9 +253,29 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
         lockedAction = state.getLockedAction ();
         scene.validate ();
 
-        if (lockedWidget != null)
+        if (lockedWidget != null) {
+            Point previousScreenLocation = getLocationOnScreen ();
             scrollRectToVisible (scene.convertSceneToView (lockedWidget.convertLocalToScene (lockedWidget.getBounds ())));
-
+            Point newScreenLocation = getLocationOnScreen ();
+            Point newViewPoint = new Point (viewPoint);
+            newViewPoint.translate (- (newScreenLocation.x - previousScreenLocation.x), - (newScreenLocation.y - previousScreenLocation.y));
+            Point newScenePoint = scene.convertViewToScene (newViewPoint);
+            shiftedMouseLocation.x += newScenePoint.x - oldScenePoint.x;
+            shiftedMouseLocation.y += newScenePoint.y - oldScenePoint.y;
+            if (operator == Operator.MOUSE_DRAGGED) {
+                Rectangle visibleRect = getVisibleRect ();
+                if (viewPoint.x < visibleRect.x)
+                    shiftedMouseLocation.x += AUTO_SHIFT;
+                else if (viewPoint.x >= visibleRect.x + visibleRect.width)
+                    shiftedMouseLocation.x -= AUTO_SHIFT;
+                if (viewPoint.y < visibleRect.y)
+                    shiftedMouseLocation.y += AUTO_SHIFT;
+                else if (viewPoint.y >= visibleRect.y + visibleRect.width)
+                    shiftedMouseLocation.y -= AUTO_SHIFT;
+            }
+        } else
+            shiftedMouseLocation.x = shiftedMouseLocation.y = 0;
+            
         return state;
     }
 

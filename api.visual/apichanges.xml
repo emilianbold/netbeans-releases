@@ -182,6 +182,19 @@
             </description>
             <class package="org.netbeans.api.visual.widget" name="ImageWidget" link="yes"/>
         </change>
+
+        <change>
+            <api name="general"/>
+            <summary>Mouse dragging event processing improved</summary>
+            <version major="2" minor="3"/>
+            <date day="5" month="6" year="2007"/>
+            <author login="dkaspar"/>
+            <compatibility addition="yes"/>
+            <description>
+                Mouse dragging event processing improved. MoveAction and others are now smoothly scrolling a view.
+            </description>
+            <issue number="101523"/>
+        </change>
     </changes>
 
     <htmlcontents>
