@@ -903,7 +903,8 @@ public class CasaWrapperModel extends CasaModelImpl {
 //        }
 //    }
     
-    // mapping bc namspace to bc name?
+    // Mapping binding component name to binding type, 
+    // e.x., sun-ftp-binding => ftp. FIXME THIS IS WRONG!
     private Map<String, String> bcNameMap;
     
     // FIXME: should we get bcs from design time or run time?
@@ -935,6 +936,27 @@ public class CasaWrapperModel extends CasaModelImpl {
             if (includeDeleted ||
                     !state.equals(ConnectionState.DELETED.getState())) {
                 ret.add(connection);
+            }
+        }
+        
+        return ret;
+    }
+    
+    /**
+     * Gets a list of WSDL PortTypes in the composite application and its 
+     * JBI modules.
+     */
+    public List<PortType> getPortTypes() {
+        List<PortType> ret = new ArrayList<PortType>();
+        
+        CasaPortTypes portTypes = getRootComponent().getPortTypes();
+        for (CasaLink link : portTypes.getLinks()) {
+            String href = link.getHref();
+            try {
+                PortType pt = (PortType) getWSDLComponentFromXLinkHref(href);
+                ret.add(pt);
+            } catch (Exception ex) {
+                System.out.println("Failed to Fetch: " + href);
             }
         }
         
