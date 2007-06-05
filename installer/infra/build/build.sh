@@ -158,7 +158,7 @@ ant build \
         \"-Dsjsas.image.token.hostname.solaris-sparc=${SJSAS_IMAGE_HOSTNAME_SOLARIS_SPARC}\" \
         \"-Dsjsas.image.token.hostname.macosx=${SJSAS_IMAGE_HOSTNAME_MACOSX}\" \
         ${ADDITIONAL_PARAMETERS} \
-        $* 2>&1 |tee ${LOG_FILE}
+        $*
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
