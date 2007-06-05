@@ -690,7 +690,7 @@ public final class BorderEditor extends PropertyEditorSupport
                 }
             } else { // load via a XMLPropertyEditor
                 for (PropertyEditor prEd : FormPropertyEditorManager.getAllEditors(prop)) {
-                    if (prEd instanceof ResourceWrapperEditor) {
+                    if (!(prEd instanceof XMLPropertyEditor) && prEd instanceof ResourceWrapperEditor) {
                         prEd = ((ResourceWrapperEditor)prEd).getDelegatedPropertyEditor();
                     }
                     if (prEd instanceof XMLPropertyEditor) {
