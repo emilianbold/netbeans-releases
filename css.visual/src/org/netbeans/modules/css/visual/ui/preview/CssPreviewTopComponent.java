@@ -63,20 +63,7 @@ public final class CssPreviewTopComponent extends TopComponent {
     private PropertyChangeListener WINDOW_REGISTRY_LISTENER = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
             if (TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
-                TopComponent activatedTC = (TopComponent)evt.getNewValue();
-                if(activatedTC != null) {
-                    Node[] activatedNodes = activatedTC.getActivatedNodes();
-                    if(activatedNodes != null) {
-                        for(Node n : activatedNodes) {
-                            CssPreviewable previewable = n.getCookie(CssPreviewable.class);
-                            if(previewable != null) {
-                                LOGGER.log(Level.INFO, "Previewable selected " + previewable);
-                                previewableSelected(previewable);
-                                break; //use the first selected previewable
-                            }
-                        }
-                    }
-                }
+                checkPreview((TopComponent)evt.getNewValue());
             }
         }
     };
@@ -118,6 +105,23 @@ public final class CssPreviewTopComponent extends TopComponent {
         add(NO_PREVIEW_PANEL, BorderLayout.CENTER);
         previewing = false;
     }
+    
+    private void checkPreview(TopComponent tc) {
+        if(tc != null) {
+            Node[] activatedNodes = tc.getActivatedNodes();
+            if(activatedNodes != null) {
+                for(Node n : activatedNodes) {
+                    CssPreviewable previewable = n.getCookie(CssPreviewable.class);
+                    if(previewable != null) {
+                        LOGGER.log(Level.INFO, "Previewable selected " + previewable);
+                        previewableSelected(previewable);
+                        break; //use the first selected previewable
+                    }
+                }
+            }
+        }
+    }
+
     
     private JPanel makeMsgPanel(String message) {
         JPanel p = new JPanel();
@@ -271,6 +275,8 @@ public final class CssPreviewTopComponent extends TopComponent {
     @Override
     public void componentOpened() {
         WindowManager.getDefault().getRegistry().addPropertyChangeListener(WINDOW_REGISTRY_LISTENER);
+        checkPreview(org.openide.windows.WindowManager.getDefault().getRegistry().getActivated());
+
     }
     
     @Override
