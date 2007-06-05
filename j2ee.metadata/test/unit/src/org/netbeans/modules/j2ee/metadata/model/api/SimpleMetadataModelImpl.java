@@ -33,6 +33,10 @@ import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelImplementation;
 public class SimpleMetadataModelImpl<T> implements MetadataModelImplementation<T> {
 
     private final boolean ready;
+    
+    public SimpleMetadataModelImpl() {
+        this(true);
+    }
 
     public SimpleMetadataModelImpl(boolean ready) {
         this.ready = ready;
