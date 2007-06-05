@@ -110,10 +110,6 @@ public class DetailsPanel extends JTextPane  {
         getScrollPane().setColumnHeaderView(value != null ? header : null);
         getScrollPane().setCorner(JScrollPane.UPPER_RIGHT_CORNER, value != null ? rightCornerHeader : null);
         if (value != null) {                            
-            if (value.length() > 30) {
-                title.setToolTipText(value);
-                value = value.substring(0, 30) + " ...";//NOI18N
-            }
             title.setText("<html><h3>"+value+"</h3></html>");
         }
     }

@@ -17,6 +17,7 @@
 
 package org.netbeans.modules.autoupdate.ui;
 
+import java.awt.Dimension;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 
@@ -31,6 +32,16 @@ public class HeaderPanel extends javax.swing.JPanel {
         initComponents();
     }
     
+    
+    @Override
+    public Dimension getPreferredSize() {
+        Dimension d = super.getPreferredSize();
+        d.width = getParent().getSize().width;
+        return d;
+    }
+    
+    
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -38,29 +49,23 @@ public class HeaderPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         title = new javax.swing.JLabel();
         button = new javax.swing.JButton();
 
+        setLayout(new java.awt.GridBagLayout());
+
         title.setText("jLabel1");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        add(title, gridBagConstraints);
 
         button.setText("jButton1");
-
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(title)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(button))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
-                .add(button)
-                .add(title))
-        );
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        add(button, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
     JLabel getTitle() {
