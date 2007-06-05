@@ -180,14 +180,17 @@ public class AddWsOperationHelper {
                         // add @WebParam annotations 
                         List<? extends VariableTree> parameters = method.getParameters();
                         List<VariableTree> newParameters = new ArrayList<VariableTree>();
-                        for (VariableTree param:parameters) {
-                            AnnotationTree paramAnnotation = make.Annotation(
-                                make.QualIdent(webParamAn), 
-                                Collections.<ExpressionTree>singletonList(
-                                    make.Assignment(make.Identifier("name"), make.Literal(param.getName().toString()))) //NOI18N
-                            );
-                            if(createAnnotations) 
+                        if(createAnnotations) { 
+                            for (VariableTree param:parameters) {
+                                AnnotationTree paramAnnotation = make.Annotation(
+                                    make.QualIdent(webParamAn), 
+                                    Collections.<ExpressionTree>singletonList(
+                                        make.Assignment(make.Identifier("name"), make.Literal(param.getName().toString()))) //NOI18N
+                                );
                                 newParameters.add(genUtils.addAnnotation(param, paramAnnotation));
+                            }
+                        } else {
+                            newParameters.addAll(parameters);
                         }
                         
                         handle.progress(70);

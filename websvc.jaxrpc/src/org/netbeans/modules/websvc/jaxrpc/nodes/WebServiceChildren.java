@@ -45,6 +45,8 @@ import static org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebserviceDescription;
 import org.netbeans.modules.j2ee.common.source.SourceUtils;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 
 public class WebServiceChildren extends Children.Keys {
     
@@ -54,6 +56,7 @@ public class WebServiceChildren extends Children.Keys {
     private WebserviceDescription webServiceDescription;
     private FileObject implClass;
     private FileObject srcRoot;
+    private FileChangeAdapter implFileListener;
     
     public WebServiceChildren(WebserviceDescription webServiceDescription, FileObject srcRoot, FileObject implClass) {
         super();
@@ -96,8 +99,24 @@ public class WebServiceChildren extends Children.Keys {
         } else {
             updateKeys();
         }
+        if(implFileListener==null) {
+            implFileListener = new FileChangeAdapter() {
+                public void fileChanged(FileEvent fe) {
+                    super.fileChanged(fe);
+                    updateKeys();
+                }
+            };
+        }
+        implClass.addFileChangeListener(implFileListener);
     }
     
+    protected void removeNotify() {
+        super.removeNotify();
+        if(implFileListener!=null) {
+            implClass.removeFileChangeListener(implFileListener);
+        }
+    }
+
     private void updateKeys() {
         if (isFromWsdl()) {
             List keys = new ArrayList();
