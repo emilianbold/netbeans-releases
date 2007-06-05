@@ -45,7 +45,7 @@ public class ExtendedConnectAction extends ConnectAction {
     public WidgetAction.State mousePressed(Widget widget, WidgetAction.WidgetMouseEvent event) {
         if (macLocking)
             return State.createLocked (widget, this);
-        if ((event.getModifiers () & modifiers) != 0) {
+        if ((event.getModifiers () & modifiers) != modifiers) {
             if ((Utilities.getOperatingSystem () & Utilities.OS_MAC) != 0)
                 macLocking = true;
             return super.mousePressed(widget,event);
