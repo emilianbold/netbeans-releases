@@ -21,10 +21,9 @@ package org.netbeans.modules.options.editor;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -48,24 +47,27 @@ public final class Editor extends OptionsCategory {
         if (icon == null)
             icon = new ImageIcon (
                 Utilities.loadImage 
-                    ("org/netbeans/modules/options/resources/editor.png")
+                    ("org/netbeans/modules/options/resources/editor.png") //NOI18N
             );
         return icon;
     }
     
     public String getCategoryName () {
-        return loc ("CTL_Editor");
+        return loc ("CTL_Editor"); //NOI18N
     }
 
     public String getTitle () {
-        return loc ("CTL_Editor_Title");
+        return loc ("CTL_Editor_Title"); //NOI18N
     }
     
     public String getDescription () {
-        return loc ("CTL_Editor_Description");
+        return loc ("CTL_Editor_Description"); //NOI18N
     }
 
     public OptionsPanelController create () {
-        return new EditorPanelController ();
+        return new FolderBasedController(
+            "org-netbeans-modules-options-editor/OptionsDialogCategories/Editor", //NOI18N
+            new HelpCtx ("netbeans.optionsDialog.editor") //NOI18N
+        );
     }
 }

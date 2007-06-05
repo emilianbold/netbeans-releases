@@ -6,6 +6,7 @@
 
 package org.netbeans.modules.options.colors;
 
+import org.netbeans.modules.options.colors.spi.FontsColorsController;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -41,7 +42,7 @@ import org.openide.util.NbBundle;
  * @author  Jan Jancura
  */
 public class AnnotationsPanel extends JPanel implements ActionListener, 
-PropertyChangeListener {
+    PropertyChangeListener, FontsColorsController {
     
     private ColorModel          colorModel;
     private boolean		listen = false;
@@ -54,6 +55,8 @@ PropertyChangeListener {
     /** Creates new form AnnotationsPanel1 */
     public AnnotationsPanel() {
         initComponents();
+
+        setName(loc("Annotations_tab")); //NOI18N
         
         // 1) init components
         cbForeground.getAccessibleContext ().setAccessibleName (loc ("AN_Foreground_Chooser"));
@@ -189,7 +192,7 @@ PropertyChangeListener {
         updateData ();
     }
     
-    void update (ColorModel colorModel) {
+    public void update (ColorModel colorModel) {
         this.colorModel = colorModel;
         listen = false;
         currentScheme = colorModel.getCurrentProfile ();
@@ -201,13 +204,13 @@ PropertyChangeListener {
         changed = false;
     }
     
-    void cancel () {
+    public void cancel () {
         toBeSaved = new HashSet<String>();
         schemes = new HashMap<String, Vector<AttributeSet>>();
         changed = false;
     }
     
-    void applyChanges() {
+    public void applyChanges() {
         if (colorModel == null) return;
         for(String scheme : toBeSaved) {
             colorModel.setAnnotations(scheme, getAnnotations(scheme));
@@ -216,7 +219,7 @@ PropertyChangeListener {
         schemes = new HashMap<String, Vector<AttributeSet>>();
     }
     
-    boolean isChanged () {
+    public boolean isChanged () {
         return changed;
     }
     
@@ -237,10 +240,13 @@ PropertyChangeListener {
         refreshUI ();
     }
     
-    void deleteProfile (String scheme) {
+    public void deleteProfile (String scheme) {
+    }
+
+    public JComponent getComponent() {
+        return this;
     }
         
-    
     // other methods ...........................................................
     
     private static String loc (String key) {

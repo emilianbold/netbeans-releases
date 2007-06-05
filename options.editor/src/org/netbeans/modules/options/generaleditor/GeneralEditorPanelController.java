@@ -33,7 +33,10 @@ import org.openide.util.Lookup;
  */
 public final class GeneralEditorPanelController extends OptionsPanelController {
 
-
+    public GeneralEditorPanelController() {
+        
+    }
+    
     public void update () {
         getGeneralEditorPanel ().update ();
     }

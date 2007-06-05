@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.options.colors;
 
+import org.netbeans.modules.options.colors.spi.FontsColorsController;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -66,12 +67,11 @@ import org.openide.util.RequestProcessor.Task;
  * @author  Jan Jancura
  */
 public class SyntaxColoringPanel extends JPanel implements ActionListener, 
-PropertyChangeListener {
+    PropertyChangeListener, FontsColorsController {
     
     
     private Preview             preview;
     private Task                selectTask;
-    private FontAndColorsPanel  fontAndColorsPanel;
     private ColorModel          colorModel = null;
     private String		currentLanguage;
     private String              currentProfile;
@@ -82,10 +82,10 @@ PropertyChangeListener {
     private boolean		listen = false;
     
     /** Creates new form SyntaxColoringPanel1 */
-    public SyntaxColoringPanel (FontAndColorsPanel fontAndColorsPanel) {
+    public SyntaxColoringPanel () {
         initComponents ();
-        this.fontAndColorsPanel = fontAndColorsPanel;
 
+        setName(loc("Syntax_coloring_tab")); //NOI18N
         // 1) init components
         cbLanguage.getAccessibleContext ().setAccessibleName (loc ("AN_Languages"));
         cbLanguage.getAccessibleContext ().setAccessibleDescription (loc ("AD_Languages"));
@@ -384,7 +384,7 @@ PropertyChangeListener {
         }
     }
     
-    void update (ColorModel colorModel) {
+    public void update (ColorModel colorModel) {
         this.colorModel = colorModel;
         currentProfile = colorModel.getCurrentProfile ();
         currentLanguage = (String) colorModel.getLanguages ().
@@ -410,12 +410,12 @@ PropertyChangeListener {
         cbLanguage.setSelectedIndex (0);
     }
     
-    void cancel () {
+    public void cancel () {
         toBeSaved = new HashMap<String, Set<String>>();
         profiles = new HashMap<String, Map<String, Vector<AttributeSet>>>();
     }
     
-    void applyChanges() {
+    public void applyChanges() {
         if (colorModel == null) return;
         for(String profile : toBeSaved.keySet()) {
             Set<String> toBeSavedLanguages = toBeSaved.get(profile);
@@ -432,7 +432,7 @@ PropertyChangeListener {
         profiles = new HashMap<String, Map<String, Vector<AttributeSet>>>();
     }
     
-    boolean isChanged () {
+    public boolean isChanged () {
         return !toBeSaved.isEmpty ();
     }
     
@@ -449,7 +449,7 @@ PropertyChangeListener {
         refreshUI ();
     }
 
-    void deleteProfile(String profile) {
+    public void deleteProfile(String profile) {
         Map<String, Vector<AttributeSet>> m = new HashMap<String, Vector<AttributeSet>>();
         boolean custom = colorModel.isCustomProfile(profile);
         for(String language : colorModel.getLanguages()) {
@@ -466,6 +466,9 @@ PropertyChangeListener {
         }
     }
     
+    public JComponent getComponent() {
+        return this;
+    }
         
     // other methods ...........................................................
     
@@ -602,7 +605,7 @@ PropertyChangeListener {
         preview.setParameters (
             currentLanguage,
             allLanguages,
-            fontAndColorsPanel.getHighlights (),
+            Collections.<AttributeSet>emptySet(),
             syntaxColorings
         );
     }

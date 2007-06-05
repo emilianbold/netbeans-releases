@@ -44,6 +44,8 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
     public GeneralEditorPanel () {
         initComponents ();
         
+        setName(loc ("General_Tab"));
+                
         loc (lCodeFolding, "Code_Folding");
         loc (lUseCodeFolding, "Code_Folding_Section");
         loc (lCollapseByDefault, "Fold_by_Default");

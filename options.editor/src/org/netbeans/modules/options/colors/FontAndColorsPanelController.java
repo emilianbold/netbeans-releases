@@ -19,11 +19,17 @@
 
 package org.netbeans.modules.options.colors;
 
+import org.netbeans.modules.options.colors.spi.FontsColorsController;
 import java.beans.PropertyChangeListener;
+import java.util.Collection;
 import javax.swing.JComponent;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.WeakListeners;
+import org.openide.util.lookup.Lookups;
 
 
 /**
@@ -32,49 +38,73 @@ import org.openide.util.Lookup;
  * @author Jan Jancura
  */
 public final class FontAndColorsPanelController extends OptionsPanelController {
-
-
-    public void update () {
-        getFontAndColorsPanel ().update ();
-    }
-
-    public void applyChanges () {
-        getFontAndColorsPanel ().applyChanges ();
+    
+    private final Lookup.Result<? extends FontsColorsController> lookupResult;
+    private final LookupListener lookupListener = new LookupListener() {
+        public void resultChanged(LookupEvent ev) {
+            rebuild();
+        }
+    };
+    
+    private Collection<? extends FontsColorsController> delegates;
+    private FontAndColorsPanel component;
+    
+    public FontAndColorsPanelController() {
+        Lookup lookup = Lookups.forPath("org-netbeans-modules-options-editor/OptionsDialogCategories/FontsColors"); //NOI18N
+        lookupResult = lookup.lookupResult(FontsColorsController.class);
+        lookupResult.addLookupListener(WeakListeners.create(
+            LookupListener.class,
+            lookupListener,
+            lookupResult
+        ));
+        rebuild();
     }
     
-    public void cancel () {
-        getFontAndColorsPanel ().cancel ();
+    public void update() {
+        getFontAndColorsPanel().update();
     }
     
-    public boolean isValid () {
-        return getFontAndColorsPanel ().dataValid ();
+    public void applyChanges() {
+        getFontAndColorsPanel().applyChanges();
     }
     
-    public boolean isChanged () {
-        return getFontAndColorsPanel ().isChanged ();
+    public void cancel() {
+        getFontAndColorsPanel().cancel();
     }
     
-    public JComponent getComponent (Lookup masterLookup) {
-        return getFontAndColorsPanel ();
+    public boolean isValid() {
+        return getFontAndColorsPanel().dataValid();
     }
     
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx ("netbeans.optionsDialog.fontAndColorsPanel");
+    public boolean isChanged() {
+        return getFontAndColorsPanel().isChanged();
     }
-
-    public void addPropertyChangeListener (PropertyChangeListener l) {
-        getFontAndColorsPanel ().addPropertyChangeListener (l);
-    }
-
-    public void removePropertyChangeListener (PropertyChangeListener l) {
-        getFontAndColorsPanel ().removePropertyChangeListener (l);
-    }
-
-    private FontAndColorsPanel fontAndColorsPanel;
     
-    private FontAndColorsPanel getFontAndColorsPanel () {
-        if (fontAndColorsPanel == null)
-            fontAndColorsPanel = new FontAndColorsPanel ();
-        return fontAndColorsPanel;
+    public JComponent getComponent(Lookup masterLookup) {
+        return getFontAndColorsPanel();
+    }
+    
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("netbeans.optionsDialog.fontAndColorsPanel");
+    }
+    
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        getFontAndColorsPanel().addPropertyChangeListener(l);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        getFontAndColorsPanel().removePropertyChangeListener(l);
+    }
+    
+    private FontAndColorsPanel getFontAndColorsPanel() {
+        if (component == null) {
+            component = new FontAndColorsPanel(delegates);
+        }
+        return component;
+    }
+    
+    private void rebuild() {
+        this.delegates = lookupResult.allInstances();
+        this.component = null;
     }
 }

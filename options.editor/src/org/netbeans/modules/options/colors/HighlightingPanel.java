@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.options.colors;
 
+import org.netbeans.modules.options.colors.spi.FontsColorsController;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -52,7 +53,7 @@ import org.openide.util.NbBundle;
  *
  * @author  Jan Jancura
  */
-public class HighlightingPanel extends JPanel implements ActionListener, PropertyChangeListener {
+public class HighlightingPanel extends JPanel implements ActionListener, PropertyChangeListener, FontsColorsController {
     
     private ColorModel          colorModel = null;
     private boolean		listen = false;
@@ -68,6 +69,8 @@ public class HighlightingPanel extends JPanel implements ActionListener, Propert
     public HighlightingPanel () {
         initComponents ();
 
+        setName(loc("Editor_tab")); //NOI18N
+        
         // 1) init components
         lCategories.getAccessibleContext ().setAccessibleName (loc ("AN_Categories"));
         lCategories.getAccessibleContext ().setAccessibleDescription (loc ("AD_Categories"));
@@ -186,7 +189,7 @@ public class HighlightingPanel extends JPanel implements ActionListener, Propert
         }
     }
     
-    void update (ColorModel colorModel) {
+    public void update (ColorModel colorModel) {
         this.colorModel = colorModel;
         currentProfile = colorModel.getCurrentProfile ();
         listen = false;
@@ -198,7 +201,7 @@ public class HighlightingPanel extends JPanel implements ActionListener, Propert
         changed = false;
     }
     
-    void cancel () {
+    public void cancel () {
         toBeSaved = new HashSet<String>();
         profileToCategories = new HashMap<String, Vector<AttributeSet>>();        
         changed = false;
@@ -213,11 +216,11 @@ public class HighlightingPanel extends JPanel implements ActionListener, Propert
         profileToCategories = new HashMap<String, Vector<AttributeSet>>();
     }
     
-    boolean isChanged () {
+    public boolean isChanged () {
         return changed;
     }
     
-    void setCurrentProfile (String currentProfile) {
+    public void setCurrentProfile (String currentProfile) {
         String oldScheme = this.currentProfile;
         this.currentProfile = currentProfile;
         if (!colorModel.getProfiles ().contains (currentProfile)) {
@@ -229,7 +232,7 @@ public class HighlightingPanel extends JPanel implements ActionListener, Propert
         refreshUI ();
     }
 
-    void deleteProfile (String profile) {
+    public void deleteProfile (String profile) {
         if (colorModel.isCustomProfile (profile))
             profileToCategories.put (profile, null);
         else {
@@ -239,6 +242,10 @@ public class HighlightingPanel extends JPanel implements ActionListener, Propert
         toBeSaved.add (profile);
     }
     
+    public JComponent getComponent() {
+        return this;
+    }
+        
     // other methods ...........................................................
     
     Collection<AttributeSet> getHighlightings () {

@@ -63,6 +63,7 @@ ActionListener {
         initComponents ();
         
         // localization
+        setName(loc ("Indentation_Tab"));
         loc (lStatementContinuationIndent, "Statement_Indent");
         loc (lNumberOfSpacesPerIndent, "Indent");
         loc (lPreview, "Preview");

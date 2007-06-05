@@ -179,7 +179,10 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.diff</friend>
+                <package>org.netbeans.modules.options.colors.spi</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

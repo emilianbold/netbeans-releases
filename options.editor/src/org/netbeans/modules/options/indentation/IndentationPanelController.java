@@ -34,7 +34,10 @@ import org.openide.util.Lookup;
  */
 public final class IndentationPanelController extends OptionsPanelController {
 
-
+    public IndentationPanelController() {
+        
+    }
+    
     public void update () {
         getIndentationPanel ().update ();
     }

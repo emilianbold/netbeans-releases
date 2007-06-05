@@ -720,4 +720,48 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
+    
+    <folder name="org-netbeans-modules-options-editor">
+        <folder name="OptionsDialogCategories">
+            <folder name="Editor">
+                <file name="GeneralEditorPanel.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.options.generaleditor.GeneralEditorPanelController"/>
+                </file>
+                <attr name="GeneralEditorPanel.instance/IndentationPanel.instance" boolvalue="true"/>
+                <file name="IndentationPanel.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.options.indentation.IndentationPanelController"/>
+                </file>
+                <attr name="IndentationPanel.instance/CodeTemplatesPanel.instance" boolvalue="true"/>
+                <file name="CodeTemplatesPanel.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.options.codetemplates.CodeTemplatesPanelController"/>
+                </file>
+                <attr name="CodeTemplatesPanel.instance/MacrosPanel.instance" boolvalue="true"/>
+                <file name="MacrosPanel.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.options.macros.MacrosPanelController"/>
+                </file>
+            </folder>
+            <folder name="FontsColors">
+                <file name="SyntaxColoringPanel.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.options.colors.spi.FontsColorsController"/>
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.options.colors.SyntaxColoringPanel"/>
+                </file>
+                <attr name="SyntaxColoringPanel.instance/HighlightingPanel.instance" boolvalue="true"/>
+                <file name="HighlightingPanel.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.options.colors.spi.FontsColorsController"/>
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.options.colors.HighlightingPanel"/>
+                </file>
+                <attr name="HighlightingPanel.instance/AnnotationsPanel.instance" boolvalue="true"/>
+                <file name="AnnotationsPanel.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.options.colors.spi.FontsColorsController"/>
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.options.colors.AnnotationsPanel"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    
+    
 </filesystem>

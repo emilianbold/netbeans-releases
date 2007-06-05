@@ -6,6 +6,7 @@
 
 package org.netbeans.modules.options.colors;
 
+import org.netbeans.modules.options.colors.spi.FontsColorsController;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -14,9 +15,10 @@ import java.awt.event.ItemListener;
 import java.util.Collection;
 import java.util.Iterator;
 import javax.swing.AbstractButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.text.AttributeSet;
+import javax.swing.border.EmptyBorder;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.InputLine;
@@ -30,18 +32,17 @@ import org.openide.util.NbBundle;
  */
 public class FontAndColorsPanel extends JPanel implements ActionListener {
     
+    private final Collection<? extends FontsColorsController> panels;
     
-    private SyntaxColoringPanel	    syntaxColoringPanel;
-    private HighlightingPanel       highlightingPanel;
-    private AnnotationsPanel	    annotationsPanel;
-
     private ColorModel		    colorModel;
     private String		    currentProfile;
     private boolean		    listen = false;
     
     
     /** Creates new form FontAndColorsPanel1 */
-    public FontAndColorsPanel () {
+    public FontAndColorsPanel (Collection<? extends FontsColorsController> panels) {
+        this.panels = panels;
+        
         initComponents ();
         
         // init components
@@ -53,9 +54,7 @@ public class FontAndColorsPanel extends JPanel implements ActionListener {
         bDuplicate.getAccessibleContext ().setAccessibleDescription (loc ("AD_Clone"));
         tpCustomizers.getAccessibleContext ().setAccessibleName (loc ("AN_Categories"));
         tpCustomizers.getAccessibleContext ().setAccessibleDescription (loc ("AD_Categories"));
-        syntaxColoringPanel = new SyntaxColoringPanel (this);
-        highlightingPanel = new HighlightingPanel ();
-        annotationsPanel = new AnnotationsPanel ();
+        
         cbProfile.addItemListener (new ItemListener () {
             public void itemStateChanged (ItemEvent evt) {
                 if (!listen) return;
@@ -67,12 +66,22 @@ public class FontAndColorsPanel extends JPanel implements ActionListener {
         loc (bDelete, "CTL_Delete");
         bDelete.addActionListener (this);
         
-	tpCustomizers.addTab (loc ("Syntax_coloring_tab"), syntaxColoringPanel);
-	tpCustomizers.addTab (loc ("Editor_tab"), highlightingPanel);
-	tpCustomizers.addTab (loc ("Annotations_tab"), annotationsPanel);
-        tpCustomizers.setMnemonicAt (0, loc ("Syntax_coloring_tab_mnemonic").charAt (0));
-        tpCustomizers.setMnemonicAt (1, loc ("Editor_tab_mnemonic").charAt (0));
-        tpCustomizers.setMnemonicAt (2, loc ("Annotations_tab_mnemonic").charAt (0));
+        JLabel label = new JLabel(); // Only for setting tab names
+        for(FontsColorsController p : panels) {
+            JComponent component = p.getComponent();
+            component.setBorder(new EmptyBorder(8, 8, 8, 8));
+
+            String tabName = component.getName();
+            Mnemonics.setLocalizedText(label, tabName);
+            tpCustomizers.addTab(label.getText(), component);
+
+            int idx = Mnemonics.findMnemonicAmpersand(tabName);
+            if (idx != -1 && idx + 1 < tabName.length()) {
+                tpCustomizers.setMnemonicAt(
+                    tpCustomizers.getTabCount() - 1, 
+                    Character.toUpperCase(tabName.charAt(idx + 1)));
+            }
+        }
     }
     
     /** This method is called from within the constructor to
@@ -149,16 +158,17 @@ public class FontAndColorsPanel extends JPanel implements ActionListener {
         else
             loc (bDelete, "CTL_Restore");                             // NOI18N
         currentProfile = profile;
-        highlightingPanel.setCurrentProfile (currentProfile);
-        syntaxColoringPanel.setCurrentProfile (currentProfile);
-        annotationsPanel.setCurrentProfile (currentProfile);
+        
+        for(FontsColorsController c : panels) {
+            c.setCurrentProfile(currentProfile);
+        }
     }
     
     private void deleteCurrentProfile () {
         String currentProfile = (String) cbProfile.getSelectedItem ();
-        highlightingPanel.deleteProfile (currentProfile);
-        syntaxColoringPanel.deleteProfile (currentProfile);
-        annotationsPanel.deleteProfile (currentProfile);
+        for(FontsColorsController c : panels) {
+            c.deleteProfile(currentProfile);
+        }
         if (colorModel.isCustomProfile (currentProfile)) {
             cbProfile.removeItem (currentProfile);
             cbProfile.setSelectedIndex (0);
@@ -172,9 +182,9 @@ public class FontAndColorsPanel extends JPanel implements ActionListener {
         if (colorModel == null)
             colorModel = new ColorModel ();
         
-        highlightingPanel.update (colorModel);
-        syntaxColoringPanel.update (colorModel);
-        annotationsPanel.update (colorModel);
+        for(FontsColorsController c : panels) {
+            c.update(colorModel);
+        }
         
         currentProfile = colorModel.getCurrentProfile ();
         if (colorModel.isCustomProfile (currentProfile))
@@ -195,17 +205,17 @@ public class FontAndColorsPanel extends JPanel implements ActionListener {
     
     
     void applyChanges () {
-        highlightingPanel.applyChanges ();
-        syntaxColoringPanel.applyChanges ();
-        annotationsPanel.applyChanges ();
+        for(FontsColorsController c : panels) {
+            c.applyChanges();
+        }
         if (colorModel == null) return;
         colorModel.setCurrentProfile (currentProfile);
     }
     
     void cancel () {
-        highlightingPanel.cancel ();
-        syntaxColoringPanel.cancel ();
-        annotationsPanel.cancel ();
+        for(FontsColorsController c : panels) {
+            c.cancel();
+        }
     }
     
     boolean dataValid () {
@@ -216,10 +226,15 @@ public class FontAndColorsPanel extends JPanel implements ActionListener {
         if (currentProfile != null &&
             colorModel != null &&
             !currentProfile.equals (colorModel.getCurrentProfile ())
-        ) return true;
-        if (highlightingPanel.isChanged ()) return true;
-        if (syntaxColoringPanel.isChanged ()) return true;
-        if (annotationsPanel.isChanged ()) return true;
+        ) {
+            return true;
+        }
+        
+        for(FontsColorsController c : panels) {
+            if (c.isChanged()) {
+                return true;
+            }
+        }
         return false;
     }
    
@@ -256,18 +271,6 @@ public class FontAndColorsPanel extends JPanel implements ActionListener {
             deleteCurrentProfile ();
             return;
         }
-    }
-    
-    Collection<AttributeSet> getDefaults () {
-        return syntaxColoringPanel.getAllLanguages ();
-    }
-    
-    Collection<AttributeSet> getHighlights () {
-        return highlightingPanel.getHighlightings ();
-    }
-    
-    Collection<AttributeSet> getSyntaxColorings () {
-        return syntaxColoringPanel.getSyntaxColorings ();
     }
     
     private static String loc (String key) {
