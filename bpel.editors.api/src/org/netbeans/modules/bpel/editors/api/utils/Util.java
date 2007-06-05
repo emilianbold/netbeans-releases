@@ -288,12 +288,11 @@ public class Util {
     }
     
     public static void goToSource(Component component) {
-        if ( !(component instanceof BpelEntity)) {
-            // todo m
+        if ( !(component instanceof DocumentComponent)) {
             return;
         }
-        BpelEntity bpelEntity = (BpelEntity) component;
-        FileObject fo = Util.getFileObjectByModel(bpelEntity.getBpelModel());
+        DocumentComponent document = (DocumentComponent) component;
+        FileObject fo = getFileObjectByModel(component.getModel());
 
         if (fo == null) {
             return;
@@ -304,13 +303,13 @@ public class Util {
             if (lc == null) {
                 return;
             }
-            int lineNum = Util.getLineNum(bpelEntity);
+            int lineNum = getLineNum(document);
             if (lineNum < 0) {
                 return;
             }
             
             final Line l = lc.getLineSet().getCurrent(lineNum);
-            final int column = Util.getColumnNum(bpelEntity);
+            final int column = getColumnNum(document);
             if (column < 0) {
                 return;
             }
@@ -345,7 +344,7 @@ public class Util {
           return;
         }
         final BpelEntity bpelEntity = (BpelEntity) component;
-        FileObject fo = Util.getFileObjectByModel(bpelEntity.getBpelModel());
+        FileObject fo = getFileObjectByModel(bpelEntity.getBpelModel());
 
         if (fo == null) {
             return;                                                        }
@@ -454,9 +453,9 @@ public class Util {
     }
 
     // private methods
-    private static int getLineNum(BpelEntity entity) {
+    private static int getLineNum(DocumentComponent entity) {
         int position = entity.findPosition();
-        ModelSource modelSource = entity.getBpelModel().getModelSource();
+        ModelSource modelSource = entity.getModel().getModelSource();
         assert modelSource != null;
         Lookup lookup = modelSource.getLookup();
         
@@ -467,9 +466,9 @@ public class Util {
         return NbDocument.findLineNumber(document,position);
     }
     
-    private static int getColumnNum(BpelEntity entity) {
+    private static int getColumnNum(DocumentComponent entity) {
         int position = entity.findPosition();
-        ModelSource modelSource = entity.getBpelModel().getModelSource();
+        ModelSource modelSource = entity.getModel().getModelSource();
         assert modelSource != null;
         Lookup lookup = modelSource.getLookup();
         
