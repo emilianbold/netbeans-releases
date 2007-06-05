@@ -44,11 +44,12 @@ import static org.netbeans.api.java.source.JavaSource.Phase;
 
 import org.netbeans.modules.j2ee.dd.api.webservices.WebserviceDescription;
 import org.netbeans.modules.j2ee.common.source.SourceUtils;
+import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 
 public class WebServiceChildren extends Children.Keys {
     
     private static final java.awt.Image OPERATION_BADGE =
-        org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/core/webservices/ui/resources/wsoperation.png" ); //NOI18N
+            org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/core/webservices/ui/resources/wsoperation.png" ); //NOI18N
     
     private WebserviceDescription webServiceDescription;
     private FileObject implClass;
@@ -65,12 +66,12 @@ public class WebServiceChildren extends Children.Keys {
         if(key instanceof ExecutableElement) {
             final ExecutableElement method = (ExecutableElement)key;
             Node n = new AbstractNode(Children.LEAF) {
-
+                
                 @java.lang.Override
                 public java.awt.Image getIcon(int type) {
                     return OPERATION_BADGE;
                 }
-
+                
                 @Override
                 public String getDisplayName() {
                     return method.getSimpleName().toString();
@@ -81,10 +82,11 @@ public class WebServiceChildren extends Children.Keys {
         }
         return new Node[0];
     }
-
+    
     private boolean isFromWsdl() {
-        //TODO
-        return false;
+        WebServicesSupport wsSupport = WebServicesSupport.getWebServicesSupport(implClass);
+        assert wsSupport != null;
+        return wsSupport.isFromWSDL(webServiceDescription.getWebserviceDescriptionName());
     }
     
     protected void addNotify() {
@@ -95,7 +97,7 @@ public class WebServiceChildren extends Children.Keys {
             updateKeys();
         }
     }
-
+    
     private void updateKeys() {
         if (isFromWsdl()) {
             List keys = new ArrayList();

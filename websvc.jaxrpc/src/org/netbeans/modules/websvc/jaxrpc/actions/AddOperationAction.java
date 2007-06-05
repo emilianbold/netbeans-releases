@@ -18,38 +18,20 @@
  */
 package org.netbeans.modules.websvc.jaxrpc.actions;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.List;
-// Retouche
-//import javax.jmi.reflect.JmiException;
-//import org.netbeans.jmi.javamodel.ClassMember;
-//import org.netbeans.jmi.javamodel.JavaClass;
-//import org.netbeans.jmi.javamodel.JavaModelPackage;
-//import org.netbeans.jmi.javamodel.Method;
-//import org.netbeans.jmi.javamodel.Resource;
-//import org.netbeans.jmi.javamodel.Type;
-//import org.netbeans.jmi.javamodel.TypeReference;
-//import org.netbeans.modules.j2ee.common.JMIUtils;
-//import org.netbeans.modules.j2ee.common.ui.nodes.MethodCollectorFactory;
-//import org.netbeans.modules.j2ee.common.ui.nodes.MethodCustomizer;
-//import org.netbeans.modules.javacore.api.JavaModel;
-//import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
-//import org.netbeans.modules.websvc.core.jaxws.actions.JaxWsClassesCookie;
-//import org.netbeans.modules.websvc.core.jaxws.actions.JaxWsCookieFactory;
-//import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
-//import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
-//import org.openide.ErrorManager;
 import org.openide.util.actions.CookieAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import java.lang.reflect.Modifier;
-import org.netbeans.modules.j2ee.dd.api.webservices.WebserviceDescription;
 import org.openide.filesystems.FileObject;
+
+import org.netbeans.modules.j2ee.dd.api.webservices.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.webservices.WebserviceDescription;
+import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
+import org.netbeans.modules.j2ee.dd.api.webservices.PortComponent;
+import org.netbeans.modules.j2ee.dd.api.webservices.ServiceImplBean;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
+import org.netbeans.modules.websvc.core.AddOperationCookie;
+import org.netbeans.modules.websvc.core.WebServiceActionProvider;
 
 public class AddOperationAction extends CookieAction {
     //private Service service;
@@ -68,7 +50,7 @@ public class AddOperationAction extends CookieAction {
     }
     
     protected Class[] cookieClasses() {
-        return new Class[] {WebServiceClassesCookie.class};
+        return new Class[] {AddOperationCookie.class};
     }
     
     protected boolean asynchronous() {
@@ -77,133 +59,74 @@ public class AddOperationAction extends CookieAction {
     
     protected boolean enable(Node[] activatedNodes) {
         return activatedNodes.length == 1 &&
-// Retouche
-//                ( activatedNodes[0].getLookup().lookup(ClassMember.class) != null || JMIUtils.getClassMemberFromNode(activatedNodes[0])!=null ) &&
-//                JMIUtils.getJavaClassFromNode(activatedNodes[0]) != null &&
-                (isJaxWsImplementationClass(activatedNodes[0]) || 
-                (isWsImplBeanOrInterface(activatedNodes[0]) && !isFromWSDL(activatedNodes[0])));
+                isWsImplBeanOrInterface(activatedNodes[0]);
     }
     
     private boolean isWsImplBeanOrInterface(Node node) {
-// Retouche
-//        JavaClass ce = JMIUtils.getJavaClassFromNode(node);
-//        Resource r = ce.getResource();
-//        FileObject f = JavaModel.getFileObject(r);
-//        if (f != null) {
-//
-//            WebserviceDescription wsDesc = WebServiceCookieFactory.findWSDescriptionFromClass(ce, f);
-//            if (wsDesc != null) {
-//                return true;
-//            }
-//        }
-        return false;
-    }
-
-    private boolean isJaxWsImplementationClass(Node node) {
-// Retouche
-//         JavaClass ce = JMIUtils.getJavaClassFromNode(node);
-//         Resource r = ce.getResource();
-//         FileObject fo = JavaModel.getFileObject(r);
-//         JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(fo);
-//         if (jaxWsSupport!=null) {
-//             List services = jaxWsSupport.getServices();
-//             for (int i=0;i<services.size();i++) {
-//                 Service serv = (Service)services.get(i);
-//                 if (serv.getWsdlUrl()==null) {
-//                     String implClass = serv.getImplementationClass();
-//                     if (implClass.equals(ce.getName())) {
-//                         service=serv;
-//                         return true;
-//                     }
-//                 }
-//             }
-//         }
-//         service=null;
-         return false;
-    }
-    
-    private boolean isFromWSDL(Node node) {
-// Retouche
-//        JavaClass ce = JMIUtils.getJavaClassFromNode(node);
-//        Resource r = ce.getResource();
-//        FileObject f = JavaModel.getFileObject(r);
-//        if (f != null) {
-//            WebserviceDescription wsDesc = WebServiceCookieFactory.findWSDescriptionFromClass(ce, f);
-//            if (wsDesc != null) {
-//                String wsName = wsDesc.getWebserviceDescriptionName();
-//                WebServicesSupport wsSupport = WebServicesSupport.getWebServicesSupport(f);
-//                assert wsSupport != null;
-//                return wsSupport.isFromWSDL(wsName);
-//            }
-//        }
+        FileObject implClassFo = node.getLookup().lookup(FileObject.class);
+        if(implClassFo==null) return false;
+        WebserviceDescription wsDesc = findWSDescriptionFromClass(implClassFo);
+        if (wsDesc != null) {
+            WebServicesSupport wsSupport = WebServicesSupport.getWebServicesSupport(implClassFo);
+            assert wsSupport != null;
+            return !wsSupport.isFromWSDL(wsDesc.getWebserviceDescriptionName());
+        }
         return false;
     }
     
     protected void performAction(Node[] activatedNodes) {
-// Retouche        
-//        JavaMetamodel.getManager().waitScanFinished();
-//        
-//        Node.Cookie cookie=null;
-//        if (service!=null) {
-//            cookie = JaxWsCookieFactory.getJaxWsClassesCookie(service,JMIUtils.getJavaClassFromNode(activatedNodes[0]));
-//        } else {
-//            cookie = WebServiceCookieFactory.getWebServiceClassesCookie(JMIUtils.getJavaClassFromNode(activatedNodes[0]));
-//        }
-//        if (cookie == null) return;
-//
-//        Method m = null;
-//        JavaClass javaClass = JMIUtils.getJavaClassFromNode(activatedNodes[0]);
-//
-//        if ((javaClass != null) && (javaClass.isValid())) {
-//            JMIUtils.beginJmiTransaction();
-//            try {
-//                m = JMIUtils.createMethod(javaClass);
-//                m.setModifiers(Modifier.PUBLIC);
-//                m.setName(NbBundle.getMessage(AddOperationAction.class, "TXT_DefaultOperationName")); //NOI18N
-//                // sets 'String' as a default return value for method. 
-//                // method.setType(type) can't be used here since it would set 
-//                // return value to 'java.lang.String' (#61178)
-//                TypeReference tr = 
-//                        ((JavaModelPackage)javaClass.refImmediatePackage()).getMultipartId().createMultipartId("String", null, null);
-//                m.setTypeName(tr);
-//                
-//            } catch (JmiException e) {
-//                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, e.toString());
-//                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, e.getElementInError().toString());
-//                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, e.getObjectInError().toString());
-//            } finally {
-//                JMIUtils.endJmiTransaction();
-//            }
-//            if (m == null) {
-//                return;
-//            }
-//
-//            MethodCustomizer mc = MethodCollectorFactory.operationCollector(m);
-//            final NotifyDescriptor nd = new NotifyDescriptor(mc,  NbBundle.getMessage(AddOperationAction.class, "TTL_AddOperation"),
-//                    NotifyDescriptor.OK_CANCEL_OPTION,
-//                    NotifyDescriptor.PLAIN_MESSAGE,
-//                    null, null
-//                    );
-//            mc.addPropertyChangeListener(new PropertyChangeListener() {
-//                public void propertyChange(PropertyChangeEvent evt) {
-//                    if (evt.getPropertyName().equals(MethodCustomizer.OK_ENABLED)) {
-//                        Object newvalue = evt.getNewValue();
-//                        if ((newvalue != null) && (newvalue instanceof Boolean)) {
-//                            nd.setValid(((Boolean)newvalue).booleanValue());
-//                        }
-//                    }
-//                }
-//            });
-//            Object rv = DialogDisplayer.getDefault().notify(nd);
-//            mc.isOK(); // apply possible changes in dialog fields
-//            if (rv == NotifyDescriptor.OK_OPTION) {
-//                if (cookie instanceof JaxWsClassesCookie)
-//                    ((JaxWsClassesCookie)cookie).addOperation(m);
-//                else 
-//                    ((WebServiceClassesCookie)cookie).addOperation(m);
-//            }
-//
-//        }
-
+        if (activatedNodes.length != 1) {
+            return;
+        }
+        
+        FileObject implClassFo = activatedNodes[0].getLookup().lookup(FileObject.class);
+        if (implClassFo!=null) {
+            AddOperationCookie addOperationCookie = WebServiceActionProvider.getAddOperationAction(implClassFo);
+            if (addOperationCookie!=null) addOperationCookie.addOperation(implClassFo);
+        }
     }
+
+    private static WebserviceDescription findWSDescriptionFromClass(FileObject implClassFO) {
+        WebServicesSupport wsSupport = WebServicesSupport.getWebServicesSupport(implClassFO);
+        String implClassPath = implClassFO.getPath();
+        int dotIndex = implClassPath.lastIndexOf('.');
+        if(dotIndex>0)implClassPath = implClassPath.substring(0,dotIndex);
+        implClassPath = implClassPath.replaceAll("/", ".");
+        if (wsSupport != null) {
+            DDProvider wsDDProvider = DDProvider.getDefault();
+            Webservices webServices = null;
+            try {
+                webServices = wsDDProvider.getDDRoot(wsSupport.getWebservicesDD());
+            } catch(java.io.IOException e) {
+                throw new RuntimeException(e.getMessage());
+            }
+		  
+            if(webServices != null) {
+                WebserviceDescription[] wsDescriptions = webServices.getWebserviceDescription();
+                for (int i = 0; i < wsDescriptions.length; i++) {
+                    WebserviceDescription wsDescription = wsDescriptions[i];
+                    PortComponent portComponent = wsDescription.getPortComponent(0);
+                    
+                    // first check the interface
+                    String wsSEI = portComponent.getServiceEndpointInterface();
+                    if ((wsSEI != null) && (implClassPath.endsWith(wsSEI))) {
+                        return wsDescription;
+                    }
+                    
+                    // then the implementation bean
+                    ServiceImplBean serviceImplBean = portComponent.getServiceImplBean();
+                    String link = serviceImplBean.getServletLink();
+                    if (link == null) {
+                        link = serviceImplBean.getEjbLink();
+                    }
+                    String implBean = wsSupport.getImplementationBean(link);
+                    if (implBean!=null && implClassPath.endsWith(implBean)) {
+                        return wsDescription;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
 }

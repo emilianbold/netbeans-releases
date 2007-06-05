@@ -117,6 +117,7 @@ public class WebServiceNode extends AbstractNode implements WSRegisterCookie, Ja
         setDisplayName(wsName);
         setName(wsName);
         content.add(this);
+        content.add(implClass);
     }
     
     public Image getIcon(int type){

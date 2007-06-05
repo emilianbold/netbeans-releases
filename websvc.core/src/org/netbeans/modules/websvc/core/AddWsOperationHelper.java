@@ -70,9 +70,15 @@ import org.openide.filesystems.FileObject;
 public class AddWsOperationHelper {
     
     private final String name;
+    private final boolean createAnnotations;
+    
+    public AddWsOperationHelper(String name, boolean flag) {
+        this.name = name;
+        this.createAnnotations = flag;
+    }
     
     public AddWsOperationHelper(String name) {
-        this.name = name;
+        this(name,true);
     }
     
     protected MethodModel getPrototypeMethod() {
@@ -148,12 +154,13 @@ public class AddWsOperationHelper {
                             Collections.<ExpressionTree>emptyList()
                         );
                         // Public modifier
-                        ModifiersTree publicModifier = make.Modifiers(
+                        ModifiersTree modifiersTree = make.Modifiers(
                             Collections.<Modifier>singleton(Modifier.PUBLIC),
                             Collections.<AnnotationTree>emptyList()
                         );
                         // add @WebMethod annotation
-                        ModifiersTree modifiersTree = make.addModifiersAnnotation(publicModifier, webMethodAnnotation);
+                        if(createAnnotations) 
+                            modifiersTree = make.addModifiersAnnotation(modifiersTree, webMethodAnnotation);
                         
                         handle.progress(40);
                         // add @Oneway annotation
@@ -165,7 +172,8 @@ public class AddWsOperationHelper {
                                     make.QualIdent(oneWayAn), 
                                     Collections.<ExpressionTree>emptyList()
                                 );
-                                modifiersTree = make.addModifiersAnnotation(modifiersTree, oneWayAnnotation);
+                                if(createAnnotations) 
+                                    modifiersTree = make.addModifiersAnnotation(modifiersTree, oneWayAnnotation);
                             }
                         }
 
@@ -178,7 +186,8 @@ public class AddWsOperationHelper {
                                 Collections.<ExpressionTree>singletonList(
                                     make.Assignment(make.Identifier("name"), make.Literal(param.getName().toString()))) //NOI18N
                             );
-                            newParameters.add(genUtils.addAnnotation(param, paramAnnotation));
+                            if(createAnnotations) 
+                                newParameters.add(genUtils.addAnnotation(param, paramAnnotation));
                         }
                         
                         handle.progress(70);
