@@ -34,6 +34,8 @@ import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Fix;
+import org.openide.LifecycleManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -62,7 +64,7 @@ public abstract class TreeRuleTestBase extends NbTestCase {
         
         assertNotNull(workFO);
         
-        FileObject sourceRoot = workFO.createFolder("src");
+        sourceRoot = workFO.createFolder("src");
         FileObject buildRoot  = workFO.createFolder("build");
         FileObject cache = workFO.createFolder("cache");
         
@@ -73,7 +75,7 @@ public abstract class TreeRuleTestBase extends NbTestCase {
         
         TestUtilities.copyStringToFile(dataFile, code);
         
-        SourceUtilsTestUtil.prepareTest(sourceRoot, buildRoot, cache);
+        SourceUtilsTestUtil.prepareTest(sourceRoot, buildRoot, cache, extraClassPath());
         
         DataObject od = DataObject.find(data);
         EditorCookie ec = od.getCookie(EditorCookie.class);
@@ -92,10 +94,15 @@ public abstract class TreeRuleTestBase extends NbTestCase {
         assertNotNull(info);
     }
     
+    private FileObject sourceRoot;
     private CompilationInfo info;
     private Document doc;
     
     protected abstract List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path);
+    
+    protected String toDebugString(CompilationInfo info, Fix f) {
+        return f.toString();
+    }
     
     protected void performAnalysisTest(String fileName, String code, int pos, String... golden) throws Exception {
         prepareTest(fileName, code);
@@ -112,6 +119,63 @@ public abstract class TreeRuleTestBase extends NbTestCase {
         }
         
         assertTrue(errorsNames.toString(), Arrays.equals(golden, errorsNames.toArray(new String[0])));
+    }
+    
+    protected void performFixTest(String fileName, String code, int pos, String errorDescriptionToString, String fixDebugString, String golden) throws Exception {
+        performFixTest(fileName, code, pos, errorDescriptionToString, fixDebugString, fileName, golden);
+    }
+    
+    protected void performFixTest(String fileName, String code, int pos, String errorDescriptionToString, String fixDebugString, String goldenFileName, String golden) throws Exception {
+        prepareTest(fileName, code);
+        
+        TreePath path = info.getTreeUtilities().pathFor(pos);
+        
+        List<ErrorDescription> errors = computeErrors(info, path);
+        
+        ErrorDescription toFix = null;
+        
+        for (ErrorDescription d : errors) {
+            if (errorDescriptionToString.equals(d.toString())) {
+                toFix = d;
+                break;
+            }
+        }
+        
+        assertNotNull("Error: \"" + errorDescriptionToString + "\" not found.", toFix);
+        
+        assertTrue("Must be computed", toFix.getFixes().isComputed());
+        
+        List<Fix> fixes = toFix.getFixes().getFixes();
+        Fix toApply = null;
+        
+        for (Fix f : fixes) {
+            if (fixDebugString.equals(toDebugString(info, f))) {
+                toApply = f;
+            }
+        }
+        
+        toApply.implement();
+        
+        FileObject toCheck = sourceRoot.getFileObject(goldenFileName);
+        
+        assertNotNull(toCheck);
+        
+        DataObject toCheckDO = DataObject.find(toCheck);
+        EditorCookie ec = toCheckDO.getLookup().lookup(EditorCookie.class);
+        Document toCheckDocument = ec.openDocument();
+        
+        String realCode = toCheckDocument.getText(0, toCheckDocument.getLength());
+        
+        //ignore whitespaces:
+        realCode = realCode.replaceAll("[ \t\n]+", " ");
+        
+        assertEquals(golden, realCode);
+        
+        LifecycleManager.getDefault().saveAll();
+    }
+    
+    protected FileObject[] extraClassPath() {
+        return new FileObject[0];
     }
     
 }
