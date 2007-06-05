@@ -100,7 +100,7 @@ public class SceneSerializer {
     //
     
     public static void serialize(PageFlowSceneData sceneData, File file) {
-        if( file == null ){
+        if( file == null || !file.exists()){
             LOG.warning("Can not serialize locations because file is null.");
             return;
         }
@@ -120,6 +120,7 @@ public class SceneSerializer {
         }
         
         writeToFile(document, file);
+        LOG.finest("Serializing to the follwoing file: " + file.toString());
         
         LOG.exiting("SceneSerializer", "serialize");
     }

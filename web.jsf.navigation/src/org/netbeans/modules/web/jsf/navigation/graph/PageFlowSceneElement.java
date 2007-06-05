@@ -1,8 +1,6 @@
 package org.netbeans.modules.web.jsf.navigation.graph;
 import java.awt.Image;
 import java.io.IOException;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
 /*
@@ -22,7 +20,6 @@ import org.openide.nodes.Node;
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
-import org.openide.nodes.Node.PropertySet;
 import org.openide.util.HelpCtx;
 /**
  *
@@ -34,7 +31,6 @@ public abstract class PageFlowSceneElement {
     
     public PageFlowSceneElement(){
     }
-
         
     public boolean equals(Object obj) {
         return (this == obj);

@@ -28,24 +28,30 @@
 
 package org.netbeans.modules.web.jsf.navigation;
 
+import java.awt.Dialog;
 import java.awt.Image;
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.awt.UndoRedo;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -171,7 +177,17 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
         
         public void componentClosed() {
             tc.unregstierListeners();
-            tc.serializeNodeLocations(PageFlowView.getStorageDatFile(context.getFacesConfigFile()));
+            File file = PageFlowView.getStorageDatFile(context.getFacesConfigFile());
+            
+            if ( file.exists() ){
+                tc.serializeNodeLocations(PageFlowView.getStorageDatFile(context.getFacesConfigFile()));
+            } else {
+                DialogDescriptor dialog = new DialogDescriptor(
+                        NbBundle.getMessage(JSFPageFlowMultiviewDescriptor.class, "MSG_NoFileToSave", file.toString()),
+                        NbBundle.getMessage(JSFPageFlowMultiviewDescriptor.class, "TLE_NoFileToSave"));
+                java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
+                d.setVisible(true);
+            }
             LOG.finest("PageFlowEditor componentClosed");
         }
         
@@ -230,5 +246,5 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
     }
     
     private final static Logger LOG = Logger.getLogger("org.netbeans.modules.web.jsf.navigation");
-
+    
 }
