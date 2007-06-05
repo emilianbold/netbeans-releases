@@ -60,6 +60,7 @@ import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.RegistryNode;
 import org.netbeans.installer.product.components.Group;
+import org.netbeans.installer.product.dependencies.Requirement;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.helper.Dependency;
@@ -74,7 +75,6 @@ import org.netbeans.installer.utils.helper.swing.NbiList;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiScrollPane;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
-import org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.ErrorMessagePanelSwingUi;
 import static org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.ErrorMessagePanelSwingUi.ERROR_ICON;
 import static org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.ErrorMessagePanelSwingUi.EMPTY_ICON;
 
@@ -418,7 +418,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         }
         
         for (Product product: toInstall) {
-            for (Dependency requirement: product.getDependencies(DependencyType.REQUIREMENT)) {
+            for (Dependency requirement: product.getDependencies(Requirement.class)) {
                 List<Product> requirees = registry.getProducts(requirement);
                 
                 boolean satisfied = false;
@@ -470,7 +470,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                     continue;
                 }
                 
-                for (Dependency requirement: dependent.getDependencies(DependencyType.REQUIREMENT)) {
+                for (Dependency requirement: dependent.getDependencies(Requirement.class)) {
                     final List<Product> requirees = registry.getProducts(requirement);
                     
                     if (requirees.contains(product)) {
