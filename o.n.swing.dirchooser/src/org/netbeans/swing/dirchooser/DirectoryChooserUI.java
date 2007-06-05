@@ -158,10 +158,10 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     
     private boolean useShellFolder = false;
     
-    //private JPanel accessoryPanel;
-    
     private JButton upFolderButton;
     private JButton newFolderButton;
+    
+    private JComponent topCombo, topComboWrapper, topToolbar;
     
     public static ComponentUI createUI(JComponent c) {
         return new DirectoryChooserUI((JFileChooser) c);
@@ -414,15 +414,21 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         buttonPanel.add(cancelButton);
     }
     
-    private void createCenterPanel(JFileChooser fc) {
+    private void createCenterPanel(final JFileChooser fc) {
         centerPanel = new JPanel(new BorderLayout());
         treeViewPanel = createTree();
         treeViewPanel.setPreferredSize(TREE_PREF_SIZE);
         JPanel treePanel = new JPanel();
         treePanel.setLayout(new BorderLayout());
-        JComponent topToolbar = createTopToolbar();
-        JComponent topCombo = createTopCombo(fc);
-        treePanel.add(topCombo, BorderLayout.NORTH);
+        JComponent accessory = fc.getAccessory();
+        topToolbar = createTopToolbar();
+        topCombo = createTopCombo(fc);
+        topComboWrapper = new JPanel(new BorderLayout());
+        topComboWrapper.add(topCombo, BorderLayout.CENTER);
+        if (accessory == null) {
+            topComboWrapper.add(topToolbar, BorderLayout.EAST);
+        }
+        treePanel.add(topComboWrapper, BorderLayout.NORTH);
         treePanel.add(treeViewPanel, BorderLayout.CENTER);
         centerPanel.add(treePanel, BorderLayout.CENTER);
         // #97049: control width of accessory panel, don't allow to jump (change width)
@@ -431,24 +437,28 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             private Dimension minSize = new Dimension(ACCESSORY_WIDTH, 0);
             
             public Dimension getMinimumSize () {
-                minSize.height = getAccessoryPanel().getMinimumSize().height;
-                return minSize;
+                if (fc.getAccessory() != null) {
+                    minSize.height = getAccessoryPanel().getMinimumSize().height;
+                    return minSize;
+                }
+                return super.getMinimumSize();
             }
             public Dimension getPreferredSize () {
-                prefSize.height = getAccessoryPanel().getPreferredSize().height;
-                return prefSize;
+                if (fc.getAccessory() != null) {
+                    prefSize.height = getAccessoryPanel().getPreferredSize().height;
+                    return prefSize;
+                }
+                return super.getPreferredSize();
             }
         };
         wrapAccessory.setLayout(new BorderLayout());
         JPanel accessoryPanel = getAccessoryPanel();
-        accessoryPanel.add(topToolbar, BorderLayout.NORTH);
+        if (accessory != null) {
+            accessoryPanel.add(topToolbar, BorderLayout.NORTH);
+            accessoryPanel.add(accessory, BorderLayout.CENTER);
+        }
         wrapAccessory.add(accessoryPanel, BorderLayout.CENTER);
         centerPanel.add(wrapAccessory, BorderLayout.EAST);
-        JComponent accessory = fc.getAccessory();
-        
-        if(accessory != null) {
-            accessoryPanel.add(accessory);
-        }
         createBottomPanel(fc);
         centerPanel.add(bottomPanel, BorderLayout.SOUTH);
     }
@@ -457,7 +467,11 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     
     private JComponent createTopCombo(JFileChooser fc) {
         JPanel panel = new JPanel();
-        panel.setBorder(BorderFactory.createEmptyBorder(4, 0, 8, 0));
+        if (fc.getAccessory() != null) {
+            panel.setBorder(BorderFactory.createEmptyBorder(4, 0, 8, 0));
+        } else {
+            panel.setBorder(BorderFactory.createEmptyBorder(6, 0, 10, 0));
+        }
         panel.setLayout(new BorderLayout());
         
         Box labelBox = Box.createHorizontalBox();
@@ -1076,13 +1090,29 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     
     private void fireAccessoryChanged(PropertyChangeEvent e) {
         if(getAccessoryPanel() != null) {
-            if(e.getOldValue() != null) {
-                getAccessoryPanel().remove((JComponent) e.getOldValue());
+            JComponent oldAcc = (JComponent) e.getOldValue();
+            JComponent newAcc = (JComponent) e.getNewValue();
+            JComponent accessoryPanel = getAccessoryPanel();
+            if(oldAcc != null) {
+                accessoryPanel.remove(oldAcc);
             }
-            JComponent accessory = (JComponent) e.getNewValue();
-            if(accessory != null) {
-                getAccessoryPanel().add(accessory, BorderLayout.CENTER);
+            if (oldAcc != null && newAcc == null) {
+                accessoryPanel.remove(topToolbar);
+                topComboWrapper.add(topToolbar, BorderLayout.EAST);
+                topCombo.setBorder(BorderFactory.createEmptyBorder(6, 0, 10, 0));
+                topCombo.revalidate();
             }
+            
+            if(newAcc != null) {
+                getAccessoryPanel().add(newAcc, BorderLayout.CENTER);
+            }
+            
+            if (oldAcc == null && newAcc != null) {
+                topComboWrapper.remove(topToolbar);
+                topCombo.setBorder(BorderFactory.createEmptyBorder(4, 0, 8, 0));
+                accessoryPanel.add(topToolbar, BorderLayout.NORTH);
+            }
+            
         }
     }
     
