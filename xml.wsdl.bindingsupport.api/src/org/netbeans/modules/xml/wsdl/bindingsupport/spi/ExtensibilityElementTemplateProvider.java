@@ -28,9 +28,28 @@ import org.netbeans.modules.xml.wsdl.model.Port;
 
 public abstract class ExtensibilityElementTemplateProvider {
 
+    
+    /**
+     * Get the template input stream.
+     * 
+     * Create a input stream to the template xml document.
+     * Make sure that the xml is compliant to the templates.xsd
+     * defined in org.netbeans.modules.xml.wsdl.bindingsupport.template.xsd.templates.xsd
+     * 
+     * @return the xml document inputstream
+     */
     public  abstract InputStream getTemplateInputStream();
     
-    public  abstract String getLocalizedMessage(String str, Object[] objects);
+    
+    
+    /**
+     * Get localized text for keys defined in the template xml document.
+     * 
+     * @param key 
+     * @param objects 
+     * @return the localized message
+     */
+    public  abstract String getLocalizedMessage(String key, Object[] objects);
     
    
     /**
@@ -63,6 +82,7 @@ public abstract class ExtensibilityElementTemplateProvider {
      * configuration or when user changes subtype of binding in binding configuration.
      * Note this binding is not yet added to definition.
      * @param binding Binding for portType
+     * @return list of ValidationInfo
      */
     public List<ValidationInfo> validate(Binding binding) {
         return Collections.EMPTY_LIST;
@@ -76,6 +96,7 @@ public abstract class ExtensibilityElementTemplateProvider {
      * configuration or when user changes subtype of binding in binding configuration.
      * Note this port is not yet added to Service.
      * @param port Port for a binding
+     * @return list of ValidationInfo
      */
     public List<ValidationInfo> validate(Port port) {
         return Collections.EMPTY_LIST;

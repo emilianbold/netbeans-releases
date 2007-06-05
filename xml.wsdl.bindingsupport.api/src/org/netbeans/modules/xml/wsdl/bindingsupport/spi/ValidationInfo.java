@@ -29,30 +29,32 @@ public class ValidationInfo {
     public enum ValidationType {
         ADVICE, WARNING, ERROR
     }
-        private ValidationType mType;
-        private String mDescription;
-        
-        public ValidationInfo(ValidationType type, String description) {
-            this.mType = type;
-            this.mDescription = description;
-        }
-        /**
-         * Returns type of validation result.
-         * @return Type of message. Advice/Warning or Error.
-         */
-        public ValidationType getType() {
-            return mType;
-        }
-        
-        
-        /**
-         * Returns description of the validation result item.
-         * @return Message describing advice/warning or error.
-         */
-        public String getDescription() {
-            return mDescription;
-        }
-        
+    
+    
+    private ValidationType mType;
+    private String mDescription;
+    
+    public ValidationInfo(ValidationType type, String description) {
+        this.mType = type;
+        this.mDescription = description;
+    }
+    /**
+     * Returns type of validation result.
+     * @return Type of message. Advice/Warning or Error.
+     */
+    public ValidationType getType() {
+        return mType;
+    }
+    
+    
+    /**
+     * Returns description of the validation result item.
+     * @return Message describing advice/warning or error.
+     */
+    public String getDescription() {
+        return mDescription;
+    }
+    
 }
     
 
