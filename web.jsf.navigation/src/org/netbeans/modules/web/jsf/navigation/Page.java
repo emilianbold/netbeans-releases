@@ -120,12 +120,12 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
             String oldNodeDisplayName = nodeDisplayName;
             nodeDisplayName = getFolderDisplayName(pc.getWebFolder(), fileObj );
             
-            if( !nodeDisplayName.equals(oldNodeDisplayName) ){
+//            if( !nodeDisplayName.equals(oldNodeDisplayName) ){
                 //DISPLAYNAME:
                 //                pc.replacePageName2Node(this, nodeDisplayName, oldNodeDisplayName );
                 //                pc.removePageName2Node(nodeDisplayName);
                 //                pc.putPageName2Node(nodeDisplayName, this);
-            }
+//            }
             
         }
         pc.putPageName2Page(nodeDisplayName, this);
