@@ -20,6 +20,7 @@
 package org.netbeans.api.lexer;
 
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import javax.swing.text.Document;
@@ -196,11 +197,64 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
      *  If the particular TS ends after this offset then it will be returned.
      * @param endOffset ending offset of the TS to get. Use Integer.MAX_VALUE for no limit.
      *  If the particular TS starts before this offset then it will be returned.
-
+     * 
+     * @return The list of <code>TokenSequence</code>s.
      */
     public List<TokenSequence<? extends TokenId>> tokenSequenceList(
     LanguagePath languagePath, int startOffset, int endOffset) {
         return TokenListList.createTokenSequenceList(operation, languagePath, startOffset, endOffset);
+    }
+
+    /**
+     * Gets the list of all embedded <code>TokenSequence</code>s at the given offset.
+     * This method will use the top level <code>TokenSequence</code> in this
+     * hierarchy to drill down through the token at the specified <code>offset</code>
+     * and all its possible embedded sub-sequences.
+     * 
+     * <p>If the <code>offset</code>
+     * lies at the border between two tokens the <code>backwardBias</code>
+     * parameter will be used to choose either the token on the left hand side
+     * (<code>backwardBias == true</code>) of the <code>offset</code> or
+     * on the right hand side (<code>backwardBias == false</code>).
+     * 
+     * @param offset The offset to look at.
+     * @param backwardBias If <code>true</code> the backward lying token will
+     *   be used in case that the <code>offset</code> specifies position between
+     *   two tokens. If <code>false</code> the forward lying token will be used.
+     * 
+     * @return The list of all sequences embedded at the given offset. The list
+     *   has always at least one element and that is the top level
+     *   <code>TokenSequence</code>. The sequences in the list are ordered from
+     *   the top level sequence to the bottom one.
+     * 
+     * @since 1.20
+     */
+    public List<TokenSequence<? extends TokenId>> embeddedTokenSequences(
+        int offset, boolean backwardBias
+    ) {
+        TokenSequence<? extends TokenId> embedded = tokenSequence();
+        List<TokenSequence<? extends TokenId>> sequences = new ArrayList<TokenSequence<? extends TokenId>>();
+
+        do {
+            TokenSequence<? extends TokenId> seq = embedded;
+            sequences.add(seq);
+            embedded = null;
+
+            seq.move(offset);
+            if (seq.moveNext()) {
+                if (seq.offset() == offset && backwardBias) {
+                    if (seq.movePrevious()) {
+                        embedded = seq.embedded();
+                    }
+                } else {
+                    embedded = seq.embedded();
+                }
+            } else if (backwardBias && seq.movePrevious()) {
+                embedded = seq.embedded();
+            }
+        } while (embedded != null);
+        
+        return sequences;
     }
     
     /**
