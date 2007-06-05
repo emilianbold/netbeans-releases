@@ -24,12 +24,12 @@ import java.security.Principal;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+import org.netbeans.installer.utils.helper.UiMode;
 import static javax.swing.JOptionPane.YES_NO_OPTION;
 import static javax.swing.JOptionPane.YES_OPTION;
 import static javax.swing.JOptionPane.NO_OPTION;
@@ -41,7 +41,40 @@ import static javax.swing.JOptionPane.NO_OPTION;
 public final class UiUtils {
     /////////////////////////////////////////////////////////////////////////////////
     // Static
-    public static boolean showYesNoDialog(String title, String message) {
+    private static boolean lookAndFeelInitialized = false;
+    
+    public static void showMessageDialog(
+            final String message,
+            final String title,
+            final MessageType messageType) {
+        initializeLookAndFeel();
+        
+        switch (UiMode.getCurrentUiMode()) {
+        case SWING:
+            int intMessageType = JOptionPane.INFORMATION_MESSAGE;
+            if (messageType == MessageType.WARNING) {
+                intMessageType = JOptionPane.WARNING_MESSAGE;
+            } else if (messageType == MessageType.ERROR) {
+                intMessageType = JOptionPane.ERROR_MESSAGE;
+            } else if (messageType == MessageType.CRITICAL) {
+                intMessageType = JOptionPane.ERROR_MESSAGE;
+            }
+            
+            JOptionPane.showMessageDialog(
+                    null, 
+                    message,
+                    title,
+                    intMessageType);
+            break;
+        case SILENT:
+            System.err.println(message);
+            break;
+        }
+    }
+    
+    public static boolean showYesNoDialog(
+            final String title,
+            final String message) {
         final int result = JOptionPane.showConfirmDialog(
                 null,
                 message,
@@ -87,10 +120,10 @@ public final class UiUtils {
             // signing is valid:
             if ((!rootCaIsNotValid) && (!timeIsNotValid)) {
                 caption = StringUtils.format(
-                        "The digital signature of {0} has been verified.", 
+                        "The digital signature of {0} has been verified.",
                         description);
                 
-                body += 
+                body +=
                         "The digital signature has been validated by a trusted source. " +
                         "The security certificate was issued by a company that is trusted";
                 
@@ -106,7 +139,7 @@ public final class UiUtils {
                             df.format(timestamp));
                 } else {
                     // add message about valid time of signing:
-                    body += 
+                    body +=
                             ", has not expired and is still valid.";
                 }
                 
@@ -127,7 +160,7 @@ public final class UiUtils {
                 if (rootCaIsNotValid){
                     // Use different caption text for https and signed content
                     caption = StringUtils.format(
-                            "The digital signature of {0} cannot be verified.", 
+                            "The digital signature of {0} cannot be verified.",
                             description);
                     
                     body += "The digital signature cannot be verified by a trusted source. " +
@@ -135,7 +168,7 @@ public final class UiUtils {
                             "The security certificate was issued by a company that is not trusted.";
                 } else {
                     caption = StringUtils.format(
-                            "The digital signature of {0} has been verified.", 
+                            "The digital signature of {0} has been verified.",
                             description);
                     
                     // Same details for both
@@ -178,8 +211,69 @@ public final class UiUtils {
         return CertificateAcceptanceStatus.DENY;
     }
     
+    public static void initializeLookAndFeel(
+            ) {
+        if (lookAndFeelInitialized) {
+            return;
+        }
+        
+        switch (UiMode.getCurrentUiMode()) {
+        case SWING:
+            String className = System.getProperty(LAF_CLASS_NAME_PROPERTY);
+            if (className == null) {
+                LogManager.log("... custom look and feel class name was not specified, using system default");
+                className = UiUtils.getDefaultLookAndFeelClassName();
+            }
+            
+            LogManager.log("... class name: " + className);
+            
+            JFrame.setDefaultLookAndFeelDecorated(true);
+            try {
+                try {
+                    // this helps to avoid some GTK L&F bugs for some locales
+                    UIManager.getInstalledLookAndFeels();
+                    
+                    UIManager.setLookAndFeel(className);
+                } catch (Exception e) {
+                    // we're catching Exception here as pretty much anything can happen
+                    // while setting the look and feel and we have no control over it
+                    // if something wrong happens we should fall back to the default
+                    // cross-platform look and feel which is assumed to be working
+                    // correctly
+                    ErrorManager.notifyWarning("Could not activate the defined look and feel - falling back to the default cross-platform one.", e);
+                    UIManager.setLookAndFeel(
+                            UIManager.getCrossPlatformLookAndFeelClassName());
+                }
+            } catch (ClassNotFoundException e) {
+                ErrorManager.notifyWarning("Could not activate the cross-platform look and feel - proceeding with whatever look and feel was the default.", e);
+            } catch (InstantiationException e) {
+                ErrorManager.notifyWarning("Could not activate the cross-platform look and feel - proceeding with whatever look and feel was the default.", e);
+            } catch (IllegalAccessException e) {
+                ErrorManager.notifyWarning("Could not activate the cross-platform look and feel - proceeding with whatever look and feel was the default.", e);
+            } catch (UnsupportedLookAndFeelException e) {
+                ErrorManager.notifyWarning("Could not activate the cross-platform look and feel - proceeding with whatever look and feel was the default.", e);
+            }
+            break;
+        }
+        
+        lookAndFeelInitialized = true;
+    }
+    
+    public static String getDefaultLookAndFeelClassName(
+            ) {
+        switch (UiMode.getCurrentUiMode()) {
+        case SWING:
+            return UIManager.getSystemLookAndFeelClassName();
+        default:
+            return null;
+        }
+    }
+    
     // private //////////////////////////////////////////////////////////////////////
-    private static String extractName(String nameString, String prefix, String defaultValue) {
+    private static String extractName(
+            final String nameString,
+            final String prefix,
+            final String defaultValue) {
         int i = nameString.indexOf(prefix);
         int j = 0;
         
@@ -227,4 +321,21 @@ public final class UiUtils {
         ACCEPT_FOR_THIS_SESSION,
         DENY
     }
+    
+    public static enum MessageType {
+        INFORMATION,
+        WARNING,
+        ERROR,
+        CRITICAL
+    }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    
+    /**
+     * Name of the system property, which contains the look and feel class name that
+     * should be used by the wizard.
+     */
+    public static final String LAF_CLASS_NAME_PROPERTY =
+            "nbi.look.and.feel"; // NOI18N
 }

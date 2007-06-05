@@ -21,12 +21,8 @@
 package org.netbeans.installer.product.components;
 
 import java.util.Locale;
-import javax.swing.UIManager;
-import org.netbeans.installer.product.*;
-import org.netbeans.installer.product.filters.RegistryFilter;
-import org.netbeans.installer.utils.exceptions.FinalizationException;
+import org.netbeans.installer.product.RegistryNode;
 import org.netbeans.installer.utils.exceptions.InitializationException;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**

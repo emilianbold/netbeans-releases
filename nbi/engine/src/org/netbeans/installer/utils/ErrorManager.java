@@ -21,7 +21,6 @@
 package org.netbeans.installer.utils;
 
 import java.lang.Thread.UncaughtExceptionHandler;
-import javax.swing.JOptionPane;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.FinishHandler;
 
@@ -108,32 +107,28 @@ public final class ErrorManager {
         
         switch (level) {
             case ErrorLevel.MESSAGE:
-                JOptionPane.showMessageDialog(
-                        null, 
+                UiUtils.showMessageDialog(
                         dialogText, 
                         "Message", 
-                        JOptionPane.INFORMATION_MESSAGE);
+                        UiUtils.MessageType.INFORMATION);
                 return;
             case ErrorLevel.WARNING:
-                JOptionPane.showMessageDialog(
-                        null, 
+                UiUtils.showMessageDialog(
                         dialogText, 
                         "Warning", 
-                        JOptionPane.WARNING_MESSAGE);
+                        UiUtils.MessageType.WARNING);
                 return;
             case ErrorLevel.ERROR:
-                JOptionPane.showMessageDialog(
-                        null, 
+                UiUtils.showMessageDialog(
                         dialogText, 
                         "Error", 
-                        JOptionPane.ERROR_MESSAGE);
+                        UiUtils.MessageType.ERROR);
                 return;
             case ErrorLevel.CRITICAL:
-                JOptionPane.showMessageDialog(
-                        null, 
+                UiUtils.showMessageDialog(
                         dialogText, 
                         "Critical Error", 
-                        JOptionPane.ERROR_MESSAGE);
+                        UiUtils.MessageType.CRITICAL);
                 finishHandler.criticalExit();
                 return;
             default:

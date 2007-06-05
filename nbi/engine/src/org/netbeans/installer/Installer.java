@@ -36,9 +36,6 @@ import java.util.TreeSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
-import javax.swing.JFrame;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import org.netbeans.installer.downloader.DownloadManager;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.DateUtils;
@@ -144,8 +141,6 @@ public class Installer implements FinishHandler {
                 localDirectory,
                 "log/" + DateUtils.getTimestamp() + ".log"));
         LogManager.start();
-        
-        setLookAndFeel();
         
         final DownloadManager downloadManager = DownloadManager.getInstance();
         downloadManager.setLocalDirectory(localDirectory);
@@ -281,7 +276,9 @@ public class Installer implements FinishHandler {
                 
                 if (i < arguments.length - 1) {
                     String value = arguments[i + 1];
-                    System.setProperty(NBI_LOOK_AND_FEEL_CLASS_NAME_PROPERTY, value);
+                    System.setProperty(
+                            UiUtils.LAF_CLASS_NAME_PROPERTY, 
+                            value);
                     
                     i = i + 1;
                     
@@ -604,60 +601,6 @@ public class Installer implements FinishHandler {
         LogManager.log("... finished initializing local directory");
     }
     
-    private void setLookAndFeel() {
-        LogManager.logIndent("setting the look and feel");
-        
-        String className = System.getProperty(NBI_LOOK_AND_FEEL_CLASS_NAME_PROPERTY);
-        if (className == null) {
-            LogManager.log("... custom look and feel class name was not specified, using system default");
-            className = DEFAULT_NBI_LOOK_AND_FEEL_CLASS_NAME;
-        }
-        
-        LogManager.log("... class name: " + className);
-        
-        JFrame.setDefaultLookAndFeelDecorated(true);
-        try {
-            try {
-                try {
-                    UIManager.getInstalledLookAndFeels(); // this helps to avoid some
-                                                          // GTK L&F bugs for some 
-                                                          // locales
-                    UIManager.setLookAndFeel(className);
-                } catch (InternalError e) {
-                    System.err.println(e.getMessage());
-                    throw new InitializationException("Can`t initialiaze L&F",e);
-                } catch (ExceptionInInitializerError e) {                    
-                    Throwable cause = e.getCause();
-                    if(cause!=null && cause instanceof HeadlessException) {
-                        System.err.println(cause.getMessage());                
-                        throw new InitializationException("Can`t initialiaze L&F",e);
-                    } else {
-                        throw e;
-                    }
-                } 
-            } catch (Exception e) {
-                // we're catching Exception here as pretty much anything can happen
-                // while setting the look and feel and we have no control over it
-                // if something wrong happens we should fall back to the default
-                // cross-platform look and feel which is assumed to be working
-                // correctly
-                ErrorManager.notifyWarning("Could not activate the defined look and feel - falling back to the default cross-platform one.", e);
-                UIManager.setLookAndFeel(
-                        UIManager.getCrossPlatformLookAndFeelClassName());
-            }
-        } catch (ClassNotFoundException e) {
-            ErrorManager.notifyWarning("Could not activate the cross-platform look and feel - proceeding with whatever look and feel was the default.", e);
-        } catch (InstantiationException e) {
-            ErrorManager.notifyWarning("Could not activate the cross-platform look and feel - proceeding with whatever look and feel was the default.", e);
-        } catch (IllegalAccessException e) {
-            ErrorManager.notifyWarning("Could not activate the cross-platform look and feel - proceeding with whatever look and feel was the default.", e);
-        } catch (UnsupportedLookAndFeelException e) {
-            ErrorManager.notifyWarning("Could not activate the cross-platform look and feel - proceeding with whatever look and feel was the default.", e);
-        }
-        
-        LogManager.logUnindent("... finished setting the look and feel");
-    }
-    
     private void cacheEngineJar() throws IOException, DownloadException {
         LogManager.log("... starting copying engine content to the new jar file");
         String [] entries = StreamUtils.readStream(
@@ -852,12 +795,6 @@ public class Installer implements FinishHandler {
     
     public static final String LOCAL_DIRECTORY_PATH_PROPERTY =
             "nbi.local.directory.path";
-    
-    public static final String DEFAULT_NBI_LOOK_AND_FEEL_CLASS_NAME =
-            UIManager.getSystemLookAndFeelClassName();
-    
-    public static final String NBI_LOOK_AND_FEEL_CLASS_NAME_PROPERTY =
-            "nbi.look.and.feel";
     
     public static final String IGNORE_LOCK_FILE_PROPERTY =
             "nbi.ignore.lock.file";
