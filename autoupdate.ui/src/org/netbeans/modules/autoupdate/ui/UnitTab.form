@@ -19,7 +19,7 @@
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="tbActions" min="-2" pref="55" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="lTabActionDescription" pref="422" max="32767" attributes="0"/>
+                      <Component id="lTabActionDescription" pref="428" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="lSearch" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
@@ -29,7 +29,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="bTabAction" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="lSelectionInfo" pref="591" max="32767" attributes="2"/>
+                      <Component id="lSelectionInfo" pref="616" max="32767" attributes="2"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -59,18 +59,8 @@
   </Layout>
   <SubComponents>
     <Component class="javax.swing.JLabel" name="lSelectionInfo">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.editors.StringEditor">
-          <SerializedValue value="-84,-19,0,5,115,114,0,45,111,114,103,46,110,101,116,98,101,97,110,115,46,109,111,100,117,108,101,115,46,105,49,56,110,46,102,111,114,109,46,70,111,114,109,73,49,56,110,83,116,114,105,110,103,116,76,94,-93,39,78,-7,99,2,0,2,76,0,7,97,108,108,68,97,116,97,116,0,18,76,106,97,118,97,47,108,97,110,103,47,79,98,106,101,99,116,59,76,0,10,98,117,110,100,108,101,78,97,109,101,116,0,18,76,106,97,118,97,47,108,97,110,103,47,83,116,114,105,110,103,59,120,112,112,112"/>
-        </Property>
-      </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="bTabAction">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.editors.StringEditor">
-          <SerializedValue value="-84,-19,0,5,115,114,0,45,111,114,103,46,110,101,116,98,101,97,110,115,46,109,111,100,117,108,101,115,46,105,49,56,110,46,102,111,114,109,46,70,111,114,109,73,49,56,110,83,116,114,105,110,103,116,76,94,-93,39,78,-7,99,2,0,2,76,0,7,97,108,108,68,97,116,97,116,0,18,76,106,97,118,97,47,108,97,110,103,47,79,98,106,101,99,116,59,76,0,10,98,117,110,100,108,101,78,97,109,101,116,0,18,76,106,97,118,97,47,108,97,110,103,47,83,116,114,105,110,103,59,120,112,112,112"/>
-        </Property>
-      </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="lTabActionDescription">
       <Properties>

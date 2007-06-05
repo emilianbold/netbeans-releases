@@ -108,10 +108,7 @@ public class UnitTable extends JTable {
             int rowIndex, int vColIndex) {
         Component c = super.prepareRenderer (renderer, rowIndex, vColIndex);
         Color bgColor = getBackground ();
-        Color bgColorDarker = new Color (
-                Math.abs (bgColor.getRed () - DARKER_COLOR_COMPONENT),
-                Math.abs (bgColor.getGreen () - DARKER_COLOR_COMPONENT),
-                Math.abs (bgColor.getBlue () - DARKER_COLOR_COMPONENT));
+        Color bgColorDarker = getDarkerColor(bgColor);
         
         Unit u = model.getUnitAtRow (rowIndex);
         if (u != null && !u.canBeMarked ()) {
@@ -132,6 +129,14 @@ public class UnitTable extends JTable {
         }
         
         return c;
+    }
+    
+    static Color getDarkerColor(Color color) {
+        return new Color(
+                Math.abs(color.getRed() - DARKER_COLOR_COMPONENT),
+                Math.abs(color.getGreen() - DARKER_COLOR_COMPONENT),
+                Math.abs(color.getBlue() - DARKER_COLOR_COMPONENT));
+        
     }
     
     @Override

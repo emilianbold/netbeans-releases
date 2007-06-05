@@ -345,6 +345,10 @@ public class UnitTab extends javax.swing.JPanel {
     }
     
     private void showDetailsAtRow (int row) {
+        showDetailsAtRow(row, null);
+    }
+    
+    private void showDetailsAtRow (int row, Action action) {
         if (row == -1) {
             details.setUnit (null);
         } else {
@@ -353,10 +357,10 @@ public class UnitTab extends javax.swing.JPanel {
                 UnitCategory category = model.getCategoryAtRow (row);
                 details.setUnitCategory (category);
             } else {
-                details.setUnit (u);
+                details.setUnit (u, action);
             }
         }
-    }
+    }    
     
     private void listenOnSelection () {
         table.getSelectionModel ().addListSelectionListener (new ListSelectionListener () {
@@ -373,8 +377,13 @@ public class UnitTab extends javax.swing.JPanel {
                     int selectedRow = lsm.getMinSelectionIndex ();
                     popupActionsSupport.rowChanged (selectedRow);
                     //selectedRow is selected
-                    showDetailsAtRow (selectedRow);
-                    
+                    Action action = null;
+                    if (activateAction != null && activateAction.isEnabled()) {
+                        action = activateAction;
+                    } else if (deactivateAction != null && deactivateAction.isEnabled()) {
+                        action = deactivateAction;
+                    }                    
+                    showDetailsAtRow (selectedRow, action);                    
                 }
             }
         });
@@ -454,7 +463,7 @@ public class UnitTab extends javax.swing.JPanel {
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(tbActions, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 55, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(lTabActionDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE)
+                        .add(lTabActionDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 428, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(lSearch)
                         .add(4, 4, 4)
@@ -463,7 +472,7 @@ public class UnitTab extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(bTabAction)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(lSelectionInfo, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 591, Short.MAX_VALUE)))
+                        .add(lSelectionInfo, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 616, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(

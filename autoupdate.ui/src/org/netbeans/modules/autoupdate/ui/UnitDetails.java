@@ -23,6 +23,7 @@ import java.io.CharConversionException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Action;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.UpdateElement;
@@ -48,17 +49,24 @@ public class UnitDetails extends DetailsPanel{
         getDetails().setText(text);
         getDetails().setCaretPosition(0);        
     }
+
+    public void setUnit(Unit u) {
+        setUnit(u, null);
+    }
     
     @SuppressWarnings ("deprecation")
-    public void setUnit(Unit u) {
+    public void setUnit(Unit u, Action action) {
         if (u == null) {
             getDetails ().setText ("<i>" + getBundle ("UnitDetails_Category_NoDescription") + "</i>"); // NOI18N
+            setTitle(null);
         } else {
             String text;
             try {
                 boolean showDetailsForDevelopers = u.updateUnit != null && u.updateUnit.getInstalled() != null;
                 //text = "<h3>" + u.annotateDisplayName(u.annotate(XMLUtil.toElementContent(u.getDisplayName()))) + "</h3>"; // NOI18N
                 text = "<h3>" + u.annotate(XMLUtil.toElementContent(u.getDisplayName())) + "</h3>"; // NOI18N
+                setTitle(text);text = "";//NOI18N
+                setActionListener(action);
                 if (! showDetailsForDevelopers) {
                     text += "<b>" + getBundle ("UnitDetails_Plugin_CodeName") + "</b>" + u.annotate(u.updateUnit.getCodeName() + "<br>"); // NOI18N
                 }
