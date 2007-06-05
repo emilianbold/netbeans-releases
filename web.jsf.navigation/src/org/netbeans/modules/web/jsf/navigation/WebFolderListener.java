@@ -245,9 +245,10 @@ public class WebFolderListener extends FileChangeAdapter{
                 }
             } else {
                 view.resetNodeWidget(oldNode, false);
+                pfc.removePageName2Page(oldDisplayName, false);
             }
         }
-        view.validateGraph();
+//        view.validateGraph();
         
     }
         
