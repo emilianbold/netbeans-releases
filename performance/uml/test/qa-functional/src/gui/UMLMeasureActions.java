@@ -34,6 +34,8 @@ public class UMLMeasureActions  {
             
         suite.addTest(new OpenUMLProject("measureTime", "Open UML Project"));
         suite.addTest(new ReverseEngineering("measureTime", "Reverse Engineering"));
+        suite.addTest(new OpenUMLDiagram("measureTime", "Open UML Diagram"));
+        suite.addTest(new CreateEmptyDiagram("measureTime", "Create Empty UML Diagram"));
         return suite;
     }
     
