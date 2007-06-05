@@ -73,20 +73,25 @@ public class PersistentObjectList<T extends PersistentObject> {
                 LOGGER.log(Level.WARNING, "setObjects: ignoring object with incorrect ElementHandle {0} (expected {1})", new Object[] { sourceHandle, typeHandle }); // NOI18N
             }
         }
+        boolean fireChange;
         if (list.size() > 0) {
             type2Objects.put(typeHandle, list);
+            fireChange = true;
         } else {
-            type2Objects.remove(typeHandle);
+            List<T> oldList = type2Objects.remove(typeHandle);
+            fireChange = oldList != null;
         }
-        changeSupport.fireChange();
+        if (fireChange) {
+            changeSupport.fireChange();
+        }
     }
 
     public List<T> remove(ElementHandle<TypeElement> typeHandle) {
-        List<T> list = type2Objects.remove(typeHandle);
-        if (list != null) {
+        List<T> oldList = type2Objects.remove(typeHandle);
+        if (oldList != null) {
             changeSupport.fireChange();
         }
-        return list;
+        return oldList;
     }
 
     public void clear() {

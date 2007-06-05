@@ -111,8 +111,9 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
 
     void typesAdded(Iterable<? extends ElementHandle<TypeElement>> typeHandles) {
         // XXX assert not in AMH java context
-        LOGGER.log(Level.FINE, "typesAdded called with {0}", typeHandles); // NOI18N
+        LOGGER.log(Level.FINE, "typesAdded: called with {0}", typeHandles); // NOI18N
         if (!initialized) {
+            LOGGER.log(Level.FINE, "typesAdded: not initialized, firing change event"); // NOI18N
             fireChange();
             return;
         }
@@ -130,8 +131,9 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
 
     void typesRemoved(Iterable<? extends ElementHandle<TypeElement>> typeHandles) {
         // XXX assert not in AMH java context
-        LOGGER.log(Level.FINE, "typesRemoved called with {0}", typeHandles); // NOI18N
+        LOGGER.log(Level.FINE, "typesRemoved: called with {0}", typeHandles); // NOI18N
         if (!initialized) {
+            LOGGER.log(Level.FINE, "typesRemoved: not initialized, firing change event"); // NOI18N
             fireChange();
             return;
         }
@@ -145,8 +147,9 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
 
     void typesChanged(Iterable<? extends ElementHandle<TypeElement>> typeHandles) {
         // XXX assert not in AMH java context
-        LOGGER.log(Level.FINE, "typesChanged called with {0}", typeHandles); // NOI18N
+        LOGGER.log(Level.FINE, "typesChanged: called with {0}", typeHandles); // NOI18N
         if (!initialized) {
+            LOGGER.log(Level.FINE, "typesChanged: not initialized, firing change event"); // NOI18N
             fireChange();
             return;
         }
@@ -164,6 +167,8 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
                 if (modified) {
                     LOGGER.log(Level.FINE, "typesChanged: modified objects to {0}", oldNewObjects); // NOI18N
                     objectList.put(typeHandle, oldNewObjects);
+                } else {
+                    LOGGER.log(Level.FINE, "typesChanged: not modifying any objects"); // NOI18N
                 }
             } else {
                 // we don't have any object based on this type
