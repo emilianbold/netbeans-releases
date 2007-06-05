@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.refactoring.java.spi;
 
+import org.netbeans.modules.refactoring.java.spi.SearchVisitor;
 import org.netbeans.modules.refactoring.java.plugins.*;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.TreePath;

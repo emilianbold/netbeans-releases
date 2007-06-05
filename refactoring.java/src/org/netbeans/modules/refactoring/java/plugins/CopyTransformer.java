@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
+import org.netbeans.modules.refactoring.java.spi.SearchVisitor;
 import com.sun.source.tree.*;
 import javax.lang.model.element.*;
 import org.netbeans.api.java.source.WorkingCopy;
