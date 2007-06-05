@@ -97,7 +97,6 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         this.modeMask = modeMask;
         
         initPanel();
-        refreshUrlHistory();
         
         repositoryPanel.titleLabel.setText(titleLabel);
                                         
@@ -110,7 +109,8 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         // retrieve the dialog size for the largest configuration
         updateVisibility("svn+");                                                                       // NOI18N
         maxNeededSize = repositoryPanel.getPreferredSize();
-        updateVisibility();
+        
+        refreshUrlHistory();
     }
     
     public void selectUrl(SVNUrl url, boolean force) {
@@ -185,6 +185,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             JTextComponent textEditor = getUrlComboEditor();
             textEditor.selectAll();            
         }         
+        updateVisibility();
     }
 
     public void storeRecentUrls() {
@@ -505,7 +506,6 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
 
     private void setValid(boolean valid, String message) {
         boolean oldValue = this.valid;
-        //String oldMessage = this.message;
         this.message = message;
         this.valid = valid;
         fireValidPropertyChanged(oldValue, valid);
