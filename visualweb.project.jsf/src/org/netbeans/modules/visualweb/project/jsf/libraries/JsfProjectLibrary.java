@@ -44,19 +44,33 @@ public class JsfProjectLibrary {
     private static final String JAR_HEADER = "nbinst:///";
     private static final String JAR_TAIL = "!/";
 
-    // JSF RI (Reference Implementation) libraries for both Compile and Deploy
-    public static final String[] ALLTIME_LIBS_JSFRI = {
+    // JSF 1.1 RI (Reference Implementation) libraries for both Compile and Deploy
+    public static final String[] ALLTIME_LIBS_JSF11RI = {
         "jstl11",
     };
 
-    // JSF RI (Reference Implementation) libraries for Compile only
-    public static final String[] DESIGNTIME_LIBS_JSFRI = {
+    // JSF 1.1 RI (Reference Implementation) libraries for Compile only
+    public static final String[] DESIGNTIME_LIBS_JSF11RI = {
         "jsf-designtime",
     };
 
-    // JSF RI (Reference Implementation) libraries for Deploy only
-    public static final String[] RUNTIME_LIBS_JSFRI = {
+    // JSF 1.1 RI (Reference Implementation) libraries for Deploy only
+    public static final String[] RUNTIME_LIBS_JSF11RI = {
         "jsf-runtime",
+    };
+
+    // JSF 1.2 RI (Reference Implementation) libraries for both Compile and Deploy
+    public static final String[] ALLTIME_LIBS_JSF12RI = {
+        "jsf12",
+        "jstl11",
+    };
+
+    // JSF 1.2 RI (Reference Implementation) libraries for Compile only
+    public static final String[] DESIGNTIME_LIBS_JSF12RI = {
+    };
+
+    // JSF 1.2 RI (Reference Implementation) libraries for Deploy only
+    public static final String[] RUNTIME_LIBS_JSF12RI = {
     };
 
     // JSF 1.1 support libraries for both Compile and Deploy
@@ -112,7 +126,25 @@ public class JsfProjectLibrary {
         String[] alltimeRIList = new String[0];
         String[] designtimeRIList = new String[0];
         String[] runtimeRIList = new String[0];
-        if (JsfProjectUtils.isJavaEE5Project(project)) {
+        boolean isJavaEE5Project = JsfProjectUtils.isJavaEE5Project(project);
+        ClassPath cp = ClassPath.getClassPath(JsfProjectUtils.getDocumentRoot(project), ClassPath.COMPILE);
+        if (cp.findResource("javax/faces/FacesException.class") == null && //NOI18N
+            cp.findResource("org/apache/myfaces/webapp/StartupServletContextListener.class") == null) { //NOI18N
+            if (isJavaEE5Project) {
+                Library jsf12Library = LibraryManager.getDefault().getLibrary(ALLTIME_LIBS_JSF12RI[0]);
+                if (jsf12Library != null) {
+                    alltimeRIList = ALLTIME_LIBS_JSF12RI;
+                    designtimeRIList = DESIGNTIME_LIBS_JSF12RI;
+                    runtimeRIList = RUNTIME_LIBS_JSF12RI;
+                }
+            } else {
+                alltimeRIList = ALLTIME_LIBS_JSF11RI;
+                designtimeRIList = DESIGNTIME_LIBS_JSF11RI;
+                runtimeRIList = RUNTIME_LIBS_JSF11RI;
+            }
+        }
+
+        if (isJavaEE5Project) {
             defaultTheme = DEFAULT_JSF12_THEME;
             alltimeList = ALLTIME_LIBS_JSF12;
             designtimeList = DESIGNTIME_LIBS_JSF12;
@@ -122,20 +154,6 @@ public class JsfProjectLibrary {
             alltimeList = ALLTIME_LIBS_JSF11;
             designtimeList = DESIGNTIME_LIBS_JSF11;
             runtimeList = RUNTIME_LIBS_JSF11;
-
-            ClassPath cp = ClassPath.getClassPath(JsfProjectUtils.getDocumentRoot(project), ClassPath.COMPILE);
-            if (cp.findResource("javax/faces/FacesException.class") == null && //NOI18N
-                cp.findResource("org/apache/myfaces/webapp/StartupServletContextListener.class") == null) { //NOI18N
-                designtimeRIList = DESIGNTIME_LIBS_JSFRI;
-                runtimeRIList = RUNTIME_LIBS_JSFRI;
-
-                if (cp.findResource("javax/servlet/jsp/jstl/core/Config.class") == null) { // NOI18N
-                    Library jstlLibrary = LibraryManager.getDefault().getLibrary(ALLTIME_LIBS_JSFRI[0]);
-                    if (jstlLibrary != null) {
-                        alltimeRIList = ALLTIME_LIBS_JSFRI;
-                    }
-                }
-            }
         }
 
         JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_JSF_PROJECT_LIBRARIES_DIR, JsfProjectConstants.PATH_LIBRARIES);
