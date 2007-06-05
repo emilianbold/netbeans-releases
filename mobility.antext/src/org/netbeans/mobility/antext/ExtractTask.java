@@ -19,6 +19,10 @@
 
 package org.netbeans.mobility.antext;
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
@@ -37,17 +41,20 @@ import org.apache.tools.ant.types.Reference;
  * <li>ClassPath - Semi-required. Specifies classpath. All archives on classpath. It supports jar and zip archives only, not directories. If this attribute is not specified, you need to specified either ClassPathRef attribute or nested ClassPath tag.
  * <li>ClassPathRef - Semi-required. Specifies classpath by reference.
  * <li>Nested ClassPath - Semi-required. Specifies classpath using nested element.
+ * <li>ExcludeClassPath - Optional. Specifies classpath to exclude from extraction.
+ * <li>ExcludeClassPathRef - Optional. Specifies classpath to exclude by reference.
+ * <li>Nested ExcludeClassPath - Optional. Specifies classpath to exclude using nested element.
  * <li>Dir - Required. Specifies target directory in which all files from classpath should be extracted to.
  * <li>ExcludeManifest - Optional. Specifies if META-INF/Manifest.mf files should be excluded from extraction. Default: false.
  * </ol>
  *
- * @author David Kaspar
+ * @author David Kaspar, Adam Sotona
  */
 public class ExtractTask extends Task
 {
     
-    /** Holds value of property classpath. */
-    private Path classPath;
+    /** Holds value of property classpath and exclasspath. */
+    private Path classPath, exClassPath;
     
     /** Holds value of property dir. */
     private File dir;
@@ -68,14 +75,14 @@ public class ExtractTask extends Task
         if (!dir.exists()  ||  !dir.isDirectory())
             throw new BuildException(Bundle.getMessage("ERR_Extract_InvalidDir", dir != null ? dir.getAbsolutePath() : null)); // NO I18N
         final String[] archives = classPath.list();
-        
+        final Set excludes = exClassPath == null ? Collections.EMPTY_SET : new HashSet(Arrays.asList(exClassPath.list()));
         long srcLastModified = Long.MIN_VALUE;
         long destLastModified = Long.MAX_VALUE;
         
         if (archives != null) for (int a = 0; a < archives.length; a ++)
         {
             final File source = new File(archives[a]);
-            if (! source.exists())
+            if (excludes.contains(archives[a]) || !source.exists())
                 continue;
             if (source.isFile())
             {
@@ -122,6 +129,7 @@ public class ExtractTask extends Task
         
         if (archives != null) for (int a = 0; a < archives.length; a ++)
         {
+            if (excludes.contains(archives[a])) continue;
             final File source = new File(archives[a]);
             log(Bundle.getMessage("MSG_Extract_ProcessingPath", source.getAbsolutePath()), Project.MSG_VERBOSE); // NO I18N
             if (!source.exists())
@@ -195,12 +203,43 @@ public class ExtractTask extends Task
     }
     
     /**
+     * Setter for property classPath.
+     * @param classPath New value of property classPath.
+     */
+    public void setExcludeClassPath(final Path classPath)
+    {
+        createExcludeClassPath().append(classPath);
+    }
+    
+    /**
+     * Creates ClassPath.
+     * @return Created Path
+     */
+    public Path createExcludeClassPath()
+    {
+        if (exClassPath == null)
+        {
+            exClassPath = new Path(getProject());
+        }
+        return exClassPath.createPath();
+    }
+    
+    /**
      * Setter for property classPathRef.
      * @param classPathRef New value of property classPathRef.
      */
     public void setClassPathRef(final Reference classPathRef)
     {
         createClassPath().setRefid(classPathRef);
+    }
+    
+    /**
+     * Setter for property classPathRef.
+     * @param classPathRef New value of property classPathRef.
+     */
+    public void setExcludeClassPathRef(final Reference classPathRef)
+    {
+        createExcludeClassPath().setRefid(classPathRef);
     }
     
     /**

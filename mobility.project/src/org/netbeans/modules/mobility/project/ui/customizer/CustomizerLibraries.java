@@ -24,7 +24,10 @@
  */
 package org.netbeans.modules.mobility.project.ui.customizer;
 
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import org.netbeans.api.mobility.project.ui.customizer.ProjectProperties;
@@ -42,7 +45,7 @@ import org.openide.util.NbBundle;
  */
 public class CustomizerLibraries extends JPanel implements CustomizerPanel, VisualPropertyGroup {
     
-    private static final String[] PROPERTY_GROUP = new String[] {DefaultPropertiesDescriptor.LIBS_CLASSPATH};
+    private static final String[] PROPERTY_GROUP = new String[] {DefaultPropertiesDescriptor.LIBS_CLASSPATH, DefaultPropertiesDescriptor.EXTRA_CLASSPATH};
     
     private VisualPropertySupport vps;
     final private VisualClasspathSupport vcs;
@@ -54,7 +57,7 @@ public class CustomizerLibraries extends JPanel implements CustomizerPanel, Visu
         initComponents();
         initAccessibility();
         vcs = new VisualClasspathSupport(
-                jListClasspath,
+                jTableClasspath,
                 jButtonAddJar,
                 jButtonAddFolder,
                 jButtonAddLibrary,
@@ -77,7 +80,7 @@ public class CustomizerLibraries extends JPanel implements CustomizerPanel, Visu
         defaultCheck = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
         jScrollClasspath = new javax.swing.JScrollPane();
-        jListClasspath = new javax.swing.JList();
+        jTableClasspath = new javax.swing.JTable();
         jButtonAddArtifact = new javax.swing.JButton();
         jButtonAddLibrary = new javax.swing.JButton();
         jButtonAddJar = new javax.swing.JButton();
@@ -101,7 +104,7 @@ public class CustomizerLibraries extends JPanel implements CustomizerPanel, Visu
         defaultCheck.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustLibs_UseDefault")); // NOI18N
 
         jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CustomizerLibraries.class).getString("MNM_CustLibs_Libraries").charAt(0));
-        jLabel1.setLabelFor(jListClasspath);
+        jLabel1.setLabelFor(jTableClasspath);
         jLabel1.setText(NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustLibs_Libraries")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -112,8 +115,8 @@ public class CustomizerLibraries extends JPanel implements CustomizerPanel, Visu
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(jLabel1, gridBagConstraints);
 
-        jScrollClasspath.setViewportView(jListClasspath);
-        jListClasspath.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustLibs_Libs")); // NOI18N
+        jScrollClasspath.setViewportView(jTableClasspath);
+        jTableClasspath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustLibs_Libs")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -208,7 +211,6 @@ public class CustomizerLibraries extends JPanel implements CustomizerPanel, Visu
         gridBagConstraints.weighty = 1.0;
         add(jButtonMoveDown, gridBagConstraints);
         jButtonMoveDown.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustLibs_MoveDown")); // NOI18N
-
     }// </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {
@@ -229,13 +231,20 @@ public class CustomizerLibraries extends JPanel implements CustomizerPanel, Visu
     }
     
     public void initGroupValues(final boolean useDefault) {
-        vcs.setPropertyName(null);
-        String propertyName = vps.translatePropertyName(configuration, DefaultPropertiesDescriptor.LIBS_CLASSPATH, useDefault);
-        List<VisualClassPathItem> value = (List<VisualClassPathItem>)props.get(propertyName);
+        vcs.setPropertyNames(null, null);
+        String libsClasspath = vps.translatePropertyName(configuration, DefaultPropertiesDescriptor.LIBS_CLASSPATH, useDefault);
+        String extraClasspath = vps.translatePropertyName(configuration, DefaultPropertiesDescriptor.EXTRA_CLASSPATH, useDefault);
+        List<VisualClassPathItem> value = (List<VisualClassPathItem>)props.get(libsClasspath);
+        Set<VisualClassPathItem> extra = new HashSet((List<VisualClassPathItem>)props.get(extraClasspath));
+        Iterator<VisualClassPathItem> it = value.iterator();
+        while (it.hasNext()) {
+            VisualClassPathItem vcpi = it.next();
+            if (extra.contains(vcpi)) vcpi.setExtra(true);
+        }
         vcs.setVisualClassPathItems( value );
-        vcs.setPropertyName(propertyName);
+        vcs.setPropertyNames(libsClasspath, extraClasspath);
         vcs.setEnabled(!useDefault);
-        jListClasspath.setBackground(UIManager.getDefaults().getColor(useDefault ?  "TextField.inactiveBackground" : "List.background")); //NOI18N
+        jTableClasspath.setBackground(UIManager.getDefaults().getColor(useDefault ?  "TextField.inactiveBackground" : "List.background")); //NOI18N
         jLabel1.setEnabled(!useDefault);
     }
    
@@ -250,8 +259,8 @@ public class CustomizerLibraries extends JPanel implements CustomizerPanel, Visu
     private javax.swing.JButton jButtonMoveUp;
     private javax.swing.JButton jButtonRemove;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JList jListClasspath;
     private javax.swing.JScrollPane jScrollClasspath;
+    private javax.swing.JTable jTableClasspath;
     // End of variables declaration//GEN-END:variables
     
 }

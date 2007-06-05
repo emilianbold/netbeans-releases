@@ -26,10 +26,16 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Vector;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.mobility.project.ui.customizer.ProjectProperties;
 import org.netbeans.api.project.Project;
@@ -53,7 +59,7 @@ public final class VisualClasspathSupport {
     
     static File lastFile = null;
     
-    final JList classpathList;
+    final JTable classpathTable;
     final JButton addJarButton;
     final JButton addFolderButton;
     final JButton addLibraryButton;
@@ -64,12 +70,12 @@ public final class VisualClasspathSupport {
     final JButton downButton;
     private FileObject myRoot;
     
-    private final DefaultListModel classpathModel;
+    private final ClasspathTableModel classpathModel;
     private ProjectProperties properties;
-    private String propertyName;
+    private String libsClasspath, extraClasspath;
     
     
-    public VisualClasspathSupport( JList classpathList,
+    public VisualClasspathSupport( JTable classpathTable,
             JButton addJarButton,
             JButton addFolderButton,
             JButton addLibraryButton,
@@ -79,10 +85,14 @@ public final class VisualClasspathSupport {
             JButton upButton,
             JButton downButton ) {
         // Remember all buttons
-        this.classpathList = classpathList;
-        this.classpathModel = new DefaultListModel();
-        this.classpathList.setModel( classpathModel );
-        this.classpathList.setCellRenderer( new ClassPathCellRenderer() );
+        this.classpathTable = classpathTable;
+        this.classpathModel = new ClasspathTableModel();
+        this.classpathTable.setModel( classpathModel );
+        this.classpathTable.getSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        this.classpathTable.setDefaultRenderer(VisualClassPathItem.class, new ClassPathRenderer());
+        TableColumn column = classpathTable.getColumnModel().getColumn(1);
+        JTableHeader header = classpathTable.getTableHeader();
+        column.setMaxWidth(24 + SwingUtilities.computeStringWidth(header.getFontMetrics(header.getFont()), String.valueOf(column.getHeaderValue())));
         
         this.addJarButton = addJarButton;
         this.addFolderButton = addFolderButton;
@@ -105,7 +115,7 @@ public final class VisualClasspathSupport {
         upButton.addActionListener( csl );
         downButton.addActionListener( csl );
         // On list selection
-        classpathList.getSelectionModel().addListSelectionListener( csl );
+        classpathTable.getSelectionModel().addListSelectionListener( csl );
         
         // Set the initial state of the buttons
         csl.valueChanged( null );
@@ -118,13 +128,13 @@ public final class VisualClasspathSupport {
     }
     
     public void setEnabled(final boolean enabled) {
-        classpathList.setEnabled(enabled);
+        classpathTable.setEnabled(enabled);
         addJarButton.setEnabled(enabled);
         addFolderButton.setEnabled(enabled);
         addLibraryButton.setEnabled(enabled);
         addArtifactButton.setEnabled(enabled);
         if (enabled) {
-            final int[] si = classpathList.getSelectedIndices();
+            final int[] si = classpathTable.getSelectedRows();
             
             // remove enabled only if selection is not empty
             boolean remove = si != null && si.length > 0;
@@ -145,7 +155,7 @@ public final class VisualClasspathSupport {
             
             // up button enabled if selection is not empty
             // and the laset selected index is not the last row
-            final boolean down = si != null && si.length > 0 && si[si.length-1] != classpathModel.size() - 1;
+            final boolean down = si != null && si.length > 0 && si[si.length-1] != classpathModel.getRowCount() - 1;
             
             removeButton.setEnabled( remove );
             upButton.setEnabled( up );
@@ -176,18 +186,31 @@ public final class VisualClasspathSupport {
         return items;
     }
 
-    public synchronized void setPropertyName(String name) {
-        this.propertyName = name;
+    public List<VisualClassPathItem> getExtraClassPathItems() {
+        
+        final ArrayList<VisualClassPathItem> items = new ArrayList<VisualClassPathItem>();
+        for( final Enumeration e = classpathModel.elements(); e.hasMoreElements(); ) {
+            final VisualClassPathItem cpItem = (VisualClassPathItem)e.nextElement();
+            if (cpItem.isExtra()) items.add( cpItem );
+        }
+        
+        return items;
+    }
+
+    public synchronized void setPropertyNames(String libs, String extra) {
+        this.libsClasspath = libs;
+        this.extraClasspath = extra;
     }
     
     private synchronized void fireActionPerformed() {
-        properties.put(propertyName, getVisualClassPathItems());
+        properties.put(libsClasspath, getVisualClassPathItems());
+        properties.put(extraClasspath, getExtraClassPathItems());
     }
     
     // Private methods ---------------------------------------------------------
     
     protected void addLibraries(final Library[] libraries) {
-        final int[] si = classpathList.getSelectedIndices();
+        final int[] si = classpathTable.getSelectedRows();
         final int lastIndex = si == null || si.length == 0 ? -1 : si[si.length - 1];
         for (int i = 0; i < libraries.length; i++) {
             final String libraryName = libraries[i].getName();
@@ -203,7 +226,7 @@ public final class VisualClasspathSupport {
     
     protected void addJarFiles( File files[] ) {
         
-        final int[] si = classpathList.getSelectedIndices();
+        final int[] si = classpathTable.getSelectedRows();
         
         final int lastIndex = si == null || si.length == 0 ? -1 : si[si.length - 1];
         
@@ -223,7 +246,7 @@ public final class VisualClasspathSupport {
     
     protected void addFolders( File files[] ) {
         
-        final int[] si = classpathList.getSelectedIndices();
+        final int[] si = classpathTable.getSelectedRows();
         
         final int lastIndex = si == null || si.length == 0 ? -1 : si[si.length - 1];
         
@@ -243,7 +266,7 @@ public final class VisualClasspathSupport {
     
     protected void addArtifacts( final AntArtifactChooser.ArtifactItem artifacts[] ) {
         
-        final int[] si = classpathList.getSelectedIndices();
+        final int[] si = classpathTable.getSelectedRows();
         
         final int lastIndex = si == null || si.length == 0 ? -1 : si[si.length - 1];
         
@@ -273,7 +296,7 @@ public final class VisualClasspathSupport {
     
     protected void removeElements() {
         
-        final int[] si = classpathList.getSelectedIndices();
+        final int[] si = classpathTable.getSelectedRows();
         
         if(  si == null || si.length == 0 ) {
             assert false : "Remove button should be disabled"; // NOI18N
@@ -285,13 +308,13 @@ public final class VisualClasspathSupport {
         }
         
         
-        if ( !classpathModel.isEmpty() ) {
+        if (classpathModel.getRowCount() > 0) {
             // Select reasonable item
             int selectedIndex = si[si.length - 1] - si.length  + 1;
-            if ( selectedIndex > classpathModel.size() - 1) {
-                selectedIndex = classpathModel.size() - 1;
+            if ( selectedIndex > classpathModel.getRowCount() - 1) {
+                selectedIndex = classpathModel.getRowCount() - 1;
             }
-            classpathList.setSelectedIndex( selectedIndex );
+            classpathTable.getSelectionModel().setSelectionInterval(selectedIndex, selectedIndex);
         }
         
         fireActionPerformed();
@@ -300,7 +323,7 @@ public final class VisualClasspathSupport {
     
     protected void moveUp() {
         
-        int[] si = classpathList.getSelectedIndices();
+        int[] si = classpathTable.getSelectedRows();
         
         if(  si == null || si.length == 0 ) {
             assert false : "MoveUp button should be disabled"; // NOI18N
@@ -308,7 +331,7 @@ public final class VisualClasspathSupport {
         
         // Move the items up
         for( int i = 0; i < si.length; i++ ) {
-            final Object item = classpathModel.get( si[i] );
+            final VisualClassPathItem item = classpathModel.get( si[i] );
             classpathModel.remove( si[i] );
             classpathModel.add( si[i] - 1, item );
         }
@@ -316,15 +339,16 @@ public final class VisualClasspathSupport {
         // Keep the selection a before
         for( int i = 0; i < si.length; i++ ) {
             si[i] -= 1;
+            if (i==0) classpathTable.getSelectionModel().setSelectionInterval(si[i], si[i]);
+            else classpathTable.getSelectionModel().addSelectionInterval(si[i], si[i]);
         }
-        classpathList.setSelectedIndices( si );
         
         fireActionPerformed();
     }
     
     protected void moveDown() {
         
-        int[] si = classpathList.getSelectedIndices();
+        int[] si = classpathTable.getSelectedRows();
         
         if(  si == null || si.length == 0 ) {
             assert false : "MoveDown button should be disabled"; // NOI18N
@@ -332,7 +356,7 @@ public final class VisualClasspathSupport {
         
         // Move the items up
         for( int i = si.length -1 ; i >= 0 ; i-- ) {
-            final Object item = classpathModel.get( si[i] );
+            final VisualClassPathItem item = classpathModel.get( si[i] );
             classpathModel.remove( si[i] );
             classpathModel.add( si[i] + 1, item );
         }
@@ -340,9 +364,9 @@ public final class VisualClasspathSupport {
         // Keep the selection a before
         for( int i = 0; i < si.length; i++ ) {
             si[i] += 1;
+            if (i==0) classpathTable.getSelectionModel().setSelectionInterval(si[i], si[i]);
+            else classpathTable.getSelectionModel().addSelectionInterval(si[i], si[i]);
         }
-        classpathList.setSelectedIndices( si );
-        
         
         fireActionPerformed();
     }
@@ -442,19 +466,17 @@ public final class VisualClasspathSupport {
     }
     
     
-    private static class ClassPathCellRenderer extends DefaultListCellRenderer {
+    private static class ClassPathRenderer extends DefaultTableCellRenderer {
         
-        private ClassPathCellRenderer()
+        private ClassPathRenderer()
         {
             //Just to avoid creation of accessor class
         }
         
-        public Component getListCellRendererComponent( final JList list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus) {
-            
-            super.getListCellRendererComponent( list, value, index, isSelected, cellHasFocus );
+        public Component getTableCellRendererComponent( JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column ) {
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column );
             final VisualClassPathItem visualClassPathItem = (VisualClassPathItem)value;
             setIcon(visualClassPathItem.getIcon());
-            
             return this;
         }
         
@@ -476,5 +498,68 @@ public final class VisualClasspathSupport {
             return NbBundle.getMessage( VisualClasspathSupport.class, "LBL_JarFileFilter"); //NOI18N
         }
         
+    }
+    
+    private class ClasspathTableModel extends AbstractTableModel {
+
+        private Vector<VisualClassPathItem> items = new Vector();
+
+        public String getColumnName(int column) {
+            return NbBundle.getMessage(VisualClasspathSupport.class, column == 0 ? "CPTable_Column1" : "CPTable_Column2"); //NOI18N
+        }
+
+        public Class getColumnClass(int arg0) {
+            return arg0 == 0 ? VisualClassPathItem.class : Boolean.class;
+        }
+
+        public boolean isCellEditable(int rowIndex, int columnIndex) {
+            return columnIndex == 1;
+        }
+
+        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+            items.get(rowIndex).setExtra(!((Boolean)aValue).booleanValue());
+            VisualClasspathSupport.this.fireActionPerformed();
+        }
+        
+        public int getRowCount() {
+            return items.size();
+        }
+
+        public int getColumnCount() {
+            return 2;
+        }
+
+        public VisualClassPathItem get(int row) {
+            return items.get(row);
+        }
+        
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            return columnIndex == 0 ? get(rowIndex) : Boolean.valueOf(!get(rowIndex).isExtra());
+        }
+       
+        public void clear() {
+            items.clear();
+            fireTableDataChanged();
+        }
+        
+        public void addElement(VisualClassPathItem elem) {
+            int row = items.size();
+            items.add(elem);
+            fireTableRowsInserted(row, row);
+        }
+
+        public void add(int index, VisualClassPathItem elem) {
+            items.add(index, elem);
+            fireTableRowsInserted(index, index);
+        }
+
+        public void remove(int index) {
+            items.remove(index);
+            fireTableRowsDeleted(index, index);
+        }
+        
+        public Enumeration<VisualClassPathItem> elements() {
+            return items.elements();
+        }
     }
 }

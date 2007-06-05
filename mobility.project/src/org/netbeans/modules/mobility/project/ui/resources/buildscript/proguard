@@ -23,7 +23,7 @@
         <mkdir dir="${{obfuscator.destjar.dir}}"/>
         <jar jarfile="${{obfuscator.srcjar}}" basedir="${{buildsystem.baton}}"/>
         <property name="obfuscation.custom" value=""/>
-        <nb-obfuscate srcjar="${{obfuscator.srcjar}}" destjar="${{obfuscator.destjar}}" obfuscatorclasspath="${{obfuscator.classpath}}" classpath="${{platform.bootclasspath}}" obfuscationLevel="${{obfuscation.level}}" extraScript="${{obfuscation.custom}}"/>
+        <nb-obfuscate srcjar="${{obfuscator.srcjar}}" destjar="${{obfuscator.destjar}}" obfuscatorclasspath="${{obfuscator.classpath}}" classpath="${{platform.bootclasspath}}:${{extra.classpath}}" obfuscationLevel="${{obfuscation.level}}" extraScript="${{obfuscation.custom}}"/>
         <mkdir dir="${{obfuscated.classes.dir}}"/>
         <unjar src="${{obfuscator.destjar}}" dest="${{obfuscated.classes.dir}}"/>
         <nb-overrideproperty name="buildsystem.baton" value="${{obfuscated.classes.dir}}"/>

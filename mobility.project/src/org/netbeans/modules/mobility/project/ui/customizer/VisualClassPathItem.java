@@ -90,7 +90,7 @@ public final class VisualClassPathItem {
     private String display;
     private String rawText;
     private URI uri;
-    
+    private boolean extra = false;
     
     
     public static VisualClassPathItem create( final Library library ) {
@@ -131,6 +131,13 @@ public final class VisualClassPathItem {
         return s.endsWith(".jar") || s.endsWith(".zip"); //NOI18N
     }
     
+    public void setExtra(boolean extra) {
+        this.extra = extra;
+    }
+    
+    public boolean isExtra() {
+        return extra;
+    }
     
     public VisualClassPathItem( AntArtifact cpElement, URI uri, int type, String rawText, String display ) {
         this(cpElement, type, rawText, display);

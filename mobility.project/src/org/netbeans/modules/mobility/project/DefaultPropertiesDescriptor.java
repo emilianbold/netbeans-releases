@@ -42,6 +42,7 @@ public class DefaultPropertiesDescriptor implements ProjectPropertiesDescriptor 
     public static final String DEBUG_LEVEL = "debug.level"; //NOI18N
     
     public static final String LIBS_CLASSPATH = "libs.classpath"; //NOI18N
+    public static final String EXTRA_CLASSPATH = "extra.classpath"; //NOI18N
     public static final String JAVAC_DEBUG = "javac.debug"; //NOI18N
     public static final String JAVAC_DEPRECATION = "javac.deprecation"; //NOI18N
     public static final String JAVAC_OPTIMIZATION = "javac.optimize"; //NOI18N
@@ -138,6 +139,7 @@ public class DefaultPropertiesDescriptor implements ProjectPropertiesDescriptor 
             set.add(new PropertyDescriptor(DIST_JAR, true, DefaultPropertyParsers.STRING_PARSER));
             set.add(new PropertyDescriptor(DIST_JAD, true, DefaultPropertyParsers.STRING_PARSER));
             set.add(new PropertyDescriptor(LIBS_CLASSPATH, true, DefaultPropertyParsers.PATH_PARSER, EMPTY));
+            set.add(new PropertyDescriptor(EXTRA_CLASSPATH, true, DefaultPropertyParsers.PATH_PARSER, EMPTY));
             set.add(new PropertyDescriptor(JAR_COMPRESS, true, DefaultPropertyParsers.BOOLEAN_PARSER, TRUE));
             set.add(new PropertyDescriptor(JAVAC_DEBUG, true, DefaultPropertyParsers.BOOLEAN_PARSER, TRUE));
             set.add(new PropertyDescriptor(JAVAC_OPTIMIZATION, true, DefaultPropertyParsers.BOOLEAN_PARSER, FALSE));

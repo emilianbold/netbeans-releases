@@ -18,11 +18,7 @@
     
     <target name="extract-libs" description="Extracts all bundled libraries.">
         <mkdir dir="${{build.classes.dir}}"/>
-        <nb-extract dir="${{build.classes.dir}}" excludeManifest="true">
-            <classpath>
-                <path path="${{libs.classpath}}"/>
-            </classpath>
-        </nb-extract>
+        <nb-extract dir="${{build.classes.dir}}" excludeManifest="true" classpath="${{libs.classpath}}" excludeclasspath="${{extra.classpath}}"/>
     </target>
 
     <target name="post-compile"/>
