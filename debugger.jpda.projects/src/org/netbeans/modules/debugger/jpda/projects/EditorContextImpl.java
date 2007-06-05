@@ -775,8 +775,12 @@ public class EditorContextImpl extends EditorContext {
                     int offset = currentOffset;
                     //Scope scope = ci.getTreeUtilities().scopeFor(offset);
                     String text = ci.getText();
-                    char c;
-                    while ((c = text.charAt(offset)) != '(' && c != ')' && c != '\n' && c != '\r') offset++;
+                    int l = text.length();
+                    char c = 0;
+                    while (offset < l && (c = text.charAt(offset)) != '(' && c != ')' && c != '\n' && c != '\r') offset++;
+                    if (offset >= l) {
+                        return ;
+                    }
                     if (c == '(') offset--;
                     
                     Tree tree = ci.getTreeUtilities().pathFor(offset).getLeaf();
@@ -1321,9 +1325,10 @@ public class EditorContextImpl extends EditorContext {
                         int offset = currentOffset;
                         
                         String text = ci.getText();
-                        char c; // Search for the end of the field declaration
-                        while ((c = text.charAt(offset)) != ';' && c != ',' && c != '\n' && c != '\r') offset++;
-                        if (c == ';' || c == ',') { // we have it, but there might be '=' sign somewhere before
+                        int l = text.length();
+                        char c = 0; // Search for the end of the field declaration
+                        while (offset < l && (c = text.charAt(offset)) != ';' && c != ',' && c != '\n' && c != '\r') offset++;
+                        if (offset < l && c == ';' || c == ',') { // we have it, but there might be '=' sign somewhere before
                             int endOffset = --offset;
                             int setOffset = -1;
                             while(offset >= 0 && (c = text.charAt(offset)) != ';' && c != ',' && c != '\n' && c != '\r') {
