@@ -136,6 +136,10 @@ abstract class OperationValidator {
                     res |= ModuleDeleterImpl.getInstance ().canDelete (module);
                 }
                 break;
+            case CUSTOM_HANDLED_COMPONENT :
+                LOGGER.log (Level.INFO, "CUSTOM_HANDLED_COMPONENT doesn't support custom uninstaller yet."); // XXX
+                res = false;
+                break;
             default:
                 assert false : "Not supported for impl " + impl;
             }
@@ -253,6 +257,9 @@ abstract class OperationValidator {
                     res |= Utilities.canEnable (m);
                 }
                 break;
+            case CUSTOM_HANDLED_COMPONENT :
+                res = false;
+                break;
             default:
                 assert false : "Not supported for impl " + impl;
             }
@@ -301,6 +308,9 @@ abstract class OperationValidator {
                     Module m =  Utilities.toModule (info);
                     res |= Utilities.canDisable (m);
                 }
+                break;
+            case CUSTOM_HANDLED_COMPONENT :
+                res = false;
                 break;
             default:
                 assert false : "Not supported for impl " + impl;

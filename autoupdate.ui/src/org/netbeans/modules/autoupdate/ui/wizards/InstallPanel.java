@@ -22,7 +22,6 @@ package org.netbeans.modules.autoupdate.ui.wizards;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.swing.JComponent;
@@ -47,6 +46,7 @@ public class InstallPanel extends javax.swing.JPanel {
         setRestartButtonsVisible (false);
     }
     
+    @Override
     public void addNotify () {
         super.addNotify ();
         RequestProcessor.getDefault ().post(new Runnable () {
@@ -115,7 +115,8 @@ public class InstallPanel extends javax.swing.JPanel {
         area.setWrapStyleWord (true);
         area.setLineWrap (true);
         area.setEditable (false);
-        area.setBackground (new JLabel ().getBackground ()); // XXX any better way how to set background?
+        area.setOpaque (false);
+        //area.setBackground (new JLabel ().getBackground ()); // XXX any better way how to set background?
         return area;
     }
     
@@ -128,7 +129,8 @@ public class InstallPanel extends javax.swing.JPanel {
             body = body + el.getDisplayName () + "<br>"; // NOI18N
         }
         area.setText (body);
-        area.setBackground (new JLabel ().getBackground ()); // XXX any better way how to set background?
+        area.setOpaque (false);
+        //area.setBackground (new JLabel ().getBackground ()); // XXX any better way how to set background?
         return area;
     }
     
@@ -148,6 +150,8 @@ public class InstallPanel extends javax.swing.JPanel {
         lDetailLabel = new javax.swing.JLabel();
         rbRestartNow = new javax.swing.JRadioButton();
         rbRestartLater = new javax.swing.JRadioButton();
+
+        pAboveSpace.setOpaque(false);
 
         org.jdesktop.layout.GroupLayout pAboveSpaceLayout = new org.jdesktop.layout.GroupLayout(pAboveSpace);
         pAboveSpace.setLayout(pAboveSpaceLayout);

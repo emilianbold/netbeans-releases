@@ -50,13 +50,15 @@ public final class InstallUnitWizardIterator implements WizardDescriptor.Iterato
     private void createPanels () {
         assert panels != null && panels.isEmpty() : "Panels are still empty";
         panels.add (new OperationDescriptionStep (installModel));
-        if (installModel.hasCustomComponents ()) {
-            panels.add (new CustomHandleStep (installModel));
-        }
         if (! installModel.allLicensesApproved ()) {
             panels.add (new LicenseApprovalStep (installModel));
         }
-        panels.add (new InstallStep (installModel));
+        if (installModel.hasCustomComponents ()) {
+            panels.add (new CustomHandleStep (installModel));
+        }
+        if (installModel.hasStandardComponents ()) {
+            panels.add (new InstallStep (installModel));
+        }
     }
     
     @SuppressWarnings ("unchecked") // XXX Can I fix it?
@@ -74,7 +76,7 @@ public final class InstallUnitWizardIterator implements WizardDescriptor.Iterato
     }
     
     public boolean hasPrevious () {
-        return index > 0 && ! (current () instanceof InstallStep);
+        return index > 0 && ! (current () instanceof InstallStep || current () instanceof CustomHandleStep);
     }
     
     public void nextPanel () {

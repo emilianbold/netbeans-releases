@@ -101,8 +101,7 @@ public class NativeComponentItem extends UpdateItemImpl {
     }
     
     public String getAgreement () {
-        assert false : "Invalid call getAgreement() on NativeComponentItem.";
-        return "";
+        return null;
         //return licenseImpl.getAgreement ();
     }
 

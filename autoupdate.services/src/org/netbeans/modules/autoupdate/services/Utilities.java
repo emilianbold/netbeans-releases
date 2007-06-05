@@ -447,8 +447,12 @@ public class Utilities {
         case FEATURE :
             mInfos = el.getModuleInfos ();
             break;
+        case CUSTOM_HANDLED_COMPONENT : // XXX: CUSTOM_HANDLED_COMPONENT should support UpdateItem<->UpdateItem dependencies
+            mInfos = Collections.emptyList ();
+            err.log (Level.INFO, "CUSTOM_HANDLED_COMPONENT should support UpdateItem<->UpdateItem dependencies.");
+            break;
         default:
-            assert false : "Upsupported for " + element + "[impl: " + el.getClass() + "]";
+            assert false : "Unsupported for " + element + "[impl: " + el.getClass() + "]";
         }
         final Set<Dependency> deps = new HashSet<Dependency> ();
         for (ModuleInfo info : mInfos) {

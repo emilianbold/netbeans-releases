@@ -45,6 +45,7 @@ import org.openide.util.NbBundle;
 public abstract class OperationWizardModel {
     private Set<UpdateElement> primaryElements;
     private Set<UpdateElement> requiredElements = null;
+    private Set<UpdateElement> customHandledElements = null;
     private Set<UpdateElement> allElements = null;
     private JButton originalCancel = null;
     private JButton originalNext = null;
@@ -75,7 +76,7 @@ public abstract class OperationWizardModel {
     public Set<UpdateElement> getPrimaryUpdateElements () {
         if (primaryElements == null) {
             primaryElements = new HashSet<UpdateElement> ();
-            for (OperationInfo<?> info : listAll ()) {
+            for (OperationInfo<?> info : getStandardInfos ()) {
                 primaryElements.add (info.getUpdateElement ());
             }
         }
@@ -90,7 +91,7 @@ public abstract class OperationWizardModel {
         if (requiredElements == null) {
             requiredElements = new HashSet<UpdateElement> ();
             
-            for (OperationInfo<?> info : listAll ()) {
+            for (OperationInfo<?> info : getStandardInfos ()) {
                 requiredElements.addAll (info.getRequiredElements ());
             }
             
@@ -107,6 +108,36 @@ public abstract class OperationWizardModel {
     
     public boolean hasCustomComponents () {
         return ! getCustomHandledContainer ().listAll ().isEmpty ();
+    }
+    
+    public boolean hasStandardComponents () {
+        return ! getBaseContainer ().listAll ().isEmpty ();
+    }
+    
+    public Set<UpdateElement> getCustomHandledComponents () {
+        if (customHandledElements == null) {
+            customHandledElements = new HashSet<UpdateElement> ();
+            
+            for (OperationInfo<?> info : getCustomHandledInfos ()) {
+                customHandledElements.add (info.getUpdateElement ());
+                customHandledElements.addAll (info.getRequiredElements ());
+            }
+        }
+        return customHandledElements;
+    }
+    
+    private List<OperationInfo<OperationSupport>> getCustomHandledInfos () {
+        return getCustomHandledContainer ().listAll ();
+    }
+    
+    @SuppressWarnings("unchecked")
+    private List<OperationInfo> getStandardInfos () {
+        List<OperationInfo> infos = new ArrayList<OperationInfo> ();
+        infos.addAll (getBaseContainer ().listAll ());
+        if (OperationType.LOCAL_DOWNLOAD == getOperation ()) {
+            infos.addAll (Containers.forUpdateNbms ().listAll ());
+        }
+        return infos;
     }
     
     public SortedMap<String, Set<String>> getBrokenDependencies () {
@@ -147,6 +178,20 @@ public abstract class OperationWizardModel {
         removeFinish (wd);
         Mnemonics.setLocalizedText (getOriginalNext (wd), NbBundle.getMessage (InstallUnitWizardModel.class,
                 "InstallUnitWizardModel_Buttons_MnemonicNext", getBundle ("InstallUnitWizardModel_Buttons_Next")));
+    }
+    
+    public void modifyOptionsForContinue (WizardDescriptor wd, boolean canFinish) {
+        if (canFinish) {
+            recognizeButtons (wd);
+            JButton b = getOriginalFinish (wd);
+            Mnemonics.setLocalizedText (b, getBundle ("InstallUnitWizardModel_Buttons_Close"));
+            wd.setOptions (new JButton [] {b});
+        } else {
+            recognizeButtons (wd);
+            removeFinish (wd);
+            Mnemonics.setLocalizedText (getOriginalNext (wd), NbBundle.getMessage (InstallUnitWizardModel.class,
+                    "InstallUnitWizardModel_Buttons_MnemonicNext", getBundle ("InstallUnitWizardModel_Buttons_Next")));
+        }
     }
     
     // XXX Hack in WizardDescriptor
@@ -203,13 +248,10 @@ public abstract class OperationWizardModel {
     }
     
     @SuppressWarnings("unchecked")
-    public Set<OperationInfo> listAll () {
+    private Set<OperationInfo> listAll () {
         Set<OperationInfo> infos = new HashSet<OperationInfo> ();
-        infos.addAll (getBaseContainer ().listAll ());
-        if (OperationType.LOCAL_DOWNLOAD == getOperation ()) {
-            infos.addAll (Containers.forUpdateNbms ().listAll ());
-        }
-        infos.addAll (getCustomHandledContainer ().listAll ());
+        infos.addAll (getStandardInfos ());
+        infos.addAll (getCustomHandledInfos ());
         return infos;
     }
     

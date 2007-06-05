@@ -117,9 +117,9 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
                 component = new PanelBodyContainer (head, "", body);
             } else {
                 body = new OperationDescriptionPanel (tableTitle,
-                        preparePluginsForShow (model.getPrimaryUpdateElements ()),
+                        preparePluginsForShow (model.getPrimaryUpdateElements (), model.getCustomHandledComponents ()),
                         dependenciesTitle,
-                        preparePluginsForShow (model.getRequiredUpdateElements ()),
+                        preparePluginsForShow (model.getRequiredUpdateElements (), null),
                         model.hasRequiredUpdateElements ());
                 component = new PanelBodyContainer (head, content, body);
             }
@@ -169,17 +169,32 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
         return displayName == null ? dep : displayName;
     }
     
-    private String preparePluginsForShow (Set<UpdateElement> plugins) {
+    private String preparePluginsForShow (Set<UpdateElement> plugins, Set<UpdateElement> customHandled) {
         String s = new String ();
         List<String> names = new ArrayList<String> ();
-        for (UpdateElement el : plugins) {
-            names.add ("<b>"  + el.getDisplayName () + "</b> " // NOI18N
-                    + NbBundle.getMessage (OperationDescriptionStep.class, "OperationDescriptionStep_PluginVersionFormat",
-                    el.getSpecificationVersion ()) + "<br>"); // NOI18N
+        if (plugins != null && ! plugins.isEmpty ()) {
+            for (UpdateElement el : plugins) {
+                names.add ("<b>"  + el.getDisplayName () + "</b> " // NOI18N
+                        + NbBundle.getMessage (OperationDescriptionStep.class, "OperationDescriptionStep_PluginVersionFormat",
+                        el.getSpecificationVersion ()) + "<br>"); // NOI18N
+            }
+            Collections.sort (names);
+            for (String name : names) {
+                s += name;
+            }
         }
-        Collections.sort (names);
-        for (String name : names) {
-            s += name;
+        if (customHandled != null && ! customHandled.isEmpty ()) {
+            names = new ArrayList<String> ();
+            for (UpdateElement el : customHandled) {
+                names.add ("<b>"  + el.getDisplayName () + "</b> " // NOI18N
+                        + NbBundle.getMessage (OperationDescriptionStep.class, "OperationDescriptionStep_PluginVersionFormat",
+                        el.getSpecificationVersion ()) + "<br>"); // NOI18N
+            }
+            Collections.sort (names);
+            s += "<br>" + NbBundle.getMessage (OperationDescriptionStep.class, "OperationDescriptionStep_CustomHandled_Head", customHandled.size ()) + "<br>"; // NOI18N
+            for (String name : names) {
+                s += name;
+            }
         }
         return s.trim ();
     }

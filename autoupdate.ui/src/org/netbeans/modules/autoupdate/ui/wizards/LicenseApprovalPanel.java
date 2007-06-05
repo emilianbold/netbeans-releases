@@ -20,10 +20,10 @@
 package org.netbeans.modules.autoupdate.ui.wizards;
 
 import java.awt.Color;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
 import javax.swing.JTextArea;
@@ -37,7 +37,7 @@ import org.openide.util.NbBundle;
  */
 public class LicenseApprovalPanel extends javax.swing.JPanel {
     public static final String LICENSE_APPROVED = "license-approved";
-    private String[] licenses;
+    private Map<String, String> licenses;
     
     /** Creates new form LicenseApprovalPanel */
     public LicenseApprovalPanel (InstallUnitWizardModel model) {
@@ -45,12 +45,12 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
         postInitComponents (model);
     }
     
-    List<String> getLicenses () {
+    Collection<String> getLicenses () {
         assert licenses != null : "Licenses must found.";
-        if (licenses == null) {
+        if (licenses == null && licenses.isEmpty ()) {
             return Collections.emptyList ();
         }
-        return Arrays.asList (licenses);
+        return licenses.values ();
     }
     
     private void postInitComponents (InstallUnitWizardModel model) {
@@ -75,18 +75,16 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
         cbLicenseForItemStateChanged (null);
     }
     
-    private String[] getItems (InstallUnitWizardModel model) {
-        Set<UpdateElement> all = model.getAllUpdateElements ();
-        String [] items = new String [all.size ()];
-        licenses = new String [items.length];
-        int i = 0;
-        for (UpdateElement el : all) {
-            items [i] = el.getDisplayName ();
-            licenses [i] = el.getLicence ();
-            i++;
+    private String [] getItems (InstallUnitWizardModel model) {
+        for (UpdateElement el : model.getAllUpdateElements ()) {
+            if (el.getLicence () != null) {
+                if (licenses == null) {
+                    licenses = new HashMap<String, String> ();
+                }
+                licenses.put (el.getDisplayName (), el.getLicence ());
+            }
         }
-        assert i == all.size ();
-        return items;
+        return licenses.keySet ().toArray (new String [0]);
     }
     
     public boolean isApproved () {
@@ -192,7 +190,7 @@ private void rbAcceptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
 
 private void cbLicenseForItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbLicenseForItemStateChanged
     if (licenses != null) {
-        writeLicense ((String) cbLicenseFor.getSelectedItem (), licenses [cbLicenseFor.getSelectedIndex ()]);
+        writeLicense ((String) cbLicenseFor.getSelectedItem (), licenses.get ((String) cbLicenseFor.getSelectedItem ()));
     }
 }//GEN-LAST:event_cbLicenseForItemStateChanged
     

@@ -34,7 +34,7 @@ import org.netbeans.spi.autoupdate.CustomInstaller;
 import org.openide.modules.ModuleInfo;
 
 /**
- * @author Radek Matous
+ * @author Jiri Rechtacek, Radek Matous
  */
 public abstract class OperationSupportImpl {
     private static final OperationSupportImpl FOR_INSTALL = new ForInstall();
@@ -244,10 +244,6 @@ public abstract class OperationSupportImpl {
                 OperationContainer<?> container) throws OperationException {
             try {
                 
-                // XXX: do you want to start ProgressHandle for custom install?
-                if (progress != null) {
-                    progress.start();
-                }
                 List<? extends OperationInfo> infos = container.listAll ();
                 List<NativeComponentUpdateElementImpl> customElements = new ArrayList<NativeComponentUpdateElementImpl> ();
                 for (OperationInfo operationInfo : infos) {
@@ -256,14 +252,21 @@ public abstract class OperationSupportImpl {
                     customElements.add ((NativeComponentUpdateElementImpl) impl);
                 }
                 assert customElements != null : "Some elements with custom installer found.";
+                boolean success = false;
                 for (NativeComponentUpdateElementImpl impl : customElements) {
                     CustomInstaller installer = impl.getInstallInfo ().getCustomInstaller ();
                     assert installer != null : "CustomInstaller must found for " + impl.getUpdateElement ();
-                    installer.install (impl.getCodeName (), impl.getSpecificationVersion ().toString (), progress);
+                    success = installer.install (impl.getCodeName (), impl.getSpecificationVersion ().toString (), progress);
+                    if (success) {
+                        UpdateUnitImpl unitImpl = Trampoline.API.impl (impl.getUpdateUnit ());
+                        unitImpl.setInstalled (impl.getUpdateElement ());
+                    } else {
+                        throw new OperationException (OperationException.ERROR_TYPE.INSTALL, impl.getDisplayName ());
+                    }
                 }
             } finally {
                 if (progress != null) {
-                    progress.finish();
+                    progress.finish ();
                 }
             }
         }

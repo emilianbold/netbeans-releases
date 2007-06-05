@@ -76,7 +76,7 @@ public class CustomHandleStep implements WizardDescriptor.FinishablePanel<Wizard
     }
     
     public boolean isFinishPanel() {
-        return false;
+        return ! model.hasStandardComponents ();
     }
 
     public PanelBodyContainer getComponent() {
@@ -109,15 +109,18 @@ public class CustomHandleStep implements WizardDescriptor.FinishablePanel<Wizard
             }
         } else {
             if (isInstall) {
-                presentInstallFail ();
+                presentInstallFail (errorMessage);
             } else {
-                presentUninstallFail ();
+                presentUninstallFail (errorMessage);
             }
         }
+        done = true;
         fireChange ();
     }
     
-    boolean passed = false;
+    private boolean passed = false;
+    private String errorMessage = null;
+    private boolean done = false;
     
     private boolean handleOperation () {
         if (! isInstall) {
@@ -144,8 +147,8 @@ public class CustomHandleStep implements WizardDescriptor.FinishablePanel<Wizard
                     panel.waitAndSetProgressComponents (mainLabel, progressComponent, new JLabel (getBundle ("CustomHandleStep_Done")));
                 } catch (OperationException ex) {
                     log.log (Level.INFO, ex.getMessage (), ex);
-                    // XXX: inform about failed operation
                     passed = false;
+                    errorMessage = ex.getLocalizedMessage ();
                 }
             }
         };
@@ -156,26 +159,26 @@ public class CustomHandleStep implements WizardDescriptor.FinishablePanel<Wizard
     
     private void presentInstallDone () {
         component.setHeadAndContent (getBundle (HEAD_CUSTOM_INSTALL_DONE), getBundle (CONTENT_CUSTOM_INSTALL_DONE));
-        model.modifyOptionsForDoClose (wd);
-        panel.setBody (getBundle ("CustomHandleStep_InstallDone_Text"), model.getAllUpdateElements ());
+        model.modifyOptionsForContinue (wd, isFinishPanel ());
+        panel.setBody (getBundle ("CustomHandleStep_InstallDone_Text"), model.getCustomHandledComponents ());
     }
     
-    private void presentInstallFail () {
+    private void presentInstallFail (String msg) {
         component.setHeadAndContent (getBundle (HEAD_CUSTOM_INSTALL_FAIL), getBundle (CONTENT_CUSTOM_INSTALL_FAIL));
         model.modifyOptionsForDoClose (wd);
-        panel.setBody (getBundle ("CustomHandleStep_InstallFail_Text"), model.getAllUpdateElements ());
+        panel.setBody (getBundle ("CustomHandleStep_InstallFail_Text", msg), model.getCustomHandledComponents ());
     }
     
     private void presentUninstallDone () {
         component.setHeadAndContent (getBundle (HEAD_CUSTOM_UNINSTALL_DONE), getBundle (CONTENT_CUSTOM_UNINSTALL_DONE));
-        model.modifyOptionsForDoClose (wd);
-        panel.setBody (getBundle ("CustomHandleStep_UninstallDone_Text"), model.getAllUpdateElements ());
+        model.modifyOptionsForContinue (wd, isFinishPanel ());
+        panel.setBody (getBundle ("CustomHandleStep_UninstallDone_Text"), model.getCustomHandledComponents ());
     }
     
-    private void presentUninstallFail () {
+    private void presentUninstallFail (String msg) {
         component.setHeadAndContent (getBundle (HEAD_CUSTOM_UNINSTALL_FAIL), getBundle (CONTENT_CUSTOM_UNINSTALL_FAIL));
         model.modifyOptionsForDoClose (wd);
-        panel.setBody (getBundle ("CustomHandleStep_UninstallFail_Text"), model.getAllUpdateElements ());
+        panel.setBody (getBundle ("CustomHandleStep_UninstallFail_Text", msg), model.getCustomHandledComponents ());
     }
     
     public HelpCtx getHelp() {
@@ -184,13 +187,14 @@ public class CustomHandleStep implements WizardDescriptor.FinishablePanel<Wizard
 
     public void readSettings (WizardDescriptor wd) {
         this.wd = wd;
+        this.done = false;
     }
 
     public void storeSettings (WizardDescriptor wd) {
     }
 
     public boolean isValid() {
-        return false;
+        return done;
     }
 
     public synchronized void addChangeListener(ChangeListener l) {
@@ -212,7 +216,7 @@ public class CustomHandleStep implements WizardDescriptor.FinishablePanel<Wizard
         }
     }
 
-    private String getBundle (String key) {
-        return NbBundle.getMessage (InstallStep.class, key);
+    private String getBundle (String key, String... params) {
+        return NbBundle.getMessage (InstallStep.class, key, params);
     }
 }

@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.autoupdate.services;
 
-import org.netbeans.api.autoupdate.UpdateManager.TYPE;
 import org.netbeans.modules.autoupdate.updateprovider.InstallInfo;
 import org.netbeans.modules.autoupdate.updateprovider.NativeComponentItem;
 import java.util.Collections;
@@ -53,6 +52,7 @@ public class NativeComponentUpdateElementImpl extends UpdateElementImpl {
         installInfo = new InstallInfo (item);
         displayName = item.getDisplayName ();
         description = item.getDescription ();
+        downloadSize = item.getDownloadSize ();
         this.nativeItem = item;
     }
     
