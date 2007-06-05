@@ -14,6 +14,8 @@ source init.sh
 SRCROOT="${NB_ALL}"
 CACHEROOT="${BASE_DIR}/cache"
 
+mkdir -p $CACHEROOT
+
 AS_ROOT="${BASE_DIR}/SUNWappserver"
 
 J2EE_HOME="${BASE_DIR}/SUNWappserver/glassfish"
