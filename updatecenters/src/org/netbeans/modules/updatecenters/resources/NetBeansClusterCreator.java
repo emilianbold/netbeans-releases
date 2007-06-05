@@ -26,7 +26,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
-import org.netbeans.modules.autoupdate.AutoupdateClusterCreator;
+import org.netbeans.spi.autoupdate.AutoupdateClusterCreator;
 
 
 /** Modifies the etc/netbeans.conf if necessary.

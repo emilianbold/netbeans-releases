@@ -84,7 +84,6 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.core</friend>
                 <friend>org.netbeans.core.registry</friend>
                 <friend>org.netbeans.modules.apisupport.ant</friend>
-                <friend>org.netbeans.modules.autoupdate</friend>
                 <friend>org.netbeans.modules.autoupdate.services</friend>
                 <package>org.netbeans.core.startup</package>
                 <package>org.netbeans.core.startup.layers</package>
