@@ -586,17 +586,10 @@ public class J2EEUtils {
         Connection con = connection.getJDBCConnection();
         List<DBColumnInfo> tables = new LinkedList<DBColumnInfo>();
         try {
-            Set<String> tablesWithPK = new HashSet<String>();
-            ResultSet rs = con.getMetaData().getPrimaryKeys(con.getCatalog(), connection.getSchema(), "%");
+            ResultSet rs = con.getMetaData().getTables(con.getCatalog(), connection.getSchema(), "%",  new String[] {"TABLE"}); // NOI18N
             while (rs.next()) {
                 String tableName = rs.getString("TABLE_NAME"); // NOI18N
-                tablesWithPK.add(tableName);
-            }
-            rs.close();
-            rs = con.getMetaData().getTables(con.getCatalog(), connection.getSchema(), "%",  new String[] {"TABLE"}); // NOI18N
-            while (rs.next()) {
-                String tableName = rs.getString("TABLE_NAME"); // NOI18N
-                boolean hasPK = tablesWithPK.contains(tableName);
+                boolean hasPK = hasPrimaryKey(connection, tableName);
                 tables.add(new DBColumnInfo(tableName, hasPK, hasPK ? null : NbBundle.getMessage(J2EEUtils.class, "MSG_NO_PK"))); // NOI18N
             }
             rs.close();
