@@ -125,6 +125,22 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
         fireOpenedIconChange();
     }
 
+    public static Node findPath(Node rootNode, Object object) {
+        
+        TreeRootNode.PathFinder pf = rootNode.getLookup().lookup(TreeRootNode.PathFinder.class);
+        
+        if ( pf != null ) {
+            return pf.findPath( rootNode, object );
+        } else {
+            TreeRootNode.PathFinder pf2 = rootNode.getLookup().lookup(TreeRootNode.PathFinder.class);
+            if (pf2 != null) {
+                return pf2.findPath(rootNode, object);
+            } else {
+                return null;
+            }
+        }
+    }
+
     /** Copied from PhysicalView and PackageRootNode. */
     public static final class PathFinder {
         
