@@ -25,27 +25,14 @@
 package org.netbeans.modules.uml.core.metamodel.infrastructure;
 
 import org.dom4j.Document;
-import org.dom4j.Element;
 import org.dom4j.Node;
-
-import org.netbeans.modules.uml.core.metamodel.core.foundation.Dependency;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IConstraint;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IDependency;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IFlow;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IReference;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.ITaggedValue;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableElement;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Classifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Derivation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IDerivation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IUMLBinding;
-import org.netbeans.modules.uml.core.metamodel.structure.IProject;
-import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguage;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 
 /**
@@ -55,7 +42,7 @@ public class DerivationClassifier
     extends Classifier
     implements IDerivationClassifier
 {
-    IDerivation m_derivation = new Derivation();
+    IDerivation m_derivation = getDerivation()==null? new Derivation() : getDerivation();
     
     /**
      * Establishes the appropriate XML elements for this UML type.
@@ -239,4 +226,9 @@ public class DerivationClassifier
         m_derivation.setSupplier(elem);
     }
 
+    public void setDerivation(IDerivation der)
+    {
+        m_derivation = der;
+        super.setDerivation(der);
+    }
 }

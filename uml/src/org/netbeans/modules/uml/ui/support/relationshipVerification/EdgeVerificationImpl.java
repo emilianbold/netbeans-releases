@@ -1157,9 +1157,11 @@ public class EdgeVerificationImpl implements IEdgeVerification
     protected IInterface getInterface(IElement element)
     {
         if (element instanceof IInterface)
-        {
             return (IInterface)element;
-        }
+        // 95999, check for template type if any
+        if (element instanceof IDerivationClassifier)
+            return getInterface(((IDerivationClassifier)element).getTemplate());
+        
         return null;
     }
     

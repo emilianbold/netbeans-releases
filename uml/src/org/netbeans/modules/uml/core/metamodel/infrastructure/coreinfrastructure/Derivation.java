@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -32,56 +32,57 @@ import org.dom4j.Document;
 
 
 
-public class Derivation extends Dependency implements IDerivation 
+public class Derivation extends Dependency implements IDerivation
 {
-	public ETList<IUMLBinding> getBindings()
-	{
-		ElementCollector<IUMLBinding> collector = new ElementCollector<IUMLBinding>();
-		return collector.retrieveElementCollection((IElement)this,"UML:Element.ownedElement/*", IUMLBinding.class);		
-	}
-	
-	public void removeBinding( IUMLBinding binding )
-	{
-		removeElement(binding);	
-	}
-	
-	public void addBinding( IUMLBinding binding )
-	{
-		addElement(binding);
-	}
-	
-	public IClassifier getTemplate()
-	{
-		INamedElement namedElem = getSupplier();
-		return (IClassifier)namedElem;
-	}
-	
-	public void setTemplate( IClassifier classifier )
-	{
-		setSupplier(classifier);	
-	}
-	
-	public IClassifier getDerivedClassifier()
-	{		
-		return OwnerRetriever.getOwnerByType(this, IClassifier.class);
-	}
-	
-	public void setDerivedClassifier( IClassifier classifier )
-	{
-		setOwner(classifier);
-	}
-	
-	/**
-	 * Establishes the appropriate XML elements for this UML type.
-	 *
-	 * [in] The document where this element will reside
-	 * [in] The element's parent node.
-	 */	
-	public void establishNodePresence(Document doc, Node parent)
-	{
-		buildNodePresence("UML:Derivation",doc,parent);
-	}
-	
+    public ETList<IUMLBinding> getBindings()
+    {
+        ElementCollector<IUMLBinding> collector = new ElementCollector<IUMLBinding>();
+        return collector.retrieveElementCollection((IElement)this,"UML:Element.ownedElement/*", IUMLBinding.class);
+    }
+    
+    public void removeBinding( IUMLBinding binding )
+    {
+        removeElement(binding);
+    }
+    
+    public void addBinding( IUMLBinding binding )
+    {
+        addElement(binding);
+    }
+    
+    public IClassifier getTemplate()
+    {
+        INamedElement namedElem = getSupplier();
+        return (IClassifier)namedElem;
+    }
+    
+    public void setTemplate( IClassifier classifier )
+    {
+        setSupplier(classifier);
+    }
+    
+    public IClassifier getDerivedClassifier()
+    {
+        return OwnerRetriever.getOwnerByType(this, IClassifier.class);
+    }
+    
+    public void setDerivedClassifier( IClassifier classifier )
+    {
+        setOwner(classifier);
+        classifier.setDerivation(this);
+    }
+    
+    /**
+     * Establishes the appropriate XML elements for this UML type.
+     *
+     * [in] The document where this element will reside
+     * [in] The element's parent node.
+     */
+    public void establishNodePresence(Document doc, Node parent)
+    {
+        buildNodePresence("UML:Derivation",doc,parent);
+    }
+    
 }
 
 

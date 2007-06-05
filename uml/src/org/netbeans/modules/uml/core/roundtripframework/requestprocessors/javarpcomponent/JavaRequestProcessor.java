@@ -44,6 +44,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IRelationProxy;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IRelationValidatorEventDispatcher;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableElement;
 import org.netbeans.modules.uml.core.metamodel.core.primitivetypes.IVisibilityKind;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.IDerivationClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.AttributeTransitionElement;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IBehavioralFeature;
@@ -1058,11 +1059,21 @@ public class JavaRequestProcessor implements IJavaRequestProcessor
                             // make sure that an interface is only deriving from another interface
                             if ( toType != null && !(toType.equals("Interface")) )
                             {
-                                // This is illegal in Java
-                                valid = false;
+                                // 95999, check for template type
+                                if (pCandidateTo instanceof IDerivationClassifier)
+                                {
+                                    if (!"Interface".equals(((IDerivationClassifier)pCandidateTo).getTemplate().getElementType()))
+                                        valid = false;
+                                }
+                                else
+                                {
+                                    // This is illegal in Java
+                                    valid = false;
+                                }
                                 
-                                sendErrorMessage(RPMessages.getString("IDS_JRT_GENERALIZATION_INTERFACE_INVALID"),
-                                        RPMessages.getString("IDS_JRT_INVALID_GENERALIZATION_TITLE"));
+                                if (!valid)
+                                    sendErrorMessage(RPMessages.getString("IDS_JRT_GENERALIZATION_INTERFACE_INVALID"),
+                                            RPMessages.getString("IDS_JRT_INVALID_GENERALIZATION_TITLE"));
                             }
                         }
                     }
