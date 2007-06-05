@@ -1054,9 +1054,18 @@ public class JPDADebuggerImpl extends JPDADebugger {
         for (Iterator it = threads.iterator(); it.hasNext(); ) {
             Object threadOrGroup = it.next();
             if (threadOrGroup instanceof JPDAThreadImpl) {
-                try {
-                    ((JPDAThreadImpl) threadOrGroup).notifySuspended();
-                } catch (ObjectCollectedException ocex) {
+                int status = ((JPDAThreadImpl) threadOrGroup).getState();
+                boolean invalid = (status == JPDAThread.STATE_NOT_STARTED ||
+                                   status == JPDAThread.STATE_UNKNOWN ||
+                                   status == JPDAThread.STATE_ZOMBIE);
+                if (!invalid) {
+                    try {
+                        ((JPDAThreadImpl) threadOrGroup).notifySuspended();
+                    } catch (ObjectCollectedException ocex) {
+                        invalid = true;
+                    }
+                }
+                if (invalid) {
                     threadsTranslation.remove(((JPDAThreadImpl) threadOrGroup).getThreadReference());
                 }
             }
@@ -1127,7 +1136,15 @@ public class JPDADebuggerImpl extends JPDADebugger {
         for (Iterator it = threads.iterator(); it.hasNext(); ) {
             Object threadOrGroup = it.next();
             if (threadOrGroup instanceof JPDAThreadImpl) {
-                ((JPDAThreadImpl) threadOrGroup).notifyToBeResumed();
+                int status = ((JPDAThreadImpl) threadOrGroup).getState();
+                boolean invalid = (status == JPDAThread.STATE_NOT_STARTED ||
+                                   status == JPDAThread.STATE_UNKNOWN ||
+                                   status == JPDAThread.STATE_ZOMBIE);
+                if (!invalid) {
+                    ((JPDAThreadImpl) threadOrGroup).notifyToBeResumed();
+                } else {
+                    threadsTranslation.remove(((JPDAThreadImpl) threadOrGroup).getThreadReference());
+                }
             }
         }
     }
