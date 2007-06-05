@@ -195,6 +195,21 @@
             </description>
             <issue number="101523"/>
         </change>
+
+        <change>
+            <api name="general"/>
+            <summary>Additional ActionFactory.createExtendedConnectAction with modifiers parameter added</summary>
+            <version major="2" minor="3"/>
+            <date day="5" month="6" year="2007"/>
+            <author login="dkaspar"/>
+            <compatibility addition="yes"/>
+            <description>
+                An additional ActionFactory.createExtendedConnectAction method was added.
+                It allows to speficied a combination of MouseEvent.*_DOWN modifiers that triggers invocation of the action.
+            </description>
+            <class package="org.netbeans.api.visual.action" name="ActionFactory" link="yes"/>
+            <issue number="103289"/>
+        </change>
     </changes>
 
     <htmlcontents>

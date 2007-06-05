@@ -24,18 +24,18 @@ import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.widget.Widget;
 import org.openide.util.Utilities;
 
-import java.awt.event.MouseEvent;
-
 /**
  *
  * @author alex
  */
 public class ExtendedConnectAction extends ConnectAction {
 
+    private long modifiers;
     private boolean macLocking;
 
-    public ExtendedConnectAction(ConnectDecorator decorator, Widget interractionLayer, ConnectProvider provider) {
-        super(decorator,interractionLayer,provider);
+    public ExtendedConnectAction(ConnectDecorator decorator, Widget interractionLayer, ConnectProvider provider, long modifiers) {
+        super(decorator, interractionLayer, provider);
+        this.modifiers = modifiers;
     }
 
     protected boolean isLocked () {
@@ -45,7 +45,7 @@ public class ExtendedConnectAction extends ConnectAction {
     public WidgetAction.State mousePressed(Widget widget, WidgetAction.WidgetMouseEvent event) {
         if (macLocking)
             return State.createLocked (widget, this);
-        if ((event.getModifiers () & MouseEvent.CTRL_MASK) != 0) {
+        if ((event.getModifiers () & modifiers) != 0) {
             if ((Utilities.getOperatingSystem () & Utilities.OS_MAC) != 0)
                 macLocking = true;
             return super.mousePressed(widget,event);

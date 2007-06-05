@@ -30,6 +30,7 @@ import org.netbeans.modules.visual.action.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseEvent;
 import java.util.EnumSet;
 
 /**
@@ -273,7 +274,21 @@ public final class ActionFactory {
      */
     public static WidgetAction createExtendedConnectAction (ConnectDecorator decorator, LayerWidget interractionLayer, ConnectProvider provider) {
         assert interractionLayer != null  &&  provider != null;
-        return new ExtendedConnectAction (decorator != null ? decorator : createDefaultConnectDecorator (), interractionLayer, provider);
+        return new ExtendedConnectAction (decorator != null ? decorator : createDefaultConnectDecorator (), interractionLayer, provider, MouseEvent.CTRL_MASK);
+    }
+
+    /**
+     * Creates an extended connect action with a specific decorator which can be invoked only with specified modifiers (usually it is <code>MouseEvent.CTRL_MASK</code>).
+     * @param decorator the connect decorator; if null, then the default decorator is used
+     * @param interractionLayer the interraction layer where the temporary connection is visualization placed.
+     * @param provider the connect logic provider
+     * @param modifiers the invocation modifiers
+     * @return the extended connect action
+     * @since 2.3
+     */
+    public static WidgetAction createExtendedConnectAction (ConnectDecorator decorator, LayerWidget interractionLayer, ConnectProvider provider, int modifiers) {
+        assert interractionLayer != null  &&  provider != null  &&  modifiers != 0;
+        return new ExtendedConnectAction (decorator != null ? decorator : createDefaultConnectDecorator (), interractionLayer, provider, modifiers);
     }
 
     /**
