@@ -282,8 +282,10 @@ public class RunTask extends Task
                 }
                 args.put("jadfile", jadFile.getAbsolutePath()); // NO I18N
             }
-            if (jadUrlURL != null)
+            if (jadUrlURL != null) {
                 args.put("jadurl", jadUrlURL); // NO I18N
+                log(Bundle.getMessage("Inf_JadURL", jadUrlURL.toExternalForm()), Project.MSG_INFO);
+            }
             if (securityDomain != null  &&  ! "".equals(securityDomain)) //NOI18N
                 args.put("securitydomain", securityDomain); // NO I18N
             if (debug)
