@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.web.jsf.navigation.NavigationCaseEdge;
+import org.netbeans.modules.web.jsf.navigation.PageFlowUtilities;
 import org.netbeans.modules.web.jsf.navigation.Pin;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowSceneElement;
@@ -57,6 +58,10 @@ public class PageFlowDeleteAction extends AbstractAction{
             /* HACK until PinNode is made a Node */
             if(!( selectedObj instanceof PageFlowSceneElement )  ){
                 return false;
+            }
+            /* Can usually assume the case is in the config file unless we are dealing with the SCOPE_ALL_FACESCONFIG. */
+            if( selectedObj instanceof NavigationCaseEdge && !((NavigationCaseEdge)selectedObj).isModifiable()) {
+                    return false;
             }
         }
         

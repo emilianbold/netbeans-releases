@@ -26,8 +26,8 @@ public class SceneSerializer {
     private static final String SCENE_SCOPE_ELEMENT = "Scope"; // NOI18N
     private static final String VERSION_ATTR = "version"; // NOI18NC
     
-    private static final String SCENE_FACES_SCOPE = PageFlowUtilities.LBL_SCOPE_FACESCONFIG; //NOI18N
-    private static final String SCENE_PROJECT_SCOPE = PageFlowUtilities.LBL_SCOPE_PROJECT; //NOI18N
+    private static final String SCENE_FACES_SCOPE = PageFlowUtilities.getScopeLabel(PageFlowUtilities.Scope.SCOPE_FACESCONFIG); //NOI18N
+    private static final String SCENE_PROJECT_SCOPE = PageFlowUtilities.getScopeLabel(PageFlowUtilities.Scope.SCOPE_PROJECT);
     
     private static final String SCENE_NODE_COUNTER_ATTR = "nodeIDcounter"; // NOI18N
     private static final String SCENE_EDGE_COUNTER_ATTR = "edgeIDcounter"; // NOI18N
@@ -109,7 +109,7 @@ public class SceneSerializer {
         
         Node sceneElement = document.getFirstChild();
         setAttribute(document, sceneElement, VERSION_ATTR, VERSION_VALUE_2);
-        setAttribute(document, sceneElement, SCENE_LAST_USED_SCOPE_ATTR, sceneData.getCurrentScope());
+        setAttribute(document, sceneElement, SCENE_LAST_USED_SCOPE_ATTR, sceneData.getCurrentScopeStr());
         Node scopeFacesElement = createScopeElement(document, sceneData, SCENE_FACES_SCOPE);
         if( scopeFacesElement != null ) {
             sceneElement.appendChild( scopeFacesElement );
@@ -199,8 +199,9 @@ public class SceneSerializer {
             deserializeV1(sceneData, file);
         } else if ( VERSION_VALUE_2.equals(getAttributeValue(sceneElement, VERSION_ATTR))) {
             
-            String lastUsedScope = getAttributeValue(sceneElement, SCENE_LAST_USED_SCOPE_ATTR);     
-            sceneData.setCurrentScope(lastUsedScope);
+            String lastUsedScope = getAttributeValue(sceneElement, SCENE_LAST_USED_SCOPE_ATTR);    
+           
+            sceneData.setCurrentScope( PageFlowUtilities.getScope(lastUsedScope) );
             LOG.fine("Last Used Scope: " + lastUsedScope);
             // TODO: Save the Last Used Scope
             

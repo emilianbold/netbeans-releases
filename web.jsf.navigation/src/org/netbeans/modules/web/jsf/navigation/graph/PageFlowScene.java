@@ -60,7 +60,6 @@ import org.netbeans.api.visual.model.ObjectSceneEventType;
 import org.netbeans.api.visual.model.ObjectSceneListener;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.vmd.VMDNodeWidget;
-import org.netbeans.api.visual.vmd.VMDConnectionWidget;
 import org.netbeans.api.visual.vmd.VMDPinWidget;
 import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
@@ -429,9 +428,8 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
     protected Widget attachEdgeWidget(NavigationCaseEdge edge) {
         assert edge != null;
         
-        VMDConnectionWidget connectionWidget = new VMDConnectionWidget(this, router);
-        
-        
+        VMDConnectionWidget2 connectionWidget = new VMDConnectionWidget2(this, router, edge.isModifiable());
+
         LabelWidget label = new LabelWidget(this, edge.getName());
         label.setOpaque(true);
         label.getActions().addAction(
@@ -445,13 +443,14 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
         connectionWidget.getActions().addAction(createObjectHoverAction());
         connectionWidget.getActions().addAction(selectAction);
         connectionWidget.getActions().addAction(moveControlPointAction);
+        
         //        connectionWidget.getActions().addAction(createActionMap());
         
         return connectionWidget;
     }
     
     public void renameEdgeWidget(NavigationCaseEdge edge, String newName, String oldName ){
-        VMDConnectionWidget edgeWidget = (VMDConnectionWidget) findWidget(edge);
+        VMDConnectionWidget2 edgeWidget = (VMDConnectionWidget2) findWidget(edge);
         List<Widget> widgets = edgeWidget.getChildren();
         for( Widget widget : widgets ){
             if( widget instanceof LabelWidget && ((LabelWidget)widget).getLabel().equals(oldName)){

@@ -28,6 +28,7 @@ package org.netbeans.modules.web.jsf.navigation;
 
 
 import java.awt.Dialog;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Collection;
@@ -55,10 +56,13 @@ import org.netbeans.modules.web.jsf.navigation.NavigationCaseEdge;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import java.util.*;
+import java.util.Map.Entry;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsf.navigation.PageFlowUtilities.Scope;
 /**
  *
  * @author joelle lam
@@ -159,23 +163,9 @@ public class PageFlowController {
         }
     }
     
-    
-    /**
-     * Get the current page flow editor scope
-     * @return currentScope (LBL_SCOPE_PROJECT,LBL_SCOPE_FACESCONFIG)
-     */
-    public String getCurrentScope() {
-        return PageFlowUtilities.getInstance(view).getCurrentScope();
+    public boolean isCurrentScope( Scope scope ){
+        return PageFlowUtilities.getInstance(view).getCurrentScope().equals( scope );
     }
-    
-    public boolean isFacesConfigCurrentScope() {
-        return getCurrentScope().equals( PageFlowUtilities.LBL_SCOPE_FACESCONFIG );
-    }
-    public boolean isProjectCurrentScope() {
-        return getCurrentScope().equals( PageFlowUtilities.LBL_SCOPE_PROJECT );
-    }
-    
-    
     
     
     /**
@@ -325,11 +315,32 @@ public class PageFlowController {
         return setupGraphNoSaveData();
     }
     
+    PropertyChangeListener otherFacesConfigListener = null;
+    private PropertyChangeListener getOtherFacesConfigListener() {
+        if( otherFacesConfigListener == null ){
+            return new OtherFacesModelListener();
+        }
+        return otherFacesConfigListener;
+    }
+    private void removeOtherFacesConfigListener() {
+        WebModule webModule = WebModule.getWebModule(getWebFolder());
+        FileObject[] configFiles = ConfigurationUtils.getFacesConfigFiles(webModule);
+        for( FileObject aConfigFile : configFiles ){
+            JSFConfigModel aConfigModel = ConfigurationUtils.getConfigModel(aConfigFile,true);
+            aConfigModel.removePropertyChangeListener(otherFacesConfigListener);
+        }
+        
+    }
+    
     public boolean setupGraphNoSaveData() {
         assert configModel !=null;
         //        assert webFolder != null;
         assert webFiles != null;
         
+        /* This listener is only created when it was a All_FACES scope */
+        if( otherFacesConfigListener != null ){
+            removeOtherFacesConfigListener();
+        }
         
         view.clearGraph();
         clearPageName2Page();
@@ -342,33 +353,69 @@ public class PageFlowController {
             return false;
         }
         
-        List<NavigationRule> rules = facesConfig.getNavigationRules();
-        for( NavigationRule navRule : rules ){
-            navRule2String.put(navRule, FacesModelUtility.getFromViewIdFiltered(navRule));
-        }
-        
-        //        String currentScope = PageFlowUtilities.getInstance().getCurrentScope();
-        Collection<String> pagesInConfig = getFacesConfigPageNames(rules);
-        if ( isFacesConfigCurrentScope()){
-            createFacesConfigPageNodes(pagesInConfig);
-        } else if ( isProjectCurrentScope() ) {
+        List<NavigationRule> rules = null;
+        if ( isCurrentScope(Scope.SCOPE_FACESCONFIG)){
+            rules = facesConfig.getNavigationRules();
+            for( NavigationRule navRule : rules ){
+                navRule2String.put(navRule, FacesModelUtility.getFromViewIdFiltered(navRule));
+            }
+            Collection<String> pagesInConfig = getFacesConfigPageNames(rules);
+            createFacesConfigPages(pagesInConfig);
+        } else if ( isCurrentScope(Scope.SCOPE_PROJECT) ) {
+            rules = facesConfig.getNavigationRules();
+            for( NavigationRule navRule : rules ){
+                navRule2String.put(navRule, FacesModelUtility.getFromViewIdFiltered(navRule));
+            }
+            Collection<String> pagesInConfig = getFacesConfigPageNames(rules);
             createAllProjectPages(pagesInConfig);
+        } else if ( isCurrentScope( Scope.SCOPE_ALL_FACESCONFIG)){
+            List<NavigationRule> allRules = new ArrayList();
+            WebModule webModule = WebModule.getWebModule(getWebFolder());
+            FileObject[] configFiles = ConfigurationUtils.getFacesConfigFiles(webModule);
+            for( FileObject aConfigFile : configFiles ){
+                JSFConfigModel aConfigModel = ConfigurationUtils.getConfigModel(aConfigFile,true);
+                allRules.addAll(aConfigModel.getRootComponent().getNavigationRules());
+                if( !configModel.equals(aConfigModel)){
+                    aConfigModel.addPropertyChangeListener(getOtherFacesConfigListener());
+                }
+            }
+            for( NavigationRule navRule : allRules ){
+                navRule2String.put(navRule, FacesModelUtility.getFromViewIdFiltered(navRule));
+            }
+            Collection<String> pagesInConfig = getFacesConfigPageNames(allRules);
+            createFacesConfigPages(pagesInConfig);
+            rules = allRules;
+            
         }
         createAllEdges(rules);
-        //view.layoutGraph();
         view.validateGraph();
         
         return true;
     }
     
+    private class OtherFacesModelListener implements PropertyChangeListener  {
+        public void propertyChange(PropertyChangeEvent evt) {
+            setupGraph();
+        }
+    }
+    
+    
     private void createAllEdges( List<NavigationRule> rules ){
+        
+        List<NavigationRule> editableRules = configModel.getRootComponent().getNavigationRules();
         for( NavigationRule rule : rules ) {
             List<NavigationCase> navCases = rule.getNavigationCases();
+            
+            /* this is for ALL_FACES_CONFIG scope*/
+            boolean isModifableEdge = editableRules.contains(rule) ? true : false;
+            
             for( NavigationCase navCase : navCases ){
-                NavigationCaseEdge node = new NavigationCaseEdge(this, navCase);                
-                navCase2NavCaseEdge.put(navCase, node);
-                if( node.getFromViewId() != null  && node.getToViewId() != null){
-                    createEdge(node);
+                
+                NavigationCaseEdge navEdge = new NavigationCaseEdge(this, navCase);
+                navCase2NavCaseEdge.put(navCase, navEdge);
+                navEdge.setModifiable(isModifableEdge);
+                if( navEdge.getFromViewId() != null  && navEdge.getToViewId() != null){
+                    createEdge(navEdge);
                 }
             }
         }
@@ -407,7 +454,7 @@ public class PageFlowController {
     }
     
     public java.util.Stack<String> PageFlowCreationStack = new java.util.Stack<String>();
-    int PageFlowCreationCount = 0;
+    private int PageFlowCreationCount = 0;
     public Page createPageFlowNode(Node node) {
         Page pageNode =  new Page(this, node);
         Calendar rightNow = Calendar.getInstance();
@@ -428,7 +475,7 @@ public class PageFlowController {
     }
     
     public java.util.Stack<String> PageFlowDestroyStack = new java.util.Stack<String>();
-    int PageFlowDestroyCount = 0;
+    private int PageFlowDestroyCount = 0;
     public void destroyPageFlowNode(Page pageNode){
         pageNode.destroy2();
         Calendar rightNow = Calendar.getInstance();
@@ -484,7 +531,7 @@ public class PageFlowController {
         return null;
     }
     
-    private void createFacesConfigPageNodes(Collection<String> pagesInConfig) {
+    private void createFacesConfigPages(Collection<String> pagesInConfig) {
         Collection<String> pages = new HashSet<String>(pagesInConfig);
         
         for( String pageName : pages ) {
@@ -507,6 +554,7 @@ public class PageFlowController {
             }
         }
     }
+    
     
     
     public Page removePageName2Page(Page pageNode, boolean destroy  ){
@@ -656,11 +704,6 @@ public class PageFlowController {
         return webFolder;
     }
     
-    //     /**** HACK until Petr. P's bug is fixed *****/
-    //    public void removeNode( PageFlowNode node) {
-    //        /*There should be any edges though*/
-    //        view.removeNodeWithEdges(node);
-    //    }
     
     public boolean isPageInFacesConfig(String name){
         List<NavigationRule> rules = configModel.getRootComponent().getNavigationRules();
@@ -668,6 +711,14 @@ public class PageFlowController {
         return pagesInConfig.contains(name);
     }
     
+    //    public boolean isNavCaseInFacesConfig(NavigationCaseEdge navEdge ){
+    //        NavigationCase navCase = getNavCase2NavCaseEdge(navEdge);
+    //        JSFConfigComponent navRule = navCase.getParent();
+    //        if ( configModel.getRootComponent().getNavigationRules().contains(navRule) ) {
+    //            return true;
+    //        }
+    //        return false;
+    //    }
     
     public void changeToAbstractNode(Page oldNode, String displayName  ) {
         //1. Make Old Node an abstract node
@@ -723,6 +774,15 @@ public class PageFlowController {
         return navCase2NavCaseEdge.get(navCase);
     }
     
+    //    private final NavigationCase getNavCase2NavCaseEdge( NavigationCaseEdge navEdge){
+    //        Set<Entry<NavigationCase,NavigationCaseEdge>> entries = navCase2NavCaseEdge.entrySet();
+    //        for( Entry entry : entries ){
+    //            if( entry.getValue().equals(navEdge)){
+    //                return (NavigationCase) entry.getKey();
+    //            }
+    //        }
+    //        return null;
+    //    }
     
     public final NavigationCaseEdge removeNavCase2NavCaseEdge(NavigationCase navCase ){
         return navCase2NavCaseEdge.remove(navCase);

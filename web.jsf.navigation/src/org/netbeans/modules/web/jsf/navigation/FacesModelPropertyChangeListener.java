@@ -100,17 +100,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
             
             final Object source = ev.getSource();
             
-            /* This code is only need if refactor calls rename of file before renaming the faces-config.
-            if ( managedBeanClassModified && oldManagedBeanInfo != null && newManagedBeanInfo != null ) {
-                if( oldManagedBeanInfo.equals(oldName) && newManagedBeanInfo.equals(newName)){
-                    refactoringIsLikely = true;
-                }
-            }
-            managedBeanClassModified = false;
-            oldManagedBeanInfo = null;
-            newManagedBeanInfo = null;
-             */
-            
+           
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
                     replaceFromViewIdToViewIdEventHandler(ev, source, oldName, newName);
@@ -124,7 +114,6 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
                     replaceFromOutcomeEventHandler(navCase, oldName, newName);
-                    //                    replaceFromViewIdToViewIdEventHandler(oldName, newName, refactoringIsLikely);
                 }
             });
         } else {
@@ -214,12 +203,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
                 pfc.putNavCase2NavCaseEdge(navCase, newCaseEdge);
                 navigationCaseEdgeEventHandler( newCaseEdge, oldCaseEdge);
             }
-            //            if ( !pfc.isPageInFacesConfig(oldName) ){
-            //                LOGGER.finest("CASE 4b: OldPage no longer exists in faces config.");
-            //                view.removeNodeWithEdges(oldPageNode);
-            //                pfc.removePageName2Node(oldPageNode, true);
-            //                view.validateGraph();
-            //            }
+
         }else {
             LOGGER.finest("CASE 5: Setup Graph");
             setupGraph(ev);
@@ -306,7 +290,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
                 if( toPage != null ) {
                     Page pageNode = pfc.getPageName2Page(toPage);
                     if( pageNode != null && !pfc.isPageInFacesConfig(toPage)){
-                        if( !pageNode.isDataNode() || pfc.isFacesConfigCurrentScope()){
+                        if( !pageNode.isDataNode() || pfc.isCurrentScope(PageFlowUtilities.Scope.SCOPE_FACESCONFIG)){
                             view.removeNodeWithEdges(pageNode);
                             pfc.removePageName2Page(pageNode,true);
                             view.validateGraph();
@@ -328,7 +312,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
             if( fromPage != null ){
                 Page pageNode = pfc.getPageName2Page(fromPage);
                 if( pageNode != null && !pfc.isPageInFacesConfig(fromPage)){
-                    if( !pageNode.isDataNode() || pfc.isFacesConfigCurrentScope()){
+                    if( !pageNode.isDataNode() || pfc.isCurrentScope(PageFlowUtilities.Scope.SCOPE_FACESCONFIG)){
                         view.removeNodeWithEdges(pageNode);
                         pfc.removePageName2Page(pageNode, true);
                         view.validateGraph();
