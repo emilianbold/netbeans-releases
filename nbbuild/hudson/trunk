@@ -1,6 +1,17 @@
 #!/bin/sh
-rm -f nbbuild/NetBeans-*.zip
-if [ `ant -f nbbuild/build.xml print-cvs-modules | perl -ne 'print sort qw(jemmy jellytools xtest), split /[, ]/, $1 if /cvsmodules=\[(.+)\]/'` \!= `perl -e 'opendir D, "."; print sort grep {!/\.\.?/ && -d} readdir D; closedir D'` ]
+
+if [ x$BUILD_TAG = x ]
+then
+    # Non-Hudson use.
+    if [ x$USERNAME = x ]
+    then
+        BUILD_TAG=private
+    else
+        BUILD_TAG=$USERNAME-private
+    fi
+    dir=`dirname $0`/../..
+    cd $dir
+elif [ `ant -f nbbuild/build.xml print-cvs-modules | perl -ne 'print sort qw(jemmy jellytools xtest), split /[, ]/, $1 if /cvsmodules=\[(.+)\]/'` \!= `perl -e 'opendir D, "."; print sort grep {!/\.\.?/ && -d} readdir D; closedir D'` ]
 then
     echo "Set of modules changed, getting fresh checkout..."
     rm -rf `ls | fgrep -v nbbuild`
@@ -10,6 +21,7 @@ then
     echo "Previous build failed, running clean build this time..."
     ant -f nbbuild/build.xml cvs-clean || exit
 fi
+
 for www in */www
 do
     if [ \! -f $www/.IGNOREME ]
@@ -18,4 +30,37 @@ do
         cp -r nbbuild/dummy $www
     fi
 done
-ant -emacs -Dbuildnum=$BUILD_TAG -f nbbuild/build.xml all
+
+DIST=$PWD/nbbuild/dist
+rm -rf $DIST/
+
+ant -Dbuildnum=$BUILD_TAG -f nbbuild/build.xml build-nozip || exit
+
+# we can't afford to run build-nbms in hudson builds, on deadlock.netbeans.org it takes 6 minutes from a typical 15 min build run
+# mkdir -p $DIST/nbms
+# ant -Dbuildnum=$BUILD_TAG -f nbbuild/build.xml build-nbms -Dmoduleconfig=all -Dbase.nbm.target.dir=${DIST}/nbms || exit
+
+cd nbbuild
+#rm -f netbeans/nb.cluster.*
+#rm -f netbeans/moduleCluster.properties
+#rm -f netbeans/module_tracking.xml
+rm -f netbeans/build_info
+
+BASENAME=netbeans-$BUILD_TAG
+
+mkdir -p $DIST/zip/moduleclusters
+mkdir -p $DIST/contrib
+
+zip -q -r $DIST/zip/$BASENAME-full.zip netbeans || exit
+
+find netbeans | egrep -v "netbeans/(mobility|enterprise|visualweb|uml|ruby|soa)" | zip -q $DIST/zip/$BASENAME-basic.zip -@ || exit
+find netbeans | egrep -v "netbeans/(uml|ruby|soa)" | zip -q $DIST/zip/$BASENAME-standard.zip -@ || exit
+find netbeans | egrep -v "netbeans/(xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa)" | zip -q $DIST/contrib/$BASENAME-rubyide.zip -@ || exit
+
+cd netbeans
+expat=
+for c in platform ide java apisupport harness enterprise profiler uml visualweb ruby mobility soa xml; do
+    zip -q -r $DIST/zip/moduleclusters/$BASENAME-${c}.zip ${c}* || exit
+    if [ x$expat = x ] ; then expat="$c" ; else expat="$expat|$c" ; fi
+done
+find . | grep -v "./$expat/" | zip -q $DIST/zip/moduleclusters/$BASENAME-nb6.0-etc.zip -@ || exit
