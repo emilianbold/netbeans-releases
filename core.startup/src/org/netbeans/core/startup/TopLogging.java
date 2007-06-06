@@ -184,28 +184,30 @@ public final class TopLogging {
         ps.println("  Operating System        = " + System.getProperty("os.name", "unknown")
                    + " version " + System.getProperty("os.version", "unknown")
                    + " running on " +  System.getProperty("os.arch", "unknown"));
-        ps.println("  Java; VM; Vendor; Home  = " + System.getProperty("java.version", "unknown") + "; " +
+        ps.println("  Java; VM; Vendor        = " + System.getProperty("java.version", "unknown") + "; " +
                    System.getProperty("java.vm.name", "unknown") + " " + System.getProperty("java.vm.version", "") + "; " +
-                   System.getProperty("java.vendor", "unknown") + "; " +
-                   System.getProperty("java.home", "unknown"));
+                   System.getProperty("java.vendor", "unknown"));
+        ps.println("  Java Home               = " + System.getProperty("java.home", "unknown"));
         ps.print(  "  System Locale; Encoding = " + Locale.getDefault()); // NOI18N
         String branding = NbBundle.getBranding ();
         if (branding != null) {
             ps.print(" (" + branding + ")"); // NOI18N
         }
         ps.println("; " + System.getProperty("file.encoding", "unknown")); // NOI18N
-        ps.println("  Home Dir.; Current Dir. = " + System.getProperty("user.home", "unknown") + "; " +
-                   System.getProperty("user.dir", "unknown"));
-        ps.print(  "  Installation; User Dir. = "); // NOI18N
+        ps.println("  Home Directory          = " + System.getProperty("user.home", "unknown"));
+        ps.println("  Current Directory       = " + System.getProperty("user.dir", "unknown"));
+        ps.print(  "  User Directory          = "); // NOI18N
+        ps.println(CLIOptions.getUserDir()); // NOI18N
+        ps.print(  "  Installation            = "); // NOI18N
         String nbdirs = System.getProperty("netbeans.dirs");
         if (nbdirs != null) { // noted in #67862: should show all clusters here.
             StringTokenizer tok = new StringTokenizer(nbdirs, File.pathSeparator);
             while (tok.hasMoreTokens()) {
                 ps.print(FileUtil.normalizeFile(new File(tok.nextToken())));
-                ps.print(File.pathSeparatorChar);
+                ps.print("\n                            "); //NOI18N
             }
         }
-        ps.println(CLIOptions.getHomeDir() + "; " + CLIOptions.getUserDir()); // NOI18N
+        ps.println(CLIOptions.getHomeDir());
         ps.println("  Boot & Ext. Classpath   = " + createBootClassPath()); // NOI18N
         ps.println("  Application Classpath   = " + System.getProperty("java.class.path", "unknown")); // NOI18N
         ps.println("  Startup Classpath       = " + System.getProperty("netbeans.dynamic.classpath", "unknown")); // NOI18N
