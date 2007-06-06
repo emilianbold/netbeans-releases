@@ -27,7 +27,6 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
 import java.io.File;
 import java.awt.event.ActionEvent;
-import java.util.*;
 
 /**
  * Excludes selected nodes from commit.
@@ -36,11 +35,15 @@ import java.util.*;
  */
 public class ExcludeFromCommitAction extends AbstractAction implements Presenter.Menu {
 
-    private final VCSContext ctx;
+    private final File [] files;
     private final int status;
 
     public ExcludeFromCommitAction(VCSContext ctx) {
-        this.ctx = ctx;
+        this(ctx.getRootFiles().toArray(new File[0]));
+    }
+
+    public ExcludeFromCommitAction(File[] files) {
+        this.files = files;
         putValue(Action.NAME, NbBundle.getBundle(ExcludeFromCommitAction.class).getString("CTL_MenuItem_ExcludeFromCommit"));
         status = getActionStatus();
         if (status == 1) {
@@ -60,7 +63,6 @@ public class ExcludeFromCommitAction extends AbstractAction implements Presenter
 
     private int getActionStatus() {
         CvsModuleConfig config = CvsModuleConfig.getDefault();
-        Set<File> files = ctx.getRootFiles();
         int status = -1;
         for (File file : files) {
             if (config.isExcludedFromCommit(file)) {
@@ -77,7 +79,6 @@ public class ExcludeFromCommitAction extends AbstractAction implements Presenter
 
     public void actionPerformed(ActionEvent e) {
         CvsModuleConfig config = CvsModuleConfig.getDefault();
-        Set<File> files = ctx.getRootFiles();
         for (File file : files) {
             if (status == 1) {
                 config.addExclusion(file);

@@ -21,6 +21,7 @@ package org.netbeans.modules.versioning.spi;
 import org.netbeans.modules.versioning.Utils;
 import org.netbeans.modules.versioning.FlatFolder;
 import org.netbeans.modules.versioning.VersioningManager;
+import org.netbeans.modules.versioning.Accessor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ProjectUtils;
@@ -68,13 +69,17 @@ public final class VCSContext {
     private Set<File>       computedFilesCached;
     private FileFilter      fileFilterCached;
 
+    static {
+        Accessor.VCSContextAccessor = new AccessorImpl();
+    }
+    
     /**
      * Constructs a VCSContext out of a set of files. These files are later available via getRootFiles().
      * 
      * @param rootFiles set of Files
      * @return VCSContext a context representing supplied set of Files
      */ 
-    public static VCSContext forFiles(Set<File> rootFiles) {
+    static VCSContext forFiles(Set<File> rootFiles) {
         return new VCSContext(null, rootFiles, emptySet());
     }
 

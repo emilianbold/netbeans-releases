@@ -73,7 +73,7 @@ public class Utils {
                 roots.add(FileUtil.toFile(fo));
             }
         }
-        return VCSContext.forFiles(roots);
+        return Accessor.VCSContextAccessor.createContextForFiles(roots);
     }
     
     /**

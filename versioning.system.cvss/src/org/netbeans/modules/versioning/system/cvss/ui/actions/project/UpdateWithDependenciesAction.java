@@ -92,7 +92,7 @@ public final class UpdateWithDependenciesAction extends SystemAction {
 
                 GlobalOptions gtx = CvsVersioningSystem.createGlobalOptions();
                 gtx.setExclusions((File[]) context.getExclusions().toArray(new File[0]));
-                group.addExecutors(UpdateExecutor.splitCommand(updateCommand, CvsVersioningSystem.getInstance(), gtx, org.netbeans.modules.versioning.util.Utils.getContextDisplayName(VCSContext.forNodes(nodes))));
+                group.addExecutors(UpdateExecutor.splitCommand(updateCommand, CvsVersioningSystem.getInstance(), gtx, null));
 
                 group.execute();
             }
