@@ -169,7 +169,7 @@
             <issue number="99054"/>
         </change>
 
-        <change>
+        <change id="animatedimagewidget">
             <api name="general"/>
             <summary>ImageWidget handles animated images</summary>
             <version major="2" minor="3"/>
