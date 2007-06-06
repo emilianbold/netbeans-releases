@@ -263,7 +263,7 @@ public class SvnClientExceptionHandler {
             } catch (MalformedURLException e) {
                 // something went wrong. 
                 // ignore and try to fallback on the url from client
-                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, e);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }    
         }                 
         if(url == null) {
