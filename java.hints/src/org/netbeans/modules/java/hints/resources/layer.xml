@@ -77,6 +77,9 @@ Microsystems, Inc. All Rights Reserved.
                 <folder name="api">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
                     <file name="org-netbeans-modules-java-hints-ExportNonAccessibleElement.instance" />                    
+                    <file name="org-netbeans-modules-java-hints-UtilityClassClass.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.UtilityClass.withoutConstructor"/>
+                    </file>
                 </folder>    
 
                 <!--
