@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
 import java.net.Socket;
 import java.security.InvalidKeyException;
 import java.security.KeyStore;
@@ -77,8 +78,8 @@ public class SvnClientExceptionHandler {
     private final int handledExceptions;
     
     private static final String NEWLINE = System.getProperty("line.separator"); // NOI18N
-    private static final String CHARSET_NAME = "ASCII7";                        // NOI18N    
-    
+    private static final String CHARSET_NAME = "ASCII7";                        // NOI18N
+  
     private class CertificateFailure {
         int mask;
         String error;
@@ -144,8 +145,8 @@ public class SvnClientExceptionHandler {
         throw getException();
     }
          
-    private boolean handleRepositoryConnectError() {
-        SVNUrl url = client.getSvnUrl();
+    private boolean handleRepositoryConnectError() {        
+        SVNUrl url = getSVNUrl();
         Repository repository = new Repository(Repository.FLAG_SHOW_PROXY, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters"));  // NOI18N
         repository.selectUrl(url, true);
         
@@ -170,11 +171,12 @@ public class SvnClientExceptionHandler {
     }
 
     private boolean handleNoCertificateError() throws Exception {
-
-        // copy the certificate if it already exists
-        SVNUrl url = client.getSvnUrl();
-        String hostString = SvnUtils.ripUserFromHost(url.getHost());
-        String realmString = url.getProtocol() + "://" + hostString + ":" + url.getPort(); // NOI18N
+        
+        SVNUrl url = getSVNUrl();
+        String realmString = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort(); // NOI18N
+        String hostString = SvnUtils.ripUserFromHost(url.getHost());                                
+        
+        // copy the certificate if it already exists        
         File certFile = CertificateFile.getSystemCertFile(realmString);
         File nbCertFile = CertificateFile.getNBCertFile(realmString);
         if( !nbCertFile.exists() &&  certFile.exists() ) {            
@@ -185,7 +187,7 @@ public class SvnClientExceptionHandler {
         // otherwise try to retrieve the certificate from the server ...                                             
         SSLSocket socket;
         try {
-            socket = getSSLSocket(url.getProtocol(), hostString, url.getPort());
+            socket = getSSLSocket(hostString, url.getPort());
         } catch (Exception e) {
             ErrorManager.getDefault().notify(e);
             return false;
@@ -239,7 +241,7 @@ public class SvnClientExceptionHandler {
         CertificateFile cf = null;
         try {
             boolean temporarily = dialogDescriptor.getValue() == temporarilyButton;
-            cf = new CertificateFile(cert, url.getProtocol() + "://" + hostString + ":" + url.getPort(), getFailuresMask(), temporarily); // NOI18N
+            cf = new CertificateFile(cert, "https://" + hostString + ":" + url.getPort(), getFailuresMask(), temporarily); // NOI18N
             cf.store();
         } catch (CertificateEncodingException ex) {
             ErrorManager.getDefault().notify(ex);
@@ -252,7 +254,42 @@ public class SvnClientExceptionHandler {
         return true;                
     }
 
-    private SSLSocket getSSLSocket(String protocol, String host, int port) throws Exception {
+    private SVNUrl getSVNUrl() {
+        String realmString = getRealmFromException(); 
+        SVNUrl url = null; 
+        if(realmString != null) {
+            try {
+                url = new SVNUrl(realmString);
+            } catch (MalformedURLException e) {
+                // something went wrong. 
+                // ignore and try to fallback on the url from client
+                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, e);
+            }    
+        }                 
+        if(url == null) {
+            // fallback to the best we have
+            url = client.getSvnUrl();
+        }        
+        return url;
+    }
+    private String getRealmFromException() {        
+        String exceptionMessage = exception.getMessage().toLowerCase();             
+        String[] errorMessages = new String[] {"host not found (", "could not connect to server (", "could not resolve hostname (", "issuer is not trusted ("};        
+        for(String errorMessage : errorMessages) {
+            int idxL = exceptionMessage.indexOf(errorMessage);
+            if(idxL < 0) {
+                continue;
+            }
+            int idxR = exceptionMessage.indexOf(")", idxL + errorMessage.length());
+            if(idxR < 0) {
+                continue;
+            }
+            return exceptionMessage.substring(idxL + errorMessage.length(), idxR);                                        
+        }
+        return null;
+    }  
+    
+    private SSLSocket getSSLSocket(String host, int port) throws Exception {
         TrustManager[] trust = new TrustManager[] {
             new X509TrustManager() {
                 public X509Certificate[] getAcceptedIssuers() { return null; }
@@ -262,12 +299,8 @@ public class SvnClientExceptionHandler {
         };
        
         ProxySettings proxySettings = new ProxySettings();
-        String proxyHost = "";
-        int proxyPort = -1;                       
-        if(protocol.startsWith("https")) {
-            proxyHost = proxySettings.getHttpsHost();
-            proxyPort = proxySettings.getHttpsPort();
-        }            
+        String proxyHost = proxySettings.getHttpsHost();
+        int proxyPort = proxySettings.getHttpsPort();                                     
         if(proxyHost.equals("")) {
             proxyHost = proxySettings.getHttpHost();
             proxyPort = proxySettings.getHttpPort();
