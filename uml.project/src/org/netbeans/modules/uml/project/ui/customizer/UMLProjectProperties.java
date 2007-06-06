@@ -231,10 +231,10 @@ public class UMLProjectProperties
         projectProperties.setProperty(
             REFERENCED_JAVA_PROJECT_SRC, refJavaSrcRoots);
         
-        projectProperties.setProperty(
-            CODE_GEN_TEMPLATES, codeGenTemplates);
-//        projectProperties.setProperty(
-//            CODE_GEN_TEMPLATES, getCodeGenTemplates());
+        if (codeGenTemplates != null)
+        {
+            projectProperties.setProperty(CODE_GEN_TEMPLATES, codeGenTemplates);
+        }
         
         projectProperties.setProperty(UML_PROJECT_IMPORTS, umlImports);
        

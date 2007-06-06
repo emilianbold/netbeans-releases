@@ -124,15 +124,9 @@ public class TemplatesTableRowPanel extends javax.swing.JPanel
 
         filenameFormatLabel.setText(org.openide.util.NbBundle.getMessage(TemplatesTableRowPanel.class, "filenameFormatLabel.text")); // NOI18N
 
-        filenameFormatText.setText(org.openide.util.NbBundle.getMessage(TemplatesTableRowPanel.class, "filenameFormatText.text")); // NOI18N
-
         extensionLabel.setText(org.openide.util.NbBundle.getMessage(TemplatesTableRowPanel.class, "extensionLabel.text")); // NOI18N
 
-        extensionText.setText(org.openide.util.NbBundle.getMessage(TemplatesTableRowPanel.class, "extensionText.text")); // NOI18N
-
         folderLabel.setText(org.openide.util.NbBundle.getMessage(TemplatesTableRowPanel.class, "folderLabel.text")); // NOI18N
-
-        folderText.setText(org.openide.util.NbBundle.getMessage(TemplatesTableRowPanel.class, "folderText.text")); // NOI18N
 
         templateFileLabel.setText(org.openide.util.NbBundle.getMessage(TemplatesTableRowPanel.class, "templateFileLabel.text")); // NOI18N
 
@@ -140,7 +134,6 @@ public class TemplatesTableRowPanel extends javax.swing.JPanel
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 326, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -160,7 +153,6 @@ public class TemplatesTableRowPanel extends javax.swing.JPanel
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 124, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)

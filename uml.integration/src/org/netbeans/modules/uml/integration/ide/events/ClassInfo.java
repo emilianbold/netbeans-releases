@@ -2288,9 +2288,20 @@ public class ClassInfo extends ElementInfo
         return FileUtil.toFileObject(file);
     }
     
+    
     public FileObject getExportPackageFileObject()
     {
-        File file = new File(getExportSourcePackage());
+        return getExportPackageFileObject(null);
+    }
+    
+    public FileObject getExportPackageFileObject(String subfolder)
+    {
+        String pathName = getExportSourcePackage();
+
+        if (subfolder != null)
+             pathName += File.separatorChar + subfolder;
+        
+        File file = new File(pathName);
 
         if (!file.exists())
         {

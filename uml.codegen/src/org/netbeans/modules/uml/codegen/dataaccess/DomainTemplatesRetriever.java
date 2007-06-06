@@ -122,7 +122,8 @@ public class DomainTemplatesRetriever
             
             // all templates, no matter which family they are in 
             // (Java, C++, etc.) will be added under this key
-            codeGenTemplates.put(key, templates);
+            if (key != null && templates != null & templates.size() > 0)
+                codeGenTemplates.put(key, templates);
         }
     }
 
@@ -135,10 +136,19 @@ public class DomainTemplatesRetriever
         ETList<String> stereotypes = 
             element.getAppliedStereotypesAsString();
         
+        // Interface elements are also marked with the stereotype <<interface>>
+        // but we don't need the extra demarcation so remove it from the list
+        // of stereotypes it may have.
+        if (eleType.equals("Interface") && 
+            stereotypes != null && stereotypes.size() > 0)
+        {
+            stereotypes.remove("interface");
+        }
+        
         // if the model element has no stereotypes, get enabled templates 
         // that do not have stereotypes
         // TODO: but is this the right thing to do? See stereotype loop below
-        if (stereotypes == null || stereotypes.getCount() == 0)
+        if (stereotypes == null || stereotypes.size() == 0)
         {
             return insertElementName(
                 element.getName(), codeGenTemplates.get(eleType));
@@ -156,8 +166,11 @@ public class DomainTemplatesRetriever
         //       doing that.
         for (String stereotype: stereotypes)
         {
-            validTemplates.addAll(
-                codeGenTemplates.get(eleType += ":" + stereotype));
+            List<DomainTemplate> templates = 
+                codeGenTemplates.get(eleType += ":" + stereotype);
+            
+            if (templates != null && templates.size() > 0)
+                validTemplates.addAll(templates);
         }
         
         // the CodeGenTemplate instances don't have any element name and it
@@ -167,9 +180,12 @@ public class DomainTemplatesRetriever
     
     
     private static List<DomainTemplate> insertElementName(
-        
-        String elementName,List<DomainTemplate> templates)
+        String elementName,
+        List<DomainTemplate> templates)
     {
+        if (templates == null || templates.size() == 0)
+            return null;
+        
         for (DomainTemplate cgt: templates)
             cgt.setElementName(elementName);
         

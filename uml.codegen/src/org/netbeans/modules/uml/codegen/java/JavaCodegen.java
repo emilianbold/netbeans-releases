@@ -22,8 +22,10 @@ package org.netbeans.modules.uml.codegen.java;
 
 import java.awt.event.*;
 import java.io.*;
-import java.nio.CharBuffer;
 import java.util.*;
+import org.netbeans.modules.uml.codegen.dataaccess.DomainTemplate;
+import org.netbeans.modules.uml.codegen.dataaccess.DomainTemplatesRetriever;
+import org.netbeans.modules.uml.codegen.java.merging.Merger;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -35,48 +37,33 @@ import org.openide.loaders.DataObject;
 import org.netbeans.modules.uml.core.coreapplication.ICodeGenerator;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.structure.ISourceFileArtifact;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Classifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Operation;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameter;
-import org.netbeans.modules.uml.core.metamodel.profiles.IStereotype;
 import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
-
 import org.netbeans.modules.uml.integration.ide.events.ClassInfo;
 
-import org.netbeans.modules.uml.codegen.java.merging.Merger;
 
-
-public class JavaCodegen implements ICodeGenerator {
-
+public class JavaCodegen implements ICodeGenerator 
+{
     public final static String COLON_COLON = "::"; // NOI18N
     public final static String JAVA = "java"; // NOI18N
     public final static String JAVA_EXT = ".java"; // NOI18N
     public final static String DOT = "."; // NOI18N
-    
 
-    // templates map TBD of config GUI & API integration 
-    public static HashMap<String, TemplateDesc[]> stereotypesToTemplates = new HashMap<String, TemplateDesc[]>();
-
-    static {
-	// dummy test config
-	stereotypesToTemplates.put("webservice", 
-				   new TemplateDesc[] {new TemplateDesc("webservice.ftl", "java"),
-						       new TemplateDesc("wsdl.ftl", "xml")});
-	stereotypesToTemplates.put("st2", new TemplateDesc[] {new TemplateDesc("st2.ftl", "java")});
-    }
-
-
-    public JavaCodegen(){
-
+    public JavaCodegen()
+    {
+        DomainTemplatesRetriever.clear();
     }
 
        
-    public void generate(IClassifier classifier, String targetFolderName, Properties props) {
-
-	boolean backup = Boolean.valueOf(props.getProperty("backup", "true")).booleanValue();
-	boolean genMarkers = Boolean.valueOf(props.getProperty("generateMarkers", "true")).booleanValue();	
+    public void generate(
+        IClassifier classifier, String targetFolderName, Properties props) 
+    {
+	boolean backup = Boolean.valueOf(
+            props.getProperty("backup", "true")).booleanValue();
+        
+	boolean genMarkers = Boolean.valueOf(
+            props.getProperty("generateMarkers", "true")).booleanValue();
+        
 	try {	    
 	    
 	    ClassInfo clinfo = new ClassInfo(classifier);
@@ -98,19 +85,27 @@ public class JavaCodegen implements ICodeGenerator {
 	    boolean oldAssociated = false;
 	    String associatedSource = ClassInfo.getSymbolFilename(classifier);
 	    File ascFile = null;
-	    if (associatedSource != null) {
+	    
+            if (associatedSource != null) 
+            {
 		ascFile = new File(associatedSource);
-		if (ascFile.exists() && !ascFile.equals(sourceFile)) {
+		
+                if (ascFile.exists() && !ascFile.equals(sourceFile)) 
+                {
 		    // check that it is under the same targetFolder
 		    File targetFolderFile = new File(targetFolderName);
 		    File parent = ascFile.getParentFile();
-		    while(parent != null) {
-			if (parent.equals(targetFolderFile)) {
-			    // TBD the file should be parsed and the path to parent 
-			    // should be compared with package value
+		    
+                    while(parent != null) 
+                    {
+			if (parent.equals(targetFolderFile)) 
+                        {
+			    // TBD the file should be parsed and the path to  
+			    // parent should be compared with package value
 			    oldAssociated = true;
 			    break;
-			}		
+			}	
+                        
 			parent = parent.getParentFile();
 		    } 
 		}
@@ -119,119 +114,207 @@ public class JavaCodegen implements ICodeGenerator {
 	    File newSourceFile = null;
 	    String newTargetFolderName = null;
 	    File newTargetFolder = null;
-	    if (! sourceFile.exists() && oldAssociated ) {
+	    
+            if (! sourceFile.exists() && oldAssociated ) 
+            {
 		FileUtil.copyFile(FileUtil.toFileObject(ascFile),
-				  FileUtil.toFileObject(sourceFile.getParentFile()),
-				  sourceFile.getName(), "");
+                      FileUtil.toFileObject(sourceFile.getParentFile()),
+                      sourceFile.getName(), "");
 	    }
-	    if (sourceFile.exists()) {
+	    
+            if (sourceFile.exists()) 
+            {
 		//String tmpdir = "/tmp/generated_";
 		String tmpdir = System.getProperty("java.io.tmpdir")+"/generated_";
-		newTargetFolderName = new File(tmpdir).getCanonicalPath()
+	
+                newTargetFolderName = new File(tmpdir).getCanonicalPath()
 		    +((int)(Math.random() * 10000));
-		newTargetFolder = new File(newTargetFolderName);
+		
+                newTargetFolder = new File(newTargetFolderName);
 		newTargetFolder.mkdirs();		
-		clinfo.setExportSourceFolderName(new File(newTargetFolderName).getAbsolutePath());
+		
+                clinfo.setExportSourceFolderName(
+                    new File(newTargetFolderName).getAbsolutePath());
+                
 		newSourceFile = sourceFile(newTargetFolderName, classifier);
 
-		if (backup) {
-		    if (!oldAssociated) {
+		if (backup) 
+                {
+		    if (!oldAssociated) 
+                    {
 			FileObject buFileObj = backupFile(sourceFile);		
-			if (buFileObj != null) {
+			
+                        if (buFileObj != null) 
+                        {
 			    FileObject efo = FileUtil.toFileObject(sourceFile);
 			    if (efo != null) 
 				; //efo.delete();
 			}
-		    } else {
+		    } 
+                    
+                    else 
+                    {
 			FileObject buFileObj = backupFile(ascFile);		
-			if (buFileObj != null) {
+			
+                        if (buFileObj != null) 
+                        {
 			    FileObject efo = FileUtil.toFileObject(ascFile);
 			    if (efo != null) 
 				efo.delete();
 			}
 		    }
-		}		
-		try {
+		}
+                
+		try 
+                {
 		    //clinfo.updateFilename(sourceFile.getCanonicalPath());
-		} catch (Exception ex) {
+		}
+                
+                catch (Exception ex) 
+                {
 		    ex.printStackTrace();
 		}
-	    } 
-
+	    }
                 
 	    // 2 possible places to get templates from - 
 	    // registry and teplates subdir of the project 
-            FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
-	    FileObject root = fs.getRoot().getFileObject("Templates/UML/CodeGeneration/Java");
-	    String projTemplPath = clinfo.getOwningProject().getBaseDirectory()+File.separator+"templates"+File.separator+"java";
+            FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+	    
+            FileObject root = fs.getRoot()
+                .getFileObject("Templates/UML/CodeGeneration/Java");
+	    
+            String projTemplPath = clinfo.getOwningProject().getBaseDirectory()
+                + File.separator + "templates" + File.separator + "java";
 
-	    List<TemplateDesc> templateDescs = templatesToUse(clinfo);
-	    Iterator<TemplateDesc> iterDescs = templateDescs.iterator();
-	    while(iterDescs.hasNext()) {
-		TemplateDesc templDesc = iterDescs.next();	    		
-		try {
-		    FileObject tfo;
-		    File tf = new File(projTemplPath + File.separator + templDesc.templateName);
-		    if (tf.exists()) {
-			tfo = FileUtil.toFileObject(tf);
-		    } else {
-			tfo = root.getFileObject(templDesc.templateName);
-		    }
+	    List<DomainTemplate> domainTemplates = DomainTemplatesRetriever
+                .retrieveTemplates(clinfo.getClassElement());
+            
+            if (domainTemplates == null || domainTemplates.size() == 0)
+                return;
+            
+	    Iterator<DomainTemplate> iterTemplates = domainTemplates.iterator();
+
+            while (iterTemplates.hasNext()) 
+            {
+		DomainTemplate domainTemplate = iterTemplates.next();
+                
+		try 
+                {
+		    FileObject templteFileObject;
+		    File templateFile = new File(projTemplPath + 
+                        File.separator + domainTemplate.getTemplateFilename());
+                    
+                    if (templateFile.exists())
+                        templteFileObject = FileUtil.toFileObject(templateFile);
+                    
+                    else 
+                    {
+                        templteFileObject = root.getFileObject(
+                            domainTemplate.getTemplateFilename());
+                    }
 		    
-		    tfo.setAttribute("javax.script.ScriptEngine", "freemarker");
-		    DataObject obj = DataObject.find(tfo);
-	    		    
-		    FileObject dfo = clinfo.getExportPackageFileObject();
-		    if (dfo != null) {
-		
-			DataFolder folder = DataFolder.findFolder(dfo);
+		    templteFileObject.setAttribute(
+                        "javax.script.ScriptEngine", "freemarker");
+                    
+		    DataObject templateDataObject = 
+                        DataObject.find(templteFileObject);
+                    
+                    FileObject exportPkgFileObject = 
+                        clinfo.getExportPackageFileObject(
+                        domainTemplate.getFolderPath());
+                    
+                    if (exportPkgFileObject != null) 
+                    {
+			DataFolder folder = 
+                            DataFolder.findFolder(exportPkgFileObject);
+                        
 			HashMap parameters = new HashMap();
 			parameters.put("classInfo", clinfo);
 			parameters.put("modelElement", classifier);
 			Hashtable codegenOptions = new Hashtable();
 			codegenOptions.put("GENERATE_MARKER_ID", genMarkers);
 			parameters.put("codegenOptions", codegenOptions);
-			DataObject n = obj.createFromTemplate(folder, clinfo.getName(), parameters);
+			
+                        DataObject n = templateDataObject.createFromTemplate(
+                            folder, 
+                            getOutputName(clinfo.getName(), domainTemplate), 
+                            parameters);
 
-			if (newSourceFile != null) {
-			    new Merger(newSourceFile.getAbsolutePath(), sourceFile.getAbsolutePath()).merge();
-			    FileObject trg = FileUtil.toFileObject(newTargetFolder);
-			    if (trg != null) 
-				trg.delete();
+			if (newSourceFile != null) 
+                        {
+                            
+                            new Merger(newSourceFile.getAbsolutePath(), 
+                                sourceFile.getAbsolutePath()).merge();
+                            
+			    FileObject targetFolderFO = 
+                                FileUtil.toFileObject(newTargetFolder);
+			    
+                            if (targetFolderFO != null) 
+				targetFolderFO.delete();
 			}
 
-			try {
-			    // TBD codegen inteface returning associative map 
-			    // (classifier, generated files) that makes sense in that type 
-			    // of codegen; 
-			    // the codegen client to decide what type of sources / of what codegen, 
-			    // to associate, if any, with the element
-			    List<IElement> sourceFiles =  classifier.getSourceFiles();
-			    if (sourceFiles != null) {
-				for(IElement src : sourceFiles) {
-				    if (src instanceof ISourceFileArtifact) {
-					classifier.removeSourceFile(((ISourceFileArtifact)src).getSourceFile());
+			try 
+                        {
+			    List<IElement> sourceFiles = 
+                                classifier.getSourceFiles();
+                            
+			    if (sourceFiles != null) 
+                            {
+				for (IElement src : sourceFiles) 
+                                {
+				    if (src instanceof ISourceFileArtifact) 
+                                    {
+					classifier.removeSourceFile(
+                                            ((ISourceFileArtifact)src)
+                                            .getSourceFile());
 				    }
 				}
 			    }
-			    classifier.addSourceFileNotDuplicate(sourceFile.getCanonicalPath());
-			} catch (IOException ex) {
+			    
+                            classifier.addSourceFileNotDuplicate(
+                                sourceFile.getCanonicalPath());
+			}
+                        
+                        catch (IOException ex) 
+                        {
 			    ex.printStackTrace();
 			}
-		    } else {
+		    } 
+                    
+                    else 
+                    {
 			// TBD - couldn't create the package directory for some reason
 			;			
 		    }
-		} catch (Exception e) {
+		}
+                
+                catch (Exception e) 
+                {
 		    e.printStackTrace();		
 		}
 	    }
-	} catch (Exception e) {
+	} 
+        
+        catch (Exception e) 
+        {
 	    e.printStackTrace();		
 	}
-
     }
     
+    
+    private String getOutputName(
+        String elementName, DomainTemplate domainTemplate)
+    {
+        String filenameFormat = domainTemplate.getFilenameFormat();
+        
+        if (filenameFormat != null && filenameFormat.length() > 0)
+        {
+            elementName = StringUtilities.replaceAllSubstrings(
+                filenameFormat, DomainTemplate.ELEMENT_NAME_TOKEN, elementName);
+        }
+        
+        return elementName;
+    }
 
 
     private File sourceFile(String sourceFolderName, IClassifier classifier)
@@ -244,9 +327,8 @@ public class JavaCodegen implements ICodeGenerator {
                 COLON_COLON, String.valueOf(File.separatorChar)) + JAVA_EXT;
         
         if (pathName != null && pathName.length() > 0)
-        {
             file = new File(pathName);            
-        }        
+
         return file;
     }
     
@@ -317,57 +399,5 @@ public class JavaCodegen implements ICodeGenerator {
             return name.contains(searchName);
         }
     }
-    
-
-    public List<TemplateDesc> templatesToUse(ClassInfo clinfo) {
-	
-	List<TemplateDesc> tlist = new ArrayList<TemplateDesc>();
-
-	String stereoName = null;
-	IClassifier classElem = clinfo.getClassElement();
-	List<Object> stereotypes = classElem.getAppliedStereotypes();
-	if ( stereotypes != null && stereotypes.size() > 0 ) {	
-	    Iterator iter = stereotypes.iterator();
-	    while (iter.hasNext()) {
-		IStereotype stereo = (IStereotype)iter.next();
-		String name = stereo.getName();	    	    
-		TemplateDesc[] templates = stereotypesToTemplates.get(name);
-		if (templates != null) {
-		    for (int i = 0; i < templates.length; i++) {
-			tlist.add(templates[i]);
-		    }
-		    return tlist;
-		}
-	    }
-	}
-	// if nothing found
-	TemplateDesc templDef = new TemplateDesc("CompilationUnit.java", "java");
-	tlist.add(templDef);
-	return tlist;
-
-    }
-    
-
-    public static class TemplateDesc {
-	public String templateName;
-	public String generatedExt;
-	
-	public TemplateDesc( String name, String extension ) {
-	    templateName = name;
-	    generatedExt = extension;
-	}
-
-    }
-
-
-
-
-
-
-
-
 
 }
-
-
-

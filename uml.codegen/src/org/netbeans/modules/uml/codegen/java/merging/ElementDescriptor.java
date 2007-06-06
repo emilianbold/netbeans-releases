@@ -173,7 +173,7 @@ public class ElementDescriptor
     */
    public ITokenDescriptor getTokenDescriptor(String type)
    {
-      if (tokenDescriptors == null  && tokenDescriptors.size() == 0)
+      if (tokenDescriptors == null || tokenDescriptors.size() == 0)
       {
          tokenDescriptors = getTokenDescriptors();
       }

@@ -30,6 +30,8 @@ import org.openide.filesystems.FileUtil;
  */
 public class DomainTemplate 
 {
+    public final static String ELEMENT_NAME_TOKEN = "{name}"; // NO18N
+    
     private String elementName;
     private String filenameFormat;
     private String extension;
