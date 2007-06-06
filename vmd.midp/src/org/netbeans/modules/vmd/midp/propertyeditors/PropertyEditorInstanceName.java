@@ -24,6 +24,7 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.lang.ref.WeakReference;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -48,6 +49,7 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
     private final CustomEditor customEditor;
     private long componentID;
     private boolean canWrite;
+    private WeakReference<DesignDocument> document;
     
     private PropertyEditorInstanceName(TypeID typeID) {
         this.typeID = typeID;
@@ -104,6 +106,7 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
     }
     
     public void init(DesignComponent component) {
+        document = new WeakReference<DesignDocument>(component.getDocument());
         this.componentID = component.getComponentID();
     }
     
@@ -112,10 +115,11 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
     }
     
     public boolean canWrite() {
-        final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-        document.getTransactionManager().readAccess(new Runnable() {
+        if (document.get() == null)
+            return false;
+        document.get().getTransactionManager().readAccess(new Runnable() {
             public void run() {
-                if (document.getSelectedComponents().size() > 1)
+                if (document.get().getSelectedComponents().size() > 1)
                     canWrite = false;
                 else
                     canWrite = true;
@@ -182,4 +186,6 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
             return textField.getText();
         }
     }
+    
+    
 }
