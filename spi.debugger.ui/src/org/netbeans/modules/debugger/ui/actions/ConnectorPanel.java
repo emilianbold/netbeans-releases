@@ -160,11 +160,11 @@ public class ConnectorPanel extends JPanel implements ActionListener {
         return currentPanel;
     }
     
-    public boolean cancel () {
+    boolean cancel () {
         return currentPanel.cancel ();
     }
     
-    public boolean ok () {
+    boolean ok () {
         String defaultAttachTypeName = currentAttachType.getClass().getName();
         Properties.getDefault().getProperties("debugger").setString("last_attach_type", defaultAttachTypeName);
         return currentPanel.ok ();

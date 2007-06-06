@@ -104,12 +104,11 @@ public final class ConnectAction extends AbstractAction {
         
         public void actionPerformed (ActionEvent e) {
             boolean okPressed = bOk.equals (e.getSource ());
-            Controller controller = connectorPanel.getController ();
             boolean close = false;
             if (okPressed) {
-                close = controller.ok ();
+                close = connectorPanel.ok ();
             } else {
-                close = controller.cancel ();
+                close = connectorPanel.cancel ();
             }
             if (!close) return;
             connectorPanel.removePropertyChangeListener (this);
