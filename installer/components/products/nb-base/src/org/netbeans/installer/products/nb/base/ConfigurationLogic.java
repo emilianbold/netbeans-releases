@@ -205,7 +205,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             progress.setDetail(getString("CL.install.glassfish.integration")); // NOI18N
             
             final List<Product> glassfishes =
-                    Registry.getInstance().getProducts("sjsas");
+                    Registry.getInstance().getProducts("glassfish");
             for (Product glassfish: glassfishes) {
                 if (glassfish.getStatus() == Status.INSTALLED) {
                     final File gfLocation = glassfish.getInstallationLocation();

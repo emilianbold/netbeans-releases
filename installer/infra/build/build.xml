@@ -631,7 +631,6 @@ jarsigner.storepass=${jarsigner.storepass}
         </ant>
         
         <echo message="BUILDING GLASSFISH ========================================"/>
-        <!--
         <ant dir="${nbi.netbeans.dir}/infra/build/products/glassfish" target="release-all">
             <property 
                 name="basedir" 
@@ -654,9 +653,9 @@ jarsigner.storepass=${jarsigner.storepass}
                 name="release.parent.platforms"
                 value=""/>
         </ant>
-        -->
         
         <echo message="BUILDING SJSAS ============================================"/>
+        <!--
         <ant dir="${nbi.netbeans.dir}/infra/build/products/sjsas" target="release-all">
             <property 
                 name="basedir" 
@@ -679,6 +678,7 @@ jarsigner.storepass=${jarsigner.storepass}
                 name="release.parent.platforms"
                 value=""/>
         </ant>
+        -->
         
         <echo message="BUILDING TOMCAT ==========================================="/>
         <ant dir="${nbi.netbeans.dir}/infra/build/products/tomcat" target="release-all">
@@ -957,7 +957,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javame" version="6.0.0.0.${build.number}"/>
-            <component uid="sjsas" version="9.1.0.${sjsas.milestone.number}.${sjsas.build.number}"/>
+            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="linux" 
@@ -966,7 +966,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javame" version="6.0.0.0.${build.number}"/>
-            <component uid="sjsas" version="9.1.0.${sjsas.milestone.number}.${sjsas.build.number}"/>
+            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-x86" 
@@ -974,7 +974,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
-            <component uid="sjsas" version="9.1.0.${sjsas.milestone.number}.${sjsas.build.number}"/>
+            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-sparc" 
@@ -982,7 +982,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
-            <component uid="sjsas" version="9.1.0.${sjsas.milestone.number}.${sjsas.build.number}"/>
+            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-x86" 
@@ -990,7 +990,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
-            <component uid="sjsas" version="9.1.0.${sjsas.milestone.number}.${sjsas.build.number}"/>
+            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-ppc" 
@@ -998,7 +998,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-base" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
-            <component uid="sjsas" version="9.1.0.${sjsas.milestone.number}.${sjsas.build.number}"/>
+            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
         </create-bundle>
         
         <create-bundle root="${output.dir}/registry-temp" 
@@ -1011,7 +1011,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
             <component uid="nb-uml" version="6.0.0.0.${build.number}"/>
             <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
-            <component uid="sjsas" version="9.1.0.${sjsas.milestone.number}.${sjsas.build.number}"/>
+            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.13.0.0"/>
             <component uid="openesb" version="5.0.3.0.${openesb.build.number}"/>
             <component uid="sjsam" version="5.0.3.${sjsam.milestone.number}.${sjsam.build.number}"/>
@@ -1026,7 +1026,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
             <component uid="nb-uml" version="6.0.0.0.${build.number}"/>
             <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
-            <component uid="sjsas" version="9.1.0.${sjsas.milestone.number}.${sjsas.build.number}"/>
+            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.13.0.0"/>
             <component uid="openesb" version="5.0.3.0.${openesb.build.number}"/>
             <component uid="sjsam" version="5.0.3.${sjsam.milestone.number}.${sjsam.build.number}"/>
@@ -1040,7 +1040,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
             <component uid="nb-uml" version="6.0.0.0.${build.number}"/>
             <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
-            <component uid="sjsas" version="9.1.0.${sjsas.milestone.number}.${sjsas.build.number}"/>
+            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.13.0.0"/>
             <component uid="openesb" version="5.0.3.0.${openesb.build.number}"/>
             <component uid="sjsam" version="5.0.3.${sjsam.milestone.number}.${sjsam.build.number}"/>
@@ -1054,7 +1054,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
             <component uid="nb-uml" version="6.0.0.0.${build.number}"/>
             <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
-            <component uid="sjsas" version="9.1.0.${sjsas.milestone.number}.${sjsas.build.number}"/>
+            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.13.0.0"/>
             <component uid="openesb" version="5.0.3.0.${openesb.build.number}"/>
             <component uid="sjsam" version="5.0.3.${sjsam.milestone.number}.${sjsam.build.number}"/>
@@ -1068,7 +1068,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
             <component uid="nb-uml" version="6.0.0.0.${build.number}"/>
             <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
-            <component uid="sjsas" version="9.1.0.${sjsas.milestone.number}.${sjsas.build.number}"/>
+            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.13.0.0"/>
             <component uid="openesb" version="5.0.3.0.${openesb.build.number}"/>
             <component uid="sjsam" version="5.0.3.${sjsam.milestone.number}.${sjsam.build.number}"/>
@@ -1082,7 +1082,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
             <component uid="nb-uml" version="6.0.0.0.${build.number}"/>
             <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
-            <component uid="sjsas" version="9.1.0.${sjsas.milestone.number}.${sjsas.build.number}"/>
+            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.13.0.0"/>
             <component uid="openesb" version="5.0.3.0.${openesb.build.number}"/>
             <component uid="sjsam" version="5.0.3.${sjsam.milestone.number}.${sjsam.build.number}"/>

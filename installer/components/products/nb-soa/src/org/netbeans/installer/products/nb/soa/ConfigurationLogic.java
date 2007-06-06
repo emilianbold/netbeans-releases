@@ -83,7 +83,7 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
         
         // get the list of suitable glassfish installations
         dependencies = 
-                amProduct.getDependencyByUid(APPSERVER_UID);
+                amProduct.getDependencyByUid(GLASSFISH_UID);
         sources = 
                 Registry.getInstance().getProducts(dependencies.get(0));
         

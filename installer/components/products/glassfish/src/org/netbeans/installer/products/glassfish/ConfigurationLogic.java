@@ -321,6 +321,14 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                                 JVM_OPTION_NAME,
                                 directory.getAbsolutePath(),
                                 true);
+                        
+                        // if the IDE was installed in the same session as the
+                        // appserver, we should add its "product id" to the IDE
+                        if (ide.hasStatusChanged()) {
+                            NetBeansUtils.addPackId(
+                                    nbLocation,
+                                    PRODUCT_ID);
+                        }
                     }
                 }
             }
@@ -730,4 +738,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     
     public static final String JVM_OPTION_NAME =
             "-Dcom.sun.aas.installRoot"; // NOI18N
+    
+    public static final String PRODUCT_ID =
+            "GLASSFISH"; // NOI18N
 }
