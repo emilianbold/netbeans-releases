@@ -168,7 +168,7 @@ public class J2MEKit extends JavaKit {
         }
         
         public PreprocessorMenuAction(){
-            super();
+            super(false, null);
             setMenu();
         }
         
@@ -205,9 +205,6 @@ public class J2MEKit extends JavaKit {
             }
             
             presenter.setEnabled(action != null);
-            if (!BLANK_ICON.equals(PREPROCESSOR_MENU.getIcon())) {
-                PREPROCESSOR_MENU.setIcon(BLANK_ICON);
-            }
         }
         
         protected String getMenuItemText(){

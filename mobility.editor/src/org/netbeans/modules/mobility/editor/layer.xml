@@ -21,14 +21,9 @@ Microsystems, Inc. All Rights Reserved.
 
 <filesystem>
     <folder name="Menu">
-        <folder name="Edit">
+        <folder name="Source">
+            <attr name="SeparatorAfterUncomment.instance/org-netbeans-modules-mobility-editor-J2MEKit$PreprocessorMenuAction.instance" boolvalue="true"/>
             <file name="org-netbeans-modules-mobility-editor-J2MEKit$PreprocessorMenuAction.instance"/>
-            <attr name="SeparatorBeforeGoTo.instance/org-netbeans-modules-mobility-editor-J2MEKit$PreprocessorMenuAction.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-mobility-editor-J2MEKit$PreprocessorMenuAction.instance/SeparatorAfterConfigBlocks.instance" boolvalue="true"/>
-            <file name="SeparatorAfterConfigBlocks.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-            </file>
-            <attr name="SeparatorAfterConfigBlocks.instance/org-netbeans-modules-editor-MainMenuAction$GoToSourceAction.instance" boolvalue="true"/>
         </folder>
     </folder>
     <folder name="Editors">
