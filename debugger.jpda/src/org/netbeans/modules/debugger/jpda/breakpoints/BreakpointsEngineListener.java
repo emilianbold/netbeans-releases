@@ -121,6 +121,10 @@ implements PropertyChangeListener, DebuggerManagerListener {
 
     public void breakpointAdded (final Breakpoint breakpoint) {
         final boolean[] started = new boolean[] { false };
+        if (Thread.holdsLock(debugger.LOCK)) {
+            createBreakpointImpl (breakpoint);
+            return ;
+        } // Otherwise:
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 synchronized (debugger.LOCK) {
@@ -143,6 +147,10 @@ implements PropertyChangeListener, DebuggerManagerListener {
 
     public void breakpointRemoved (final Breakpoint breakpoint) {
         final boolean[] started = new boolean[] { false };
+        if (Thread.holdsLock(debugger.LOCK)) {
+            removeBreakpointImpl (breakpoint);
+            return ;
+        } // Otherwise:
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 synchronized (debugger.LOCK) {
