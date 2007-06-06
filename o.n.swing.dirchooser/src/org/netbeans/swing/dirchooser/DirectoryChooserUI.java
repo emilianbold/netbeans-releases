@@ -1718,7 +1718,9 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     private class TextFieldKeyListener extends KeyAdapter {
         public void keyPressed(KeyEvent evt) {
             showPopupCompletion = true;
-            if((!completionPopup.isVisible()) && (evt.getKeyCode() == KeyEvent.VK_ENTER)) {
+            // #105801: completionPopup might not be ready when updateCompletions not called (empty text field)
+            if(completionPopup != null &&
+                    !completionPopup.isVisible() && (evt.getKeyCode() == KeyEvent.VK_ENTER)) {
                 File file = new File(filenameTextField.getText());
                 if(file.exists() && file.isDirectory()) {
                     setSelected(new File[] {file});
