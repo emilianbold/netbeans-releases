@@ -98,7 +98,7 @@ public final class RecentFiles {
             keys = prefs.keys();
         }
         catch (BackingStoreException ex) {
-            Logger.getLogger(RecentFiles.class.getName()).log(Level.WARNING, ex.getMessage(), ex);
+            Logger.getLogger(RecentFiles.class.getName()).log(Level.FINE, ex.getMessage(), ex);
             return Collections.emptyList();
         }
         List<HistoryItem> result = new ArrayList<HistoryItem>(keys.length + 10);
@@ -126,11 +126,7 @@ public final class RecentFiles {
             url = new URL(value.substring(0, sepIndex));
         } catch (MalformedURLException ex) {
             // url corrupted, skip
-            Logger.getLogger(RecentFiles.class.getName()).log(Level.INFO, ex.getMessage(), ex);
-            return null;
-        }
-        FileObject fo = URLMapper.findFileObject(url);
-        if (fo == null) {
+            Logger.getLogger(RecentFiles.class.getName()).log(Level.FINE, ex.getMessage(), ex);
             return null;
         }
         long time = 0;
@@ -138,35 +134,19 @@ public final class RecentFiles {
             time = Long.decode(value.substring(sepIndex + SEPARATOR.length()));
         } catch (NumberFormatException ex) {
             // stored data corrupted, skip
-            Logger.getLogger(RecentFiles.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+            Logger.getLogger(RecentFiles.class.getName()).log(Level.FINE, ex.getMessage(), ex);
             return null;
         }
-        return new HistoryItem(fo, time);
+        return new HistoryItem(url, time);
     }
 
     static void storeRemoved (HistoryItem hItem) {
-        String stringURL = null;
-        URL url = URLMapper.findURL(hItem.getFile(), URLMapper.EXTERNAL);
-        if (url == null) {
-            // not possible to store
-            Logger.getLogger(RecentFiles.class.getName()).log(Level.INFO, 
-                    "storeRemoved: URL can't be found for FileObject " + hItem.getFile()); // NOI18N
-            return;
-        }
-        stringURL = url.toExternalForm();
+        String stringURL = hItem.getURL().toExternalForm();
         getPrefs().remove(trimToKeySize(stringURL));
     }
     
     static void storeAdded (HistoryItem hItem) {
-        String stringURL = null;
-        URL url = URLMapper.findURL(hItem.getFile(), URLMapper.EXTERNAL);
-        if (url == null) {
-            // not possible to store
-            Logger.getLogger(RecentFiles.class.getName()).log(Level.INFO, 
-                    "storeAdded: URL can't be found for FileObject " + hItem.getFile()); // NOI18N
-            return;
-        }
-        stringURL = url.toExternalForm();
+        String stringURL = hItem.getURL().toExternalForm();
         String value = stringURL + SEPARATOR + String.valueOf(hItem.getTime());
         getPrefs().put(trimToKeySize(stringURL), value);
     }
@@ -191,14 +171,14 @@ public final class RecentFiles {
      */ 
     private static void addFile (TopComponent tc) {
         if (tc instanceof CloneableTopComponent) {
-            FileObject fo = obtainFileObject(tc);
-            if (fo != null) {
+            URL fileURL = obtainURL(tc);
+            if (fileURL != null) {
                 boolean added = false;
                 synchronized (HISTORY_LOCK) {
                     // avoid duplicates
-                    HistoryItem hItem = findHistoryItem(fo);
+                    HistoryItem hItem = findHistoryItem(fileURL);
                     if (hItem == null) {
-                        hItem = new HistoryItem(fo, System.currentTimeMillis());
+                        hItem = new HistoryItem(fileURL, System.currentTimeMillis());
                         history.add(0, hItem);
                         storeAdded(hItem);
                         added = true;
@@ -218,11 +198,11 @@ public final class RecentFiles {
     /** Removes file represented by given TopComponent from the list */
     private static void removeFile (TopComponent tc) {
         if (tc instanceof CloneableTopComponent) {
-            FileObject fo = obtainFileObject(tc);
-            if (fo != null) {
+            URL fileURL = obtainURL(tc);
+            if (fileURL != null) {
                 boolean removed = false;
                 synchronized (HISTORY_LOCK) {
-                    HistoryItem hItem = findHistoryItem(fo);
+                    HistoryItem hItem = findHistoryItem(fileURL);
                     if (hItem != null) {
                         history.remove(hItem);
                         storeRemoved(hItem);
@@ -233,26 +213,52 @@ public final class RecentFiles {
         }
     }
     
-    private static FileObject obtainFileObject (TopComponent tc) {
+    private static URL obtainURL (TopComponent tc) {
         DataObject dObj = tc.getLookup().lookup(DataObject.class);
-        return dObj != null ? dObj.getPrimaryFile() : null;
+        if (dObj != null) {
+            FileObject fo = dObj.getPrimaryFile();
+            if (fo != null) {
+                return convertFile2URL(fo);
+            }
+        }
+        return null;
     }
     
-    private static HistoryItem findHistoryItem (FileObject fo) {
+    private static HistoryItem findHistoryItem (URL url) {
         for (HistoryItem hItem : history) {
-            if (fo.equals(hItem.getFile())) {
+            if (url.equals(hItem.getURL())) {
                 return hItem;
             }
         }
         return null;
     }
     
+    static URL convertFile2URL (FileObject fo) {
+        URL url = URLMapper.findURL(fo, URLMapper.EXTERNAL);
+        if (url == null) {
+            Logger.getLogger(RecentFiles.class.getName()).log(Level.FINE, 
+                    "convertFile2URL: URL can't be found for FileObject " + fo); // NOI18N
+        }
+        return url;
+    }
+    
+    static FileObject convertURL2File (URL url) {
+        FileObject fo = URLMapper.findFileObject(url);
+        if (fo == null) {
+            Logger.getLogger(RecentFiles.class.getName()).log(Level.FINE, 
+                    "convertURL2File: File can't be found for URL " + url); // NOI18N
+        }
+        return fo;
+    }
+    
     /** Checks recent files history and removes non-valid entries */
     private static void checkHistory () {
         // note, code optimized for the frequent case that there are no invalid entries
         List<HistoryItem> invalidEntries = new ArrayList<HistoryItem>(3);
+        FileObject fo = null;
         for (HistoryItem historyItem : history) {
-            if (!historyItem.getFile().isValid()) {
+            fo = convertURL2File(historyItem.getURL());
+            if (fo == null || !fo.isValid()) {
                 invalidEntries.add(historyItem);
             }
         }
@@ -267,15 +273,15 @@ public final class RecentFiles {
     public static final class HistoryItem<T extends HistoryItem> implements Comparable<T> {
         
         private long time;
-        private FileObject file;
+        private URL fileURL;
         
-        HistoryItem (FileObject file, long time) {
-            this.file = file;
+        HistoryItem (URL fileURL, long time) {
+            this.fileURL = fileURL;
             this.time = time;
         }
         
-        public FileObject getFile () {
-            return file;
+        public URL getURL () {
+            return fileURL;
         }
         
         public long getTime () {

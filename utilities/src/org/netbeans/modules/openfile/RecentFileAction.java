@@ -91,6 +91,10 @@ public class RecentFileAction extends AbstractAction implements Presenter.Menu, 
 
         int counter = 0;
         for (HistoryItem hItem : files) {
+            // obtain file object
+            // note we need not check for null or validity, as it is ensured
+            // by RecentFiles.getRecentFiles()
+            FileObject fo = RecentFiles.convertURL2File(hItem.getURL());
             // allow only up to max items
             if (++counter > MAX_COUNT) {
                 break;
@@ -98,7 +102,7 @@ public class RecentFileAction extends AbstractAction implements Presenter.Menu, 
             // obtain icon for fileobject
             Image icon = null;
             try {
-                DataObject dObj = DataObject.find(hItem.getFile());
+                DataObject dObj = DataObject.find(fo);
                 icon = dObj.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16);
             } catch (DataObjectNotFoundException ex) {
                 // should not happen, log and skip to next
@@ -109,11 +113,11 @@ public class RecentFileAction extends AbstractAction implements Presenter.Menu, 
             // create and configure menu item
             JMenuItem jmi = null;
             if (icon != null) {
-                jmi = new JMenuItem(hItem.getFile().getNameExt(), new ImageIcon(icon));
+                jmi = new JMenuItem(fo.getNameExt(), new ImageIcon(icon));
             } else {
-                jmi = new JMenuItem(hItem.getFile().getNameExt());
+                jmi = new JMenuItem(fo.getNameExt());
             }
-            jmi.putClientProperty(FO_PROP, hItem.getFile());
+            jmi.putClientProperty(FO_PROP, fo);
             jmi.addActionListener(this);
             menu.add(jmi);
         }
