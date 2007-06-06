@@ -1,11 +1,11 @@
 #!/bin/sh
 ANT_OPTS='-Xmx512m -XX:MaxPermSize=128m'
 export ANT_OPTS
-if [ `ant -f nbbuild/build.xml -Dmoduleconfig=daily-alpha-nbms print-cvs-modules | perl -ne 'print sort split /[, ]/, $1 if /cvsmodules=\[(.+)\]/'` \!= `perl -e 'opendir D, "."; print sort grep {!/\.\.?/ && -d} readdir D; closedir D'` ]
+if [ `ant -f nbbuild/build.xml -Dcluster.config=experimental print-cvs-modules | perl -ne 'print sort split /[, ]/, $1 if /cvsmodules=\[(.+)\]/'` \!= `perl -e 'opendir D, "."; print sort grep {!/\.\.?/ && -d} readdir D; closedir D'` ]
 then
     echo "Set of modules changed, getting fresh checkout..."
     rm -rf `ls | fgrep -v nbbuild`
-    ant -f nbbuild/build.xml -Dmoduleconfig=daily-alpha-nbms checkout cvs-clean || exit
+    ant -f nbbuild/build.xml -Dcluster.config=experimental checkout cvs-clean || exit
 elif [ builds/`ls -1 ../builds | tail -2 | head -1` '!=' `readlink ../lastSuccessful` ]
 then
     echo "Previous build failed, running clean build this time..."
@@ -14,6 +14,6 @@ fi
 mydir=`cd $(dirname $0); pwd`
 keystore=$mydir/NBstore
 storepass=`cat $mydir/storepass`
-ant -emacs -Dbuildnum=$BUILD_TAG -Dmoduleconfig=daily-alpha-nbms -Dkeystore=$keystore -Dstorepass=$storepass -f nbbuild/build.xml merge build-nbms || exit
+ant -emacs -Dbuildnum=$BUILD_TAG -Dcluster.config=experimental -Dkeystore=$keystore -Dstorepass=$storepass -f nbbuild/build.xml merge build-nbms || exit
 ant -f $mydir/build-update-descriptor.xml || exit
 ant -f nbbuild/build.xml -Djnlp.codebase=http://deadlock.netbeans.org/hudson/job/javadoc-nbms/lastSuccessfulBuild/artifact/nbbuild/build/jnlp/ -Djnlp.signjar.keystore=$keystore -Djnlp.signjar.alias=nb_ide -Djnlp.signjar.password=$storepass build-jnlp
