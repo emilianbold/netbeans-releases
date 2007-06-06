@@ -1825,6 +1825,15 @@ public class ContainerBox extends CssBox {
      */
     private boolean isSpan() {
         return inline && !boxType.isAbsolutelyPositioned() && !replaced;
+//        return false; // TEMP
+    }
+    
+    private static boolean isTextualBox(CssBox box) {
+        if (box == null) {
+            return false;
+        }
+        BoxType boxType = box.getBoxType();
+        return boxType == BoxType.TEXT || boxType == BoxType.SPACE || boxType == BoxType.LINEBREAK;
     }
     
     /**
@@ -1836,7 +1845,9 @@ public class ContainerBox extends CssBox {
         // Inline tags like <span> in flow context should simply include
         // the children as normal children; the LineBoxGroup will organize
         // them into LineBoxes
-        if (isSpan()) {
+        
+        // XXX #105679 This doesn't know how to deal with the 'textual' boxes, adding those normally.
+        if (isSpan() && !isTextualBox(ibox)) {
             addBox(ibox, prevBox, nextBox);
         } else {
             if (context.lineBox == null) {

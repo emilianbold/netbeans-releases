@@ -46,13 +46,14 @@ import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.ImageIcon;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import org.netbeans.modules.visualweb.api.designer.Designer.Box;
 
-import org.openide.ErrorManager;
 import org.openide.util.Utilities;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -1106,8 +1107,9 @@ public class CssBox implements Box {
 //            }
             // XXX Improving the above error handling.
             // TODO Why is actually this state invalid?
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                    new IllegalStateException("Fatal painting error:" // NOI18N
+            // XXX FIXME Possibility of this state is wrong.
+            info(new IllegalStateException("Fatal painting error:" // NOI18N
+                            + "\nthis box=" + this // NOI18N
                             + "\nbad box=" + badBox // NOI18N
                             + "\nparent of bad box=" + badBox.getParent())); // NOI18N
 
@@ -1611,7 +1613,7 @@ public class CssBox implements Box {
             // Look for problematic children
             if ((Math.abs(px) > 50000) || (Math.abs(py) > 50000) || (Math.abs(width) > 50000) ||
                     (Math.abs(height) > 50000)) {
-                ErrorManager.getDefault().log("Size wrong for " + this);
+                fine("Size wrong for " + this);
             }
         }
 
@@ -2050,7 +2052,7 @@ public class CssBox implements Box {
      */
     protected void initializeHorizontalWidths(FormatContext context) {
         if (element == null) {
-            ErrorManager.getDefault().log("Unexpected null element in initialize horizontal widths");
+            fine("Unexpected null element in initialize horizontal widths");
 
             return; // why does this happen?
         }
@@ -4495,5 +4497,15 @@ public class CssBox implements Box {
 //        return uic.getClientId(fcontext);
 //    }
 
+    private static void info(Exception ex) {
+        getLogger().log(Level.INFO, null, ex);
+    }
     
+    private static void fine(String message) {
+        getLogger().fine(message);
+    }
+    
+    private static Logger getLogger() {
+        return Logger.getLogger(CssBox.class.getName());
+    }
 }
