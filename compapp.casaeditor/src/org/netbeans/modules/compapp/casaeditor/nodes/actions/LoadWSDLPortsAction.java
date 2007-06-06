@@ -72,12 +72,14 @@ public class LoadWSDLPortsAction extends NodeAction {
     }
     
     protected void performAction(Node[] activatedNodes) {
-        final ServiceUnitNode node = ((ServiceUnitNode) activatedNodes[0]);
-        SwingUtilities.invokeLater(new Runnable(){
-            public void run(){
-                showDialog(node);
-            }
-        });
+        if (activatedNodes.length > 0 && activatedNodes[0] instanceof ServiceUnitNode) {
+            final ServiceUnitNode node = ((ServiceUnitNode) activatedNodes[0]);
+            SwingUtilities.invokeLater(new Runnable(){
+                public void run(){
+                    showDialog(node);
+                }
+            });
+        }
     }
     
     private void visitAllWsdlFiles(File file, List<File> fs) {
