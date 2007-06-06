@@ -1,0 +1,3 @@
+org.netbeans.modules.autoupdate.XMLAutoupdateType=org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory
+org.netbeans.modules.autoupdate.AutoupdateType=org.netbeans.spi.autoupdate.UpdateProvider
+
