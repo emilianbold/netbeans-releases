@@ -146,8 +146,6 @@ public class DetailsPanel extends JTextPane  {
         
         header.setBackground(UnitTable.getDarkerColor(getBackground()));
         rightCornerHeader.setBackground(UnitTable.getDarkerColor(getBackground()));
-        Insets margin = getMargin(); 
-        margin.top += 2;
-        setMargin(margin);
+        setBorder(BorderFactory.createEmptyBorder(3, 3, 0, 0));
     }
 }
