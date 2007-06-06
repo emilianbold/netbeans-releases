@@ -266,7 +266,6 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../ide/welcome</project>
                 <project>../image</project>
                 <project>../j2ee/archiveproject</project>
-                <project>../j2ee/blueprints</project>
                 <project>../j2ee/clientproject</project>
                 <project>../j2ee/ddapi</project>
                 <project>../j2ee/ddloaders</project>
