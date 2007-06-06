@@ -26,6 +26,9 @@ import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.EventListener;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 
 import org.openide.*;
 import org.openide.cookies.EditorCookie;
@@ -38,6 +41,9 @@ import org.openide.nodes.CookieSet;
 
 import org.netbeans.modules.web.core.QueryStringCookie;
 import org.netbeans.modules.web.core.WebExecSupport;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /** Object that provides main functionality for internet data loader.
  *
@@ -56,6 +62,8 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     
     static final String ATTR_FILE_ENCODING = "Content-Encoding"; // NOI18N
     
+    private static final String DEFAULT_ENCODING = "ISO-8559-1"; // NOI18N
+    
     transient private EditorCookie servletEdit;
     transient protected JspServletDataObject servletDataObject;
     // it is guaranteed that if servletDataObject != null, then this is its
@@ -67,10 +75,19 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     transient private BaseJspEditorSupport editorSupport;
     transient final private static boolean debug = false;
     
+    transient volatile private Lookup currentLookup;
+    transient volatile private boolean useEditorForEncoding = false, reparseEncoding = false;
+    transient final private AtomicBoolean resolvingEncoding = new AtomicBoolean(false);
+    
     public JspDataObject(FileObject pf, final UniFileLoader l) throws DataObjectExistsException {
         super(pf, l);
         CookieSet cookies = getCookieSet();
         initialize();
+    }
+    
+    @Override
+    public Lookup getLookup() {
+        return currentLookup;
     }
     
     // Public accessibility for e.g. JakartaServerPlugin.
@@ -146,27 +163,31 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         return "text/x-java"; // NOI18N
     }
     
-    public String getFileEncoding(boolean forceParse, boolean useEditor) {
-        //read the encoding property and if not empty return it
-        String encoding = (String)getPrimaryFile().getAttribute(PROP_ENCODING);
-        if(encoding != null) {
-            return encoding;
-        } else {
-            TagLibParseSupport tlps = (TagLibParseSupport)getCookie(TagLibParseSupport.class);
-            return tlps.getCachedOpenInfo(forceParse, useEditor).getEncoding();
-        }
+    public String getFileEncoding() {
+        //        TagLibParseSupport tlps = (TagLibParseSupport)getCookie(TagLibParseSupport.class);
+        String retrievedEncoding = (String)getPrimaryFile().getAttribute(PROP_ENCODING);
+        //        if (tlps != null) {
+        //            boolean doReparse = reparseEncoding;
+        //            boolean useEditor = useEditorForEncoding;
+        //            reparseEncoding = false;
+        //            useEditorForEncoding = false;
+        //            retrievedEncoding = tlps.getCachedOpenInfo(doReparse, useEditor).getEncoding();
+        //        }
+        retrievedEncoding = retrievedEncoding != null ? retrievedEncoding : DEFAULT_ENCODING;
+        return retrievedEncoding ;
     }
     
-    public void setFileEncoding(String encoding) {
-        encoding = encoding.trim();
-        if(encoding.length() == 0) {
-            encoding = null; //clear the property
+    void updateFileEncoding(boolean fromEditor) {
+        TagLibParseSupport tlps = (TagLibParseSupport)getCookie(TagLibParseSupport.class);
+        if (tlps != null) {
+            String encoding = tlps.getCachedOpenInfo(true, fromEditor).getEncoding();
+            try {
+                getPrimaryFile().setAttribute(PROP_ENCODING, encoding);
+            } catch (IOException e) {
+                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+            }
         }
-        try {
-            getPrimaryFile().setAttribute(PROP_ENCODING, encoding);
-        } catch(IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
-        }
+        
     }
     
     private static final String CORRECT_WINDOWS_31J = "windows-31j";
@@ -212,6 +233,8 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         listener = new Listener();
         listener.register(getPrimaryFile());
         refreshPlugin(false);
+        createLookup();
+        assert currentLookup != null;
     }
     
     /** Updates classFileData, servletDataObject, servletEdit
@@ -412,6 +435,22 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
             getCookieSet().add(tlps);
         }
         return retValue;
+    }
+    
+    private void createLookup() {
+        Lookup noEncodingLookup = super.getLookup();
+        
+        org.netbeans.spi.queries.FileEncodingQueryImplementation feq = new org.netbeans.spi.queries.FileEncodingQueryImplementation() {
+            public Charset getEncoding(FileObject file) {
+                assert file != null;
+                assert file.equals(getPrimaryFile());
+                
+                String charsetName = getFileEncoding();
+                return Charset.forName(charsetName);
+            }
+        };
+        
+        currentLookup = new ProxyLookup(noEncodingLookup, Lookups.singleton(feq));
     }
     
     

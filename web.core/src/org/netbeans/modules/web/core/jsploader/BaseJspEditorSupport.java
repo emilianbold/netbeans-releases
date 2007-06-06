@@ -204,12 +204,18 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
         
         return supported;
     }
+
+    @Override
+    protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
+        ((JspDataObject)getDataObject()).updateFileEncoding(false);
+        super.loadFromStreamToKit(doc, stream, kit);
+    }
     
     public void open(){
-        long a = System.currentTimeMillis();
-        encoding = getObjectEncoding(false, false); //use encoding from fileobject & cache it
+//        long a = System.currentTimeMillis(); // 
+        encoding = ((JspDataObject)getDataObject()).getFileEncoding(); //use encoding from fileobject
         
-        if (!isSupportedEncoding(encoding)){
+        if (!isSupportedEncoding(encoding)) {
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
                 NbBundle.getMessage (BaseJspEditorSupport.class, "MSG_BadEncodingDuringLoad", //NOI18N
                     new Object [] { getDataObject().getPrimaryFile().getNameExt(),
@@ -223,41 +229,23 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
         super.open();
     }
     
-    protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
-
-        Reader reader = null;
-        encoding = getObjectEncoding(false, true);//use encoding from fileobject & cache it
-        
-        if (!isSupportedEncoding(encoding)){
-            encoding = defaulEncoding;
-        }
-        try {
-            reader = new InputStreamReader(stream, encoding);
-            kit.read(reader, doc, 0);
-        }
-        finally {
-            if (reader != null)
-                reader.close();
-        }
-    }
-    
-    protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
-        Writer wr = null;
-        if (encoding == null) {
-            encoding = getObjectEncoding(false, true);//use encoding from fileobject & cache it
-        }
-        try {
-            if (!isSupportedEncoding(encoding)){
-                encoding = defaulEncoding;
-            }
-            wr = new OutputStreamWriter(stream, encoding);
-            kit.write(wr, doc, 0, doc.getLength());
-        }
-        finally {
-            if (wr != null)
-                wr.close();
-        }
-    }
+//    protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
+//
+//        Reader reader = null;
+//        encoding = getObjectEncoding(false, true);//use encoding from fileobject & cache it
+//        
+//        if (!isSupportedEncoding(encoding)){
+//            encoding = defaulEncoding;
+//        }
+//        try {
+//            reader = new InputStreamReader(stream, encoding);
+//            kit.read(reader, doc, 0);
+//        }
+//        finally {
+//            if (reader != null)
+//                reader.close();
+//        }
+//    }
     
     /** Notify about the editor closing.
      */
@@ -296,20 +284,20 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
         obj.removeSaveCookie();
     }
     
-    protected String getObjectEncoding(boolean useEditor) {
-        return getObjectEncoding(useEditor, false);
-    }
+//    protected String getObjectEncoding(boolean useEditor) {
+//        return getObjectEncoding(useEditor, false);
+//    }
     
-    /** Returns encoding of the JSP file. 
-     * @param useEditor if <code>true</code> then the encoding is got from the editor 
-     *        otherwise the encoding is obtained from webmodule parser.
-     * @param useCache if <code>true</code> then the encoding parsed from the webmodule and JSP is 
-     *        cached. So the next call of this method wont parse the wm and the JSP again until the JSP file is changed.
-     * @return JSP page encoding.
-     */
-    protected String getObjectEncoding(boolean useEditor, boolean useCache) {
-            return ((JspDataObject)getDataObject()).getFileEncoding(!useCache, useEditor).trim();
-    }
+//    /** Returns encoding of the JSP file. 
+//     * @param useEditor if <code>true</code> then the encoding is got from the editor 
+//     *        otherwise the encoding is obtained from webmodule parser.
+//     * @param useCache if <code>true</code> then the encoding parsed from the webmodule and JSP is 
+//     *        cached. So the next call of this method wont parse the wm and the JSP again until the JSP file is changed.
+//     * @return JSP page encoding.
+//     */
+//    protected String getObjectEncoding(boolean useEditor, boolean useCache) {
+//            return ((JspDataObject)getDataObject()).getFileEncoding(!useCache, useEditor).trim();
+//    }
     
     /** Save the document in this thread and start reparsing it.
      * @exception IOException on I/O error
@@ -333,7 +321,10 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
      */
     private void saveDocument(boolean parse, boolean forceSave) throws IOException {
         if (forceSave || isModified()) {
-            encoding = getObjectEncoding(true); //use encoding from editor 
+            ((JspDataObject)getDataObject()).updateFileEncoding(true);
+            
+            encoding = ((JspDataObject)getDataObject()).getFileEncoding();
+//            encoding = getObjectEncoding(true); //use encoding from editor 
             if (!isSupportedEncoding(encoding)){
                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
                 NbBundle.getMessage (BaseJspEditorSupport.class, "MSG_BadEncodingDuringSave", //NOI18N
