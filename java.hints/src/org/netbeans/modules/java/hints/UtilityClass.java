@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ElementVisitor;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -68,7 +69,7 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
     
     /** Creates a new instance of AddOverrideAnnotation */
     private UtilityClass(boolean b) {
-        super( true, true, AbstractHint.HintSeverity.WARNING );
+        super( true, true, b ? AbstractHint.HintSeverity.WARNING : AbstractHint.HintSeverity.CURRENT_LINE_WARNING);
         clazz = b;
     }
     
@@ -78,6 +79,9 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
     
     public static UtilityClass withoutConstructor() {
         return new UtilityClass(true);
+    }
+    public static UtilityClass withConstructor() {
+        return new UtilityClass(false);
     }
 
     public List<ErrorDescription> run(CompilationInfo compilationInfo,
@@ -100,26 +104,40 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
                         return null;
                     }
                 }
-                List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(
-                    clazz,
-                    TreePathHandle.create(e, compilationInfo),
-                    compilationInfo.getFileObject()
-                    ));
-                
-                int[] span = Utilities.findIdentifierSpan(treePath, compilationInfo.getCompilationUnit(), compilationInfo.getTrees().getSourcePositions(), doc);
-                
-                ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
-                    getSeverity().toEditorSeverity(),
-                    NbBundle.getMessage(UtilityClass.class, clazz ? "MSG_UtilityClass" : "MSG_PublicConstructor"), // NOI18N
-                    fixes,
-                    doc,
-                    doc.createPosition((int) span[0]),
-                    doc.createPosition((int) span[1])
-                    );
-                
-                return Collections.singletonList(ed);
-                
+            } else {
+                if (e.getKind() != ElementKind.CONSTRUCTOR) {
+                    return null;
+                }
+                ExecutableElement x = (ExecutableElement)e;
+                for (Element m : x.getEnclosingElement().getEnclosedElements()) {
+                    if (m.accept(this, compilationInfo)) {
+                        return null;
+                    }
+                }
+                if (x.getModifiers().contains(Modifier.PROTECTED) || x.getModifiers().contains(Modifier.PUBLIC)) {
+                    // ok
+                } else {
+                    return null;
+                }
             }
+            List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(
+                clazz,
+                TreePathHandle.create(e, compilationInfo),
+                compilationInfo.getFileObject()
+                ));
+
+            int[] span = Utilities.findIdentifierSpan(treePath, compilationInfo.getCompilationUnit(), compilationInfo.getTrees().getSourcePositions(), doc);
+
+            ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
+                getSeverity().toEditorSeverity(),
+                NbBundle.getMessage(UtilityClass.class, clazz ? "MSG_UtilityClass" : "MSG_PublicConstructor"), // NOI18N
+                fixes,
+                doc,
+                doc.createPosition((int) span[0]),
+                doc.createPosition((int) span[1])
+                );
+
+            return Collections.singletonList(ed);
         } catch (BadLocationException e) {
             Exceptions.printStackTrace(e);
         } catch (IOException e) {
@@ -175,7 +193,11 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
     }
 
     public Boolean visitExecutable(ExecutableElement m, CompilationInfo arg1) {
-        return !m.getModifiers().contains(Modifier.STATIC) && !arg1.getElementUtilities().isSynthetic(m);
+        if (clazz) {
+            return !m.getModifiers().contains(Modifier.STATIC) && !arg1.getElementUtilities().isSynthetic(m);
+        } else {
+            return !m.getModifiers().contains(Modifier.STATIC) && !m.getSimpleName().contentEquals("<init>"); // NOI18N
+        }
     }
 
     public Boolean visitTypeParameter(TypeParameterElement arg0, CompilationInfo arg1) {
@@ -215,14 +237,14 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
         }
 
         public void run(WorkingCopy wc) throws Exception {
+            wc.toPhase(JavaSource.Phase.RESOLVED);
+            
+            Element e = handle.resolveElement(wc);
+            if (e == null) {
+                return;
+            }
+            Tree outer = wc.getTrees().getTree(e);
             if (clazz) {
-                wc.toPhase(JavaSource.Phase.RESOLVED);
-                
-                Element e = handle.resolveElement(wc);
-                if (e == null) {
-                    return;
-                }
-                Tree outer = wc.getTrees().getTree(e);
                 if (outer == null || outer.getKind() != Kind.CLASS) {
                     return;
                 }
@@ -237,6 +259,14 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
                     wc.getTreeMaker().Block(Collections.<StatementTree>emptyList(), false)
                 );
                 wc.rewrite(cls, wc.getTreeMaker().addClassMember(cls, m));
+            } else {
+                if (outer == null || outer.getKind() != Kind.METHOD) {
+                    return;
+                }
+                MethodTree met = (MethodTree)outer;
+                
+                ModifiersTree modifiers = wc.getTreeMaker().Modifiers(Collections.singleton(Modifier.PRIVATE), met.getModifiers().getAnnotations());
+                wc.rewrite(met.getModifiers(), modifiers);
             }
         }
     }

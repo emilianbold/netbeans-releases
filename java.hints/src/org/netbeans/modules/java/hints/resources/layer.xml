@@ -80,6 +80,9 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="org-netbeans-modules-java-hints-UtilityClassClass.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.UtilityClass.withoutConstructor"/>
                     </file>
+                    <file name="org-netbeans-modules-java-hints-UtilityClassConstructor.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.UtilityClass.withConstructor"/>
+                    </file>
                 </folder>    
 
                 <!--
