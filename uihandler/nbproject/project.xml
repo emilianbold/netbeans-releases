@@ -50,10 +50,9 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.autoupdate</code-name-base>
+                    <code-name-base>org.netbeans.modules.autoupdate.services</code-name-base>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>2.22</specification-version>
+                        <specification-version>1.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
