@@ -100,13 +100,13 @@ final class InspectorUI  extends TopComponent implements ExplorerManager.Provide
                         if (node instanceof InspectorFolderNode) {
                             Long componentID = ((InspectorFolderNode) node).getComponentID();
                             DesignComponent component = componentID == null ? null : document.get().getComponentByUID(componentID);
-                            if (component != null)
+                            if (component != null) {
                                 selectedComponents.add(component);
+                            }
+                            
                         }
                     }
                     document.get().setSelectedComponents(InspectorAccessController.INSPECTOR_ID, selectedComponents);
-                    //InspectorPanel.getInstance().selectionChanged(explorerManager.getSelectedNodes());
-                    //InspectorPanel.getInstance().selectionChanged(selectedComponents);
                 } finally {
                     lockSelectionSetting = false;
                 }

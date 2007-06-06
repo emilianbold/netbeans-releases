@@ -47,6 +47,10 @@ public final class PropertiesSupport {
     private PropertiesSupport() {
     }
     
+    public static Sheet getSheet(DataEditorView view, DesignComponent component) {
+        return PropertiesNodesManager.getDefault(view).getSheet(component);
+    }
+    
     public static void addInstanceContent(DataEditorView view, InstanceContent ic) {
         PropertiesNodesManager.getDefault(view).add(ic);
     }

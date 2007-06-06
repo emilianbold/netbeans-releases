@@ -35,14 +35,18 @@ import java.awt.dnd.DnDConstants;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.vmd.api.io.ActiveViewSupport;
+import org.netbeans.modules.vmd.api.io.DataEditorView;
 
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.common.AbstractAcceptPresenter;
 import org.netbeans.modules.vmd.api.model.common.DesignComponentDataFlavor;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
+import org.netbeans.modules.vmd.api.properties.common.PropertiesSupport;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
+import org.openide.nodes.Sheet;
 import org.openide.util.datatransfer.PasteType;
 
 
@@ -141,11 +145,11 @@ final class InspectorFolderNode extends AbstractNode {
         final Node dropNode = NodeTransfer.node( t, DnDConstants.ACTION_COPY_OR_MOVE + NodeTransfer.CLIPBOARD_CUT );
         if (!(dropNode instanceof InspectorFolderNode))
             return null;
-         
+        
         final InspectorFolderNode ifn = ((InspectorFolderNode) dropNode);
         ifn.getComponent().getDocument().getTransactionManager().readAccess(new Runnable() {
             public void run() {
-         
+                
                 final DesignComponent ifnc = ifn.getComponent();
                 Map<AbstractAcceptPresenter, ComponentProducer> presentersMap = new HashMap<AbstractAcceptPresenter,ComponentProducer>();
                 if (component == null)
@@ -161,7 +165,7 @@ final class InspectorFolderNode extends AbstractNode {
                             public Transferable paste() throws IOException {
                                 ifnc.getDocument().getTransactionManager().writeAccess(new Runnable() {
                                     public void run() {
-                                         presenter.accept(trans);
+                                        presenter.accept(trans);
                                     }
                                 });
                                 return t;
@@ -173,10 +177,10 @@ final class InspectorFolderNode extends AbstractNode {
                 }
             }
         });
-
+        
         return pasteType;
     }
-
+    
     public Transferable drag() throws IOException {
         return transferable;
     }
@@ -184,7 +188,7 @@ final class InspectorFolderNode extends AbstractNode {
     public boolean canCut() {
         return true;
     }
-
+    
     public boolean canDestroy() {
         return false;
     }
@@ -197,6 +201,15 @@ final class InspectorFolderNode extends AbstractNode {
         componentID = null;
         component = null;
         folder = null;
+    }
+    
+    public Sheet createSheet() {
+        if(component.get() == null)
+            super.createSheet();
+        DataEditorView view = ActiveViewSupport.getDefault().getActiveView();
+        if (view != null && view.getKind() == DataEditorView.Kind.MODEL)
+            return PropertiesSupport.getSheet(view, component.get());
+        return super.createSheet();
     }
     
     private class NodeTransferable implements Transferable {

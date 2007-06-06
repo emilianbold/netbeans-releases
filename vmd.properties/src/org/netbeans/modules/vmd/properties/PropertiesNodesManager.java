@@ -30,13 +30,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.WeakHashMap;
 import org.netbeans.modules.vmd.api.io.DataEditorView;
-import org.netbeans.modules.vmd.api.io.DataObjectContext;
+
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyDescriptor;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
 import org.netbeans.modules.vmd.api.properties.GroupPropertyEditor;
 import org.netbeans.modules.vmd.api.properties.PropertiesPresenter;
 import org.openide.nodes.Node;
+import org.openide.nodes.Node.Property;
 import org.openide.nodes.Sheet;
 import org.openide.util.WeakSet;
 import org.openide.util.lookup.InstanceContent;
@@ -53,6 +54,7 @@ public final class PropertiesNodesManager {
     private WeakHashMap<InstanceContent, WeakSet<Node>> nodesToRemoveMap;
     private WeakReference<DataEditorView> view;
     private WeakHashMap<DesignComponent, WeakSet<DefaultPropertySupport>> propertySupportMap;
+    private WeakHashMap<DesignComponent, Sheet> sheetMap;
     
     public synchronized static PropertiesNodesManager getDefault(DataEditorView view) {
         if (INSTANCES.get(view) == null) {
@@ -66,8 +68,9 @@ public final class PropertiesNodesManager {
         nodesToRemoveMap = new WeakHashMap<InstanceContent, WeakSet<Node>>();
         this.view = new WeakReference<DataEditorView>(view);
         icMap = new WeakHashMap<DataEditorView, InstanceContent>();
-        ics = new HashSet();
+        ics = new HashSet<InstanceContent>();
         propertySupportMap = new WeakHashMap<DesignComponent, WeakSet<DefaultPropertySupport>>();
+        sheetMap = new WeakHashMap<DesignComponent, Sheet>();
     }
     
     public void add(InstanceContent ic) {
@@ -111,7 +114,9 @@ public final class PropertiesNodesManager {
     
     public synchronized Sheet getSheet(DesignComponent component) {
         assert (component != null);
-        return createSheet(component);
+        if (sheetMap.get(component) == null)
+            sheetMap.put(component, createSheet(component));
+        return sheetMap.get(component);
     }
     
     private synchronized static void createCategoriesSet(Sheet sheet, List<String> categories) {
@@ -133,8 +138,7 @@ public final class PropertiesNodesManager {
         }
     };
     
-    
-    public Sheet createSheet(final DesignComponent component) {
+    private Sheet createSheet(final DesignComponent component) {
         final Sheet sheet = new Sheet();
         component.getDocument().getTransactionManager().readAccess(new Runnable() {
             public void run() {
@@ -175,6 +179,23 @@ public final class PropertiesNodesManager {
         return sheet;
     }
     
+    public void updateSheet(Collection<DesignComponent> components) {
+        if (components == null)
+            return;
+        for (DesignComponent component : components) {
+            Sheet sheet = sheetMap.get(component);
+            if (sheet == null)
+                continue;
+            for (Node.PropertySet set : sheet.toArray()) {
+                for(Property property : set.getProperties()) {
+                    if (!(property instanceof DefaultPropertySupport))
+                        continue;
+                    ((DefaultPropertySupport) property).update();
+                }
+            }
+        }
+    }
+    
     private void addPropertySupport(DesignComponent component, DefaultPropertySupport propertySupport) {
         WeakSet<DefaultPropertySupport> propertySupports = propertySupportMap.get(component);
         if (propertySupports == null) {
@@ -197,12 +218,12 @@ public final class PropertiesNodesManager {
                 continue;
             for (Node node : nodesToRemove) {
                 PropertiesNode pn = (PropertiesNode) node;
-                pn.updateNode(createSheet(pn.getComponent()));
+                pn.updateNode(getSheet(pn.getComponent()));
             }
         }
     }
     
-   
+    
     
 }
 
