@@ -30,6 +30,17 @@ if [ $ERROR_CODE != 0 ]; then
     exit $ERROR_CODE;
 fi
 
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml all-xtest build-test-dist -Dtest.fail.on.error=false
+ERROR_CODE=$?
+
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Building of Test Distrubution failed"
+#    exit $ERROR_CODE;
+else
+    mv nbbuild/build/testdist.zip $DIST/testdist-${BUILDNUMBER}.zip
+fi
+
+
 #ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml -Dmerge.dependent.modules=false -Dcluster.name=nb.cluster.platform sanity-build-from-source
 #ERROR_CODE=$?
 
