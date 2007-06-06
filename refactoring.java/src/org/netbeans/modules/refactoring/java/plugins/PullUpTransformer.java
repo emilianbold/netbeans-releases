@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
-import org.netbeans.modules.refactoring.java.spi.SearchVisitor;
+import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import java.util.HashSet;
@@ -34,7 +34,7 @@ import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
  *
  * @author Jan Becicka
  */
-public class PullUpTransformer extends SearchVisitor {
+public class PullUpTransformer extends RefactoringVisitor {
 
     private MemberInfo<ElementHandle>[] members;
     private Element targetType;
@@ -68,7 +68,7 @@ public class PullUpTransformer extends SearchVisitor {
                             Set<Modifier> mod = new HashSet<Modifier>(njuClass.getModifiers().getFlags());
                             mod.add(Modifier.ABSTRACT);
                             ModifiersTree modifiers = make.Modifiers(mod);
-                            workingCopy.rewrite(njuClass.getModifiers(), modifiers);
+                            rewrite(njuClass.getModifiers(), modifiers);
                         }
                         
                         
@@ -85,10 +85,10 @@ public class PullUpTransformer extends SearchVisitor {
                                 (BlockTree) null,
                                 (ExpressionTree)method.getDefaultValue());
                         njuClass = make.addClassMember(njuClass, nju);
-                        workingCopy.rewrite(tree, njuClass);
+                        rewrite(tree, njuClass);
                     } else {
                         njuClass = make.addClassMember(njuClass, workingCopy.getTrees().getTree(members[i].getElementHandle().resolve(workingCopy)));
-                        workingCopy.rewrite(tree, njuClass);
+                        rewrite(tree, njuClass);
                     }
                 }
             }
@@ -99,7 +99,7 @@ public class PullUpTransformer extends SearchVisitor {
                         Element currentInterface = workingCopy.getTrees().getElement(TreePath.getPath(getCurrentPath(), t));
                         if (currentInterface.equals(members[i].getElementHandle().resolve(workingCopy))) {
                             njuClass = make.removeClassImplementsClause(njuClass, t);
-                            workingCopy.rewrite(tree, njuClass);
+                            rewrite(tree, njuClass);
                         }
                     }
                 } else {
@@ -108,7 +108,7 @@ public class PullUpTransformer extends SearchVisitor {
                     if (currentMember.getEnclosingElement().equals(current)) {
                         if (members[i].isMakeAbstract()) {
                             njuClass = make.removeClassMember(njuClass, workingCopy.getTrees().getTree(currentMember));
-                            workingCopy.rewrite(tree, njuClass);
+                            rewrite(tree, njuClass);
                         }
                     }
                 }

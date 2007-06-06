@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
-import org.netbeans.modules.refactoring.java.spi.SearchVisitor;
+import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import java.util.Set;
@@ -32,7 +32,7 @@ import org.netbeans.api.java.source.SourceUtils;
  *
  * @author Jan Becicka
  */
-public class RenameTransformer extends SearchVisitor {
+public class RenameTransformer extends RefactoringVisitor {
 
     private Set<ElementHandle<ExecutableElement>> allMethods;
     private String newName;
@@ -82,7 +82,7 @@ public class RenameTransformer extends SearchVisitor {
             } else {
                 nju = make.setLabel(tree, newName);
             }
-            workingCopy.rewrite(tree, nju);
+            rewrite(tree, nju);
         }
     }
 
@@ -116,7 +116,7 @@ public class RenameTransformer extends SearchVisitor {
         Element el = workingCopy.getTrees().getElement(path);
         if (el.equals(elementToFind) || isMethodMatch(el)) {
             Tree nju = make.setLabel(tree, newName);
-            workingCopy.rewrite(tree, nju);
+            rewrite(tree, nju);
             return;
         }
     }

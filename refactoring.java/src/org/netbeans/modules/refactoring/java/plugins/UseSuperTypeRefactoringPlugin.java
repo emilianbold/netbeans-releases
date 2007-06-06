@@ -18,7 +18,7 @@
  */
 
 package org.netbeans.modules.refactoring.java.plugins;
-import org.netbeans.modules.refactoring.java.spi.SearchVisitor;
+import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
@@ -200,7 +200,7 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
         }
     }
     
-    private static class ReferencesVisitor extends SearchVisitor{
+    private static class ReferencesVisitor extends RefactoringVisitor{
         private final Element superTypeElement;
         private final Element subTypeElement;
         private ReferencesVisitor(WorkingCopy workingCopy, Element subClassElement,
@@ -239,7 +239,7 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
             ModifiersTree oldModifiers = oldVarTree.getModifiers();
             Tree newTree = make.Variable(oldModifiers, oldVarTree.getName(),
                     superTypeTree, oldInitTree);
-            workingCopy.rewrite(oldVarTree, newTree);
+            rewrite(oldVarTree, newTree);
         }
         
     }

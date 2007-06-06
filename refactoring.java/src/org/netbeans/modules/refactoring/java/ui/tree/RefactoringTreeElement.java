@@ -20,15 +20,10 @@
 package org.netbeans.modules.refactoring.java.ui.tree;
 
 import com.sun.source.tree.Tree;
-import javax.lang.model.element.ElementKind;
 import javax.swing.Icon;
-import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.UiUtils;
-import org.netbeans.modules.refactoring.java.RefactoringModule;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
-import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.ui.*;
 
 /**
@@ -37,14 +32,14 @@ import org.netbeans.modules.refactoring.spi.ui.*;
  */
 public class RefactoringTreeElement implements TreeElement { 
     
-    RefactoringElement element;
-    ElementGrip thisFeature;
-    ElementGrip parent;
+    private RefactoringElement refactoringElement;
+    private ElementGrip thisFeature;
+    private ElementGrip parent;
     
     RefactoringTreeElement(RefactoringElement element) {
-        this.element = element;
+        this.refactoringElement = element;
         thisFeature = getFeature(((ElementGrip) element.getLookup().lookup(ElementGrip.class)));
-        parent =  thisFeature.getParent();
+        parent =  thisFeature;
         if (parent == null) {
             parent = thisFeature;
         }
@@ -54,7 +49,7 @@ public class RefactoringTreeElement implements TreeElement {
         if (isLogical) {
             return TreeElementFactory.getTreeElement(parent);
         } else {
-            return TreeElementFactory.getTreeElement(element.getParentFile());
+            return TreeElementFactory.getTreeElement(refactoringElement.getParentFile());
         }
     }
     
@@ -66,18 +61,14 @@ public class RefactoringTreeElement implements TreeElement {
     }
 
     public Icon getIcon() {
-        return thisFeature.getIcon();   
+        return null;   
     }
 
     public String getText(boolean isLogical) {
-        if (isLogical) {
-            return RetoucheUtils.htmlize(thisFeature.toString()) + " ... " + element.getDisplayText();
-        } else {
-            return element.getDisplayText();
-        }
+        return refactoringElement.getDisplayText();
     }
 
     public Object getUserObject() {
-        return element;
+        return refactoringElement;
     }
 }

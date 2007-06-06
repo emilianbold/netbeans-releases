@@ -18,10 +18,9 @@
  */
 package org.netbeans.modules.refactoring.java.spi;
 
-import org.netbeans.modules.refactoring.java.spi.SearchVisitor;
+import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.netbeans.modules.refactoring.java.plugins.*;
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
@@ -30,7 +29,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.*;
-import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
 import org.netbeans.modules.refactoring.spi.*;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
@@ -226,9 +224,9 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
     
     protected class TransformTask implements CancellableTask<WorkingCopy> {
         
-        private SearchVisitor visitor;
+        private RefactoringVisitor visitor;
         private TreePathHandle treePathHandle;
-        public TransformTask(SearchVisitor visitor, TreePathHandle searchedItem) {
+        public TransformTask(RefactoringVisitor visitor, TreePathHandle searchedItem) {
             this.visitor = visitor;
             this.treePathHandle = searchedItem;
         }
@@ -251,9 +249,6 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
             
             visitor.scan(compiler.getCompilationUnit(), el);
             
-            for (TreePath tree : visitor.getUsages()) {
-                ElementGripFactory.getDefault().put(compiler.getFileObject(), tree, compiler);
-            }
             fireProgressListenerStep();
         }
     }

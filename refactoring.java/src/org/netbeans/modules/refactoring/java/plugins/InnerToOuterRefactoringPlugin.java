@@ -219,7 +219,7 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
                 String relativePath = compilationUnit.getPackageName().toString().replace('.', '/') + '/' + refactoring.getClassName() + ".java";
                 //TODO:
                 //CompilationUnitTree newCompilation = tm.CompilationUnit(sourceRoot, relativePath, null, Collections.singletonList(newInnerClass));
-                //workingCopy.rewrite(null, newCompilation);        
+                //rewrite(null, newCompilation);        
             } else {
                 ClassTree outerTree = (ClassTree) SourceUtils.treeFor(workingCopy, outer);
                 ClassTree outerouterTree = (ClassTree) SourceUtils.treeFor(workingCopy, outerouter);

@@ -19,32 +19,33 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
+import java.util.ArrayList;
+import java.util.Collection;
+import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
+import com.sun.source.tree.*;
+import com.sun.source.util.TreePath;
+import javax.lang.model.element.*;
 import org.netbeans.api.java.source.WorkingCopy;
 
 /**
  *
  * @author Jan Becicka
  */
-public class FindOverridingVisitor extends FindVisitor {
+public class FindVisitor extends RefactoringVisitor {
 
-    public FindOverridingVisitor(WorkingCopy workingCopy) {
-        super(workingCopy);
+    private Collection<TreePath> usages = new ArrayList<TreePath>();
+
+    public FindVisitor(WorkingCopy workingCopy) {
+        setWorkingCopy(workingCopy);
     }
 
-    @Override
-    public Tree visitMethod(MethodTree node, Element elementToFind) {
-        if (!workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
-            ExecutableElement el = (ExecutableElement) workingCopy.getTrees().getElement(getCurrentPath());
-            
-            if (workingCopy.getElements().overrides(el, (ExecutableElement) elementToFind, (TypeElement) el.getEnclosingElement())) {
-                addUsage(getCurrentPath());
-            }
-        }
-        return super.visitMethod(node, elementToFind);
+    
+    public Collection<TreePath> getUsages() {
+        return usages;
+    }
+    
+    protected void addUsage(TreePath tp) {
+        assert tp != null;
+        usages.add(tp);
     }
 }

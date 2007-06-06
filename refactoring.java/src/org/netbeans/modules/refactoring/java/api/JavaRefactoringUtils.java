@@ -61,6 +61,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
@@ -445,6 +446,10 @@ public final class JavaRefactoringUtils {
             JavaSource src = JavaSource.forFileObject(fob);
             src.runUserActionTask(c, true);
         }
+    }
+    
+    public static void cacheTreePathInfo(TreePath tp, CompilationInfo info) {
+        ElementGripFactory.getDefault().put(info.getFileObject(), tp, info);
     }
 
     public static <T> void runAgainstSources (Iterable <TreePathHandle> handles,TreePathHandleTask<T> t, T arg) throws IOException {

@@ -34,7 +34,6 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.SingleCopyRefactoring;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
-import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
@@ -180,10 +179,6 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
             
             CopyTransformer findVisitor = new CopyTransformer(compiler, refactoring.getNewName(), insertImport, oldPackage);
             findVisitor.scan(compiler.getCompilationUnit(), null);
-
-            for (TreePath tree : findVisitor.getUsages()) {
-                    ElementGripFactory.getDefault().put(compiler.getFileObject(), tree, compiler);
-          }
             fireProgressListenerStep();
         }
     }          

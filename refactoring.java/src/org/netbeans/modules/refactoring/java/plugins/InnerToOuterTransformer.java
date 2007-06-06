@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
-import org.netbeans.modules.refactoring.java.spi.SearchVisitor;
+import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import javax.lang.model.element.*;
@@ -31,7 +31,7 @@ import org.netbeans.modules.refactoring.java.api.InnerToOuterRefactoring;
  *
  * @author Jan Becicka
  */
-public class InnerToOuterTransformer extends SearchVisitor {
+public class InnerToOuterTransformer extends RefactoringVisitor {
 
     private Element inner;
     private Element outer;
@@ -55,10 +55,10 @@ public class InnerToOuterTransformer extends SearchVisitor {
     public Tree visitIdentifier(IdentifierTree node, Element p) {
         if (inner.equals(getCurrentElement())) {
             Tree newTree = make.setLabel(node, refactoring.getClassName());        
-            workingCopy.rewrite(node, newTree);
+            rewrite(node, newTree);
         } else if (isThisReferenceToOuter()) {
             MemberSelectTree m = make.MemberSelect(node, refactoring.getReferenceName());
-            workingCopy.rewrite(node, m);
+            rewrite(node, m);
         }
         return super.visitIdentifier(node, p);
     }
@@ -71,7 +71,7 @@ public class InnerToOuterTransformer extends SearchVisitor {
                 MemberSelectTree arg = make.MemberSelect(make.Identifier(getCurrentClass().getEnclosingElement().getSimpleName()), "this");
                 MethodInvocationTree superCall = (MethodInvocationTree) ((ExpressionStatementTree)constructor.getBody().getStatements().get(0)).getExpression();
                 MethodInvocationTree newSuperCall = make.insertMethodInvocationArgument(superCall, 0, arg, null);
-                workingCopy.rewrite(superCall, newSuperCall);
+                rewrite(superCall, newSuperCall);
             }
             
         }
@@ -91,14 +91,14 @@ public class InnerToOuterTransformer extends SearchVisitor {
             Tree newTree;
             if (ex.getKind() == Tree.Kind.IDENTIFIER) {
                 newTree = make.Identifier(refactoring.getClassName());
-                workingCopy.rewrite(memberSelect, newTree);
+                rewrite(memberSelect, newTree);
             } else if (ex.getKind() == Tree.Kind.MEMBER_SELECT) {
                 MemberSelectTree m = make.MemberSelect(((MemberSelectTree) ex).getExpression(),refactoring.getClassName());
-                workingCopy.rewrite(memberSelect,m);
+                rewrite(memberSelect,m);
             }
         } else if (isThisReferenceToOuter()) {
             MemberSelectTree m = make.MemberSelect(memberSelect, refactoring.getReferenceName());
-            workingCopy.rewrite(memberSelect, m);
+            rewrite(memberSelect, m);
         }
         
         return super.visitMemberSelect(memberSelect, element);

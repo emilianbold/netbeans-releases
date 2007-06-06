@@ -166,7 +166,7 @@ public class RetoucheUtils {
                 category = "whitespace"; //NOI18N
             }
             AttributeSet set = settings.getTokenFontColors(category);
-            buf.append(color(token.text().toString(), set));
+            buf.append(color(htmlize(token.text().toString()), set));
         }
         return buf.toString();
     }

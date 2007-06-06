@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
-import org.netbeans.modules.refactoring.java.spi.SearchVisitor;
+import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import com.sun.source.tree.*;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
@@ -37,7 +37,7 @@ import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.Par
  *
  * @author Jan Becicka
  */
-public class ChangeParamsTransformer extends SearchVisitor {
+public class ChangeParamsTransformer extends RefactoringVisitor {
 
     private Set<ElementHandle<ExecutableElement>> allMethods;
 
@@ -58,7 +58,7 @@ public class ChangeParamsTransformer extends SearchVisitor {
                             tree.getIdentifier(),
                             arguments,
                             tree.getClassBody());
-                    workingCopy.rewrite(tree, nju);
+                    rewrite(tree, nju);
                 }
             }
         }
@@ -95,7 +95,7 @@ public class ChangeParamsTransformer extends SearchVisitor {
                             (List<ExpressionTree>)tree.getTypeArguments(),
                             tree.getMethodSelect(),
                             arguments);
-                    workingCopy.rewrite(tree, nju);
+                    rewrite(tree, nju);
                 }
             }
         }
@@ -141,7 +141,7 @@ public class ChangeParamsTransformer extends SearchVisitor {
                     current.getThrows(),
                     current.getBody(),
                     (ExpressionTree) current.getDefaultValue());
-            workingCopy.rewrite(tree, nju);
+            rewrite(tree, nju);
             return;
         }
     }

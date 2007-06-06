@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
-import org.netbeans.modules.refactoring.java.spi.SearchVisitor;
+import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import java.util.HashSet;
@@ -33,7 +33,7 @@ import org.netbeans.modules.refactoring.java.api.MemberInfo;
  *
  * @author Jan Becicka
  */
-public class PushDownTransformer extends SearchVisitor {
+public class PushDownTransformer extends RefactoringVisitor {
 
     private MemberInfo<ElementHandle>[] members;
     public PushDownTransformer(MemberInfo<ElementHandle> members[]) {
@@ -53,7 +53,7 @@ public class PushDownTransformer extends SearchVisitor {
                 for (int i=0; i<members.length; i++) {
                     if (members[i].getGroup()==MemberInfo.Group.IMPLEMENTS && currentInterface.equals(members[i].getElementHandle().resolve(workingCopy))) {
                         njuClass = make.removeClassImplementsClause(njuClass, t);
-                        workingCopy.rewrite(tree, njuClass);
+                        rewrite(tree, njuClass);
                     }
                 }
             }
@@ -68,7 +68,7 @@ public class PushDownTransformer extends SearchVisitor {
                                 Set<Modifier> mod = new HashSet<Modifier>(njuClass.getModifiers().getFlags());
                                 mod.add(Modifier.ABSTRACT);
                                 ModifiersTree modifiers = make.Modifiers(mod);
-                                workingCopy.rewrite(njuClass.getModifiers(), modifiers);
+                                rewrite(njuClass.getModifiers(), modifiers);
                             }
                             
                             
@@ -84,10 +84,10 @@ public class PushDownTransformer extends SearchVisitor {
                                     method.getThrows(),
                                     (BlockTree) null,
                                     (ExpressionTree)method.getDefaultValue());
-                            workingCopy.rewrite(method, nju);
+                            rewrite(method, nju);
                         } else {
                             njuClass = make.removeClassMember(njuClass, t);
-                            workingCopy.rewrite(tree, njuClass);
+                            rewrite(tree, njuClass);
                         }
                     }
                 }
@@ -104,7 +104,7 @@ public class PushDownTransformer extends SearchVisitor {
                         njuClass = make.addClassMember(njuClass, workingCopy.getTrees().getTree(members[i].getElementHandle().resolve(workingCopy)));
                     }
                 }
-                workingCopy.rewrite(tree, njuClass);
+                rewrite(tree, njuClass);
             }
         }
         return super.visitClass(tree, p);

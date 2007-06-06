@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
-import org.netbeans.modules.refactoring.java.spi.SearchVisitor;
+import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import com.sun.source.tree.*;
 import javax.lang.model.element.*;
 
@@ -27,7 +27,7 @@ import javax.lang.model.element.*;
  *
  * @author Jan Becicka
  */
-public class DeleteTransformer extends SearchVisitor {
+public class DeleteTransformer extends RefactoringVisitor {
 
     @Override
     public Tree visitMethod(MethodTree tree, Element p) {
@@ -59,9 +59,8 @@ public class DeleteTransformer extends SearchVisitor {
                 newOne = make.removeCompUnitTypeDecl((CompilationUnitTree) parent, tree);
             }
             if (newOne!=null) {
-                workingCopy.rewrite(parent,newOne);
+                rewrite(parent,newOne);
             }
-            addUsage(getCurrentPath());
         }
     }
 }

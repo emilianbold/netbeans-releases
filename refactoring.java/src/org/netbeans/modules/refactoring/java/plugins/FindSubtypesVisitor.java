@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
-import org.netbeans.modules.refactoring.java.spi.SearchVisitor;
 import com.sun.source.tree.*;
 import java.util.List;
 import javax.lang.model.element.*;
@@ -31,11 +30,11 @@ import org.netbeans.api.java.source.WorkingCopy;
  *
  * @author Jan Becicka
  */
-public class FindSubtypesVisitor extends SearchVisitor {
+public class FindSubtypesVisitor extends FindVisitor {
 
     private boolean recursive;
     public FindSubtypesVisitor(boolean recursive, WorkingCopy workingCopy) {
-        setWorkingCopy(workingCopy);
+        super(workingCopy);
         this.recursive = recursive;
     }
 

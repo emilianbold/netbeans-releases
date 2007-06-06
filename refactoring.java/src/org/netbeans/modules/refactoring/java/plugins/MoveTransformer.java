@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
-import org.netbeans.modules.refactoring.java.spi.SearchVisitor;
+import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import com.sun.source.tree.*;
 import java.util.HashSet;
 import java.util.Set;
@@ -34,7 +34,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Jan Becicka
  */
-public class MoveTransformer extends SearchVisitor {
+public class MoveTransformer extends RefactoringVisitor {
 
     private FileObject originalFolder;
     private MoveRefactoringPlugin move;
@@ -62,7 +62,7 @@ public class MoveTransformer extends SearchVisitor {
                 if (isElementMoving(el)) {
                     elementsAlreadyImported.add(el);
                     Tree nju = make.MemberSelect(make.Identifier(move.getTargetPackageName(move.filesToMove.get(index))), el);
-                    workingCopy.rewrite(node, nju);
+                    rewrite(node, nju);
                 }
             }
         }
@@ -145,7 +145,7 @@ public class MoveTransformer extends SearchVisitor {
             // neither old nor new package is default
             String newPckg = move.getTargetPackageName(workingCopy.getFileObject());
             if (node.getPackageName() != null && !"".equals(newPckg)) {
-                workingCopy.rewrite(node.getPackageName(), make.Identifier(move.getTargetPackageName(workingCopy.getFileObject())));
+                rewrite(node.getPackageName(), make.Identifier(move.getTargetPackageName(workingCopy.getFileObject())));
             } else {
                 // in order to handle default package, we have to rewrite whole
                 // compilation unit:
@@ -155,7 +155,7 @@ public class MoveTransformer extends SearchVisitor {
                         node.getTypeDecls(),
                         node.getSourceFile()
                 );
-                workingCopy.rewrite(node, copy);
+                rewrite(node, copy);
             }
             if (isThisFileReferencingOldPackage) {
                 //add import to old package
@@ -175,7 +175,7 @@ public class MoveTransformer extends SearchVisitor {
                 return node;
         }
         CompilationUnitTree nju = make.insertCompUnitImport(node, 0, make.Import(make.Identifier(imp), false));
-        workingCopy.rewrite(node, nju);
+        rewrite(node, nju);
         return nju;
     }
     

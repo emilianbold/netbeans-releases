@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
-import org.netbeans.modules.refactoring.java.spi.SearchVisitor;
+import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import com.sun.source.tree.*;
 import javax.lang.model.element.*;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -28,7 +28,7 @@ import org.netbeans.api.java.source.WorkingCopy;
  *
  * @author Jan Becicka
  */
-public class CopyTransformer extends SearchVisitor {
+public class CopyTransformer extends RefactoringVisitor {
     
     private String newName;
     private boolean insertImport;
@@ -47,7 +47,7 @@ public class CopyTransformer extends SearchVisitor {
             if (insertImport) {
                 Element el = workingCopy.getTrees().getElement(getCurrentPath());
                 Tree tree2 = make.insertCompUnitImport(tree, 0, make.Import(make.Identifier(oldPackage), false));
-                workingCopy.rewrite(tree, tree2);
+                rewrite(tree, tree2);
             }
         }
         return super.visitCompilationUnit(tree, p);
@@ -58,7 +58,7 @@ public class CopyTransformer extends SearchVisitor {
         if (!workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
             //if (tree.getSimpleName().toString().equals(workingCopy.getFileObject().getName())) {
             Tree nju = make.setLabel(tree, newName);
-            workingCopy.rewrite(tree, nju);
+            rewrite(tree, nju);
             //}
         }
         return null;
