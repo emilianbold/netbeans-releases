@@ -20,14 +20,7 @@
 package org.netbeans.modules.websvc.rest.wizard;
 
 import java.awt.Component;
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import javax.swing.JComponent;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
@@ -35,40 +28,24 @@ import org.netbeans.modules.websvc.rest.support.PersistenceHelper;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
 /**
  * @author Pavel Buzek
  */
-public final class EntitySelectionPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel, ChangeListener {
-    
-    private WizardDescriptor wizardDescriptor;
-    private String panelName;
-    private HelpCtx helpCtx;
+public final class EntitySelectionPanel extends AbstractPanel {
     private EntitySelectionPanelVisual component;
     
-    
     /** Create the wizard panel descriptor. */
-    public EntitySelectionPanel(String panelName, HelpCtx helpCtx, WizardDescriptor wizardDescriptor) {
-        this.panelName = panelName;
-        this.helpCtx = helpCtx;
-        this.wizardDescriptor = wizardDescriptor;
+    public EntitySelectionPanel(String panelName, WizardDescriptor wizardDescriptor) {
+        super(panelName, wizardDescriptor);
+    }
+    
+    public HelpCtx getHelp() {
+        return HelpCtx.DEFAULT_HELP;
     }
     
     public boolean isFinishPanel() {
         return false;
-    }
-    
-    public Component getComponent() {
-        if (component == null) {
-            component = new EntitySelectionPanelVisual(panelName, wizardDescriptor);
-            component.addChangeListener(this);
-        }
-        return component;
-    }
-    
-    public HelpCtx getHelp() {
-        return helpCtx;
     }
     
     public boolean isValid() {
@@ -94,6 +71,14 @@ public final class EntitySelectionPanel implements WizardDescriptor.Panel, Wizar
         }
         return true;
     }
+
+    public Component getComponent() {
+        if (component == null) {
+            component = new EntitySelectionPanelVisual(panelName, wizardDescriptor);
+            component.addChangeListener(this);
+        }
+        return component;
+    }
     
     String getPersistenceUnitName(Project project) {
         String puName = (String) wizardDescriptor.getProperty(WizardProperties.PERSISTENCE_UNIT_NAME);
@@ -104,42 +89,8 @@ public final class EntitySelectionPanel implements WizardDescriptor.Panel, Wizar
         return puName;
     }
     
-    private void setErrorMessage(String key) {
-        if ( key == null ) {
-            setLocalizedErrorMessage(""); // NOI18N
-        } else {
-            setLocalizedErrorMessage(
-                    NbBundle.getMessage(EntitySelectionPanel.class, key)); // NOI18N
-        }
-    }
-    
-    private void setLocalizedErrorMessage(String message) {
-        wizardDescriptor.putProperty("WizardPanel_errorMessage", message); // NOI18N
-    }
-    
-    private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
-    
-    public final void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
-    }
-    public final void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
-    }
-    protected final void fireChangeEvent(ChangeEvent ev) {
-        Iterator it;
-        synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
-        }
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
-        }
-    }
-    
-    public void readSettings(Object settings) {
+    // TODO cleanup
+    /*public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
         component.read(wizardDescriptor);
         
@@ -156,10 +107,5 @@ public final class EntitySelectionPanel implements WizardDescriptor.Panel, Wizar
         component.store(d);
         //d.putProperty(WizardProperties.PERSISTENCE_UNIT, component.getPersistenceUnit());
         ((WizardDescriptor) d).putProperty("NewProjectWizard_Title", null); // NOI18N
-    }
-    
-    public void stateChanged(ChangeEvent e) {
-        fireChangeEvent(e);
-    }
-    
+    }*/
 }

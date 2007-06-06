@@ -39,18 +39,20 @@ public class GenericResourceBean {
     public static final String MIME_TYPE_XML = "application/xml";
     public static final String MIME_TYPE_JASON = "application/json";
     public static final String[] supportedMimeTypes = new String[] { 
+        MIME_TYPE_XML,  // first one is default
         MIME_TYPE_TEXT, 
         MIME_TYPE_TEXT_HTML,
-        MIME_TYPE_XML
     };
     
     public static final HttpMethodType[] CONTAINER_METHODS = new HttpMethodType[] {
-         HttpMethodType.GET, HttpMethodType.POST, HttpMethodType.DELETE 
+         HttpMethodType.GET, HttpMethodType.POST
     };
     
     public static final HttpMethodType[] ITEM_METHODS = new HttpMethodType[] {
          HttpMethodType.GET, HttpMethodType.PUT, HttpMethodType.DELETE 
     };
+    
+    public static final HttpMethodType[] STAND_ALONE_METHODS = ITEM_METHODS;
     
     private String name;
     private String packageName;

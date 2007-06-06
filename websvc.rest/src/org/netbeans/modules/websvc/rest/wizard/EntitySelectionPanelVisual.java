@@ -43,7 +43,7 @@ import org.openide.WizardDescriptor;
  *
  * @author  Pavel Buzek
  */
-public class EntitySelectionPanelVisual extends javax.swing.JPanel {
+public class EntitySelectionPanelVisual extends javax.swing.JPanel implements AbstractPanel.Settings {
     
     private WizardDescriptor wizard;
     //private ChangeSupport changeSupport = new ChangeSupport(this);
@@ -235,7 +235,7 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel {
         }
     }
     
-    void read(WizardDescriptor settings) {
+    public void read(WizardDescriptor settings) {
         project = Templates.getProject(settings);
         availableEntities = JavaSourceHelper.getEntityClasses(project);
         selectedEntities = new ArrayList<JavaSource>();
@@ -249,7 +249,7 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel {
         this.addChangeListener(model);
     }
     
-    void store(WizardDescriptor settings) {
+    public void store(WizardDescriptor settings) {
         ListModel model = listSelected.getModel();
         if (model instanceof EntityListModel) {
             EntityListModel elm = (EntityListModel) model;

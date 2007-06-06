@@ -28,6 +28,8 @@ import java.util.Iterator;
 import java.util.Collection;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.websvc.rest.codegen.Constants;
+import org.netbeans.modules.websvc.rest.support.Inflector;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -178,4 +180,51 @@ public class Util {
         setSteps(panels, steps, steps, 0);
     }
     
+    public static String lowerFirstChar(String name) {
+        StringBuilder sb = new StringBuilder(name);
+        sb.setCharAt(0, Character.toLowerCase(name.charAt(0)));
+        return sb.toString();
+    }
+    
+    public static String deriveResourceClassName(String resourceName) {
+        return resourceName + Constants.RESOURCE;
+    }
+
+    //TODO unit testing
+    public static String deriveUri(String resourceName, String currentUri) {
+        if (currentUri == null || currentUri.isEmpty() || currentUri.charAt(0) != '/') {
+            return currentUri;
+        }
+        String s = lowerFirstChar(resourceName);
+        String root = resourceName;
+        String params = null;
+        int lastIndex = currentUri.indexOf('{');
+        if (lastIndex > -1) {
+            params = root.substring(lastIndex-1);
+            root = root.substring(0, lastIndex-1); /* ../{id} we are excluding the ending '/' */
+            if (root.isEmpty()) {
+                return currentUri;
+            }
+        }
+
+
+        lastIndex = root.lastIndexOf('/');
+        if (lastIndex == -1) {
+            return currentUri;
+        }
+
+        String ret = root + "/" + resourceName;
+        if (params != null) {
+            ret += "/" + params;
+        }
+        return ret;
+    }
+
+    public static String deriveContainerClassName(String resourceName) {
+        return pluralize(resourceName) + Constants.RESOURCE;
+    }
+    
+    public static String pluralize(String name) {
+        return Inflector.getInstance().pluralize(name);
+    }
 }
