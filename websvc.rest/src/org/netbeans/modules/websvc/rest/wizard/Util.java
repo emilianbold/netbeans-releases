@@ -192,7 +192,7 @@ public class Util {
 
     //TODO unit testing
     public static String deriveUri(String resourceName, String currentUri) {
-        if (currentUri == null || currentUri.isEmpty() || currentUri.charAt(0) != '/') {
+        if (currentUri == null || currentUri.length() == 0 || currentUri.charAt(0) != '/') {
             return currentUri;
         }
         String s = lowerFirstChar(resourceName);
@@ -202,7 +202,7 @@ public class Util {
         if (lastIndex > -1) {
             params = root.substring(lastIndex-1);
             root = root.substring(0, lastIndex-1); /* ../{id} we are excluding the ending '/' */
-            if (root.isEmpty()) {
+            if (root.length() == 0) {
                 return currentUri;
             }
         }
