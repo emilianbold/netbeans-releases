@@ -92,7 +92,7 @@ public class ComponentStyleDialog extends JSFComponentOptionsDialog {
     
     public void initialize() {
         super.initialize();
-        pto =  new PropertySheetOperator("Page1").invoke();
+        pto =  PropertySheetOperator.invoke();
         surface.clickOnSurface(addPoint.x+5, addPoint.y+5);
         componentID = new Property(pto,"id").getValue();
         property = new Property(pto,"style"); // NOI18N
