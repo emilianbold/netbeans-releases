@@ -480,6 +480,15 @@ public class SourceTableImpl extends AbstractDBTable implements SourceTable {
     }
     
     /**
+     * Sets wehether to select distinct rows of a column.
+     *
+     * @param distinct distinct
+     */
+    public void setSelectDistinct(Boolean distinct) {
+        this.setAttribute(ATTR_DISTINCT, distinct);
+    }    
+    
+    /**
      * Sets the temporary table name.
      *
      * @param tName temp table name
