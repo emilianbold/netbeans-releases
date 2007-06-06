@@ -50,8 +50,6 @@ mkdir -p $DIST/targz
 mkdir -p $DIST/tarbz2
 mkdir -p $LOGS
 
-echo "To be written" > $DIST/INSTALL.txt
-
 #LOGS
 CVS_CHECKOUT_LOG=$LOGS/$BASENAME-cvs-checkout.log
 IDE_BUILD_LOG=$LOGS/$BASENAME-build-ide.log
