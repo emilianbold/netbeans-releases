@@ -139,10 +139,15 @@ public class VariablesTableModel implements TableModel, Constants {
                 if ( row instanceof LocalVariable ||
                      row instanceof Field ||
                      row instanceof JPDAWatch
-                )
-                    return !debugger.canBeModified();
-                else
+                ) {
+                    if (WatchesNodeModel.isEmptyWatch(row)) {
+                        return true;
+                    } else {
+                        return !debugger.canBeModified();
+                    }
+                } else {
                     return true;
+                }
             }
         }
         if (row instanceof JPDAClassType) {

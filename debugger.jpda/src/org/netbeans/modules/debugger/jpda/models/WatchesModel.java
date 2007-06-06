@@ -66,12 +66,14 @@ public class WatchesModel implements TreeModel {
     private ContextProvider     lookupProvider;
     // Watch to Expression or Exception
     private Map<Watch, JPDAWatchEvaluating>  watchToValue = new WeakHashMap<Watch, JPDAWatchEvaluating>(); // <node (expression), JPDAWatch>
+    private final JPDAWatch EMPTY_WATCH;
 
     
     public WatchesModel (ContextProvider lookupProvider) {
         debugger = (JPDADebuggerImpl) lookupProvider.
             lookupFirst (null, JPDADebugger.class);
         this.lookupProvider = lookupProvider;
+        EMPTY_WATCH = new EmptyWatch();
     }
     
     /** 
@@ -100,7 +102,7 @@ public class WatchesModel implements TreeModel {
             
             // 2) create JPDAWatches for Watches
             int i, k = fws.length;
-            JPDAWatch[] jws = new JPDAWatch [k];
+            JPDAWatch[] jws = new JPDAWatch [k + 1];
             for (i = 0; i < k; i++) {
                 
                 
@@ -113,6 +115,7 @@ public class WatchesModel implements TreeModel {
                 
                 // The actual expressions are computed on demand in JPDAWatchEvaluating
             }
+            jws[k] = EMPTY_WATCH;
             
             if (listener == null)
                 listener = new Listener (this, debugger);
@@ -156,6 +159,7 @@ public class WatchesModel implements TreeModel {
                 return ((JPDAWatchImpl) jw).isPrimitive ();
             }
         }
+        if (node == EMPTY_WATCH) return true;
         return getLocalsTreeModel ().isLeaf (node);
     }
 
@@ -552,4 +556,50 @@ public class WatchesModel implements TreeModel {
             }
         }
     }
+    
+    /**
+     * The last empty watch, that can be used to enter new watch expressions.
+     */
+    private final class EmptyWatch implements JPDAWatch {
+        
+    
+        public String getExpression() {
+            return "";
+        }
+
+        public void setExpression(String expression) {
+            DebuggerManager.getDebuggerManager().createWatch(expression);
+            
+            Vector v = (Vector) listeners.clone ();
+            int i, k = v.size ();
+            for (i = 0; i < k; i++)
+                ((ModelListener) v.get (i)).modelChanged (
+                    new ModelEvent.NodeChanged (WatchesModel.this, EmptyWatch.this)
+                );
+        }
+
+        public void remove() {
+            // Can not be removed
+        }
+
+        public String getType() {
+            return "";
+        }
+
+        public String getValue() {
+            return "";
+        }
+
+        public String getExceptionDescription() {
+            return null;
+        }
+
+        public void setValue(String value) throws InvalidExpressionException {
+            // Can not be set
+        }
+
+        public String getToStringValue() throws InvalidExpressionException {
+            return "";
+        }
+}
 }

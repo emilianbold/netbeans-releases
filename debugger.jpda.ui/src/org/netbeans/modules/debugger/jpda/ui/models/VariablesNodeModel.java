@@ -311,7 +311,7 @@ public class VariablesNodeModel implements NodeModel {
         }
     }
     
-    private void fireModelChange(ModelEvent me) {
+    protected void fireModelChange(ModelEvent me) {
         Object[] listeners;
         synchronized (modelListeners) {
             listeners = modelListeners.toArray();

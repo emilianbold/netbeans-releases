@@ -114,6 +114,7 @@ public class WatchesActionsProvider implements NodeActionsProvider {
             return;
         if (node instanceof JPDAWatch) {
             customize((JPDAWatch) node);
+            return ;
         }
         throw new UnknownTypeException (node);
     }

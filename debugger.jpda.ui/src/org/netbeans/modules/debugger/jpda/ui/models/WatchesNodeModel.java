@@ -19,20 +19,28 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.io.IOException;
+
+import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAWatch;
+import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TreeModel;
-import org.netbeans.spi.viewmodel.ModelListener;
+import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.openide.util.NbBundle;
+import org.openide.util.datatransfer.PasteType;
 
 
 /**
  * @author   Jan Jancura
  */
-public class WatchesNodeModel extends VariablesNodeModel {
+public class WatchesNodeModel extends VariablesNodeModel implements ExtendedNodeModel {
 
     public static final String WATCH =
         "org/netbeans/modules/debugger/resources/watchesView/Watch";
@@ -40,6 +48,10 @@ public class WatchesNodeModel extends VariablesNodeModel {
 
     public WatchesNodeModel (ContextProvider lookupProvider) {
         super (lookupProvider);
+    }
+    
+    static boolean isEmptyWatch(Object node) {
+        return "EmptyWatch".equals(node.getClass().getSimpleName());
     }
     
     public String getDisplayName (Object o) throws UnknownTypeException {
@@ -53,6 +65,9 @@ public class WatchesNodeModel extends VariablesNodeModel {
     
     protected String getShortDescriptionSynch (Object o) {
         if (o instanceof JPDAWatch) {
+            if (isEmptyWatch(o)) {
+                return "Write or paste a new watch expression.";
+            }
             JPDAWatch w = (JPDAWatch) o;
             boolean evaluated;
             evaluated = VariablesTreeModelFilter.isEvaluated(o);
@@ -82,11 +97,99 @@ public class WatchesNodeModel extends VariablesNodeModel {
     }
     
     public String getIconBase (Object o) throws UnknownTypeException {
-        if (o == TreeModel.ROOT)
+        if (o == TreeModel.ROOT) {
+            if (isEmptyWatch(o)) {
+                return null;
+            }
             return WATCH;
+        }
         if (o instanceof JPDAWatch)
             return WATCH;
         return super.getIconBase (o);
     }
 
+    public boolean canRename(Object node) throws UnknownTypeException {
+        return (node instanceof JPDAWatch);
+    }
+
+    public boolean canCopy(Object node) throws UnknownTypeException {
+        return (node instanceof JPDAWatch) && !isEmptyWatch(node);
+    }
+
+    public boolean canCut(Object node) throws UnknownTypeException {
+        return (node instanceof JPDAWatch) && !isEmptyWatch(node);
+    }
+
+    public Transferable clipboardCopy(Object node) throws IOException,
+                                                          UnknownTypeException {
+        return new StringSelection(((JPDAWatch) node).getExpression());
+    }
+
+    public Transferable clipboardCut(Object node) throws IOException,
+                                                         UnknownTypeException {
+        return new StringSelection(((JPDAWatch) node).getExpression());
+    }
+
+    /*
+    public Transferable drag(Object node) throws IOException,
+                                                 UnknownTypeException {
+        if (node instanceof JPDAWatch) {
+            return new StringSelection(((JPDAWatch) node).getExpression());
+        } else {
+            return null;
+        }
+    }
+     */
+
+    public PasteType[] getPasteTypes(final Object node, final Transferable t) throws UnknownTypeException {
+        if (node != TreeModel.ROOT && !(node instanceof JPDAWatch)) {
+            return null;
+        }
+        DataFlavor[] flavors = t.getTransferDataFlavors();
+        final DataFlavor textFlavor = DataFlavor.selectBestTextFlavor(flavors);
+        if (textFlavor != null) {
+            return new PasteType[] { new PasteType() {
+
+                public Transferable paste() {
+                    try {
+                        java.io.Reader r = textFlavor.getReaderForText(t);
+                        java.nio.CharBuffer cb = java.nio.CharBuffer.allocate(1000);
+                        r.read(cb);
+                        cb.flip();
+                        if (node instanceof JPDAWatch) {
+                            ((JPDAWatch) node).setExpression(cb.toString());
+                            fireModelChange(new ModelEvent.NodeChanged(WatchesNodeModel.this, node));
+                        } else {
+                            // Root => add a new watch
+                            DebuggerManager.getDebuggerManager().createWatch(cb.toString());
+                        }
+                    } catch (Exception ex) {}
+                    return null;
+                }
+            } };
+        } else {
+            return null;
+        }
+    }
+
+    /*
+    public PasteType getDropType(Object node, Transferable t, int action,
+                                 int index) throws UnknownTypeException {
+        return null;
+    }
+     */
+
+    public void setName(Object node, String name) throws UnknownTypeException {
+        ((JPDAWatch) node).setExpression(name);
+    }
+
+    public String getIconBaseWithExtension(Object node) throws UnknownTypeException {
+        String iconBase = getIconBase(node);
+        if (iconBase == null) {
+            return null;
+        } else {
+            return iconBase + ".gif";
+        }
+    }
+    
 }
