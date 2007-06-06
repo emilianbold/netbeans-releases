@@ -186,10 +186,13 @@
                     <prop:Property attributeName="maxConcurrentConsumers" groupName="Consumer" propertyOrder="6">
                         <prop:SchemaCustomizer/>
                     </prop:Property>
-                    <prop:Property attributeName="batchSize" groupName="Consumer" propertyOrder="7">
+                    <prop:Property attributeName="concurrencyMode" groupName="Consumer" propertyOrder="7">
                         <prop:SchemaCustomizer/>
                     </prop:Property>
-                    <prop:Property attributeName="redeliveryHandling" groupName="Consumer" propertyOrder="8">
+                    <prop:Property attributeName="batchSize" groupName="Consumer" propertyOrder="8">
+                        <prop:SchemaCustomizer/>
+                    </prop:Property>
+                    <prop:Property attributeName="redeliveryHandling" groupName="Consumer" propertyOrder="9">
                         <prop:SchemaCustomizer/>
                     </prop:Property>
                 </prop:ElementProperties>
@@ -272,7 +275,12 @@
 				</xs:attribute>
 				<xs:attribute name="maxConcurrentConsumers" type="xs:positiveInteger" use="optional">
 					<xs:annotation>
-						<xs:documentation>If defined with a positive integer and the destination type is Queue, this element specifies the maximum number of concurrent receivers that can process messages</xs:documentation>
+						<xs:documentation>This element specifies the maximum number of concurrent receivers that can process messages.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="concurrencyMode" type="jms:concurrencyModeTypes" use="optional" default="sync">
+					<xs:annotation>
+						<xs:documentation>Specifies the concurrency mode. Note that there is no concurrent processing for Topics in sync mode.</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 				<xs:attribute name="batchSize" type="xs:positiveInteger" use="optional">
@@ -765,4 +773,12 @@ This causes no delay up to the 5th delivery; a 1000 ms delay is invoked when the
 		</xs:restriction>
 	</xs:simpleType>
 
+    <!-- Consumer Concurrency types -->
+	<xs:simpleType name="concurrencyModeTypes">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="cc"/>
+			<xs:enumeration value="sync"/>
+		</xs:restriction>
+	</xs:simpleType>
+        
 </xs:schema>

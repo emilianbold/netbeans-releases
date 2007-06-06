@@ -266,4 +266,15 @@ public class JMSOperationImpl extends JMSComponentImpl implements JMSOperation {
                      JMSAttribute.JMS_OPERATION_REDELIVERY_HANDLING,
                      val);         
     }
+
+    public String getConcurrencyMode() {
+        return getAttribute(JMSAttribute.JMS_OPERATION_CONCURRENCY_MODE);        
+    }
+
+    public void setConcurrencyMode(String val) {
+        setAttribute(JMSOperation.ATTR_CONCURRENCY_MODE, 
+                     JMSAttribute.JMS_OPERATION_CONCURRENCY_MODE,
+                     val);         
+
+    }
 }

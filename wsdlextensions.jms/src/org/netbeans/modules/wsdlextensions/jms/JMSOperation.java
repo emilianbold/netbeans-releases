@@ -55,6 +55,7 @@ public interface JMSOperation extends JMSComponent {
     public static final String ATTR_SUBSCRIPTION_NAME = "subscriptionName";    
     public static final String ATTR_BATCH_SZIE = "batchSize";
     public static final String ATTR_MAX_CONCURRENT_CONSUMERS = "maxConcurrentConsumers";
+    public static final String ATTR_CONCURRENCY_MODE = "concurrencyMode";
     public static final String ATTR_REDELIVERY_HANDLING = "redeliveryHandling";
   
     /*
@@ -114,5 +115,8 @@ public interface JMSOperation extends JMSComponent {
     
     public String getRedeliveryHandling();
     public void setRedeliveryHandling(String val);
+
+    public String getConcurrencyMode();
+    public void setConcurrencyMode(String val);
     
 }
