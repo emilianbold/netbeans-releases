@@ -13,17 +13,19 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.viewmodel;
 
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyEditor;
 import java.lang.IllegalAccessException;
 import java.lang.ref.WeakReference;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -53,6 +55,7 @@ import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
+import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 
 
@@ -203,11 +206,23 @@ public class TreeModelNode extends AbstractNode {
     }
     
     public boolean canCopy () {
-        return false;
+        try {
+            return model.canCopy(object);
+        } catch (UnknownTypeException e) {
+            Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
+            return false;
+        }
     }
     
     public boolean canCut () {
-        return false;
+        try {
+            return model.canCut(object);
+        } catch (UnknownTypeException e) {
+            Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
+            return false;
+        }
     }
     
     public void destroy () {
@@ -296,9 +311,9 @@ public class TreeModelNode extends AbstractNode {
             }
         } else if ((ModelEvent.NodeChanged.ICON_MASK & changeMask) != 0) {
             try {
-                String iconBase = model.getIconBase (object);
+                String iconBase = model.getIconBaseWithExtension (object);
                 if (iconBase != null)
-                    setIconBase (iconBase);
+                    setIconBaseWithExtension (iconBase);
                 else
                     setIconBaseWithExtension ("org/openide/resources/actions/empty.gif");
             } catch (UnknownTypeException e) {
@@ -363,9 +378,12 @@ public class TreeModelNode extends AbstractNode {
                 ErrorManager.getDefault().notify(t);
             }
             setName (name, false);
-            String iconBase = model.getIconBase (object);
+            String iconBase = null;
+            if (model.getRoot() != object) {
+                iconBase = model.getIconBaseWithExtension (object);
+            }
             if (iconBase != null)
-                setIconBase (iconBase);
+                setIconBaseWithExtension (iconBase);
             else
                 setIconBaseWithExtension ("org/openide/resources/actions/empty.gif");
             firePropertyChange(null, null, null);
@@ -466,6 +484,110 @@ public class TreeModelNode extends AbstractNode {
         return text;
     }
     
+    
+    public boolean canRename() {
+        try {
+            return model.canRename(object);
+        } catch (UnknownTypeException e) {
+            Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
+            return false;
+        }
+    }
+
+    public void setName(String s) {
+        try {
+            model.setName(object, s);
+            super.setName(s);
+        } catch (UnknownTypeException e) {
+            Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
+        }
+    }
+    
+    public Transferable clipboardCopy() throws IOException {
+        Transferable t;
+        try {
+            t = model.clipboardCopy(object);
+        } catch (UnknownTypeException e) {
+            Throwable th = ErrorManager.getDefault().annotate(e, "Model: "+model);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, th);
+            t = null;
+        }
+        if (t == null) {
+            return super.clipboardCopy();
+        } else {
+            return t;
+        }
+    }
+    
+    public Transferable clipboardCut() throws IOException {
+        Transferable t;
+        try {
+            t = model.clipboardCut(object);
+        } catch (UnknownTypeException e) {
+            Throwable th = ErrorManager.getDefault().annotate(e, "Model: "+model);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, th);
+            t = null;
+        }
+        if (t == null) {
+            return super.clipboardCut();
+        } else {
+            return t;
+        }
+    }
+    
+    /*
+    public Transferable drag() throws IOException {
+        Transferable t;
+        try {
+            t = model.drag(object);
+        } catch (UnknownTypeException e) {
+            Throwable th = ErrorManager.getDefault().annotate(e, "Model: "+model);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, th);
+            t = null;
+        }
+        if (t == null) {
+            return super.drag();
+        } else {
+            return t;
+        }
+    }
+     */
+    
+    public void createPasteTypes(Transferable t, List<PasteType> l) {
+        PasteType[] p;
+        try {
+            p = model.getPasteTypes(object, t);
+        } catch (UnknownTypeException e) {
+            Throwable th = ErrorManager.getDefault().annotate(e, "Model: "+model);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, th);
+            p = null;
+        }
+        if (p == null) {
+            super.createPasteTypes(t, l);
+        } else {
+            l.addAll(Arrays.asList(p));
+        }
+    }
+    
+    /*
+    public PasteType getDropType(Transferable t, int action, int index) {
+        PasteType p;
+        try {
+            p = model.getDropType(object, t, action, index);
+        } catch (UnknownTypeException e) {
+            Throwable th = ErrorManager.getDefault().annotate(e, "Model: "+model);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, th);
+            p = null;
+        }
+        if (p == null) {
+            return super.getDropType(t, action, index);
+        } else {
+            return p;
+        }
+    }
+     */
     
     // innerclasses ............................................................
     

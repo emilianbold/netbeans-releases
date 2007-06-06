@@ -35,6 +35,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.table.TableColumn;
+import javax.swing.text.DefaultEditorKit;
 import javax.swing.tree.TreeNode;
 
 import javax.swing.tree.TreePath;
@@ -51,6 +52,7 @@ import org.openide.explorer.view.BeanTreeView;
 
 import org.openide.explorer.view.NodeTableModel;
 import org.openide.explorer.view.TreeTableView;
+import org.openide.explorer.view.TreeView;
 import org.openide.explorer.view.Visualizer;
 
 import org.openide.nodes.AbstractNode;
@@ -91,8 +93,11 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
         add (treeTable, "Center");  //NOI18N
         treeTable.getTree ().addTreeExpansionListener (this);
         ActionMap map = getActionMap();
-        map.put("delete", ExplorerUtils.actionDelete(getExplorerManager(), false));
-        
+        ExplorerManager manager = getExplorerManager();
+        map.put(DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(manager));
+        map.put(DefaultEditorKit.cutAction, ExplorerUtils.actionCut(manager));
+        map.put(DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(manager));
+        map.put("delete", ExplorerUtils.actionDelete(manager, false));
     }
     
     public void setModel (Models.CompoundModel model) {
@@ -310,13 +315,15 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
     public void addNotify () {
         super.addNotify ();
         TopComponent.getRegistry ().addPropertyChangeListener (this);
+        ExplorerUtils.activateActions(getExplorerManager (), true);
         getExplorerManager ().addPropertyChangeListener (this);
     }
     
     public void removeNotify () {
-        super.removeNotify ();
         TopComponent.getRegistry ().removePropertyChangeListener (this);
+        ExplorerUtils.activateActions(getExplorerManager (), false);
         getExplorerManager ().removePropertyChangeListener (this);
+        super.removeNotify ();
     }
     
     public boolean isExpanded (Object node) {

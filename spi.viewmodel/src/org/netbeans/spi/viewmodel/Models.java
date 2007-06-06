@@ -13,15 +13,16 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.spi.viewmodel;
 
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.lang.StringBuffer;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -39,13 +40,14 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 
-import org.netbeans.modules.viewmodel.TreeModelNode;
 import org.netbeans.modules.viewmodel.TreeTable;
 
 import org.netbeans.spi.viewmodel.ColumnModel;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 import org.netbeans.spi.viewmodel.NodeModel;
+import org.netbeans.spi.viewmodel.ExtendedNodeModel;
+import org.netbeans.spi.viewmodel.ExtendedNodeModelFilter;
 import org.netbeans.spi.viewmodel.NodeModelFilter;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TableModelFilter;
@@ -53,9 +55,10 @@ import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+
 import org.openide.nodes.Node;
 import org.openide.util.WeakSet;
-
+import org.openide.util.datatransfer.PasteType;
 import org.openide.windows.TopComponent;
 
 
@@ -374,11 +377,11 @@ public final class Models {
      *
      * @returns compund tree model
      */
-    private static NodeModel createCompoundNodeModel (
-        NodeModel originalNodeModel,
+    private static ExtendedNodeModel createCompoundNodeModel (
+        ExtendedNodeModel originalNodeModel,
         List treeNodeModelFilters
     ) {
-        NodeModel nm = originalNodeModel;
+        ExtendedNodeModel nm = originalNodeModel;
         int i, k = treeNodeModelFilters.size ();
         for (i = 0; i < k; i++)
             nm = new CompoundNodeModel (
@@ -695,10 +698,10 @@ public final class Models {
      * 
      * @author   Jan Jancura
      */
-    final static class CompoundNodeModel implements NodeModel, ModelListener {
+    final static class CompoundNodeModel implements ExtendedNodeModel, ModelListener {
 
 
-        private NodeModel model;
+        private ExtendedNodeModel model;
         private NodeModelFilter filter;
 
         private Collection modelListeners = new HashSet();
@@ -708,7 +711,7 @@ public final class Models {
          * Creates {@link org.netbeans.spi.viewmodel.TreeModel} for given TreeModel and
          * {@link org.netbeans.spi.viewmodel.TreeModelFilter}.
          */
-        CompoundNodeModel (NodeModel model, NodeModelFilter filter) {
+        CompoundNodeModel (ExtendedNodeModel model, NodeModelFilter filter) {
             this.model = model;
             this.filter = filter;
         }
@@ -804,6 +807,90 @@ public final class Models {
                     ((DelegatingNodeModel) model).toString (n + "  ");
             return n + filter + "\n" + 
                    n + "  " + model;
+        }
+    
+        public boolean canRename(Object node) throws UnknownTypeException {
+            if (filter instanceof ExtendedNodeModelFilter) {
+                return ((ExtendedNodeModelFilter) filter).canRename(model, node);
+            } else {
+                return model.canRename(node);
+            }
+        }
+
+        public boolean canCopy(Object node) throws UnknownTypeException {
+            if (filter instanceof ExtendedNodeModelFilter) {
+                return ((ExtendedNodeModelFilter) filter).canCopy(model, node);
+            } else {
+                return model.canCopy(node);
+            }
+        }
+
+        public boolean canCut(Object node) throws UnknownTypeException {
+            if (filter instanceof ExtendedNodeModelFilter) {
+                return ((ExtendedNodeModelFilter) filter).canCut(model, node);
+            } else {
+                return model.canCut(node);
+            }
+        }
+
+        public Transferable clipboardCopy(Object node) throws IOException,
+                                                              UnknownTypeException {
+            if (filter instanceof ExtendedNodeModelFilter) {
+                return ((ExtendedNodeModelFilter) filter).clipboardCopy(model, node);
+            } else {
+                return model.clipboardCopy(node);
+            }
+        }
+
+        public Transferable clipboardCut(Object node) throws IOException,
+                                                             UnknownTypeException {
+            if (filter instanceof ExtendedNodeModelFilter) {
+                return ((ExtendedNodeModelFilter) filter).clipboardCut(model, node);
+            } else {
+                return model.clipboardCut(node);
+            }
+        }
+
+        /*public Transferable drag(Object node) throws IOException,
+                                                     UnknownTypeException {
+            if (filter instanceof ExtendedNodeModelFilter) {
+                return ((ExtendedNodeModelFilter) filter).drag(model, node);
+            } else {
+                return model.drag(node);
+            }
+        }*/
+
+        public PasteType[] getPasteTypes(Object node, Transferable t) throws UnknownTypeException {
+            if (filter instanceof ExtendedNodeModelFilter) {
+                return ((ExtendedNodeModelFilter) filter).getPasteTypes(model, node, t);
+            } else {
+                return model.getPasteTypes(node, t);
+            }
+        }
+
+        /*public PasteType getDropType(Object node, Transferable t, int action,
+                                     int index) throws UnknownTypeException {
+            if (filter instanceof ExtendedNodeModelFilter) {
+                return ((ExtendedNodeModelFilter) filter).getDropType(model, node, t, action, index);
+            } else {
+                return model.getDropType(node, t, action, index);
+            }
+        }*/
+
+        public void setName(Object node, String name) throws UnknownTypeException {
+            if (filter instanceof ExtendedNodeModelFilter) {
+                ((ExtendedNodeModelFilter) filter).setName(model, node, name);
+            } else {
+                model.setName(node, name);
+            }
+        }
+
+        public String getIconBaseWithExtension(Object node) throws UnknownTypeException {
+            if (filter instanceof ExtendedNodeModelFilter) {
+                return ((ExtendedNodeModelFilter) filter).getIconBaseWithExtension(model, node);
+            } else {
+                return model.getIconBaseWithExtension(node);
+            }
         }
     }
     
@@ -1546,7 +1633,7 @@ public final class Models {
      *
      * @author   Jan Jancura
      */
-    static final class DelegatingNodeModel implements NodeModel {
+    static final class DelegatingNodeModel implements ExtendedNodeModel {
 
         private NodeModel[] models;
         private HashMap classNameToModel = new HashMap ();
@@ -1711,6 +1798,469 @@ public final class Models {
             sb.append (n);
             sb.append (models [i]);
             return new String (sb);
+        }
+        
+        // Extensions:
+        
+        private boolean defaultCanRename() {
+            return false;
+        }
+        
+        private boolean defaultCanCopy() {
+            return false;
+        }
+    
+        private boolean defaultCanCut() {
+            return false;
+        }
+    
+        private Transferable defaultClipboardCopy() throws IOException {
+            return null;
+        }
+
+        private Transferable defaultClipboardCut() throws IOException {
+            return null;
+        }
+
+        /*
+        private Transferable defaultDrag() throws IOException {
+            return null;
+        }
+         */
+
+        private PasteType[] defaultGetPasteTypes(Transferable t) {
+            return null;
+        }
+
+        /*
+        private PasteType defaultGetDropType(Transferable t, int action,
+                                            int index) {
+            return null;
+        }
+         */
+
+        private void defaultSetName(String name) {
+            // nothing
+        }
+
+        public boolean canRename(Object node) throws UnknownTypeException {
+            UnknownTypeException uex = null;
+            NodeModel model = (NodeModel) classNameToModel.get (
+                node.getClass ().getName ()
+            );
+            if (model != null) {
+                if (model instanceof ExtendedNodeModel) {
+                    try {
+                        return ((ExtendedNodeModel) model).canRename (node);
+                    } catch (UnknownTypeException e) {
+                        uex = e;
+                    }
+                } else {
+                    return defaultCanRename();
+                }
+            }
+            int i, k = models.length;
+            boolean isExtended = false;
+            for (i = 0; i < k; i++) {
+                if (models[i] instanceof ExtendedNodeModel) {
+                    try {
+                        boolean cr = ((ExtendedNodeModel) models [i]).canRename (node);
+                        classNameToModel.put (node.getClass ().getName (), models [i]);
+                        return cr;
+                    } catch (UnknownTypeException e) {
+                        uex = e;
+                    }
+                    isExtended = true;
+                }
+            }
+            if (!isExtended) {
+                return defaultCanRename();
+            }
+            if (uex != null) {
+                throw uex;
+            } else {
+                throw new UnknownTypeException (node);
+            }
+        }
+
+        public boolean canCopy(Object node) throws UnknownTypeException {
+            UnknownTypeException uex = null;
+            NodeModel model = (NodeModel) classNameToModel.get (
+                node.getClass ().getName ()
+            );
+            if (model != null) {
+                if (model instanceof ExtendedNodeModel) {
+                    try {
+                        return ((ExtendedNodeModel) model).canCopy (node);
+                    } catch (UnknownTypeException e) {
+                        uex = e;
+                    }
+                } else {
+                    return defaultCanCopy();
+                }
+            }
+            int i, k = models.length;
+            boolean isExtended = false;
+            for (i = 0; i < k; i++) {
+                if (models[i] instanceof ExtendedNodeModel) {
+                    try {
+                        boolean cr = ((ExtendedNodeModel) models [i]).canCopy (node);
+                        classNameToModel.put (node.getClass ().getName (), models [i]);
+                        return cr;
+                    } catch (UnknownTypeException e) {
+                        uex = e;
+                    }
+                    isExtended = true;
+                }
+            }
+            if (!isExtended) {
+                return defaultCanCopy();
+            }
+            if (uex != null) {
+                throw uex;
+            } else {
+                throw new UnknownTypeException (node);
+            }
+        }
+
+        public boolean canCut(Object node) throws UnknownTypeException {
+            UnknownTypeException uex = null;
+            NodeModel model = (NodeModel) classNameToModel.get (
+                node.getClass ().getName ()
+            );
+            if (model != null) {
+                if (model instanceof ExtendedNodeModel) {
+                    try {
+                        return ((ExtendedNodeModel) model).canCut (node);
+                    } catch (UnknownTypeException e) {
+                        uex = e;
+                    }
+                } else {
+                    return defaultCanCut();
+                }
+            }
+            int i, k = models.length;
+            boolean isExtended = false;
+            for (i = 0; i < k; i++) {
+                if (models[i] instanceof ExtendedNodeModel) {
+                    try {
+                        boolean cr = ((ExtendedNodeModel) models [i]).canCut (node);
+                        classNameToModel.put (node.getClass ().getName (), models [i]);
+                        return cr;
+                    } catch (UnknownTypeException e) {
+                        uex = e;
+                    }
+                    isExtended = true;
+                }
+            }
+            if (!isExtended) {
+                return defaultCanCut();
+            }
+            if (uex != null) {
+                throw uex;
+            } else {
+                throw new UnknownTypeException (node);
+            }
+        }
+
+        public Transferable clipboardCopy(Object node) throws IOException,
+                                                              UnknownTypeException {
+            UnknownTypeException uex = null;
+            NodeModel model = (NodeModel) classNameToModel.get (
+                node.getClass ().getName ()
+            );
+            if (model != null) {
+                if (model instanceof ExtendedNodeModel) {
+                    try {
+                        return ((ExtendedNodeModel) model).clipboardCopy (node);
+                    } catch (UnknownTypeException e) {
+                        uex = e;
+                    }
+                } else {
+                    return defaultClipboardCopy();
+                }
+            }
+            int i, k = models.length;
+            boolean isExtended = false;
+            for (i = 0; i < k; i++) {
+                if (models[i] instanceof ExtendedNodeModel) {
+                    try {
+                        Transferable t = ((ExtendedNodeModel) models [i]).clipboardCopy (node);
+                        classNameToModel.put (node.getClass ().getName (), models [i]);
+                        return t;
+                    } catch (UnknownTypeException e) {
+                        uex = e;
+                    }
+                    isExtended = true;
+                }
+            }
+            if (!isExtended) {
+                return defaultClipboardCopy();
+            }
+            if (uex != null) {
+                throw uex;
+            } else {
+                throw new UnknownTypeException (node);
+            }
+        }
+
+        public Transferable clipboardCut(Object node) throws IOException,
+                                                             UnknownTypeException {
+            UnknownTypeException uex = null;
+            NodeModel model = (NodeModel) classNameToModel.get (
+                node.getClass ().getName ()
+            );
+            if (model != null) {
+                if (model instanceof ExtendedNodeModel) {
+                    try {
+                        return ((ExtendedNodeModel) model).clipboardCut (node);
+                    } catch (UnknownTypeException e) {
+                        uex = e;
+                    }
+                } else {
+                    return defaultClipboardCut();
+                }
+            }
+            int i, k = models.length;
+            boolean isExtended = false;
+            for (i = 0; i < k; i++) {
+                if (models[i] instanceof ExtendedNodeModel) {
+                    try {
+                        Transferable t = ((ExtendedNodeModel) models [i]).clipboardCut (node);
+                        classNameToModel.put (node.getClass ().getName (), models [i]);
+                        return t;
+                    } catch (UnknownTypeException e) {
+                        uex = e;
+                    }
+                    isExtended = true;
+                }
+            }
+            if (!isExtended) {
+                return defaultClipboardCut();
+            }
+            if (uex != null) {
+                throw uex;
+            } else {
+                throw new UnknownTypeException (node);
+            }
+        }
+
+        /*
+        public Transferable drag(Object node) throws IOException,
+                                                     UnknownTypeException {
+            UnknownTypeException uex = null;
+            NodeModel model = (NodeModel) classNameToModel.get (
+                node.getClass ().getName ()
+            );
+            if (model != null) {
+                if (model instanceof ExtendedNodeModel) {
+                    try {
+                        return ((ExtendedNodeModel) model).drag (node);
+                    } catch (UnknownTypeException e) {
+                        uex = e;
+                    }
+                } else {
+                    return defaultDrag();
+                }
+            }
+            int i, k = models.length;
+            boolean isExtended = false;
+            for (i = 0; i < k; i++) {
+                if (models[i] instanceof ExtendedNodeModel) {
+                    try {
+                        Transferable t = ((ExtendedNodeModel) models [i]).drag (node);
+                        classNameToModel.put (node.getClass ().getName (), models [i]);
+                        return t;
+                    } catch (UnknownTypeException e) {
+                        uex = e;
+                    }
+                    isExtended = true;
+                }
+            }
+            if (!isExtended) {
+                return defaultDrag();
+            }
+            if (uex != null) {
+                throw uex;
+            } else {
+                throw new UnknownTypeException (node);
+            }
+        }
+         */
+
+        public PasteType[] getPasteTypes(Object node, Transferable t) throws UnknownTypeException {
+            UnknownTypeException uex = null;
+            NodeModel model = (NodeModel) classNameToModel.get (
+                node.getClass ().getName ()
+            );
+            if (model != null) {
+                if (model instanceof ExtendedNodeModel) {
+                    try {
+                        return ((ExtendedNodeModel) model).getPasteTypes (node, t);
+                    } catch (UnknownTypeException e) {
+                        uex = e;
+                    }
+                } else {
+                    return defaultGetPasteTypes(t);
+                }
+            }
+            int i, k = models.length;
+            boolean isExtended = false;
+            for (i = 0; i < k; i++) {
+                if (models[i] instanceof ExtendedNodeModel) {
+                    try {
+                        PasteType[] p = ((ExtendedNodeModel) models [i]).getPasteTypes (node, t);
+                        classNameToModel.put (node.getClass ().getName (), models [i]);
+                        return p;
+                    } catch (UnknownTypeException e) {
+                        uex = e;
+                    }
+                    isExtended = true;
+                }
+            }
+            if (!isExtended) {
+                return defaultGetPasteTypes(t);
+            }
+            if (uex != null) {
+                throw uex;
+            } else {
+                throw new UnknownTypeException (node);
+            }
+        }
+
+        /*
+        public PasteType getDropType(Object node, Transferable t, int action,
+                                     int index) throws UnknownTypeException {
+            UnknownTypeException uex = null;
+            NodeModel model = (NodeModel) classNameToModel.get (
+                node.getClass ().getName ()
+            );
+            if (model != null) {
+                if (model instanceof ExtendedNodeModel) {
+                    try {
+                        return ((ExtendedNodeModel) model).getDropType (node, t, action, index);
+                    } catch (UnknownTypeException e) {
+                        uex = e;
+                    }
+                } else {
+                    return defaultGetDropType(t, action, index);
+                }
+            }
+            int i, k = models.length;
+            boolean isExtended = false;
+            for (i = 0; i < k; i++) {
+                if (models[i] instanceof ExtendedNodeModel) {
+                    try {
+                        PasteType p = ((ExtendedNodeModel) models [i]).getDropType (node, t, action, index);
+                        classNameToModel.put (node.getClass ().getName (), models [i]);
+                        return p;
+                    } catch (UnknownTypeException e) {
+                        uex = e;
+                    }
+                    isExtended = true;
+                }
+            }
+            if (!isExtended) {
+                return defaultGetDropType(t, action, index);
+            }
+            if (uex != null) {
+                throw uex;
+            } else {
+                throw new UnknownTypeException (node);
+            }
+        }
+         */
+
+        public void setName(Object node, String name) throws UnknownTypeException {
+            UnknownTypeException uex = null;
+            NodeModel model = (NodeModel) classNameToModel.get (
+                node.getClass ().getName ()
+            );
+            if (model != null) {
+                if (model instanceof ExtendedNodeModel) {
+                    try {
+                        ((ExtendedNodeModel) model).setName (node, name);
+                        return ;
+                    } catch (UnknownTypeException e) {
+                        uex = e;
+                    }
+                } else {
+                    defaultSetName(name);
+                    return ;
+                }
+            }
+            int i, k = models.length;
+            boolean isExtended = false;
+            for (i = 0; i < k; i++) {
+                if (models[i] instanceof ExtendedNodeModel) {
+                    try {
+                        ((ExtendedNodeModel) models [i]).setName (node, name);
+                        classNameToModel.put (node.getClass ().getName (), models [i]);
+                        return ;
+                    } catch (UnknownTypeException e) {
+                        uex = e;
+                    }
+                    isExtended = true;
+                }
+            }
+            if (!isExtended) {
+                defaultSetName(name);
+                return ;
+            }
+            if (uex != null) {
+                throw uex;
+            } else {
+                throw new UnknownTypeException (node);
+            }
+        }
+
+        public String getIconBaseWithExtension(Object node) throws UnknownTypeException {
+            UnknownTypeException uex = null;
+            NodeModel model = (NodeModel) classNameToModel.get (
+                node.getClass ().getName ()
+            );
+            if (model != null) {
+                try {
+                    if (model instanceof ExtendedNodeModel) {
+                        return ((ExtendedNodeModel) model).getIconBaseWithExtension (node);
+                    } else {
+                        String base = model.getIconBase(node);
+                        if (base != null) {
+                            return base + ".gif";
+                        } else {
+                            return null;
+                        }
+                    }
+                } catch (UnknownTypeException e) {
+                    uex = e;
+                }
+            }
+            int i, k = models.length;
+            for (i = 0; i < k; i++) {
+                try {
+                    String ib;
+                    if (models[i] instanceof ExtendedNodeModel) {
+                        ib = ((ExtendedNodeModel) models [i]).getIconBaseWithExtension (node);
+                    } else {
+                        String base = models[i].getIconBase(node);
+                        if (base != null) {
+                            ib = base + ".gif";
+                        } else {
+                            ib = null;
+                        }
+                    }
+                    classNameToModel.put (node.getClass ().getName (), models [i]);
+                    return ib;
+                } catch (UnknownTypeException e) {
+                    uex = e;
+                }
+            }
+            if (uex != null) {
+                throw uex;
+            } else {
+                throw new UnknownTypeException (node);
+            }
+            
         }
     }
 
@@ -2120,10 +2670,10 @@ public final class Models {
      * @author   Jan Jancura
      */
     public static final class CompoundModel implements TreeModel, 
-    NodeModel, NodeActionsProvider, TableModel, TreeExpansionModel {
+    ExtendedNodeModel, NodeActionsProvider, TableModel, TreeExpansionModel {
 
         private TreeModel       treeModel;
-        private NodeModel       nodeModel;
+        private ExtendedNodeModel nodeModel;
         private NodeActionsProvider nodeActionsProvider;
         private ColumnModel[]   columnModels;
         private TableModel      tableModel;
@@ -2148,7 +2698,7 @@ public final class Models {
         private CompoundModel (
             TreeModel treeModel, 
             TreeExpansionModel treeExpansionModel,
-            NodeModel nodeModel, 
+            ExtendedNodeModel nodeModel, 
             NodeActionsProvider nodeActionsProvider,
             List columnModels,
             TableModel tableModel,
@@ -2412,6 +2962,56 @@ public final class Models {
                    "\n  TableModel = " + tableModel +
                    "\n  NodeActionsProvider = " + nodeActionsProvider +
                    "\n  ColumnsModel = " + java.util.Arrays.asList(columnModels);
+        }
+        
+        // ExtendedNodeModel
+    
+        public boolean canRename(Object node) throws UnknownTypeException {
+            return nodeModel.canRename(node);
+        }
+
+        public boolean canCopy(Object node) throws UnknownTypeException {
+            return nodeModel.canCopy(node);
+        }
+
+        public boolean canCut(Object node) throws UnknownTypeException {
+            return nodeModel.canCut(node);
+        }
+
+        public Transferable clipboardCopy(Object node) throws IOException,
+                                                              UnknownTypeException {
+            return nodeModel.clipboardCopy(node);
+        }
+
+        public Transferable clipboardCut(Object node) throws IOException,
+                                                             UnknownTypeException {
+            return nodeModel.clipboardCut(node);
+        }
+
+        /*
+        public Transferable drag(Object node) throws IOException,
+                                                     UnknownTypeException {
+            return nodeModel.drag(node);
+        }
+         */
+
+        public PasteType[] getPasteTypes(Object node, Transferable t) throws UnknownTypeException {
+            return nodeModel.getPasteTypes(node, t);
+        }
+
+        /*
+        public PasteType getDropType(Object node, Transferable t, int action,
+                                     int index) throws UnknownTypeException {
+            return nodeModel.getDropType(node, t, action, index);
+        }
+         */
+
+        public void setName(Object node, String name) throws UnknownTypeException {
+            nodeModel.setName(node, name);
+        }
+
+        public String getIconBaseWithExtension(Object node) throws UnknownTypeException {
+            return nodeModel.getIconBaseWithExtension(node);
         }
     }
 }

@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -221,6 +221,28 @@ Microsystems, Inc. All Rights Reserved.
         </description>
         <class package="org.netbeans.spi.viewmodel" name="ColumnModel" />
         <issue number="71858"/>
+    </change>
+    <change>
+        <api name="ViewModelAPI"/>
+        <summary>Extension to NodeModel.</summary>
+        <version major="1" minor="12"/>
+        <date day="1" month="6" year="2007"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" deletion="no" addition="yes" modification="no"/>
+        <description>
+            Add ability to in-place rename and copy/paste functionality to nodes
+            in debugger views. Also, the models needs to have a way to provide
+            an icon with arbitrary extension. Therefore following methods are
+            provided with new <code>ExtendedNodeModel</code> and <code>ExtendedNodeModelFilter</code> interfaces
+            and are also added into <code>CompoundModel</code>:
+            <code>canRename()</code>, <code>canCopy()</code>, <code>canCut()</code>,
+            <code>clipboardCopy()</code>, <code>clipboardCut()</code>, <code>getPasteTypes()</code>,
+            <code>setName()</code>, <code>getIconBaseWithExtension()</code>.
+        </description>
+        <class package="org.netbeans.spi.viewmodel" name="ExtendedNodeModel" />
+        <class package="org.netbeans.spi.viewmodel" name="ExtendedNodeModelFilter" />
+        <class package="org.netbeans.spi.viewmodel" name="Models.CompoundModel" />
+        <issue number="104281"/>
     </change>
     
 
