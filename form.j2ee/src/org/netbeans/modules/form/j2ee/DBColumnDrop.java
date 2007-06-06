@@ -27,6 +27,7 @@ import org.netbeans.modules.db.api.explorer.DatabaseMetaDataTransfer;
 import org.netbeans.modules.form.BindingDesignSupport;
 import org.netbeans.modules.form.BindingProperty;
 import org.netbeans.modules.form.FormEditor;
+import org.netbeans.modules.form.FormJavaSource;
 import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.MetaBinding;
 import org.netbeans.modules.form.RADComponent;
@@ -70,18 +71,20 @@ public class DBColumnDrop extends DBConnectionDrop {
      */
     public PaletteItem getPaletteItem(DropTargetDragEvent dtde) {
         PaletteItem pItem;
+        if (!assistantInitialized) {
+            initAssistant();
+        }
         if (!J2EEUtils.hasPrimaryKey(column.getDatabaseConnection(), column.getTableName())) {
-            if (!assistantInitialized) {
-                initAssistant();
-            }
             FormEditor.getAssistantModel(model).setContext("tableWithoutPK"); // NOI18N
+            return null;
+        }
+        if (FormJavaSource.isInDefaultPackage(model)) {
+            // 97982: default package
+            FormEditor.getAssistantModel(model).setContext("columnDefaultPackage"); // NOI18N
             return null;
         }
         setBindingOnly(dtde.getDropAction() == DnDConstants.ACTION_MOVE);
         if (isBindingOnly()) {
-            if (!assistantInitialized) {
-                initAssistant();
-            }
             FormEditor.getAssistantModel(model).setContext("columnDropBinding", "columnDropComponent"); // NOI18N
             pItem = new PaletteItem(new ClassSource("javax.persistence.EntityManager", // NOI18N
                 new String[] { ClassSource.LIBRARY_SOURCE },
@@ -102,10 +105,12 @@ public class DBColumnDrop extends DBConnectionDrop {
         String dropBindingMsg = bundle.getString("MSG_ColumnDropBinding"); // NOI18N
         String dropComponentMsg = bundle.getString("MSG_ColumnDropComponent"); // NOI18N
         String tableWithoutPKMsg = bundle.getString("MSG_TableWithoutPK"); // NOI18N
+        String columnDefaultPackageMsg = bundle.getString("MSG_ColumnDefaultPackage"); // NOI18N
         AssistantMessages messages = AssistantMessages.getDefault();
         messages.setMessages("columnDropBinding", dropBindingMsg); // NOI18N
         messages.setMessages("columnDropComponent", dropComponentMsg); // NOI18N
         messages.setMessages("tableWithoutPK", tableWithoutPKMsg); // NOI18N
+        messages.setMessages("columnDefaultPackage", columnDefaultPackageMsg);
         assistantInitialized = true;
     }
 

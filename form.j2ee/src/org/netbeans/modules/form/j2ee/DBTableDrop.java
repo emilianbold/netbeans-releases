@@ -65,19 +65,21 @@ public class DBTableDrop extends DBConnectionDrop {
      * @return <code>JTable</code> palette item.
      */
     public PaletteItem getPaletteItem(DropTargetDragEvent dtde) {
+        if (!assistantInitialized) {
+            initAssistant();
+        }
         PaletteItem pItem;
         if (!J2EEUtils.hasPrimaryKey(table.getDatabaseConnection(), table.getTableName())) {
-            if (!assistantInitialized) {
-                initAssistant();
-            }
             FormEditor.getAssistantModel(model).setContext("tableWithoutPK"); // NOI18N
+            return null;
+        }
+        if (FormJavaSource.isInDefaultPackage(model)) {
+            // 97982: default package
+            FormEditor.getAssistantModel(model).setContext("tableDefaultPackage"); // NOI18N
             return null;
         }
         setBindingOnly(dtde.getDropAction() == DnDConstants.ACTION_MOVE);
         if (isBindingOnly()) {
-            if (!assistantInitialized) {
-                initAssistant();
-            }
             FormEditor.getAssistantModel(model).setContext("tableDropBinding", "tableDropComponent"); // NOI18N
             pItem = new PaletteItem(new ClassSource("javax.persistence.EntityManager", // NOI18N
                 new String[] { ClassSource.LIBRARY_SOURCE },
@@ -98,10 +100,12 @@ public class DBTableDrop extends DBConnectionDrop {
         String dropBindingMsg = bundle.getString("MSG_TableDropBinding"); // NOI18N
         String dropComponentMsg = bundle.getString("MSG_TableDropComponent"); // NOI18N
         String tableWithoutPKMsg = bundle.getString("MSG_TableWithoutPK"); // NOI18N
+        String tableDefaultPackageMsg = bundle.getString("MSG_TableDefaultPackage"); // NOI18N
         AssistantMessages messages = AssistantMessages.getDefault();
         messages.setMessages("tableDropBinding", dropBindingMsg); // NOI18N
         messages.setMessages("tableDropComponent", dropComponentMsg); // NOI18N
         messages.setMessages("tableWithoutPK", tableWithoutPKMsg); // NOI18N
+        messages.setMessages("tableDefaultPackage", tableDefaultPackageMsg);
         assistantInitialized = true;
     }
 

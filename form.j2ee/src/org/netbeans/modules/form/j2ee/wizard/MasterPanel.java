@@ -19,6 +19,7 @@
 package org.netbeans.modules.form.j2ee.wizard;
 
 import java.awt.Component;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.*;
@@ -27,9 +28,14 @@ import javax.swing.event.*;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.support.DatabaseExplorerUIs;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.form.j2ee.J2EEUtils;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * Wizard panel for master information of master/detail wizard.
@@ -41,6 +47,18 @@ public class MasterPanel implements WizardDescriptor.Panel {
     private boolean valid;
     /** List of <code>ChangeListener</code> objects. */
     private EventListenerList listenerList;
+    /** Determines whether the master/detail form is created as a part of a new project. */
+    private boolean inNewProject;
+
+    /**
+     * Creates new <code>MasterPanel</code>.
+     * 
+     * @param inNewProject determines whether the master/detail form is created
+     * as a part of a new project.
+     */
+    public MasterPanel(boolean inNewProject) {
+        this.inNewProject = inNewProject;
+    }
 
     /**
      * Initializes GUI of this panel.
@@ -477,7 +495,24 @@ public class MasterPanel implements WizardDescriptor.Panel {
     }
 
     public void readSettings(Object settings) {
-        // not used
+        boolean valid = true;
+        if (!inNewProject && (settings instanceof TemplateWizard)) {
+            try {
+                TemplateWizard wizard = (TemplateWizard)settings;
+                DataFolder folder = wizard.getTargetFolder();
+                FileObject fob = folder.getPrimaryFile();
+                ClassPath cp = ClassPath.getClassPath(fob, ClassPath.SOURCE);
+                String name = cp.getResourceName(fob).trim();
+                valid = (name.length() != 0);
+                wizard.putProperty("WizardPanel_errorMessage", valid ? null : NbBundle.getMessage(getClass(), "MSG_MasterDefaultPackage")); // NOI18N
+            } catch (IOException ioex) {
+                ioex.printStackTrace();
+            }
+        }
+        connectionCombo.setEnabled(valid);
+        if (!valid) {
+            setValid(false);
+        }
     }
 
     /**
@@ -488,7 +523,10 @@ public class MasterPanel implements WizardDescriptor.Panel {
     public void storeSettings(Object settings) {
         WizardDescriptor wizard = (WizardDescriptor) settings;
         wizard.putProperty("connection", getConnection()); // NOI18N
-        wizard.putProperty("master", getTable().getName()); // NOI18N
+        J2EEUtils.DBColumnInfo table = getTable();
+        if (table != null) {
+            wizard.putProperty("master", table.getName()); // NOI18N
+        }
         wizard.putProperty("masterColumns", getSelectedColumns()); // NOI18N
     }
     

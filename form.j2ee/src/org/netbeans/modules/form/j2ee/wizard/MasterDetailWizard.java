@@ -127,7 +127,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
      */
     private WizardDescriptor.Panel[] createPanels() {
         panels = new WizardDescriptor.Panel[] {
-            new MasterPanel(),
+            new MasterPanel(delegateIterator == null),
             new DetailPanel()
         };
         return panels;

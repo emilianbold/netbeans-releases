@@ -31,6 +31,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.form.DataImporter;
 import org.netbeans.modules.form.FormEditor;
+import org.netbeans.modules.form.FormJavaSource;
 import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.RADComponent;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
@@ -39,6 +40,7 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMeta
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -148,6 +150,12 @@ private void connectionComboActionPerformed(java.awt.event.ActionEvent evt) {//G
      */
     public RADComponent importData(FormModel formModel) {
         removeAll();
+        if (FormJavaSource.isInDefaultPackage(formModel)) {
+            // 97982: default package
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(getClass(), "MSG_ImportToDefaultPackage"))); // NOI18N
+            return null;
+        }
         initComponents();
         DatabaseExplorerUIs.connect(connectionCombo, ConnectionManager.getDefault());
         DialogDescriptor dd = new DialogDescriptor(
