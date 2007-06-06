@@ -85,7 +85,11 @@ final class Element extends SearchElement.Adapter {
     return RefactorUtil.getToolTip(component);
   }
 
-  private static SearchElement getParent(Component component, Object cookie, Object view) {
+  private static SearchElement getParent(
+    Component component,
+    Object cookie,
+    Object view)
+  {
     Component parent = component.getParent();
 
     if (parent == null) {
