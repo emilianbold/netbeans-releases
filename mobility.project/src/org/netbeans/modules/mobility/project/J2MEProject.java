@@ -494,6 +494,11 @@ public final class J2MEProject implements Project, AntProjectListener {
                 FileObject root = Repository.getDefault().getDefaultFileSystem().findResource("Buildsystem/org.netbeans.modules.kjava.j2meproject"); //NOI18N
                 LinkedList<FileObject> files = new LinkedList();
                 files.addAll(Arrays.asList(root.getChildren()));
+                try {
+                    ProjectManager.getDefault().saveProject(J2MEProject.this);
+                } catch (IOException ioe) {
+                    ErrorManager.getDefault().notify(ioe);
+                }
                 while (!files.isEmpty()) try {
                     FileObject fo = files.removeFirst();
                     if (fo.getExt().equals("xml") && isAuthorized(fo)) { //NOI18N
