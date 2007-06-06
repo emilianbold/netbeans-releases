@@ -193,7 +193,7 @@ public class CompilationInfo {
                 for( Tree t : typeDecls ) {
                     TreePath p = new TreePath(cuPath,t);
                     Element e = trees.getElement(p);
-                    if (e.getKind().isClass() || e.getKind().isInterface()) {
+                    if ( e != null && ( e.getKind().isClass() || e.getKind().isInterface() ) ) {
                         result.add((TypeElement)e);
                     }
                 }
