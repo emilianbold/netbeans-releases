@@ -55,7 +55,7 @@ public class UtilityClassTest extends TreeRuleTestBase {
             "0:27-0:31:verifier:Utility class without constructor"
         );
     }
-    public void tsestClassWithOnlyStaticMethodsAndFields() throws Exception {
+    public void testClassWithOnlyStaticMethodsAndFields() throws Exception {
         String before = "package test; public class Te";
         String after = "st extends Object {" +
             " public static boolean isEventQueue() { return false; }" +
