@@ -1226,8 +1226,10 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   </target>
 
   <target name="print-cvs-modules" depends="init-module-list" description="Prints list of CVS (top-level) modules required to build in selected moduleconfig.">
-    <taskdef name="printcvsmodules" classname="org.netbeans.nbbuild.PrintCvsModules" classpath="nbantext.jar"/>
-    <printcvsmodules modules="${fixedmodules},${modules}" cvsmodulesproperty="cvsmodules"/>
+      <taskdef name="resolvelist" classname="org.netbeans.nbbuild.ResolveList" classpath="nbantext.jar"/>
+      <taskdef name="printcvsmodules" classname="org.netbeans.nbbuild.PrintCvsModules" classpath="nbantext.jar"/>
+      <resolvelist name="modules.for.checkout.list" list="${nb.clusters.list}"/>
+      <printcvsmodules modules="${modules.for.checkout.list}" cvsmodulesproperty="cvsmodules"/>
   </target>
 
   <target name="checkout-cluster" depends="init-module-list" description="Checking out all CVS modules required for cluster.name cluster">
@@ -1260,12 +1262,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <cvs command="checkout -P" compressionlevel="6" cvsroot="${cvsroot}" dest=".." package="${cvsmodules} core jemmy jellytools xtest" tag="${cvstag}" date="${cvsdate}" quiet="true" failonerror="true"/>
   </target>
   
-  <target name="checkout" depends="init-module-list" description="Check out all CVS modules which are needed to build (and test) the selected moduleconfig.">
-      <taskdef name="resolvelist" classname="org.netbeans.nbbuild.ResolveList" classpath="nbantext.jar"/>
-      <taskdef name="printcvsmodules" classname="org.netbeans.nbbuild.PrintCvsModules" classpath="nbantext.jar"/>
-      <resolvelist name="modules.for.checkout.list" list="${nb.clusters.list}"/>
-      <printcvsmodules modules="${modules.for.checkout.list}" cvsmodulesproperty="cvsmodules"/>
-     
+  <target name="checkout" depends="init-module-list,print-cvs-modules" description="Check out all CVS modules which are needed to build (and test) the selected moduleconfig.">
       <!-- The following mess is an attempt to guess the correct CVSROOT and branch from the current checkout. -->
       <loadfile srcfile="CVS/Root" property="cvsroot" failonerror="false">
           <filterchain>
