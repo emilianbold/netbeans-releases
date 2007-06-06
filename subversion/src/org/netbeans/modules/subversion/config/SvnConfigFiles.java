@@ -145,13 +145,8 @@ public class SvnConfigFiles {
         Ini.Section nbGlobalSection = nbServers.add(GLOBAL_SECTION);
         Ini.Section svnGlobalSection = svnServers.get(GLOBAL_SECTION);
         if(proxySettings.isDirect()) {
-            // no proxy host means no proxy at all                                                
-            if(svnGlobalSection != null) {
-                // if there is a global section than get the no proxy settings                                                                 
-                mergeNonProxyKeys(svnGlobalSection, nbGlobalSection);
-            }
-        } else {            
-            
+            mergeNonProxyKeys(host, svnGlobalSection, nbGlobalSection);
+        } else {                        
             String proxyHost = "";
             int proxyPort = -1;                       
             if(url.getProtocol().startsWith("https")) {
@@ -183,16 +178,9 @@ public class SvnConfigFiles {
                 }            
             
                 // we have a proxy for the host, so check 
-                // if in the there are also some no proxy settings 
-                // we should get from the original svn servers file
-                Ini.Section svnHostGroup = getServerGroup(host);
-                if(svnGlobalSection != null) {
-                    // if there is a global section than get the no proxy settings                                                                 
-                    mergeNonProxyKeys(svnGlobalSection, nbGlobalSection);                
-                }            
-                if(svnHostGroup != null) {
-                    mergeNonProxyKeys(svnHostGroup, nbGlobalSection);                
-                }
+                // if in there are also some no proxy settings 
+                // we should get from the original svn servers file     
+                mergeNonProxyKeys(host, svnGlobalSection, nbGlobalSection);                
             } else {
                 // no proxy host means no proxy at all                                                
                 if(svnGlobalSection != null) {
@@ -203,6 +191,18 @@ public class SvnConfigFiles {
         }        
         storeIni(nbServers, "servers");                                                       // NOI18N    
     }        
+    
+    private void mergeNonProxyKeys(String host, Ini.Section svnGlobalSection, Ini.Section nbGlobalSection) {                             
+        if(svnGlobalSection != null) {
+            // if there is a global section, than get the no proxy settings                                                                 
+            mergeNonProxyKeys(svnGlobalSection, nbGlobalSection);
+        }
+        Ini.Section svnHostGroup = getServerGroup(host);
+        if(svnHostGroup != null) {
+            // if there is a section for the given host, than get the no proxy settings                                                                 
+            mergeNonProxyKeys(svnHostGroup, nbGlobalSection);                
+        }                                
+    }
     
     private void mergeNonProxyKeys(Ini.Section source, Ini.Section target) {
         for (String key : source.keySet()) {
@@ -259,6 +259,26 @@ public class SvnConfigFiles {
         return DEFAULT_GLOBAL_IGNORES;
     }
 
+    public String getClientCertFile(String host) {
+        return getMergeValue("ssl-client-cert-file", host);                     // NOI18N
+    }
+
+    public String getClientCertPassword(String host) {
+        return getMergeValue("ssl-client-cert-password", host);                 // NOI18N    
+    }
+    
+    private String getMergeValue(String key, String host) {
+        Ini.Section group = getServerGroup(host);
+        if(group != null) {
+            return group.get(key);
+        }
+        group = svnServers.get(GLOBAL_SECTION);
+        if(group != null) {
+            return group.get(key);
+        }
+        return null;
+    }
+    
     private static List<String> parseGlobalIgnores(String ignores) {
         StringTokenizer st = new StringTokenizer(ignores, " ");                 // NOI18N
         List<String> ret = new ArrayList<String>(10);

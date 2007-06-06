@@ -20,6 +20,7 @@ package org.netbeans.modules.subversion.client;
 
 import java.awt.Dialog;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -27,6 +28,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.InvalidKeyException;
+import java.security.KeyStore;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateEncodingException;
@@ -35,6 +37,8 @@ import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSocket;
@@ -45,6 +49,7 @@ import javax.swing.JButton;
 import org.netbeans.modules.subversion.Diagnostics;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.config.CertificateFile;
+import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.netbeans.modules.subversion.util.FileUtils;
@@ -287,11 +292,33 @@ public class SvnClientExceptionHandler {
         }
                         
         SSLContext context = SSLContext.getInstance("SSL");                     // NOI18N
-        context.init(null, trust, null);        
+                        
+        context.init(getKeyManagers(host), trust, null);        
         SSLSocketFactory factory = context.getSocketFactory();                                         
         SSLSocket socket = (SSLSocket) factory.createSocket(proxySocket, host, port, true);
         socket.startHandshake();
         return socket;
+    }
+    
+    private KeyManager[] getKeyManagers(String host) {        
+        try {   
+            String certFile = SvnConfigFiles.getInstance().getClientCertFile(host);
+            if(certFile == null || certFile.trim().equals("")) {                            // NOI18N
+                return null;
+            }                                    
+            String certPassword = SvnConfigFiles.getInstance().getClientCertPassword(host);
+            char[] certPasswordChars = certPassword != null ? certPassword.toCharArray() : null;                        
+            
+            KeyStore ks = KeyStore.getInstance("pkcs12");                                   // NOI18N            
+            ks.load(new FileInputStream(certFile), certPasswordChars);
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            kmf.init(ks, certPasswordChars);
+            return kmf.getKeyManagers();
+            
+        } catch(Exception ex) {
+            ErrorManager.getDefault().notify(ex);
+            return null;
+        }                                       
     }
     
     private void connectProxy(Socket proxy, String host, int port, String proxyHost, int proxyPort) throws IOException {
