@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.autoupdate.updateprovider;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -109,6 +110,10 @@ public class AutoupdateCatalogFactory {
         return au_catalog;
     }
     
+    @Deprecated
+    public static Object createXMLAutoupdateType (FileObject fo) throws IOException {
+        return createUpdateProvider (fo);
+    }
     
     // helper methods
     private static String displayName (FileObject fo) {
