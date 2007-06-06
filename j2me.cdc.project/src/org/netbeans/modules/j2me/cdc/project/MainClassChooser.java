@@ -51,6 +51,7 @@ public class MainClassChooser extends JPanel {
     private String dialogSubtitle = null;
     protected List<String> possibleMainClasses;
     private FileObject sourcesRoot;
+    final private String bcp;
     protected boolean onlyMain;
     protected String mainClass;
     protected Map<String,String> executionModes;
@@ -59,11 +60,11 @@ public class MainClassChooser extends JPanel {
     
     
     /** Creates new form MainClassChooser */
-    public MainClassChooser (FileObject sourcesRoot, Map<String,String> executionModes) {
-        this (sourcesRoot, null, false, executionModes);
+    public MainClassChooser (FileObject sourcesRoot, Map<String,String> executionModes, String bootcp) {
+        this (sourcesRoot, null, false, executionModes,bootcp);
     }
 
-    public MainClassChooser (FileObject sourcesRoot, String subtitle, boolean onlyMain, Map<String,String> executionModes) {
+    public MainClassChooser (FileObject sourcesRoot, String subtitle, boolean onlyMain, Map<String,String> executionModes,String bootcp) {
         dialogSubtitle = subtitle;
         this.sourcesRoot = sourcesRoot;
         this.onlyMain = onlyMain;
@@ -72,7 +73,7 @@ public class MainClassChooser extends JPanel {
         initClassesView (sourcesRoot);
         if (onlyMain)
             onlymainLabel.setText(NbBundle.getMessage(MainClassChooser.class, "MSG_OnlyMainAllowed"));
-        
+        bcp=bootcp;
         specialExecFqnXlet = (executionModes != null) ? executionModes.get(CDCPlatform.PROP_EXEC_XLET)  : null;
         specialExecFqnApplet = (executionModes != null) ? executionModes.get(CDCPlatform.PROP_EXEC_APPLET)  : null;        
         
@@ -109,7 +110,7 @@ public class MainClassChooser extends JPanel {
         
         RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {
-                possibleMainClasses = CDCProjectUtil.getMainClasses (new FileObject[] {sourcesRoot}, executionModes);
+                possibleMainClasses = CDCProjectUtil.getMainClasses (new FileObject[] {sourcesRoot}, executionModes,bcp);
                 if (possibleMainClasses.isEmpty ()) {                    
                     SwingUtilities.invokeLater( new Runnable () {
                         public void run () {

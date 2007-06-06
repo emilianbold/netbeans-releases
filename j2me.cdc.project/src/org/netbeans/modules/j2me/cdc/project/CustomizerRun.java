@@ -221,7 +221,7 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
         public void actionPerformed( ActionEvent e ) { 
             // only chooseMainClassButton can be performed
             final MainClassChooser panel = new MainClassChooser (prop.getSourceRoot(),
-                    CDCProjectUtil.getExecutionModes(prop));
+                    CDCProjectUtil.getExecutionModes(prop),(String)prop.get("platform.bootclasspath"));
 
             Object[] options = new Object[] {
                 okButton,

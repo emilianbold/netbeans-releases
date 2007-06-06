@@ -19,12 +19,14 @@
 
 package org.netbeans.modules.j2me.cdc.project;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -47,7 +49,9 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.mobility.project.ui.customizer.ProjectProperties;
 import org.netbeans.modules.j2me.cdc.platform.CDCDevice;
 import org.netbeans.modules.j2me.cdc.platform.CDCPlatform;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Miscellaneous utilities for the cdcproject module.
@@ -78,10 +82,10 @@ public class CDCProjectUtil {
      * @param roots the classpath roots of source to start find
      * @return list of names of classes, e.g, [sample.project1.Hello, sample.project.app.MainApp]
      */
-    public static List<String> getMainClasses (FileObject[] roots, Map<String,String> executionModes) {
+    public static List<String> getMainClasses (FileObject[] roots, Map<String,String> executionModes,String bootcp) {
         List<String> result = new ArrayList<String> ();
         for (FileObject fo : roots) {
-            getMainClasses(fo, result, executionModes);
+            getMainClasses(fo, result, executionModes,bootcp);
         }
         return result;
     }
@@ -91,14 +95,40 @@ public class CDCProjectUtil {
      * @param root the root of source to start find
      * @param addInto list of names of classes, e.g, [sample.project1.Hello, sample.project.app.MainApp]
      */
-    private static void getMainClasses (final FileObject root, final List<String> addInto, final Map<String,String> executionModes) {       
+    private static void getMainClasses (final FileObject root, final List<String> addInto, final Map<String,String> executionModes, final String bootcp) {       
         final String specialXletFqn = (executionModes != null) ? executionModes.get(CDCPlatform.PROP_EXEC_XLET)  : null;
         final String specialAppletFqn = (executionModes != null) ? executionModes.get(CDCPlatform.PROP_EXEC_APPLET)  : null;
         
-        final ClassPath boot = ClassPath.getClassPath (root, ClassPath.BOOT);  //Single compilation unit
+        //We must get acuall (choosen in the customizer bootclasspath so we can't usee ClassPath.Boot
+        ClassPath bcp=null;
+        if (bootcp != null)
+        {
+            StringTokenizer tokens=new StringTokenizer(bootcp,File.pathSeparator);
+            if (tokens.countTokens()>0)
+            {
+                FileObject bcpRoots[]=new FileObject[tokens.countTokens()];
+                int i=0;
+                for (;tokens.hasMoreTokens();i++)
+                {
+                    FileObject fo=FileUtil.toFileObject(new File(tokens.nextToken()));
+                    if (FileUtil.isArchiveFile(fo))
+                        bcpRoots[i]=FileUtil.getArchiveRoot(fo);
+                    else
+                        bcpRoots[i]=fo;
+                }
+
+                bcp=ClassPathSupport.createClassPath(bcpRoots);
+            }
+        }
+        else
+            bcp=ClassPath.getClassPath (root, ClassPath.BOOT);  //Single compilation unit
+        
+        final ClassPath boot = bcp;
         final ClassPath rtm2 = ClassPath.getClassPath (root, ClassPath.EXECUTE);  //Single compilation unit'
         final ClassPath rtm1 = ClassPath.getClassPath (root, ClassPath.COMPILE);
         final ClassPath rtm  = org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPath(new ClassPath[] { rtm1, rtm2 } );
+        
+        
         
         /* Here is the trick to include not build dependent projects */
         ArrayList<ClassPath> srcRoots=new ArrayList<ClassPath>();
@@ -300,6 +330,8 @@ public class CDCProjectUtil {
         String activePlatformId = (String)props.get("platform.active");  //NOI18N
         String defaultDevice    = (String)props.get("platform.device");  //NOI18N
         CDCPlatform platform = getActivePlatform (activePlatformId);
+        if (platform == null)
+            return null;
         CDCDevice[] devices = platform.getDevices();
         Map<String,String> executionModes = null;
         for (int i = 0; i < devices.length && executionModes == null; i++) {
