@@ -103,7 +103,8 @@ public final class LookupProviderSupport {
                     doDelegate(providerResult.allInstances());
                 }
             };
-            providerResult.addLookupListener(providerListener);
+            providerResult.addLookupListener(
+                WeakListeners.create(LookupListener.class, providerListener, providerResult));
         }
         
         
