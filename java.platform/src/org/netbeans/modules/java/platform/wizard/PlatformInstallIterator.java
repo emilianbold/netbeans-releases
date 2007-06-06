@@ -36,9 +36,9 @@ import org.openide.WizardDescriptor;
  *
  * @author  sd99038
  */
-public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIterator, ChangeListener {
+public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIterator<WizardDescriptor>, ChangeListener {
     
-    WizardDescriptor.InstantiatingIterator typeIterator;
+    WizardDescriptor.InstantiatingIterator<WizardDescriptor> typeIterator;
     int                     panelIndex; // -1 - not set, 0 - the first panel, 1 - files chooser, 2 - custom panel from PlatformInstall, 3 - custom panel from CustomPlatformInstall
     boolean                 hasSelectorPanel;
     WizardDescriptor          wizard;
@@ -98,7 +98,7 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
         listeners.add(l);
     }
     
-    public WizardDescriptor.Panel current() {
+    public WizardDescriptor.Panel<WizardDescriptor> current() {
         if (panelIndex == 0) {
             return selectorPanel;
         }
@@ -237,7 +237,7 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
     }
     
     public void stateChanged(ChangeEvent e) {
-        WizardDescriptor.InstantiatingIterator it;
+        WizardDescriptor.InstantiatingIterator<WizardDescriptor> it;
         if (e.getSource() == this.locationPanel) {
             it = locationPanel.getInstallerIterator();
         }

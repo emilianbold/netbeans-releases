@@ -159,7 +159,7 @@ class SelectorPanel extends javax.swing.JPanel implements ItemListener {
     // End of variables declaration//GEN-END:variables
     
     
-    public static class Panel implements WizardDescriptor.Panel {
+    public static class Panel implements WizardDescriptor.Panel<WizardDescriptor> {
         
         private final ChangeSupport cs = new ChangeSupport(this);
         private SelectorPanel component;
@@ -172,11 +172,11 @@ class SelectorPanel extends javax.swing.JPanel implements ItemListener {
             cs.addChangeListener(l);
         }                
 
-        public void readSettings(Object settings) {
-            ((SelectorPanel)this.getComponent()).readSettings();
+        public void readSettings(WizardDescriptor wiz) {
+            getComponent().readSettings();
         }
 
-        public void storeSettings(Object settings) {
+        public void storeSettings(WizardDescriptor wiz) {
         }
 
         public HelpCtx getHelp() {
@@ -187,7 +187,7 @@ class SelectorPanel extends javax.swing.JPanel implements ItemListener {
             return this.component != null;
         }
 
-        public java.awt.Component getComponent() {
+        public SelectorPanel getComponent() {
             if (this.component == null) {
                 this.component = new SelectorPanel (this);
             }
@@ -195,7 +195,7 @@ class SelectorPanel extends javax.swing.JPanel implements ItemListener {
         }
         
         public GeneralPlatformInstall getInstaller () {
-            SelectorPanel c = (SelectorPanel) getComponent ();
+            SelectorPanel c = getComponent ();
             ButtonModel bm = c.group.getSelection();
             if (bm != null) {            
                 return c.installersByButtonModels.get(bm);
