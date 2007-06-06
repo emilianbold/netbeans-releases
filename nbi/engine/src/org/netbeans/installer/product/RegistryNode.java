@@ -43,6 +43,7 @@ import org.netbeans.installer.utils.exceptions.ParseException;
 import org.netbeans.installer.utils.helper.ExtendedUri;
 import org.netbeans.installer.utils.helper.NbiProperties;
 import org.netbeans.installer.utils.helper.PropertyContainer;
+import org.netbeans.installer.utils.helper.UiMode;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -314,7 +315,8 @@ public abstract class RegistryNode implements PropertyContainer {
         return "node";
     }
     
-    protected Element saveToDom(final Element element) throws FinalizationException {
+    protected Element saveToDom(
+            final Element element) throws FinalizationException {
         Document document = element.getOwnerDocument();
         
         element.setAttribute("uid", uid);
@@ -345,14 +347,16 @@ public abstract class RegistryNode implements PropertyContainer {
         return element;
     }
     
-    public RegistryNode loadFromDom(Element element) throws InitializationException {
+    public RegistryNode loadFromDom(
+            final Element element) throws InitializationException {
         try {
             uid = element.getAttribute("uid");
             
             iconUri = XMLUtils.parseExtendedUri(
                     XMLUtils.getChild(element, "icon"));
             
-            if (!Boolean.getBoolean(Registry.LAZY_LOAD_ICONS_PROPERTY)) {
+            if (!Boolean.getBoolean(Registry.LAZY_LOAD_ICONS_PROPERTY) && 
+                    (UiMode.getCurrentUiMode() != UiMode.SILENT)) {
                 final File iconFile =
                         FileProxy.getInstance().getFile(iconUri.getRemote());
                 
@@ -388,6 +392,7 @@ public abstract class RegistryNode implements PropertyContainer {
     }
     
     // node -> string ///////////////////////////////////////////////////////////////
+    @Override
     public String toString() {
         return getDisplayName();
     }
