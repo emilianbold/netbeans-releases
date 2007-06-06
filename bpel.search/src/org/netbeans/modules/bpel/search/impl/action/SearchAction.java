@@ -18,7 +18,12 @@
  */
 package org.netbeans.modules.bpel.search.impl.action;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.io.IOException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -27,15 +32,20 @@ import org.openide.util.Lookup;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.NodeAction;
 
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
+
 import org.netbeans.modules.xml.xam.Model;
-import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.schema.model.SchemaModel;
-
 import org.netbeans.modules.xml.xam.ui.ModelCookie;
-
 import org.netbeans.modules.xml.xam.ui.search.api.SearchManagerAccess;
 import org.netbeans.modules.xml.xam.ui.search.api.SearchTarget;
+
+import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.schema.ui.basic.SchemaTreeView;
+import org.netbeans.modules.xml.validation.ShowCookie;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+
+import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.search.impl.util.Util;
 
 import static org.netbeans.modules.print.ui.PrintUI.*;
@@ -54,7 +64,47 @@ public final class SearchAction extends NodeAction {
 
   private static synchronized void performAction(Node node) {
     Model model = getModel(node);
-    SearchManagerAccess.getManager().getUI(model, getTargets(model), null, true);
+    ShowCookie cookie = getCookie(node);
+    SchemaTreeView view = getView();
+//out();
+//out("ShowCookie: " + cookie);
+//out("SchemaTreeView: " + view);
+    List<Object> list = new ArrayList<Object>();
+
+    list.add(model);
+    list.add(cookie);
+    list.add(view);
+
+    SearchManagerAccess.getManager().getUI(list, getTargets(model), null, true);
+  }
+
+  private static ShowCookie getCookie(Node node) {
+    return getDataObject(node).getCookie(ShowCookie.class);
+  }
+
+  private static SchemaTreeView getView() {
+    TopComponent.Registry registry = WindowManager.getDefault().getRegistry();
+    return getView(registry.getActivated(), "  "); // NOI18N
+  }
+
+  private static SchemaTreeView getView(Container container, String indent) {
+//out(indent + container.getClass().getName());
+    if (container instanceof SchemaTreeView) {
+      return (SchemaTreeView) container;
+    }
+    Component[] components = container.getComponents();
+    SchemaTreeView view;
+
+    for (Component component : components) {
+      if (component instanceof Container) {
+        view = getView((Container) component, "    " + indent); // NOI18N
+
+        if (view != null) {
+          return view;
+        }
+      }
+    }
+    return null;
   }
 
   private static SearchTarget [] getTargets(Model model) {
@@ -107,7 +157,7 @@ public final class SearchAction extends NodeAction {
     if (data instanceof Lookup.Provider) {
       Lookup.Provider provider = (Lookup.Provider) data;
 
-      // hot fix for 100277. todo as search provider
+      // # 100277
       try {
         return (BpelModel) provider.getLookup().lookup(BpelModel.class);
       }

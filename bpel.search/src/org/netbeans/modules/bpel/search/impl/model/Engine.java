@@ -44,7 +44,7 @@ public final class Engine extends SearchEngine.Adapter {
   public void search(SearchOption option) throws SearchException {
     myClazz = null;
     myOption = option;
-    myModel = (Model) option.getSource();
+    myList = (List) option.getSource();
     SearchTarget target = option.getTarget();
 
     if (target != null) {
@@ -52,7 +52,7 @@ public final class Engine extends SearchEngine.Adapter {
     }
 //out();
     fireSearchStarted(option);
-    search(Util.getRoot(myModel), ""); // NOI18N
+    search(Util.getRoot((Model) myList.get(0)), ""); // NOI18N
     fireSearchFinished(option);
   }
 
@@ -73,7 +73,7 @@ public final class Engine extends SearchEngine.Adapter {
 //out(indent + " see: " + component);
     if (checkClazz(component) && checkName(component)) {
 //out(indent + "      add.");
-      fireSearchFound(new Element(component));
+      fireSearchFound(new Element(component, myList.get(1), myList.get(2)));
     }
   }
 
@@ -112,7 +112,7 @@ public final class Engine extends SearchEngine.Adapter {
 
   /**{@inheritDoc}*/
   public boolean accepts(Object source) {
-    return source instanceof Model;
+    return source instanceof List;
   }
 
   /**{@inheritDoc}*/
@@ -125,7 +125,7 @@ public final class Engine extends SearchEngine.Adapter {
     return i18n(Engine.class, "CTL_Engine_Short_Description"); // NOI18N
   }
 
-  private Model myModel;
+  private List myList;
   private SearchOption myOption;
   private Class<? extends Component> myClazz;
 }

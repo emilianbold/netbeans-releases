@@ -31,6 +31,9 @@ import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.modules.xml.xam.ui.highlight.Highlight;
 import org.netbeans.modules.xml.xam.ui.highlight.HighlightGroup;
 import org.netbeans.modules.xml.xam.ui.highlight.HighlightManager;
+import org.netbeans.modules.xml.schema.ui.basic.SchemaTreeView;
+import org.netbeans.modules.xml.validation.ShowCookie;
+import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.bpel.editors.api.BpelEditorConstants;
 import org.netbeans.modules.bpel.editors.api.nodes.FactoryAccess;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
@@ -326,7 +329,11 @@ public class Util {
         }
     }
 
-    public static void goToDesign(final Component component) {
+    public static void goToDesign(Component component) {
+        goToDesign(component, null, null);
+    }
+
+    public static void goToDesign(final Component component, Object cookie, Object view) {
         // vlv
         if ( !(component instanceof BpelEntity)) {
           HighlightManager manager = HighlightManager.getDefault();
@@ -341,6 +348,15 @@ public class Util {
           Highlight highlight = new Highlight(component, Highlight.SEARCH_RESULT);
           group.addHighlight(highlight);
           manager.addHighlightGroup(group);
+          
+          if (view instanceof SchemaTreeView && component instanceof SchemaComponent) {
+            ((SchemaTreeView) view).showComponent((SchemaComponent) component);
+            return;
+          }
+          if (cookie instanceof ShowCookie) {
+            ((ShowCookie) cookie).show(new ResultItem(null, null, component, null));
+            return;
+          }
           return;
         }
         final BpelEntity bpelEntity = (BpelEntity) component;

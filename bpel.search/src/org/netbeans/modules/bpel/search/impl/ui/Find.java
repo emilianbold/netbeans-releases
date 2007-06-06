@@ -88,20 +88,20 @@ public final class Find extends SearchControlPanel {
 
   private void bindAction(JComponent parent) {
     FindAction findAction = (FindAction) FindAction.get(FindAction.class);
-    Object mapKey = findAction.getActionMapKey();
-    parent.getActionMap().put(mapKey, new AbstractAction () {
+    Object key = findAction.getActionMapKey();
+    parent.getActionMap().put(key, new AbstractAction () {
       public void actionPerformed(ActionEvent event) {
         setVisible(true);
       }
     });
     InputMap keys =
       parent.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-    KeyStroke key = (KeyStroke) findAction.getValue(Action.ACCELERATOR_KEY);
+    KeyStroke stroke = (KeyStroke) findAction.getValue(Action.ACCELERATOR_KEY);
 
-    if (key == null) {
-      key = KeyStroke.getKeyStroke(KeyEvent.VK_F, Event.CTRL_MASK);
+    if (stroke == null) {
+      stroke = KeyStroke.getKeyStroke(KeyEvent.VK_F, Event.CTRL_MASK);
     }
-    keys.put(key, mapKey);
+    keys.put(stroke, key);
   }
 
   // ---------------------------------------------------------------------

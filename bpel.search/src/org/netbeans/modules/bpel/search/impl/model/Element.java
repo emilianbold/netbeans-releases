@@ -34,14 +34,16 @@ import static org.netbeans.modules.print.ui.PrintUI.*;
  */
 final class Element extends SearchElement.Adapter {
 
-  Element(Component component) {
+  Element(Component component, Object cookie, Object view) {
     super(
       getName(component),
       getToolTip(component),
       getIcon(component),
-      getParent(component)); 
+      getParent(component, cookie, view)); 
 
     myComponent = component;
+    myCookie = cookie;
+    myView = view;
   }
 
   /**{@inheritDoc}*/
@@ -55,7 +57,7 @@ final class Element extends SearchElement.Adapter {
   @Override
   public void select()
   {
-    Util.goToDesign(myComponent);
+    Util.goToDesign(myComponent, myCookie, myView);
   }
 
   /**{@inheritDoc}*/
@@ -83,13 +85,13 @@ final class Element extends SearchElement.Adapter {
     return RefactorUtil.getToolTip(component);
   }
 
-  private static SearchElement getParent(Component component) {
+  private static SearchElement getParent(Component component, Object cookie, Object view) {
     Component parent = component.getParent();
 
     if (parent == null) {
       return null;
     }
-    return new Element(parent);
+    return new Element(parent, cookie, view);
   }
 
   private static Icon getIcon(Component component) {
@@ -97,4 +99,6 @@ final class Element extends SearchElement.Adapter {
   }
 
   private Component myComponent;
+  private Object myCookie;
+  private Object myView;
 }
