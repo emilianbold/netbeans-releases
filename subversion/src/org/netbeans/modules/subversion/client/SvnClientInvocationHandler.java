@@ -214,7 +214,6 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     }
 
     private boolean handleException(SvnClient client, Throwable t) throws Throwable {
-        SVNClientException svnException = null;
         if( t instanceof InvocationTargetException ) {
             t = ((InvocationTargetException) t).getCause();            
         } 
