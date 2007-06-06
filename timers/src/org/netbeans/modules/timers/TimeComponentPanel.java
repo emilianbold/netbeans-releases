@@ -328,6 +328,9 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
         
         void createPopup(int x, int y, int row) {
             Object fo = jList1.getSelectedValue();
+            if (fo instanceof WeakReference) fo = ((WeakReference)fo).get();
+            if (fo == null) return;
+            
             TimesCollectorPeer.Description desc = getDescForRow(fo, row);
             if (!(desc instanceof TimesCollectorPeer.ObjectCountDescripton)) return;
             
