@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.web.jsf.navigation.Page;
 import org.netbeans.modules.web.jsf.navigation.PageFlowUtilities;
+import org.netbeans.modules.web.jsf.navigation.PageFlowUtilities.Scope;
 
 /**
  *
@@ -31,10 +32,11 @@ import org.netbeans.modules.web.jsf.navigation.PageFlowUtilities;
  */
 public class PageFlowSceneData {
     private PageFlowUtilities utilities;
-//    private PageFlowScene scene;
+    //    private PageFlowScene scene;
     
     private final Map<String,Point> facesConfigSceneData = new HashMap<String,Point>();
     private final Map<String,Point> projectSceneData = new HashMap<String,Point>();
+    private final Map<String,Point> allFacesConfigSceneData = new HashMap<String,Point>();
     
     /**
      * PageFlowSceneData keeps scene data for the facesConfigScope and the projectSceneScope.
@@ -45,20 +47,38 @@ public class PageFlowSceneData {
      **/
     public PageFlowSceneData(PageFlowUtilities utilities) {
         this.utilities = utilities;
-//        this.scene = scene;
+        //        this.scene = scene;
     }
     
     /**
      * Saves the Scene Data for the Current Scene Scope
      **/
     public void saveCurrentSceneData( PageFlowScene scene ) {
-        if ( utilities.getCurrentScope().equals( PageFlowUtilities.LBL_SCOPE_FACESCONFIG) ){
+        switch( utilities.getCurrentScope()){
+        case SCOPE_FACESCONFIG:
             facesConfigSceneData.clear();
             facesConfigSceneData.putAll( createSceneInfo(scene ) );
-        } else if( utilities.getCurrentScope().equals(PageFlowUtilities.LBL_SCOPE_PROJECT)){
+            break;
+        case SCOPE_PROJECT:
             projectSceneData.clear();
             projectSceneData.putAll( createSceneInfo(scene) );
+            break;
+        case SCOPE_ALL_FACESCONFIG:
+            allFacesConfigSceneData.clear();
+            allFacesConfigSceneData.putAll(createSceneInfo(scene));
+            break;
+        default:
+            System.out.println("PageFlowSceneData: Unknown State");
+            
         }
+        //
+        //        if ( utilities.getCurrentScope().equals( PageFlowUtilities.Scope.SCOPE_FACESCONFIG) ){
+        //            facesConfigSceneData.clear();
+        //            facesConfigSceneData.putAll( createSceneInfo(scene ) );
+        //        } else if( utilities.getCurrentScope().equals( PageFlowUtilities.Scope.SCOPE_PROJECT)){
+        //            projectSceneData.clear();
+        //            projectSceneData.putAll( createSceneInfo(scene) );
+        //        }
     }
     
     /**
@@ -69,6 +89,7 @@ public class PageFlowSceneData {
     public void savePageWithNewName(String oldDisplayName, String newDisplayName) {
         replaceSceneInfo(facesConfigSceneData, oldDisplayName,  newDisplayName);
         replaceSceneInfo(projectSceneData, oldDisplayName,  newDisplayName);
+        replaceSceneInfo(allFacesConfigSceneData, oldDisplayName,  newDisplayName);
     }
     
     /**
@@ -111,43 +132,78 @@ public class PageFlowSceneData {
         return sceneInfo;
     }
     
-    public String getCurrentScope() {
-        return utilities.getCurrentScope();
+    public String getCurrentScopeStr() {
+        return PageFlowUtilities.getScopeLabel(utilities.getCurrentScope());
     }
     
-    public void setCurrentScope(String newScope) {
+    public void setCurrentScope(Scope newScope) {
         utilities.setCurrentScope(newScope);
     }
     
     
     public void setScopeData( String scope, Map<String,Point> map){
-        if ( scope.equals( PageFlowUtilities.LBL_SCOPE_FACESCONFIG) ){
+        switch(PageFlowUtilities.getScope(scope)){
+        case SCOPE_FACESCONFIG:
             facesConfigSceneData.clear();
             facesConfigSceneData.putAll(map);
-        } else if( scope.equals(PageFlowUtilities.LBL_SCOPE_PROJECT)){
+            break;
+        case SCOPE_PROJECT:
             projectSceneData.clear();
             projectSceneData.putAll(map);
+            break;
+        case SCOPE_ALL_FACESCONFIG:
+            allFacesConfigSceneData.clear();
+            allFacesConfigSceneData.putAll(map);
+            break;
         }
+        //        if ( scope.equals( PageFlowUtilities.getScopeLabel(PageFlowUtilities.Scope.SCOPE_FACESCONFIG) ) ){
+        //            facesConfigSceneData.clear();
+        //            facesConfigSceneData.putAll(map);
+        //        } else if( scope.equals(PageFlowUtilities.getScopeLabel(PageFlowUtilities.Scope.SCOPE_PROJECT))){
+        //            projectSceneData.clear();
+        //            projectSceneData.putAll(map);
+        //        }
     }
     
-    public Map<String,Point> getScopeData( String scope ) {
+    public Map<String,Point> getScopeData( String scopeStr ) {
         Map<String,Point> sceneInfo = null;
-        if ( scope.equals( PageFlowUtilities.LBL_SCOPE_FACESCONFIG) ){
+        PageFlowUtilities.Scope scope = PageFlowUtilities.getScope(scopeStr);
+        switch( scope ){
+        case SCOPE_FACESCONFIG:
             sceneInfo = facesConfigSceneData;
-        } else if( scope.equals(PageFlowUtilities.LBL_SCOPE_PROJECT)){
+            break;
+        case SCOPE_PROJECT:
             sceneInfo = projectSceneData;
+            break;
+        case SCOPE_ALL_FACESCONFIG:
+            sceneInfo = allFacesConfigSceneData;
         }
+        //        if ( scope.equals( PageFlowUtilities.LBL_SCOPE_FACESCONFIG) ){
+        //            sceneInfo = facesConfigSceneData;
+        //        } else if( scope.equals(PageFlowUtilities.LBL_SCOPE_PROJECT)){
+        //            sceneInfo = projectSceneData;
+        //        }
         return sceneInfo;
     }
     
     private Map<String,Point> getCurrentSceneData() {
         Map<String,Point> sceneInfo = null;
-        if ( utilities.getCurrentScope().equals( PageFlowUtilities.LBL_SCOPE_FACESCONFIG) ){
-            sceneInfo = facesConfigSceneData;
-        } else if( utilities.getCurrentScope().equals(PageFlowUtilities.LBL_SCOPE_PROJECT)){
-            sceneInfo = projectSceneData;
+        switch( utilities.getCurrentScope()){
+        case SCOPE_FACESCONFIG:
+            return facesConfigSceneData;
+        case SCOPE_PROJECT:
+            return projectSceneData;
+        case SCOPE_ALL_FACESCONFIG:
+            return allFacesConfigSceneData;
+        default:
+            return null;
         }
-        return sceneInfo;
+        //        if ( utilities.getCurrentScope().equals( PageFlowUtilities.LBL_SCOPE_FACESCONFIG) ){
+        //            sceneInfo = facesConfigSceneData;
+        //        } else if( utilities.getCurrentScope().equals(PageFlowUtilities.LBL_SCOPE_PROJECT)){
+        //            sceneInfo = projectSceneData;
+        //        }
+        //        return sceneInfo;
     }
     
     private void replaceSceneInfo(Map<String,Point> sceneInfo, String oldDisplayName, String newDisplayName) {

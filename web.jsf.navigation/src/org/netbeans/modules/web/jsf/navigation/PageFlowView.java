@@ -29,19 +29,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.Action;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.border.EmptyBorder;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.vmd.VMDPinWidget;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.navigation.JSFPageFlowMultiviewDescriptor.PageFlowElement;
@@ -75,6 +72,8 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     private PageFlowController pfc;
     private PageFlowElement multiview;
     private PageFlowSceneData sceneData;
+    
+    private static final Logger LOG = Logger.getLogger("org.netbeans.web.jsf.navigation");
     
     PageFlowView(PageFlowElement multiview, JSFConfigEditorContext context){
         this.multiview = multiview;
@@ -506,17 +505,21 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     public final static File getStorageDatFile( FileObject configFile ){
         FileObject webFolder = getWebFolder(configFile);
         if( webFolder == null) {
+            LOG.warning(("Unable to create the following webfolder: " + webFolder));
+            System.err.println("Unable to create the following webfolder: " + webFolder);
             return null;
         }
         FileObject nbprojectFolder = webFolder.getParent().getFileObject("nbproject", null);
         String fileName = configFile.getName() + ".NavData";
-        return  new File(nbprojectFolder.getPath(), fileName);
+        return new File(nbprojectFolder.getPath(), fileName);
     }
     
     public final static FileObject getWebFolder( FileObject configFile ){
         WebModule webModule = WebModule.getWebModule(configFile);
         
         if ( webModule == null ) {
+            LOG.warning("This configuration file is not part of a webModule: " + configFile);
+            System.err.println("This configuration file is not part of a webModule: " + configFile);
             return null;
         }
         FileObject webFolder = webModule.getDocumentBase();
@@ -524,16 +527,12 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     }
     
     public void serializeNodeLocations(File navDataFile){
-        //For long term storage;
-        //        SceneSerializer.serialize(scene, navDataFile);
         saveLocations();
         SceneSerializer.serialize(sceneData, navDataFile);
     }
     
     public void deserializeNodeLocation(File navDataFile) {
         if( navDataFile != null && navDataFile.exists() ) {
-            //            SceneSerializer.deserialize(scene, navDataFile);
-            //            validate();
             SceneSerializer.deserialize(sceneData, navDataFile);
         }
     }

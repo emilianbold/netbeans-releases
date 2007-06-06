@@ -27,17 +27,14 @@
 package org.netbeans.modules.web.jsf.navigation;
 
 import java.awt.Image;
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowSceneElement;
-import org.netbeans.modules.web.jsf.navigation.graph.SceneSerializer;
 import org.openide.ErrorManager;
 import org.openide.cookies.SaveCookie;
-import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -141,39 +138,7 @@ public final class NavigationCaseEdge extends PageFlowSceneElement  {
     
     public void destroy() throws IOException {
         boolean deleteRuleTo = false;
-        
-        //Moving model references to PageController
-        //        model.startTransaction();
-        //        NavigationRule navRule = (NavigationRule)navCase.getParent();
-        //        if( navRule !=null && navRule.getNavigationCases().contains(navCase) ) {  //Only delete if it is still valid.
-        //            navRule.removeNavigationCase(navCase);
-        //            if( navRule.getNavigationCases().size() < 1 ){
-        //                model.removeChildComponent(navRule);  //put this back once you remove hack
-        //            }
-        //        }
-        //        model.endTransaction();
-        //        model.sync();
-        pc.removeModelNavigationCase(navCase);
-        
-        //        if( deleteRuleTo ){
-        //            model.startTransaction();
-        //            /* HACK: Be careful here... This is a work around until Petr's fix is in. */
-        //            String fromViewID = navRule.getFromViewId();
-        //            PageFlowNode node = pc.pageName2Node.get(fromViewID);
-        //            if( node != null && !pc.isPageInFacesConfig(fromViewID)){
-        //                if( !node.isDataNode() ){
-        //                    node.destroy(); //only okay because it is an abstract node.
-        //                } else if( PageFlowUtilities.getInstance().getCurrentScope() == PageFlowUtilities.LBL_SCOPE_FACESCONFIG){
-        //                    pc.changeToAbstractNode(node, "DELETE");
-        //                    node.destroy();
-        //                }
-        //            }
-        //            /* End of Hack */
-        //            model.removeChildComponent(navRule);
-        //            model.endTransaction();
-        //            model.sync();
-        //        }
-        
+        pc.removeModelNavigationCase(navCase);        
         if( navNode != null ){
             navNode.destroy();
         }
@@ -209,8 +174,8 @@ public final class NavigationCaseEdge extends PageFlowSceneElement  {
             if (ss == null) {
                 ss = new Sheet.Set();
                 ss.setName("general"); // NOI18N
-                ss.setDisplayName(NbBundle.getMessage(PageFlowController.class, "General")); // NOI18N
-                ss.setShortDescription(NbBundle.getMessage(PageFlowController.class, "GeneralHint")); // NOI18N
+                ss.setDisplayName(NbBundle.getMessage(NavigationCaseEdge.class, "General")); // NOI18N
+                ss.setShortDescription(NbBundle.getMessage(NavigationCaseEdge.class, "GeneralHint")); // NOI18N
                 s.put(ss);
             }
             Set gs = ss;
@@ -220,22 +185,22 @@ public final class NavigationCaseEdge extends PageFlowSceneElement  {
                 
                 p = new ModelProperty(navCase, String.class, "getFromOutcome", "setFromOutcome"); // NOI18N
                 p.setName("fromOutcome"); // NOI18N
-                p.setDisplayName(NbBundle.getMessage(PageFlowController.class, "Outcome")); // NOI18N
-                p.setShortDescription(NbBundle.getMessage(PageFlowController.class, "OutcomeHint")); // NOI18N
+                p.setDisplayName(NbBundle.getMessage(NavigationCaseEdge.class, "Outcome")); // NOI18N
+                p.setShortDescription(NbBundle.getMessage(NavigationCaseEdge.class, "OutcomeHint")); // NOI18N
                 ss.put(p);
                 
                 p = new ModelProperty(navCase, String.class, "getFromAction", "setFromAction"); // NOI18N
                 p.setName("fromView"); // NOI18N
-                p.setDisplayName(NbBundle.getMessage(PageFlowController.class, "FromAction")); // NOI18N
-                p.setShortDescription(NbBundle.getMessage(PageFlowController.class, "FromActionHint")); // NOI18N
+                p.setDisplayName(NbBundle.getMessage(NavigationCaseEdge.class, "FromAction")); // NOI18N
+                p.setShortDescription(NbBundle.getMessage(NavigationCaseEdge.class, "FromActionHint")); // NOI18N
                 //                p.setValue(PageSelector.PROPERTY_NAVDOC, document);
                 //                p.setPropertyEditorClass(PageSelector.class);
                 ss.put(p);
                 
                 p = new ModelProperty(navCase, String.class, "getToViewId", "setToViewId"); // NOI18N
                 p.setName("toViewId"); // NOI18N
-                p.setDisplayName(NbBundle.getMessage(PageFlowController.class, "ToViewId")); // NOI18N
-                p.setShortDescription(NbBundle.getMessage(PageFlowController.class, "ToViewHint")); // NOI18N
+                p.setDisplayName(NbBundle.getMessage(NavigationCaseEdge.class, "ToViewId")); // NOI18N
+                p.setShortDescription(NbBundle.getMessage(NavigationCaseEdge.class, "ToViewHint")); // NOI18N
                 //                p.setValue(PageSelector.PROPERTY_NAVDOC, document);
                 //                p.setPropertyEditorClass(PageSelector.class);
                 ss.put(p);
@@ -267,7 +232,7 @@ public final class NavigationCaseEdge extends PageFlowSceneElement  {
 
         @Override
         public boolean canRename() {
-            return true;
+            return isModifiable();
         }
 
         @Override
@@ -310,5 +275,11 @@ public final class NavigationCaseEdge extends PageFlowSceneElement  {
         
     }
     
-    
+    private boolean modifiable = true;
+    public boolean isModifiable () {
+        return modifiable;
+    } 
+    public void setModifiable(boolean modifiable ){
+        this.modifiable = modifiable;
+    }
 }
