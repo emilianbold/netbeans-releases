@@ -38,6 +38,10 @@ public final class UI {
 
     private UI() {
     }
+    
+    public static enum Constants {
+        REQUEST_PREVIEW;
+    }
 
     /**
      * Open Refactoring UI for specified RefactoringUI

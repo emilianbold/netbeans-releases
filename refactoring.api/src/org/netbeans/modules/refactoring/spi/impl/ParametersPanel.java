@@ -95,7 +95,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
      */
     public void setPreviewEnabled(boolean enabled) {
         RefactoringPanel.checkEventThread();
-        next.setEnabled(enabled);
+        next.setEnabled(enabled && !isPreviewRequired());
     }
     
     /** Creates ParametersPanel
@@ -522,7 +522,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         errorPanel.setBorder(new EmptyBorder(new Insets(12, 12, 11, 11)));
         containerPanel.add(errorPanel, BorderLayout.CENTER);
         
-        next.setEnabled(!problem.isFatal()); 
+        next.setEnabled(!problem.isFatal() && !isPreviewRequired()); 
         dialog.getRootPane().setDefaultButton(next);
         if (currentState == PRE_CHECK ) {
             //calculatePrefferedSize();
@@ -555,6 +555,8 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         containerPanel.add(customPanel, BorderLayout.CENTER);
         back.setVisible(false);
         previewButton.setVisible(!rui.isQuery());
+        Boolean b = rui.getRefactoring().getContext().lookup(Boolean.class);
+        next.setEnabled(!isPreviewRequired());
         currentState = INPUT_PARAMETERS;
         setPanelEnabled(true);
         cancel.setEnabled(true);
@@ -563,6 +565,11 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         //stateChanged(null);
         customPanel.requestFocus();
         repaint();  
+    }
+    
+    private boolean isPreviewRequired() {
+        UI.Constants b = rui.getRefactoring().getContext().lookup(UI.Constants.class);
+        return b!=null && b==UI.Constants.REQUEST_PREVIEW;
     }
     
     private ProgressBar progressBar;
@@ -654,7 +661,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         if (problem == null) {
             label.setText(" "); // NOI18N
             innerPanel.setBorder(null);
-            next.setEnabled(true);
+            next.setEnabled(!isPreviewRequired());
             previewButton.setEnabled(true);
             return;
         }
@@ -674,7 +681,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     }
     
     private void displayWarning(String warning) {
-        next.setEnabled(true);
+        next.setEnabled(!isPreviewRequired());
         previewButton.setEnabled(true);
         label.setText("<html><font color=\"red\">" + NbBundle.getMessage(ParametersPanel.class, "LBL_Warning") + ": </font>" + warning + "</html>"); //NOI18N
     }
@@ -715,7 +722,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     }
     
     private void setButtonsEnabled(boolean enabled) {
-        next.setEnabled(enabled);
+        next.setEnabled(enabled && !isPreviewRequired());
         //cancel.setEnabled(enabled);
         back.setEnabled(enabled);
         previewButton.setEnabled(enabled); 
