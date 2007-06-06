@@ -24,6 +24,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopesImplementation;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopesProvider;
 import org.netbeans.modules.j2ee.persistenceapi.PersistenceScopesAccessor;
+import org.openide.util.Parameters;
 
 /**
  * Describes a list of persistence scopes and allows listening on this list.
@@ -56,9 +57,7 @@ public final class PersistenceScopes {
      * @throws NullPointerException if <code>project</code> was null.
      */
     public static PersistenceScopes getPersistenceScopes(Project project) {
-        if (project == null) {
-            throw new NullPointerException("Passed null to PersistenceScopes.getPersistenceScopes(Project)"); // NOI18N
-        };
+        Parameters.notNull("project", project); // NOI18N
         PersistenceScopesProvider provider = (PersistenceScopesProvider)project.getLookup().lookup(PersistenceScopesProvider.class);
         if (provider != null) {
             return provider.getPersistenceScopes();

@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.j2ee.persistence.api;
 
-import java.util.Iterator;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
@@ -28,6 +27,7 @@ import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeProvider;
 import org.netbeans.modules.j2ee.persistenceapi.PersistenceScopeAccessor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 
 /**
  * Describes a persistence scope. A persistence scope is composed of
@@ -41,7 +41,7 @@ public final class PersistenceScope {
 
     // XXX remove getClassPath(), not needed anymore
 
-    private static final Lookup.Result providers =
+    private static final Lookup.Result<PersistenceScopeProvider> providers =
             Lookup.getDefault().lookupResult(PersistenceScopeProvider.class);
 
     private final PersistenceScopeImplementation impl;
@@ -65,12 +65,8 @@ public final class PersistenceScope {
      * @throws NullPointerException if the fo parameter was null.
      */
     public static PersistenceScope getPersistenceScope(FileObject fo) {
-        if (fo == null) {
-            throw new NullPointerException("Passed null to PersistenceScope.getPersistenceScope(FileObject)"); // NOI18N
-        }
-        Iterator it = providers.allInstances().iterator();
-        while (it.hasNext()) {
-            PersistenceScopeProvider provider = (PersistenceScopeProvider)it.next();
+        Parameters.notNull("fo", fo); // NOI18N
+        for (PersistenceScopeProvider provider : providers.allInstances()) {
             PersistenceScope persistenceScope = provider.findPersistenceScope(fo);
             if (persistenceScope != null) {
                 return persistenceScope;
@@ -93,6 +89,14 @@ public final class PersistenceScope {
         return impl.getPersistenceXml();
     }
 
+    /**
+     * Returns a model of entity classes for the specified persistence unit.
+     * 
+     * @param  persistenceUnitName the persistence unit name; cannot be null.
+     * 
+     * @return an entity class model or null if the given persistence scope does
+     *         not exist.
+     */
     public MetadataModel<EntityMappingsMetadata> getEntityMappingsModel(String persistenceUnitName) {
         return impl.getEntityMappingsModel(persistenceUnitName);
     }

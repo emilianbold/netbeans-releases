@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.j2ee.persistence.api;
 
-import java.util.Iterator;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.spi.EntityClassScopeImplementation;
@@ -27,6 +26,7 @@ import org.netbeans.modules.j2ee.persistence.spi.EntityClassScopeProvider;
 import org.netbeans.modules.j2ee.persistenceapi.EntityClassScopeAccessor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 
 /**
  * Describes an entity class scope, which is basically a bunch of related
@@ -62,9 +62,7 @@ public final class EntityClassScope {
      * @throws NullPointerException if the fo parameter was null.
      */
     public static EntityClassScope getEntityClassScope(FileObject fo) {
-        if (fo == null) {
-            throw new NullPointerException("Passed null to EntityClassScope.getEntityClassScope(FileObject)"); // NOI18N
-        }
+        Parameters.notNull("fo", fo); // NOI18N
         for (EntityClassScopeProvider provider : providers.allInstances()) {
             EntityClassScope entityClassScope = provider.findEntityClassScope(fo);
             if (entityClassScope != null) {
