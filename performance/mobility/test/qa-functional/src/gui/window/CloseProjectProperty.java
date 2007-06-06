@@ -97,7 +97,7 @@ public class CloseProjectProperty extends org.netbeans.performance.test.utilitie
        NbDialogOperator add_abil = new NbDialogOperator("Add Ability");
        JComboBoxOperator abilityCombo = new JComboBoxOperator(add_abil); 
        abilityCombo.clearText();
-       abilityCombo.typeText("Ability_"+(index++));
+       abilityCombo.typeText("Ability_"+System.currentTimeMillis());
        JButtonOperator abil_okButton = new JButtonOperator(add_abil,"OK");
        abil_okButton.push();
        
