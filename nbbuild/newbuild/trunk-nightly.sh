@@ -84,7 +84,7 @@ if [ $ERROR_CODE != 0 ]; then
     exit $ERROR_CODE;
 fi
 
-scp -P 222 -q -r -v $DIST/installers $DIST_SERVER:$DIST_SERVER_PATH/$DATESTAMP > $SCP_LOG 2>&1
+scp -P 222 -q -r -v $DIST/installers/* $DIST_SERVER:$DIST_SERVER_PATH/$DATESTAMP > $SCP_LOG 2>&1
 ssh -p 222 $DIST_SERVER rm $DIST_SERVER_PATH/latest.old
 ssh -p 222 $DIST_SERVER mv $DIST_SERVER_PATH/latest $DIST_SERVER_PATH/latest.old
 ssh -p 222 $DIST_SERVER ln -s $DIST_SERVER_PATH/$DATESTAMP $DIST_SERVER_PATH/latest
