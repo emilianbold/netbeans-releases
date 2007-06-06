@@ -28,6 +28,7 @@ import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 import org.openide.util.datatransfer.ExTransferable;
 import java.beans.BeanInfo;
+import java.net.URL;
 import javax.swing.ImageIcon;
 /**
  *
@@ -35,7 +36,7 @@ import javax.swing.ImageIcon;
  */
 public class CasaPaletteItemNode extends AbstractNode {
     
-    private CasaPaletteItem mPaletteItem;
+    private CasaPaletteItemID mPaletteItem;
     private boolean mbDefaultBigIcons = false;  //Brings in default bigicon
     private static Image ms32BigImage = null;
     private String mIconFileName;
@@ -44,20 +45,22 @@ public class CasaPaletteItemNode extends AbstractNode {
      * iconFileName shouldn't include 16,32 or open. The extensions are automatically deduced by setIconBaseWithExtension
      * defaultBigIcons is a temporary solution to overcome BC's current inability of providing 32 bit icons.
      */
-    public CasaPaletteItemNode(CasaPaletteItem key,String iconFileName, Lookup lookup,boolean defaultBigIcons) {
+    public CasaPaletteItemNode(CasaPaletteItemID key, Lookup lookup, boolean defaultBigIcons) {
         super(Children.LEAF, lookup);
         mPaletteItem = key;
-        setName(key.getTitle());
-        setDisplayName(key.getTitle());
+        setName(key.getDisplayName());
+        setDisplayName(key.getDisplayName());
         mbDefaultBigIcons = defaultBigIcons;
-        mIconFileName = iconFileName;
-        setIconBaseWithExtension(iconFileName);
-    }
-    public CasaPaletteItemNode(CasaPaletteItem key, String icon, Lookup lookup) {
-        this(key, icon, lookup, false);
+        mIconFileName = key.getIconFileBase();
+        setIconBaseWithExtension(mIconFileName);
     }
     
-    public CasaPaletteItem getCasaPaletteItem() {
+    public CasaPaletteItemNode(CasaPaletteItemID key, Lookup lookup) {
+        this(key, lookup, false);
+    }
+    
+    
+    public CasaPaletteItemID getCasaPaletteItem() {
         return mPaletteItem;
     }
     
@@ -104,23 +107,21 @@ public class CasaPaletteItemNode extends AbstractNode {
     *     
     */
     public Image getIcon(int type) {
-        if(mbDefaultBigIcons && (type == BeanInfo.ICON_COLOR_32x32 || type == BeanInfo.ICON_MONO_32x32)){
+        if (mbDefaultBigIcons && (type == BeanInfo.ICON_COLOR_32x32 || type == BeanInfo.ICON_MONO_32x32)){
             String iconName32 = mIconFileName.replaceFirst("16\\.", "\\.");
             iconName32 = iconName32.replaceFirst("\\.", "32\\.");
             if(!iconName32.startsWith("/")) {
                 iconName32 = "/" + iconName32;
             }
-            java.net.URL imgURL = CasaPaletteItemNode.class.getResource(iconName32);
+            URL imgURL = mPaletteItem.getClass().getResource(iconName32);
             if (imgURL == null) {
                 if(ms32BigImage == null) {
                     ImageIcon ic = new ImageIcon(this.getClass().getResource("/org/netbeans/modules/compapp/casaeditor/palette/resources/bc32.png"));        // NOI18N
                     ms32BigImage = ic.getImage();
                 }
                 return ms32BigImage;
-            } 
+            }
         }
         return super.getIcon(type);
     }
-    
-    
 }    

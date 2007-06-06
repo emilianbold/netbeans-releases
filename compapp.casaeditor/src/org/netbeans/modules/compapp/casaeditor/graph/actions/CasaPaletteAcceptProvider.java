@@ -20,7 +20,6 @@
 package org.netbeans.modules.compapp.casaeditor.graph.actions;
 
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.datatransfer.DataFlavor;
@@ -43,7 +42,8 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.model.casa.JBIServiceUnitTransferObject;
 import org.netbeans.modules.compapp.casaeditor.palette.CasaCommonAcceptProvider;
 import org.netbeans.modules.compapp.casaeditor.palette.CasaPalette;
-import org.netbeans.modules.compapp.casaeditor.palette.CasaPaletteItem;
+import org.netbeans.modules.compapp.casaeditor.palette.CasaPaletteCategoryID;
+import org.netbeans.modules.compapp.casaeditor.palette.CasaPaletteItemID;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.ErrorManager;
@@ -101,9 +101,9 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
         ConnectorState retState = ConnectorState.REJECT;
         try {
             if (transferable.isDataFlavorSupported(CasaPalette.CasaPaletteDataFlavor)) {
-                CasaPaletteItem selNode = (CasaPaletteItem) transferable.getTransferData(CasaPalette.CasaPaletteDataFlavor);
-                if (selNode != null) {
-                    retState = isAcceptableFromPalette(point, selNode);
+                CasaPaletteItemID itemID = (CasaPaletteItemID) transferable.getTransferData(CasaPalette.CasaPaletteDataFlavor);
+                if (itemID != null) {
+                    retState = isAcceptableFromPalette(point, itemID);
                 }
             } else {
                 retState = isAcceptableFromOther(point, transferable, false);
@@ -116,8 +116,8 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
         return retState;
     }
     
-    private ConnectorState isAcceptableFromPalette(Point point, CasaPaletteItem selNode) {
-        CasaRegionWidget region = getApplicableRegion(selNode);
+    private ConnectorState isAcceptableFromPalette(Point point, CasaPaletteItemID itemID) {
+        CasaRegionWidget region = getApplicableRegion(itemID);
         ConnectorState retState = ConnectorState.REJECT;
         if (
                 region != null &&
@@ -215,11 +215,9 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
     public void accept(Widget widget, Point point, Transferable transferable) {
         try {
             if (transferable.isDataFlavorSupported(CasaPalette.CasaPaletteDataFlavor)) {
-                
-                CasaPaletteItem selNode =
-                        (CasaPaletteItem) transferable.getTransferData(CasaPalette.CasaPaletteDataFlavor);
-                if (selNode != null) {
-                    acceptFromPalette(point, selNode);
+                CasaPaletteItemID itemID = (CasaPaletteItemID) transferable.getTransferData(CasaPalette.CasaPaletteDataFlavor);
+                if (itemID != null) {
+                    acceptFromPalette(point, itemID);
                 }
             } else {
                 acceptFromOther(point, transferable);
@@ -231,29 +229,25 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
         }
     }
     
-    private void acceptFromPalette(Point point, CasaPaletteItem selNode) {
-        switch(selNode.getCategory()) {
-            case WSDL_BINDINGS :
-                point = getScene().getBindingRegion().convertSceneToLocal(point);
-                mModel.addCasaPort(
-                        selNode.getTitle(),
-                        selNode.getComponentName(),
-                        point.x,
-                        point.y);
-                break;
-            case SERVICE_UNITS :
-                if        (CasaPalette.CASA_PALETTE_ITEM_TYPE.INT_SU == selNode.getPaletteItemType()) {
-                    // add an internal SU to the model
-                    point = getScene().getEngineRegion().convertSceneToLocal(point);
-                    mModel.addServiceEngineServiceUnit(true, point.x, point.y);
-                } else if (CasaPalette.CASA_PALETTE_ITEM_TYPE.EXT_SU == selNode.getPaletteItemType()) {
-                    // add an external SU to the model
-                    point = getScene().getExternalRegion().convertSceneToLocal(point);
-                    mModel.addServiceEngineServiceUnit(false, point.x, point.y);
-                }
-                break;
-            default:
-                break;
+    private void acceptFromPalette(Point point, CasaPaletteItemID itemID) {
+        CasaPaletteCategoryID categoryID = itemID.getCategory();
+        if        (categoryID.equals(CasaPalette.CATEGORY_ID_WSDL_BINDINGS)) {
+            point = getScene().getBindingRegion().convertSceneToLocal(point);
+            mModel.addCasaPort(
+                    itemID.getDisplayName(),
+                    (String) itemID.getDataObject(), // this is the component name
+                    point.x,
+                    point.y);
+        } else if (categoryID.equals(CasaPalette.CATEGORY_ID_SERVICE_UNITS)) {
+            if        (itemID.equals(CasaPalette.ITEM_ID_INTERNAL_SU)) {
+                // add an internal SU to the model
+                point = getScene().getEngineRegion().convertSceneToLocal(point);
+                mModel.addServiceEngineServiceUnit(true, point.x, point.y);
+            } else if (itemID.equals(CasaPalette.ITEM_ID_EXTERNAL_SU)) {
+                // add an external SU to the model
+                point = getScene().getExternalRegion().convertSceneToLocal(point);
+                mModel.addServiceEngineServiceUnit(false, point.x, point.y);
+            }
         }
     }
     
@@ -316,11 +310,11 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
     public void acceptStarted(Transferable transferable) {
         super.acceptStarted(transferable);
         if (transferable.isDataFlavorSupported(CasaPalette.CasaPaletteDataFlavor)) {
-            CasaPaletteItem selNode = getCasaPaletteItem(transferable);
-            CasaRegionWidget region = getApplicableRegion(selNode);
-            if(region == null) {
-                if(selNode != null) {
-                    if(selNode.getCategory() == CasaPalette.CASA_CATEGORY_TYPE.END_POINTS) {
+            CasaPaletteItemID itemID = getCasaPaletteItem(transferable);
+            CasaRegionWidget region = getApplicableRegion(itemID);
+            if (region == null) {
+                if (itemID != null) {
+                    if (itemID.getCategory().equals(CasaPalette.CATEGORY_ID_END_POINTS)) {
                         highlightExtSUs(true);
                     }
                 }
@@ -361,39 +355,35 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
         }
     }
     
-    private CasaRegionWidget getApplicableRegion(CasaPaletteItem selNode) {
+    private CasaRegionWidget getApplicableRegion(CasaPaletteItemID itemID) {
         CasaRegionWidget region = null;
-        if (selNode != null) {
-            switch(selNode.getCategory()) {
-                case WSDL_BINDINGS :
-                    region = getScene().getBindingRegion();
-                    break;
-                case SERVICE_UNITS :
-                    if(CasaPalette.CASA_PALETTE_ITEM_TYPE.INT_SU == selNode.getPaletteItemType()) {
-                        region = getScene().getEngineRegion();
-                    } else if (CasaPalette.CASA_PALETTE_ITEM_TYPE.EXT_SU == selNode.getPaletteItemType()) {
-                        region = getScene().getExternalRegion();
-                    }
-                    break;
-                default:
-                    break;
+        if (itemID != null) {
+            CasaPaletteCategoryID categoryID = itemID.getCategory();
+            if (categoryID.equals(CasaPalette.CATEGORY_ID_WSDL_BINDINGS)) {
+                region = getScene().getBindingRegion();
+            } else if (categoryID.equals(CasaPalette.CATEGORY_ID_SERVICE_UNITS)) {
+                if        (itemID.equals(CasaPalette.ITEM_ID_INTERNAL_SU)) {
+                    region = getScene().getEngineRegion();
+                } else if (itemID.equals(CasaPalette.ITEM_ID_EXTERNAL_SU)) {
+                    region = getScene().getExternalRegion();
+                }
             }
         } 
         return region;
     }
     
-    private CasaPaletteItem getCasaPaletteItem(Transferable transferable) {
-        CasaPaletteItem selNode = null;
+    private CasaPaletteItemID getCasaPaletteItem(Transferable transferable) {
+        CasaPaletteItemID itemID = null;
         if (transferable.isDataFlavorSupported(CasaPalette.CasaPaletteDataFlavor)) {
             try {
-                selNode = (CasaPaletteItem) transferable.getTransferData(CasaPalette.CasaPaletteDataFlavor);
+                itemID = (CasaPaletteItemID) transferable.getTransferData(CasaPalette.CasaPaletteDataFlavor);
             } catch (UnsupportedFlavorException ex) {
                 ex.printStackTrace();
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
         }
-        return selNode;
+        return itemID;
     }
 }
 

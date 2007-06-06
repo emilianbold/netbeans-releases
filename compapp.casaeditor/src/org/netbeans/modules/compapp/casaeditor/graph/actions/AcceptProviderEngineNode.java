@@ -30,7 +30,8 @@ import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidgetEngineExterna
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
 import org.netbeans.modules.compapp.casaeditor.palette.CasaCommonAcceptProvider;
 import org.netbeans.modules.compapp.casaeditor.palette.CasaPalette;
-import org.netbeans.modules.compapp.casaeditor.palette.CasaPaletteItem;
+import org.netbeans.modules.compapp.casaeditor.palette.CasaPaletteCategoryID;
+import org.netbeans.modules.compapp.casaeditor.palette.CasaPaletteItemID;
 import org.openide.ErrorManager;
 
 /**
@@ -48,15 +49,13 @@ public class AcceptProviderEngineNode extends CasaCommonAcceptProvider {
         ConnectorState retState = ConnectorState.REJECT;
         try {
             if(transferable.isDataFlavorSupported(CasaPalette.CasaPaletteDataFlavor)) {
-                CasaPaletteItem selNode = (CasaPaletteItem) transferable.getTransferData(CasaPalette.CasaPaletteDataFlavor);
-                if (selNode != null) {
-                    switch(selNode.getCategory()) {
-                        case END_POINTS:
-                            //populateIconInfo(transferable); 
-                            retState = ConnectorState.ACCEPT;
-                            break;
-                        default:
-                            retState = ConnectorState.REJECT;
+                CasaPaletteItemID itemID = (CasaPaletteItemID) transferable.getTransferData(CasaPalette.CasaPaletteDataFlavor);
+                if (itemID != null) {
+                    CasaPaletteCategoryID categoryID = itemID.getCategory();
+                    if (categoryID.equals(CasaPalette.CATEGORY_ID_END_POINTS)) {
+                        retState = ConnectorState.ACCEPT;
+                    } else {
+                        retState = ConnectorState.REJECT;
                     }
                 }
             }
@@ -71,15 +70,12 @@ public class AcceptProviderEngineNode extends CasaCommonAcceptProvider {
     public void accept(Widget widget, Point point, Transferable transferable) {
         try {
             if (transferable.isDataFlavorSupported(CasaPalette.CasaPaletteDataFlavor)) {
-                CasaPaletteItem selNode = (CasaPaletteItem) transferable.getTransferData(CasaPalette.CasaPaletteDataFlavor);
-                if(selNode != null) {
-                    switch(selNode.getCategory()) {
-                        case END_POINTS:
-                            highlightExtSUs(false);
-                            addEndpoint(widget, selNode.getPaletteItemType());
-                            break;
-                        default:
-                            break;
+                CasaPaletteItemID itemID = (CasaPaletteItemID) transferable.getTransferData(CasaPalette.CasaPaletteDataFlavor);
+                if (itemID != null) {
+                    CasaPaletteCategoryID categoryID = itemID.getCategory();
+                    if (categoryID.equals(CasaPalette.CATEGORY_ID_END_POINTS)) {
+                        highlightExtSUs(false);
+                        addEndpoint(widget, itemID);
                     }
                 }
             }
@@ -90,12 +86,12 @@ public class AcceptProviderEngineNode extends CasaCommonAcceptProvider {
         }
     }
 
-    private void addEndpoint(Widget widget, CasaPalette.CASA_PALETTE_ITEM_TYPE type) {
+    private void addEndpoint(Widget widget, CasaPaletteItemID type) {
         CasaModelGraphScene scene = (CasaModelGraphScene) widget.getScene();
         CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) scene.findObject(widget);
-        if        (type == CasaPalette.CASA_PALETTE_ITEM_TYPE.CONSUME) {
+        if        (type.equals(CasaPalette.ITEM_ID_CONSUME)) {
             scene.getModel().addEndpointToServiceEngineServiceUnit(su, true);
-        } else if (type == CasaPalette.CASA_PALETTE_ITEM_TYPE.PROVIDE) {
+        } else if (type.equals(CasaPalette.ITEM_ID_PROVIDE)) {
             scene.getModel().addEndpointToServiceEngineServiceUnit(su, false);
         }
     }

@@ -30,7 +30,8 @@ import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidgetBinding;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
 import org.netbeans.modules.compapp.casaeditor.palette.CasaCommonAcceptProvider;
 import org.netbeans.modules.compapp.casaeditor.palette.CasaPalette;
-import org.netbeans.modules.compapp.casaeditor.palette.CasaPaletteItem;
+import org.netbeans.modules.compapp.casaeditor.palette.CasaPaletteCategoryID;
+import org.netbeans.modules.compapp.casaeditor.palette.CasaPaletteItemID;
 import org.openide.ErrorManager;
 
 /**
@@ -39,12 +40,9 @@ import org.openide.ErrorManager;
  */
 public class AcceptProviderBindingNode extends CasaCommonAcceptProvider {
     
-    //private CasaNodeWidgetBinding mBindingNode;
-
     
     public AcceptProviderBindingNode(CasaNodeWidgetBinding node) {
         super((CasaModelGraphScene) node.getScene());
-        //mBindingNode = node;
     }
     
     
@@ -52,17 +50,16 @@ public class AcceptProviderBindingNode extends CasaCommonAcceptProvider {
         ConnectorState retState = ConnectorState.REJECT;
         
         try {
-            if(transferable.isDataFlavorSupported(CasaPalette.CasaPaletteDataFlavor)) {
-                CasaPaletteItem selNode = (CasaPaletteItem) transferable.getTransferData(CasaPalette.CasaPaletteDataFlavor);
-                if (selNode != null) {
-                    switch(selNode.getCategory()) {
-                        case END_POINTS:
-                            if (canAddEndpoint(widget, selNode.getPaletteItemType())) {
-                                retState = ConnectorState.ACCEPT;
-                            }
-                            break;
-                        default:
-                            retState = ConnectorState.REJECT;
+            if (transferable.isDataFlavorSupported(CasaPalette.CasaPaletteDataFlavor)) {
+                CasaPaletteItemID itemID = (CasaPaletteItemID) transferable.getTransferData(CasaPalette.CasaPaletteDataFlavor);
+                if (itemID != null) {
+                    CasaPaletteCategoryID categoryID = itemID.getCategory();
+                    if (categoryID.equals(CasaPalette.CATEGORY_ID_END_POINTS)) {
+                        if (canAddEndpoint(widget, itemID)) {
+                            retState = ConnectorState.ACCEPT;
+                        }
+                    } else {
+                        retState = ConnectorState.REJECT;
                     }
                 }
             }
@@ -77,14 +74,11 @@ public class AcceptProviderBindingNode extends CasaCommonAcceptProvider {
     public void accept(Widget widget, Point point, Transferable transferable) {
         try {
             if (transferable.isDataFlavorSupported(CasaPalette.CasaPaletteDataFlavor)) {
-                CasaPaletteItem selNode = (CasaPaletteItem) transferable.getTransferData(CasaPalette.CasaPaletteDataFlavor);
-                if(selNode != null) {
-                    switch(selNode.getCategory()) {
-                        case END_POINTS:
-                            addEndpoint(widget, selNode.getPaletteItemType());
-                            break;
-                        default:
-                            break;
+                CasaPaletteItemID itemID = (CasaPaletteItemID) transferable.getTransferData(CasaPalette.CasaPaletteDataFlavor);
+                if (itemID != null) {
+                    CasaPaletteCategoryID categoryID = itemID.getCategory();
+                    if (categoryID.equals(CasaPalette.CATEGORY_ID_END_POINTS)) {
+                        addEndpoint(widget, itemID);
                     }
                 }
             }
@@ -95,24 +89,24 @@ public class AcceptProviderBindingNode extends CasaCommonAcceptProvider {
         }
     }
 
-    private boolean canAddEndpoint(Widget widget, CasaPalette.CASA_PALETTE_ITEM_TYPE type) {
+    private boolean canAddEndpoint(Widget widget, CasaPaletteItemID type) {
         CasaModelGraphScene scene = (CasaModelGraphScene) widget.getScene();
         CasaPort casaPort = (CasaPort) scene.findObject(widget);
-        if        (type == CasaPalette.CASA_PALETTE_ITEM_TYPE.CONSUME) {
+        if        (type.equals(CasaPalette.ITEM_ID_CONSUME)) {
             return casaPort.getConsumes() == null;
-        } else if (type == CasaPalette.CASA_PALETTE_ITEM_TYPE.PROVIDE) {
+        } else if (type.equals(CasaPalette.ITEM_ID_PROVIDE)) {
             return casaPort.getProvides() == null;
         }
         return false;
     }
     
-    private void addEndpoint(Widget widget, CasaPalette.CASA_PALETTE_ITEM_TYPE type) {
+    private void addEndpoint(Widget widget, CasaPaletteItemID type) {
         CasaModelGraphScene scene = (CasaModelGraphScene) widget.getScene();
         CasaPort casaPort = (CasaPort) scene.findObject(widget);
         // This is not allowed any more.
-//        if        (type == CasaPalette.CASA_PALETTE_ITEM_TYPE.CONSUME) {
+//        if        (type.equals(CasaPalette.ITEM_ID_CONSUME)) {
 //            scene.getModel().addEndpointToCasaPort(casaPort, true);
-//        } else if (type == CasaPalette.CASA_PALETTE_ITEM_TYPE.PROVIDE) {
+//        } else if (type.equals(CasaPalette.ITEM_ID_PROVIDE)) {
 //            scene.getModel().addEndpointToCasaPort(casaPort, false);
 //        }
     }

@@ -29,10 +29,10 @@ import org.openide.util.Lookup;
  */
 public class CasaPaletteCategoryNode extends AbstractNode {
    
-    public CasaPaletteCategoryNode(CasaPaletteCategory category, Lookup lookup) {
-        super(new CasaPaletteItems(category, lookup), lookup);
-        setName(category.getName());
-        setDisplayName(category.getName());
+    public CasaPaletteCategoryNode(CasaPaletteCategoryID categoryID, Lookup lookup) {
+        super(new CasaPaletteItems(categoryID, lookup), lookup);
+        setName(categoryID.getDisplayName());
+        setDisplayName(categoryID.getDisplayName());
         setValue(PaletteController.ATTR_IS_EXPANDED, Boolean.TRUE);
     }
 

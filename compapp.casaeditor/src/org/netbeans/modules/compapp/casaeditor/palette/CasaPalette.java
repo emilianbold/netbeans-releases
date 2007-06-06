@@ -37,25 +37,38 @@ import org.openide.util.NbBundle;
  */
 public class CasaPalette {
     
-    public static enum CASA_CATEGORY_TYPE {
-        WSDL_BINDINGS,
-        SERVICE_UNITS,
-        END_POINTS
-    };
+    public static final CasaPaletteCategoryID CATEGORY_ID_WSDL_BINDINGS = 
+            new CasaPaletteCategoryID(NbBundle.getMessage(CasaPalette.class, "WSDLBindings"));  // NOI18N
+    public static final CasaPaletteCategoryID CATEGORY_ID_SERVICE_UNITS = 
+            new CasaPaletteCategoryID(NbBundle.getMessage(CasaPalette.class, "ServiceUnits"));  // NOI18N
+    public static final CasaPaletteCategoryID CATEGORY_ID_END_POINTS    = 
+            new CasaPaletteCategoryID(NbBundle.getMessage(CasaPalette.class, "EndPoints"));     // NOI18N
     
-    public static enum CASA_PALETTE_ITEM_TYPE {
-        CONSUME,
-        PROVIDE,
-        INT_SU,
-        EXT_SU,
-        UN_KNOWN
-    }
-    
-    public static final DataFlavor CasaPaletteDataFlavor = new DataFlavor( CasaPaletteItem.class, "CasaPaletteData" ) {  // NOI18N
+    public static final CasaPaletteItemID ITEM_ID_CONSUME               = 
+            new CasaPaletteItemID(CasaPalette.CATEGORY_ID_END_POINTS, 
+                NbBundle.getMessage(CasaPalette.class, "Palette_Consume_Title"), // NOI18N
+                "org/netbeans/modules/compapp/casaeditor/palette/resources/consumesPalette.png"); // NOI18N
+    public static final CasaPaletteItemID ITEM_ID_PROVIDE               = 
+            new CasaPaletteItemID(CasaPalette.CATEGORY_ID_END_POINTS, 
+                NbBundle.getMessage(CasaPalette.class, "Palette_Provide_Title"), // NOI18N
+                "org/netbeans/modules/compapp/casaeditor/palette/resources/providesPalette.png"); // NOI18N
+    public static final CasaPaletteItemID ITEM_ID_INTERNAL_SU           = 
+            new CasaPaletteItemID(CasaPalette.CATEGORY_ID_SERVICE_UNITS, 
+                NbBundle.getMessage(CasaPalette.class, "Palette_ExtSU_Title"), // NOI18N
+                "org/netbeans/modules/compapp/casaeditor/palette/resources/intsu.png"); // NOI18N
+    public static final CasaPaletteItemID ITEM_ID_EXTERNAL_SU           = 
+            new CasaPaletteItemID(CasaPalette.CATEGORY_ID_SERVICE_UNITS, 
+                NbBundle.getMessage(CasaPalette.class, "Palette_IntSU_Title"), // NOI18N
+                "org/netbeans/modules/compapp/casaeditor/palette/resources/extsu.png"); // NOI18N
+
+    public static final DataFlavor CasaPaletteDataFlavor = new DataFlavor( 
+            CasaPaletteItemID.class, 
+            "CasaPaletteData" ) // NOI18N
+    {
     };
     
     private static PaletteController msPaletteController = null;
-    private static String CASA_PALETTE_ROOT = "CasaPalette";    // NOI18N
+    private static String CASA_PALETTE_ROOT = "CasaPalette"; // NOI18N
     private static PaletteController palette = null;
     private static CasaPaletteRootNode paletteRoot;
     
