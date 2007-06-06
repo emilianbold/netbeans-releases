@@ -37,6 +37,7 @@ import org.openide.util.Utilities;
 
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.impl.JBIAttributes;
+import org.netbeans.modules.compapp.casaeditor.properties.PortTypeProperty;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.PortNode;
 import org.openide.nodes.Children;
 
@@ -114,6 +115,10 @@ public class WSDLEndpointNode extends CasaNode {
             }
         };
         identificationProperties.put(componentNameSupport);
+
+        Node.Property portTypeDefinition = new PortTypeProperty(this); 
+        identificationProperties.put(portTypeDefinition);
+
         
         // Add all concrete child properties, as a convenience to the user.
         for (Node child : getChildren().getNodes()) {
