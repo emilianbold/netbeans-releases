@@ -41,6 +41,7 @@ import org.netbeans.modules.xml.xam.ui.search.api.SearchManagerAccess;
 import org.netbeans.modules.xml.xam.ui.search.api.SearchTarget;
 
 import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.schema.ui.basic.SchemaColumnsView;
 import org.netbeans.modules.xml.schema.ui.basic.SchemaTreeView;
 import org.netbeans.modules.xml.validation.ShowCookie;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -65,7 +66,7 @@ public final class SearchAction extends NodeAction {
   private static synchronized void performAction(Node node) {
     Model model = getModel(node);
     ShowCookie cookie = getCookie(node);
-    SchemaTreeView view = getView();
+    Object view = getView();
 //out();
 //out("ShowCookie: " + cookie);
 //out("SchemaTreeView: " + view);
@@ -82,12 +83,17 @@ public final class SearchAction extends NodeAction {
     return getDataObject(node).getCookie(ShowCookie.class);
   }
 
-  private static SchemaTreeView getView() {
-    TopComponent.Registry registry = WindowManager.getDefault().getRegistry();
-    return getView(registry.getActivated(), "  "); // NOI18N
+  private static Object getView() {
+    Container container = WindowManager.getDefault().getRegistry().getActivated();
+    Object view = getTreeView(container, "  "); // NOI18N
+
+    if (view != null) {
+      return view;
+    }
+    return getColumnView(container, "  "); // NOI18N
   }
 
-  private static SchemaTreeView getView(Container container, String indent) {
+  private static SchemaTreeView getTreeView(Container container, String indent) {
 //out(indent + container.getClass().getName());
     if (container instanceof SchemaTreeView) {
       return (SchemaTreeView) container;
@@ -97,7 +103,7 @@ public final class SearchAction extends NodeAction {
 
     for (Component component : components) {
       if (component instanceof Container) {
-        view = getView((Container) component, "    " + indent); // NOI18N
+        view = getTreeView((Container) component, "    " + indent); // NOI18N
 
         if (view != null) {
           return view;
@@ -107,6 +113,26 @@ public final class SearchAction extends NodeAction {
     return null;
   }
 
+  private static SchemaColumnsView getColumnView(Container container, String indent) {
+//out(indent + container.getClass().getName());
+    if (container instanceof SchemaColumnsView) {
+      return (SchemaColumnsView) container;
+    }
+    Component[] components = container.getComponents();
+    SchemaColumnsView view;
+
+    for (Component component : components) {
+      if (component instanceof Container) {
+        view = getColumnView((Container) component, "    " + indent); // NOI18N
+
+        if (view != null) {
+          return view;
+        }
+      }
+    }
+    return null;
+  }
+  
   private static SearchTarget [] getTargets(Model model) {
     if (model instanceof BpelModel) {
       return Target.BPEL;

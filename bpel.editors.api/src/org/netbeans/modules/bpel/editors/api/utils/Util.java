@@ -31,6 +31,7 @@ import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.modules.xml.xam.ui.highlight.Highlight;
 import org.netbeans.modules.xml.xam.ui.highlight.HighlightGroup;
 import org.netbeans.modules.xml.xam.ui.highlight.HighlightManager;
+import org.netbeans.modules.xml.schema.ui.basic.SchemaColumnsView;
 import org.netbeans.modules.xml.schema.ui.basic.SchemaTreeView;
 import org.netbeans.modules.xml.validation.ShowCookie;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
@@ -351,6 +352,10 @@ public class Util {
           
           if (view instanceof SchemaTreeView && component instanceof SchemaComponent) {
             ((SchemaTreeView) view).showComponent((SchemaComponent) component);
+            return;
+          }
+          if (view instanceof SchemaColumnsView && component instanceof SchemaComponent) {
+            ((SchemaColumnsView) view).showComponent((SchemaComponent) component);
             return;
           }
           if (cookie instanceof ShowCookie) {
