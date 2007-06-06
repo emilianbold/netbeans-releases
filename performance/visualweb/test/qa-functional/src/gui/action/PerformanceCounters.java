@@ -21,7 +21,6 @@ package gui.action;
 
 import java.util.LinkedList;
 import org.netbeans.junit.NbPerformanceTest;
-import org.netbeans.junit.NbPerformanceTestCase;
 import org.netbeans.performance.test.guitracker.ActionTracker;
 import org.netbeans.performance.test.utilities.PerformanceTestCase;
 
@@ -33,6 +32,7 @@ public class PerformanceCounters {
 
     private static int COUNTER_START = -20;
     private static int COUNTER_STOP = - 30;
+    private static int testAttempt = 0;
     private static String testName;
     private static ActionTracker tr;    
     private static LinkedList<String> countersList;
@@ -44,6 +44,7 @@ public class PerformanceCounters {
         testCase.log("Test name = "+test.getName());
         tr = ActionTracker.getInstance();
         countersList = new LinkedList<String>();
+        testAttempt = 0;
     }
     
     public static void addPerformanceCounter(String counterName) {
@@ -51,21 +52,23 @@ public class PerformanceCounters {
         countersList.add(counterName);
         long lastEventTime = tr.getCurrentEvents().getLast().getTimeMillis();
         long ctm = System.currentTimeMillis();
-        testCase.log("last event = "+lastEventTime+" system Time = "+ctm);
+        testCase.log("add: last event = "+lastEventTime+" system Time = "+ctm);
         tr.add(COUNTER_START, counterName, ctm);
     }
     
     public static void endPerformanceCounter(String counterName) {
         long lastEventTime = tr.getCurrentEvents().getLast().getTimeMillis();
         long ctm = System.currentTimeMillis();
-        testCase.log("last event = "+lastEventTime+" system Time = "+ctm);        
+        testCase.log("end: last event = "+lastEventTime+" system Time = "+ctm);        
         tr.add(COUNTER_STOP, counterName, ctm);  
     }
     private static void clearPerformanceCounters() {
         countersList = new LinkedList<String>();
         
     }
-    
+    private static void nextPass() {
+        testAttempt++;
+    } 
     public static void reportPerformanceCounters() {
         for (String counter : countersList) {
            reportPerformanceCounter(counter);           
@@ -73,14 +76,16 @@ public class PerformanceCounters {
     }    
 
     private static void reportPerformanceCounter(String counterName) {
-        long counterResult = measurePerformanceCounter(counterName);        
+        long counterResult = measurePerformanceCounter(counterName); 
+        testCase.log("Report for "+counterName+" = "+counterResult);
         testCase.reportPerformance(testName + " at step: "+counterName, counterResult, "ms", NbPerformanceTest.PerformanceData.NO_ORDER, NbPerformanceTest.PerformanceData.NO_THRESHOLD);
         
     }
     private static long measurePerformanceCounter(String name) {
         ActionTracker.Tuple start = tr.getCurrentEvents().getFirst();
         ActionTracker.Tuple end = tr.getCurrentEvents().getFirst(); 
-        
+        testCase.log(start.toString());
+        testCase.log(end.toString());
         for (ActionTracker.Tuple tuple : tr.getCurrentEvents()) {
             int code = tuple.getCode();
             String counter = tuple.getName();
@@ -91,6 +96,9 @@ public class PerformanceCounters {
                 end = tuple;
             }            
         }
+        testCase.log(start.toString());
+        testCase.log(end.toString());
+        
         long result = end.getTimeMillis() - start.getTimeMillis();
         if (result < 0 || start.getTimeMillis() == 0) {
             throw new IllegalStateException("Measuring failed, because we start["+start.getTimeMillis()+"] > end["+end.getTimeMillis()+"] or start=0");
