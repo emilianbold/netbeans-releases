@@ -20,9 +20,15 @@
 package org.netbeans.modules.compapp.casaeditor.palette;
 
 import java.awt.datatransfer.DataFlavor;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import javax.swing.Action;
+import org.netbeans.modules.compapp.casaeditor.plugin.CasaPalettePlugin;
+import org.netbeans.modules.compapp.casaeditor.plugin.CasaPalettePlugin;
+import org.netbeans.modules.compapp.casaeditor.plugin.aspect.AspectPalettePlugin;
 import org.netbeans.spi.palette.PaletteActions;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFactory;
@@ -85,6 +91,16 @@ public class CasaPalette {
             disableCreateCategoryAction((Node) palette.getRoot().lookup(Node.class));
         }
         return palette;
+    }
+    
+    public static Collection<? extends CasaPalettePlugin> getPlugins(Lookup lookup) {
+
+//                return lookup.lookupAll(CasaPalettePlugin.class);
+        
+        // For now just hard code this in
+        List<CasaPalettePlugin> plugins = new ArrayList<CasaPalettePlugin>();
+        plugins.add(new AspectPalettePlugin());
+        return plugins;
     }
     
     private static void disableCreateCategoryAction(Node proxyRootNode) {

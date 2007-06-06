@@ -60,7 +60,7 @@ public class CasaPaletteCategoryChildren extends Children.Keys {
             objs.add(CategoryTypes[i]);
         }
         
-        Collection<? extends CasaPalettePlugin> plugins = mLookup.lookupAll(CasaPalettePlugin.class);
+        Collection<? extends CasaPalettePlugin> plugins = CasaPalette.getPlugins(mLookup);
         if (plugins != null) {
             for (CasaPalettePlugin plugin : plugins) {
                 if (plugin.getCategoryIDs() != null) {
