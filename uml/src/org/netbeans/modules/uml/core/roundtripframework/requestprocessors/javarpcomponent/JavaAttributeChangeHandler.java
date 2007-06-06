@@ -386,8 +386,13 @@ public class JavaAttributeChangeHandler extends JavaChangeHandler
     
     private final static String stripGenericBrackets(String type)
     {
-        return StringTokenizer2.replace(
-            StringTokenizer2.replace(type, "<", ""), ">", "");
+        // 102494, strip out <String, String>
+        int begin = type.indexOf("<");
+        if (begin > -1)
+            return type.substring(0, begin).trim();
+        return type;
+//        return StringTokenizer2.replace(
+//            StringTokenizer2.replace(type, "<", ""), ">", "");
     }
     
     protected boolean ensureUniqueRoleName( INavigableEnd pEnd, String origRoleName,
