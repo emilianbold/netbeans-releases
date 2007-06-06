@@ -46,7 +46,7 @@ public class ReplaceInFilesAction extends FindInFilesAction {
     }
     
     public String getName() {
-        String key = SearchScopeRegistry.getInstance().hasProjectSearchScopes()
+        String key = SearchScopeRegistry.getDefault().hasProjectSearchScopes()
                      ? "LBL_Action_ReplaceInProjects"                   //NOI18N
                      : "LBL_Action_ReplaceInFiles";                     //NOI18N
         return NbBundle.getMessage(getClass(), key);

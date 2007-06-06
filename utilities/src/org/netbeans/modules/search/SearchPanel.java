@@ -100,12 +100,13 @@ public final class SearchPanel extends JPanel
      * @param  basicSearchCriteria  basic search criteria,
      *                              or {@code null} if basic search criteria
      *                              should not be used
-     * @param  extraSearchTypes  list of extra {@code SearchType}s to use
+     * @param  preferredSearchScope  preferred search scope (may be {@code null})
      */
     SearchPanel(Map<SearchScope, Boolean> searchScopes,
+                SearchScope preferredSearchScope,
                 boolean searchAndReplace) {
         this(searchScopes,
-             null,
+             preferredSearchScope,
              null,
              Utils.cloneSearchTypes(Utils.getSearchTypes()),
              false,

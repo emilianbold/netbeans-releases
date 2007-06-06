@@ -24,17 +24,20 @@ import org.openide.modules.ModuleInstall;
 /**
  * Module installation class for search 'sub module'.
  *
- * @author  Petr Kuzel
  * @author  Marian Petras
  */
 public class Installer extends ModuleInstall {
 
+    @Override
     public void restored () {
-        SearchScopeRegistry.getInstance().registerSearchScope(
+        SearchScopeRegistry.getDefault().registerSearchScope(
                 new SearchScopeNodeSelection());
+        FindActionManager.getInstance().init();
     }
 
+    @Override
     public void uninstalled () {
+        FindActionManager.getInstance().cleanup();
         Manager.getInstance().doCleanup();
     }
 }

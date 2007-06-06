@@ -21,21 +21,31 @@ package org.netbeans.modules.search;
 
 import java.awt.Component;
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import javax.swing.Action;
+import javax.swing.JMenuItem;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.search.SearchPanel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.ContextAwareAction;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.Presenter;
+import org.openide.util.actions.SystemAction;
 import org.openidex.search.SearchType;
+import static java.util.logging.Level.FINER;
 
 /**
  * Action which searches files in folders, packages and projects.
@@ -61,7 +71,7 @@ import org.openidex.search.SearchType;
  * @author  Marian Petras
  */
 public class FindInFilesAction extends CallableSystemAction
-                               implements ChangeListener {
+                               implements ContextAwareAction, ChangeListener {
 
     static final long serialVersionUID = 4554342565076372611L;
     
@@ -106,14 +116,35 @@ public class FindInFilesAction extends CallableSystemAction
         putProperty(REPLACING, Boolean.FALSE, false);
     }
 
+    public Action createContextAwareInstance(Lookup lookup) {
+        if (shouldLog(LOG)) {
+            log("createContextAwareInstance(lookup)");
+        }
+        return new LookupSensitive(this, lookup);
+    }
+
+    public Action createContextAwareInstance(Lookup lookup,
+                                             boolean searchSelection) {
+        if (shouldLog(LOG)) {
+            log("createContextAwareInstance(lookup, " + searchSelection + ')');
+        }
+        Action result = new LookupSensitive(this, lookup, searchSelection);
+        if (shouldLog(LOG)) {
+            log(" -> " + result);
+        }
+        return result;
+    }
+
     @Override
     public Component getToolbarPresenter() {
         assert EventQueue.isDispatchThread();
-        LOG.finer("FindInFilesAction.getMenuPresenter()");
+        if (shouldLog(LOG)) {
+            log("getMenuPresenter()");
+        }
 
         Component presenter = getStoredToolbarPresenter();
         if (putProperty(VAR_LISTENING, Boolean.TRUE) == null) {
-            SearchScopeRegistry.getInstance().addChangeListener(this);
+            SearchScopeRegistry.getDefault().addChangeListener(this);
             putProperty(VAR_FIRST_ISENABLED, null);
             updateState();
         }
@@ -131,7 +162,9 @@ public class FindInFilesAction extends CallableSystemAction
      */
     private Component getStoredToolbarPresenter() {
         assert EventQueue.isDispatchThread();
-        LOG.finer("FindInFilesAction.getStoredToolbarPresenter()");
+        if (shouldLog(LOG)) {
+            log("getStoredToolbarPresenter()");
+        }
 
         Object refObj = getProperty(VAR_TOOLBAR_COMP_REF);
         if (refObj != null) {
@@ -158,7 +191,9 @@ public class FindInFilesAction extends CallableSystemAction
      */
     private boolean checkToolbarPresenterExists() {
         assert EventQueue.isDispatchThread();
-        LOG.finer("FindInFilesAction.checkToolbarPresenterExists()");
+        if (shouldLog(LOG)) {
+            log("checkToolbarPresenterExists()");
+        }
 
         Object refObj = getProperty(VAR_TOOLBAR_COMP_REF);
         if (refObj == null) {
@@ -173,7 +208,9 @@ public class FindInFilesAction extends CallableSystemAction
      */
     public void stateChanged(ChangeEvent e) {
         assert EventQueue.isDispatchThread();
-        LOG.finer("FindInFilesAction.stateChanged()");
+        if (shouldLog(LOG)) {
+            log("stateChanged()");
+        }
 
         /*
          * Check whether listening on open projects is active.
@@ -185,7 +222,7 @@ public class FindInFilesAction extends CallableSystemAction
         if (checkToolbarPresenterExists()) {
             updateState();
         } else {
-            SearchScopeRegistry.getInstance().removeChangeListener(this);
+            SearchScopeRegistry.getDefault().removeChangeListener(this);
             putProperty(VAR_LISTENING, null);
             putProperty(VAR_TOOLBAR_COMP_REF, null);
         }
@@ -194,14 +231,19 @@ public class FindInFilesAction extends CallableSystemAction
     @Override
     public boolean isEnabled() {
         assert EventQueue.isDispatchThread();
-        LOG.finer("FindInFilesAction.isEnabled()");
+        if (shouldLog(LOG)) {
+            log("isEnabled()");
+        }
 
         if (getProperty(VAR_LISTENING) != null) {
+            log(" - isListening");
             return super.isEnabled();
         } else if (getProperty(VAR_FIRST_ISENABLED) == null) {
-            return SearchScopeRegistry.getInstance().hasApplicableSearchScope();
+            log(" - checking registry");
+            return SearchScopeRegistry.getDefault().hasApplicableSearchScope();
         } else {
             /* first call of this method */
+            log(" - first \"isEnabled()\"");
             putProperty(VAR_FIRST_ISENABLED, null);
             return false;
         }
@@ -211,10 +253,12 @@ public class FindInFilesAction extends CallableSystemAction
      */
     private void updateState() {
         assert EventQueue.isDispatchThread();
-        LOG.finer("FindInFilesAction.updateState()");
+        if (shouldLog(LOG)) {
+            log("updateState()");
+        }
         
         final boolean enabled
-                = SearchScopeRegistry.getInstance().hasApplicableSearchScope();
+                = SearchScopeRegistry.getDefault().hasApplicableSearchScope();
         Mutex.EVENT.writeAccess(new Runnable() {
             public void run() {
                 setEnabled(enabled);
@@ -228,7 +272,7 @@ public class FindInFilesAction extends CallableSystemAction
     }
     
     public String getName() {
-        String key = SearchScopeRegistry.getInstance().hasProjectSearchScopes()
+        String key = SearchScopeRegistry.getDefault().hasProjectSearchScopes()
                      ? "LBL_Action_FindInProjects"                      //NOI18N
                      : "LBL_Action_FindInFiles";                        //NOI18N
         return NbBundle.getMessage(getClass(), key);
@@ -240,6 +284,12 @@ public class FindInFilesAction extends CallableSystemAction
 
     /** Perform this action. */
     public void performAction() {
+        performAction(SearchScopeRegistry.getDefault().getSearchScopes(),
+                      null);    //no preferred search scope
+    }
+
+    private void performAction(Map<SearchScope, Boolean> searchScopes,
+                               SearchScope preferredSearchScope) {
         assert EventQueue.isDispatchThread();
 
         String msg = Manager.getInstance().mayStartSearching();
@@ -255,14 +305,14 @@ public class FindInFilesAction extends CallableSystemAction
             return;
         }
 
-	Map<SearchScope, Boolean> searchScopes
-		= SearchScopeRegistry.getInstance().getSearchScopes();
         if (!isSomeEnabled(searchScopes)) {
             return;
         }
 
         boolean replacing = Boolean.TRUE.equals(getProperty(REPLACING));
-        SearchPanel searchPanel = new SearchPanel(searchScopes, replacing);
+        SearchPanel searchPanel = new SearchPanel(searchScopes,
+                                                  preferredSearchScope,
+                                                  replacing);
         
         searchPanel.showDialog();
         if (searchPanel.getReturnStatus() != SearchPanel.RET_OK) {
@@ -307,5 +357,207 @@ public class FindInFilesAction extends CallableSystemAction
     protected boolean asynchronous() {
         return false;
     }
+
+    private static final class LookupSensitive implements Action, ChangeListener, Presenter.Menu, Presenter.Popup, Presenter.Toolbar {
+
+        private static int counter = 0;
+
+        private final FindInFilesAction delegate;
+        private final SearchScopeRegistry searchScopeRegistry;
+        private final boolean searchSelection;
+        private final int id;
+
+        /** support for listeners */
+        private PropertyChangeSupport support;
+        private boolean enabled;
+        
+        {
+            id = ++counter;
+        }
+
+        LookupSensitive(FindInFilesAction delegate,
+                        Lookup lookup) {
+            this(delegate, lookup, false);
+        }
+
+        LookupSensitive(FindInFilesAction delegate,
+                        Lookup lookup,
+                        boolean searchSelection) {
+            this.delegate = delegate;
+            this.searchScopeRegistry = SearchScopeRegistry.getInstance(lookup, id);
+            this.searchSelection = searchSelection;
+            log("<init>");
+        }
+
+        private Object getLock() {
+            return this;
+        }
+
+        public Object getValue(String key) {
+            if (shouldLog(LOG)) {
+                log("getValue(\"" + key + "\")");
+            }
+            return delegate.getValue(key);
+        }
+
+        public void putValue(String key, Object value) {
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            assert EventQueue.isDispatchThread();
+            if (shouldLog(LOG)) {
+                log("actionPerformed(...)");
+            }
+
+            delegate.performAction(
+                    searchScopeRegistry.getSearchScopes(),
+                    searchSelection
+                        ? searchScopeRegistry.getNodeSelectionSearchScope()
+                        : null);
+        }
+
+        public void setEnabled(boolean b) {
+            if (shouldLog(LOG)) {
+                log("setEnabled(" + b + ')');
+            }
+        }
+
+        public boolean isEnabled() {
+            assert EventQueue.isDispatchThread();
+            if (shouldLog(LOG)) {
+                log("isEnabled(...)");
+            }
+
+            synchronized (getLock()) {
+                if (support != null) {
+                    return enabled;
+                }
+            }
+
+            return searchScopeRegistry.hasApplicableSearchScope();
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            if (shouldLog(LOG)) {
+                log("addPropertyChangeListener(...)");
+            }
+
+            if (listener == null) {
+                return;
+            }
+
+            synchronized (getLock()) {
+                if (support == null) {
+                    support = new PropertyChangeSupport(this);
+                    searchScopeRegistry.addChangeListener(this);
+                    enabled = searchScopeRegistry.hasApplicableSearchScope();
+                }
+                support.addPropertyChangeListener(listener);
+            }
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            if (shouldLog(LOG)) {
+                log("removePropertyChangeListener(...)");
+            }
+
+            if (listener == null) {
+                return;
+            }
+
+            synchronized (getLock()) {
+                if (support == null) {
+                    return;
+                }
+
+                support.removePropertyChangeListener(listener);
+                boolean lastListener = !support.hasListeners(null);
+                if (lastListener) {
+                    searchScopeRegistry.removeChangeListener(this);
+                    support = null;
+                }
+            }
+        }
+
+        public void stateChanged(ChangeEvent e) {
+            if (shouldLog(LOG)) {
+                log("stateChanged(...)");
+            }
+
+            synchronized (getLock()) {
+                if (support != null) {
+                    boolean wasEnabled = enabled;
+                    enabled = searchScopeRegistry.hasApplicableSearchScope();
+                    support.firePropertyChange(SystemAction.PROP_ENABLED,
+                                               wasEnabled, enabled);//auto-boxing
+                }
+            }
+        }
+
+        public JMenuItem getMenuPresenter() {
+            if (shouldLog(LOG)) {
+                log("getMenuPresenter(...)");
+            }
+            return delegate.getMenuPresenter();
+        }
+
+        public JMenuItem getPopupPresenter() {
+            if (shouldLog(LOG)) {
+                log("getPopupPresenter(...)");
+            }
+            return delegate.getPopupPresenter();
+        }
+
+        public Component getToolbarPresenter() {
+            if (shouldLog(LOG)) {
+                log("getToolbarPresenter(...)");
+            }
+            return delegate.getToolbarPresenter();
+        }
+
+        @Override
+        public String toString() {
+            return shortClassName + " #" + id;
+        }
+
+        private final String shortClassName;
+
+        {
+            String clsName = getClass().getName();
+            int lastDot = clsName.lastIndexOf('.');
+            shortClassName = ((lastDot != -1) ? clsName.substring(lastDot + 1)
+                                              : clsName)
+                             .replace('$', '.');
+        }
+
+        private boolean shouldLog(Logger logger) {
+            return logger.isLoggable(FINER)
+                   && shortClassName.startsWith("FindInFilesAction");
+        }
+
+        private void log(String msg) {
+            LOG.finer(this + ": " + msg);
+        }
+
+    }
+
+    private final String shortClassName;
+
+    {
+        String clsName = getClass().getName();
+        int lastDot = clsName.lastIndexOf('.');
+        shortClassName = (lastDot != -1) ? clsName.substring(lastDot + 1)
+                                         : clsName;
+    }
+
+    private boolean shouldLog(Logger logger) {
+        return logger.isLoggable(FINER)
+               && shortClassName.equals("FindInFilesAction");
+    }
+
+    private void log(String msg) {
+        LOG.finer(shortClassName + ": " + msg);
+    }
+
 
 }

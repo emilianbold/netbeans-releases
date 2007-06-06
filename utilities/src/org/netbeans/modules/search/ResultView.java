@@ -1091,7 +1091,7 @@ final class ResultView extends TopComponent {
 		= cloneAvailableSearchTypes(searchTypes);
         
         SearchPanel searchPanel = new SearchPanel(
-                SearchScopeRegistry.getInstance().getSearchScopes(),
+                SearchScopeRegistry.getDefault().getSearchScopes(),
                 searchScope,
                 basicSearchCriteriaClone,
                 extraSearchTypesClones);

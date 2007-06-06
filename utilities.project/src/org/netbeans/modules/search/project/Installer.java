@@ -42,12 +42,12 @@ public class Installer extends ModuleInstall {
         putProperty(PROP_OPEN_PROJECTS,
                     searchScope = new SearchScopeOpenProjects(),
                     false);
-        SearchScopeRegistry.getInstance().registerSearchScope(searchScope);
+        SearchScopeRegistry.getDefault().registerSearchScope(searchScope);
         
         putProperty(PROP_MAIN_PROJECT,
                     searchScope = new SearchScopeMainProject(),
                     false);
-        SearchScopeRegistry.getInstance().registerSearchScope(searchScope);
+        SearchScopeRegistry.getDefault().registerSearchScope(searchScope);
         
     }
     
@@ -58,7 +58,7 @@ public class Installer extends ModuleInstall {
         value = getProperty(PROP_OPEN_PROJECTS);
         if (value instanceof SearchScope) {
             try {
-                SearchScopeRegistry.getInstance().unregisterSearchScope(
+                SearchScopeRegistry.getDefault().unregisterSearchScope(
                         (SearchScope) value);
             } catch (Exception ex) {
                 ErrorManager.getDefault().notify(ex);
@@ -68,7 +68,7 @@ public class Installer extends ModuleInstall {
         value = getProperty(PROP_MAIN_PROJECT);
         if (value instanceof SearchScope) {
             try {
-                SearchScopeRegistry.getInstance().unregisterSearchScope(
+                SearchScopeRegistry.getDefault().unregisterSearchScope(
                         (SearchScope) value);
             } catch (Exception ex) {
                 ErrorManager.getDefault().notify(ex);

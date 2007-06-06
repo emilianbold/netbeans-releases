@@ -63,12 +63,8 @@ abstract class AbstractProjectSearchScope extends AbstractSearchScope
     }
     
     public final synchronized void propertyChange(PropertyChangeEvent e) {
-        if (!isListening()) {
-            //ignore
-        } else {
-            if (interestingProperty.equals(e.getPropertyName())) {
-                updateIsApplicable();
-            }
+        if (interestingProperty.equals(e.getPropertyName())) {
+            updateIsApplicable();
         }
     }
     

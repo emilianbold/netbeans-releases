@@ -22,6 +22,7 @@ package org.netbeans.modules.search;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,12 +30,15 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 import org.openidex.search.FileObjectFilter;
 import org.openidex.search.SearchInfo;
 import org.openidex.search.SearchInfoFactory;
+import static org.openide.windows.TopComponent.Registry.PROP_CURRENT_NODES;
 
 /**
  * Defines search scope across selected nodes.
@@ -55,6 +59,7 @@ final class SearchScopeNodeSelection extends AbstractSearchScope
                                    "SearchScopeNameSelectedNodes");     //NOI18N
     }
 
+    @Override
     protected boolean checkIsApplicable() {
         return checkIsApplicable(TopComponent.getRegistry().getCurrentNodes());
     }
@@ -102,28 +107,33 @@ final class SearchScopeNodeSelection extends AbstractSearchScope
     }
     
     protected void startListening() {
+
+        /* thread: <any> */
+        
         TopComponent.Registry tcRegistry = TopComponent.getRegistry();
         currentNodesWeakListener = WeakListeners.propertyChange(this, tcRegistry);
         tcRegistry.addPropertyChangeListener(currentNodesWeakListener);
     }
 
     protected void stopListening() {
+
+        /* thread: <any> */
+        
         TopComponent.getRegistry().removePropertyChangeListener(currentNodesWeakListener);
         currentNodesWeakListener = null;
     }
 
     public synchronized void propertyChange(PropertyChangeEvent e) {
-        if (!isListening()) {
-            //ignore
-        } else {
-            if (TopComponent.Registry.PROP_CURRENT_NODES.equals(e.getPropertyName())) {
-                updateIsApplicable();
-            }
+        if (PROP_CURRENT_NODES.equals(e.getPropertyName())) {
+            updateIsApplicable();
         }
     }
 
     public SearchInfo getSearchInfo() {
-        Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
+        return getSearchInfo(TopComponent.getRegistry().getActivatedNodes());
+    }
+
+    private SearchInfo getSearchInfo(Node[] nodes) {
         if ((nodes == null) || (nodes.length == 0)) {
             return createEmptySearchInfo();
         }
@@ -281,6 +291,71 @@ final class SearchScopeNodeSelection extends AbstractSearchScope
             }
         }
         return (Node[]) result.toArray(new Node[result.size()]);
+    }
+
+    @Override
+    protected SearchScope getContextSensitiveInstance(Lookup context) {
+        return new LookupSensitive(this, context);
+    }
+
+    /**
+     * Lookup-sensitive variant of {@code SearchScopeNodeSelection}.
+     */
+    private static final class LookupSensitive extends AbstractSearchScope
+                                               implements LookupListener {
+
+        private static final Node[] emptyNodesArray = new Node[0];
+        private final SearchScopeNodeSelection delegate;
+        private final Lookup.Result<Node> lookupResult;
+        private LookupListener lookupListener;
+
+        LookupSensitive(SearchScopeNodeSelection delegate, Lookup lookup) {
+            this.delegate = delegate;
+
+            lookupResult = lookup.lookupResult(Node.class);
+        }
+
+        private Node[] nodes() {
+            Collection<? extends Node> nodesColl = lookupResult.allInstances();
+            return nodesColl.isEmpty() ? emptyNodesArray
+                                       : nodesColl.toArray(emptyNodesArray);
+        }
+
+        protected void startListening() {
+
+            /* thread: <any> */
+
+            lookupListener = WeakListeners.create(LookupListener.class,
+                                                  this,
+                                                  lookupResult);
+            lookupResult.addLookupListener(lookupListener);
+        }
+
+        protected void stopListening() {
+
+            /* thread: <any> */
+
+            if (lookupListener != null) {
+                lookupResult.removeLookupListener(lookupListener);
+            }
+        }
+
+        public void resultChanged(LookupEvent ev) {
+            updateIsApplicable();
+        }
+
+        protected boolean checkIsApplicable() {
+            return SearchScopeNodeSelection.checkIsApplicable(nodes());
+        }
+
+        protected SearchInfo getSearchInfo() {
+            return delegate.getSearchInfo(nodes());
+        }
+
+        protected String getDisplayName() {
+            return delegate.getDisplayName();
+        }
+
     }
 
 }

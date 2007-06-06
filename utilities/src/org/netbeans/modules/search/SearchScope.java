@@ -20,6 +20,7 @@
 package org.netbeans.modules.search;
 
 import javax.swing.event.ChangeListener;
+import org.openide.util.Lookup;
 import org.openidex.search.SearchInfo;
 
 /**
@@ -66,6 +67,15 @@ public abstract class SearchScope {
      * @see  #isApplicable
      */
     protected abstract void removeChangeListener(ChangeListener l);
+
+    /**
+     * Returns lock for synchronization of access to set of registered listeners.
+     * 
+     * @return  lock to be used for synchronization
+     */
+    protected final Object getListenersLock() {
+        return this;
+    }
     
     /**
      * Returns object defining the actual search scope, i.e. the iterator over
@@ -74,6 +84,17 @@ public abstract class SearchScope {
      * @return  {@code SearchInfo} defining the search scope
      */
     protected abstract SearchInfo getSearchInfo();
+
+    /**
+     * Returns a context-sensitive variant of this search scope.
+     * The returned instance may be the same as this instance.
+     * 
+     * @return  context-sensitive variant of this instance;
+     *          the default implementation returns this
+     */
+    protected SearchScope getContextSensitiveInstance(Lookup context) {
+        return this;
+    }
 
     @Override
     public String toString() {

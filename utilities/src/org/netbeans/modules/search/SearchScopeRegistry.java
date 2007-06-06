@@ -19,14 +19,19 @@
 package org.netbeans.modules.search;
 
 import java.awt.EventQueue;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.openide.util.Lookup;
 import static java.util.logging.Level.FINER;
 
 /**
@@ -40,68 +45,328 @@ import static java.util.logging.Level.FINER;
  */
 public final class SearchScopeRegistry {
     
-    private static SearchScopeRegistry instance;
+    private static SearchScopeRegistry defaultInstance;
 
-    private final Logger LOG = Logger.getLogger(
-            "org.netbeans.modules.search.FindAction_state");            //NOI18N
+    private static final Logger LOG = Logger.getLogger(
+            "org.netbeans.modules.search.SearchScopeRegistry");         //NOI18N
     
+    private final int id;
+    private Collection<Reference<SearchScopeRegistry>> extraInstances;
     private SearchScopeChangeHandler scopeChangeHandler;
     private List<ChangeListener> changeListeners;
-    private boolean applicable;
 
     private int projectSearchScopesCount;
     private int applicableSearchScopesCount;
     private Map<SearchScope, Boolean> searchScopes
             = new LinkedHashMap<SearchScope, Boolean>(5);
     
-    public static SearchScopeRegistry getInstance() {
-        if (instance == null) {
-            instance = new SearchScopeRegistry();
+    public static synchronized SearchScopeRegistry getDefault() {
+        if (defaultInstance == null) {
+            defaultInstance = new SearchScopeRegistry(0);
+        }
+        return defaultInstance;
+    }
+
+    static SearchScopeRegistry getInstance(Lookup lookup, int id) {
+        return getDefault().getLookupInstance(lookup, id);
+    }
+
+    private SearchScopeRegistry(int id) {
+        this.id = id;
+    }
+
+    private SearchScopeRegistry getLookupInstance(final Lookup lookup,
+                                                  final int id) {
+        assert id > 0;
+        assert EventQueue.isDispatchThread();
+        assert this == defaultInstance;
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("getLookupInstance(Lookup, " + id + ')');
+        }
+
+        SearchScopeRegistry instance;
+        Collection<SearchScope> scopes;
+        synchronized (getLock()) {
+            instance = new SearchScopeRegistry(id);
+            if (extraInstances == null) {
+                extraInstances = new ArrayList<Reference<SearchScopeRegistry>>(4);
+            }
+            extraInstances.add(new WeakReference<SearchScopeRegistry>(instance));
+
+            scopes = cloneSearchScopes(defaultInstance);
+        }
+        for (SearchScope scope : scopes) {
+            instance.registerSearchScope(
+                    scope.getContextSensitiveInstance(lookup));
         }
         return instance;
     }
 
-    private SearchScopeRegistry() { }
-
-    /*
-     * Critical sections (access to...):
-     *   - list of registered search scopes~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     *       + register/unregister [any -> AWT]
-     *       - has project search scope [AWT]
-     *   - global state (enabled/disabled)~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     *       + change of state of a single search scope [any -> AWT]
-     *       - has applicable search scope [AWT]
-     *   - list of registered change listeners~~~~~~~~~~~~~~~~~~~~~~~~
-     *       + add/remove change listener [AWT]
-     *       - notifications of changes of a global state [AWT]
-     */
-    
-    public boolean hasApplicableSearchScope() {
-        assert EventQueue.isDispatchThread();
-
+    public void registerSearchScope(final SearchScope searchScope) {
+        /* thread: <any> */
         if (LOG.isLoggable(FINER)) {
-            LOG.finer("hasApplicableSearchScope");
-            LOG.finer(" - isListening(): " + isListening());
-            if (isListening()) {
-                LOG.finer(" - applicable: " + applicable);
-            }
+            log("register search scope " + searchScope);
         }
 
-        return isListening() ? applicable
-                             : checkIsApplicable();
+        final Collection<ChangeListener> listeners;
+        final Collection<SearchScopeRegistry> lookupInstances;
+        synchronized (getLock()) {
+            if (scopeChangeHandler != null) {       //listening
+                searchScope.addChangeListener(scopeChangeHandler);
+                listeners = checkNewState(searchScope, Boolean.TRUE)
+                            ? cloneChangeListeners()
+                            : null;
+            } else {
+                searchScopes.put(searchScope, null);
+                listeners = null;
+            }
+            if (isProjectSearchScope(searchScope)) {
+                projectSearchScopesCount++;
+            }
+            lookupInstances = cloneLookupInstances();
+        }
+        if (listeners != null) {
+            notifyListeners(listeners);
+        }
+        if (!lookupInstances.isEmpty()) {
+            for (SearchScopeRegistry instance : lookupInstances) {
+                instance.registerSearchScope(searchScope);
+            }
+        }
+    }
+
+    public void unregisterSearchScope(final SearchScope searchScope) {
+        /* thread: <any> */
+        if (LOG.isLoggable(FINER)) {
+            log("unregister search scope " + searchScope);
+        }
+
+        final Collection<ChangeListener> listeners;
+        final Collection<SearchScopeRegistry> lookupInstances;
+        synchronized (getLock()) {
+            if (scopeChangeHandler != null) {       //listening
+                searchScope.removeChangeListener(scopeChangeHandler);
+                listeners = checkNewState(searchScope, Boolean.FALSE)
+                            ? cloneChangeListeners()
+                            : null;
+            } else {
+                searchScopes.remove(searchScope);
+                listeners = null;
+            }
+            if (isProjectSearchScope(searchScope)) {
+                projectSearchScopesCount--;
+            }
+            lookupInstances = cloneLookupInstances();
+        }
+        if (!lookupInstances.isEmpty()) {
+            for (SearchScopeRegistry instance : lookupInstances) {
+                instance.unregisterSearchScope(searchScope);
+            }
+        }
+    }
+    
+    void addChangeListener(final ChangeListener l) {
+        /* thread: <any> */
+        assert l != null;
+        if (LOG.isLoggable(FINER)) {
+            log("addChangeListener(" + l + ')');
+        }
+
+        synchronized (getLock()) {
+            boolean firstListener = (changeListeners == null);
+            if (changeListeners == null) {
+                changeListeners = new ArrayList<ChangeListener>(1);
+            }
+            changeListeners.add(l);
+
+            if (firstListener) {
+                assert applicableSearchScopesCount == 0;
+                applicableSearchScopesCount = 0;
+                scopeChangeHandler = new SearchScopeChangeHandler();
+                for (Map.Entry<SearchScope,Boolean> entry : searchScopes.entrySet()) {
+                    SearchScope scope = entry.getKey();
+                    scope.addChangeListener(scopeChangeHandler);
+                    boolean applicable = scope.isApplicable();
+                    if (applicable) {
+                        applicableSearchScopesCount++;
+                    }
+                    entry.setValue(applicable);     //auto-boxing
+                }
+                if (LOG.isLoggable(FINER)) {
+                    log(" - initial applicable search scopes count: "
+                         + applicableSearchScopesCount);
+                }
+            }
+        }
+    }
+
+    void removeChangeListener(final ChangeListener l) {
+        /* thread: <any> */
+        assert l != null;
+        if (LOG.isLoggable(FINER)) {
+            log("removeChangeListener(" + l + ')');
+        }
+
+        synchronized (getLock()) {
+            if (changeListeners == null) {
+                return;
+            }
+            boolean lastListener = changeListeners.remove(l) && changeListeners.isEmpty();
+            if (lastListener) {
+                changeListeners = null;
+                applicableSearchScopesCount = 0;
+            }
+
+            for (SearchScope scope : searchScopes.keySet()) {
+                scope.removeChangeListener(scopeChangeHandler);
+            }
+            scopeChangeHandler = null;
+        }
+    }
+
+    private final class SearchScopeChangeHandler implements ChangeListener {
+        public void stateChanged(ChangeEvent e) {
+            assert e.getSource() instanceof SearchScope;
+            searchScopeStateChanged((SearchScope) e.getSource());
+        }
+    }
+    
+    private void searchScopeStateChanged(final SearchScope searchScope) {
+        /* thread: <any> */
+        if (LOG.isLoggable(FINER)) {
+            log("searchScopeStateChanged(" + searchScope + ')');
+        }
+
+        final Collection<ChangeListener> listeners;
+        synchronized (getLock()) {
+            listeners = checkNewState(searchScope, null)
+                        ? cloneChangeListeners()
+                        : null;
+        }
+        if (listeners != null) {
+            notifyListeners(listeners);
+        }
+    }
+
+    private boolean checkNewState(final SearchScope searchScope,
+                                  final Boolean addition) {
+        /* thread: <any> */
+        assert Thread.currentThread().holdsLock(getLock());
+        if (LOG.isLoggable(FINER)) {
+            log("checkNewState(" + searchScope + ')');
+        }
+
+        boolean newValue;
+        if (addition == null) {                     //SearchScope state changed
+            newValue = searchScope.isApplicable();
+            Boolean oldValue = searchScopes.put(searchScope, newValue);
+            if (oldValue == null) {
+                searchScopes.remove(searchScope);
+                return false;
+            }
+            if (newValue == oldValue.booleanValue()) {
+                return false;
+            }
+        } else if (addition.booleanValue()) {       //SearchScope registered
+            newValue = searchScope.isApplicable();
+            searchScopes.put(searchScope, newValue);
+        } else {                                    //SearchScope unregistered
+            newValue = false;
+            searchScopes.remove(searchScope);
+        }
+
+        boolean stateChanged;
+        if (newValue) {
+            applicableSearchScopesCount++;
+            if (LOG.isLoggable(FINER)) {
+                log(" - search scope count increased to "
+                    + applicableSearchScopesCount);
+            }
+            stateChanged = (applicableSearchScopesCount == 1);
+        } else {
+            applicableSearchScopesCount--;
+            if (LOG.isLoggable(FINER)) {
+                log(" - search scope count decreased to "
+                    + applicableSearchScopesCount);
+            }
+            stateChanged = (applicableSearchScopesCount == 0);
+        }
+        return stateChanged;
+    }
+
+    private void notifyListeners(Collection<ChangeListener> listeners) {
+        assert listeners != null;
+
+        final ChangeEvent e = new ChangeEvent(this);
+        for (ChangeListener listener : listeners) {
+            listener.stateChanged(e);
+        }
+    }
+    
+    SearchScope getNodeSelectionSearchScope() {
+        /*
+         * There are several conditions that must be met for implementation
+         * of this method to work correctly:
+         *   - the Map of search scopes (field "searchScopes") preserves order
+         *   - node selection search scope is the first registered search scope
+         *   - lookup-sensitive search scopes are registered in the same order
+         *     as the default search scopes
+         *   - lookup-sensitive variant of SearchScopeNodeSelection
+         *     is a (direct or indirect) subclass of SearchScopeNodeSelection
+         */
+        SearchScope nodeSelectionScope;
+        synchronized (getLock()) {
+            if (searchScopes.isEmpty()) {
+                nodeSelectionScope = null;
+            } else {
+                nodeSelectionScope = searchScopes.entrySet().iterator().next().getKey();
+                assert nodeSelectionScope.getClass().getName().startsWith(
+                    "org.netbeans.modules.search.SearchScopeNodeSelection");//NOI18N
+            }
+        }
+        return nodeSelectionScope;
+    }
+
+    public boolean hasApplicableSearchScope() {
+        /* thread: <any> */
+        if (LOG.isLoggable(FINER)) {
+            log("hasApplicableSearchScope");
+        }
+
+        synchronized (getLock()) {
+            if (changeListeners != null) {
+                if (LOG.isLoggable(FINER)) {
+                    log(" - listening, search scopes count = "
+                        + applicableSearchScopesCount);
+                }
+                return (applicableSearchScopesCount != 0);
+            } else {
+                if (LOG.isLoggable(FINER)) {
+                    log(" - not listening, going to check...");
+                }
+                return checkIsApplicable();
+            }
+        }
     }
     
     Map<SearchScope, Boolean> getSearchScopes() {
         assert EventQueue.isDispatchThread();
 
-        Map<SearchScope, Boolean> clone
-                = new LinkedHashMap<SearchScope, Boolean>(searchScopes);
-        if (!isListening()) {
-            for (SearchScope searchScope : searchScopes.keySet()) {
-                clone.put(searchScope, searchScope.isApplicable());
+        final Map<SearchScope, Boolean> result;
+        final Collection<SearchScope> scopes;
+        synchronized (getLock()) {
+            if (changeListeners != null) {
+                return new LinkedHashMap<SearchScope, Boolean>(searchScopes);
             }
+
+            scopes = cloneSearchScopes();
         }
-        return clone;
+
+        result = new LinkedHashMap<SearchScope, Boolean>(scopes.size() * 2);
+        for (SearchScope scope : scopes) {
+            result.put(scope, scope.isApplicable());
+        }
+        return result;
     }
     
     boolean hasProjectSearchScopes() {
@@ -131,258 +396,102 @@ public final class SearchScopeRegistry {
         return false;
     }
 
-    public final void registerSearchScope(SearchScope searchScope) {
-        if (LOG.isLoggable(FINER)) {
-            LOG.finer("register search scope " + searchScope);
-        }
-        registerOrUnregister(searchScope, true);
-    }
-
-    public final void unregisterSearchScope(SearchScope searchScope) {
-        if (LOG.isLoggable(FINER)) {
-            LOG.finer("unregister search scope " + searchScope);
-        }
-        registerOrUnregister(searchScope, false);
-    }
-
-    private void registerOrUnregister(SearchScope searchScope,
-                                      boolean register) {
-        SearchScopeRegistrator registrator
-                = new SearchScopeRegistrator(searchScope, register);
-        if (EventQueue.isDispatchThread()) {
-            registrator.run();
-        } else {
-            LOG.finer("- registration/unregistration postponed to AWT");
-            EventQueue.invokeLater(registrator);
-        }
-    }
-
-    private final class SearchScopeRegistrator implements Runnable {
-        private final SearchScope searchScope;
-        private final boolean register;    //false = unregister
-        SearchScopeRegistrator(SearchScope scope, boolean register) {
-            this.searchScope = scope;
-            this.register = register;
-        }
-        public void run() {
-            assert EventQueue.isDispatchThread();
-            if (register) {
-                registerSearchScopeAWT(searchScope);
-            } else {
-                unregisterSearchScopeAWT(searchScope);
-            }
-            LOG.finer("- registration/unregistration done");
-        }
-    }
-
-    private void registerSearchScopeAWT(SearchScope searchScope) {
-        assert EventQueue.isDispatchThread();
-
-        boolean needsUpdate = false;
-        if (isListening()) {
-            assert scopeChangeHandler != null;
-            boolean applicable = searchScope.isApplicable();
-            searchScopes.put(searchScope, applicable);
-            searchScope.addChangeListener(scopeChangeHandler);
-            if (applicable) {
-                applicableSearchScopesCount++;
-                needsUpdate = true;
-            }
-        } else {
-            searchScopes.put(searchScope, null);
-        }
-        
-        if (isProjectSearchScope(searchScope)) {
-            projectSearchScopesCount++;
-        }
-        if (needsUpdate) {
-            assert isListening();
-            updateIsApplicableByCount();
-        }
-    }
-    
-    public void unregisterSearchScopeAWT(SearchScope searchScope) {
-        assert EventQueue.isDispatchThread();
-
-        boolean needsUpdate = false;
-        Boolean wasApplicable = searchScopes.remove(searchScope);
-        if (isListening()) {
-            assert scopeChangeHandler != null;
-            assert wasApplicable != null;
-            searchScope.removeChangeListener(scopeChangeHandler);
-            if (Boolean.TRUE.equals(wasApplicable)) {
-                applicableSearchScopesCount--;
-                needsUpdate = true;
-            }
-        }
-        
-        if (isProjectSearchScope(searchScope)) {
-            projectSearchScopesCount--;
-        }
-        if (needsUpdate) {
-            assert isListening();
-            updateIsApplicableByCount();
-        }
-    }
-    
     private static boolean isProjectSearchScope(SearchScope searchScope) {
         return searchScope.getClass().getName().startsWith(
                                 "org.netbeans.modules.search.project"); //NOI18N
     }
     
-    private void setApplicable(boolean applicable) {
-        if (applicable == this.applicable) {
-            return;
-        }
-        
-        this.applicable = applicable;
-        if (LOG.isLoggable(FINER)) {
-            LOG.finer("state changed to " + applicable);
-        }
-        
-        if ((changeListeners != null) && !changeListeners.isEmpty()) {
-            final ChangeEvent e = new ChangeEvent(this);
-            for (ChangeListener l : changeListeners) {
-                l.stateChanged(e);
-            }
-        }
-    }
-    
-    private void updateIsApplicableByCount() {
-        if (LOG.isLoggable(FINER)) {
-            LOG.finer("updateIsApplicableByCount()");
-            LOG.finer(" - applicableSearchScopesCount = "
-                                      + applicableSearchScopesCount);
-        }
-        setApplicable(applicableSearchScopesCount > 0);
-    }
-    
     private boolean checkIsApplicable() {
-        assert EventQueue.isDispatchThread();
-        LOG.finer("checkIsApplicable()");
+        /* thread: <any> */
+        if (LOG.isLoggable(FINER)) {
+            log("checkIsApplicable()");
+        }
 
-        for (SearchScope searchScope : searchScopes.keySet()) {
+        final Collection<SearchScope> scopes;
+        synchronized (getLock()) {
+            scopes = cloneSearchScopes();
+        }
+        for (SearchScope searchScope : scopes) {
             if (searchScope.isApplicable()) {
-                LOG.finer(" - returning true");
+                if (LOG.isLoggable(FINER)) {
+                    log(" - returning true");
+                }
                 return true;
             }
         }
-        LOG.finer(" - returning false");
+        if (LOG.isLoggable(FINER)) {
+            log(" - returning false");
+        }
         return false;
     }
 
-    final class SearchScopeChangeHandler implements ChangeListener, Runnable {
-        private final SearchScope searchScope;
-        private SearchScopeChangeHandler() {
-            this.searchScope = null;
-        }
-        private SearchScopeChangeHandler(SearchScope searchScope) {
-            this.searchScope = searchScope;
-        }
-        public void stateChanged(ChangeEvent e) {
-            assert e.getSource() instanceof SearchScope;
-            final SearchScope searchScope = (SearchScope) e.getSource();
-            if (EventQueue.isDispatchThread()) {
-                searchScopeStateChanged(searchScope);
-            } else {
-                EventQueue.invokeLater(
-                        new SearchScopeChangeHandler(searchScope));
-            }
-        }
-        public void run() {
-            assert searchScope != null;
-            searchScopeStateChanged(searchScope);
-        }
+    private Object getLock() {
+        return this;
     }
-    
-    private void searchScopeStateChanged(SearchScope searchScope) {
-        assert EventQueue.isDispatchThread();
-        if (!isListening()) {
-            //ignore
+
+    /**
+     * Gets a copy of lookup-sensitive {@code SearchScopeRegistry}
+     * instances that are accessible via references held in
+     * {@link #extraInstances}.
+     * 
+     * @return  collection of lookup-sensitive {@code SearchScopeRegistry}
+     *          instances, or an empty list of there are no lookup-sensitive
+     *          instances accessible
+     */
+    private Collection<SearchScopeRegistry> cloneLookupInstances() {
+        assert Thread.currentThread().holdsLock(getLock());
+
+        Collection<SearchScopeRegistry> extras;
+        if ((extraInstances != null) && !extraInstances.isEmpty()) {
+            extras = new ArrayList<SearchScopeRegistry>(extraInstances.size());
+            Iterator<Reference<SearchScopeRegistry>> it = extraInstances.iterator();
+            while (it.hasNext()) {
+                Reference<SearchScopeRegistry> extraInstanceRef = it.next();
+                SearchScopeRegistry inst = extraInstanceRef.get();
+                if (inst == null) {
+                    it.remove();
+                    continue;
+                }
+                extras.add(inst);
+            }
+            assert extras.size() == extraInstances.size();
         } else {
-            Boolean currValue = searchScopes.get(searchScope);
-            assert currValue != null;
-            boolean newValue = searchScope.isApplicable();
-            if (newValue != currValue.booleanValue()) {
-                searchScopes.put(searchScope, newValue);    //auto-boxing
-                applicableSearchScopesCount += (newValue ? 1 : -1);
-                updateIsApplicableByCount();
-            }
+            extras = null;
         }
-    }
-    
-    private void startListening() {
-        assert EventQueue.isDispatchThread();
-        assert scopeChangeHandler == null;
-
-        LOG.finer("startListening()");
-
-        applicableSearchScopesCount = 0;
-        scopeChangeHandler = new SearchScopeChangeHandler();
-        for (SearchScope searchScope : searchScopes.keySet()) {
-            searchScope.addChangeListener(scopeChangeHandler);
-            boolean isApplicable = searchScope.isApplicable();
-            searchScopes.put(searchScope, isApplicable);
-            if (isApplicable) {
-                applicableSearchScopesCount++;
-            }
+        if ((extras == null) || extras.isEmpty()) {
+            extras = null;
+            extraInstances = null;
         }
-        applicable = applicableSearchScopesCount > 0;
-    }
-    
-    private void stopListening() {
-        assert EventQueue.isDispatchThread();
-
-        LOG.finer("stopListening()");
-
-        for (SearchScope searchScope : searchScopes.keySet()) {
-            searchScope.removeChangeListener(scopeChangeHandler);
-        }
-        scopeChangeHandler = null;
-        applicableSearchScopesCount = 0;
-    }
-    
-    private boolean isListening() {
-        assert EventQueue.isDispatchThread();
-        return changeListeners != null;
+        return (extras != null) ? extras
+                                : Collections.<SearchScopeRegistry>emptyList();
     }
 
-    public void addChangeListener(ChangeListener l) {
-        assert EventQueue.isDispatchThread();
-
-        if (LOG.isLoggable(FINER)) {
-            LOG.finer("addChangeListener(" + l + ')');
-        }
-
-        if (l == null) {
-            throw new IllegalArgumentException("null");                 //NOI18N
-        }
-        
-        boolean firstListener = ((changeListeners == null) || changeListeners.isEmpty());
-        if (changeListeners == null) {
-            changeListeners = new ArrayList<ChangeListener>(1);
-        }
-        changeListeners.add(l);
-        if (firstListener) {
-            startListening();
-        }
+    /**
+     */
+    private Collection<SearchScope> cloneSearchScopes() {
+        return cloneSearchScopes(this);
     }
 
-    public void removeChangeListener(ChangeListener l) {
-        assert EventQueue.isDispatchThread();
+    /**
+     */
+    private Collection<SearchScope> cloneSearchScopes(SearchScopeRegistry fromInstance) {
+        assert Thread.currentThread().holdsLock(getLock());
 
-        if (LOG.isLoggable(FINER)) {
-            LOG.finer("removeChangeListener(" + l + ')');
-        }
-
-        if (l == null) {
-            throw new IllegalArgumentException("null");                 //NOI18N
-        }
-        
-        if (changeListeners.remove(l) && changeListeners.isEmpty()) {
-            changeListeners = null;
-            stopListening();
-        }
+        return new ArrayList<SearchScope>(fromInstance.searchScopes.keySet());
     }
-    
+
+    /**
+     */
+    private Collection<ChangeListener> cloneChangeListeners() {
+        assert Thread.currentThread().holdsLock(getLock());
+
+        return (changeListeners != null)
+               ? new ArrayList<ChangeListener>(changeListeners)
+               : null;
+    }
+
+    private void log(String msg) {
+        LOG.finer("registry #" + id + ": " + msg);
+    }
+
 }

@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.search;
 
-import java.awt.EventQueue;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,31 +38,52 @@ import org.openidex.search.SearchInfoFactory;
 public abstract class AbstractSearchScope extends SearchScope {
     
     private List<ChangeListener> changeListeners;
-    private boolean applicable;
+    private Boolean applicable;
 
     protected AbstractSearchScope() { }
-    
-    protected final boolean isApplicable() {
-        assert EventQueue.isDispatchThread();
 
-        return isListening() ? applicable : checkIsApplicable();
+    protected final boolean isApplicable() {
+
+        /* thread: <any> */
+
+        boolean currState;
+        synchronized (getListenersLock()) {
+            if ((applicable == null) && isListening()) {
+                applicable = Boolean.valueOf(checkIsApplicable());
+            }
+            if (applicable != null) {
+                return applicable.booleanValue();
+            }
+        }
+
+        return checkIsApplicable();
     }
 
-    private void setApplicable(boolean applicable) {
-        if (applicable == this.applicable) {
-            return;
+    protected final void setApplicable(boolean applicable) {
+        List<ChangeListener> listeners;
+
+        synchronized (getListenersLock()) {
+            if (!isListening()) {
+                return;
+            }
+            if ((this.applicable != null)
+                    && (applicable == this.applicable.booleanValue())) {
+                return;
+            }
+            this.applicable = Boolean.valueOf(applicable);
+            listeners = (changeListeners != null) && !changeListeners.isEmpty()
+                        ? new ArrayList<ChangeListener>(changeListeners)
+                        : null;
         }
-        
-        this.applicable = applicable;
-        
-        if ((changeListeners != null) && !changeListeners.isEmpty()) {
+
+        if (listeners != null) {
             final ChangeEvent e = new ChangeEvent(this);
-            for (ChangeListener l : changeListeners) {
+            for (ChangeListener l : listeners) {
                 l.stateChanged(e);
             }
         }
     }
-    
+
     protected final void updateIsApplicable() {
         setApplicable(checkIsApplicable());
     }
@@ -75,41 +95,52 @@ public abstract class AbstractSearchScope extends SearchScope {
     protected abstract void stopListening();
     
     protected final boolean isListening() {
-        assert EventQueue.isDispatchThread();
 
-        return changeListeners != null;
+        /* thread: <any> */
+
+        synchronized (getListenersLock()) {
+            return changeListeners != null;
+        }
     }
 
     protected void addChangeListener(ChangeListener l) {
-        assert EventQueue.isDispatchThread();
-
         if (l == null) {
             throw new IllegalArgumentException("null");                 //NOI18N
         }
         
-        boolean firstListener = ((changeListeners == null) || changeListeners.isEmpty());
-        if (changeListeners == null) {
-            changeListeners = new ArrayList<ChangeListener>(1);
-        }
-        changeListeners.add(l);
-        if (firstListener) {
-            startListening();
-            applicable = checkIsApplicable();
+        /* thread: <any> */
+
+        synchronized (getListenersLock()) {
+            boolean firstListener = !isListening();
+            if (changeListeners == null) {
+                changeListeners = new ArrayList<ChangeListener>(1);
+            }
+            changeListeners.add(l);
+            if (firstListener) {
+                assert applicable == null;
+                startListening();
+            }
+            assert isListening();
         }
     }
 
     protected void removeChangeListener(ChangeListener l) {
-        assert EventQueue.isDispatchThread();
-
         if (l == null) {
             throw new IllegalArgumentException("null");                 //NOI18N
         }
         
-        if (changeListeners.remove(l) && changeListeners.isEmpty()) {
-            changeListeners = null;
-            stopListening();
+        /* thread: <any> */
+
+        synchronized (getListenersLock()) {
+            if (changeListeners.remove(l) && changeListeners.isEmpty()) {
+                changeListeners = null;
+                stopListening();
+                applicable = null;
+                assert !isListening();
+            }
         }
     }
+        
     
     protected SearchInfo createEmptySearchInfo() {
         return SearchInfoFactory.createSearchInfo(
