@@ -47,8 +47,6 @@ Microsystems, Inc. All Rights Reserved.
 
   <resolve name="nb.clusters.list" value="clusters.config.${cluster.config}.list"/>
 
-  <property name="clusters.list" value="${nb.clusters.list},${clusters.extra.list}"/>
-
   <property file="${moduleCluster.file}"/>
 
   <property name="test.dist.dir" location="${nb_all}/nbbuild/build/testdist"/>
