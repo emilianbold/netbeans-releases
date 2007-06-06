@@ -128,6 +128,19 @@ public class ExportNonAccessibleElementTest extends TreeRuleTestBase {
         performAnalysisTest("test/Test.java", before + after, before.length());       
     }
 
+    public void testWhyStaticFieldIsNotIdentified() throws Exception {
+        String  before = "package proxy.test.impl; " +
+        "public class IfaceFactory {" +
+            "public static I2 xfjd";
+        String after = "ksla;" +
+        "}" +
+        "interface I2 {" +
+        "}";
+        
+        performAnalysisTest("test/Test.java", before + after, before.length(),
+            "0:69-0:77:verifier:Non Accessible Type");       
+        
+    }
 
     public void testNonVisibleMethod() throws Exception {
         String before = "package test; " +

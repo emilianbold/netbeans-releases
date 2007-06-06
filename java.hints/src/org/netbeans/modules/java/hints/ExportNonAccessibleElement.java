@@ -83,7 +83,7 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
     }
     
     public Set<Kind> getTreeKinds() {
-        return EnumSet.of(Kind.METHOD, Kind.CLASS);
+        return EnumSet.of(Kind.METHOD, Kind.CLASS, Kind.VARIABLE);
     }
 
     public List<ErrorDescription> run(CompilationInfo compilationInfo,
