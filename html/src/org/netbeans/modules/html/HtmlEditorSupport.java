@@ -22,10 +22,6 @@ package org.netbeans.modules.html;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInput;
-import java.io.OutputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.io.OutputStreamWriter;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.BadLocationException;
@@ -35,7 +31,9 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.html.palette.HTMLPaletteFactory;
 import org.netbeans.spi.palette.PaletteController;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
@@ -57,26 +55,35 @@ import org.openide.windows.CloneableOpenSupport;
 
 
 
-/** 
+/**
  * Editor support for HTML data objects.
  *
  * @author Radim Kubacki
- * @see org.openide.text.DataEditorSupport
+ * @see org.openide.text.DataEditorSupportH
  */
 public final class HtmlEditorSupport extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie {
-
+    
     //constants used when finding html document content type
     private static final String CHARSET_DECL = "CHARSET="; //NOI18N
     private static final String HEAD_END_TAG_NAME = "</HEAD>"; //NOI18N
-        
     
-    /** SaveCookie for this support instance. The cookie is adding/removing 
-     * data object's cookie set depending on if modification flag was set/unset. */
+    
+    /** SaveCookie for this support instance. The cookie is adding/removing
+     * data object's cookie set depending on if modification flag was set/unset.
+     * It also invokes beforeSave() method on the HtmlDataObject to give it
+     * a chance to eg. reflect changes in 'charset' attribute
+     * */
+    
     private final SaveCookie saveCookie = new SaveCookie() {
         /** Implements <code>SaveCookie</code> interface. */
         public void save() throws IOException {
-            HtmlEditorSupport.this.saveDocument();
-            HtmlEditorSupport.this.getDataObject().setModified(false);
+            String encoding = ((HtmlDataObject)HtmlEditorSupport.this.getDataObject()).getFileEncoding();
+            
+            if (canUseEncoding(encoding)) {
+                
+                HtmlEditorSupport.this.saveDocument();
+                HtmlEditorSupport.this.getDataObject().setModified(false);
+            }
         }
     };
     
@@ -88,116 +95,139 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
         setMIMEType("text/html"); // NOI18N
     }
     
-    /** 
+    /**
+     * Adds notification to the data object to allow it to retrieve the correct encoding information
+     */
+    @Override
+    protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
+        HtmlDataObject hdo = (HtmlDataObject)getDataObject();
+        hdo.useEncodingFromFile();
+        super.loadFromStreamToKit(doc, stream, kit);
+        hdo.useEncodingFromEditor();
+    }
+    
+    /**
      * Overrides superclass method. Adds adding of save cookie if the document has been marked modified.
      * @return true if the environment accepted being marked as modified
      *    or false if it has refused and the document should remain unmodified
      */
-    protected boolean notifyModified () {
-        if (!super.notifyModified()) 
+    protected boolean notifyModified() {
+        if (!super.notifyModified())
             return false;
-
+        
         addSaveCookie();
-
+        
         return true;
     }
-
+    
     /** Overrides superclass method. Adds removing of save cookie. */
-    protected void notifyUnmodified () {
+    protected void notifyUnmodified() {
         super.notifyUnmodified();
-
+        
         removeSaveCookie();
     }
-
+    
     /** Helper method. Adds save cookie to the data object. */
     private void addSaveCookie() {
         HtmlDataObject obj = (HtmlDataObject)getDataObject();
-
+        
         // Adds save cookie to the data object.
         if(obj.getCookie(SaveCookie.class) == null) {
             obj.getCookieSet0().add(saveCookie);
             obj.setModified(true);
         }
     }
-
+    
     /** Helper method. Removes save cookie from the data object. */
     private void removeSaveCookie() {
         HtmlDataObject obj = (HtmlDataObject)getDataObject();
         
         // Remove save cookie from the data object.
         Cookie cookie = obj.getCookie(SaveCookie.class);
-
+        
         if(cookie != null && cookie.equals(saveCookie)) {
             obj.getCookieSet0().remove(saveCookie);
             obj.setModified(false);
         }
     }
-
-    /** From the begining part of the stream tries to guess the correct encoding
-     * to use for loading the document into memory.
-     *
-     * @param doc the document to read into
-     * @param stream the open stream to read from
-     * @param kit the associated editor kit
-     * @throws IOException if there was a problem reading the file
-     * @throws BadLocationException should not normally be thrown
-     * @see #saveFromKitToStream
-     */
-    protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
-        String encoding = ((HtmlDataObject)getDataObject()).getFileEncoding();
-        try {
-            InputStreamReader r = new InputStreamReader(stream, encoding);
-            kit.read (r, doc, 0);
-            return;
-        } catch (UnsupportedEncodingException ex) {
-            // ok unsupported encoding, lets go on
-        } catch (Exception ex) {
-            // annotate and try default read method
-            ErrorManager.getDefault ().annotate (
-                ex, NbBundle.getMessage(HtmlEditorSupport.class, "MSG_errorInReadingWithEnc", 
-                getDataObject().getPrimaryFile().getPath())
-            );
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
-        }
-        // no or bad encoding, just read the stream
-        kit.read (stream, doc, 0);
-    }    
     
-    /** 
-     * @param doc the document to write from
-     * @param kit the associated editor kit
-     * @param stream the open stream to write to
-     * @throws IOException if there was a problem writing the file
-     * @throws BadLocationException should not normally be thrown
-     * @see #loadFromStreamToKit
-     */
-    protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
-        int len = doc.getLength();
-        if (len > 4096) {
-            len = 4096;
-        }
-        String txt = doc.getText(0, len).toUpperCase();
-        // encoding
-        String encoding = (String) getDataObject().getPrimaryFile().getAttribute(HtmlDataObject.PROP_ENCODING);;
-        if (encoding != null) {
-            encoding.trim();
-        } else {
-            encoding = findEncoding(txt);
-        }
-        if (encoding == null) {
-            encoding = HtmlDataObject.DEFAULT_ENCODING;
-        }
-        // try to save in that encoding
+    private String getDocumentText() {
+        String text = "";
         try {
-            OutputStreamWriter w = new OutputStreamWriter(stream, encoding);
-            kit.write (w, doc, 0, doc.getLength());
-            return;
-        } catch (UnsupportedEncodingException ex) {
-            // ok unsupported encoding, lets go on
+            StyledDocument doc = getDocument();
+            if (doc != null) {
+                text = doc.getText(doc.getStartPosition().getOffset(), doc.getLength());
+            }
+        } catch (BadLocationException e) {
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
         }
-
-        // no encoding or unsupported => save in regular way
-        super.saveFromKitToStream(doc, kit, stream);
+        return text;
+    }
+    
+    String getHtmlEncoding() {
+        String docText = getDocumentText();
+        return HtmlEditorSupport.findEncoding(docText);
+    }
+    
+    void setEncodingProperty(String oldEncoding, String encoding) {
+        boolean storeEncoding = true;
+        // epmty property value means "use the encoding from the owning project"
+        if (encoding == null || encoding.length()==0) {
+            String defaultEnc = ((HtmlDataObject) getDataObject()).getDefaultFileEncoding();
+            storeEncoding = canUseEncoding(defaultEnc);
+            encoding = null;
+        } else {
+            storeEncoding = canUseEncoding(encoding);
+        }
+        if (storeEncoding) { // encoding conversion is either safe or the user decided to go for unsafe conversion
+            // only if the encoding has been actually changed
+            if (((encoding == null && oldEncoding != null) ||  
+                    (encoding != null && oldEncoding == null)) || 
+                    !encoding.equals(oldEncoding)) {
+                ((HtmlDataObject) getDataObject()).setFileEncoding(encoding);
+                try {
+                    // do litle magic here to force the new encoding to take effect
+                    notifyModified();
+                    saveDocument();
+                    reloadDocument();
+                } catch (IOException e) {
+                    // in case of exception revert the encoding
+                    notifyUnmodified();
+                    ((HtmlDataObject) getDataObject()).setFileEncoding(oldEncoding);
+                }
+            }
+        }
+    }
+    
+    boolean canUseEncoding(String encoding) {
+        return canUseEncoding(getDocumentText(), encoding);
+    }
+    
+    private boolean canUseEncoding(String docText, String encoding) {
+        if (!isSupportedEncoding(encoding)) return false;
+        java.nio.charset.CharsetEncoder coder = java.nio.charset.Charset.forName(encoding).newEncoder();
+        if (!coder.canEncode(docText)) {
+            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                    NbBundle.getMessage(HtmlEditorSupport.class, "MSG_BadCharConversion", //NOI18N
+                    new Object [] { getDataObject().getPrimaryFile().getNameExt(),
+                    encoding}),
+                    NotifyDescriptor.YES_NO_OPTION,
+                    NotifyDescriptor.WARNING_MESSAGE);
+            nd.setValue(NotifyDescriptor.NO_OPTION);
+            DialogDisplayer.getDefault().notify(nd);
+            if(nd.getValue() != NotifyDescriptor.YES_OPTION) return false;
+        }
+        return true;
+    }
+    
+    private boolean isSupportedEncoding(String encoding){
+        boolean supported;
+        try{
+            supported = java.nio.charset.Charset.isSupported(encoding);
+        } catch (java.nio.charset.IllegalCharsetNameException e){
+            supported = false;
+        }
+        return supported;
     }
     
     /** Tries to guess the mime type from given input stream. Tries to find
@@ -206,11 +236,21 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
      * @return the encoding or null if no has been found
      */
     static String findEncoding(String txt) {
-        int headEndOffset = txt.indexOf (HEAD_END_TAG_NAME); // NOI18N
+        int[] offsets = findEncodingOffsets(txt);
+        if (offsets.length == 3) {
+            String encoding = txt.substring(offsets[0] + offsets[1], offsets[0] + offsets[2]);
+            return encoding;
+        }
+        return null;
+    }
+    
+    private static int[] findEncodingOffsets(String txt) {
+        int[] rslt = new int[0];
+        int headEndOffset = txt.indexOf(HEAD_END_TAG_NAME); // NOI18N
         headEndOffset = headEndOffset == -1 ? txt.indexOf(HEAD_END_TAG_NAME.toLowerCase()) : headEndOffset;
         
         if (headEndOffset == -1){
-            return null;
+            return rslt;
         }
         
         TokenHierarchy hi = TokenHierarchy.create(txt, HTMLTokenId.language());
@@ -230,7 +270,7 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
                 charsetOffset = charsetOffset == -1 ? tokenImage.indexOf(CHARSET_DECL.toLowerCase()) : charsetOffset;
                 
                 int charsetEndOffset = charsetOffset + CHARSET_DECL.length();
-                if (charsetOffset != -1){ 
+                if (charsetOffset != -1){
                     int endOffset = tokenImage.indexOf('"', charsetEndOffset);
                     
                     if (endOffset == -1){
@@ -242,40 +282,38 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
                     }
                     
                     if (endOffset == -1){
-                        return null;
+                        return rslt;
                     }
                     
-                    String encoding = tokenImage.substring(charsetEndOffset, endOffset);
-                    return encoding;
+                    rslt =  new int[]{token.offset(hi), charsetEndOffset, endOffset};
                 }
             }
         }
-        
-        return null; // no token in token sequence or encoding not found
+        return rslt;
     }
     
     /** Nested class. Environment for this support. Extends <code>DataEditorSupport.Env</code> abstract class. */
     private static class Environment extends DataEditorSupport.Env {
-
+        
         private static final long serialVersionUID = 3035543168452715818L;
         
         /** Constructor. */
         public Environment(HtmlDataObject obj) {
             super(obj);
         }
-
+        
         
         /** Implements abstract superclass method. */
         protected FileObject getFile() {
             return getDataObject().getPrimaryFile();
         }
-
+        
         /** Implements abstract superclass method.*/
         protected FileLock takeLock() throws IOException {
             return ((HtmlDataObject)getDataObject()).getPrimaryEntry().takeLock();
         }
-
-        /** 
+        
+        /**
          * Overrides superclass method.
          * @return text editor support (instance of enclosing class)
          */
@@ -283,7 +321,7 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
             return (HtmlEditorSupport)getDataObject().getCookie(HtmlEditorSupport.class);
         }
     } // End of nested Environment class.
-
+    
     
     /** A method to create a new component. Overridden in subclasses.
      * @return the {@link HtmlEditor} for this support
@@ -305,14 +343,13 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
             instanceContent.add(getActionMap());
             
             setActivatedNodes(nodes);
-
+            
             DataObject dataObject = s.getDataObject();
             if (dataObject instanceof HtmlDataObject) {
                 try {
                     PaletteController pc = HTMLPaletteFactory.getPalette();
                     instanceContent.add(pc);
-                }
-                catch (IOException ioe) {
+                } catch (IOException ioe) {
                     //TODO exception handling
                     ioe.printStackTrace();
                 }
@@ -324,7 +361,7 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
             super(s);
             initialize();
         }
-
+        
         private void initialize() {
             associatePalette((HtmlEditorSupport)cloneableEditorSupport());
         }

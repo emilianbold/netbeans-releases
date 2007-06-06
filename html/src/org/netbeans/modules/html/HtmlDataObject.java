@@ -22,6 +22,10 @@ package org.netbeans.modules.html;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.ViewCookie;
@@ -35,22 +39,27 @@ import org.openide.loaders.UniFileLoader;
 import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /** Object that represents one html file.
-*
-* @author Ian Formanek
-*/
+ *
+ * @author Ian Formanek
+ */
 public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory {
-
     public static final String PROP_ENCODING = "encoding"; // NOI18N
     public static final String DEFAULT_ENCODING = new InputStreamReader(System.in).getEncoding();
     static final long serialVersionUID =8354927561693097159L;
     
+    transient volatile private Lookup currentLookup;
+    transient volatile private boolean useEditorForEncoding = true;
+    
     /** New instance.
-    * @param pf primary file object for this data object
-    * @param loader the data loader creating it
-    * @exception DataObjectExistsException if there was already a data object for it 
-    */
+     * @param pf primary file object for this data object
+     * @param loader the data loader creating it
+     * @exception DataObjectExistsException if there was already a data object for it
+     */
     public HtmlDataObject(FileObject pf, UniFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
         CookieSet set = getCookieSet();
@@ -62,37 +71,115 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
                 es.saveAs( folder, fileName );
             }
         });
+        createLookup();
+        assert currentLookup != null;
+        resolveFileEncoding();
     }
-
-    protected org.openide.nodes.Node createNodeDelegate () {
-        DataNode n = new HtmlDataNode (this, Children.LEAF);
+    
+    @Override
+    public Lookup getLookup() {
+        return currentLookup;
+    }
+    
+    protected org.openide.nodes.Node createNodeDelegate() {
+        DataNode n = new HtmlDataNode(this, Children.LEAF);
         n.setIconBaseWithExtension("org/netbeans/modules/html/htmlObject.png"); // NOI18N
         return n;
     }
     
     /** Creates new Cookie */
     public Node.Cookie createCookie(Class klass) {
-        if (klass.isAssignableFrom (HtmlEditorSupport.class)) {
+        if (klass.isAssignableFrom(HtmlEditorSupport.class)) {
             HtmlEditorSupport es = new HtmlEditorSupport(this);
             return es;
-        } else if (klass.isAssignableFrom (ViewSupport.class)) {
+        } else if (klass.isAssignableFrom(ViewSupport.class)) {
             return new ViewSupport(getPrimaryEntry());
         } else {
             return null;
         }
     }
-
+    
     // Package accessibility for HtmlEditorSupport:
     CookieSet getCookieSet0() {
         return getCookieSet();
     }
     
-    public String getFileEncoding() {
-        //read the encoding property and if not empty return it
-        String encoding = (String)getPrimaryFile().getAttribute(PROP_ENCODING);
-        if (encoding != null) {
-            return encoding;
+    String getDefaultFileEncoding() {
+        Project owner = FileOwnerQuery.getOwner(getPrimaryFile());
+        if (owner != null) { // try to get encoding from the owning project
+            FileEncodingQueryImplementation feq = owner.getLookup().lookup(FileEncodingQueryImplementation.class);
+            if (feq != null) { // don't try retrieving encoding from a project not supporting FileEncodingQuery
+                Charset charset = feq.getEncoding(getPrimaryFile());
+                return charset.name();
+            }
         }
+        return DEFAULT_ENCODING;
+    }
+    
+    String getFileEncoding() {
+        
+        String encoding = null;
+        if (useEditorForEncoding) {
+            HtmlEditorSupport editor = (HtmlEditorSupport)getCookie(HtmlEditorSupport.class);
+            encoding = editor.getHtmlEncoding();
+        } else {
+            encoding = resolveFileEncoding();
+        }
+        if (encoding == null) { // no encoding specified inside the HTML code
+            encoding = (String)getPrimaryFile().getAttribute(PROP_ENCODING); // try to get the encoding from the file property
+        }
+        
+        if (encoding == null) { // no encoding in the encoding file property either
+            encoding = getDefaultFileEncoding(); // get the default encoding from the file's project
+        }
+        return encoding;
+    }
+    
+    void setFileEncoding(String encoding) {
+        try {
+            getPrimaryFile().setAttribute(PROP_ENCODING, encoding);
+        } catch(IOException e) {
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+        }
+    }
+    
+    void useEncodingFromFile() {
+        useEditorForEncoding = false;
+    }
+    
+    void useEncodingFromEditor() {
+        useEditorForEncoding = true;
+    }
+    
+    private boolean isSupportedEncoding(String encoding){
+        boolean supported;
+        try{
+            supported = java.nio.charset.Charset.isSupported(encoding);
+        } catch (java.nio.charset.IllegalCharsetNameException e){
+            supported = false;
+        }
+        
+        return supported;
+    }
+    
+    private void createLookup() {
+        Lookup noEncodingLookup = super.getLookup();
+        
+        org.netbeans.spi.queries.FileEncodingQueryImplementation feq = new org.netbeans.spi.queries.FileEncodingQueryImplementation() {
+            public Charset getEncoding(FileObject file) {
+                assert file != null;
+                assert file.equals(getPrimaryFile());
+                
+                String charsetName = getFileEncoding();
+                return Charset.forName(charsetName);
+            }
+        };
+        
+        currentLookup = new ProxyLookup(noEncodingLookup, Lookups.singleton(feq));        
+    }
+    
+    private String resolveFileEncoding() {
+        String encoding = null;
         //detect encoding from input stream
         InputStream is = null;
         try {
@@ -107,10 +194,7 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
                     encoding = "UTF-16"; // NOI18N
                 }
             }
-            if (encoding == null) {
-                encoding = DEFAULT_ENCODING;
-            }
-            String txt = new String(arr, 0, len, encoding).toUpperCase();
+            String txt = new String(arr, 0, len, encoding != null ? encoding : DEFAULT_ENCODING).toUpperCase();
             encoding = HtmlEditorSupport.findEncoding(txt);
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
@@ -123,24 +207,10 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
                 ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
             }
         }
-        // if cannot detect return default
-        if (encoding == null) {
-            encoding = DEFAULT_ENCODING;
+        if (encoding != null) {
+            encoding.trim();
         }
-        encoding.trim();
         return encoding;
-    }
-    
-    public void setFileEncoding(String encoding) {
-        encoding = encoding.trim();
-        if(encoding.length() == 0) {
-            encoding = null; //clear the property
-        }
-        try {
-            getPrimaryFile().setAttribute(PROP_ENCODING, encoding);
-        } catch(IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
-        }
     }
     
     static final class ViewSupport implements ViewCookie {
@@ -152,12 +222,12 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
             this.primary = primary;
         }
         
-         public void view () {
-             try {
-                 HtmlBrowser.URLDisplayer.getDefault ().showURL (primary.getFile ().getURL ());
-             } catch (FileStateInvalidException e) {
-             }
-         }
+        public void view() {
+            try {
+                HtmlBrowser.URLDisplayer.getDefault().showURL(primary.getFile().getURL());
+            } catch (FileStateInvalidException e) {
+            }
+        }
     }
     
 }

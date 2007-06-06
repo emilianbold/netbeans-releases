@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.html;
 
+import java.beans.PropertyVetoException;
+import java.io.IOException;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -77,26 +79,12 @@ public class HtmlDataNode extends org.openide.loaders.DataNode {
                         throw new IllegalArgumentException();
                     }
                     String enc = ((String) val).trim();
-                    if (enc.length()!=0 && !isSupportedEncoding(enc)) {
-                        enc = oldVal;
-                    }
-                    ((HtmlDataObject) getDataObject()).setFileEncoding(enc);
+                    HtmlEditorSupport editor = (HtmlEditorSupport)getDataObject().getCookie(HtmlEditorSupport.class);
+                    editor.setEncodingProperty(oldVal, enc);
                 }
             });
             sheet.put(set);
         }
         return sheet.toArray();
     }
-    
-    private boolean isSupportedEncoding(String encoding){
-        boolean supported;
-        try{
-            supported = java.nio.charset.Charset.isSupported(encoding);
-        }
-        catch (java.nio.charset.IllegalCharsetNameException e){
-            supported = false;
-        }
-        return supported;
-    }
-
 }
