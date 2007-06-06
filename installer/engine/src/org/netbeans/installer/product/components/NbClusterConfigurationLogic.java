@@ -146,22 +146,22 @@ public abstract class NbClusterConfigurationLogic extends ProductConfigurationLo
         }
         
         // remove files that are not suited for the current platform ////////////////
-        for (String clusterName: clusterNames) {
-            final File cluster = new File(installLocation, clusterName);
-            
-            try {
-                progress.setDetail(ResourceUtils.getString(
-                        NbClusterConfigurationLogic.class,
-                        "NCCL.install.irrelevant.files")); // NOI18N
-                
-                SystemUtils.removeIrrelevantFiles(cluster);
-            } catch (IOException e) {
-                throw new InstallationException(ResourceUtils.getString(
-                        NbClusterConfigurationLogic.class,
-                        "NCCL.install.error.irrelevant.files"), // NOI18N
-                        e);
-            }
-        }
+        //for (String clusterName: clusterNames) {
+        //    final File cluster = new File(installLocation, clusterName);
+        //    
+        //    try {
+        //        progress.setDetail(ResourceUtils.getString(
+        //                NbClusterConfigurationLogic.class,
+        //                "NCCL.install.irrelevant.files")); // NOI18N
+        //        
+        //        SystemUtils.removeIrrelevantFiles(cluster);
+        //    } catch (IOException e) {
+        //        throw new InstallationException(ResourceUtils.getString(
+        //                NbClusterConfigurationLogic.class,
+        //                "NCCL.install.error.irrelevant.files"), // NOI18N
+        //                e);
+        //    }
+        //}
         
         // corrent permisions on executable files ///////////////////////////////////
         for (String clusterName: clusterNames) {

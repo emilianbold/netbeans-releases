@@ -120,20 +120,20 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }
         
         /////////////////////////////////////////////////////////////////////////////
-        try {
-            progress.setDetail(getString("CL.install.irrelevant.files")); // NOI18N
-            
-            SystemUtils.removeIrrelevantFiles(binSubdir);
-            SystemUtils.removeIrrelevantFiles(etcSubdir);
-            SystemUtils.removeIrrelevantFiles(platformCluster);
-            SystemUtils.removeIrrelevantFiles(nbCluster);
-            SystemUtils.removeIrrelevantFiles(ideCluster);
-            SystemUtils.removeIrrelevantFiles(xmlCluster);
-        } catch (IOException e) {
-            throw new InstallationException(
-                    getString("CL.install.error.irrelevant.files"), // NOI18N
-                    e);
-        }
+        //try {
+        //    progress.setDetail(getString("CL.install.irrelevant.files")); // NOI18N
+        //    
+        //    SystemUtils.removeIrrelevantFiles(binSubdir);
+        //    SystemUtils.removeIrrelevantFiles(etcSubdir);
+        //    SystemUtils.removeIrrelevantFiles(platformCluster);
+        //    SystemUtils.removeIrrelevantFiles(nbCluster);
+        //    SystemUtils.removeIrrelevantFiles(ideCluster);
+        //    SystemUtils.removeIrrelevantFiles(xmlCluster);
+        //} catch (IOException e) {
+        //    throw new InstallationException(
+        //            getString("CL.install.error.irrelevant.files"), // NOI18N
+        //            e);
+        //}
         
         /////////////////////////////////////////////////////////////////////////////
         try {

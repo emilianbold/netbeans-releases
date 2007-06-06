@@ -56,15 +56,15 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         final File location = getProduct().getInstallationLocation();
         
         /////////////////////////////////////////////////////////////////////////////
-        try {
-            progress.setDetail(getString("CL.install.irrelevant.files")); // NOI18N
-            
-            SystemUtils.removeIrrelevantFiles(location);
-        } catch (IOException e) {
-            throw new InstallationException(
-                    getString("CL.install.error.irrelevant.files"), // NOI18N
-                    e);
-        }
+        //try {
+        //    progress.setDetail(getString("CL.install.irrelevant.files")); // NOI18N
+        //    
+        //    SystemUtils.removeIrrelevantFiles(location);
+        //} catch (IOException e) {
+        //    throw new InstallationException(
+        //            getString("CL.install.error.irrelevant.files"), // NOI18N
+        //            e);
+        //}
         
         /////////////////////////////////////////////////////////////////////////////
         try {
