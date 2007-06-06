@@ -73,7 +73,7 @@ http://mesh.dl.sourceforge.net/sourceforge/freemarker/freemarker-2.3.8.tar.gz
 
     <target name="netbeans-extra" depends="release"/>
 
-    <target name="release" depends="init,download-freemarker">
+    <target name="release" depends="init">
         <mkdir dir="${cluster}/modules/ext"/>
         <copy todir="${cluster}/modules/ext" file="${freemarker.jar}"/>
     </target>
