@@ -37,7 +37,6 @@ import javax.swing.text.Document;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.java.editor.codegen.EqualsHashCodeGenerator;
-import org.netbeans.modules.java.editor.overridden.ElementDescription;
 import org.netbeans.modules.java.editor.semantic.Utilities;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ChangeInfo;
@@ -76,6 +75,9 @@ public class MissingHashCode extends AbstractHint {
             }
             
             Element e = compilationInfo.getTrees().getElement(treePath);
+            if (e == null) {
+                return null;
+            }
             
             Element parent = e.getEnclosingElement();
             ExecutableElement[] ret = EqualsHashCodeGenerator.overridesHashCodeAndEquals(compilationInfo, parent);
