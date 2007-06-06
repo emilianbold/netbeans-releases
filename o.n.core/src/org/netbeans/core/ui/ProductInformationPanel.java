@@ -20,9 +20,11 @@
 package org.netbeans.core.ui;
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.Window;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Enumeration;
@@ -39,6 +41,7 @@ import org.netbeans.core.actions.HTMLViewAction;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Enumerations;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -48,12 +51,12 @@ public class ProductInformationPanel extends JPanel implements HyperlinkListener
     
     public ProductInformationPanel() {
         initComponents();
-        
+        netbeansOrg.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         description.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, 
-                "LBL_Description", new Object[] {getProductVersionValue(), getJavaValue(), getVMValue(), getOperatingSystemValue(), getEncodingValue(), getSystemLocaleValue()}));
+                "LBL_Description", new Object[] {getProductVersionValue(), getJavaValue(), getVMValue(), 
+                getOperatingSystemValue(), getEncodingValue(), getSystemLocaleValue(), getUserDirValue()}));
         description.addHyperlinkListener(this);
         copyright.addHyperlinkListener(this);
-        netbeansOrg.addHyperlinkListener(this);
     }
 
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
@@ -68,8 +71,7 @@ public class ProductInformationPanel extends JPanel implements HyperlinkListener
         description = new javax.swing.JTextPane();
         jLayeredPane1 = new javax.swing.JLayeredPane();
         jLabel1 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        netbeansOrg = new javax.swing.JTextPane();
+        netbeansOrg = new javax.swing.JLabel();
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
@@ -101,6 +103,7 @@ public class ProductInformationPanel extends JPanel implements HyperlinkListener
 
         description.setContentType("text/html");
         description.setEditable(false);
+        description.setText("<div style=\"font-size: 12pt; font-family: Verdana, 'Verdana CE',  Arial, 'Arial CE', 'Lucida Grande CE', lucida, 'Helvetica CE', sans-serif;\">\n    <b>Product Version:</b> {0}<br> <b>Java:</b> {1}; {2}<br> <b>System:</b> {3}; {4}; {5}<br><b>Userdir:</b> {6}</div>");
         jScrollPane2.setViewportView(description);
 
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/core/resources/about.png"))); // NOI18N
@@ -111,22 +114,13 @@ public class ProductInformationPanel extends JPanel implements HyperlinkListener
         jLabel1.setBounds(0, 0, 531, 254);
         jLayeredPane1.add(jLabel1, javax.swing.JLayeredPane.DEFAULT_LAYER);
 
-        jScrollPane1.setBackground(new java.awt.Color(255, 255, 255));
-        jScrollPane1.setBorder(null);
-
-        netbeansOrg.setBorder(null);
-        netbeansOrg.setContentType("text/html");
-        netbeansOrg.setEditable(false);
-        netbeansOrg.setText(org.openide.util.NbBundle.getBundle(ProductInformationPanel.class).getString("LBL_NetBeansOrg")); // NOI18N
         netbeansOrg.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 netbeansOrgMouseClicked(evt);
             }
         });
-        jScrollPane1.setViewportView(netbeansOrg);
-
-        jScrollPane1.setBounds(210, 230, 120, 20);
-        jLayeredPane1.add(jScrollPane1, javax.swing.JLayeredPane.POPUP_LAYER);
+        netbeansOrg.setBounds(160, 60, 210, 40);
+        jLayeredPane1.add(netbeansOrg, javax.swing.JLayeredPane.POPUP_LAYER);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -156,8 +150,14 @@ public class ProductInformationPanel extends JPanel implements HyperlinkListener
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void netbeansOrgMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_netbeansOrgMouseClicked
-    showUrl();
+private void netbeansOrgMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_netbeansOrgMouseClicked
+        try {
+            url = new URL("http://www.netbeans.org/"); // NOI18N
+            showUrl();
+        } catch (MalformedURLException ex) {
+            //ignore
+        }
+        url = null;        
 }//GEN-LAST:event_netbeansOrgMouseClicked
 
 private void copyrightMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_copyrightMouseClicked
@@ -175,10 +175,9 @@ private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLayeredPane jLayeredPane1;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JTextPane netbeansOrg;
+    private javax.swing.JLabel netbeansOrg;
     // End of variables declaration//GEN-END:variables
     
     private void closeDialog() {
