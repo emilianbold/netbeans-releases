@@ -4573,9 +4573,6 @@ public JavaRecognizer(ParserSharedInputState state) {
 			if ( synPredMatched195 ) {
 				declaration();
 				astFactory.addASTChild(currentAST, returnAST);
-				AST tmp150_AST = null;
-				tmp150_AST = astFactory.create(LT(1));
-				astFactory.addASTChild(currentAST, tmp150_AST);
 				match(SEMI);
 				statement_AST = (AST)currentAST.root;
 			}

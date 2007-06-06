@@ -1124,7 +1124,7 @@ statement
 	// statements. Must backtrack to be sure. Could use a semantic
 	// predicate to test symbol table to see what the type was coming
 	// up, but that's pretty hard without a symbol table ;)
-	|	(declaration)=> declaration SEMI
+	|	(declaration)=> declaration SEMI!
 
 	// An expression statement. This could be a method call,
 	// assignment statement, or any other expression evaluated for
