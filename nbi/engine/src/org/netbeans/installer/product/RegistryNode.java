@@ -355,13 +355,14 @@ public abstract class RegistryNode implements PropertyContainer {
             iconUri = XMLUtils.parseExtendedUri(
                     XMLUtils.getChild(element, "icon"));
             
-            if (!Boolean.getBoolean(Registry.LAZY_LOAD_ICONS_PROPERTY) && 
-                    (UiMode.getCurrentUiMode() != UiMode.SILENT)) {
+            if (!Boolean.getBoolean(Registry.LAZY_LOAD_ICONS_PROPERTY)) {
                 final File iconFile =
                         FileProxy.getInstance().getFile(iconUri.getRemote());
-                
-                icon = new ImageIcon(iconFile.getPath());
                 iconUri.setLocal(iconFile.toURI());
+                
+                if (UiMode.getCurrentUiMode() != UiMode.SILENT) {
+                    icon = new ImageIcon(iconFile.getPath());
+                }
             }
             
             offset = Long.parseLong(element.getAttribute("offset"));
