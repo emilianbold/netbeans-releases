@@ -20,7 +20,6 @@ package org.netbeans.modules.visualweb.insync.live;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
-import java.util.HashMap;
 
 import javax.faces.context.FacesContext;
 import javax.faces.el.ValueBinding;
@@ -34,6 +33,7 @@ import org.netbeans.modules.visualweb.insync.UndoEvent;
 import org.netbeans.modules.visualweb.insync.beans.Bean;
 import org.netbeans.modules.visualweb.insync.beans.Property;
 import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
+import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean.Scope;
 
 /**
  * DesignProperty implementation based on delegation to beans.Property and subclasses, using Java
@@ -162,7 +162,8 @@ public class BeansDesignProperty extends SourceDesignProperty {
             if(lb == null) {
                 // Now look through all contexts and see if we can find it
                 // !EAT TODONOW Optimize this, so that lookup for simple values like strings dont take too long ?
-                LiveUnit[] units = (LiveUnit[]) ((FacesModelSet) liveBean.unit.getModel().getOwner()).getDesignContexts();
+                LiveUnit[] units = (LiveUnit[]) ((FacesModelSet) liveBean.unit.getModel().getOwner()).findDesignContexts(
+                        new String[]{Scope.REQUEST.toString(), Scope.SESSION.toString(), Scope.APPLICATION.toString()});
                 for (int i=0; i < units.length; i++) {
                     lb = units[i].getBeanForInstance(value);
                     if(lb != null) break;

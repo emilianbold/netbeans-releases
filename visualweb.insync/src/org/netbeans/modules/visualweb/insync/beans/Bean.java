@@ -282,10 +282,13 @@ public class Bean extends BeansNode {
             //System.err.println("B.setName " + oldname + "=>" + name);
             name = newname;
             List<FileObject> fObjs = new ArrayList<FileObject>();
-            LiveUnit[] units = (LiveUnit[]) ((FacesModelSet)unit.getModel().getOwner()).getDesignContexts();
-            for (int i=0; i < units.length; i++) {
-                fObjs.add(units[i].getBeansUnit().getJavaUnit().getFileObject());
-             }
+            fObjs.add(((FacesModel)unit.getModel()).getJavaFile());
+            FacesModel[] models = ((FacesModelSet)unit.getModel().getOwner()).getFacesModels();
+            for (int i=0; i < models.length; i++) {
+                if(!models[i].isPageBean()) {
+                    fObjs.add(models[i].getJavaFile());
+                }
+            }
             unit.getThisClass().renameProperty(oldname, newname, fObjs);
         }
         return newname;

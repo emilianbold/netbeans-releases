@@ -687,7 +687,7 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
             }
         }
         
-        return (DesignContext[])dcs.toArray(new DesignContext[dcs.size()]);
+        return (DesignContext[])dcs.toArray(new LiveUnit[dcs.size()]);
     }
 
     /**
