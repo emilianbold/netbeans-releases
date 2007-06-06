@@ -47,10 +47,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * @author  Peter Pis
  */
 public class RelocateAction extends ContextAction {
- 
-    
-    SvnProgressSupport support;
-    
+         
     protected boolean enable(Node[] nodes) {
         final Context ctx = getContext(nodes);
         File[] roots = ctx.getRootFiles();
@@ -149,21 +146,17 @@ public class RelocateAction extends ContextAction {
         }                  
         final String wc = roots[0].getAbsolutePath();
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
-        try {
-            support = new SvnProgressSupport() {
-                SvnClient client = null;
-                protected void perform() {                    
-                    try {
-                        client = Subversion.getInstance().getClient(repositoryUrl);
-                        client.relocate(repositoryUrl.toString(), newUrl, wc, true);
-                    } catch (SVNClientException ex) {
-                        support.annotate(ex);
-                    } 
-                }
-            };
-            support.start(rp, repositoryUrl, loc.getString("LBL_Relocate_Progress"));
-        } finally {
-            support = null;
-        }
+        SvnProgressSupport support = new SvnProgressSupport() {
+            SvnClient client = null;
+            protected void perform() {                    
+                try {
+                    client = Subversion.getInstance().getClient(repositoryUrl);
+                    client.relocate(repositoryUrl.toString(), newUrl, wc, true);
+                } catch (SVNClientException ex) {
+                    annotate(ex);
+                } 
+            }
+        };
+        support.start(rp, repositoryUrl, loc.getString("LBL_Relocate_Progress"));
     }
 }
