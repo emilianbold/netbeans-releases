@@ -6,11 +6,14 @@
 
 package org.netbeans.modules.visualweb.ejb.load;
 
-import java.io.FileInputStream;
-import java.util.*;
+import java.io.StringReader;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
@@ -135,21 +138,8 @@ public class WeblogicDeploymentDescriptorParser extends DefaultHandler{
 
     public InputSource resolveEntity( String publicId, String systemId )
     {
-        try
-        {
-            // PE 8.0 sun-ejb-jar.xml
-            if( systemId.equals( "http://www.bea.com/servers/wls810/dtd/weblogic-ejb-jar.dtd" ) ) // NOI18N
-            {
-                return new InputSource( new java.io.CharArrayReader( new char[0] ) );
-            }
-            else
-                return null;
-            }
-            catch( Exception e )
-            {
-                // Ignore the exception
-                return null;
-            }
+        // Ignore any external entities
+        return new InputSource(new StringReader(""));
     }
 
 }

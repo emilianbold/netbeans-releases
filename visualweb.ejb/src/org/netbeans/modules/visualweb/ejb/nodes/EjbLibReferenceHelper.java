@@ -26,10 +26,12 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.visualweb.api.designerapi.DesignerServiceHack;
+import org.netbeans.modules.visualweb.api.j2ee.common.RequestedEjbResource;
 import org.netbeans.modules.visualweb.ejb.EjbDataSourceManager;
 import org.netbeans.modules.visualweb.ejb.EjbRefMaintainer;
 import org.netbeans.modules.visualweb.ejb.datamodel.EjbDataModel;
 import org.netbeans.modules.visualweb.ejb.datamodel.EjbGroup;
+import org.netbeans.modules.visualweb.ejb.datamodel.EjbInfo;
 import org.netbeans.modules.visualweb.ejb.util.Util;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.openide.ErrorManager;
@@ -77,8 +79,7 @@ public class EjbLibReferenceHelper {
     }
 
     /**
-     * Gets or creates the library definition containing the client wrapper
-     * classes
+     * Gets or creates the library definition containing the client wrapper classes
      */
     public static Library getWrapperClientLibDef(EjbGroup ejbGroup) {
 
@@ -351,15 +352,14 @@ public class EjbLibReferenceHelper {
     }
 
     /**
-     * Adds the given jars to the project as archive references. This method is
-     * idempotent and is safe to call even if jars already have been copied to
-     * the project.
+     * Adds the given jars to the project as archive references. This method is idempotent and is
+     * safe to call even if jars already have been copied to the project.
      * 
      * @param project
      *            the project to be added to
      * @param role
-     *            ClassPath.COMPILE = compile-time only, do not deploy,
-     *            ClassPath.EXECUTE = deploy only, or null = means both.
+     *            One of three values: ClassPath.COMPILE = compile-time only, do not deploy;
+     *            ClassPath.EXECUTE = deploy only; or null = means both.
      * @param jars
      *            jar files to be copied to the project (filename Strings)
      * @throws IOException
@@ -427,8 +427,8 @@ public class EjbLibReferenceHelper {
      * @param project
      *            The project to be added to
      * @param libDefs
-     *            The libraries to be added to the project. It is a map of(
-     *            Library, JsfProjectClassPathExtender.LibraryRole[])
+     *            The libraries to be added to the project. It is a map of( Library,
+     *            JsfProjectClassPathExtender.LibraryRole[])
      */
     public static void addLibRefsToProject(Project project, Map libDefs) {
         // <MIGRATION Fix Me - Use latest API from project >
@@ -488,8 +488,7 @@ public class EjbLibReferenceHelper {
     }
 
     /**
-     * Adds the reference information of the ejbs in the give ejb group to the
-     * project.
+     * Adds the reference information of the ejbs in the give ejb group to the project.
      * 
      * @param project
      *            The project to be added to
@@ -536,7 +535,7 @@ public class EjbLibReferenceHelper {
         FileObject ejbRefXml = null;
         try {
             ejbRefXml = JsfProjectUtils.getProjectLibraryDirectory(project).getFileObject(
-                    EjbDataSourceManager.EJB_DATA_SUB_DIR + File.separator + EJB_REFS_XML);
+                    EjbDataSourceManager.EJB_DATA_SUB_DIR + "/" + EJB_REFS_XML);
         } catch (java.io.IOException ie) {
             // Trouble getting to the ref file
             return null;
@@ -553,12 +552,48 @@ public class EjbLibReferenceHelper {
     }
 
     /**
-     * Adds the EjbGroup to the currently active project. This method is
-     * idempotent.
+     * Add all session beans in EjbGroup grp to project. This method is idempotent.
+     * 
+     * @param project
+     * @param grp
+     */
+    private static void addToWebXml(Project project, EjbGroup grp) {
+        // Add all the EJBs in this group as EJB resources to the project
+        // Note: we purposely decided to add all the EJBs vs just the used
+        // ones
+        for (Iterator ejbIter = grp.getSessionBeans().iterator(); ejbIter.hasNext();) {
+            EjbInfo ejbInfo = (EjbInfo) ejbIter.next();
+
+            String refName = ejbInfo.getWebEjbRef();
+            String refType = ejbInfo.getBeanTypeName();
+            String home = ejbInfo.getHomeInterfaceName();
+
+            // The global JNDI name for this EJB
+            // - corbaname:iiop:<hostname>:<port>#<jndiname> for Sun
+            // Application server, weblogic
+            // -
+            // corbaname:iiop:<hostname>:<port>/NameServiceServerRoot#<jndiname>
+            // for websphere 5.1
+            String jndiName = "corbaname:iiop:" + grp.getServerHost() + ":" + grp.getIIOPPort()
+                    + "#" + ejbInfo.getJNDIName();
+            if (grp.isWebsphereAppServer())
+                jndiName = "corbaname:iiop:" + grp.getServerHost() + ":" + grp.getIIOPPort()
+                        + "/NameServiceServerRoot#" + ejbInfo.getJNDIName();
+
+            String remote = ejbInfo.getCompInterfaceName();
+
+            RequestedEjbResource resource = new RequestedEjbResource(refName, jndiName, refType,
+                    home, remote);
+            JsfProjectUtils.setEjbReference(project, resource);
+        }
+    }
+
+    /**
+     * Adds the EjbGroup to the currently active project. This method is idempotent.
      * 
      * @throws IOException
      */
-    public static void addJarRef(EjbGroup ejbGroup) throws IOException {
+    public static void addEjbGroupToActiveProject(EjbGroup ejbGroup) throws IOException {
         Project project = getActiveProject();
         boolean isJavaEE5 = JsfProjectUtils.isJavaEE5Project(project);
 
@@ -574,13 +609,18 @@ public class EjbLibReferenceHelper {
         String dtJar = ejbGroup.getDesignInfoJar();
         addJarsAndRefsToProject(project, ClassPath.COMPILE, dtJar);
 
-        // Add the AppClient jars to the project
+        // Add the client stub jars to the project
         ArrayList<String> clientJarFiles = ejbGroup.getClientJarFiles();
         for (String clientJar : clientJarFiles) {
             addJarsAndRefsToProject(project, null, clientJar);
         }
 
-        // Add/update this ejb group to the ejb ref xml in the porject
+        // Add/update this ejb group to the ejb ref xml in the project
         addToEjbRefXmlToProject(project, ejbGroup);
+
+        // Add an ejb-ref to the standard webapp DD, web.xml
+        addToWebXml(project, ejbGroup);
+
+        // TODO add it to the container-specific DD
     }
 }

@@ -6,11 +6,17 @@
 
 package org.netbeans.modules.visualweb.ejb.load;
 
-import org.netbeans.modules.visualweb.ejb.datamodel.EjbInfo;
-import java.util.*;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
+import org.netbeans.modules.visualweb.ejb.datamodel.EjbInfo;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
@@ -178,26 +184,8 @@ public class StdDeploymentDescriptorParser extends DefaultHandler
 
     public InputSource resolveEntity( String publicId, String systemId )
     {
-        try
-        {
-            // sunAppServer 7 ejb-jar.xml
-            if (systemId.equals("http://java.sun.com/j2ee/dtds/ejb-jar_1_1.dtd")) // NOI18N
-            {
-                return new InputSource( new java.io.CharArrayReader( new char[0] ) );
-            }
-            // weblogic 8.1 ejb-jar.xml
-            else if( systemId.equals( "http://java.sun.com/dtd/ejb-jar_2_0.dtd" ) ) // NOI18N
-            {
-                return new InputSource( new java.io.CharArrayReader( new char[0] ) );
-            }
-            else
-                return null;
-            }
-            catch( Exception e )
-            {
-                // Ignore the exception
-                return null;
-            }
+        // Ignore any external entities
+        return new InputSource(new StringReader(""));
     }
 
     public Collection getSkippedEjbs()

@@ -5,13 +5,18 @@
  */
 
 package org.netbeans.modules.visualweb.ejb.load;
-import java.util.*;
+import java.io.StringReader;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -118,6 +123,12 @@ public class WebsphereDeploymentDescriptorParser extends DefaultHandler {
     public void characters(char buf [], int offset, int len)
         throws SAXException 
     { 
+    }
+    
+    public InputSource resolveEntity( String publicId, String systemId )
+    {
+        // Ignore any external entities
+        return new InputSource(new StringReader(""));
     }
 }
 

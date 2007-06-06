@@ -179,8 +179,7 @@ public class MethodNode extends AbstractNode implements Node.Cookie {
                         NotifyDescriptor d = new NotifyDescriptor.Message("Class " + className
                                 + " not found", /*
                                                  * NbBundle.getMessage(MethodNode.class,
-                                                 * "PARAMETER_NAME_NOT_UNIQUE",
-                                                 * name ),
+                                                 * "PARAMETER_NAME_NOT_UNIQUE", name ),
                                                  */
                         NotifyDescriptor.ERROR_MESSAGE);
                         DialogDisplayer.getDefault().notify(d);
@@ -383,7 +382,7 @@ public class MethodNode extends AbstractNode implements Node.Cookie {
         public String getBeanClassName() {
             // XXX Hack Jar ref adding.
             try {
-                EjbLibReferenceHelper.addJarRef(ejbGroup);
+                EjbLibReferenceHelper.addEjbGroupToActiveProject(ejbGroup);
             } catch (IOException e) {
                 Util.getLogger().log(Level.SEVERE, "Unable to add EJB Set to Project", e);
             }

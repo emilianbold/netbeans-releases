@@ -223,7 +223,7 @@ public class SessionBeanNode extends AbstractNode implements Node.Cookie {
             // EJB node is even dragged onto the designer
             // without dropping
             try {
-                EjbLibReferenceHelper.addJarRef(ejbGroup);
+                EjbLibReferenceHelper.addEjbGroupToActiveProject(ejbGroup);
             } catch (IOException e) {
                 Util.getLogger().log(Level.SEVERE, "Unable to add EJB Set to Project", e);
             }
