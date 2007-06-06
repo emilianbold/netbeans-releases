@@ -19,15 +19,20 @@
 
 package org.netbeans.modules.css.model;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.NbBundle;
 
 /**
- * Represents the content of a Css rule. 
- * 
+ * Represents the content of a Css rule.
+ *
  * @author Winston Prakash
  * @author Marek Fukala
  *
@@ -35,11 +40,16 @@ import org.openide.util.NbBundle;
  */
 public class CssRuleContent {
     
+    private static final Logger LOGGER = Logger.getLogger(org.netbeans.modules.css.Utilities.VISUAL_EDITOR_LOGGER);
+    
     //TODO move this to the UI package
     public final static String NOT_SET = NbBundle.getMessage(CssRuleContent.class, "NOT_SET"); //NOI18N
     public final static String VALUE = NbBundle.getMessage(CssRuleContent.class, "VALUE"); //NOI18N
     
-    private PropertyChangeSupport propertyChangeSupport =  new PropertyChangeSupport(this);
+    private final List<PropertyChangeListener> listeners = new ArrayList<PropertyChangeListener>();
+    
+    //debug
+    private HashMap<PropertyChangeListener, Exception> listenersCreators = new HashMap<PropertyChangeListener, Exception>();
     
     private List<CssRuleItem> items;
     
@@ -54,7 +64,7 @@ public class CssRuleContent {
     
     /**
      * Get the value of specified property from the rule items.
-     * 
+     *
      * @return Value of the specified property.
      */
     public String getProperty(String property) {
@@ -72,17 +82,16 @@ public class CssRuleContent {
         newValue = newValue.trim();
         if (item != null && newValue.length() == 0) {
             //property remove
-            propertyChangeSupport.firePropertyChange("property", item, null); //NOI18N
+            firePropertyChange(item, null); //NOI18N
         } else {
             //property add or modify
-            propertyChangeSupport.firePropertyChange("property",
-                    item,
+            firePropertyChange(item,
                     new CssRuleItem(property, -1, newValue, -1)); //NOI18N
         }
     }
     
-    /** Returns a formated string with the rule items in the form key: value; 
-     * 
+    /** Returns a formated string with the rule items in the form key: value;
+     *
      * @return formatted string representation of the rule items
      */
     public String getFormattedString(){
@@ -102,6 +111,7 @@ public class CssRuleContent {
         return strWriter.toString();
     }
     
+    @Override
     public String toString(){
         return getFormattedString();
     }
@@ -110,16 +120,38 @@ public class CssRuleContent {
      * Adds a PropertyChangeListener to the listener list.
      * @param listener The listener to add.
      */
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        propertyChangeSupport.addPropertyChangeListener(listener);
+    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+        //debug code >>>
+        if(!listeners.isEmpty()) {
+            Exception e = new IllegalStateException("Trying to add second listener to CssRuleContent.");
+            LOGGER.throwing(CssRuleContent.class.getName(), "addPropertyChangeListener", e);
+            LOGGER.log(Level.FINE, "Stacktraces of the previous listeners creators:");
+            for(Exception ex : listenersCreators.values()) {
+                LOGGER.throwing(CssRuleContent.class.getName(), "addPropertyChangeListener", ex);
+            }
+        }
+        listenersCreators.put(listener, new Exception());
+        //<<<<
+        
+        listeners.add(listener);
     }
     
     /**
      * Removes a PropertyChangeListener from the listener list.
      * @param listener The listener to remove.
      */
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        propertyChangeSupport.removePropertyChangeListener(listener);
+    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+        listeners.remove(listener);
+        
+        //debug
+        listenersCreators.remove(listener);
+    }
+    
+    private synchronized void firePropertyChange(CssRuleItem oldVal, CssRuleItem newVal) {
+        List<PropertyChangeListener> copy = new ArrayList<PropertyChangeListener>(listeners);
+        for(PropertyChangeListener l : copy) {
+            l.propertyChange(new PropertyChangeEvent(this, "property", oldVal, newVal));
+        }
     }
     
     private CssRuleItem findItem(String keyName) {
