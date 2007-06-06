@@ -32,6 +32,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
@@ -39,6 +41,8 @@ import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -53,11 +57,10 @@ public class LocalDownloadSupport {
     private static String LOCAL_DOWNLOAD_FILES = "local-download-files"; // NOI18N    
     private FileList fileList = new FileList();
     private List<UpdateUnit> updateUnits;
+    private Logger err = Logger.getLogger (LocalDownloadSupport.class.getName ());
 
-    public LocalDownloadSupport() { 
-    }
+    public LocalDownloadSupport() {}
     
-
     public boolean selectNbmFiles () {
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -99,7 +102,14 @@ public class LocalDownloadSupport {
             UpdateUnitProviderFactory factory = UpdateUnitProviderFactory.getDefault();
             for (File file : nbms) {
                 UpdateUnitProvider provider = factory.create(file.getName(), new File[] {file});
-                List<UpdateUnit> units = provider.getUpdateUnits(UpdateManager.TYPE.MODULE);
+                List<UpdateUnit> units = Collections.emptyList ();
+                try {
+                    units = provider.getUpdateUnits(UpdateManager.TYPE.MODULE);
+                } catch (RuntimeException re) {
+                    err.log (Level.INFO, re.getMessage (), re);
+                    DialogDisplayer.getDefault().notifyLater (new NotifyDescriptor.Exception (re, getBundle ("LocalDownloadSupport_BrokenNBM_Exception", file.getName ())));
+                    fileList.removeFile (file);
+                }
                 synchronized(LocalDownloadSupport.class) {                
                     updateUnits.addAll(units);
                 }
@@ -137,8 +147,8 @@ public class LocalDownloadSupport {
         return (retval.exists()) ? retval : new File(System.getProperty ("netbeans.user")); // NOI18N
     }
 
-    public static String getBundle (String key) {
-        return NbBundle.getMessage (LocalDownloadSupport.class, key);
+    public static String getBundle (String key, String... params) {
+        return NbBundle.getMessage (LocalDownloadSupport.class, key, params);
     }
     
     private static Preferences getPreferences() {
@@ -162,7 +172,7 @@ public class LocalDownloadSupport {
         
         void addFiles(Collection<File> files) {
             getSelectedFiles().addAll(files);
-            selectedFiles = stripNotExistingFiles(getSelectedFiles());
+            selectedFiles = stripNoNBMs (stripNotExistingFiles(getSelectedFiles ()));
             makePersistent(selectedFiles);
         }
 
@@ -172,7 +182,7 @@ public class LocalDownloadSupport {
         
         void removeFiles(Collection<File> files) {
             getSelectedFiles().removeAll(files);
-            selectedFiles = stripNotExistingFiles(getSelectedFiles());
+            selectedFiles = stripNoNBMs (stripNotExistingFiles(getSelectedFiles ()));
             makePersistent(selectedFiles);
         }
         
@@ -211,6 +221,16 @@ public class LocalDownloadSupport {
             Set<File> retval = new HashSet<File>();
             for (File file : files) {
                 if (file.exists()) {
+                    retval.add(file);
+                }
+            }
+            return retval;
+        }
+        
+        private static Set<File> stripNoNBMs (Set<File> files) {
+            Set<File> retval = new HashSet<File> ();
+            for (File file : files) {
+                if (NBM_FILE_FILTER.accept (file)) {
                     retval.add(file);
                 }
             }

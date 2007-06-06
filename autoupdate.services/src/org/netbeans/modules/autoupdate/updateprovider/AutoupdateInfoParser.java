@@ -110,7 +110,9 @@ public class AutoupdateInfoParser {
         if (entry == null) {
             entry = jf.getEntry (INFO_DIR + '/' + INFO_FILE);
         }
-        assert entry != null : "info.xml found in file " + nbmFile;
+        if (entry == null) {
+            throw new IllegalArgumentException ("info.xml found in file " + nbmFile);
+        }
         
         // get xml document
         InputSource xmlInputSource = new InputSource (jf.getInputStream (entry));
