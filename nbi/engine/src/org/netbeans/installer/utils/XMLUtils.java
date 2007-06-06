@@ -280,22 +280,22 @@ public abstract class XMLUtils {
                 Version.getVersion(element.getAttribute("version-resolved"));
         Dependency dependency = null;
         if(type.equals(Requirement.NAME)) {
-            /*
-            Element orElement = getChild(element, "or");
-            if(orElement!=null) {
-                List <Requirement> list = new ArrayList <Requirement> ();
+            List <List <Requirement>> orList = new ArrayList<List<Requirement>> ();
+            for(Element orElement : getChildren(element, "or")) {
+                List < Requirement> requirements = new ArrayList <Requirement> ();
                 for(Element el : getChildren(orElement)) {
                     Dependency dep = parseDependency(el);
                     if(dep instanceof Requirement) {
-                        list.add((Requirement)dep);
+                        requirements.add((Requirement)dep);
                     } else {
-                        throw new ParseException("OR dependencies doesn`t support " +
-                                dep.getClass().getSimpleName());
+                        throw new ParseException(
+                                "OR dependencies are not supported for " +
+                                dep.getName());
                     }
                 }
-                dependency = new Requirement(uid, lower, upper, resolved, list);
-            }*/
-            dependency = new Requirement(uid, lower, upper, resolved);
+                orList.add(requirements);
+            }
+            dependency = new Requirement(uid, lower, upper, resolved, orList);
         } else if(type.equals(Conflict.NAME)) {
             dependency = new Conflict(uid, lower, upper, resolved);
         } else if(type.equals(InstallAfter.NAME)) {
@@ -324,6 +324,15 @@ public abstract class XMLUtils {
             element.setAttribute("version-resolved",
                     dependency.getVersionResolved().toString());
         }
+        if(dependency instanceof Requirement) {
+            Requirement requirement = (Requirement)dependency;
+            List <List <Requirement>> orList = requirement.getAlternatives();
+            for(List <Requirement> requirememntsBlock : orList) {
+                element.appendChild(
+                        saveDependencies(requirememntsBlock, 
+                        element.getOwnerDocument().createElement("or")));
+            }            
+        }
         
         return element;
     }
@@ -340,7 +349,7 @@ public abstract class XMLUtils {
     }
     
     public static Element saveDependencies(
-            final List<Dependency> dependencies,
+            final List<? extends Dependency> dependencies,
             final Element element) {
         final Document document = element.getOwnerDocument();
         

@@ -20,6 +20,8 @@
 
 package org.netbeans.installer.product.dependencies;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.helper.Dependency;
 import org.netbeans.installer.utils.helper.Version;
@@ -30,13 +32,24 @@ import org.netbeans.installer.utils.helper.Version;
  */
 public class Requirement extends Dependency {
     public static final String NAME = "requirement"; //NOI18N
+    private List <List <Requirement>> alternatives ;
     
     public Requirement(
             final String uid,
             final Version versionLower,
             final Version versionUpper,
             final Version versionResolved) {
+        this(uid,versionLower,versionUpper,versionResolved,
+                new ArrayList <List <Requirement>>());
+    }
+    public Requirement(
+            final String uid,
+            final Version versionLower,
+            final Version versionUpper,
+            final Version versionResolved,
+            final List <List <Requirement>> altRequirements) {
         super(uid,versionLower,versionUpper,versionResolved);
+        alternatives = new ArrayList <List <Requirement>> (altRequirements);
     }
     
    
@@ -45,7 +58,6 @@ public class Requirement extends Dependency {
     }
     
     public boolean satisfies(Product product) {
-        boolean satisfy;
         if (getVersionResolved() != null) {
             return product.getUid().equals(getUid()) &&
                     product.getVersion().equals(getVersionResolved());
@@ -58,4 +70,9 @@ public class Requirement extends Dependency {
                 product.getVersion().newerOrEquals(getVersionLower()) &&
                 product.getVersion().olderOrEquals(getVersionUpper());        
     }   
+
+    public List<List<Requirement>> getAlternatives() {
+        return alternatives;
+    }
+
 }
