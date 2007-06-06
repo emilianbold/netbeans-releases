@@ -26,9 +26,11 @@ import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import javax.swing.Action;
-import org.netbeans.modules.compapp.casaeditor.plugin.CasaPalettePlugin;
-import org.netbeans.modules.compapp.casaeditor.plugin.CasaPalettePlugin;
-import org.netbeans.modules.compapp.casaeditor.plugin.aspect.AspectPalettePlugin;
+import org.netbeans.modules.compapp.casaeditor.api.CasaPaletteCategoryID;
+import org.netbeans.modules.compapp.casaeditor.api.CasaPaletteItemID;
+import org.netbeans.modules.compapp.casaeditor.api.CasaPalettePlugin;
+import org.netbeans.modules.compapp.casaeditor.api.PaletteIDFactory;
+import org.netbeans.modules.compapp.casaeditor.aspect.AspectPalettePlugin;
 import org.netbeans.spi.palette.PaletteActions;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFactory;
@@ -43,12 +45,14 @@ import org.openide.util.NbBundle;
  */
 public class CasaPalette {
     
+    private static final CasaBasePlugin mBasePlugin = new CasaBasePlugin();
+    
     public static final CasaPaletteCategoryID CATEGORY_ID_WSDL_BINDINGS = 
-            new CasaPaletteCategoryID(NbBundle.getMessage(CasaPalette.class, "WSDLBindings"));  // NOI18N
+            PaletteIDFactory.createCategoryID(mBasePlugin, NbBundle.getMessage(CasaPalette.class, "WSDLBindings"));  // NOI18N
     public static final CasaPaletteCategoryID CATEGORY_ID_SERVICE_UNITS = 
-            new CasaPaletteCategoryID(NbBundle.getMessage(CasaPalette.class, "ServiceUnits"));  // NOI18N
+            PaletteIDFactory.createCategoryID(mBasePlugin, NbBundle.getMessage(CasaPalette.class, "ServiceUnits"));  // NOI18N
     public static final CasaPaletteCategoryID CATEGORY_ID_END_POINTS    = 
-            new CasaPaletteCategoryID(NbBundle.getMessage(CasaPalette.class, "EndPoints"));     // NOI18N
+            PaletteIDFactory.createCategoryID(mBasePlugin, NbBundle.getMessage(CasaPalette.class, "EndPoints"));     // NOI18N
     
     public static final CasaPaletteItemID ITEM_ID_CONSUME               = 
             new CasaPaletteItemID(CasaPalette.CATEGORY_ID_END_POINTS, 
@@ -82,6 +86,7 @@ public class CasaPalette {
     private CasaPalette() {
     }
     
+    
     public static PaletteController getPalette(Lookup lookup) {
         if ( null == palette ) {
             paletteRoot = new CasaPaletteRootNode(new CasaPaletteCategoryChildren(lookup), lookup);
@@ -94,12 +99,16 @@ public class CasaPalette {
     }
     
     public static Collection<? extends CasaPalettePlugin> getPlugins(Lookup lookup) {
-
-//                return lookup.lookupAll(CasaPalettePlugin.class);
-        
-        // For now just hard code this in
         List<CasaPalettePlugin> plugins = new ArrayList<CasaPalettePlugin>();
+        
+        // CASA itself plugs into its own palette
+        plugins.add(mBasePlugin);
+        
+        // For now just hard code this in.
+        // This eventually should be replaced with a lookup for 
+        // external service providers.
         plugins.add(new AspectPalettePlugin());
+        
         return plugins;
     }
     
@@ -138,23 +147,20 @@ public class CasaPalette {
         }
     }
     
+    
     private static class MyPaletteActions extends PaletteActions {
         public Action[] getImportActions() {
             return new Action[0];
         }
-        
         public Action[] getCustomPaletteActions() {
             return new Action[0];
         }
-        
         public Action[] getCustomCategoryActions(Lookup lookup) {
             return new Action[0];
         }
-        
         public Action[] getCustomItemActions(Lookup lookup) {
             return new Action[0];
         }
-        
         public Action getPreferredAction(Lookup lookup) {
             return null;
         }

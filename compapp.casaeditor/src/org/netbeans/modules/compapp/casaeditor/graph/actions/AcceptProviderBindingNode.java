@@ -25,13 +25,13 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import org.netbeans.api.visual.action.ConnectorState;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.compapp.casaeditor.api.CasaPaletteCategoryID;
+import org.netbeans.modules.compapp.casaeditor.api.CasaPaletteItemID;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidgetBinding;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
 import org.netbeans.modules.compapp.casaeditor.palette.CasaCommonAcceptProvider;
 import org.netbeans.modules.compapp.casaeditor.palette.CasaPalette;
-import org.netbeans.modules.compapp.casaeditor.palette.CasaPaletteCategoryID;
-import org.netbeans.modules.compapp.casaeditor.palette.CasaPaletteItemID;
 import org.openide.ErrorManager;
 
 /**

@@ -22,7 +22,8 @@ package org.netbeans.modules.compapp.casaeditor.palette;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import org.netbeans.modules.compapp.casaeditor.plugin.CasaPalettePlugin;
+import org.netbeans.modules.compapp.casaeditor.api.CasaPaletteCategoryID;
+import org.netbeans.modules.compapp.casaeditor.api.CasaPalettePlugin;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -33,14 +34,7 @@ import org.openide.util.Lookup;
  */
 public class CasaPaletteCategoryChildren extends Children.Keys {
     
-    private static CasaPaletteCategoryID[] CategoryTypes = new CasaPaletteCategoryID[] {
-        CasaPalette.CATEGORY_ID_WSDL_BINDINGS,
-        CasaPalette.CATEGORY_ID_SERVICE_UNITS,
-        CasaPalette.CATEGORY_ID_END_POINTS
-    };
-    
     private Lookup mLookup;
-    
     
     public CasaPaletteCategoryChildren(Lookup lookup) {
         mLookup = lookup;
@@ -48,26 +42,19 @@ public class CasaPaletteCategoryChildren extends Children.Keys {
     
     
     protected Node[] createNodes(Object key) {
-        CasaPaletteCategoryID id = (CasaPaletteCategoryID) key;
-        return new Node[] { new CasaPaletteCategoryNode(id, mLookup) };
+        CasaPaletteCategoryID categoryID = (CasaPaletteCategoryID) key;
+        return new Node[] { new CasaPaletteCategoryNode(categoryID, mLookup) };
     }
     
     protected void addNotify() {
         super.addNotify();
         
         List<CasaPaletteCategoryID> objs = new ArrayList<CasaPaletteCategoryID>();
-        for (int i = 0; i < CategoryTypes.length; i++) {
-            objs.add(CategoryTypes[i]);
-        }
-        
         Collection<? extends CasaPalettePlugin> plugins = CasaPalette.getPlugins(mLookup);
-        if (plugins != null) {
-            for (CasaPalettePlugin plugin : plugins) {
-                if (plugin.getCategoryIDs() != null) {
-                    for (CasaPaletteCategoryID id : plugin.getCategoryIDs()) {
-                        id.setPlugin(plugin);
-                        objs.add(id);
-                    }
+        for (CasaPalettePlugin plugin : plugins) {
+            if (plugin.getCategoryIDs() != null) {
+                for (CasaPaletteCategoryID id : plugin.getCategoryIDs()) {
+                    objs.add(id);
                 }
             }
         }

@@ -16,40 +16,20 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-package org.netbeans.modules.compapp.casaeditor.palette;
-
-import org.netbeans.modules.compapp.casaeditor.api.CasaPaletteCategoryID;
-import org.netbeans.spi.palette.PaletteController;
-import org.openide.nodes.AbstractNode;
-import org.openide.util.Lookup;
+package org.netbeans.modules.compapp.casaeditor.api;
 
 /**
  *
- * @author rdara
+ * @author jsandusky
  */
-public class CasaPaletteCategoryNode extends AbstractNode {
-   
-    public CasaPaletteCategoryNode(CasaPaletteCategoryID categoryID, Lookup lookup) {
-        super(new CasaPaletteItems(categoryID, lookup), lookup);
-        setName(categoryID.getDisplayName());
-        setDisplayName(categoryID.getDisplayName());
-        setValue(PaletteController.ATTR_IS_EXPANDED, Boolean.TRUE);
-    }
+public abstract class CasaPaletteCategoryID {
 
-    public boolean canCut() {
-        return false;
+    CasaPaletteCategoryID() {
+        // To create an instance of this class, use PaletteIDFactory.
     }
     
-    public boolean canCopy() {
-        return false;
-    }
+    public abstract String getDisplayName();
     
-    public boolean canRename() {
-        return false;
-    }
+    public abstract CasaPalettePlugin getPlugin();
     
-    public boolean canDestroy() {
-        return false;
-    }
-}    
+}

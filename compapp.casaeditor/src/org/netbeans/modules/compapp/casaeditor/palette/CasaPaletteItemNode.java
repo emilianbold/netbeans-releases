@@ -30,6 +30,7 @@ import org.openide.util.datatransfer.ExTransferable;
 import java.beans.BeanInfo;
 import java.net.URL;
 import javax.swing.ImageIcon;
+import org.netbeans.modules.compapp.casaeditor.api.CasaPaletteItemID;
 /**
  *
  * @author rdara
