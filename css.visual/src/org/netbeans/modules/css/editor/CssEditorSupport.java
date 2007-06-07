@@ -80,12 +80,31 @@ public class CssEditorSupport extends DataEditorSupport implements OpenCookie, E
                     public void run() {
                         CssRuleItem oldRule = (CssRuleItem)evt.getOldValue();
                         CssRuleItem newRule = (CssRuleItem)evt.getNewValue();
+                        
+                        if(selected == null) {
+                            throw new IllegalStateException("CssRuleContent event fired, but selected rule is null!");
+                        }
+                        
                         try {
                             if(oldRule != null && newRule == null) {
                                 //remove the old rule line - maybe we should just cut the exact part?!?!
                                 int offset = oldRule.key().offset();
                                 int lineStart = Utilities.getRowStart(doc, offset);
+                                
+                                //do not remove the rule opening bracket if we are on it's line
+                                int ruleOpenBracketOffset = selected.getRuleOpenBracketOffset();
+                                if(lineStart <= ruleOpenBracketOffset) {
+                                    lineStart = ruleOpenBracketOffset + 1;
+                                }
+                                
                                 int lineEnd = Utilities.getRowEnd(doc, offset) + LINE_SEPARATOR.length();
+                                
+                                //do not remove the rule closing bracket if we are on it's line
+                                int ruleCloseBracketOffset = selected.getRuleCloseBracketOffset();
+                                if(lineEnd > ruleCloseBracketOffset) {
+                                    lineEnd = ruleCloseBracketOffset;
+                                }
+                                
                                 doc.remove(lineStart, lineEnd - lineStart);
                                 
                             } else if(oldRule == null && newRule != null) {
@@ -106,11 +125,24 @@ public class CssEditorSupport extends DataEditorSupport implements OpenCookie, E
                                 
                                 int line = Utilities.getLineOffset(doc, offset);
                                 int lineEnd = Utilities.getRowEnd(doc, offset);
+                                
+                                //check the case where the rule closing bracket is on the same line as the last item
+                                // h1 { color: red; }
+                                int ruleCloseBracketOffset = selected.getRuleCloseBracketOffset();
+                                if(lineEnd > ruleCloseBracketOffset) {
+                                    lineEnd = ruleCloseBracketOffset;
+                                }
+                                
                                 int indent = Utilities.getRowIndent(doc, offset);
                                 doc.insertString(lineEnd, LINE_SEPARATOR, null); //NOI18N
                                 int new_line_start = Utilities.getRowStartFromLineOffset(doc, line + 1);
                                 doc.getFormatter().changeRowIndent(doc, new_line_start, indent + (increaseIndent ? doc.getFormatter().getShiftWidth() : 0));
                                 int insertOffset = Utilities.getRowEnd(doc, new_line_start);
+                                
+                                if(lineEnd == ruleCloseBracketOffset) {
+                                    //the new item's line has rule close bracket at the end
+                                    insertOffset--; //move before the '}' char
+                                }
                                 
                                 doc.insertString(insertOffset, newRule.key().name() + ": " + newRule.value().name() + ";", null);
                                 
@@ -232,7 +264,11 @@ public class CssEditorSupport extends DataEditorSupport implements OpenCookie, E
     }
     
     void cssTCActivated(CssCloneableEditor editor) {
-        selected = null;
+        //we need to refresh the StyleBuilder content when switching between more css files
+        if(selected != null) {
+            selected.ruleContent().removePropertyChangeListener(CSS_STYLE_DATA_LISTENER);
+            selected = null;
+        }
         updateSelectedRule(editor.getEditorPane().getCaret().getDot());
     }
     
