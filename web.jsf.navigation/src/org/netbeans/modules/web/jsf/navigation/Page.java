@@ -295,12 +295,10 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
         getCookie(SaveCookie.class).save();
     }
     
-    
-    private SaveCookie saveCookie;
+//    @Override
     public <T extends Cookie> T getCookie(Class<T> type) {
         if( type.equals(SaveCookie.class)) {
-            saveCookie = pc.getConfigDataObject().getCookie(SaveCookie.class);
-            return (T) saveCookie;
+            return pc.getConfigDataObject().getCookie(type);
         }
         return original.getCookie(type);
     }

@@ -220,12 +220,10 @@ public final class NavigationCaseEdge extends PageFlowSceneElement  {
 //        }
         
         
-        private SaveCookie saveCookie;
         public <T extends Cookie> T getCookie(Class<T> type) {
             if( type.equals(SaveCookie.class)) {
-                saveCookie = pc.getConfigDataObject().getCookie(SaveCookie.class);
                 pc.serializeNodeLocations();
-                return (T) saveCookie;
+                return pc.getConfigDataObject().getCookie(type);
             }
             return null;
         }

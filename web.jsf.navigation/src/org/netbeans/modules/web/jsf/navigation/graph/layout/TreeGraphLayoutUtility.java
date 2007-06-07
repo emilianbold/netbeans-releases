@@ -87,7 +87,7 @@ public class TreeGraphLayoutUtility <N,E,P> {
         }  
         
         N root = findNodeWithMaxEdges(unresolvedNodes, node2connected);
-        TreeGraphLayoutUtility utility = new TreeGraphLayoutUtility(graph,100, 100, 50, 50, true );
+        TreeGraphLayoutUtility<N,E,P> utility = new TreeGraphLayoutUtility<N,E,P>(graph,100, 100, 50, 50, true );
         utility.layout(root);
     }
     
