@@ -111,7 +111,7 @@ public class PageFlowController {
                     null);
             
             Dialog d = DialogDisplayer.getDefault().createDialog(desc);
-            d.show();
+            d.setVisible(true);
             webFiles = new HashSet<FileObject>();
         } else {
             webFiles = getAllProjectRelevantFilesObjects();
