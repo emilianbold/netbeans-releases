@@ -193,6 +193,12 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         return name;    // do not support 'plain' annotations
     }
 
+    static void refreshAllAnnotations() {
+        if (instance != null) {
+            instance.refreshAnnotations(null);
+        }
+    }
+    
     public void refreshAllAnnotations(boolean icon, boolean text) {
         Set<FileSystem> filesystems = new HashSet<FileSystem>(1);
         File[] allRoots = File.listRoots();

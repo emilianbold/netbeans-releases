@@ -127,7 +127,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         loadVersioningSystems(systems);
         flushFileOwnerCache();
         refreshDiffSidebars(null);
-        VersioningAnnotationProvider.instance.refreshAnnotations(null);
+        VersioningAnnotationProvider.refreshAllAnnotations();
     }
 
     private void loadVersioningSystems(Collection<? extends VersioningSystem> systems) {
