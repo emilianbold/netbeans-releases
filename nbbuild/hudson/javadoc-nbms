@@ -14,6 +14,6 @@ fi
 mydir=`cd $(dirname $0); pwd`
 keystore=$mydir/NBstore
 storepass=`cat $mydir/storepass`
-ant -emacs -Dbuildnum=$BUILD_TAG -Dmoduleconfig=daily-alpha-nbms -Dkeystore=$keystore -Dstorepass=$storepass -f nbbuild/build.xml merge build-nbms || exit
+ant -emacs -Dbuildnum=$BUILD_TAG -Dmoduleconfig=daily-alpha-nbms -Dnb.cluster.testtools=xtest -Dkeystore=$keystore -Dstorepass=$storepass -f nbbuild/build.xml merge build-nbms || exit
 ant -f $mydir/build-update-descriptor.xml || exit
 ant -f nbbuild/build.xml -Djnlp.codebase=http://deadlock.netbeans.org/hudson/job/javadoc-nbms/lastSuccessfulBuild/artifact/nbbuild/build/jnlp/ -Djnlp.signjar.keystore=$keystore -Djnlp.signjar.alias=nb_ide -Djnlp.signjar.password=$storepass build-jnlp
