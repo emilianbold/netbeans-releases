@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -222,25 +223,28 @@ public class WorkingCopyDetails {
         return returnValue;
     }
 
-    public boolean propertiesModified() throws IOException {
-        File basePropsFile = getPropertiesFile();
-        File propsFile = getBasePropertiesFile();
-
-        if ((basePropsFile == null) && (propsFile != null)) {
-            return true;
-        }
-
-        if ((basePropsFile != null) && (propsFile == null)) {
-            return true;
-        }
-
-        if ((basePropsFile == null) && (propsFile == null)) {
-            return false;
-        }
-
+    public boolean propertiesModified() throws IOException {        
         Map<String, byte[]> baseProps = getBaseSvnProperties();
         Map<String, byte[]> props = getWorkingSvnProperties();
-        return !(baseProps.equals(props));
+        if ((baseProps == null) && (props != null)) {
+            return true;
+        }
+        if ((baseProps != null) && (props == null)) {
+            return true;
+        }
+        if ((baseProps == null) && (props == null)) {
+            return false;
+        }        
+        if(baseProps.size() != props.size()) {
+            return true;
+        }
+        for(Map.Entry<String, byte[]> baseEntry : baseProps.entrySet()) {
+            byte[] propsValue = props.get(baseEntry.getKey());            
+            if(propsValue == null || !Arrays.equals(propsValue, baseEntry.getValue())) {
+                return true;
+            }                        
+        }
+        return false;
     }
 
     private Map<String, byte[]> loadProperties(File propsFile) throws IOException {
