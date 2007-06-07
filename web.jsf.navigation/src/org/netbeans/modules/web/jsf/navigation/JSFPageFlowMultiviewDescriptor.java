@@ -47,6 +47,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.awt.UndoRedo;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.HelpCtx;
@@ -177,13 +178,13 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
         
         public void componentClosed() {
             tc.unregstierListeners();
-            File file = PageFlowView.getStorageDatFile(context.getFacesConfigFile());
+            FileObject storageFile = PageFlowView.getStorageFile(context.getFacesConfigFile());
             
-            if ( file.exists() ){
-                tc.serializeNodeLocations(PageFlowView.getStorageDatFile(context.getFacesConfigFile()));
+            if ( storageFile.isValid() ){
+                tc.serializeNodeLocations(storageFile);
             } else {
                 DialogDescriptor dialog = new DialogDescriptor(
-                        NbBundle.getMessage(JSFPageFlowMultiviewDescriptor.class, "MSG_NoFileToSave", file.toString()),
+                        NbBundle.getMessage(JSFPageFlowMultiviewDescriptor.class, "MSG_NoFileToSave", storageFile),
                         NbBundle.getMessage(JSFPageFlowMultiviewDescriptor.class, "TLE_NoFileToSave"));
                 java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
                 d.setVisible(true);
@@ -224,7 +225,7 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
         }
         
         private void writeObject(java.io.ObjectOutputStream out) throws IOException {
-            tc.serializeNodeLocations(PageFlowView.getStorageDatFile(context.getFacesConfigFile()));
+            tc.serializeNodeLocations(PageFlowView.getStorageFile(context.getFacesConfigFile()));
             out.writeObject(context);
             LOG.finest("writeObject");
         }

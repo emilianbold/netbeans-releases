@@ -835,7 +835,7 @@ public class PageFlowController {
     }
     
     public void serializeNodeLocations() {
-        view.serializeNodeLocations(PageFlowView.getStorageDatFile(configDataObj.getPrimaryFile()));
+        view.serializeNodeLocations(PageFlowView.getStorageFile(configDataObj.getPrimaryFile()));
     }
     
 }

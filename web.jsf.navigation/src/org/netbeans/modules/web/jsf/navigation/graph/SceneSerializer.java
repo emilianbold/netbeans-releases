@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.netbeans.modules.web.jsf.navigation.PageFlowUtilities;
+import org.openide.filesystems.FileObject;
 
 /**
  * @author David Kaspar
@@ -99,8 +100,8 @@ public class SceneSerializer {
     //    }
     //
     
-    public static void serialize(PageFlowSceneData sceneData, File file) {
-        if( file == null || !file.exists()){
+    public static void serialize(PageFlowSceneData sceneData, FileObject file) {
+        if( file == null || !file.isValid()){
             LOG.warning("Can not serialize locations because file is null.");
             return;
         }
@@ -148,10 +149,10 @@ public class SceneSerializer {
         
     }
     
-    private final static void writeToFile(Document document, File file ){
-        FileOutputStream fos = null;
+    private final static void writeToFile(Document document, FileObject file ){
+        OutputStream fos = null;
         try {
-            fos = new FileOutputStream(file);
+            fos = file.getOutputStream();
             XMLUtil.write(document, fos, "UTF-8"); // NOI18N
         } catch (Exception e) {
             Exceptions.printStackTrace(e);
@@ -169,7 +170,7 @@ public class SceneSerializer {
     
     private final static Logger LOG = Logger.getLogger("org.netbeans.modules.web.jsf.navigation");
     // call in AWT to deserialize scene
-    public static void deserializeV1(PageFlowSceneData sceneData, File file) {
+    public static void deserializeV1(PageFlowSceneData sceneData, FileObject file) {
         LOG.entering("SceneSerializer", "deserializeV1(PageFlowSceneData sceneData, File file)");
         Node sceneElement = getRootNode(file);
         
@@ -192,7 +193,7 @@ public class SceneSerializer {
     }
     
     
-    public static void deserialize(PageFlowSceneData sceneData, File file) {
+    public static void deserialize(PageFlowSceneData sceneData, FileObject file) {
         LOG.entering("SceneSerializer", "deserialize(PageFlowSceneData sceneData, File file)");
         Node sceneElement = getRootNode(file);
         if ( VERSION_VALUE_1.equals(getAttributeValue(sceneElement, VERSION_ATTR) )) {
@@ -237,10 +238,10 @@ public class SceneSerializer {
         map.setNamedItem(attribute);
     }
     
-    private static Node getRootNode(File file) {
-        FileInputStream is = null;
+    private static Node getRootNode(FileObject file) {
+        InputStream is = null;
         try {
-            is = new FileInputStream(file);
+            is = file.getInputStream();
             Document doc = XMLUtil.parse(new InputSource(is), false, false, new ErrorHandler() {
                 public void error(SAXParseException e) throws SAXException {
                     throw new SAXException(e);

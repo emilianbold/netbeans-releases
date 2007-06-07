@@ -82,7 +82,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         pfc = new PageFlowController( context,  this );
         sceneData = new PageFlowSceneData(PageFlowUtilities.getInstance(this));
         
-        deserializeNodeLocation(getStorageDatFile(context.getFacesConfigFile()));
+        deserializeNodeLocation(getStorageFile(context.getFacesConfigFile()));
         
         pfc.setupGraphNoSaveData(); /* I don't want to override the loaded locations with empy sceneData */
         setFocusable(true);
@@ -502,16 +502,24 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     }
     
     //    private File navDataFile = null;
-    public final static File getStorageDatFile( FileObject configFile ){
-        FileObject webFolder = getWebFolder(configFile);
-        if( webFolder == null) {
+    public final static FileObject getStorageFile( FileObject configFile ){
+         FileObject webFolder = getWebFolder(configFile);
+        if( webFolder == null ) {
             LOG.warning(("Unable to create the following webfolder: " + webFolder));
             System.err.println("Unable to create the following webfolder: " + webFolder);
             return null;
         }
         FileObject nbprojectFolder = webFolder.getParent().getFileObject("nbproject", null);
-        String fileName = configFile.getName() + ".NavData";
-        return new File(nbprojectFolder.getPath(), fileName);
+        String filename = configFile.getName() + ".NavData";
+        FileObject storageFile = nbprojectFolder.getFileObject(filename);
+        if( storageFile == null ){
+            try {
+                storageFile = nbprojectFolder.createData(filename);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return storageFile;
     }
     
     public final static FileObject getWebFolder( FileObject configFile ){
@@ -526,13 +534,13 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         return webFolder;
     }
     
-    public void serializeNodeLocations(File navDataFile){
+    public void serializeNodeLocations(FileObject navDataFile){
         saveLocations();
         SceneSerializer.serialize(sceneData, navDataFile);
     }
     
-    public void deserializeNodeLocation(File navDataFile) {
-        if( navDataFile != null && navDataFile.exists() ) {
+    public void deserializeNodeLocation(FileObject navDataFile) {
+        if( navDataFile != null && navDataFile.isValid() ) {
             SceneSerializer.deserialize(sceneData, navDataFile);
         }
     }
