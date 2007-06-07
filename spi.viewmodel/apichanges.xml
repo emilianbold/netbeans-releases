@@ -226,7 +226,7 @@ Microsystems, Inc. All Rights Reserved.
         <api name="ViewModelAPI"/>
         <summary>Extension to NodeModel.</summary>
         <version major="1" minor="12"/>
-        <date day="1" month="6" year="2007"/>
+        <date day="6" month="6" year="2007"/>
         <author login="mentlicher"/>
         <compatibility binary="compatible" source="compatible" deletion="no" addition="yes" modification="no"/>
         <description>
