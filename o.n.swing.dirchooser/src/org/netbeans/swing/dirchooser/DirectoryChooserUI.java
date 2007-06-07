@@ -790,9 +790,10 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             }
         }
         
-        Collections.sort(files);
+        Collections.sort(files, DirectoryNode.FILE_NAME_COMPARATOR);
         return files;
     }
+    
     
     private static String normalizeFile(String text) {
         // See #21690 for background.

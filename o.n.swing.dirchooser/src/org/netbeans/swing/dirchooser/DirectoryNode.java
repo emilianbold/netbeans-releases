@@ -25,6 +25,7 @@ import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import javax.swing.JFileChooser;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.netbeans.api.project.ProjectManager;
@@ -42,6 +43,9 @@ public class DirectoryNode extends DefaultMutableTreeNode {
     public final static int SINGLE_SELECTION = 0;
     
     public final static int DIG_IN_SELECTION = 4;
+
+    /** case insensitive file name's comparator */
+    static final FileNameComparator FILE_NAME_COMPARATOR = new FileNameComparator();
     
     private File directory;
     
@@ -150,7 +154,7 @@ public class DirectoryNode extends DefaultMutableTreeNode {
                     list.add(child);
                 }
             }
-            Collections.sort(list);
+            Collections.sort(list, FILE_NAME_COMPARATOR);
         } else if(mode == JFileChooser.FILES_AND_DIRECTORIES || mode == JFileChooser.FILES_ONLY) {
             ArrayList dirList = new ArrayList();
             ArrayList fileList = new ArrayList();
@@ -163,8 +167,8 @@ public class DirectoryNode extends DefaultMutableTreeNode {
                 }
             }
             
-            Collections.sort(dirList);
-            Collections.sort(fileList);
+            Collections.sort(dirList, FILE_NAME_COMPARATOR);
+            Collections.sort(fileList, FILE_NAME_COMPARATOR);
             
             list.addAll(dirList);
             list.addAll(fileList);
@@ -223,4 +227,14 @@ public class DirectoryNode extends DefaultMutableTreeNode {
             return "Directory";
         }
     }
+    
+    /** Compares files ignoring case sensitivity */
+    private static class FileNameComparator implements Comparator<File> {
+
+        public int compare(File f1, File f2) {
+            return String.CASE_INSENSITIVE_ORDER.compare(f1.getName(), f2.getName());
+        }
+        
+    }
+    
 }
