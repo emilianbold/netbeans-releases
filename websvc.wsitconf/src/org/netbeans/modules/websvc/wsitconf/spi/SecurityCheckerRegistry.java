@@ -36,7 +36,7 @@ public class SecurityCheckerRegistry {
     
     private static SecurityCheckerRegistry instance;
     
-    private List<SecurityChecker> checkers = (List<SecurityChecker>) Collections.synchronizedList(new LinkedList<SecurityChecker>());
+    private List<SecurityChecker> checkers = Collections.synchronizedList(new LinkedList<SecurityChecker>());
     
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.websvc.wsitconf.spi");
     
@@ -47,6 +47,7 @@ public class SecurityCheckerRegistry {
 
     /**
      * Returns default singleton instance of registry
+     * @return 
      */
     public static SecurityCheckerRegistry getDefault(){
         if (instance == null) {
@@ -57,6 +58,7 @@ public class SecurityCheckerRegistry {
       
     /**
      * Registers checker to the list
+     * @param checker 
      */
     public void register(SecurityChecker checker) {
         if (checker != null) {
@@ -69,6 +71,7 @@ public class SecurityCheckerRegistry {
     
     /**
      * Unregisters checker from the list
+     * @param checker 
      */
     public void unregister(SecurityChecker checker) {
         if (checker != null) {

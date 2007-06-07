@@ -50,7 +50,6 @@ public class RMSunModelHelper {
 
     // disables Ordered delivery in the config wsdl on specified binding
     public static void disableOrdered(Binding b) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         Ordered ord = getOrdered(p);
         if (ord != null) {
@@ -61,7 +60,6 @@ public class RMSunModelHelper {
 
     // checks if Flow Control is enabled in the config wsdl  on specified binding
     public static boolean isOrderedEnabled(Binding b) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         if (p != null) {
             Ordered ord = getOrdered(p);
@@ -75,7 +73,6 @@ public class RMSunModelHelper {
     }    
 
     public static String getResendInterval(Binding b) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         ResendInterval ri = (ResendInterval) PolicyModelHelper.getTopLevelElement(p, ResendInterval.class);
         if (ri != null) {
@@ -107,7 +104,6 @@ public class RMSunModelHelper {
     }
 
     public static String getCloseTimeout(Binding b) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         CloseTimeout ct = (CloseTimeout) PolicyModelHelper.getTopLevelElement(p, CloseTimeout.class);
         if (ct != null) {
@@ -139,7 +135,6 @@ public class RMSunModelHelper {
     }
     
     public static String getAckRequestInterval(Binding b) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         AckRequestInterval ri = PolicyModelHelper.getTopLevelElement(p, AckRequestInterval.class);
         if (ri != null) {

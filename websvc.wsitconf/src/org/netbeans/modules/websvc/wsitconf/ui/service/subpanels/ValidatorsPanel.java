@@ -20,17 +20,13 @@
 package org.netbeans.modules.websvc.wsitconf.ui.service.subpanels;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.wsitconf.WSITEditor;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.Validator;
 import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.openide.util.NbBundle;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileFilter;
-import java.io.File;
 import java.util.Set;
 import org.netbeans.modules.websvc.wsitconf.ui.ClassDialog;
 
@@ -146,19 +142,6 @@ public class ValidatorsPanel extends JPanel {
         }
     }
     
-    private class JavaFileFilter extends FileFilter {
-        private static final String JAVA_EXT = ".java";      //NOI18N
-        public boolean accept(File f) {
-            if ((f != null) && f.exists() && (f.getName() != null) && ((f.getName().contains(JAVA_EXT)) || (f.isDirectory()))) {
-                return true;
-            }
-            return false;
-        }
-        public String getDescription() {
-            return NbBundle.getMessage(WSITEditor.class, "JAVA_FILE");  //NOI18N
-        }
-    }
-
     public void storeState() {
         String usernameV = getValidator(Validator.USERNAME_VALIDATOR);
         if ((usernameV == null) || (usernameV.length() == 0)) {

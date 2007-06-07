@@ -83,7 +83,7 @@ public class STSWizard implements TemplateWizard.Iterator {
         return new STSWizard();
     }
     
-    public Set instantiate(TemplateWizard wiz) throws IOException {
+    public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
         FileObject template = Templates.getTemplate(wiz);
         DataObject dTemplate = DataObject.find(template);
         
@@ -147,13 +147,6 @@ public class STSWizard implements TemplateWizard.Iterator {
                             port = (WsdlPort) ports.get(0);
                     }
                 }
-
-//                if (service != null && port != null) {
-//                    if (wsdlHandler!=null) {
-//                        String bindingType = wsdlHandler.getBindingTypeForPort(port.getName());
-//                        if (bindingType!=null) port.setSOAPVersion(bindingType);
-//                    }
-//                }
             }
         });
 
@@ -178,7 +171,7 @@ public class STSWizard implements TemplateWizard.Iterator {
     }
     
     private transient int index;
-    private transient WizardDescriptor.Panel[] panels;
+    private transient WizardDescriptor.Panel<WizardDescriptor>[] panels;
     private transient TemplateWizard wiz;
     private transient WizardDescriptor.Panel bottomPanel;
     
@@ -189,7 +182,6 @@ public class STSWizard implements TemplateWizard.Iterator {
         project = Templates.getProject(wiz);
         
         SourceGroup[] sourceGroups = Util.getJavaSourceGroups(project);
-//        bottomPanel = new WebServiceFromWSDL(wiz, project);
         WizardDescriptor.Panel firstPanel; //special case: use Java Chooser
         if (sourceGroups.length == 0)
             firstPanel = new FinishableProxyWizardPanel(Templates.createSimpleTargetChooser(project, sourceGroups, bottomPanel));
@@ -274,7 +266,7 @@ public class STSWizard implements TemplateWizard.Iterator {
         index--;
     }
     
-    public WizardDescriptor.Panel current() {
+    public WizardDescriptor.Panel<WizardDescriptor> current() {
         return panels[index];
     }
     

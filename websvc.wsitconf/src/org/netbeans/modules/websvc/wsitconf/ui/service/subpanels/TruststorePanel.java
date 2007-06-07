@@ -165,7 +165,7 @@ public class TruststorePanel extends JPanel {
 
     private String getServerStoreLocation() {
         String keystoreLocation = null;
-        J2eeModuleProvider mp = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider mp = project.getLookup().lookup(J2eeModuleProvider.class);
         if (mp != null) {
             String sID = mp.getServerInstanceID();
 
@@ -186,12 +186,12 @@ public class TruststorePanel extends JPanel {
     
     private void enableDisable() {        
         
-        boolean storeLocKnown = false;
+//        boolean storeLocKnown = false;
         
-        String storeLoc = getServerStoreLocation();
-        if ((storeLoc != null) && !(storeLoc.equals(""))) {
-            storeLocKnown = true;
-        }
+//        String storeLoc = getServerStoreLocation();
+//        if ((storeLoc != null) && !(storeLoc.equals(""))) {
+//            storeLocKnown = true;
+//        }
         
         //these depend on jsr109 stateand whether location of the store is known or not
 //        storeLocationButton.setEnabled(!jsr109 || !storeLocKnown);

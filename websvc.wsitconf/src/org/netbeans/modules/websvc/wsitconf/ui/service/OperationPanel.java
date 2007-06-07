@@ -19,10 +19,8 @@
 
 package org.netbeans.modules.websvc.wsitconf.ui.service;
 
-import java.awt.Dialog;
 import javax.swing.undo.UndoManager;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
-import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.TxModelHelper;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
@@ -34,18 +32,9 @@ import org.netbeans.modules.xml.xam.ComponentListener;
 import org.openide.nodes.Node;
 import javax.swing.*;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
-import org.netbeans.modules.websvc.wsitconf.ui.service.subpanels.TargetsPanel;
-import org.netbeans.modules.websvc.wsitconf.util.UndoCounter;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
-import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.xml.wsdl.model.Binding;
-import org.netbeans.modules.xml.wsdl.model.BindingInput;
-import org.netbeans.modules.xml.wsdl.model.BindingOutput;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -75,15 +64,7 @@ public class OperationPanel extends SectionInnerPanel {
         
         txCombo.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         txLbl.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-//        securityChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-//        profileComboLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-//        profileCombo.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-//        profileInfoField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-//        profileInfoField.setFont(securityChBox.getFont());
-//        jSeparator2.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-//        
-//        addImmediateModifier(securityChBox);
-//        addImmediateModifier(profileCombo);
+
         addImmediateModifier(txCombo);
 
         inSync = true;
@@ -94,21 +75,6 @@ public class OperationPanel extends SectionInnerPanel {
         txCombo.addItem(ComboConstants.TX_REQUIRED);
         txCombo.addItem(ComboConstants.TX_REQUIRESNEW);
         txCombo.addItem(ComboConstants.TX_SUPPORTED);
-
-//        profileCombo.removeAllItems();
-//        profileCombo.addItem(ComboConstants.PROF_USERNAME);
-//        profileCombo.addItem(ComboConstants.PROF_MUTUALCERT);
-//        profileCombo.addItem(ComboConstants.PROF_TRANSPORT);
-//        profileCombo.addItem(ComboConstants.PROF_MSGAUTHSSL);
-//        profileCombo.addItem(ComboConstants.PROF_SAMLSSL);
-//        profileCombo.addItem(ComboConstants.PROF_ENDORSCERT);
-//        profileCombo.addItem(ComboConstants.PROF_SAMLSENDER);
-//        profileCombo.addItem(ComboConstants.PROF_SAMLHOLDER);
-////        profileCombo.addItem(ComboConstants.PROF_KERBEROS);
-//        profileCombo.addItem(ComboConstants.PROF_STSISSUED);
-//        profileCombo.addItem(ComboConstants.PROF_STSISSUEDCERT);
-//        profileCombo.addItem(ComboConstants.PROF_STSISSUEDENDORSE);
-////        profileCombo.addItem(ComboConstants.PROF_GENERIC);
 
         inSync = false;
         sync();
@@ -132,34 +98,10 @@ public class OperationPanel extends SectionInnerPanel {
         String txValue = TxModelHelper.getTx(operation, node);
         txCombo.setSelectedItem(txValue);
                 
-//        boolean securityEnabled = SecurityPolicyModelHelper.isSecurityEnabled(operation);
-//        setSecurity(securityEnabled);
-//        if (securityEnabled) {
-//            setSecurityProfile(ProfilesModelHelper.getSecurityProfile(operation));
-//        } else {
-//            setSecurityProfile(ComboConstants.PROF_USERNAME);
-//        }
-//
         enableDisable();
         inSync = false;
     }
 
-//    // SECURITY
-//    private void setSecurity(Boolean enable) {
-//        if (enable == null) {
-//            this.securityChBox.setSelected(false);
-//        } else {
-//            this.securityChBox.setSelected(enable);
-//        }
-//    }
-//
-//    public Boolean getSecurity() {
-//        if (securityChBox.isSelected()) {
-//            return Boolean.TRUE;
-//        }
-//        return Boolean.FALSE;
-//    }
-//    
     @Override
     public void setValue(javax.swing.JComponent source, Object value) {
         if (inSync) return;
@@ -170,17 +112,6 @@ public class OperationPanel extends SectionInnerPanel {
             }
         }
 
-//        if (source.equals(securityChBox)) {
-//            if (securityChBox.isSelected()) {
-//                profileCombo.setSelectedItem((String) profileCombo.getSelectedItem());
-//            } else {
-//                SecurityPolicyModelHelper.disableSecurity(operation);
-//            }
-//        }
-//
-//        if (source.equals(profileCombo)) {
-//            ProfilesModelHelper.setSecurityProfile(operation, (String) profileCombo.getSelectedItem());
-//        }
         enableDisable();
     }
     
@@ -213,42 +144,8 @@ public class OperationPanel extends SectionInnerPanel {
         
         boolean txConfigEnabled = !isTomcat && isWebProject;
         txCombo.setEnabled(txConfigEnabled);
-        txLbl.setEnabled(txConfigEnabled);
-        
-//        boolean serviceSecurityEnabled = SecurityPolicyModelHelper.isSecurityEnabled(binding);
-//        securityChBox.setEnabled(!(serviceSecurityEnabled || amSec));
-//        
-//        boolean secSelected = securityChBox.isSelected();
-//        profileComboLabel.setEnabled(secSelected);
-//        profileCombo.setEnabled(secSelected);
-//        profileInfoField.setEnabled(secSelected);
-//        profConfigButton.setEnabled(secSelected);
-
-//        boolean storeConfigRequired = isStoreConfigRequired();
-//        keystoreButton.setEnabled(storeConfigRequired && secSelected);
-//        trustButton.setEnabled(storeConfigRequired && secSelected);
+        txLbl.setEnabled(txConfigEnabled);        
     }
-
-//    private boolean isStoreConfigRequired() {
-//        if (project != null) {
-//            J2eeModuleProvider mp = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
-//            if (mp != null) {
-//                String id = mp.getServerID();
-//                String instid = mp.getServerInstanceID();
-//                if ((instid != null) && (instid.toLowerCase().contains("sun:appserver"))) {     //NOI18N
-//                    // TODO - when this gets clarified
-//    //                return false;
-//                }
-//            }
-//        }
-//        return true;
-//    }
-
-//    // SECURITY PROFILE
-//    private void setSecurityProfile(String profile) {
-//        this.profileCombo.setSelectedItem(profile);
-//        this.profileInfoField.setText(ProfileUtil.getProfileInfo(profile));
-//    }
     
     /** This method is called from within the constructor to
      * initialize the form.

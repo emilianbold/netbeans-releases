@@ -37,13 +37,14 @@ import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelp
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.WSITModelSupport;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
  *
  * @author Martin Grebac
  */
-public class SecurityConfiguration  implements WSConfiguration {
+public class SecurityConfiguration implements WSConfiguration {
   
     private Service service;
     private FileObject implementationFile;
@@ -51,7 +52,7 @@ public class SecurityConfiguration  implements WSConfiguration {
     
     private ServiceModel serviceModel;
     private ServiceChangeListener scl;
-    private Collection<FileObject> createdFiles = new LinkedList();
+    private Collection<FileObject> createdFiles = new LinkedList<FileObject>();
     
     /** Creates a new instance of WSITWsConfiguration */
 
@@ -67,7 +68,7 @@ public class SecurityConfiguration  implements WSConfiguration {
     }
 
     public String getDescription() {
-        return "Security";
+        return NbBundle.getMessage(SecurityConfiguration.class, "DesignConfigPanel.Security=Security");
     }
 
     public Image getIcon() {
@@ -75,7 +76,7 @@ public class SecurityConfiguration  implements WSConfiguration {
     }
 
     public String getDisplayName() {
-        return "Security";
+        return NbBundle.getMessage(SecurityConfiguration.class, "DesignConfigPanel.Security=Security");
     }
   
     public boolean isSet() {

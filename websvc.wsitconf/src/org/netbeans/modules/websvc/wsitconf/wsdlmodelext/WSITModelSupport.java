@@ -24,9 +24,9 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -89,22 +89,22 @@ public class WSITModelSupport {
     public WSITModelSupport() {
     }
     
-    public static WSDLModel getModel(Node node, JaxWsModel jaxWsModel, UndoManagerHolder umHolder, boolean create, Collection createdFiles) throws MalformedURLException, Exception {
+    public static WSDLModel getModel(Node node, JaxWsModel jaxWsModel, UndoManagerHolder umHolder, boolean create, Collection<FileObject> createdFiles) throws MalformedURLException, Exception {
         
         WSDLModel model = null;
         
         //is it a client node?
-        Client client = (Client)node.getLookup().lookup(Client.class);
+        Client client = node.getLookup().lookup(Client.class);
         
         //is it a service node?
-        Service service = (Service)node.getLookup().lookup(Service.class);
+        Service service = node.getLookup().lookup(Service.class);
         
         if (client != null) { //it is a client
-            FileObject srcRoot = (FileObject) node.getLookup().lookup(FileObject.class);
+            FileObject srcRoot = node.getLookup().lookup(FileObject.class);
             Project p = FileOwnerQuery.getOwner(srcRoot);
             return getModelForClient(p, client, create, createdFiles);
         } else if (service != null) {  //it is a service
-            FileObject implClass = (FileObject)node.getLookup().lookup(FileObject.class);
+            FileObject implClass = node.getLookup().lookup(FileObject.class);
             if (jaxWsModel == null) return null;
             Project p = FileOwnerQuery.getOwner(jaxWsModel.getJaxWsFile());
             return getModelForService(service, implClass, p, create, createdFiles);
@@ -120,7 +120,7 @@ public class WSITModelSupport {
         return model;
     }
     
-    public static WSDLModel getModelForService(Service service, FileObject implClass, Project p, boolean create, Collection createdFiles) {
+    public static WSDLModel getModelForService(Service service, FileObject implClass, Project p, boolean create, Collection<FileObject> createdFiles) {
         try {
             String wsdlUrl = service.getWsdlUrl();
             if (wsdlUrl == null) { // WS from Java
@@ -156,7 +156,7 @@ public class WSITModelSupport {
     
     /* Retrieves WSDL model for a WS client - always has a wsdl
      */
-    public static WSDLModel getModelForClient(Project p, Client client, boolean create, Collection createdFiles) throws IOException {
+    public static WSDLModel getModelForClient(Project p, Client client, boolean create, Collection<FileObject> createdFiles) throws IOException {
         
         WSDLModel model = null;
         FileObject srcFolder = WSITEditor.getClientConfigFolder(p);
@@ -216,7 +216,7 @@ public class WSITModelSupport {
                 
                 DataObject mainConfigDO = DataObject.find(mainConfigFO);
                 if ((mainConfigDO != null) && (mainConfigDO.isModified())) {
-                    SaveCookie wsdlSaveCookie = (SaveCookie)mainConfigDO.getCookie(SaveCookie.class);
+                    SaveCookie wsdlSaveCookie = mainConfigDO.getCookie(SaveCookie.class);
                     if(wsdlSaveCookie != null){
                         wsdlSaveCookie.save();
                     }
@@ -225,7 +225,7 @@ public class WSITModelSupport {
                 
                 DataObject configDO = DataObject.find(configFO);
                 if ((configDO != null) && (configDO.isModified())) {
-                    SaveCookie wsdlSaveCookie = (SaveCookie)configDO.getCookie(SaveCookie.class);
+                    SaveCookie wsdlSaveCookie = configDO.getCookie(SaveCookie.class);
                     if(wsdlSaveCookie != null){
                         wsdlSaveCookie.save();
                     }
@@ -240,7 +240,7 @@ public class WSITModelSupport {
         return model;
     }
     
-    private static void copyImports(final WSDLModel model, final FileObject srcFolder, Collection createdFiles) throws CatalogModelException {
+    private static void copyImports(final WSDLModel model, final FileObject srcFolder, Collection<FileObject> createdFiles) throws CatalogModelException {
         
         FileObject modelFO = Utilities.getFileObject(model.getModelSource());
         
@@ -277,7 +277,7 @@ public class WSITModelSupport {
     /** Creates new empty main client configuration file
      *
      */
-    private static FileObject createMainConfig(FileObject folder, Collection createdFiles) {
+    private static FileObject createMainConfig(FileObject folder, Collection<FileObject> createdFiles) {
         FileObject mainConfig = null;
         try {
             mainConfig = FileUtil.createData(folder, CONFIG_WSDL_CLIENT_PREFIX + "." + MAIN_CONFIG_EXTENSION); //NOI18N
@@ -335,7 +335,7 @@ public class WSITModelSupport {
     
     /* Retrieves WSDL model for a WS from Java - if config file exists, reuses that one, otherwise generates new one
      */
-    public static WSDLModel getModelForServiceFromJava(FileObject jc, JAXWSSupport supp, boolean create, Collection createdFiles) throws IOException {
+    public static WSDLModel getModelForServiceFromJava(FileObject jc, JAXWSSupport supp, boolean create, Collection<FileObject> createdFiles) throws IOException {
         
         WSDLModel model = null;
         String configWsdlName = CONFIG_WSDL_SERVICE_PREFIX;
@@ -498,7 +498,7 @@ public class WSITModelSupport {
                     }
                     
                     DataObject dO = DataObject.find(wsdlFO);
-                    SaveCookie sc = (SaveCookie) dO.getCookie(SaveCookie.class);
+                    SaveCookie sc = dO.getCookie(SaveCookie.class);
                     sc.save();
                     dO.setModified(false);
                 }
@@ -532,7 +532,7 @@ public class WSITModelSupport {
     }
     
     public static boolean isServiceFromWsdl(Node node) {
-        Service service = (Service)node.getLookup().lookup(Service.class);
+        Service service = node.getLookup().lookup(Service.class);
         if (service != null) { //it is a service
             String wsdlUrl = service.getWsdlUrl();
             if (wsdlUrl != null) { // it is a web service from wsdl
@@ -558,7 +558,7 @@ public class WSITModelSupport {
         }
     }
     
-    public static void fillImportedBindings(final WSDLModel model, Collection<Binding> bindings, HashSet<FileObject> traversedModels) {
+    public static void fillImportedBindings(final WSDLModel model, Collection<Binding> bindings, Set<FileObject> traversedModels) {
         FileObject modelFO = Util.getFOForModel(model);
         // avoid neverending recursion for recursive imports
         if (traversedModels.contains(modelFO)) {
@@ -595,7 +595,7 @@ public class WSITModelSupport {
                 }
                 DataObject wsdlDO = DataObject.find(wsdlFO);
                 if ((wsdlDO != null) && (wsdlDO.isModified())) {
-                    SaveCookie wsdlSaveCookie = (SaveCookie)wsdlDO.getCookie(SaveCookie.class);
+                    SaveCookie wsdlSaveCookie = wsdlDO.getCookie(SaveCookie.class);
                     if(wsdlSaveCookie != null){
                         wsdlSaveCookie.save();
                     }
@@ -609,7 +609,7 @@ public class WSITModelSupport {
     
     //TODO: Need a way to determine binding that the user wants
     //For now just get the first one (if there is one)
-    public static Binding getBinding(Service service, FileObject implClass, Project project, boolean create, Collection createdFiles) {
+    public static Binding getBinding(Service service, FileObject implClass, Project project, boolean create, Collection<FileObject> createdFiles) {
         WSDLModel model = WSITModelSupport.getModelForService(service, implClass, project, create, createdFiles);
         if (model == null) return null;
         Definitions definitions = model.getDefinitions();

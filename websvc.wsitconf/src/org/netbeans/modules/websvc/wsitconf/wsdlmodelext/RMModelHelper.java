@@ -66,7 +66,6 @@ public class RMModelHelper {
     
     // checks if RM is enabled in the config wsdl on specified binding
     private static boolean isRMEnabledB(Binding b) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         if (p != null) {
             RMAssertion rm = getRMAssertion(p);
@@ -83,7 +82,6 @@ public class RMModelHelper {
 
     // disables RM in the config wsdl on specified binding
     public static void disableRM(Binding b) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         RMAssertion rm = getRMAssertion(p);
         if (rm != null) {

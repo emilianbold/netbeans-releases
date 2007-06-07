@@ -99,7 +99,7 @@ public class TxModelHelper {
 
             // now add what is required
             WSDLComponentFactory wcf = model.getFactory();
-            All all = PolicyModelHelper.createPolicy(bop, true);
+            All all = PolicyModelHelper.createPolicy(bop, false);
             
             if ((ComboConstants.TX_NEVER.equals(txValue)) || 
                 (ComboConstants.TX_NOTSUPPORTED.equals(txValue))) {
@@ -243,7 +243,6 @@ public class TxModelHelper {
     }
     
     private static String getTxFromConfig(BindingOperation bop) {
-        WSDLModel model = bop.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(bop);
 
         ATAssertion tx = getATAssertion(p);

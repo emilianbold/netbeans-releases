@@ -71,12 +71,12 @@ public class ServiceProvidersTablePanel extends DefaultTablePanel {
         addedProviders = new HashMap<String, ServiceProviderElement>();
         
         addActionListener = new AddActionListener();
-        ActionListener addListener = (ActionListener)WeakListeners.create(ActionListener.class,
+        ActionListener addListener = WeakListeners.create(ActionListener.class,
                 addActionListener, addButton);
         addButton.addActionListener(addListener);
         
         removeActionListener = new RemoveActionListener();
-        ActionListener removeListener = (ActionListener)WeakListeners.create(ActionListener.class,
+        ActionListener removeListener = WeakListeners.create(ActionListener.class,
                 removeActionListener, removeButton);
         removeButton.addActionListener(removeListener);
     }

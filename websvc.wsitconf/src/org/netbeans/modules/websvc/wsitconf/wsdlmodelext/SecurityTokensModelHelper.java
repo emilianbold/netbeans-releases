@@ -749,7 +749,6 @@ public class SecurityTokensModelHelper {
 
     public static void setIssuedTokenAddressAttributes(WSDLComponent token, String address, String metaAddress) {
         WSDLModel model = token.getModel();
-        WSDLComponentFactory wcf = model.getFactory();
 
         boolean isTransaction = model.isIntransaction();
         if (!isTransaction) {
@@ -777,7 +776,6 @@ public class SecurityTokensModelHelper {
 
     public static void setIssuedTokenRSTAttributes(WSDLComponent token, String tokenType, String keyType, String keySize) {
         WSDLModel model = token.getModel();
-        WSDLComponentFactory wcf = model.getFactory();
 
         boolean isTransaction = model.isIntransaction();
         if (!isTransaction) {

@@ -19,12 +19,7 @@
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
- <folder name="Services">
-        <folder name="JavaHelp">
-            <file name="wsitconf-helpset.xml" url="wsitconf-helpset.xml"/>
-        </folder>
-    </folder>
-    <folder name="Templates">
+<folder name="Templates">
    <folder name="WebServices">
      <attr name="WebService/STSWizard" boolvalue="true"/>
      <file name="STSWizard.java">

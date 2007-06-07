@@ -48,7 +48,7 @@ public class WsitServiceChangeListener implements ServiceChangeListener {
     }
 
     public void propertyChanged(String propertyName, String oldValue, String newValue) {
-        System.out.println("receieved propertychangeevent for propertyName="+propertyName);
+//        System.out.println("receieved propertychangeevent for propertyName="+propertyName);
     }
 
     public void operationAdded(MethodModel method) {
@@ -97,9 +97,6 @@ public class WsitServiceChangeListener implements ServiceChangeListener {
         WSITModelSupport.save(b);
     }
 
-    public void operationChanged(MethodModel oldMethod,
-                                 MethodModel newMethod) {
-        //
-    }
+    public void operationChanged(MethodModel oldMethod, MethodModel newMethod) { }
             
 }

@@ -46,7 +46,6 @@ public class PolicyModelHelper {
      * @return the bottom-most All element
      */
     public static All createTopExactlyOneAll(final Policy p) {
-        WSDLModel model = p.getModel();
         ExactlyOne eo = createElement(p, PolicyQName.EXACTLYONE.getQName(), ExactlyOne.class, false);
         All all = createElement(eo, PolicyQName.ALL.getQName(), All.class, false);
         return all;
@@ -125,7 +124,11 @@ public class PolicyModelHelper {
                         }
                         policyRef.setPolicyURI("#" + policyName);                   //NOI18N
                         c.addExtensibilityElement(policyRef);
-                        return createTopExactlyOneAll(p);
+                        All all = createTopExactlyOneAll(p);
+                        if ((c instanceof Binding) && (addressing)) {
+                            PolicyModelHelper.createElement(all, Addressing10WsdlQName.USINGADDRESSING.getQName(), Addressing10WsdlUsingAddressing.class, false);
+                        }
+                        return all;
                     }
                 }            
                 policy = (Policy)wcf.create(d, PolicyQName.POLICY.getQName());

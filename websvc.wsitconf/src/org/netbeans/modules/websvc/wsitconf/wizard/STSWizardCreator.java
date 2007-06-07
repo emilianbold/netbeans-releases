@@ -48,9 +48,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
@@ -59,6 +57,7 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.wsitconf.util.GenerationUtils;
+import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -195,7 +194,7 @@ public class STSWizardCreator {
         String portJavaName = port.getJavaName();
         String artifactsPckg = portJavaName.substring(0, portJavaName.lastIndexOf("."));
 
-        serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(), port.getName(), artifactsPckg, jsr109Supported && isJavaEE5orHigher(project));
+        serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(), port.getName(), artifactsPckg, jsr109Supported && Util.isJavaEE5orHigher(project));
         final String wsdlLocation = jaxWsSupport.getWsdlLocation(serviceID);
                        
         JavaSource targetSource = JavaSource.forFileObject(implClassFo);
@@ -356,42 +355,12 @@ public class STSWizardCreator {
     }
 
     private static void openFileInEditor(DataObject dobj){
-        final EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
+        final EditorCookie ec = dobj.getCookie(EditorCookie.class);
         RequestProcessor.getDefault().post(new Runnable(){
             public void run(){
                 ec.open();
             }
         }, 1000);
     }
-    
-    /**
-     * Is J2EE version of a given project JavaEE 5 or higher?
-     *
-     * @param project J2EE project
-     * @return true if J2EE version is JavaEE 5 or higher; otherwise false
-     */
-    public static boolean isJavaEE5orHigher(Project project) {
-        if (project == null) {
-            return false;
-        }
-        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
-        if (j2eeModuleProvider != null) {
-            J2eeModule j2eeModule = j2eeModuleProvider.getJ2eeModule();
-            if (j2eeModule != null) {
-                Object type = j2eeModule.getModuleType();
-                double version = Double.parseDouble(j2eeModule.getModuleVersion());
-                if (J2eeModule.EJB.equals(type) && (version > 2.1)) {
-                    return true;
-                };
-                if (J2eeModule.WAR.equals(type) && (version > 2.4)) {
-                    return true;
-                }
-                if (J2eeModule.CLIENT.equals(type) && (version > 1.4)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-    
+        
 }

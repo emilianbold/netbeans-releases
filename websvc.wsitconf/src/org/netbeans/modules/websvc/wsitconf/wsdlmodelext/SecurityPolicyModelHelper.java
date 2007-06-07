@@ -98,7 +98,6 @@ public class SecurityPolicyModelHelper {
 
     // checks if Security is enabled in the config wsdl on specified element (Binding/Operation/Message)
     public static boolean isSecurityEnabled(WSDLComponent c) {
-        WSDLModel model = c.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(c);
         if (p != null) {
             ExtensibilityElement secElem = getSecurityBindingTypeElement(c);
@@ -556,8 +555,7 @@ public class SecurityPolicyModelHelper {
     
     public static Vector<Vector> getTargets(WSDLComponent comp) {
         
-        WSDLModel model = comp.getModel();
-        Vector<Vector> rows = new Vector();
+        Vector<Vector> rows = new Vector<Vector>();
         
         Policy p = null;
         p = PolicyModelHelper.getPolicyForElement(comp);
@@ -566,9 +564,9 @@ public class SecurityPolicyModelHelper {
         }
 
         // ENCRYPTED PARTS FIRST
-        List<Body> bodies = Collections.EMPTY_LIST;
-        List<Header> headers = Collections.EMPTY_LIST;
-        List<XPath> xpaths = Collections.EMPTY_LIST;
+        List<Body> bodies = Collections.emptyList();
+        List<Header> headers = Collections.emptyList();
+        List<XPath> xpaths = Collections.emptyList();
         EncryptedParts encryptedParts = (EncryptedParts)PolicyModelHelper.getTopLevelElement(p, EncryptedParts.class);
         EncryptedElements encryptedElements = (EncryptedElements)PolicyModelHelper.getTopLevelElement(p, EncryptedElements.class);
         if (encryptedParts != null) {
@@ -1002,7 +1000,7 @@ public class SecurityPolicyModelHelper {
     }
 
     public static void setDefaultTargets(WSDLComponent c, boolean wss11) {
-        Vector<Vector> targets = new Vector();
+        Vector<Vector> targets = new Vector<Vector>();
 
         Vector row = new Vector();
         MessageBody body = new MessageBody();

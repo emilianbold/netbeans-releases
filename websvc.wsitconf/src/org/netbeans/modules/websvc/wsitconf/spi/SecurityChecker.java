@@ -31,12 +31,16 @@ public abstract class SecurityChecker {
                
     /**
      * Returns display name to be presented in UI.
+     * @return 
      */
     public abstract String getDisplayName();
 
     /**
      * Should return true if technology security means represented by this checker are 
      * enabled for service or client represented by passed node and jaxWsModel
+     * @param node 
+     * @param jaxWsModel 
+     * @return 
      */
     public boolean isSecurityEnabled(Node node, JaxWsModel jaxWsModel) {
         return false;

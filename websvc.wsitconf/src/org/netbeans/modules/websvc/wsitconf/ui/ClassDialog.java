@@ -79,7 +79,7 @@ public class ClassDialog {
     private String getClassNameFromNode(Node node) {
         final String[] name = new String[1];
 
-        FileObject classElement = (FileObject) node.getLookup().lookup(FileObject.class);            
+        FileObject classElement = node.getLookup().lookup(FileObject.class);            
         JavaSource js = JavaSource.forFileObject(classElement);
         try {
             js.runUserActionTask(new AbstractTask<CompilationController>() {
@@ -127,7 +127,7 @@ public class ClassDialog {
                     Node[] selectedNodes = sPanel.getSelectedNodes();
                     for(int i = 0; i < selectedNodes.length; i++){
                         Node node = selectedNodes[i];
-                        FileObject classElement = (FileObject) node.getLookup().lookup(FileObject.class);
+                        FileObject classElement = node.getLookup().lookup(FileObject.class);
                         JavaSource js = JavaSource.forFileObject(classElement);
                         if (js == null) {
                             errMsg = NbBundle.getMessage(ClassDialog.class, "TXT_NotJavaClass_msg");    //NOI18N

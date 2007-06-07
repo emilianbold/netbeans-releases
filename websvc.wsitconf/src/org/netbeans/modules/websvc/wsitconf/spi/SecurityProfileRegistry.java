@@ -46,6 +46,7 @@ public class SecurityProfileRegistry {
 
     /**
      * Returns default singleton instance of registry
+     * @return 
      */
     public static SecurityProfileRegistry getDefault(){
         if (instance == null) {
@@ -57,6 +58,8 @@ public class SecurityProfileRegistry {
     
     /** 
      * Returns profile from list based on it's display name
+     * @param displayName 
+     * @return 
      */
     public SecurityProfile getProfile(String displayName) {
         return profiles.get(displayName);
@@ -64,6 +67,7 @@ public class SecurityProfileRegistry {
     
     /**
      * Registers profile to the list
+     * @param profile 
      */
     public void register(SecurityProfile profile){
         profiles.put(profile.getDisplayName(), profile);
@@ -71,6 +75,7 @@ public class SecurityProfileRegistry {
     
     /**
      * Unregisters profile from the list
+     * @param profile 
      */
     public void unregister(SecurityProfile profile){
         profiles.remove(profile.getDisplayName());
@@ -82,12 +87,10 @@ public class SecurityProfileRegistry {
     
     public Set<SecurityProfile> getSecurityProfiles() {
         
-        TreeSet<SecurityProfile> set = new TreeSet(new Comparator() {
-            public int compare(Object obj1, Object obj2) {
-                SecurityProfile p1 = (SecurityProfile)obj1;
-                SecurityProfile p2 = (SecurityProfile)obj2;
-                Integer i1 = p1.getId();
-                Integer i2 = p2.getId();
+        TreeSet<SecurityProfile> set = new TreeSet<SecurityProfile>(new Comparator<SecurityProfile>() {
+            public int compare(SecurityProfile o1, SecurityProfile o2) {
+                Integer i1 = o1.getId();
+                Integer i2 = o2.getId();
                 return i1.compareTo(i2);
             }
         });
@@ -99,7 +102,7 @@ public class SecurityProfileRegistry {
         SecurityProfileRegistry registry = SecurityProfileRegistry.getDefault();
         if (registry.getSecurityProfiles().isEmpty()) {
             Lookup.Result results = Lookup.getDefault().
-                    lookup(new Lookup.Template(SecurityProfile.class));
+                    lookup(new Lookup.Template<SecurityProfile>(SecurityProfile.class));
             Collection<SecurityProfile> profiles = results.allInstances();
             for (SecurityProfile p : profiles) {
                 registry.register(p); 

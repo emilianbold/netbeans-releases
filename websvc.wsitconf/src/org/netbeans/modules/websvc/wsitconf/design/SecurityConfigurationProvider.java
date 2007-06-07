@@ -32,7 +32,7 @@ import org.openide.filesystems.FileObject;
  */
 public class SecurityConfigurationProvider implements WSConfigurationProvider {
     
-    private HashMap<String, WSConfiguration> configProviders = new HashMap();
+    private HashMap<String, WSConfiguration> configProviders = new HashMap<String, WSConfiguration>();
     
     /** Creates a new instance of SecurityConfigurationProvider */
     public SecurityConfigurationProvider() {

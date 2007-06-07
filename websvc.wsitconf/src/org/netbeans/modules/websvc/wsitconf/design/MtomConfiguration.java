@@ -31,6 +31,7 @@ import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.TransportModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.WSITModelSupport;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -43,7 +44,7 @@ public class MtomConfiguration  implements WSConfiguration{
     private FileObject implementationFile;
     private Project project;
 
-    private Collection<FileObject> createdFiles = new LinkedList();
+    private Collection<FileObject> createdFiles = new LinkedList<FileObject>();
     
     /** Creates a new instance of WSITWsConfiguration */
 
@@ -58,7 +59,7 @@ public class MtomConfiguration  implements WSConfiguration{
     }
 
     public String getDescription() {
-        return "MTOM";
+        return NbBundle.getMessage(MtomConfiguration.class, "DesignConfigPanel.mtomCB.text");
     }
 
     public Image getIcon() {
@@ -67,7 +68,7 @@ public class MtomConfiguration  implements WSConfiguration{
     }
 
     public String getDisplayName() {
-        return "MTOM";
+        return NbBundle.getMessage(MtomConfiguration.class, "DesignConfigPanel.mtomCB.text");
     }
   
     public boolean isSet() {

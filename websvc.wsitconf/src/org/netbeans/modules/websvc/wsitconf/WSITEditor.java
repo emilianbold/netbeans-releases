@@ -19,14 +19,10 @@
 
 package org.netbeans.modules.websvc.wsitconf;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import javax.swing.undo.UndoManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
@@ -73,7 +69,7 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
     private static final Logger logger = Logger.getLogger(WSITEditor.class.getName());
     
     private UndoManager undoManager;
-    private Collection<FileObject> createdFiles = new LinkedList();
+    private Collection<FileObject> createdFiles = new LinkedList<FileObject>();
             
     /**
      * Creates a new instance of WSITEditor
@@ -90,9 +86,9 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
         WSDLModel wsdlModel;
 
         //is it a client node?
-        Client client = (Client)node.getLookup().lookup(Client.class);
+        Client client = node.getLookup().lookup(Client.class);
         //is it a service node?
-        Service service = (Service)node.getLookup().lookup(Service.class);
+        Service service = node.getLookup().lookup(Service.class);
         
         final Project p;
         if (jaxWsModel != null) {
@@ -106,45 +102,21 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
             if (p != null) {
                 final JAXWSClientSupport wscs = JAXWSClientSupport.getJaxWsClientSupport(p.getProjectDirectory());
                 if (wscs != null) {
-                    PropertyChangeListener jaxWsClientListener = new PropertyChangeListener() {
-                        public void propertyChange(PropertyChangeEvent arg0) {
-                            if (arg0 != null) {
-                                Object newV = arg0.getNewValue();
-                                Object oldV = arg0.getOldValue();
-                                if ((oldV != null) && (newV == null)) {  //being removed
-                                    if (oldV instanceof Client) {
-                                        Client c = (Client)oldV;
-                                        
-                                    }
-                                }
-                            }
-//                            JaxWsModel jaxWsModel = (JaxWsModel)p.getLookup().lookup(JaxWsModel.class);
-//                            String implClass = s.getImplementationClass();
-//                            String configWsdlName = WSITModelSupport.CONFIG_WSDL_EXTENSION + implClass;
-//                            if ((implClass != null) && (implClass.length() > 0)) {
-//                                try {
-//                                    if (wscs.getWsdlFolder(false) != null) {
-//                                        FileObject wsdlFO = wscs.getWsdlFolder(
-//                                                false).getParent().getFileObject(configWsdlName, WSITModelSupport.CONFIG_WSDL_EXTENSION);
-//                                        if ((wsdlFO != null) && (wsdlFO.isValid())) {   //NOI18N
-//                                            FileLock lock = null;
-//                                            try {
-//                                                lock = wsdlFO.lock();
-//                                                wsdlFO.delete(lock);
-//                                            } finally {
-//                                                if (lock != null) {
-//                                                    lock.releaseLock();
-//                                                }
-//                                            }
-//                                        }
+//                    PropertyChangeListener jaxWsClientListener = new PropertyChangeListener() {
+//                        public void propertyChange(PropertyChangeEvent arg0) {
+//                            if (arg0 != null) {
+//                                Object newV = arg0.getNewValue();
+//                                Object oldV = arg0.getOldValue();
+//                                if ((oldV != null) && (newV == null)) {  //being removed
+//                                    if (oldV instanceof Client) {
+//                                        Client c = (Client)oldV;
+//                                        
 //                                    }
-//                                } catch (IOException e) {
-//                                    // burn
 //                                }
 //                            }
-                        }
-                    };
-                    jaxWsModel.addPropertyChangeListener(jaxWsClientListener);
+//                        }
+//                    };
+//                    jaxWsModel.addPropertyChangeListener(jaxWsClientListener);
 
                     wsitSupported = Util.isWsitSupported(p);
                     if (wsitSupported) {
@@ -156,7 +128,7 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
                             logger.log(Level.SEVERE, null, e);
                         }
                     } else {
-                        return new ErrorTopComponent(NbBundle.getMessage(WSITEditor.class, "TXT_WSIT_NotDetected", getServerName(p)));
+                        return new ErrorTopComponent(NbBundle.getMessage(WSITEditor.class, "TXT_WSIT_NotDetected", Util.getServerName(p)));
                     }
                 }
             }
@@ -168,7 +140,7 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
                         public void serviceAdded(String name, String implementationClass) {}
                         public void serviceRemoved(String name) {
                             if (!wss.isFromWSDL(name)) {
-                                JaxWsModel jaxWsModel = (JaxWsModel)p.getLookup().lookup(JaxWsModel.class);
+                                JaxWsModel jaxWsModel = p.getLookup().lookup(JaxWsModel.class);
                                 Service s = jaxWsModel.findServiceByName(name);
                                 String implClass = s.getImplementationClass();
                                 String configWsdlName = WSITModelSupport.CONFIG_WSDL_SERVICE_PREFIX + implClass;
@@ -207,7 +179,7 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
                             logger.log(Level.SEVERE, null, e);
                         }
                     } else {
-                        return new ErrorTopComponent(NbBundle.getMessage(WSITEditor.class, "TXT_WSIT_NotDetected", getServerName(p)));
+                        return new ErrorTopComponent(NbBundle.getMessage(WSITEditor.class, "TXT_WSIT_NotDetected", Util.getServerName(p)));
                     }
                 }
             }
@@ -232,8 +204,7 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
         WSDLModel model = null;
         
         // remove imports from main config file if a new config file was imported
-        
-        FileObject srcRoot = (FileObject) node.getLookup().lookup(FileObject.class);
+        FileObject srcRoot = node.getLookup().lookup(FileObject.class);
         if (srcRoot != null) {
             Project p = FileOwnerQuery.getOwner(srcRoot);
             if (p != null) {
@@ -258,7 +229,7 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
                             try {
                                 DataObject mainDO = DataObject.find(mainFO);
                                 if ((mainDO != null) && (mainDO.isModified())) {
-                                    SaveCookie wsdlSaveCookie = (SaveCookie)mainDO.getCookie(SaveCookie.class);
+                                    SaveCookie wsdlSaveCookie = mainDO.getCookie(SaveCookie.class);
                                     if(wsdlSaveCookie != null){
                                         wsdlSaveCookie.save();
                                     }
@@ -332,7 +303,7 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
         FileObject folder = null;
         Sources sources = ProjectUtils.getSources(p);
 
-        J2eeModuleProvider mp = (J2eeModuleProvider)p.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider mp = p.getLookup().lookup(J2eeModuleProvider.class);
         if (mp == null) {
             if (sources != null) {
                 SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
@@ -393,16 +364,6 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
         }
         
         return folder;
-    }
-    
-    private String getServerName(Project p) {
-        J2eeModuleProvider mp = (J2eeModuleProvider)p.getLookup().lookup(J2eeModuleProvider.class);
-        if (mp != null) {
-            String sID = mp.getServerInstanceID();
-            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(sID);
-            return j2eePlatform.getDisplayName();
-        }
-        return null;
     }
     
     public UndoManager getUndoManager() {

@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.websvc.wsitconf;
 
-//import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.modules.websvc.core.wseditor.spi.WSEditor;
 import org.netbeans.modules.websvc.core.wseditor.spi.WSEditorProvider;
 import org.openide.nodes.Node;

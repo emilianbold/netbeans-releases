@@ -20,7 +20,6 @@
 package org.netbeans.modules.websvc.wsitconf.ui.service.subpanels;
 
 import java.io.IOException;
-import java.util.Enumeration;
 import org.netbeans.modules.websvc.wsitconf.ui.StoreFileFilter;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;

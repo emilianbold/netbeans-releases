@@ -68,14 +68,6 @@ public class ServiceTopComponent extends TopComponent {
         this.jaxWsModel = jaxWsModel;
     }
 
-    public ServiceTopComponent(WSDLModel wsdlModel, UndoManager undoManager, Collection<Binding> bindings) {
-        setLayout(new BorderLayout());
-        this.wsdlModel = wsdlModel;
-        this.undoManager = undoManager;
-        this.bindings = bindings;
-        this.initialized = false;
-    }
-
     public ServiceTopComponent(Service service, JaxWsModel jaxWsModel, WSDLModel wsdlModel, FileObject implClass, UndoManager undoManager, boolean serviceOnly) {
         setLayout(new BorderLayout());
         this.wsdlModel = wsdlModel;

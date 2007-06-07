@@ -68,11 +68,11 @@ public class SelectClassPanel extends JPanel implements ExplorerManager.Provider
     }
     
     private void populateTree(){
-        LogicalViewProvider lvp = (LogicalViewProvider)project.getLookup().lookup(LogicalViewProvider.class);
-        HashSet set = new HashSet();
+        LogicalViewProvider lvp = project.getLookup().lookup(LogicalViewProvider.class);
+        HashSet<Node> set = new HashSet<Node>();
         set.add(lvp.createLogicalView());
         Children.Array children = new Children.Array();
-        children.add((Node[]) set.toArray(new Node[set.size()]));
+        children.add(set.toArray(new Node[set.size()]));
         Node root = new AbstractNode(children);
         root.setDisplayName(NbBundle.getMessage(SelectClassPanel.class, "LBL_Select_Class"));       //NOI18N
         manager.setRootContext(root);

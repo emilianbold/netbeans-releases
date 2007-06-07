@@ -91,7 +91,6 @@ public class ProprietarySecurityPolicyModelHelper {
     }
 
     public static String getSTSIssuer(Binding b) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         WSDLComponent sc = getSTSConfiguration(p);
         if (sc != null) {
@@ -104,13 +103,11 @@ public class ProprietarySecurityPolicyModelHelper {
     }
     
     public static STSConfiguration getSTSConfiguration(Binding b) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         return getSTSConfiguration(p);
     }
     
     public static String getSTSContractClass(Binding b) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         WSDLComponent sc = getSTSConfiguration(p);
         if (sc != null) {
@@ -123,7 +120,6 @@ public class ProprietarySecurityPolicyModelHelper {
     }
 
     public static boolean getSTSEncryptKey(Binding b) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         STSConfiguration sc = getSTSConfiguration(p);
         if (sc != null) {
@@ -133,7 +129,6 @@ public class ProprietarySecurityPolicyModelHelper {
     }
     
     public static boolean getSTSEncryptToken(Binding b) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         STSConfiguration sc = getSTSConfiguration(p);
         if (sc != null) {
@@ -143,7 +138,6 @@ public class ProprietarySecurityPolicyModelHelper {
     }
 
     public static String getSPCertAlias(ServiceProvider sp) {
-        WSDLModel model = sp.getModel();
         if (sp != null) {
             List<CertAlias> elems = sp.getExtensibilityElements(CertAlias.class);
             if ((elems != null) && !(elems.isEmpty())) {
@@ -154,7 +148,6 @@ public class ProprietarySecurityPolicyModelHelper {
     }
 
     public static String getSPTokenType(ServiceProvider sp) {
-        WSDLModel model = sp.getModel();
         if (sp != null) {
             List<TokenType> elems = sp.getExtensibilityElements(TokenType.class);
             if ((elems != null) && !(elems.isEmpty())) {
@@ -173,12 +166,9 @@ public class ProprietarySecurityPolicyModelHelper {
             }
         }
         return null;
-        
-
     }
 
     public static String getSPKeyType(ServiceProvider sp) {
-        WSDLModel model = sp.getModel();
         if (sp != null) {
             List<KeyType> elems = sp.getExtensibilityElements(KeyType.class);
             if ((elems != null) && !(elems.isEmpty())) {
@@ -189,15 +179,12 @@ public class ProprietarySecurityPolicyModelHelper {
     }
     
     public static List<ServiceProvider> getSTSServiceProviders(Binding b) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         WSDLComponent sc = getSTSConfiguration(p);
         return getSTSServiceProviders((STSConfiguration) sc);
     }
 
     public static List<ServiceProvider> getSTSServiceProviders(STSConfiguration stsConfig) {
-        if (stsConfig == null) return null;
-        WSDLModel model = stsConfig.getModel();
         if (stsConfig != null) {
             List<ServiceProviders> elems = stsConfig.getExtensibilityElements(ServiceProviders.class);
             if ((elems != null) && (elems.size() > 0)) {
@@ -209,7 +196,6 @@ public class ProprietarySecurityPolicyModelHelper {
     }
 
     public static String getLifeTime(Binding b, boolean client) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         WSDLComponent sc = null;
         if (client) { 
@@ -228,7 +214,6 @@ public class ProprietarySecurityPolicyModelHelper {
 
     public static String getTimestampTimeout(WSDLComponent b, boolean client) {
         if (b == null) return null;
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         if (p == null) return null;
         Timestamp t = PolicyModelHelper.getTopLevelElement(p, Timestamp.class);
@@ -236,7 +221,6 @@ public class ProprietarySecurityPolicyModelHelper {
     }
        
     public static String getPreSTSEndpoint(Binding b) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         PreconfiguredSTS ps = getPreconfiguredSTS(p);
         if (ps != null) {
@@ -246,7 +230,6 @@ public class ProprietarySecurityPolicyModelHelper {
     }
 
     public static String getPreSTSMetadata(Binding b) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         PreconfiguredSTS ps = getPreconfiguredSTS(p);
         if (ps != null) {
@@ -256,7 +239,6 @@ public class ProprietarySecurityPolicyModelHelper {
     }
 
     public static String getPreSTSNamespace(Binding b) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         PreconfiguredSTS ps = getPreconfiguredSTS(p);
         if (ps != null) {
@@ -266,7 +248,6 @@ public class ProprietarySecurityPolicyModelHelper {
     }
 
     public static String getPreSTSPortName(Binding b) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         PreconfiguredSTS ps = getPreconfiguredSTS(p);
         if (ps != null) {
@@ -276,7 +257,6 @@ public class ProprietarySecurityPolicyModelHelper {
     }
 
     public static String getPreSTSServiceName(Binding b) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         PreconfiguredSTS ps = getPreconfiguredSTS(p);
         if (ps != null) {
@@ -286,7 +266,6 @@ public class ProprietarySecurityPolicyModelHelper {
     }
 
     public static String getPreSTSWsdlLocation(Binding b) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         PreconfiguredSTS ps = getPreconfiguredSTS(p);
         if (ps != null) {
@@ -296,7 +275,6 @@ public class ProprietarySecurityPolicyModelHelper {
     }
     
     public static boolean isRenewExpired(Binding b) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         SCClientConfiguration sc = getSCClientConfiguration(p);
         if (sc != null) {
@@ -306,7 +284,6 @@ public class ProprietarySecurityPolicyModelHelper {
     }
 
     public static boolean isRequireCancel(Binding b) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         SCClientConfiguration sc = getSCClientConfiguration(p);
         if (sc != null) {
@@ -363,7 +340,6 @@ public class ProprietarySecurityPolicyModelHelper {
      */
     public static String getStoreLocation(WSDLComponent b, boolean trust) {
         if (b == null) return null;
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         if (p == null) return null;
         if (trust) {
@@ -377,7 +353,6 @@ public class ProprietarySecurityPolicyModelHelper {
 
     public static String getStoreAlias(WSDLComponent b, boolean trust) {
         if (b == null) return null;
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         if (p == null) return null;
         if (trust) {
@@ -391,7 +366,6 @@ public class ProprietarySecurityPolicyModelHelper {
 
     public static String getStoreType(WSDLComponent b, boolean trust) {
         if (b == null) return null;
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         if (p == null) return null;
         if (trust) {
@@ -405,7 +379,6 @@ public class ProprietarySecurityPolicyModelHelper {
     
     public static String getTrustSTSAlias(Binding b) {
         if (b == null) return null;
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         if (p == null) return null;
         TrustStore ks = (TrustStore) getStore(p, true);
@@ -414,7 +387,6 @@ public class ProprietarySecurityPolicyModelHelper {
 
     public static String getTrustPeerAlias(WSDLComponent b) {
         if (b == null) return null;
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         if (p == null) return null;
         TrustStore ks = (TrustStore) getStore(p, true);
@@ -423,7 +395,6 @@ public class ProprietarySecurityPolicyModelHelper {
 
     public static String getValidator(WSDLComponent c, String validatorType) {
         if (c == null) return null;
-        WSDLModel model = c.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(c);
         if (p == null) return null;
         ValidatorConfiguration vc = (ValidatorConfiguration) PolicyModelHelper.getTopLevelElement(p, ValidatorConfiguration.class);
@@ -477,7 +448,6 @@ public class ProprietarySecurityPolicyModelHelper {
     
     public static String getDefaultUsername(Binding b) {
         if (b == null) return null;
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         if (p == null) return null;
         CallbackHandlerConfiguration chc = (CallbackHandlerConfiguration) PolicyModelHelper.getTopLevelElement(p, CallbackHandlerConfiguration.class);
@@ -490,7 +460,6 @@ public class ProprietarySecurityPolicyModelHelper {
 
     public static String getDefaultPassword(Binding b) {
         if (b == null) return null;
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         if (p == null) return null;
         CallbackHandlerConfiguration chc = (CallbackHandlerConfiguration) PolicyModelHelper.getTopLevelElement(p, CallbackHandlerConfiguration.class);
@@ -503,7 +472,6 @@ public class ProprietarySecurityPolicyModelHelper {
     
     public static String getCallbackHandler(Binding b, String cbhType) {
         if (b == null) return null;
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         if (p == null) return null;
         CallbackHandlerConfiguration chc = (CallbackHandlerConfiguration) PolicyModelHelper.getTopLevelElement(p, CallbackHandlerConfiguration.class);
@@ -526,7 +494,6 @@ public class ProprietarySecurityPolicyModelHelper {
     }
 
     public static String getKeyPassword(WSDLComponent b) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         if (p == null) return null;
         KeyStore ks = (KeyStore) getStore(p, false);
@@ -534,7 +501,6 @@ public class ProprietarySecurityPolicyModelHelper {
     }
     
     public static String getStorePassword(WSDLComponent b, boolean trust) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         if (p == null) return null;
         if (trust) {
@@ -660,7 +626,7 @@ public class ProprietarySecurityPolicyModelHelper {
         }
         
         if ((p == null) || (vc == null)) {
-            vc = (ValidatorConfiguration) createValidatorConfiguration(c, client);
+            vc = createValidatorConfiguration(c, client);
         }
         Validator v = getValidator(type, vc);
         if (v == null) {
@@ -885,7 +851,7 @@ public class ProprietarySecurityPolicyModelHelper {
         Policy p = PolicyModelHelper.getPolicyForElement(b);        
         STSConfiguration sc = getSTSConfiguration(p);
         if ((p == null) || (sc == null)) {
-            sc = (STSConfiguration) createSTSConfiguration(b);
+            sc = createSTSConfiguration(b);
         }
         boolean isTransaction = model.isIntransaction();
         if (!isTransaction) {
@@ -906,7 +872,7 @@ public class ProprietarySecurityPolicyModelHelper {
         Policy p = PolicyModelHelper.getPolicyForElement(b);        
         STSConfiguration sc = getSTSConfiguration(p);
         if ((p == null) || (sc == null)) {
-            sc = (STSConfiguration) createSTSConfiguration(b);
+            sc = createSTSConfiguration(b);
         }
         boolean isTransaction = model.isIntransaction();
         if (!isTransaction) {
@@ -971,7 +937,7 @@ public class ProprietarySecurityPolicyModelHelper {
         try {
             CallbackHandlerConfiguration chc = (CallbackHandlerConfiguration) PolicyModelHelper.getTopLevelElement(p, CallbackHandlerConfiguration.class);
             if ((p == null) || (chc == null)) {
-                chc = (CallbackHandlerConfiguration) createCallbackHandlerConfiguration(b, client);
+                chc = createCallbackHandlerConfiguration(b, client);
             }
             CallbackHandler h = getCallbackHandler(type, chc);
             if (h == null) {

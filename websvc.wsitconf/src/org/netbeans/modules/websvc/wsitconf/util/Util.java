@@ -23,7 +23,6 @@ import java.util.logging.Level;
 
 import java.util.logging.Logger;
 import java.awt.Component;
-import java.util.Arrays;
 import javax.swing.JLabel;
 import java.awt.Container;
 import java.io.File;
@@ -50,20 +49,16 @@ import javax.xml.namespace.QName;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxwsruntimemodel.JavaWsdlMapper;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.wsdl.model.Binding;
@@ -73,7 +68,6 @@ import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.xam.ModelSource;
-import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 
@@ -112,7 +106,7 @@ public class Util {
     /*
      * Recursively gets all components in the components array and puts it in allComponents
      */
-    public static void getAllComponents( Component[] components, Collection allComponents ) {
+    public static void getAllComponents( Component[] components, Collection<Component> allComponents ) {
         for( int i = 0; i < components.length; i++ ) {
             if( components[i] != null ) {
                 allComponents.add( components[i] );
@@ -127,7 +121,7 @@ public class Util {
      *  Recursively finds a JLabel that has labelText in comp
      */
     public static JLabel findLabel(JComponent comp, String labelText) {
-        Vector allComponents = new Vector();
+        Vector<Component> allComponents = new Vector<Component>();
         getAllComponents(comp.getComponents(), allComponents);
         Iterator iterator = allComponents.iterator();
         while(iterator.hasNext()) {
@@ -153,18 +147,18 @@ public class Util {
         SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
                                     JavaProjectConstants.SOURCES_TYPE_JAVA);
         Set testGroups = getTestSourceGroups(sourceGroups);
-        List result = new ArrayList();
+        List<SourceGroup> result = new ArrayList<SourceGroup>();
         for (int i = 0; i < sourceGroups.length; i++) {
             if (!testGroups.contains(sourceGroups[i])) {
                 result.add(sourceGroups[i]);
             }
         }
-        return (SourceGroup[]) result.toArray(new SourceGroup[result.size()]);
+        return result.toArray(new SourceGroup[result.size()]);
     }
 
-    private static Set/*<SourceGroup>*/ getTestSourceGroups(SourceGroup[] sourceGroups) {
+    private static Set<SourceGroup> getTestSourceGroups(SourceGroup[] sourceGroups) {
         Map foldersToSourceGroupsMap = createFoldersToSourceGroupsMap(sourceGroups);
-        Set testGroups = new HashSet();
+        Set<SourceGroup> testGroups = new HashSet<SourceGroup>();
         for (int i = 0; i < sourceGroups.length; i++) {
             testGroups.addAll(getTestTargets(sourceGroups[i], foldersToSourceGroupsMap));
         }
@@ -172,11 +166,11 @@ public class Util {
     }
     
     private static Map createFoldersToSourceGroupsMap(final SourceGroup[] sourceGroups) {
-        Map result;
+        Map<FileObject, SourceGroup> result;
         if (sourceGroups.length == 0) {
-            result = Collections.EMPTY_MAP;
+            result = Collections.emptyMap();
         } else {
-            result = new HashMap(2 * sourceGroups.length, .5f);
+            result = new HashMap<FileObject, SourceGroup>(2 * sourceGroups.length, .5f);
             for (int i = 0; i < sourceGroups.length; i++) {
                 SourceGroup sourceGroup = sourceGroups[i];
                 result.put(sourceGroup.getRootFolder(), sourceGroup);
@@ -185,8 +179,8 @@ public class Util {
         return result;
     }
 
-    private static List/*<FileObject>*/ getFileObjects(URL[] urls) {
-        List result = new ArrayList();
+    private static List<FileObject> getFileObjects(URL[] urls) {
+        List<FileObject> result = new ArrayList<FileObject>();
         for (int i = 0; i < urls.length; i++) {
             FileObject sourceRoot = URLMapper.findFileObject(urls[i]);
             if (sourceRoot != null) {
@@ -200,15 +194,15 @@ public class Util {
         return result;
     }
     
-    private static List/*<SourceGroup>*/ getTestTargets(SourceGroup sourceGroup, Map foldersToSourceGroupsMap) {
+    private static List<SourceGroup> getTestTargets(SourceGroup sourceGroup, Map foldersToSourceGroupsMap) {
         final URL[] rootURLs = UnitTestForSourceQuery.findUnitTests(sourceGroup.getRootFolder());
         if (rootURLs.length == 0) {
-            return new ArrayList();
+            return Collections.emptyList();
         }
-        List result = new ArrayList();
-        List sourceRoots = getFileObjects(rootURLs);
+        List<SourceGroup> result = new ArrayList<SourceGroup>();
+        List<FileObject> sourceRoots = getFileObjects(rootURLs);
         for (int i = 0; i < sourceRoots.size(); i++) {
-            FileObject sourceRoot = (FileObject) sourceRoots.get(i);
+            FileObject sourceRoot = sourceRoots.get(i);
             SourceGroup srcGroup = (SourceGroup) foldersToSourceGroupsMap.get(sourceRoot);
             if (srcGroup != null) {
                 result.add(srcGroup);
@@ -236,108 +230,23 @@ public class Util {
         return false;
     }
 
-    public static void addProblemsToEnd(Problem[] where, Problem what) {
-        where[0] = addProblemsToEnd(where[0], what);
-    }
-    
-    public static Problem addProblemsToEnd(Problem where, Problem what) {
-        if (where == null) {
-            return what;
-        }
-        if (what != null) {
-            Problem tail = where;
-
-            while (tail.getNext() != null) {
-                tail = tail.getNext();
-            }
-            tail.setNext(what);
-        }
-        return where;
-    }
-
-    /** Finds all WS projects affected by the change of FileObject 'fo' */
-    public static Collection/*WebServicesSupport*/ getRelevantWSModules(FileObject fo) {
-        
-        Project affectedProject = FileOwnerQuery.getOwner(fo);
-        Collection wsmodules = new ArrayList();
-        Collection projects = new ArrayList();
-        
-        if (affectedProject != null) {
-            // first check if the project which directly contains fo is relevant
-            JAXWSSupport wsmod = JAXWSSupport.getJAXWSSupport(affectedProject.getProjectDirectory());
-            if (wsmod != null) {
-                projects.add(affectedProject);
-            }
-            
-            
-            projects.add(affectedProject);for (Project project : OpenProjects.getDefault().getOpenProjects()){
-                
-                Object isJ2eeApp = project.getLookup().lookup(J2eeApplicationProvider.class);
-                if (isJ2eeApp != null) {
-                    J2eeApplicationProvider j2eeApp = (J2eeApplicationProvider)isJ2eeApp;
-                    J2eeModuleProvider[] j2eeModules = j2eeApp.getChildModuleProviders();
-                
-                    if (j2eeModules != null) {
-                        J2eeModuleProvider affectedPrjProvider =
-                                (J2eeModuleProvider)affectedProject.getLookup().lookup(J2eeModuleProvider.class);
-                        if (affectedPrjProvider != null) {
-                            if (Arrays.asList(j2eeModules).contains(affectedPrjProvider)) {
-                                for (int i=0; i<j2eeModules.length; i++) {
-                                    FileObject[] sourceRoots = j2eeModules[i].getSourceRoots();
-                                    if (sourceRoots != null && sourceRoots.length > 0){
-                                        FileObject srcRoot = sourceRoots[0];
-                                        Project p = FileOwnerQuery.getOwner(srcRoot);
-                                        if ((p != null) && (!projects.contains(p))) {
-                                            projects.add(p);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    Object obj = project.getLookup().lookup(SubprojectProvider.class);
-                    if ((obj != null) && (obj instanceof SubprojectProvider)) {
-                        Set subprojects = ((SubprojectProvider)obj).getSubprojects();
-                        if (subprojects.contains(affectedProject)) {
-                            JAXWSSupport ws = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
-                            if (ws != null) {
-                                if (!projects.contains(project)) { // include each project only once
-                                    projects.add(project);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        for (int j=0; j < projects.size(); j++) {
-            Project prj = (Project)((ArrayList)projects).get(j);
-            JAXWSSupport websvc = JAXWSSupport.getJAXWSSupport(prj.getProjectDirectory());
-            wsmodules.add(websvc);
-        }
-        
-        logger.log(Level.FINE, "Affected ws modules: " + wsmodules);
-        return wsmodules;
-    }
-
     public static String getServerStoreLocation(Project project, boolean trust) {
         String storeLocation = null;
-        J2eeModuleProvider mp = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider mp = project.getLookup().lookup(J2eeModuleProvider.class);
         if (mp != null) {
-            String sID = mp.getServerInstanceID();
-
             InstanceProperties ip = mp.getInstanceProperties();
             if ("".equals(ip.getProperty("LOCATION"))) {    //NOI18N
                 return null;
             }
             
-            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(sID);
-            File[] keyLocs = null;
-            keyLocs = trust ? j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_TRUSTSTORE_CLIENT) :
-                              j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_KEYSTORE_CLIENT);
-            if ((keyLocs != null) && (keyLocs.length > 0)) {
-                storeLocation = keyLocs[0].getAbsolutePath();
+            J2eePlatform j2eePlatform = getJ2eePlatform(project);
+            if (j2eePlatform != null) {
+                File[] keyLocs = null;
+                keyLocs = trust ? j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_TRUSTSTORE_CLIENT) :
+                                  j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_KEYSTORE_CLIENT);
+                if ((keyLocs != null) && (keyLocs.length > 0)) {
+                    storeLocation = keyLocs[0].getAbsolutePath();
+                }
             }
         }
         return storeLocation;
@@ -383,6 +292,16 @@ public class Util {
         }
         return "";
     }
+
+    private static String getServerInstanceID(Project p) {
+        if (p != null) {
+            J2eeModuleProvider mp = p.getLookup().lookup(J2eeModuleProvider.class);
+            if (mp != null) {
+                return mp.getServerInstanceID();
+            }
+        }
+        return null;
+    }
     
     public static final boolean isWsitSupported(Project p) {
 
@@ -391,34 +310,72 @@ public class Util {
         ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);
         FileObject wsimportFO = classPath.findResource("com/sun/xml/ws/policy/Policy.class"); // NOI18N
         
-        if (wsimportFO != null) {
-            return true;
+        if (wsimportFO == null) {
+            J2eePlatform j2eePlatform = getJ2eePlatform(p);
+            if (j2eePlatform != null) {
+                return j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIT); //NOI18N
+            }
         }
-        
-        J2eeModuleProvider mp = (J2eeModuleProvider)p.getLookup().lookup(J2eeModuleProvider.class);
-        if (mp != null) {
-            String sID = mp.getServerInstanceID();
-            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(sID);
-            return j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIT); //NOI18N
-        } else {
-            return true;
-        }
+        return true;
     }
 
-    public static final boolean isTomcat(Project project) {
-        if (project != null) {
-            J2eeModuleProvider mp = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
-            if (mp != null) {
-                String id = mp.getServerID();
-                String instid = mp.getServerInstanceID();
-                if ((instid != null) && (instid.toLowerCase().contains("tomcat"))) {     //NOI18N
+    public static J2eePlatform getJ2eePlatform(Project project) {
+        String serverInstanceID = getServerInstanceID(project);
+        if ((serverInstanceID != null) && (serverInstanceID.length() > 0)) {
+            return Deployment.getDefault().getJ2eePlatform(serverInstanceID);
+        }
+        return null;
+    }
+    
+    /**
+     * Is J2EE version of a given project JavaEE 5 or higher?
+     *
+     * @param project J2EE project
+     * @return true if J2EE version is JavaEE 5 or higher; otherwise false
+     */
+    public static boolean isJavaEE5orHigher(Project project) {
+        if (project == null) {
+            return false;
+        }
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (j2eeModuleProvider != null) {
+            J2eeModule j2eeModule = j2eeModuleProvider.getJ2eeModule();
+            if (j2eeModule != null) {
+                Object type = j2eeModule.getModuleType();
+                double version = Double.parseDouble(j2eeModule.getModuleVersion());
+                if (J2eeModule.EJB.equals(type) && (version > 2.1)) {
+                    return true;
+                };
+                if (J2eeModule.WAR.equals(type) && (version > 2.4)) {
+                    return true;
+                }
+                if (J2eeModule.CLIENT.equals(type) && (version > 1.4)) {
                     return true;
                 }
             }
         }
         return false;
     }
-
+    
+    public static String getServerName(Project p) {
+        String sID = getServerInstanceID(p);
+        if (sID != null) {
+            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(sID);
+            return j2eePlatform.getDisplayName();
+        }
+        return null;
+    }
+        
+    public static final boolean isTomcat(Project project) {
+        String sID = getServerInstanceID(project);
+        if (sID != null) {
+            if ((sID != null) && (sID.toLowerCase().contains("tomcat"))) {     //NOI18N
+                return true;
+            }
+        }
+        return false;
+    }
+    
     public static final boolean isWebProject(Project project) {
         if (getProjectType(project) == ProjectType.WEB) {
             return true;

@@ -45,7 +45,7 @@ public class TargetsPanel extends javax.swing.JPanel {
     
     private Vector<Vector> targetsModel;
     private MessagePartsModel targetsTableDataModel;
-    private Vector columnNames = new Vector();
+    private Vector<String> columnNames = new Vector<String>();
 
     private AddHeaderPanel addHeaderPanel;
     

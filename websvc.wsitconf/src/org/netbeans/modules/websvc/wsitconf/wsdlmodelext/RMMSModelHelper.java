@@ -49,7 +49,6 @@ public class RMMSModelHelper {
 
     // disables RM in the config wsdl on specified binding
     public static void disableFlowControl(Binding b) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         FlowControl fc = getFlowControl(p);
         if (fc != null) {

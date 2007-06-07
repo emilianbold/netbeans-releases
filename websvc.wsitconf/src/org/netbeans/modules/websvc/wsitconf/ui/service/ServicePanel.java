@@ -54,9 +54,7 @@ import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
 import javax.swing.*;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityCheckerRegistry;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
@@ -99,7 +97,7 @@ public class ServicePanel extends SectionInnerPanel {
         REGULAR = profileInfoField.getForeground();
         
         if (node != null) {
-            service = (Service)node.getLookup().lookup(Service.class);
+            service = node.getLookup().lookup(Service.class);
             if (service != null) {
                 String wsdlUrl = service.getWsdlUrl();
                 if (wsdlUrl != null) { // WS from WSDL
@@ -290,7 +288,8 @@ public class ServicePanel extends SectionInnerPanel {
             try {
                 String profile = (String) profileCombo.getSelectedItem();
                 ProfilesModelHelper.setSecurityProfile(binding, profile, oldProfile);
-                profileInfoField.setText(ProfileUtil.getProfileInfo(profile));
+                SecurityProfile sp = SecurityProfileRegistry.getDefault().getProfile(profile);
+                profileInfoField.setText(sp.getDescription());
                 oldProfile = profile;
             } finally {
                 doNotSync = false;
@@ -300,34 +299,13 @@ public class ServicePanel extends SectionInnerPanel {
         enableDisable();
     }
 
-    public Boolean getMtom() {
-        if (mtomChBox.isSelected()) {
+    public Boolean getChBox(JCheckBox chBox) {
+        if (chBox.isSelected()) {
             return Boolean.TRUE;
         }
         return Boolean.FALSE;
     }
     
-    public Boolean getRM() {
-        if (rmChBox.isSelected()) {
-            return Boolean.TRUE;
-        }
-        return Boolean.FALSE;
-    }
-
-    public Boolean getOrdered() {
-        if (orderedChBox.isSelected()) {
-            return Boolean.TRUE;
-        }
-        return Boolean.FALSE;
-    }
-
-    public Boolean getSecurity() {
-        if (securityChBox.isSelected()) {
-            return Boolean.TRUE;
-        }
-        return Boolean.FALSE;
-    }
-
     private void setChBox(JCheckBox chBox, Boolean enable) {
         if (enable == null) {
             chBox.setSelected(false);
@@ -339,7 +317,8 @@ public class ServicePanel extends SectionInnerPanel {
     // SECURITY PROFILE
     private void setSecurityProfile(String profile) {
         this.profileCombo.setSelectedItem(profile);
-        this.profileInfoField.setText(ProfileUtil.getProfileInfo(profile));
+        SecurityProfile sp = SecurityProfileRegistry.getDefault().getProfile(profile);
+        this.profileInfoField.setText(sp.getDescription());
     }
     
     @Override
@@ -424,20 +403,10 @@ public class ServicePanel extends SectionInnerPanel {
         }
     }
 
-    private J2eePlatform getJ2eePlatform(){
-        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
-        if(provider != null){
-            String serverInstanceID = provider.getServerInstanceID();
-            if(serverInstanceID != null && serverInstanceID.length() > 0) {
-                return Deployment.getDefault().getJ2eePlatform(serverInstanceID);
-            }
-        }
-        return null;
-    }
-    
+
     private boolean isJsr109Supported(){
-        J2eePlatform j2eePlatform = getJ2eePlatform();
-        if(j2eePlatform != null){
+        J2eePlatform j2eePlatform = Util.getJ2eePlatform(project);
+        if (j2eePlatform != null) {
             return j2eePlatform.isToolSupported(J2eePlatform.TOOL_JSR109);
         }
         return false;

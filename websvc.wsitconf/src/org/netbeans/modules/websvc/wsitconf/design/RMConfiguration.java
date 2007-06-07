@@ -31,6 +31,7 @@ import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.WSITModelSupport;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -43,7 +44,7 @@ public class RMConfiguration  implements WSConfiguration {
     private FileObject implementationFile;
     private Project project;
     
-    private Collection<FileObject> createdFiles = new LinkedList();
+    private Collection<FileObject> createdFiles = new LinkedList<FileObject>();
     
     /** Creates a new instance of WSITWsConfiguration */
 
@@ -58,7 +59,7 @@ public class RMConfiguration  implements WSConfiguration {
     }
 
     public String getDescription() {
-        return "Reliable Messaging";
+        return NbBundle.getMessage(RMConfiguration.class, "DesignConfigPanel.rmCB.text");
     }
 
     public Image getIcon() {
@@ -66,7 +67,7 @@ public class RMConfiguration  implements WSConfiguration {
     }
 
     public String getDisplayName() {
-        return "Reliable Messaging";
+        return NbBundle.getMessage(RMConfiguration.class, "DesignConfigPanel.rmCB.text");
     }
   
     public boolean isSet() {

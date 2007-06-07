@@ -36,31 +36,39 @@ public abstract class SecurityProfile {
             
     /**
      * Returns display name to be presented in UI.
+     * @return 
      */
     public abstract String getDisplayName();
 
     /**
      * Returns a longer description of the profile to be presented in the UI.
+     * @return 
      */
     public abstract String getDescription();
 
     /**
      * Returns id for sorting the profiles. WSIT default profiles have ids 10, 20, 30, ... to keep space for additional profiles
+     * @return 
      */
     public abstract int getId();
     
     /**
      * Called when the profile is selected in the combo box.
+     * @param component 
      */
     public abstract void profileSelected(WSDLComponent component);
 
     /**
      * Called when there's another profile selected, or security is disabled at all.
+     * @param component 
      */ 
     public abstract void profileDeselected(WSDLComponent component);
 
     /**
      * Should return true if the profile is supported for specific component in the wsdl
+     * @param p 
+     * @param component 
+     * @return 
      */
     public boolean isProfileSupported(Project p, WSDLComponent component) {
         return true;
@@ -68,11 +76,15 @@ public abstract class SecurityProfile {
 
     /**
      * Should return true if the profile is set on component, false otherwise
+     * @param component 
+     * @return 
      */
     public abstract boolean isCurrentProfile(WSDLComponent component);
     
     /**
      * Should open configuration UI and block until user doesn't close it.
+     * @param component 
+     * @param undoManager 
      */
     public void displayConfig(WSDLComponent component, UndoManager undoManager) { }
 }
