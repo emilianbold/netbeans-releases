@@ -21,7 +21,6 @@
 package org.netbeans.modules.derby;
 
 import java.awt.Dialog;
-import java.io.File;
 import org.netbeans.modules.derby.ui.CreateDatabasePanel;
 import org.netbeans.modules.derby.ui.DerbySystemHomePanel;
 import org.openide.DialogDescriptor;
@@ -50,17 +49,11 @@ public class CreateDatabaseAction extends CallableSystemAction {
             return;
         }
         
-        String derbySystemHome = DerbyOptions.getDefault().getSystemHome();
-        if (derbySystemHome.length() <= 0) {
-            derbySystemHome = DerbySystemHomePanel.findDerbySystemHome();
-            if (derbySystemHome.length() > 0) {
-                DerbyOptions.getDefault().setSystemHome(derbySystemHome);
-            }
-        }
-        if (derbySystemHome.length() <= 0) {
+        if (!DerbySystemHomePanel.checkDerbyInstallAndHome()) {
             return;
         }
         
+        String derbySystemHome = DerbyOptions.getDefault().getSystemHome();
         CreateDatabasePanel panel = new CreateDatabasePanel(derbySystemHome);
         DialogDescriptor desc = new DialogDescriptor(panel, NbBundle.getMessage(CreateDatabaseAction.class, "LBL_CreateDatabaseTitle"), true, null);
         panel.setDialogDescriptor(desc);
@@ -99,6 +92,11 @@ public class CreateDatabaseAction extends CallableSystemAction {
         return false;
     }
 
+    @Override
+    public boolean isEnabled() {
+        return Util.hasInstallLocation();
+    }
+    
     /** Gets localized name of action. Overrides superclass method. */
     public String getName() {
         return NbBundle.getBundle(CreateDatabaseAction.class).getString("LBL_CreateDBAction");

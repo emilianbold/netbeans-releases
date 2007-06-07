@@ -44,7 +44,7 @@ public class StartAction extends CallableSystemAction {
         // return new HelpCtx(RefreshAction.class);
     }
     public boolean isEnabled() {
-        return (RegisterDerby.getDefault().isRunning()==false);
+        return (Util.hasInstallLocation() && RegisterDerby.getDefault().isRunning()==false);
     }
     
     public void performAction()  {
@@ -53,15 +53,7 @@ public class StartAction extends CallableSystemAction {
             return;
         }
         
-        String derbySystemHome = DerbyOptions.getDefault().getSystemHome();
-        if (derbySystemHome.length() <= 0) {
-            derbySystemHome = DerbySystemHomePanel.findDerbySystemHome();
-            if (derbySystemHome.length() > 0) {
-                DerbyOptions.getDefault().setSystemHome(derbySystemHome);
-            }
-        }
-        
-        if (derbySystemHome.length() > 0) {
+        if (DerbySystemHomePanel.checkDerbyInstallAndHome()) {
             RegisterDerby.getDefault().start();
         }
     }

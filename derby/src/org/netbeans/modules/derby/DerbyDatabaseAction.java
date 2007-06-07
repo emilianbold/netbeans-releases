@@ -71,11 +71,11 @@ public class DerbyDatabaseAction extends AbstractAction implements Presenter.Men
         }
 
         public JComponent[] getMenuPresenters() {
-            if (!DerbyOptions.getDefault().isLocationNull()) {
+//            if (!DerbyOptions.getDefault().isLocationNull()) {
                 return new JComponent[] { this };
-            } else {
-                return new JComponent[0];
-            }
+//            } else {
+//                return new JComponent[0];
+//            }
         }
 
         public void menuSelected(MenuEvent e) {
@@ -84,6 +84,7 @@ public class DerbyDatabaseAction extends AbstractAction implements Presenter.Men
                 SystemAction.get(StartAction.class),
                 SystemAction.get(StopAction.class),
                 SystemAction.get(CreateDatabaseAction.class),
+                SystemAction.get(DerbySettingsAction.class),
             }, Utilities.actionsGlobalContext());
             while (menu.getComponentCount() > 0) {
                 Component c = menu.getComponent(0);
