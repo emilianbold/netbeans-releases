@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.refactoring.java.spi;
 
+import org.netbeans.api.java.source.ModificationResult.Difference;
+import org.netbeans.modules.refactoring.java.api.DiffElement;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.netbeans.modules.refactoring.java.plugins.*;
 import com.sun.source.tree.CompilationUnitTree;
@@ -221,6 +223,18 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
             currentTask = null;
         }
         return results;
+    }
+    
+    protected final void createAndAddElements(Set<FileObject> files, CancellableTask<WorkingCopy> task, RefactoringElementsBag elements, AbstractRefactoring refactoring) {
+        final Collection<ModificationResult> results = processFiles(files, task);
+        elements.registerTransaction(new RetoucheCommit(results));
+        for (ModificationResult result:results) {
+            for (FileObject jfo : result.getModifiedFileObjects()) {
+                for (Difference dif: result.getDifferences(jfo)) {
+                        elements.add(refactoring,DiffElement.create(dif, jfo, result));
+                }
+            }
+        }
     }
     
     protected class TransformTask implements CancellableTask<WorkingCopy> {

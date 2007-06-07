@@ -395,23 +395,8 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
             return null;
         Set<FileObject> a = getRelevantFiles();
         fireProgressListenerStart(ProgressEvent.START, a.size());
-        if (!a.isEmpty()) {
-            TransformTask transform = new TransformTask(new RenameTransformer(refactoring.getNewName(), allMethods), treePathHandle);
-            final Collection<ModificationResult> results = processFiles(a, transform);
-            elements.registerTransaction(new RetoucheCommit(results));
-            for (ModificationResult result:results) {
-                for (FileObject jfo : result.getModifiedFileObjects()) {
-                    for (Difference dif: result.getDifferences(jfo)) {
-                        String old = dif.getOldText();
-                        if (old!=null) {
-                            //TODO: workaround
-                            //generator issue?
-                            elements.add(refactoring,DiffElement.create(dif, jfo, result));
-                        }
-                    }
-                }
-            }
-        }
+        TransformTask transform = new TransformTask(new RenameTransformer(refactoring.getNewName(), allMethods), treePathHandle);
+        createAndAddElements(a, transform, elements, refactoring);
         fireProgressListenerStop();
         return null;
     }

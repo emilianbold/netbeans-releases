@@ -227,23 +227,8 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
         a.addAll(RetoucheUtils.getSuperTypesFiles(refactoring.getSourceType()));
         a.add(RetoucheUtils.getFileObject(treePathHandle));
         fireProgressListenerStart(ProgressEvent.START, a.size());
-        if (!a.isEmpty()) {
-            TransformTask task = new TransformTask(new PullUpTransformer(refactoring), treePathHandle);
-            final Collection<ModificationResult> results = processFiles(a, task);
-            refactoringElements.registerTransaction(new RetoucheCommit(results));
-            for (ModificationResult result:results) {
-                for (FileObject jfo : result.getModifiedFileObjects()) {
-                    for (Difference dif: result.getDifferences(jfo)) {
-                        String old = dif.getOldText();
-                        //                        if (old!=null) {
-                        //                            //TODO: workaround
-                        //                            //generator issue?
-                        refactoringElements.add(refactoring,DiffElement.create(dif, jfo, result));
-                        //                        }
-                    }
-                }
-            }
-        }
+        TransformTask task = new TransformTask(new PullUpTransformer(refactoring), treePathHandle);
+        createAndAddElements(a, task, refactoringElements, refactoring);
         fireProgressListenerStop();
         return null;
     }

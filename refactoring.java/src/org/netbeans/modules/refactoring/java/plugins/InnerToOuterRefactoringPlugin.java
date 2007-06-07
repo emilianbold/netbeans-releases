@@ -22,6 +22,7 @@ import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.*;
+import java.util.Collections;
 import java.util.Set;
 import javax.lang.model.element.*;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -174,18 +175,15 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        if (!a.isEmpty()) {
-            TransformTask transform = new TransformTask(new InnerToOuterTransformer(refactoring), refactoring.getSourceType());
-            results.addAll(processFiles(a, transform));
-            refactoringElements.registerTransaction(new RetoucheCommit(results));
-            for (ModificationResult result:results) {
-                for (FileObject jfo : result.getModifiedFileObjects()) {
-                    for (Difference dif: result.getDifferences(jfo)) {
-                        refactoringElements.add(refactoring,DiffElement.create(dif, jfo, result));
-                    }
-                }
-            }
-        }
+        
+        createAndAddElements(
+                Collections.singleton(RetoucheUtils.getFileObject(refactoring.getRefactoringSource().lookup(TreePathHandle.class))),
+                new AddOuterClass(), 
+                refactoringElements,
+                refactoring);
+        
+        TransformTask transform = new TransformTask(new InnerToOuterTransformer(refactoring), refactoring.getSourceType());
+        createAndAddElements(a, transform, refactoringElements, refactoring);
         fireProgressListenerStop();
         return null;
     }

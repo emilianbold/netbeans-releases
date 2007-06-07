@@ -220,19 +220,8 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
         
         Set<FileObject> a = getRelevantFiles();
         fireProgressListenerStart(ProgressEvent.START, a.size());
-        if (!a.isEmpty()) {
-            TransformTask task = new TransformTask(new MoveTransformer(this), null);
-            final Collection<ModificationResult> results = processFiles(a, task);
-            elements.registerTransaction(new RetoucheCommit(results));
-            for (ModificationResult result:results) {
-                for (FileObject jfo : result.getModifiedFileObjects()) {
-                    for (ModificationResult.Difference dif: result.getDifferences(jfo)) {
-                        elements.add(refactoring,DiffElement.create(dif, jfo,result));
-                    }
-                }
-            }
-            
-        }
+        TransformTask task = new TransformTask(new MoveTransformer(this), null);
+        createAndAddElements(a, task, elements, refactoring);
         fireProgressListenerStop();
         return null;
     }

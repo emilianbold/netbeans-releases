@@ -77,24 +77,12 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         for(int i = 0;i < whereUsedQueries.length; ++i) {
             Object refactoredObject = whereUsedQueries[i].getRefactoringSource().lookup(Object.class);
             refactoredObjects.add(refactoredObject);
-
+            
             whereUsedQueries[i].prepare(inner);
             
-            JavaSource javaSource = JavaSource.forFileObject(grips.get(i).getFileObject());
-            try {
-                TransformTask task = new TransformTask(new DeleteTransformer(), grips.get(i));
-                final ModificationResult result = javaSource.runModificationTask(task);
-                refactoringElements.registerTransaction(new RetoucheCommit(Collections.singleton(result)));
-                for (FileObject jfo : result.getModifiedFileObjects()) {
-                    for (ModificationResult.Difference dif: result.getDifferences(jfo)) {
-                        refactoringElements.add(refactoring,DiffElement.create(dif, jfo, result));
-                    }
-                }
-            } catch (MalformedURLException ex) {
-                ex.printStackTrace();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+            TransformTask task = new TransformTask(new DeleteTransformer(), grips.get(i));
+            createAndAddElements(Collections.singleton(grips.get(i).getFileObject()), task, refactoringElements, refactoring);
+            
             
             fireProgressListenerStep();
         }

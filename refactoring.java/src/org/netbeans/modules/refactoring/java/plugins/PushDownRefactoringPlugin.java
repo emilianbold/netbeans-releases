@@ -130,23 +130,8 @@ public final class PushDownRefactoringPlugin extends JavaRefactoringPlugin {
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         Set<FileObject> a = getRelevantFiles(treePathHandle);
         fireProgressListenerStart(ProgressEvent.START, a.size());
-        if (!a.isEmpty()) {
-            TransformTask task = new TransformTask(new PushDownTransformer(refactoring.getMembers()), treePathHandle);
-            final Collection<ModificationResult> results = processFiles(a, task);
-            refactoringElements.registerTransaction(new RetoucheCommit(results));
-            for (ModificationResult result:results) {
-                for (FileObject jfo : result.getModifiedFileObjects()) {
-                    for (Difference dif: result.getDifferences(jfo)) {
-                        String old = dif.getOldText();
-//                        if (old!=null) {
-//                            //TODO: workaround
-//                            //generator issue?
-                            refactoringElements.add(refactoring,DiffElement.create(dif, jfo, result));
-//                        }
-                    }
-                }
-            }
-        }
+        TransformTask task = new TransformTask(new PushDownTransformer(refactoring.getMembers()), treePathHandle);
+        createAndAddElements(a, task, refactoringElements, refactoring);
         fireProgressListenerStop();
         return null;    
     }
