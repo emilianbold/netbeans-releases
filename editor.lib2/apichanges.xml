@@ -82,6 +82,19 @@ is the proper place.
 
     <changes>
 
+        <change id="added-EditorRegistry">
+            <summary>EditorRegistry added</summary>
+            <version major="1" minor="4"/>
+            <date day="4" month="6" year="2007"/>
+            <author login="mmetelka"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                The <code>EditorRegistry</code> allows to get focused and last focused text component
+                and list of all registered components and it allows to listen for currently focused
+                component and changes of documents in it.
+            </description>
+        </change>
+
         <change id="removed-AttributesUtilities">
             <summary>AttributesUtilities removed</summary>
             <version major="1" minor="3"/>

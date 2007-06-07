@@ -111,6 +111,7 @@ Microsystems, Inc. All Rights Reserved.
                 </test-type>
             </test-dependencies>
             <public-packages>
+                <package>org.netbeans.api.editor</package>
                 <package>org.netbeans.spi.editor.highlighting</package>
                 <package>org.netbeans.spi.editor.highlighting.support</package>
             </public-packages>

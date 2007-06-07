@@ -21,6 +21,8 @@ package org.netbeans.modules.editor.completion;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,11 +36,11 @@ import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.CaretListener;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.TextUI;
 import javax.swing.text.*;
 
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.BaseDocument;
@@ -48,7 +50,6 @@ import org.netbeans.editor.SettingsChangeListener;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
-import org.netbeans.editor.Registry;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.spi.editor.completion.*;
@@ -72,7 +73,7 @@ import org.openide.util.NbBundle;
  */
 
 public class CompletionImpl extends MouseAdapter implements DocumentListener,
-CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener, SettingsChangeListener {
+CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChangeListener, SettingsChangeListener {
     
     private static final boolean debug = Boolean.getBoolean("org.netbeans.modules.editor.completion.debug");
     private static final boolean alphaSort = Boolean.getBoolean("org.netbeans.modules.editor.completion.alphabeticalSort"); // [TODO] create an option
@@ -177,7 +178,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     private String completionShortcut = null;
     
     private CompletionImpl() {
-        Registry.addChangeListener(this);
+        EditorRegistry.addPropertyChangeListener(this);
         completionAutoPopupTimer = new Timer(0, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Result localCompletionResult;
@@ -362,11 +363,11 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     /**
      * Expected to be called from the AWT only.
      */
-    public void stateChanged(javax.swing.event.ChangeEvent e) {
+    public void propertyChange(PropertyChangeEvent e) {
         assert (SwingUtilities.isEventDispatchThread()); // expected in AWT only
 
         boolean cancel = false;
-        JTextComponent component = Registry.getMostActiveComponent();
+        JTextComponent component = EditorRegistry.lastFocusedComponent();
         if (component != getActiveComponent()) {
             activeProviders = getCompletionProvidersForComponent(component);
             if (debug) {
@@ -402,8 +403,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
             installKeybindings();
             cancel = true;
         }
-        Document document = Registry.getMostActiveDocument();
-        if (component != null && document == component.getDocument() && document != getActiveDocument()) {
+        Document document = component.getDocument();
+        if (component != null && document != getActiveDocument()) {
             activeProviders = getCompletionProvidersForComponent(component);
             if (debug) {
                 StringBuffer sb = new StringBuffer("Completion PROVIDERS:\n"); // NOI18N
