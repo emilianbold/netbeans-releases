@@ -267,6 +267,12 @@ public class EdgeVerificationImpl implements IEdgeVerification
                                     (getInterface(pFinishNode)==null &&
                                     getInterface(pStartNode) != null))
                                 bValid = false;
+                            // 80559
+                            if (pFinishNode instanceof IClassifier)
+                            {
+                                if (((IClassifier)pFinishNode).getIsLeaf())
+                                    bValid = false;
+                            }
                         }
                         else
                             bValid = false;
