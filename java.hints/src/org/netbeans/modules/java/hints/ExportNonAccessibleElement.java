@@ -250,9 +250,11 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
         return arg0.getLowerBound().accept(this, arg1) && arg0.getUpperBound().accept(this, arg1);
     }
 
-    public Boolean visitWildcard(WildcardType arg0, Void arg1) {
-        return arg0.getExtendsBound().accept(this, arg1) &&
-            arg0.getSuperBound().accept(this, arg1);
+    public Boolean visitWildcard(WildcardType wild, Void arg1) {
+        TypeMirror eb = wild.getExtendsBound();
+        TypeMirror sb = wild.getSuperBound();
+        return (eb == null || eb.accept(this, arg1)) &&
+               (sb == null || sb.accept(this, arg1));
     }
 
     public Boolean visitExecutable(ExecutableType arg0, Void arg1) {

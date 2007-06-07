@@ -141,6 +141,32 @@ public class ExportNonAccessibleElementTest extends TreeRuleTestBase {
             "0:69-0:77:verifier:Non Accessible Type");       
         
     }
+    public void testWildCards() throws Exception {
+        String  before = "package proxy.test.impl; " +
+        "public class IfaceFactory {" +
+            "public static java.util.Collection<? extends I2> xfjd";
+        String after = "ksla;" +
+        "}" +
+        "interface I2 {" +
+        "}";
+        
+        performAnalysisTest("test/Test.java", before + after, before.length(),
+            "0:101-0:109:verifier:Non Accessible Type");       
+        
+    }
+    public void testWildCardsSuper() throws Exception {
+        String  before = "package proxy.test.impl; " +
+        "public class IfaceFactory {" +
+            "public static java.util.Collection<? super I2> xfjd";
+        String after = "ksla;" +
+        "}" +
+        "interface I2 {" +
+        "}";
+        
+        performAnalysisTest("test/Test.java", before + after, before.length(),
+            "0:99-0:107:verifier:Non Accessible Type");       
+        
+    }
 
     public void testNonVisibleMethod() throws Exception {
         String before = "package test; " +
