@@ -6,11 +6,9 @@ cd ${DIRNAME}
 source init.sh
 
 cd $BASE_DIR
-cvs -d :pserver:anoncvs@cvs.netbeans.org:/cvs checkout -D "$CVS_STAMP" -PA -d NBI installer/infra/build/build.sh installer/infra/build/build.properties installer/infra/build/build.xml
+cvs -d :pserver:anoncvs@cvs.netbeans.org:/cvs checkout -D "$CVS_STAMP" -PA -d NBI installer/infra/build
 
 cd NBI
-
-unset LD_PRELOAD
 
 bash build.sh
 ERROR_CODE=$?
