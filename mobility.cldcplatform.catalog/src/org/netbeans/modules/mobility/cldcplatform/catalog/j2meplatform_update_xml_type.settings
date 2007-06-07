@@ -19,9 +19,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <settings version="1.0">
-    <module name="org.netbeans.modules.autoupdate/1"/>
-    <instanceof class="org.openide.ServiceType"/>
-    <instanceof class="org.netbeans.modules.autoupdate.AutoupdateType"/>
-    <instanceof class="org.netbeans.modules.autoupdate.XMLAutoupdateType"/>
-    <instance class="org.netbeans.modules.autoupdate.XMLAutoupdateType" method="createXMLAutoupdateType"/>
+    <module name="org.netbeans.modules.mobility.cldcplatform.catalog"/>
+    <instanceof class="org.netbeans.spi.autoupdate.UpdateProvider"/>
+    <instance class="org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory" method="createUpdateProvider"/>
 </settings>
