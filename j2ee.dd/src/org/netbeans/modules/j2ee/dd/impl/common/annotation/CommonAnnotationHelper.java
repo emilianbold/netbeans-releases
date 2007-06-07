@@ -38,6 +38,7 @@ import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.dd.api.common.SecurityRole;
+import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHandler;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.TypeAnnotationHandler;
@@ -212,6 +213,33 @@ public class CommonAnnotationHelper {
         return getMessageDestinationRefs(resources);
     }
     
+    /**
+     * Get all {@link ServiceRef}s for given class.
+     * @param helper        annotation model helper.
+     * @param typeElement   class that is searched.
+     * @return              all found {@link ServiceRef}s.
+     */
+    public static ServiceRef[] getServiceRefs(final AnnotationModelHelper helper, final TypeElement typeElement) {
+        assert helper != null;
+        assert typeElement != null;
+        
+        List<ResourceImpl> resources = getResources(helper, typeElement);
+        return getServiceRefs(resources);
+    }
+    
+    /**
+     * Get all {@link ServiceRef}s
+     * for given classpath (via given annotation model helper).
+     * @param helper    annotation model helper.
+     * @return          all found {@link ServiceRef}s.
+     */
+    public static ServiceRef[] getServiceRefs(final AnnotationModelHelper helper) {
+        assert helper != null;
+        
+        List<ResourceImpl> resources = getResources(helper);
+        return getServiceRefs(resources);
+    }
+    
     private static List<ResourceImpl> getResources(final AnnotationModelHelper helper, final TypeElement typeElement) {
         
         final List<ResourceImpl> result = new ArrayList<ResourceImpl>();
@@ -280,6 +308,17 @@ public class CommonAnnotationHelper {
             }
         }
         return elements.toArray(new MessageDestinationRef[elements.size()]);
+    }
+    
+    private static ServiceRef[] getServiceRefs(final List<ResourceImpl> resources) {
+        List<ServiceRef> elements = new ArrayList<ServiceRef>(resources.size());
+        
+        for (ResourceImpl resource : resources) {
+            if (SERVICE_REF_TYPES.contains(resource.getType())) {
+                elements.add(new ServiceRefImpl(resource));
+            }
+        }
+        return elements.toArray(new ServiceRef[elements.size()]);
     }
     
     private static ResourceEnvRef[] getResourceEnvRefs(final List<ResourceImpl> resources) {

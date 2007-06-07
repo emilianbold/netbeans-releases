@@ -23,6 +23,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
@@ -259,9 +260,12 @@ public class SessionImpl implements Session {
             if (helper.hasAnnotation(variableElement.getAnnotationMirrors(), "javax.xml.ws.WebServiceRef")) { //NOI18N
                 createServiceReference(variableElement, resultServiceRefs);
             }
-        }       
+        }
+        // @Resource
+        List<ServiceRef> serviceRefsFromResources = Arrays.asList(CommonAnnotationHelper.getServiceRefs(helper, typeElement));
+        resultServiceRefs.addAll(serviceRefsFromResources);
         serviceRefs = resultServiceRefs.toArray(new ServiceRef[resultServiceRefs.size()]);                
-    }    
+    }
         
     /**
      * Creates service reference

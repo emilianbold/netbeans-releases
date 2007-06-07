@@ -29,6 +29,7 @@ import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.dd.api.common.SecurityRole;
+import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
@@ -242,6 +243,47 @@ public class CommonAnnotationHelperTest extends CommonTestCase {
         });
     }
     
+    /**
+     * Test for getting {@link javax.annotation.Resource @Resource}s (as <tt>ServiceRef</tt>) for the whole classpath.
+     * @throws java.lang.Exception if any error occurs.
+     */
+    // disabling because of lack of web-service implementation
+    public void xtestGetServiceRefsOnClasspath() throws Exception {
+        initClasses();
+        final Set<String> resourceNames = new HashSet<String>(Arrays.asList("yourService"));
+        createWebAppModel(false).runReadAction(new MetadataModelAction<WebAppMetadata, Void>() {
+            public Void run(WebAppMetadata metadata) throws VersionNotSupportedException {
+                assertServiceRefNames(resourceNames, metadata.getRoot().getServiceRef());
+                return null;
+            }
+        });
+        createAppClientModel().runReadAction(new MetadataModelAction<AppClientMetadata, Void>() {
+            public Void run(AppClientMetadata metadata) throws Exception {
+                assertServiceRefNames(resourceNames, metadata.getRoot().getServiceRef());
+                return null;
+            }
+        });
+    }
+    
+    /**
+     * Test for getting {@link javax.annotation.Resource @Resource}s (as <tt>ServiceRef</tt>) for one class.
+     * @throws java.lang.Exception if any error occurs.
+     */
+    // disabling because of lack of web-service implementation
+    public void xtestGetServiceRefsInClass() throws Exception {
+        initClass();
+        final Set<String> resourceNames = new HashSet<String>(Arrays.asList("myService"));
+
+        createEjbJarModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
+            public Void run(EjbJarMetadata metadata) throws VersionNotSupportedException {
+                MessageDriven messageDriven = (MessageDriven) getEjbByEjbName(
+                        metadata.getRoot().getEnterpriseBeans().getMessageDriven(), "CustomerMDB");
+                assertServiceRefNames(resourceNames, messageDriven.getServiceRef());
+                return null;
+            }
+        });
+    }
+    
     private void initClasses() throws IOException {
         TestUtilities.copyStringToFileObject(srcFO, "foo/MyClass.java",
                 "package foo;" +
@@ -279,6 +321,9 @@ public class CommonAnnotationHelperTest extends CommonTestCase {
                 "   @Resource" +
                 "   private void setYourLong(Long long) {" +
                 "   }" +
+                "" +
+                "   @Resource" +
+                "   private javax.xml.rpc.Service yourService;" +
                 "}");
     }
     
@@ -328,6 +373,7 @@ public class CommonAnnotationHelperTest extends CommonTestCase {
                 "" +
                 "import javax.annotation.Resource;" +
                 "import javax.sql.DataSource;" +
+                "import javax.xml.rpc.Service;" +
                 "" +
                 "@Resource(name=\"yourClass\", type=javax.transaction.UserTransaction)" +
                 "public class YourClass {" +
@@ -337,6 +383,10 @@ public class CommonAnnotationHelperTest extends CommonTestCase {
                 "" +
                 "   @Resource" +
                 "   private void setYourLong(Long long) {" +
+                "   }" +
+                "" +
+                "   @Resource" +
+                "   private void setMyService(Service service) {" +
                 "   }" +
                 "}");
     }
@@ -374,6 +424,15 @@ public class CommonAnnotationHelperTest extends CommonTestCase {
         for (MessageDestinationRef messageDestinationRef : messageDestinationRefs) {
             assertTrue(resourceNamesCopy.contains(messageDestinationRef.getMessageDestinationRefName()));
             resourceNamesCopy.remove(messageDestinationRef.getMessageDestinationRefName());
+        }
+    }
+    
+    private void assertServiceRefNames(final Set<String> resourceNames, final ServiceRef[] serviceRefs) {
+        assertEquals(resourceNames.size(), serviceRefs.length);
+        Set<String> resourceNamesCopy = new HashSet<String>(resourceNames);
+        for (ServiceRef serviceRef : serviceRefs) {
+            assertTrue(resourceNamesCopy.contains(serviceRef.getServiceRefName()));
+            resourceNamesCopy.remove(serviceRef.getServiceRefName());
         }
     }
     

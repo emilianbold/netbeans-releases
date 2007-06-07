@@ -72,6 +72,21 @@ public class ServiceRefImpl implements ServiceRef {
         type = parseResult.get("type", String.class); // NOI18N
     }
     
+    /**
+     * Create new ServiceRefImpl instance based on given {@link javax.annotation.Resource @Resource} annotation.
+     * @param resource {@link ResourceImpl @Resource} implementation.
+     * @see ResourceImpl
+     */
+    public ServiceRefImpl(ResourceImpl resource) {
+        serviceRefName = resource.getName();
+        // not type, but value
+        value = resource.getType();
+        
+        typeElement = null;
+        element = null;
+        helper = null;
+    }
+    
     public URI getWsdlFile() {
         URI wsdlURI = null;
         if (wsdlFile != null) {
