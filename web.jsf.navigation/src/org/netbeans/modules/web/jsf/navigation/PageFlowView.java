@@ -540,7 +540,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     }
     
     public void deserializeNodeLocation(FileObject navDataFile) {
-        if( navDataFile != null && navDataFile.isValid() ) {
+        if( navDataFile != null && navDataFile.isValid() && navDataFile.getSize() > 0) {
             SceneSerializer.deserialize(sceneData, navDataFile);
         }
     }
