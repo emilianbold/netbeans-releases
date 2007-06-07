@@ -1,7 +1,7 @@
 defaultpkg.RenameLocal.java
 --------------------
 Rename variable local
-null
+Update reference to local
 Update reference to local
 --------------------
   4   public class RenameLocal {
@@ -9,11 +9,11 @@ Update reference to local
   6       public void method() {
   7 -         int local;
     +         int newVarName;
-  8 -         
-    +         newVarName = 2;
+  8           
   9 -         local = 2;
-    +         System.out.println(newVarName);
+    +         newVarName = 2;
  10 -         System.out.println(local);
+    +         System.out.println(newVarName);
  11       }
  12       
  13   }

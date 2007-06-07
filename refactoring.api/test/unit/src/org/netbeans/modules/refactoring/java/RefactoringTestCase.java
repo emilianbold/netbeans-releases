@@ -43,11 +43,6 @@ import org.openide.filesystems.FileUtil;
  */
 public abstract class RefactoringTestCase extends LogTestCase{
     
-    public interface ParameterSetter {
-        
-        void setParameters();
-    }
-       
     /**
      * Map of files involved in refactoring. Files are stored as Strings as FQN + extension.
      */
@@ -69,7 +64,7 @@ public abstract class RefactoringTestCase extends LogTestCase{
         FileObject fo = element.getParentFile();
         String relPath = getRelativeFileName(fo);
         if(!refactoredFiles.keySet().contains(relPath)) { //new file
-            try {                
+            try {
                 File fBackUp = new File(getWorkDir(),getRelativeFileName(fo));
                 File oFile = FileUtil.toFile(fo);
                 if(!oFile.isDirectory()) copyFile(oFile, fBackUp);
@@ -92,11 +87,11 @@ public abstract class RefactoringTestCase extends LogTestCase{
             ref("--------------------");
             try {
                 File actualFile = new File(classPathWorkDir,fqn2FilePath(fileName));
-                File backupedFile = new File(getWorkDir(),fileName);                                                
+                File backupedFile = new File(getWorkDir(),fileName);
                 if(backupedFile.exists()) {
                     log("Original file:");
                     log(backupedFile);
-                }                                
+                }
                 if(!actualFile.exists()) {
                     ref("File was deleted");
                 } else {
@@ -171,7 +166,7 @@ public abstract class RefactoringTestCase extends LogTestCase{
         boolean fatal = false;
         while(problem!=null) {
             ref.print(problem.getMessage());
-            if(problem.isFatal()) fatal = true;
+            fatal = fatal || problem.isFatal();
             problem = problem.getNext();
         }
         if(fatal) return  false;
@@ -179,14 +174,14 @@ public abstract class RefactoringTestCase extends LogTestCase{
         problem = absRefactoring.fastCheckParameters();
         while(problem!=null) {
             ref.print(problem.getMessage());
-            if(problem.isFatal()) fatal = true;
+            fatal = fatal || problem.isFatal();
             problem = problem.getNext();
         }
         if(fatal) return  false;
         problem = absRefactoring.checkParameters();
         while(problem!=null) {
             ref.print(problem.getMessage());
-            if(problem.isFatal()) fatal = true;
+            fatal = fatal || problem.isFatal();
             problem = problem.getNext();
         }
         if(fatal) return  false;

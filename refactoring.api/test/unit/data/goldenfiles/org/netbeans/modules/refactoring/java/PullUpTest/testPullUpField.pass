@@ -1,0 +1,27 @@
+pulluppkg.PullUpField.java
+--------------------
+null
+null
+null
+null
+null
+null
+--------------------
+  1   package pulluppkg;
+  2   
+  3   
+    + 
+  4   public class PullUpField extends SuperPullUpField{
+  5 - 
+    + }
+    + class SuperPullUpField {
+  6       public int filed;
+  7 - 
+    +     
+  8   }
+  9 - 
+ 10 - class SuperPullUpField {
+ 11 -     
+ 12   }
+
+

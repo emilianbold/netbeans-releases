@@ -36,6 +36,39 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
+    
+    <testbag testattribs="move" executor="unit-executor" name="Move Class Refactoring">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="org/netbeans/modules/refactoring/java/MoveClassTest.class"/>            
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="copy" executor="unit-executor" name="Copy Class Refactoring">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="org/netbeans/modules/refactoring/java/CopyClassTest.class"/>            
+            </patternset>
+        </testset>
+    </testbag>
+
+    <testbag testattribs="pullup" executor="unit-executor" name="Pull Up Refactoring">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="org/netbeans/modules/refactoring/java/PullUpTest.class"/>            
+            </patternset>
+        </testset>
+    </testbag>
+    
+    
+    <testbag testattribs="elements" executor="unit-executor" name="Refactoring elements ">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="org/netbeans/modules/refactoring/java/RenameClass2Test.class"/>
+            </patternset>
+        </testset>
+    </testbag>
             
     <compiler name="default-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
     <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>

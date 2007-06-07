@@ -1,0 +1,29 @@
+copypkg.CopyRename.java
+--------------------
+Copy file CopyRename.java
+Create a new class CopiedAndRenamed in package test as a copy of CopyRename
+--------------------
+
+
+copypkgdst.CopiedAndRenamed
+--------------------
+
+package copypkgdst;
+
+import copypkg.*;
+
+public class CopiedAndRenamed {
+
+    public CopiedAndRenamed() {
+    }
+    
+    public CopiedAndRenamed(int param) {
+    }
+    
+    public CopyRename getInstance() {
+        return null;
+    }
+
+}
+
+

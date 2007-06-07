@@ -85,6 +85,17 @@ public class RenameClassTest extends RefactoringTestCase {
             }
         });
     }
+    
+    public void testRenamePackage2() throws Exception {
+        FileObject test = getFileInProject("default","src/renamepkg2" );
+        final RenameRefactoring renameRefactoring = new RenameRefactoring(Lookups.singleton(test));
+        perform(renameRefactoring,new ParameterSetter() {
+            public void setParameters() {
+                renameRefactoring.setNewName("newpkgname2");
+            }
+        });
+        
+    }
         
     private class ParamSelector implements TreePathResolver.TreePathHandleSelector {
         
@@ -104,7 +115,7 @@ public class RenameClassTest extends RefactoringTestCase {
                         return TreePathHandle.create(path, compilationController);
                     }
                 }
-            }
+            }            
             return null;
         }
     }
