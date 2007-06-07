@@ -80,6 +80,10 @@ public class CssRuleContent {
     public void modifyProperty(String property, String newValue) {
         CssRuleItem item = findItem(property);
         newValue = newValue.trim();
+        if(item == null && newValue.length() == 0) {
+            return ; //TODO: marek - should be fixed in the UI so it doesn't fire such stupid events
+        }
+        
         if (item != null && newValue.length() == 0) {
             //property remove
             firePropertyChange(item, null); //NOI18N

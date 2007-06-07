@@ -49,8 +49,6 @@ import org.openide.util.NbBundle;
  */
 public class BackgroundStyleEditor extends StyleEditor {
 
-    static File currentFile = null;
-
     ColorSelectionField colorField =  new ColorSelectionField();
     BackgroundPositionData bgPositionData = new BackgroundPositionData();
 
@@ -482,7 +480,7 @@ public class BackgroundStyleEditor extends StyleEditor {
     }//GEN-LAST:event_imageFileFieldActionPerformed
     
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        BackgroundImageUrlDialog imageUrlDialog = new BackgroundImageUrlDialog();
+        BackgroundImageUrlDialog imageUrlDialog = new BackgroundImageUrlDialog(content().fileObject());
         if(imageUrlDialog.show(this)){
             imageFileField.setText(imageUrlDialog.getImageUrl());
         }

@@ -330,17 +330,17 @@ public class CssEditorSupport extends DataEditorSupport implements OpenCookie, E
             //TODO make activation of the selected rule consistent for StyleBuilder and CSSPreview,
             //now one uses direct call to TC, second property change listening on this class
             
-            //activate the selected rule in stylebuilder
-            StyleBuilderTopComponent sbTC = StyleBuilderTopComponent.findInstance();
-            //            if(sbTC.isOpened()) {
-            sbTC.setActiveRule(selectedRule);
-            sbTC.setPanelMode(StyleBuilderTopComponent.MODEL_OK);
-            //            }
             
             //update the css preview
-            CssPreviewable.Content change =
+            CssPreviewable.Content content =
                     new CssPreviewable.Content(selectedRule, getDocument(), getDataObject().getPrimaryFile());
-            firePreviewableActivated(change);
+
+            //activate the selected rule in stylebuilder
+            StyleBuilderTopComponent sbTC = StyleBuilderTopComponent.findInstance();
+            sbTC.setContent(content);
+            sbTC.setPanelMode(StyleBuilderTopComponent.MODEL_OK);
+            
+            firePreviewableActivated(content);
         }
     }
     

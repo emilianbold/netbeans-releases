@@ -41,6 +41,12 @@ import org.openide.util.NbBundle;
  */
 public class BackgroundImageUrlDialog { //extends URLPanel{
     
+    private FileObject base;
+    
+    public BackgroundImageUrlDialog(FileObject base) {
+        this.base = base;
+    }
+    
     private String imageUrl = null;
     private FileFilter imgFilter = new ImageFilter() ;
     
@@ -50,9 +56,7 @@ public class BackgroundImageUrlDialog { //extends URLPanel{
         JFileChooser fileChooser = Utilities.getJFileChooser();
         File currDir = null;
         try{
-            //FileObject fo = CssMetaModel.getDataObject().getPrimaryFile();
-            FileObject fo = null; //TODO: marek: recode!!!!!!!!!!!!!!!1
-            currDir = FileUtil.toFile(fo).getParentFile();
+            currDir = FileUtil.toFile(base).getParentFile();
             if (currDir == null) currDir = new File(System.getProperty("user.home")); //NOI18N
             if (currDir != null ) fileChooser.setCurrentDirectory(currDir);
             fileChooser.addChoosableFileFilter(new ImageFilter()) ;

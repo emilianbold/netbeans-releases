@@ -24,6 +24,7 @@ import org.netbeans.modules.css.model.CssRuleContent;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JPanel;
+import org.netbeans.modules.css.visual.ui.preview.CssPreviewable;
 
 /**
  * Style Builder main panel
@@ -60,10 +61,9 @@ public final class StyleBuilderPanel extends JPanel {
         jTabbedPane1.setSelectedIndex(0);
     }
 
-    public void setContent(final CssRuleContent cssStyleData){
-        for(int i=0; i< styleEditorList.size(); i++){
-            StyleEditor styleEitor = styleEditorList.get(i);
-            styleEitor.setContent(cssStyleData);
+    public void setContent(CssPreviewable.Content content){
+        for(StyleEditor editor : styleEditorList) {
+            editor.setContent(content);
         }
     }
 

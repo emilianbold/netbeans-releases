@@ -31,6 +31,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.Icon;
 import javax.swing.JPanel;
+import org.netbeans.modules.css.visual.ui.preview.CssPreviewable;
 
 /**
  * Super class for all Style editors
@@ -45,9 +46,16 @@ abstract public class StyleEditor extends JPanel {
 
     boolean listenerAdded = false;
 
+    private CssPreviewable.Content content;
+    
     /** Called by StyleBuilderPanel to set the UI panel property values. */
-    public void setContent(CssRuleContent ruleContent) {
-        setCssPropertyValues(ruleContent);
+    public void setContent(CssPreviewable.Content content) {
+        this.content = content;
+        setCssPropertyValues(content.selectedRule().ruleContent());
+    }
+    
+    protected CssPreviewable.Content content() {
+        return content;
     }
     
     /**

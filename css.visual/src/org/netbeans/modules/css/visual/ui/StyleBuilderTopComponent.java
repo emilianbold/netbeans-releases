@@ -28,6 +28,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import org.netbeans.modules.css.model.CssRule;
+import org.netbeans.modules.css.visual.ui.preview.CssPreviewable;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -159,9 +160,10 @@ public final class StyleBuilderTopComponent extends TopComponent {
         }
     }
     
-    public void setActiveRule(final CssRule rule){
+    public void setContent(CssPreviewable.Content content){
+        CssRule rule = content.selectedRule();
         setName((rule != null ? rule.name() + " - " : "") + DEFAULT_TC_NAME);
-        styleBuilderPanel.setContent(rule.ruleContent());
+        styleBuilderPanel.setContent(content);
     }
     
     public void setPanelMode(int mode) {
