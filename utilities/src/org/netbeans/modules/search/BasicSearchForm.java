@@ -121,6 +121,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     private void initComponents(final boolean searchAndReplace) {
         JLabel lblTextToFind = new JLabel();
         cboxTextToFind = new JComboBox();
+        lblTextToFind.setLabelFor(cboxTextToFind);
         JLabel lblHintTextToFind = new JLabel();
         
         JLabel lblReplacement;
@@ -128,6 +129,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
 	if (searchAndReplace) {
             lblReplacement = new JLabel();
             cboxReplacement = new JComboBox();
+            lblReplacement.setLabelFor(cboxReplacement);
             lblDummyReplacement = new JLabel();
 	} else {
             lblReplacement = null;
@@ -137,6 +139,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         
         JLabel lblFileNamePattern = new JLabel();
         cboxFileNamePattern = new JComboBox();
+        lblFileNamePattern.setLabelFor(cboxFileNamePattern);
         JLabel lblHintFileNamePattern = new JLabel();
         
         chkWholeWords = new JCheckBox();
@@ -583,7 +586,8 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         int firstEnabled = -1;
         for (Map.Entry<SearchScope, Boolean> entry : orderSearchScopes()) {
             SearchScope searchScope = entry.getKey();
-            AbstractButton button = new JRadioButton(searchScope.getDisplayName());
+            AbstractButton button = new JRadioButton();
+            Mnemonics.setLocalizedText(button, searchScope.getDisplayName());
             button.putClientProperty("searchScope", searchScope);
             button.addItemListener(buttonStateListener);
             
