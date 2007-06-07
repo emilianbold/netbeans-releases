@@ -74,7 +74,7 @@ public abstract class JavaSourceTestCase extends NbTestCase {
     }
 
     protected void setUp() throws Exception {
-        MockLookup.setInstances();
+        MockLookup.init();
         clearWorkDir();
         File userdir = new File(getWorkDir(), "userdir");
         userdir.mkdirs();
