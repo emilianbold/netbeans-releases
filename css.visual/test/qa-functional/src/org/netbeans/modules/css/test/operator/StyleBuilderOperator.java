@@ -1,0 +1,257 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+package org.netbeans.modules.css.test.operator;
+
+import java.awt.Component;
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JColorChooserOperator;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JListOperator;
+import org.netbeans.jemmy.operators.JTabbedPaneOperator;
+import static org.netbeans.modules.css.test.operator.StyleBuilderOperator.Panes.*;
+
+/**Keeps methods to access style builder component.
+ *
+ * @author Jindrich Sedek
+ */
+public class StyleBuilderOperator extends TopComponentOperator{
+    private JTabbedPaneOperator tabbles;
+    private static final String uiBundle = "org.netbeans.modules.css.visual.ui.Bundle";
+    private static final String DIALOG_NAME =
+            Bundle.getString(uiBundle, "FONT_FAMILY_EDITOR_TITLE");
+    private static final String BUILDER_TITLE =
+            Bundle.getString(uiBundle, "CTL_CSSStyleBuilderTopComponent");
+    
+    /** CSS StyleBuilderOperator is created.
+     *  Builder window must be displayed.
+     */
+    public StyleBuilderOperator(){
+        super(waitTopComponent(null, BUILDER_TITLE, 0, new StyleBuilderComponentChooser()));
+    }
+    
+    /** This function dislays CSS style builder window and returns operator for it
+     *
+     *@return navigator operator
+     *
+     */
+    public static StyleBuilderOperator invokeBuilder() {
+        new StyleBuilderAction().perform();
+        return new StyleBuilderOperator();
+    }
+    
+    public CSSPaneOperator setPane(Panes panes){
+        getTabs().selectPage(panes.title());
+        switch (panes){
+        case FONT:
+            return new FontPaneOperator(this);
+        }
+        return null;
+    }
+    
+    private JTabbedPaneOperator getTabs(){
+        if (tabbles == null){
+            tabbles = new JTabbedPaneOperator(this, 0);
+        }
+        return tabbles;
+    }
+    
+    private static final class StyleBuilderAction extends Action{
+        private static final String StyleBuilderActionName = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window")
+                + "|Other|" +
+                Bundle.getStringTrimmed(uiBundle, "CTL_CSSStyleBuilderAction");
+        
+        public StyleBuilderAction() {
+            super(StyleBuilderActionName, null, "org.netbeans.modules.navigator.StyleBuilderAction");
+        }
+    }
+    
+    private static final class StyleBuilderComponentChooser implements ComponentChooser {
+        public boolean checkComponent(Component comp) {
+            return(comp.getClass().getName().equals("org.netbeans.modules.css.visual.ui.StyleBuilderTopComponent"));
+        }
+        
+        public String getDescription() {
+            return "StyleBuilder Window";
+        }
+    }
+    
+    //-------ABSTRACT PANEOPERATOR---------//
+    public abstract class CSSPaneOperator{
+        protected TopComponentOperator topComp;
+    }
+    
+    //-------FONT----------------//
+    public class FontPaneOperator extends CSSPaneOperator{
+        public FontPaneOperator(TopComponentOperator _topComp){
+            topComp = _topComp;
+        }
+        
+        public EditFontOperator getEditFont(){
+            new JButtonOperator(topComp, Bundle.getString(uiBundle, "EDIT")).pushNoBlock();
+            return new EditFontOperator();
+        }
+        
+        public JListOperator fontFamilies(){
+            return new JListOperator(topComp, 0);
+        }
+        
+        public JListOperator fontSizes(){
+            return new JListOperator(topComp, 1);
+        }
+        
+        public JComboBoxOperator fontSizeUnits(){
+            return new JComboBoxOperator(topComp, 0);
+        }
+        
+        public JComboBoxOperator fontStyle(){
+            return new JComboBoxOperator(topComp, 1);
+        }
+        
+        public JComboBoxOperator fontWeight(){
+            return new JComboBoxOperator(topComp, 2);
+        }
+        
+        public JComboBoxOperator fontVariant(){
+            return new JComboBoxOperator(topComp, 3);
+        }
+        
+        public JComboBoxOperator fontColor(){
+            return new JComboBoxOperator(topComp, 4);
+        }
+        
+        public void overline(boolean b){
+            changeSelection(b, new JCheckBoxOperator(topComp, Bundle.getString(uiBundle, "FONT_OVERLINE")));
+        }
+
+        public void underline(boolean b){
+            changeSelection(b, new JCheckBoxOperator(topComp, Bundle.getString(uiBundle, "FONT_UNDERLINE")));
+        }
+        
+        public void strikethrough(boolean b){
+            changeSelection(b, new JCheckBoxOperator(topComp, Bundle.getString(uiBundle, "FONT_STRIKETHROUGH")));
+        }
+
+        public void noDecoration(boolean b){
+            changeSelection(b, new JCheckBoxOperator(topComp, Bundle.getString(uiBundle, "NO_DECORATION_1")));
+        }
+        
+        private void changeSelection(boolean b, JCheckBoxOperator operator){
+            if (operator.isSelected() && !b){
+                operator.changeSelection(b);
+            }else if (!operator.isSelected() && b){
+                operator.changeSelection(b);
+            }
+        }
+        
+        
+        public JColorChooserOperator showColorChooser(){
+            new JButtonOperator(topComp, 2).pushNoBlock();
+            return new JColorChooserOperator(new NbDialogOperator(Bundle.getString(uiBundle, "COLOR_CHOOSER_TITLE")));
+        }
+    }
+    
+    //-------BACKGROUND----------//
+    
+    
+    //---------------------------//
+    public class EditFontOperator extends NbDialogOperator{
+        public EditFontOperator(){
+            super(DIALOG_NAME);
+        }
+        
+        public void createNewFamily(){
+            new JButtonOperator(this, Bundle.getString(uiBundle, "NEW")).push();
+        }
+        
+        public void deleteFamily(){
+            new JButtonOperator(this, Bundle.getString(uiBundle, "DELETE")).push();
+        }
+        
+        public void up(){
+            new JButtonOperator(this, Bundle.getString(uiBundle, "UP")).push();
+        }
+        
+        public void down(){
+            new JButtonOperator(this, Bundle.getString(uiBundle, "DOWN")).push();
+        }
+        
+        public void selectAvailable(int order){
+            new JComboBoxOperator(this, 0).selectItem(order);
+        }
+        
+        public void add(){
+            new JButtonOperator(this, ">").push();
+        }
+        
+        public void remove(){
+            new JButtonOperator(this, "<").push();
+        }
+        
+        public JListOperator currentFontFamilies(){
+            return new JListOperator(this, 0);
+        }
+        
+        public JListOperator fonts(){
+            return new JListOperator(this, 1);
+        }
+        
+        public JListOperator selected(){
+            return new JListOperator(this, 2);
+        }
+    }
+    
+    public enum Panes{FONT, BACKGROUND, TEXT_BLOCK, BORDER, MARGIN, POSITION ;
+    private static final String FONT_PANE =
+            Bundle.getString(uiBundle, "FONT_EDITOR_DISPNAME");
+    private static final String BACK_PANE =
+            Bundle.getString(uiBundle, "BACKGROUND_EDITOR_DISPNAME");
+    private static final String TEXT_PANE =
+            Bundle.getString(uiBundle, "TEXTBLOCK_EDITOR_DISPNAME");
+    private static final String BORDER_PANE =
+            Bundle.getString(uiBundle, "BORDER_EDITOR_DISPNAME");
+    private static final String MARGIN_PANE =
+            Bundle.getString(uiBundle, "MARGIN_EDITOR_DISPNAME");
+    private static final String POSITION_PANE =
+            Bundle.getString(uiBundle, "POSITION_EDITOR_DISPNAME");
+    
+    public String title(){
+        switch (this){
+        case FONT:
+            return FONT_PANE;
+        case BACKGROUND:
+            return BACK_PANE;
+        case TEXT_BLOCK:
+            return TEXT_PANE;
+        case BORDER:
+            return BORDER_PANE;
+        case MARGIN:
+            return MARGIN_PANE;
+        case POSITION:
+            return POSITION_PANE;
+        }
+        return null;
+    }
+    }
+}
