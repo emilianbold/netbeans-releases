@@ -35,7 +35,7 @@ DIST=$PWD/nbbuild/dist
 rm -rf $DIST/
 
 ant -Dbuildnum=$BUILD_TAG -f nbbuild/build.xml build-nozip || exit
-ant -Dbuildnum=$BUILD_TAG -f nbbuild/build.xml commitValidation || exit
+# ant -Dbuildnum=$BUILD_TAG -f nbbuild/build.xml commitValidation || exit
 
 # we can't afford to run build-nbms in hudson builds, on deadlock.netbeans.org it takes 6 minutes from a typical 15 min build run
 # mkdir -p $DIST/nbms
