@@ -165,6 +165,7 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.j2ee.clientproject</friend>
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
                 <friend>org.netbeans.modules.j2ee.refactoring</friend>
+                <friend>org.netbeans.modules.mobility.end2end</friend>
                 <friend>org.netbeans.modules.tcpmon.integration</friend>
                 <friend>org.netbeans.modules.visualweb.websvcmgr</friend>
                 <friend>org.netbeans.modules.web.project</friend>
@@ -173,7 +174,7 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.websvc.customization</friend>
                 <friend>org.netbeans.modules.websvc.design</friend>
                 <friend>org.netbeans.modules.websvc.jaxwsapi</friend>
-                <friend>org.netbeans.modules.websvc.wsitconf</friend>
+                <friend>org.netbeans.modules.websvc.wsitconf</friend>                
                 <package>org.netbeans.modules.websvc.api.jaxws.project</package>
                 <package>org.netbeans.modules.websvc.api.jaxws.project.config</package>
                 <package>org.netbeans.modules.websvc.api.jaxws.wsdlmodel</package>
