@@ -21,6 +21,8 @@ package org.netbeans.modules.websvc.wsitconf.api;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
+import javax.swing.undo.UndoManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
@@ -28,6 +30,7 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.wsitconf.*;
+import org.netbeans.modules.websvc.wsitconf.ui.service.ServiceTopComponent;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.WSITModelSupport;
@@ -52,6 +55,18 @@ public final class WSITConfigProvider extends Object {
             instance = new WSITConfigProvider();
         }
         return instance;
+    }
+
+     /**
+     * Returns a WSIT configuration editor, then you may call same methods as WS Attributes editor api does,
+     * which means WSEditor.createWSEditorComponent(Node node, JaxWsModel jaxWsModel). This call returns JComponent 
+     * with WSIT config UI.
+     * This method only returns dialog - there are no OK/Cancel buttons provided - thus it's required that a 
+     * caller of this method makes sure appropriate actions are taken on wsdlModel and undomanager for Cancel/Save actions
+     */
+    public final JComponent getWSITServiceConfig(WSDLModel wsdlModel, UndoManager undoManager, Collection<Binding> bindings) {      
+        final ServiceTopComponent stc = new ServiceTopComponent(wsdlModel, undoManager, bindings);
+        return stc;
     }
     
     /**
