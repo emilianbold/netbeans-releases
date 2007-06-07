@@ -308,4 +308,11 @@ public class Util {
         return ClassPath.getClassPath(file, ClassPath.SOURCE).getResourceName(file, '.', false);
     }
 
+    public static String[] ensureTypes(String[] types) {
+        if (types == null || types.length == 0 || types[0].length() == 0) {
+            types = new String[] { String.class.getName() };
+        }
+        return types;
+    }
+    
 }
