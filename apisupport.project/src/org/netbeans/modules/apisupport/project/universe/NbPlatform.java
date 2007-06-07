@@ -753,6 +753,18 @@ public final class NbPlatform {
         }
     }
     
+    /**
+     * Gets a module from the platform by name.
+     */
+    public ModuleEntry getModule(String cnb) {
+        try {
+            return ModuleList.findOrCreateModuleListFromBinaries(getDestDir()).getEntry(cnb);
+        } catch (IOException e) {
+            Util.err.notify(e);
+            return null;
+        }
+    }
+    
     private static File findCoreJar(File destdir) {
         File[] subdirs = destdir.listFiles();
         if (subdirs != null) {

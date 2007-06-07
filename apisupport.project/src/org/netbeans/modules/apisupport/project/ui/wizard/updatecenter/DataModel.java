@@ -20,8 +20,11 @@
 package org.netbeans.modules.apisupport.project.ui.wizard.updatecenter;
 
 import java.net.URL;
+import java.util.Collections;
+import java.util.jar.Manifest;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ManifestManager;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
@@ -40,6 +43,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     static private String AUTOUPDATE_SERVICE_TYPE_EXT = "settings"; //NOI18N
     static private String UC_LOCALIZING_BUNDLE = "SystemFileSystem.localizingBundle"; //NOI18N
     static private String AUTOUPDATE_MODULE = "org.netbeans.modules.autoupdate"; // NOI18N
+    static private String AUTOUPDATE_MODULE_NEW = "org.netbeans.modules.autoupdate.services"; // NOI18N
 
     private CreatedModifiedFiles cmf;
     
@@ -55,7 +59,8 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         if (cmf == null) {
             cmf = new CreatedModifiedFiles (getProject ());
         }
-        URL url = DataModel.class.getResource ("update_center.xml"); //NOI18N
+        boolean newAPI = ((NbModuleProject) getProject()).getPlatform(true).getModule("org.netbeans.modules.autoupdate.services") != null;
+        URL url = DataModel.class.getResource(newAPI ? "update_center_new.xml" : "update_center.xml"); // NOI18N
         assert url != null : "File 'update_center.xml must exist in package of " + getClass().getName() + "!";
         String serviceTypeName = getModuleInfo().getCodeNameBase ().replace ('.', '_') + AUTOUPDATE_SERVICE_TYPE; // NOI18N
         FileSystem layer = LayerUtils.layerForProject (getProject ()).layer (false);
@@ -71,7 +76,15 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                 }
             } while (f != null);
         }
-        cmf.add (cmf.createLayerEntry (pathToAutoUpdateType, url, null, null, null));
+        String codename = null;
+        Manifest mani = ((NbModuleProject) getProject()).getManifest();
+        if (mani != null) {
+            codename = mani.getMainAttributes().getValue("OpenIDE-Module"); // NOI18N
+        }
+        if (codename == null) {
+            codename = getModuleInfo().getCodeNameBase();
+        }
+        cmf.add(cmf.createLayerEntry(pathToAutoUpdateType, url, Collections.singletonMap("MODULECODENAME", codename), null, null)); // NOI18N
         
         String url_key_base = getModuleInfo().getCodeNameBase ().replace ('.', '_') + AUTOUPDATE_SERVICE_TYPE; //NOI18N
         String url_key = sequence == 0 ? url_key_base : url_key_base + '_' + sequence; // NOI18N
@@ -89,7 +102,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         cmf.add (cmf.bundleKeyDefaultBundle (url_key, ucUrl));
         
         // add dependency to autoupdate module
-        cmf.add (cmf.addModuleDependency (AUTOUPDATE_MODULE, null, null, false));
+        cmf.add(cmf.addModuleDependency(newAPI ? AUTOUPDATE_MODULE_NEW : AUTOUPDATE_MODULE, null, null, false));
         
         return cmf;
     }
