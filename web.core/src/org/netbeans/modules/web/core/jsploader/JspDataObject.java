@@ -170,7 +170,6 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         //            useEditorForEncoding = false;
         //            retrievedEncoding = tlps.getCachedOpenInfo(doReparse, useEditor).getEncoding();
         //        }
-        System.out.println("Retrieved encoding = " + retrievedEncoding);
         retrievedEncoding = retrievedEncoding != null ? retrievedEncoding : DEFAULT_ENCODING;
         return retrievedEncoding ;
     }
