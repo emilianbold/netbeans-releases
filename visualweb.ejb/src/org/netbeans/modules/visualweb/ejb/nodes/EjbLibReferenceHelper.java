@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -25,6 +26,11 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
+import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
+import org.netbeans.modules.j2ee.sun.dd.api.common.EjbRef;
+import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 import org.netbeans.modules.visualweb.api.designerapi.DesignerServiceHack;
 import org.netbeans.modules.visualweb.api.j2ee.common.RequestedEjbResource;
 import org.netbeans.modules.visualweb.ejb.EjbDataSourceManager;
@@ -38,6 +44,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 
 /**
  * 
@@ -621,6 +628,53 @@ public class EjbLibReferenceHelper {
         // Add an ejb-ref to the standard webapp DD, web.xml
         addToWebXml(project, ejbGroup);
 
-        // TODO add it to the container-specific DD
+        // Add it to the container-specific DD
+        addToVendorDD(project, ejbGroup);
+    }
+
+    private static void addToVendorDD(Project project, EjbGroup ejbGroup) throws IOException {
+        Lookup lookup = project.getLookup();
+        J2eeModuleProvider provider = (J2eeModuleProvider) lookup.lookup(J2eeModuleProvider.class);
+        FileObject[] configFiles = provider.getConfigurationFiles();
+        for (FileObject fo : configFiles) {
+            if (fo.getNameExt().equals("sun-web.xml")) {
+                addToSunWebXml(ejbGroup, fo);
+                // TODO Add support to other servers here
+            }
+        }
+    }
+
+    private static void addToSunWebXml(EjbGroup ejbGroup, FileObject fo) throws IOException {
+        RootInterface sunDDRoot = DDProvider.getDefault().getDDRoot(fo);
+        if (sunDDRoot instanceof SunWebApp) {
+            SunWebApp sunWebXml = (SunWebApp) sunDDRoot;
+
+            List<EjbInfo> sessionBeans = ejbGroup.getSessionBeans();
+            for (EjbInfo ejbInfo : sessionBeans) {
+                String refName = ejbInfo.getWebEjbRef();
+                String jndiName = ejbInfo.getJNDIName();
+
+                EjbRef ref = findEjbRefByName(sunWebXml, refName);
+                if (ref != null) {
+                    ref.setJndiName(jndiName);
+                } else {
+                    ref = sunWebXml.newEjbRef();
+                    ref.setEjbRefName(refName);
+                    ref.setJndiName(jndiName);
+                    sunWebXml.addEjbRef(ref);
+                }
+            }
+            sunWebXml.write(fo);
+        }
+    }
+
+    private static EjbRef findEjbRefByName(SunWebApp sunWebXml, String ejbRefName) {
+        EjbRef[] ejbRefs = sunWebXml.getEjbRef();
+        for (EjbRef ref : ejbRefs) {
+            if (ref.getEjbRefName().equals(ejbRefName)) {
+                return ref;
+            }
+        }
+        return null;
     }
 }

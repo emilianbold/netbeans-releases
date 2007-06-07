@@ -16,6 +16,11 @@ import org.openide.util.NbBundle;
 public class EjbContainerVendor
 {
     // Supported application servers
+    public static final String SUN_APP_SERVER_9_1 = NbBundle.getMessage(EjbContainerVendor.class,
+            "SUN_APP_SERVER_9_1");
+
+    public static final String SUN_APP_SERVER_9 = NbBundle.getMessage(EjbContainerVendor.class,
+            "SUN_APP_SERVER_9");
     public static final String SUN_APP_SERVER_8_1 = NbBundle.getMessage( EjbContainerVendor.class, "SUN_APP_SERVER_8_1" );
     public static final String SUN_APP_SERVER_8 = NbBundle.getMessage( EjbContainerVendor.class, "SUN_APP_SERVER_8" );
     public static final String SUN_APP_SERVER_7 = NbBundle.getMessage( EjbContainerVendor.class, "SUN_APP_SERVER_7" );
@@ -36,13 +41,14 @@ public class EjbContainerVendor
     
     public static String[] getContainerTypeNames()
     {
-        String[] containerTypes = { SUN_APP_SERVER_8_1, SUN_APP_SERVER_8, SUN_APP_SERVER_7, WEBLOGIC_8_1, WEBSPHERE_5_1 };
+        String[] containerTypes = { SUN_APP_SERVER_9_1, SUN_APP_SERVER_9, SUN_APP_SERVER_8_1,
+                SUN_APP_SERVER_8, SUN_APP_SERVER_7, WEBLOGIC_8_1, WEBSPHERE_5_1 };
         return containerTypes;
     }
     
     public static int getDefaultPort( String server )
     {
-        if( server.equals( SUN_APP_SERVER_8_1 ) || server.equals( SUN_APP_SERVER_8 ) || server.equals( SUN_APP_SERVER_7 ) )
+        if (isSunAppServer(server))
             return SUN_APP_SERVER_PORT;
         else if( server.equals( WEBLOGIC_8_1 ) )
             return WEBLOGIC_PORT;
@@ -51,10 +57,10 @@ public class EjbContainerVendor
         else
             return UNKNOWN_PORT;
     }
-    
+
     public static String getVendorDDFileName( String server )
     {
-        if( server.equals( SUN_APP_SERVER_8_1 ) || server.equals( SUN_APP_SERVER_8 ) || server.equals( SUN_APP_SERVER_7 ) )
+        if (isSunAppServer(server))
             return SUN_DEPLOYMENT_DESCRIPTOR;
         else if( server.equals( WEBLOGIC_8_1 ) )
             return WEBLOGIC_DEPLOYMENT_DESCRIPTOR;
@@ -63,4 +69,10 @@ public class EjbContainerVendor
         else
             throw new java.lang.IllegalArgumentException( server );
     }
+
+    static boolean isSunAppServer(String server) {
+        return server.equals(SUN_APP_SERVER_9_1) || server.equals(SUN_APP_SERVER_9)
+                || server.equals(SUN_APP_SERVER_8_1) || server.equals(SUN_APP_SERVER_8)
+                || server.equals(SUN_APP_SERVER_7);
+    }    
 }

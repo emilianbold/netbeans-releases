@@ -291,10 +291,10 @@ public class EjbGroup implements java.lang.Cloneable
         return justNames;
     }
 
-    public Collection getSessionBeans() {
+    public List<EjbInfo> getSessionBeans() {
         if( this.sessionBeans != null )
         {
-            ArrayList beans = new ArrayList( this.sessionBeans.values() );
+            ArrayList<EjbInfo> beans = new ArrayList<EjbInfo>( this.sessionBeans.values() );
             Collections.sort( beans );
             return beans;
         }
@@ -325,12 +325,7 @@ public class EjbGroup implements java.lang.Cloneable
     
     public boolean isSunAppServer()
     {
-        if( this.getAppServerVendor().equals( EjbContainerVendor.SUN_APP_SERVER_8_1 ) ||
-            this.getAppServerVendor().equals( EjbContainerVendor.SUN_APP_SERVER_8 ) ||
-            this.getAppServerVendor().equals( EjbContainerVendor.SUN_APP_SERVER_7 ) )
-            return true;
-        else
-            return false;
+        return EjbContainerVendor.isSunAppServer(getAppServerVendor());
     }
 
     public boolean isWebLogicAppServer()
