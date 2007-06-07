@@ -1,0 +1,154 @@
+<?xml version="1.0"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project name="Data Connectivity XTest Workspace Script" basedir="." default="all">
+    <property name="xtest.home" value="${basedir}/../../../xtest"/>
+    <!--import file="${xtest.home}/lib/templates/xtest.xml"/-->
+    <property environment="os_env"/>
+
+    <!-- default testtypes, attributes used when no value is supplied from command line -->
+    <property name="xtest.testtype" value="qa-functional"/>
+    <property name="xtest.attribs" value="acceptance"/>
+
+    <!-- Name of tested module -->
+    <property name="xtest.module" value="Data Connectivity XTest Workspace Script"/>
+    <!-- Home of XTest -->
+
+    <!-- Points to directory with IDE to test. Optional for IDE tests. -->
+    <property name="netbeans.dest.dir" location="${basedir}/../../../nbbuild/netbeans"/>
+
+
+    <property name="rootdir" location="./"/>
+    <property name="datasources" location="DataSource.properties"/>
+
+    <!-- Define path to WAR files -->
+    <property name="xtest.war.path" location="./work/"/>
+    <!-- Pass ${xtest.war.path} property value to xtest command line -->
+
+    <!--property name="xtest.ide.commandline.suffix" value="-J-Ddatasources=${datasources} -J-Ddbms=${dbms} -J-Dcrud_code_fragments=${crud_code_fragments} -J-Dxtest.war.path=${xtest.war.path} -J-Drootdir=${rootdir} -J-Dnetbeans.javacore.noscan=true"/-->
+
+    <target name="ds">
+     <echo message="Datasources: ${datasources}"/>
+     <echo message="CRUD: ${crud_code_fragments}"/>
+     <echo message="Suffix: ${xtest.ide.commandline.suffix}"/>
+    </target> 
+
+
+    <target name="oracle">
+        <property name="dbms" value="Oracle"/>
+        <property name="xtest.ide.commandline.suffix" value="-J-Ddatasources=${datasources} -J-Ddbms=${dbms} -J-Dnetbeans.javacore.noscan=true"/> 
+        <antcall target="runtests"/>
+    </target>
+
+    <target name="sqlserver">
+        <property name="dbms" value="SQLServer"/>
+        <property name="xtest.ide.commandline.suffix" value="-J-Ddatasources=${datasources} -J-Ddbms=${dbms} -J-Dnetbeans.javacore.noscan=true"/> 
+        <antcall target="runtests"/>
+    </target>
+
+    <target name="sybase">
+        <property name="dbms" value="Sybase"/>
+        <property name="xtest.ide.commandline.suffix" value="-J-Ddatasources=${datasources} -J-Ddbms=${dbms} -J-Dnetbeans.javacore.noscan=true"/> 
+        <antcall target="runtests"/>
+    </target>
+
+    <target name="db2">
+        <property name="dbms" value="DB2"/>
+        <property name="xtest.ide.commandline.suffix" value="-J-Ddatasources=${datasources} -J-Ddbms=${dbms} -J-Dnetbeans.javacore.noscan=true"/> 
+        <antcall target="runtests"/>
+    </target>
+
+    <target name="mysql">
+        <property name="dbms" value="MySQL"/>
+        <property name="xtest.ide.commandline.suffix" value="-J-Ddatasources=${datasources} -J-Ddbms=${dbms} -J-Dnetbeans.javacore.noscan=true"/> 
+        <antcall target="runtests"/>
+    </target>
+
+    <target name="pointbase">
+        <property name="xtest.ide.commandline.suffix" value="-J-Dnetbeans.javacore.noscan=true"/> 
+        <property name="dbms" value="PointBase"/>
+        <antcall target="runtests"/>
+    </target>
+
+    <target name="alldbs">
+        <antcall target="oracle"/>
+        <antcall target="sqlserver"/>
+        <antcall target="sybase"/>
+        <antcall target="db2"/>
+        <antcall target="mysql"/>
+        <antcall target="pointbase"/>
+    </target>
+
+    <!--property name="dbms" value="PointBase"/-->
+    <property name="dbms" value="Derby"/>
+    <!--property name="xtest.ide.commandline.suffix" value="-J-Ddatasources=${datasources} -J-Ddbms=${dbms} -J-Dnetbeans.javacore.noscan=true"/--> 
+    <property name="xtest.ide.commandline.suffix" value="-J-Ddatasources=${datasources} -J-Ddbms=${dbms}"/> 
+    
+    <!-- before using xtest task, it has to be defined -->
+    <taskdef name="xtest" classname="org.netbeans.xtest.usertasks.XTestActionTask" classpath="${xtest.home}/lib/xtest.jar"/>
+
+<!-- ============ -->
+<!-- Main targets -->
+<!-- ============ -->
+    <target name="all" depends="runtests"/>
+
+    <!--
+     This calls target which will call compilers according to cfg file.
+         You should not change this target unless you realy know what you are doing 
+    -->
+    <target name="buildtests">
+        <xtest executeAction="buildTests"/>
+    </target>
+
+    <!--
+       This calls common clean process. This cleans the tests 
+    -->
+   <!--
+      You can write your own if you need something special 
+   -->
+   <target name="cleantests">
+       <xtest executeAction="cleanTests"/>
+   </target>
+
+   <!--
+      This target runs tests. You should not change this 
+    -->
+    <!-- target unless you realy know what you are doing -->
+    <target name="runtests" depends="buildtests">
+        <echo message="Module: Running tests for ${xtest.module}, testtype ${xtest.testtype}, attribs=${xtest.attribs}"/>
+        <xtest executeAction="runTests"/>
+    </target>
+
+    <!-- This target cleans results -->
+    <target name="cleanresults">
+        <xtest executeAction="cleanResults"/>
+    </target>
+
+    <!-- This target cleans both tests and results -->
+    <target name="realclean">
+        <xtest executeAction="cleanAll"/>
+    </target>
+
+    <!--
+       This target prints out default xtest configuration which will be used to run the tests 
+    -->
+    <target name="printconfig">
+        <echo message="Default config is testtype: ${xtest.testtype}, attributes: ${xtest.attribs}."/>
+    </target>
+</project>
