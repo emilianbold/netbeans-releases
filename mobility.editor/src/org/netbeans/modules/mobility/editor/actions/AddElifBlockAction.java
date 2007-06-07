@@ -32,7 +32,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.completion.Completion;
-import org.netbeans.spi.project.ProjectConfigurationProvider;
+import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.mobility.antext.preprocessor.PPBlockInfo;
@@ -57,16 +57,16 @@ public class AddElifBlockAction extends PreprocessorEditorContextAction {
         super(NAME); //NOI18N
     }
     
-    public boolean isEnabled(final ProjectConfigurationProvider cfgProvider, final ArrayList<PPLine> preprocessorLineList, final JTextComponent target) {
+    public boolean isEnabled(final ProjectConfigurationsHelper cfgProvider, final ArrayList<PPLine> preprocessorLineList, final JTextComponent target) {
         if (cfgProvider != null && preprocessorLineList != null && target != null) {
             this.textComponent = new WeakReference<JTextComponent>(target);
             this.preprocessorLineList = preprocessorLineList;
         } else this.textComponent = null;
-        return cfgProvider != null && cfgProvider.getConfigurations().size() > 1 && isInsideIfChain(target, preprocessorLineList) && !overlapsBlockBorders(target, preprocessorLineList);
+        return cfgProvider != null && cfgProvider.isPreprocessorOn() && cfgProvider.getConfigurations().size() > 1 && isInsideIfChain(target, preprocessorLineList) && !overlapsBlockBorders(target, preprocessorLineList);
     }
     
     public String getPopupMenuText(@SuppressWarnings("unused")
-	final ProjectConfigurationProvider cfgProvider, @SuppressWarnings("unused")
+	final ProjectConfigurationsHelper cfgProvider, @SuppressWarnings("unused")
 	final ArrayList preprocessorLineList, @SuppressWarnings("unused")
 	final JTextComponent target) {
         return NbBundle.getMessage(AddElifBlockAction.class, "LBL_Add_Elif_Block");//NOI18N

@@ -32,10 +32,10 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 
-import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.mobility.antext.preprocessor.PPLine;
+import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.openide.ErrorManager;
 import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
@@ -53,12 +53,12 @@ public class CreateDebugBlockAction extends PreprocessorEditorContextAction {
         super(NAME); //NOI18N
     }
     
-    public boolean isEnabled(final ProjectConfigurationProvider cfgProvider, final ArrayList<PPLine> preprocessorLineList, final JTextComponent target) {
-        return cfgProvider != null && cfgProvider.getConfigurations().size() > 1 && !overlapsBlockBorders(target, preprocessorLineList);
+    public boolean isEnabled(final ProjectConfigurationsHelper cfgProvider, final ArrayList<PPLine> preprocessorLineList, final JTextComponent target) {
+        return cfgProvider != null && cfgProvider.isPreprocessorOn() && cfgProvider.getConfigurations().size() > 1 && !overlapsBlockBorders(target, preprocessorLineList);
     }
     
     public String getPopupMenuText(@SuppressWarnings("unused")
-	final ProjectConfigurationProvider cfgProvider, @SuppressWarnings("unused")
+	final ProjectConfigurationsHelper cfgProvider, @SuppressWarnings("unused")
 	final ArrayList preprocessorLineList, @SuppressWarnings("unused")
 	final JTextComponent target) {
         return NbBundle.getMessage(CreateDebugBlockAction.class, "LBL_Create_Debug_Block");//NOI18N

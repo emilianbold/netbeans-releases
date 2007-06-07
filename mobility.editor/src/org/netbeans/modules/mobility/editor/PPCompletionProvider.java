@@ -27,6 +27,7 @@ package org.netbeans.modules.mobility.editor;
 
 import java.io.IOException;
 import java.io.StringReader;
+import org.netbeans.api.project.Project;
 
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -88,7 +89,9 @@ public final class PPCompletionProvider implements CompletionProvider {
         final String line = getLine(component);
         if (!canBeValidPPLine(line))
             ret = 0;
-        if (!(J2MEProjectUtils.getProjectForDocument(component.getDocument()) instanceof J2MEProject))
+        Project p = (J2MEProjectUtils.getProjectForDocument(component.getDocument()));
+        ProjectConfigurationsHelper hlp = p==null ? null : p.getLookup().lookup(ProjectConfigurationsHelper.class);
+        if (hlp == null || !hlp.isPreprocessorOn())
             ret = 0;
         return ret;
     }
@@ -166,7 +169,9 @@ public final class PPCompletionProvider implements CompletionProvider {
     
     
     public CompletionTask createTask(final int queryType, final JTextComponent component) {
-        if (J2MEProjectUtils.getProjectForDocument(component.getDocument()) instanceof J2MEProject) {
+        Project p = (J2MEProjectUtils.getProjectForDocument(component.getDocument()));
+        ProjectConfigurationsHelper hlp = p==null ? null : p.getLookup().lookup(ProjectConfigurationsHelper.class);
+        if (hlp != null && hlp.isPreprocessorOn()) {
             try {
                 final int offset = component.getCaret().getDot();
                 final String line = getLine(component, offset);

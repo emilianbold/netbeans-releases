@@ -2,7 +2,7 @@
     
     <target name="pre-preprocess"/>
 
-    <target name="do-preprocess">
+    <target name="do-preprocess" unless="no.preprocess">
         <fail unless="preprocessed.dir">Must set preprocessed.dir</fail>
         <property name="abilities" value=""/>
         <property name="debug.level" value="debug"/>

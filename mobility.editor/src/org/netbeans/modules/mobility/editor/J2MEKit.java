@@ -88,7 +88,7 @@ public class J2MEKit extends JavaKit {
         return doc;
     }
     
-	protected static JMenu createMenu(JMenu menu, final JTextComponent c) {
+    protected static JMenu createMenu(JMenu menu, final JTextComponent c) {
         final String menuText = NbBundle.getMessage(J2MEKit.class, "Menu/Edit/PreprocessorBlocks"); //NOI18N
         if (menu == null) menu = new JMenu(); else menu.removeAll();
         Mnemonics.setLocalizedText(menu, menuText);
@@ -111,7 +111,7 @@ public class J2MEKit extends JavaKit {
         return menu;
     }
     
-    private static void addAction(final BaseKit kit, final ProjectConfigurationProvider cfgProvider, final ArrayList<PPLine> preprocessorBlockList, final JTextComponent target, final JMenu menu, final String actionName) {
+    private static void addAction(final BaseKit kit, final ProjectConfigurationsHelper cfgProvider, final ArrayList<PPLine> preprocessorBlockList, final JTextComponent target, final JMenu menu, final String actionName) {
         final Action a = kit.getActionByName(actionName);
         if (a != null) {
             if (a instanceof PreprocessorEditorContextAction) {

@@ -73,6 +73,7 @@ public final class ProjectConfigurationsHelper implements ProjectConfigurationPr
     //private ProjectConfiguration[] configurations;
     private ProjectConfiguration defaultConfiguration;
     private J2MEProject p;
+    private boolean preprocessorOn, invalid = true;
     
     /**
      * Creates new instance of the helper.
@@ -82,6 +83,15 @@ public final class ProjectConfigurationsHelper implements ProjectConfigurationPr
     public ProjectConfigurationsHelper(AntProjectHelper helper, J2MEProject p) {
         this.h = helper;
         this.p = p;
+    }
+
+    public boolean isPreprocessorOn() {
+        if (invalid) {
+            String prop = h.getStandardPropertyEvaluator().getProperty(DefaultPropertiesDescriptor.USE_PREPROCESSOR);
+            preprocessorOn = prop == null || Boolean.parseBoolean(prop);
+            invalid = false;
+        }
+        return preprocessorOn;
     }
     
     public synchronized ProjectConfiguration getDefaultConfiguration() {
@@ -335,6 +345,7 @@ public final class ProjectConfigurationsHelper implements ProjectConfigurationPr
                 psp.firePropertyChange(PROP_CONFIGURATION_ACTIVE, oldAC, newAC);
             }
         } else if (AntProjectHelper.PROJECT_PROPERTIES_PATH.equals(ev.getPath())) {
+            invalid = true;
             final TreeMap<String,ProjectConfiguration> old = configurations;
             final ProjectConfiguration oldCFs[]=old.values().toArray(new ProjectConfiguration[old.size()]);
             configurations = null;

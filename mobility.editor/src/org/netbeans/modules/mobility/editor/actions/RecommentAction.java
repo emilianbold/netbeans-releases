@@ -35,7 +35,6 @@ import javax.swing.*;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ProjectConfiguration;
-import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.mobility.antext.preprocessor.CommentingPreProcessor;
 import org.netbeans.mobility.antext.preprocessor.PreprocessorException;
@@ -63,14 +62,14 @@ public class RecommentAction extends PreprocessorEditorContextAction {
         putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke("control shift R"));//NOI18N
     }
     
-    public boolean isEnabled(final ProjectConfigurationProvider cfgProvider, @SuppressWarnings("unused")
+    public boolean isEnabled(final ProjectConfigurationsHelper cfgProvider, @SuppressWarnings("unused")
 	final ArrayList preprocessorLineList, @SuppressWarnings("unused")
 	final JTextComponent target) {
-        return cfgProvider != null && cfgProvider.getConfigurations().size() > 1;
+        return cfgProvider != null && cfgProvider.isPreprocessorOn() && cfgProvider.getConfigurations().size() > 1;
     }
     
     public String getPopupMenuText(@SuppressWarnings("unused")
-	final ProjectConfigurationProvider cfgProvider, @SuppressWarnings("unused")
+	final ProjectConfigurationsHelper cfgProvider, @SuppressWarnings("unused")
 	final ArrayList preprocessorLineList, @SuppressWarnings("unused")
 	final JTextComponent target) {
         return NbBundle.getMessage(RecommentAction.class, "LBL_Recomment") ;//NOI18N
@@ -91,7 +90,7 @@ public class RecommentAction extends PreprocessorEditorContextAction {
         final Project p = J2MEProjectUtils.getProjectForDocument(doc);
         if (p != null) {
             final ProjectConfigurationsHelper pch = p.getLookup().lookup(ProjectConfigurationsHelper.class);
-            if (pch != null) try {
+            if (pch != null && pch.isPreprocessorOn()) try {
                 final PPDocumentSource ppSource = new PPDocumentSource(doc);
                 final PPDocumentDestination ppDestination = new PPDocumentDestination((BaseDocument)doc);
                 final ProjectConfiguration conf = pch.getActiveConfiguration();

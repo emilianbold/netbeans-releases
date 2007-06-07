@@ -58,6 +58,7 @@ public class PreprocessorFileFilterImplementation implements JavaFileFilterImple
     }
     
     public Reader filterReader(final Reader r) {
+        if (!pch.isPreprocessorOn()) return r;
         final StringWriter sw = new StringWriter();
         new CommentingPreProcessor(new CommentingPreProcessor.Source() {
             public Reader createReader() throws IOException {
@@ -74,6 +75,7 @@ public class PreprocessorFileFilterImplementation implements JavaFileFilterImple
     }
     
     public CharSequence filterCharSequence(final CharSequence charSequence) {
+        if (!pch.isPreprocessorOn()) return charSequence;
         final StringWriter sw = new StringWriter();
         new CommentingPreProcessor(new CommentingPreProcessor.Source() {
             public Reader createReader() throws IOException {
@@ -90,6 +92,7 @@ public class PreprocessorFileFilterImplementation implements JavaFileFilterImple
     }
     
     public Writer filterWriter(final Writer w) {
+        if (!pch.isPreprocessorOn()) return w;
         return new StringWriter() {
             public void close() throws IOException {
                 new CommentingPreProcessor(new CommentingPreProcessor.Source() {

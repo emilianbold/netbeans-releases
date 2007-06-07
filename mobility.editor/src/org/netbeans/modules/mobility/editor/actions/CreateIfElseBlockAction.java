@@ -38,6 +38,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.mobility.antext.preprocessor.PPLine;
 import org.netbeans.modules.mobility.project.J2MEProjectUtils;
+import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.openide.ErrorManager;
 import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
@@ -55,12 +56,12 @@ public class CreateIfElseBlockAction extends PreprocessorEditorContextAction {
         super(NAME); //NOI18N
     }
     
-    public boolean isEnabled(final ProjectConfigurationProvider cfgProvider, final ArrayList<PPLine> preprocessorLineList, final JTextComponent target) {
-        return cfgProvider != null && cfgProvider.getConfigurations().size() > 1 && !overlapsBlockBorders(target, preprocessorLineList);
+    public boolean isEnabled(final ProjectConfigurationsHelper cfgProvider, final ArrayList<PPLine> preprocessorLineList, final JTextComponent target) {
+        return cfgProvider != null && cfgProvider.isPreprocessorOn() && cfgProvider.getConfigurations().size() > 1 && !overlapsBlockBorders(target, preprocessorLineList);
     }
     
     public String getPopupMenuText(@SuppressWarnings("unused")
-	final ProjectConfigurationProvider cfgProvider, final ArrayList<PPLine> preprocessorLineList, final JTextComponent target) {
+	final ProjectConfigurationsHelper cfgProvider, final ArrayList<PPLine> preprocessorLineList, final JTextComponent target) {
         return getBlock(target, preprocessorLineList) != null ? NbBundle.getMessage(CreateIfElseBlockAction.class, "LBL_Create_Nested_If_Else_Block") : NbBundle.getMessage(CreateIfElseBlockAction.class, "LBL_Create_If_Else_Block");//NOI18N
     }
     

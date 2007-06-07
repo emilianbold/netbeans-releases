@@ -43,6 +43,7 @@ import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.mobility.antext.preprocessor.CommentingPreProcessor;
 import org.netbeans.mobility.antext.preprocessor.PreprocessorException;
 import org.netbeans.modules.mobility.editor.J2MEKit;
@@ -186,19 +187,15 @@ public class J2MEDataObject extends MultiDataObject {
             setMIMEType("text/x-java"); // NOI18N
         }
         
-        public static String getFileEncoding(FileObject someFile) {
-            String enc = (String)someFile.getAttribute(ATTR_FILE_ENCODING);
-            if (enc == null) {
-//                enc = JavaSettings.getDefault().getDefaultEncoding();
-                enc = System.getProperty("file.encoding"); //NOI18N
-            }
-            if ("".equals(enc))
-                return null;
-            else
-                return enc;
-        }
-        
         protected void saveFromKitToStream(final StyledDocument doc, final EditorKit kit, final OutputStream stream) throws IOException, BadLocationException {
+            if (pch == null) {
+                Project p = FileOwnerQuery.getOwner(getDataObject().getPrimaryFile());
+                pch = p == null ? null : (ProjectConfigurationsHelper)p.getLookup().lookup(ProjectConfigurationsHelper.class);
+            }
+            if (!pch.isPreprocessorOn()) {
+                saveFromKitToStreamHook(doc, kit, stream);
+                return;
+            }
             // super.saveFromKitToStream called to handled guarded sections -- store the results in memory
             final ByteArrayOutputStream myStream = new ByteArrayOutputStream();
             saveFromKitToStreamHook (doc,kit,myStream);
@@ -218,10 +215,6 @@ public class J2MEDataObject extends MultiDataObject {
                 }
 
             };
-            if (pch == null) {
-                Project p = FileOwnerQuery.getOwner(getDataObject().getPrimaryFile());
-                pch = p == null ? null : (ProjectConfigurationsHelper)p.getLookup().lookup(ProjectConfigurationsHelper.class);
-            }
             final ProjectConfiguration defCfg = pch == null ? null : pch.getDefaultConfiguration();
             final HashMap<String,String> identifiers = new HashMap<String,String>();
             if (defCfg !=null) {
@@ -237,9 +230,7 @@ public class J2MEDataObject extends MultiDataObject {
         }
 
         protected final String getEncoding () {
-            final String enc = getFileEncoding(getDataObject().getPrimaryFile());
-            final String encoding = enc == null ? System.getProperty("file.encoding") : enc; //NOI18N
-            return encoding;
+            return FileEncodingQuery.getEncoding(getDataObject().getPrimaryFile()).name();
         }
 
         protected void saveFromKitToStreamHook (StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
@@ -247,6 +238,14 @@ public class J2MEDataObject extends MultiDataObject {
         }
 
         protected void loadFromStreamToKit(final StyledDocument doc, final InputStream stream, final EditorKit kit) throws IOException, BadLocationException {
+            if (pch == null) {
+                Project p = FileOwnerQuery.getOwner(getDataObject().getPrimaryFile());
+                pch = p == null ? null : (ProjectConfigurationsHelper)p.getLookup().lookup(ProjectConfigurationsHelper.class);
+            }
+            if (!pch.isPreprocessorOn()) {
+                loadFromStreamToKitHook(doc, stream, kit);
+                return;
+            }
             final String encoding = getEncoding ();
 
             final CommentingPreProcessor.Source ppSource = new CommentingPreProcessor.Source() {
@@ -266,10 +265,6 @@ public class J2MEDataObject extends MultiDataObject {
                 }
 
             };
-            if (pch == null) {
-                Project p = FileOwnerQuery.getOwner(getDataObject().getPrimaryFile());
-                pch = p == null ? null : (ProjectConfigurationsHelper)p.getLookup().lookup(ProjectConfigurationsHelper.class);
-            }
             final ProjectConfiguration conf = pch == null ? null : pch.getActiveConfiguration();
             final HashMap<String,String> identifiers=new HashMap<String,String>();
             if (conf != null) {

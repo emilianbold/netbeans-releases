@@ -67,6 +67,7 @@ public class CustomizerGeneral extends JPanel implements CustomizerPanel, Action
         vps.register(jTextFieldAppVersion, DefaultPropertiesDescriptor.APP_VERSION_NUMBER);
         vps.register(jSpinnerCounter, DefaultPropertiesDescriptor.APP_VERSION_COUNTER);
         vps.register(jCheckBoxAutoIncrement, DefaultPropertiesDescriptor.APP_VERSION_AUTOINCREMENT);
+        vps.register(jCheckBoxUsePreprocessor, DefaultPropertiesDescriptor.USE_PREPROCESSOR);
         jCheckBoxAutoIncrement.addActionListener(this);
         actionPerformed(null);
         
@@ -174,6 +175,7 @@ public class CustomizerGeneral extends JPanel implements CustomizerPanel, Action
         jLabel6 = new javax.swing.JLabel();
         jSpinnerCounter = new javax.swing.JSpinner();
         jCheckBoxAutoIncrement = new javax.swing.JCheckBox();
+        jCheckBoxUsePreprocessor = new javax.swing.JCheckBox();
         jLabel2 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         projectList = new javax.swing.JList();
@@ -281,12 +283,24 @@ public class CustomizerGeneral extends JPanel implements CustomizerPanel, Action
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         add(jCheckBoxAutoIncrement, gridBagConstraints);
 
+        jCheckBoxUsePreprocessor.setMnemonic(NbBundle.getMessage(CustomizerGeneral.class, "MNM_CustomizeGeneral_UsePreprocessor").charAt(0));
+        jCheckBoxUsePreprocessor.setText(NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustomizeGeneral_UsePreprocessor")); // NOI18N
+        jCheckBoxUsePreprocessor.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        jCheckBoxUsePreprocessor.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        add(jCheckBoxUsePreprocessor, gridBagConstraints);
+
         jLabel2.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CustomizerGeneral.class).getString("MNM_CustGeneral_RequiredProjects").charAt(0));
         jLabel2.setLabelFor(projectList);
         jLabel2.setText(NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustGeneral_RequiredProjects")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -298,7 +312,7 @@ public class CustomizerGeneral extends JPanel implements CustomizerPanel, Action
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
@@ -310,7 +324,7 @@ public class CustomizerGeneral extends JPanel implements CustomizerPanel, Action
         rebuildCheckBox.setText(NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustGeneral_RebuildProjects")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -327,6 +341,7 @@ public class CustomizerGeneral extends JPanel implements CustomizerPanel, Action
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox jCheckBoxAutoIncrement;
+    private javax.swing.JCheckBox jCheckBoxUsePreprocessor;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

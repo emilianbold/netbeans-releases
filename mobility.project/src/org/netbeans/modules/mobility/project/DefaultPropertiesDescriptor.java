@@ -24,6 +24,7 @@ import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.mobility.project.PropertyDescriptor;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.spi.mobility.project.ProjectPropertiesDescriptor;
 import org.netbeans.spi.mobility.project.support.DefaultPropertyParsers;
 
@@ -34,6 +35,7 @@ import org.netbeans.spi.mobility.project.support.DefaultPropertyParsers;
 public class DefaultPropertiesDescriptor implements ProjectPropertiesDescriptor {
     
     public static final String CONFIG_ACTIVE = "config.active"; //NOI18N
+    public static final String USE_PREPROCESSOR = "use.preprocessor"; //NOI18N
     public static final String ALL_CONFIGURATIONS = "all.configurations"; //NOI18N
     public static final String SELECTED_CONFIGURATIONS = "selected.configurations"; //NOI18N
     public static final String CONFIG_DISPLAY_NAME = "display.name"; //NOI18N
@@ -130,6 +132,7 @@ public class DefaultPropertiesDescriptor implements ProjectPropertiesDescriptor 
         if (set == null) {
             set = new HashSet();
             set.add(new PropertyDescriptor(CONFIG_ACTIVE, false, DefaultPropertyParsers.STRING_PARSER,  EMPTY));
+            set.add(new PropertyDescriptor(USE_PREPROCESSOR, true, DefaultPropertyParsers.BOOLEAN_PARSER,  TRUE));
             set.add(new PropertyDescriptor(ALL_CONFIGURATIONS, true, DefaultPropertyParsers.STRING_PARSER,  " "));//NOI18N
             set.add(new PropertyDescriptor(SELECTED_CONFIGURATIONS, false, DefaultPropertyParsers.STRING_PARSER));
             set.add(new PropertyDescriptor(CONFIG_DISPLAY_NAME, true, DefaultPropertyParsers.STRING_PARSER));
@@ -147,7 +150,7 @@ public class DefaultPropertiesDescriptor implements ProjectPropertiesDescriptor 
             set.add(new PropertyDescriptor(JAVAC_DEPRECATION, true, DefaultPropertyParsers.BOOLEAN_PARSER, FALSE));
             set.add(new PropertyDescriptor(JAVAC_SOURCE, true, DefaultPropertyParsers.STRING_PARSER, "1.3")); //NOI18N
             set.add(new PropertyDescriptor(JAVAC_TARGET, true, DefaultPropertyParsers.STRING_PARSER, "1.1")); //NOI18N
-            set.add(new PropertyDescriptor(JAVAC_ENCODING, true, DefaultPropertyParsers.STRING_PARSER, System.getProperty("file.encoding"))); //NOI18N
+            set.add(new PropertyDescriptor(JAVAC_ENCODING, true, DefaultPropertyParsers.STRING_PARSER, FileEncodingQuery.getDefaultEncoding().name())); 
             set.add(new PropertyDescriptor(OBFUSCATION_LEVEL, true, DefaultPropertyParsers.INTEGER_PARSER, "0")); //NOI18N
             set.add(new PropertyDescriptor(OBFUSCATION_CUSTOM, true, DefaultPropertyParsers.STRING_PARSER, EMPTY));
             set.add(new PropertyDescriptor(USE_EMPTYAPIS, true, DefaultPropertyParsers.BOOLEAN_PARSER, TRUE));

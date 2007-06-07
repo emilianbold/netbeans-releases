@@ -30,6 +30,9 @@
         <condition property="no.deps">
             <istrue value="${{no.dependencies}}"/>
         </condition>
+        <condition property="no.preprocess">
+            <isfalse value="${{use.preprocessor}}"/>
+        </condition>
         <condition property="no.javadoc.preview">
             <isfalse value="${{javadoc.preview}}"/>
         </condition>

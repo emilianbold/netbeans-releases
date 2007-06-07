@@ -183,7 +183,7 @@ public class J2MEEditorDocument extends JavaDocument {
             final Project p = J2MEProjectUtils.getProjectForDocument(doc);
             if (p != null) {
                 final ProjectConfigurationsHelper configHelper = p.getLookup().lookup(ProjectConfigurationsHelper.class);
-                if (configHelper == null) return;
+                if (configHelper == null || !configHelper.isPreprocessorOn()) return;
                 final HashMap<String,String> activeIdentifiers=new HashMap<String,String>(configHelper.getActiveAbilities());
                 activeIdentifiers.put(configHelper.getActiveConfiguration().getDisplayName(),null);
                 try {

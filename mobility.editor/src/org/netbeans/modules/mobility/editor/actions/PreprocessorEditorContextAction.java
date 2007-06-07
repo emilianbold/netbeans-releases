@@ -32,6 +32,7 @@ import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.mobility.antext.preprocessor.PPBlockInfo;
 import org.netbeans.mobility.antext.preprocessor.PPLine;
+import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.openide.text.NbDocument;
 
 /**
@@ -45,9 +46,9 @@ public abstract class PreprocessorEditorContextAction extends BaseAction {
         super(name);
     }
     
-    public abstract String getPopupMenuText(ProjectConfigurationProvider cfgProvider, ArrayList<PPLine> preprocessorLineList, JTextComponent target);
+    public abstract String getPopupMenuText(ProjectConfigurationsHelper cfgProvider, ArrayList<PPLine> preprocessorLineList, JTextComponent target);
     
-    public abstract boolean isEnabled(ProjectConfigurationProvider cfgProvider, ArrayList<PPLine> preprocessorLineList, JTextComponent target);
+    public abstract boolean isEnabled(ProjectConfigurationsHelper cfgProvider, ArrayList<PPLine> preprocessorLineList, JTextComponent target);
     
     protected int getSelectionStartLine(final JTextComponent c) {
         if (c == null || !(c.getDocument() instanceof StyledDocument)) return 0;

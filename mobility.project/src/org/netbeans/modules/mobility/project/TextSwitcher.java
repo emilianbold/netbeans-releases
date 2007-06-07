@@ -57,6 +57,7 @@ public class TextSwitcher implements PropertyChangeListener {
     
     protected final Project p;
     protected final AntProjectHelper h;
+    protected ProjectConfigurationsHelper pch;
     
     protected static RequestProcessor switchProcessor = new RequestProcessor(TEXT_SWITCH_SUPPORT);
     protected static Object lockObserver = new Object();
@@ -69,9 +70,10 @@ public class TextSwitcher implements PropertyChangeListener {
     
     public void propertyChange(final PropertyChangeEvent evt) {
         final String changed = evt.getPropertyName();
-        
-        if (ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE.equals(changed) ||
-                ProjectConfigurationsHelper.PROJECT_PROPERTIES.equals(changed)) {
+        if (pch == null) pch = p.getLookup().lookup(ProjectConfigurationsHelper.class);
+        if (pch != null && pch.isPreprocessorOn() &&
+               (ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE.equals(changed) ||
+                ProjectConfigurationsHelper.PROJECT_PROPERTIES.equals(changed))) {
             
             new Runner(((ProjectConfiguration)evt.getNewValue())).start();
             
@@ -134,8 +136,6 @@ public class TextSwitcher implements PropertyChangeListener {
                 
                 final PPDocumentSource ppSrc = new PPDocumentSource(doc);
                 final PPDocumentDestination ppDest = new PPDocumentDestination((BaseDocument)doc);
-                
-                final ProjectConfigurationsHelper pch = p.getLookup().lookup(ProjectConfigurationsHelper.class);
                 
                 final HashMap<String,String> identifiers=new HashMap<String,String>(pch.getActiveAbilities());
                 identifiers.put(pch.getActiveConfiguration().getDisplayName(),null);
