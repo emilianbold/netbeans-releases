@@ -55,7 +55,7 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
         super(topComponentName,Index);
         
         long oldTimeout = this.getTimeouts().getTimeout("ComponentOperator.WaitComponentTimeout");
-        this.getTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout", 1000000);
+        this.getTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout", 120000);
         try {
             surfacecomp = new ComponentOperator(this, new DesignerPaneChooser());
         } catch(TimeoutExpiredException tex) {

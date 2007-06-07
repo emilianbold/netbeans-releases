@@ -39,7 +39,7 @@ public class CreateWebPackProject extends org.netbeans.performance.test.utilitie
     
     private String category, project, project_name, project_type;
     
-
+    
     
     /**
      * Creates a new instance of CreateWebPackProject
@@ -77,7 +77,7 @@ public class CreateWebPackProject extends org.netbeans.performance.test.utilitie
     
     public void prepare(){
         log("::prepare");
-        createProject();        
+        createProject();
     }
     
     private void createProject() {
@@ -111,10 +111,12 @@ public class CreateWebPackProject extends org.netbeans.performance.test.utilitie
     public ComponentOperator open(){
         log("::open");
         PerformanceCounters.addPerformanceCounter("Wait Wizard closed");
-            wizard_location.finish();
+        wizard_location.finish();
+        
         PerformanceCounters.endPerformanceCounter("Wait Wizard closed");
         PerformanceCounters.addPerformanceCounter("Wait document");
-            WebFormDesignerOperator.findWebFormDesignerOperator("Page1");
+        WebFormDesignerOperator.findWebFormDesignerOperator("Page1");
+        
         PerformanceCounters.endPerformanceCounter("Wait document");
         return null;
     }
@@ -127,7 +129,7 @@ public class CreateWebPackProject extends org.netbeans.performance.test.utilitie
         } catch (Exception ex) {
             log("Exception catched on CloseAllDocuments action: "+ex.getMessage());
         }
-        VWPFootprintUtilities.deleteProject(project_name);        
+        VWPFootprintUtilities.deleteProject(project_name);
     }
     
     public static void main(java.lang.String[] args) {
