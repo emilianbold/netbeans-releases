@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -330,7 +331,7 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
     
     public Collection<Pin> getPinNodes() {
         if( pageContentModel == null ){
-            return Arrays.asList();
+            return Collections.emptyList();
         }
         Collection<PageContentItem> pageContentItems = pageContentModel.getPageContentItems();
         Collection<Pin> pinNodes = new ArrayList<Pin>(pageContentItems.size());
