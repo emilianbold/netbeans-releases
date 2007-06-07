@@ -1,0 +1,35 @@
+movepkg.MoveImport.java
+--------------------
+Update package statement
+null
+Move file MoveImport.java
+--------------------
+File was deleted
+
+
+movepkgdep.MoveImportDep.java
+--------------------
+null
+--------------------
+  1   
+  2   package movepkgdep;
+  3   
+    + import movepkgdst.MoveImport;
+  4   import movepkg.*;
+  5   
+  6   public class MoveImportDep {
+
+
+movepkgdst.MoveImport.java
+--------------------
+
+package movepkgdst;
+
+import movepkgdst.MoveImport;
+import movepkg.*;
+
+public class MoveImport {
+   
+}
+
+
