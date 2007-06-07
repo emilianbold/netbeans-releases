@@ -34,7 +34,7 @@ public class DerbySettingsAction extends CallableSystemAction {
     }    
     
     public void performAction() {
-        DerbySystemHomePanel.derbySettings();
+        DerbySystemHomePanel.showDerbySettings();
     }
     
     protected boolean asynchronous() {

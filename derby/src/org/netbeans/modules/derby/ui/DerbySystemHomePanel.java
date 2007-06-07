@@ -66,12 +66,12 @@ public class DerbySystemHomePanel extends javax.swing.JPanel {
     public static boolean checkDerbyInstallAndHome() {
         String derbySystemHome = DerbyOptions.getDefault().getSystemHome();
         if (derbySystemHome.length() <= 0 || DerbyOptions.getDefault().isLocationNull()) {
-            return derbySettings();
+            return showDerbySettings();
         }
         return true;
     }
     
-    public static boolean derbySettings() {
+    public static boolean showDerbySettings() {
         // since this could be called from StartAction, which is asynchronous
         return Mutex.EVENT.writeAccess(new Mutex.Action<Boolean>() {
             public Boolean run() {

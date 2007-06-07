@@ -252,7 +252,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void settingsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_settingsButtonActionPerformed
-        DerbySystemHomePanel.derbySettings();
+        DerbySystemHomePanel.showDerbySettings();
         databaseLocationTextField.setText(DerbyOptions.getDefault().getSystemHome());
 }//GEN-LAST:event_settingsButtonActionPerformed
     
