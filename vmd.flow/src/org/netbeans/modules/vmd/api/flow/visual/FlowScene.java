@@ -247,18 +247,7 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
     }
 
     public void userSelectionSuggested (final Set<? extends Object> suggestedSelectedObjects, boolean invertSelection) {
-        if (invertSelection) {
-            HashSet<Object> objects = new HashSet<Object> (getSelectedObjects ());
-            for (Object o : suggestedSelectedObjects) {
-                if (objects.contains (o))
-                    objects.remove (o);
-                else
-                    objects.add (o);
-            }
-            setSelectedObjects (objects);
-        } else {
-            setSelectedObjects (suggestedSelectedObjects);
-        }
+        super.userSelectionSuggested (suggestedSelectedObjects, invertSelection);
 
         document.getTransactionManager ().writeAccess (new Runnable() {
             public void run () {
@@ -784,7 +773,10 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
             if (descriptor == null)
                 return null;
 
-            userSelectionSuggested (Collections.singleton (descriptor), false);
+            setFocusedObject (descriptor);
+            if (! getSelectedObjects ().contains (descriptor))
+                userSelectionSuggested (Collections.singleton (descriptor), false);
+
             return Utilities.actionsToPopup (ActionsSupport.createActionsArray (descriptor.getRepresentedComponent ()), component);
         }
     }
