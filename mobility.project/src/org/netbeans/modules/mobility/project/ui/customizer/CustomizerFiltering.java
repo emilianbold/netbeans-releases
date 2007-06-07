@@ -59,7 +59,7 @@ public class CustomizerFiltering extends JPanel implements CustomizerPanel, Visu
     private static final String STANDARD_ANT_EXCLUDES = "([^/]*~)|(#[^/]*#)|(\\.#[^/]*)|(%[^/]*%)|(\\._[^/]*)|(CVS)|(CVS/.*)|(\\.cvsignore)|(SCCS)|(SCCS/.*)|(vssver\\.scc)|(\\.svn)|(\\.svn/.*)|(\\.DS_Store)";//NOI18N
     private static final String TEST_EXCLUDES = "([^/]*Test\\.java)|(test)|(test/.*)";//NOI18N
     
-    static final String[] PROPERTY_GROUP = new String[] {DefaultPropertiesDescriptor.FILTER_USE_STANDARD, DefaultPropertiesDescriptor.FILTER_EXCLUDE_TESTS, DefaultPropertiesDescriptor.FILTER_EXCLUDES};
+    static final String[] PROPERTY_GROUP = new String[] {DefaultPropertiesDescriptor.FILTER_USE_STANDARD, DefaultPropertiesDescriptor.FILTER_EXCLUDE_TESTS, DefaultPropertiesDescriptor.FILTER_EXCLUDES, DefaultPropertiesDescriptor.FILTER_MORE_EXCLUDES};
     
     private VisualPropertySupport vps;
     private CheckedTreeBeanView treeView;
@@ -106,11 +106,13 @@ public class CustomizerFiltering extends JPanel implements CustomizerPanel, Visu
         jCheckBoxTests = new javax.swing.JCheckBox();
         jLabelTree = new javax.swing.JLabel();
         jPanelTree = new javax.swing.JPanel();
+        jLabelExcludes = new javax.swing.JLabel();
+        jTextFieldExcludes = new javax.swing.JTextField();
 
         setLayout(new java.awt.GridBagLayout());
 
         defaultCheck.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerFiltering.class).getString("MNM_Use_Default").charAt(0));
-        defaultCheck.setText(NbBundle.getMessage(CustomizerFiltering.class, "LBL_Use_Default"));
+        defaultCheck.setText(NbBundle.getMessage(CustomizerFiltering.class, "LBL_Use_Default")); // NOI18N
         defaultCheck.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -120,8 +122,8 @@ public class CustomizerFiltering extends JPanel implements CustomizerPanel, Visu
         add(defaultCheck, gridBagConstraints);
 
         jCheckBoxCVS.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerFiltering.class).getString("MNM_CustFilter_DefaultExcludes").charAt(0));
-        jCheckBoxCVS.setText(NbBundle.getMessage(CustomizerFiltering.class, "LBL_CustFilter_DefaultExcludes"));
-        jCheckBoxCVS.setToolTipText(NbBundle.getMessage(CustomizerFiltering.class, "TTT_CustFilter_DefaultExcludes"));
+        jCheckBoxCVS.setText(NbBundle.getMessage(CustomizerFiltering.class, "LBL_CustFilter_DefaultExcludes")); // NOI18N
+        jCheckBoxCVS.setToolTipText(NbBundle.getMessage(CustomizerFiltering.class, "TTT_CustFilter_DefaultExcludes")); // NOI18N
         jCheckBoxCVS.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -132,8 +134,8 @@ public class CustomizerFiltering extends JPanel implements CustomizerPanel, Visu
         add(jCheckBoxCVS, gridBagConstraints);
 
         jCheckBoxTests.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerFiltering.class).getString("MNM_CustFilter_ExcludeTests").charAt(0));
-        jCheckBoxTests.setText(NbBundle.getMessage(CustomizerFiltering.class, "LBL_CustFilter_ExcludeTests"));
-        jCheckBoxTests.setToolTipText(NbBundle.getMessage(CustomizerFiltering.class, "TTT_CustFilter_ExcludeTests"));
+        jCheckBoxTests.setText(NbBundle.getMessage(CustomizerFiltering.class, "LBL_CustFilter_ExcludeTests")); // NOI18N
+        jCheckBoxTests.setToolTipText(NbBundle.getMessage(CustomizerFiltering.class, "TTT_CustFilter_ExcludeTests")); // NOI18N
         jCheckBoxTests.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -145,7 +147,7 @@ public class CustomizerFiltering extends JPanel implements CustomizerPanel, Visu
 
         jLabelTree.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CustomizerFiltering.class).getString("MNM_CustFilter_SelectFiles").charAt(0));
         jLabelTree.setLabelFor(sourceExplorer);
-        jLabelTree.setText(NbBundle.getMessage(CustomizerFiltering.class, "LBL_CustFilter_SelectFiles"));
+        jLabelTree.setText(NbBundle.getMessage(CustomizerFiltering.class, "LBL_CustFilter_SelectFiles")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -155,7 +157,6 @@ public class CustomizerFiltering extends JPanel implements CustomizerPanel, Visu
         add(jLabelTree, gridBagConstraints);
 
         jPanelTree.setLayout(new java.awt.BorderLayout());
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -166,8 +167,19 @@ public class CustomizerFiltering extends JPanel implements CustomizerPanel, Visu
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(jPanelTree, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+        jLabelExcludes.setDisplayedMnemonic(NbBundle.getMessage(CustomizerFiltering.class, "MNM_CustFilter_Excludes").charAt(0));
+        jLabelExcludes.setLabelFor(jTextFieldExcludes);
+        jLabelExcludes.setText(NbBundle.getMessage(CustomizerFiltering.class, "LBL_CustFilter_Excludes")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        add(jLabelExcludes, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 5, 0, 0);
+        add(jTextFieldExcludes, gridBagConstraints);
+    }// </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerFiltering.class, "ACSN_CustFilter"));
@@ -192,10 +204,12 @@ public class CustomizerFiltering extends JPanel implements CustomizerPanel, Visu
         jCheckBoxTests.removeActionListener(this);
         vps.register(jCheckBoxCVS, DefaultPropertiesDescriptor.FILTER_USE_STANDARD, useDefault);
         vps.register(jCheckBoxTests, DefaultPropertiesDescriptor.FILTER_EXCLUDE_TESTS, useDefault);
+        vps.register(jTextFieldExcludes, DefaultPropertiesDescriptor.FILTER_MORE_EXCLUDES, useDefault);
         this.excludesTranslatedPropertyName = VisualPropertySupport.translatePropertyName(configuration, DefaultPropertiesDescriptor.FILTER_EXCLUDES, useDefault);
         initTree();
         treeView.setEditable(!useDefault);
         jLabelTree.setEnabled(!useDefault);
+        jLabelExcludes.setEnabled(!useDefault);
         jCheckBoxCVS.addActionListener(this);
         jCheckBoxTests.addActionListener(this);
     }
@@ -229,8 +243,10 @@ public class CustomizerFiltering extends JPanel implements CustomizerPanel, Visu
     private javax.swing.JCheckBox defaultCheck;
     private javax.swing.JCheckBox jCheckBoxCVS;
     private javax.swing.JCheckBox jCheckBoxTests;
+    private javax.swing.JLabel jLabelExcludes;
     private javax.swing.JLabel jLabelTree;
     private javax.swing.JPanel jPanelTree;
+    private javax.swing.JTextField jTextFieldExcludes;
     // End of variables declaration//GEN-END:variables
     
     boolean acceptFileObject(final FileObject fo) {

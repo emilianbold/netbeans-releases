@@ -33,10 +33,10 @@
         <condition property="no.javadoc.preview">
             <isfalse value="${{javadoc.preview}}"/>
         </condition>
-        <condition property="filter.excludes.evaluated" value="${{filter.excludes}},**/*Test.java,**/test,**/test/**">
+        <condition property="filter.excludes.evaluated" value="${{filter.excludes}},${{filter.more.excludes}},**/*Test.java,**/test,**/test/**">
             <istrue value="${{filter.exclude.tests}}"/>
         </condition>
-        <property name="filter.excludes.evaluated" value="${{filter.excludes}}"/>
+        <property name="filter.excludes.evaluated" value="${{filter.excludes}},${{filter.more.excludes}}"/>
         <condition property="deployment.do.override.jarurl" value="">
             <istrue value="${{deployment.override.jarurl}}"/>
         </condition>

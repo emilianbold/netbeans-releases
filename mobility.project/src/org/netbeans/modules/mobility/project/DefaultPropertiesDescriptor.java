@@ -83,6 +83,7 @@ public class DefaultPropertiesDescriptor implements ProjectPropertiesDescriptor 
     public static final String FILTER_USE_STANDARD = "filter.use.standard"; //NOI18N
     public static final String FILTER_EXCLUDE_TESTS = "filter.exclude.tests"; //NOI18N
     public static final String FILTER_EXCLUDES = "filter.excludes"; //NOI18N
+    public static final String FILTER_MORE_EXCLUDES = "filter.more.excludes"; //NOI18N
     public static final String RUN_CMD_OPTIONS = "run.cmd.options"; //NOI18N
     public static final String APP_VERSION_AUTOINCREMENT = "app-version.autoincrement"; //NOI18N
     public static final String APP_VERSION_COUNTER = "deployment.counter"; //NOI18N
@@ -179,6 +180,7 @@ public class DefaultPropertiesDescriptor implements ProjectPropertiesDescriptor 
             set.add(new PropertyDescriptor(FILTER_USE_STANDARD, true, DefaultPropertyParsers.BOOLEAN_PARSER, TRUE));
             set.add(new PropertyDescriptor(FILTER_EXCLUDE_TESTS, true, DefaultPropertyParsers.BOOLEAN_PARSER, FALSE));
             set.add(new PropertyDescriptor(FILTER_EXCLUDES, true, DefaultPropertyParsers.STRING_PARSER, EMPTY));
+            set.add(new PropertyDescriptor(FILTER_MORE_EXCLUDES, true, DefaultPropertyParsers.STRING_PARSER, EMPTY));
         
             set.add(new PropertyDescriptor(JAVADOC_PRIVATE, true, DefaultPropertyParsers.BOOLEAN_PARSER, FALSE));
             set.add(new PropertyDescriptor(JAVADOC_NO_TREE, true, DefaultPropertyParsers.INVERSE_BOOLEAN_PARSER, FALSE));
