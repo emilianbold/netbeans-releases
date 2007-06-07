@@ -25,12 +25,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import org.netbeans.modules.derby.ui.DerbySystemHomePanel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -43,6 +45,14 @@ public class Util {
 
     public static boolean hasInstallLocation() {
         return getCheckedLocation() != null;
+    }
+    
+    public static boolean checkInstallLocation() {
+        if (!hasInstallLocation()) {
+            showInformation(NbBundle.getMessage(Util.class, "MSG_DerbyLocationIncorrect"));
+            return false;
+        }
+        return true;
     }
 
     private static File getCheckedLocation() {
@@ -59,6 +69,17 @@ public class Util {
             return new File(location, relPath);
         }
         return null;
+    }
+    
+    public static boolean ensureSystemHome() {
+        if (DerbyOptions.getDefault().getSystemHome().length() <= 0) {
+            return Mutex.EVENT.writeAccess(new Mutex.Action<Boolean>() {
+                public Boolean run() {
+                    return DerbySystemHomePanel.showDerbySettings();
+                }
+            });
+        }
+        return true;
     }
 
     public static void showInformation(final String msg){

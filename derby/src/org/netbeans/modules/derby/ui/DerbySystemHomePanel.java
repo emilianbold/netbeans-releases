@@ -23,23 +23,26 @@ import java.awt.Color;
 import java.awt.Dialog;
 import java.io.File;
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.derby.DerbyOptions;
 import org.netbeans.modules.derby.Util;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
- *
+ * Despite the name, serves as a settings dialog for Derby (not only
+ * system home, but also database location).
+ * 
  * @author Andrei Badea
  */
 public class DerbySystemHomePanel extends javax.swing.JPanel {
+    
+    // XXX rename to something more meaningful, e.g., DerbySettingsPanel
 
     private DialogDescriptor descriptor;
     private Color nbErrorForeground;
@@ -59,56 +62,40 @@ public class DerbySystemHomePanel extends javax.swing.JPanel {
         }
     };
     
-    /**
-     * Asks the user for the value of the Derby install location and system home. 
-     * Never returns null.
-     */
-    public static boolean checkDerbyInstallAndHome() {
-        String derbySystemHome = DerbyOptions.getDefault().getSystemHome();
-        if (derbySystemHome.length() <= 0 || DerbyOptions.getDefault().isLocationNull()) {
-            return showDerbySettings();
-        }
-        return true;
-    }
-    
     public static boolean showDerbySettings() {
-        // since this could be called from StartAction, which is asynchronous
-        return Mutex.EVENT.writeAccess(new Mutex.Action<Boolean>() {
-            public Boolean run() {
-                DerbySystemHomePanel panel = new DerbySystemHomePanel();
-                String title = NbBundle.getMessage(DerbySystemHomePanel.class, "LBL_SetDerbySystemHome");
+        assert SwingUtilities.isEventDispatchThread();
+        
+        DerbySystemHomePanel panel = new DerbySystemHomePanel();
+        String title = NbBundle.getMessage(DerbySystemHomePanel.class, "LBL_SetDerbySystemHome");
 
-                DialogDescriptor desc = new DialogDescriptor(panel, title);
-                panel.setDialogDescriptor(desc);
-                
-                for (;;) {                    
-                    Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
-                    String acsd = NbBundle.getMessage(DerbySystemHomePanel.class, "ACSD_DerbySystemHomePanel");
-                    dialog.getAccessibleContext().setAccessibleDescription(acsd);
-                    dialog.setVisible(true);
-                    dialog.dispose();
-                    
-                    if (!desc.OK_OPTION.equals(desc.getValue())) {
-                        return Boolean.FALSE; // NOI18N
-                    }
-                    
-                    File derbySystemHome = new File(panel.getDerbySystemHome());
-                    
-                    if (!derbySystemHome.exists()) {
-                        boolean success = derbySystemHome.mkdirs();
-                        if (!success) {
-                            String message = NbBundle.getMessage(DerbySystemHomePanel.class, "ERR_DerbySystemHomeCantCreate");
-                            NotifyDescriptor ndesc = new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE);
-                            DialogDisplayer.getDefault().notify(ndesc);
-                            continue;
-                        }
-                    }
-                    DerbyOptions.getDefault().setSystemHome(panel.getDerbySystemHome());
-                    DerbyOptions.getDefault().setLocation(panel.getInstallLocation());
-                    return Boolean.TRUE;
+        DialogDescriptor desc = new DialogDescriptor(panel, title);
+        panel.setDialogDescriptor(desc);
+
+        for (;;) {                    
+            Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
+            String acsd = NbBundle.getMessage(DerbySystemHomePanel.class, "ACSD_DerbySystemHomePanel");
+            dialog.getAccessibleContext().setAccessibleDescription(acsd);
+            dialog.setVisible(true);
+            dialog.dispose();
+
+            if (!desc.OK_OPTION.equals(desc.getValue())) {
+                return false; // NOI18N
+            }
+
+            File derbySystemHome = new File(panel.getDerbySystemHome());
+            if (!derbySystemHome.exists()) {
+                boolean success = derbySystemHome.mkdirs();
+                if (!success) {
+                    String message = NbBundle.getMessage(DerbySystemHomePanel.class, "ERR_DerbySystemHomeCantCreate");
+                    NotifyDescriptor ndesc = new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(ndesc);
+                    continue;
                 }
             }
-        }).booleanValue();
+            DerbyOptions.getDefault().setSystemHome(panel.getDerbySystemHome());
+            DerbyOptions.getDefault().setLocation(panel.getInstallLocation());
+            return true;
+        }
     }
     
     private DerbySystemHomePanel() {

@@ -225,8 +225,7 @@ public class RegisterDerby implements DatabaseRuntime {
         if (process!=null){// seems to be already running?
             stop();
         }
-        if (!Util.hasInstallLocation()) {
-            Util.showInformation(NbBundle.getMessage(RegisterDerby.class, "MSG_DerbyLocationIncorrect"));
+        if (!Util.checkInstallLocation()) {
             return;
         }
         try {

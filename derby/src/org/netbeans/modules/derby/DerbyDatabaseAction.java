@@ -28,7 +28,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
-import org.openide.ErrorManager;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -42,6 +41,9 @@ import org.openide.util.actions.SystemAction;
  * @author Andrei Badea
  */
 public class DerbyDatabaseAction extends AbstractAction implements Presenter.Menu {
+    
+    // XXX should perhaps get rid of DynamicMenuContent 
+    // since now the Java DB Database menu is always visible
     
     private JMenuItem menuPresenter = null;
     
@@ -71,11 +73,7 @@ public class DerbyDatabaseAction extends AbstractAction implements Presenter.Men
         }
 
         public JComponent[] getMenuPresenters() {
-//            if (!DerbyOptions.getDefault().isLocationNull()) {
-                return new JComponent[] { this };
-//            } else {
-//                return new JComponent[0];
-//            }
+            return new JComponent[] { this };
         }
 
         public void menuSelected(MenuEvent e) {

@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.derby;
 
-import org.netbeans.modules.derby.ui.DerbySystemHomePanel;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
@@ -44,16 +43,14 @@ public class StartAction extends CallableSystemAction {
         // return new HelpCtx(RefreshAction.class);
     }
     public boolean isEnabled() {
-        return (Util.hasInstallLocation() && RegisterDerby.getDefault().isRunning()==false);
+        return (Util.hasInstallLocation() && !RegisterDerby.getDefault().isRunning());
     }
     
     public void performAction()  {
-        if (!Util.hasInstallLocation()) {
-            Util.showInformation(NbBundle.getMessage(RegisterDerby.class, "MSG_DerbyLocationIncorrect"));
+        if (!Util.checkInstallLocation()) {
             return;
         }
-        
-        if (DerbySystemHomePanel.checkDerbyInstallAndHome()) {
+        if (Util.ensureSystemHome()) {
             RegisterDerby.getDefault().start();
         }
     }

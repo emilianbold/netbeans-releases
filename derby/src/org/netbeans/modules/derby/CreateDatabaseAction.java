@@ -44,12 +44,10 @@ public class CreateDatabaseAction extends CallableSystemAction {
     }    
     
     public void performAction() {
-        if (!Util.hasInstallLocation()) {
-            Util.showInformation(NbBundle.getMessage(RegisterDerby.class, "MSG_DerbyLocationIncorrect"));
+        if (!Util.checkInstallLocation()) {
             return;
         }
-        
-        if (!DerbySystemHomePanel.checkDerbyInstallAndHome()) {
+        if (!Util.ensureSystemHome()) {
             return;
         }
         
