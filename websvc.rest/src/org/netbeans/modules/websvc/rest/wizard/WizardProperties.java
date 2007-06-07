@@ -33,5 +33,5 @@ public class WizardProperties {
     public static final String REPRESENTATION_CLASS = "RepresentationClass"; //NOI18N
     public static final String CONTAINER_RESOURCE_CLASS = "ContainerResourceClass"; //NOI18N
     public static final String CONTAINER_RESOURCE_URI = "ContainerResourceURI"; //NOI18N
-    public static final String NEXT_PANEL_CLASS = "NextPanelClass"; //NOI18N
+    public static final String PATTERN_SELECTION = "SelectedPattern"; //NOI18N
 }

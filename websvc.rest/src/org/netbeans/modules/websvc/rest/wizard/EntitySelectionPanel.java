@@ -69,12 +69,12 @@ public final class EntitySelectionPanel extends AbstractPanel {
                 return false;
             }
         }
-        return true;
+        return component.valid(wizardDescriptor);
     }
 
     public Component getComponent() {
         if (component == null) {
-            component = new EntitySelectionPanelVisual(panelName, wizardDescriptor);
+            component = new EntitySelectionPanelVisual(panelName);
             component.addChangeListener(this);
         }
         return component;
@@ -88,24 +88,5 @@ public final class EntitySelectionPanel extends AbstractPanel {
         }
         return puName;
     }
-    
-    // TODO cleanup
-    /*public void readSettings(Object settings) {
-        wizardDescriptor = (WizardDescriptor) settings;
-        component.read(wizardDescriptor);
-        
-        // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
-        // this name is used in NewProjectWizard to modify the title
-        Object substitute = ((JComponent) component).getClientProperty("NewProjectWizard_Title"); // NOI18N
-        if (substitute != null){
-            wizardDescriptor.putProperty("NewProjectWizard_Title", substitute); // NOI18N
-        }
-    }
-    
-    public void storeSettings(Object settings) {
-        WizardDescriptor d = (WizardDescriptor) settings;
-        component.store(d);
-        //d.putProperty(WizardProperties.PERSISTENCE_UNIT, component.getPersistenceUnit());
-        ((WizardDescriptor) d).putProperty("NewProjectWizard_Title", null); // NOI18N
-    }*/
+
 }

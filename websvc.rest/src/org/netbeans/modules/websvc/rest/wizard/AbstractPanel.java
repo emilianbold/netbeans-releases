@@ -34,8 +34,6 @@ public abstract class AbstractPanel implements ChangeListener, FinishablePanel, 
     private final java.util.Set listeners = new HashSet(1);
     protected java.lang.String panelName;
     protected org.openide.WizardDescriptor wizardDescriptor;
-    protected Class nextPanelClass;
-    protected Class previousPanelClass;
 
     public AbstractPanel (String name, WizardDescriptor wizardDescriptor) {
         this.panelName = name;
@@ -49,42 +47,25 @@ public abstract class AbstractPanel implements ChangeListener, FinishablePanel, 
     public static interface Settings {
         public void read(WizardDescriptor wizard);
         public void store(WizardDescriptor wizard);
+        public boolean valid(WizardDescriptor wizard);
+        public void addChangeListener(ChangeListener l);
     }
     
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
-        if (getComponent() instanceof Settings) {
-            wizardDescriptor.putProperty(WizardProperties.NEXT_PANEL_CLASS, nextPanelClass);
-            ((Settings)getComponent()).read(wizardDescriptor);
-        } else {
-            throw new IllegalArgumentException("Expect AbstractPanel.Settings"); //NOI18N
-        }
+        ((Settings)getComponent()).read(wizardDescriptor);
     }
     
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
-        if (getComponent() instanceof Settings) {
-            ((Settings)getComponent()).store(wizardDescriptor);
-            nextPanelClass = (Class) wizardDescriptor.getProperty(WizardProperties.NEXT_PANEL_CLASS);
-        } else {
-            throw new IllegalArgumentException("Expect component of type AbstractPanel.Settings");
-        }
+        ((Settings)getComponent()).store(wizardDescriptor);
     }
 
-    public Class getNextPanelClass() {
-        return nextPanelClass;
-    }
-    
-    public void setNextPanelClass(Class clazz) {
-        nextPanelClass = clazz;
-    }
-    
-    public Class getPreviousPanelClass() {
-        return previousPanelClass;
-    }
-    
-    public void setPreviousPanelClass(Class clazz) {
-        previousPanelClass = clazz;
+    public boolean isValid() {
+        if (getComponent() instanceof Settings) {
+            return ((Settings)getComponent()).valid(wizardDescriptor);
+        }
+        return false;
     }
     
     public final void addChangeListener(javax.swing.event.ChangeListener l) {

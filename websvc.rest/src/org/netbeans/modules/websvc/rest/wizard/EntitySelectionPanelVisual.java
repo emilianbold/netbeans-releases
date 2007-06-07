@@ -45,7 +45,6 @@ import org.openide.WizardDescriptor;
  */
 public class EntitySelectionPanelVisual extends javax.swing.JPanel implements AbstractPanel.Settings {
     
-    private WizardDescriptor wizard;
     //private ChangeSupport changeSupport = new ChangeSupport(this);
     private Project project;
     private List<JavaSource> availableEntities;
@@ -65,9 +64,8 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel implements Ab
     
     
     /** Creates new form CrudSetupPanel */
-    public EntitySelectionPanelVisual(String name, WizardDescriptor wizard) {
+    public EntitySelectionPanelVisual(String name) {
         setName(name);
-        this.wizard = wizard;
         listeners = new ArrayList<ChangeListener>();
         initComponents();
         ListSelectionListener selectionListener = new ListSelectionListener() {
@@ -366,5 +364,10 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel implements Ab
             setText(text);
             return this;
         }
+    }
+
+    public boolean valid(WizardDescriptor wizard) {
+        //TODO
+        return true;
     }
 }

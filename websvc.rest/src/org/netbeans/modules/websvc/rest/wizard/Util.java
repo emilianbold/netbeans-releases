@@ -26,13 +26,24 @@ import javax.swing.JComponent;
 import java.util.Vector;
 import java.util.Iterator;
 import java.util.Collection;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.websvc.rest.codegen.Constants;
+import org.netbeans.modules.websvc.rest.codegen.EntityRESTServicesCodeGenerator;
 import org.netbeans.modules.websvc.rest.support.Inflector;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
+import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
+import org.openide.nodes.NodeAcceptor;
+import org.openide.nodes.NodeOperation;
+import org.openide.util.NbBundle;
+import org.openide.util.UserCancelException;
 
 /**
  * Copy of j2ee/utilities Util class
@@ -187,16 +198,24 @@ public class Util {
     }
     
     public static String deriveResourceClassName(String resourceName) {
-        return resourceName + Constants.RESOURCE;
+        return resourceName + EntityRESTServicesCodeGenerator.RESOURCE_SUFFIX;
     }
 
+    public static String deriveContentClassName(String packageName, String className) {
+        String contentClass = packageName;
+        if (contentClass != null && contentClass.length() > 0) {
+            contentClass += "." + className;
+        }
+        return contentClass;
+    }
+    
     //TODO unit testing
     public static String deriveUri(String resourceName, String currentUri) {
-        if (currentUri == null || currentUri.length() == 0 || currentUri.charAt(0) != '/') {
+        if (resourceName.length() == 0 || currentUri == null || currentUri.length() == 0 || currentUri.charAt(0) != '/') {
             return currentUri;
         }
-        String s = lowerFirstChar(resourceName);
-        String root = resourceName;
+        resourceName = lowerFirstChar(resourceName);
+        String root = currentUri;
         String params = null;
         int lastIndex = currentUri.indexOf('{');
         if (lastIndex > -1) {
@@ -213,18 +232,88 @@ public class Util {
             return currentUri;
         }
 
+        root = root.substring(0, lastIndex);
         String ret = root + "/" + resourceName;
         if (params != null) {
-            ret += "/" + params;
+            ret += params;
         }
         return ret;
     }
 
     public static String deriveContainerClassName(String resourceName) {
-        return pluralize(resourceName) + Constants.RESOURCE;
+        return deriveResourceClassName(pluralize(resourceName));
     }
     
     public static String pluralize(String name) {
         return Inflector.getInstance().pluralize(name);
     }
+
+    /**
+     * Displays a class chooser dialog and lets the user select a class.
+     * @return the qualified name of the chosen class.
+     */
+    public static String chooseClass(Project project) {
+        SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
+        try {
+            final Node[] sourceGroupNodes
+                    = new Node[sourceGroups.length];
+            for (int i = 0; i < sourceGroupNodes.length; i++) {
+                /*
+                 * Note:
+                 * Precise structure of this view is *not* specified by the API.
+                 */
+                Node srcGroupNode
+                       = PackageView.createPackageView(sourceGroups[i]);
+                sourceGroupNodes[i]
+                       = new FilterNode(srcGroupNode,
+                                        new JavaChildren(srcGroupNode));
+            }
+            
+            Node rootNode;
+            if (sourceGroupNodes.length == 1) {
+                rootNode = new FilterNode(
+                        sourceGroupNodes[0],
+                        new JavaChildren(sourceGroupNodes[0]));
+            } else {
+                Children children = new Children.Array();
+                children.add(sourceGroupNodes);
+                
+                AbstractNode node = new AbstractNode(children);
+                node.setName("Project Source Roots");                   //NOI18N
+                node.setDisplayName(
+                        NbBundle.getMessage(Util.class, "LBL_Sources"));//NOI18N
+                rootNode = node;
+            }
+            
+            NodeAcceptor acceptor = new NodeAcceptor() {
+                public boolean acceptNodes(Node[] nodes) {
+                    Node.Cookie cookie;
+                    return nodes.length == 1
+                           && (cookie = nodes[0].getCookie(DataObject.class))
+                              != null
+                           && ((DataObject) cookie).getPrimaryFile().isFolder()
+                              == false;
+                }
+            };
+            
+            Node selectedNode = NodeOperation.getDefault().select(
+                    NbBundle.getMessage(GenericRESTServicePanelVisual.class,
+                                        "LBL_WinTitle_SelectClass"),    //NOI18N
+                    NbBundle.getMessage(GenericRESTServicePanelVisual.class,
+                                        "LBL_SelectRepresentationClass"),       //NOI18N
+                    rootNode,
+                    acceptor)[0];
+            
+            FileObject selectedFO = ((DataObject) selectedNode.getCookie(DataObject.class)).getPrimaryFile();
+            return getClassName(selectedFO);
+        } catch (UserCancelException ex) {
+            // if the user cancels the choice, do nothing
+        }
+        return null;
+    }
+    
+    private static String getClassName(FileObject file) {
+        return ClassPath.getClassPath(file, ClassPath.SOURCE).getResourceName(file, '.', false);
+    }
+
 }
