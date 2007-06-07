@@ -24,8 +24,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.autoupdate.OperationException;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -90,6 +93,13 @@ public class LicenseApprovalStep implements WizardDescriptor.FinishablePanel<Wiz
             model.addApprovedLicenses (panel.getLicenses ());
         } else {
             model.modifyOptionsForStartWizard (wd);
+        }
+        if (WizardDescriptor.CANCEL_OPTION.equals (wd.getValue ()) || WizardDescriptor.CLOSED_OPTION.equals (wd.getValue ())) {
+            try {
+                model.doCleanup ();
+            } catch (OperationException x) {
+                Logger.getLogger (InstallUnitWizardModel.class.getName ()).log (Level.INFO, x.getMessage (), x);
+            }
         }
     }
 

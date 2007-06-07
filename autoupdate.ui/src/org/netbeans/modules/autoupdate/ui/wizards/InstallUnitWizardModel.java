@@ -101,7 +101,9 @@ public class InstallUnitWizardModel extends OperationWizardModel {
         return installer;
     }
     
+    @Override
     public void doCleanup () throws OperationException {
+        super.doCleanup ();
         if (getBaseContainer ().getSupport () instanceof InstallSupport) {
             InstallSupport isupp = (InstallSupport) getBaseContainer ().getSupport ();
             if (isupp != null) {

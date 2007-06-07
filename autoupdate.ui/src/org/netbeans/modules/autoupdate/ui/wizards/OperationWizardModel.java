@@ -30,6 +30,7 @@ import java.util.TreeMap;
 import javax.swing.JButton;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
+import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
@@ -245,6 +246,11 @@ public abstract class OperationWizardModel {
             }
         }
         wd.setOptions (newOptionsL.toArray ());
+    }
+    
+    public void doCleanup () throws OperationException {
+        getBaseContainer ().removeAll ();
+        getCustomHandledContainer ().removeAll ();
     }
     
     @SuppressWarnings("unchecked")

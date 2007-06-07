@@ -380,7 +380,7 @@ public class Utilities {
                 break;
             default:
                 //assert false : "Unknown type of Dependency, was " + dep.getType ();
-                getLogger ().log (Level.INFO, "Uncovered Dependency " + dep);                    
+                getLogger ().log (Level.FINE, "Uncovered Dependency " + dep);                    
                 break;
         }
         return null;
