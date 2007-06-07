@@ -19,21 +19,26 @@
 
 package org.netbeans.modules.autoupdate.ui;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.prefs.Preferences;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.api.options.OptionsDisplayer;
@@ -41,56 +46,76 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
 /**
- *
  * @author  Radek Matous
  */
 public class SettingsTab extends javax.swing.JPanel {
-    final DetailsPanel details;
+    private DetailsPanel details;
+    private JScrollPane  scrollerForDetails;
+    private JTable table;
+    private JScrollPane  scrollerForTable;
+    private static final RequestProcessor RP = new RequestProcessor();
+    private Action removeAction;
+    private Action editAction;    
+    private Action addAction;   
     private Listener listener;
-    private static final RequestProcessor RP = new RequestProcessor ();
-    private final RequestProcessor.Task searchTask = RP.create (new Runnable (){
-        public void run () {
-            String filter = tfSearch.getText ().trim ();
-            if (filter != null) {
-                getSettingsTableModel ().setFilter (filter);
-            }
-        }
-    });
-    private boolean modulesOnly = Utilities.modulesOnly ();
     
-    /** Creates new form SettingsTab */
-    public SettingsTab (PluginManagerUI manager, DetailsPanel details) {
-        initComponents ();
+    /** Creates new form UnitTab */
+    public SettingsTab(PluginManagerUI manager) {
+        initComponents();
+        scrollerForTable = new JScrollPane();
+        table = new Table();
+        scrollerForTable.setViewportView(table);
+        
+        scrollerForDetails = new JScrollPane();
+        details = new DetailsPanel();
+        scrollerForDetails.setViewportView(details);
+        
+        spTab.setLeftComponent(scrollerForTable);
+        spTab.setRightComponent(scrollerForDetails);
+        
+        table.setModel(new SettingsTableModel());        
+        
+        cbCheckPeriod.setModel(new DefaultComboBoxModel(new String [] {
+            getMessage("CTL_Update_every_startup"),
+            getMessage("CTL_Update_every_day"),
+            getMessage("CTL_Update_every_week"),
+            getMessage("CTL_Update_every_2weeks"),
+            getMessage("CTL_Update_every_month"),
+            getMessage("CTL_Update_never")
+        }));
+        cbCheckPeriod.setSelectedIndex (getAutoUpdatePeriod ());
+        cbModules.setSelected(Utilities.modulesOnly());
+        cbPlugins.setSelected(!Utilities.modulesOnly());
         getSettingsTableModel ().setPluginManager (manager);
-        TableColumn activeColumn = jTable1.getColumnModel ().getColumn (0);
-        activeColumn.setMaxWidth (jTable1.getTableHeader ().getHeaderRect (0).width);
-        this.details = details;
-        addListener ();
-        cbOnlyModules.setSelected (modulesOnly);
+        TableColumn activeColumn = table.getColumnModel ().getColumn (0);
+        activeColumn.setMaxWidth (table.getTableHeader ().getHeaderRect (0).width);
+        
+        editAction = new EditAction();
+        removeAction = new RemoveAction();
+        addAction = new AddAction();
+        addButton.setAction(addAction);        
+        addListener ();        
     }
-    
+
     public String getDisplayName () {
         return NbBundle.getMessage (SettingsTab.class, "SettingsTab_displayName"); //NOI18N
     }
-    
+        
     private void addListener () {
         if (listener == null) {
-            listener = new SettingsTab.Listener ();
-            tfSearch.getDocument ().addDocumentListener (listener);
-            jTable1.getSelectionModel ().addListSelectionListener (listener);
-            jTable1.addFocusListener (listener);
+            listener = new Listener ();
+            table.getSelectionModel ().addListSelectionListener (listener);
             getSettingsTableModel ().addTableModelListener (listener);
         }
     }
     
     private void removeListener () {
         if (listener != null) {
-            tfSearch.getDocument ().removeDocumentListener (listener);
-            jTable1.getSelectionModel ().removeListSelectionListener (listener);
-            jTable1.removeFocusListener (listener);
+            table.getSelectionModel ().removeListSelectionListener (listener);
             getSettingsTableModel ().removeTableModelListener (listener);
             listener = null;
         }
@@ -101,10 +126,10 @@ public class SettingsTab extends javax.swing.JPanel {
         super.addNotify ();
         Utilities.startAsWorkerThread(new Runnable() {
             public void run() {
-                getSettingsTableModel ().refreshModel ();
+                getSettingsTableModel ().refreshModel ();                
             }
         });        
-        addListener ();
+        addListener ();                
     }
     
     @Override
@@ -112,8 +137,10 @@ public class SettingsTab extends javax.swing.JPanel {
         super.removeNotify ();
         removeListener ();
     }
-    
-    
+            
+    private static String getMessage(final String key) {
+        return NbBundle.getMessage(SettingsTab.class, key); //NOI18N
+    }
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -122,44 +149,39 @@ public class SettingsTab extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        lHeader = new javax.swing.JLabel();
-        lSearch = new javax.swing.JLabel();
-        tfSearch = new javax.swing.JTextField();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
-        bEdit = new javax.swing.JButton();
-        bNew = new javax.swing.JButton();
-        bRemove = new javax.swing.JButton();
+        pluginsViewGroup = new javax.swing.ButtonGroup();
+        lUpdateCenters = new javax.swing.JLabel();
+        spTab = new javax.swing.JSplitPane();
+        addButton = new javax.swing.JButton();
+        lConnection = new javax.swing.JLabel();
+        jSeparatorConnection = new javax.swing.JSeparator();
+        lCheckPeriod = new javax.swing.JLabel();
+        cbCheckPeriod = new javax.swing.JComboBox();
         bProxy = new javax.swing.JButton();
-        cbOnlyModules = new javax.swing.JCheckBox();
+        lGeneral = new javax.swing.JLabel();
+        lPluginsView = new javax.swing.JLabel();
+        cbPlugins = new javax.swing.JRadioButton();
+        cbModules = new javax.swing.JRadioButton();
+        cbSharedInstall = new javax.swing.JCheckBox();
+        jSeparatorAdvanced = new javax.swing.JSeparator();
 
-        lHeader.setLabelFor(jTable1);
-        org.openide.awt.Mnemonics.setLocalizedText(lHeader, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.lHeader.text")); // NOI18N
+        lUpdateCenters.setLabelFor(spTab);
+        org.openide.awt.Mnemonics.setLocalizedText(lUpdateCenters, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.lUpdateCenters.text")); // NOI18N
 
-        lSearch.setLabelFor(tfSearch);
-        org.openide.awt.Mnemonics.setLocalizedText(lSearch, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.lSearch.text")); // NOI18N
+        spTab.setBorder(null);
+        spTab.setDividerLocation(370);
+        spTab.setResizeWeight(0.5);
+        spTab.setOneTouchExpandable(true);
 
-        jTable1.setModel(new SettingsTableModel());
-        jScrollPane1.setViewportView(jTable1);
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.addButton.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(bEdit, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.bEdit.text")); // NOI18N
-        bEdit.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(lConnection, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.lConnection.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(lCheckPeriod, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.lCheckPeriod.text")); // NOI18N
+
+        cbCheckPeriod.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                bEditActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(bNew, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.bNew.text")); // NOI18N
-        bNew.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                bNewActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(bRemove, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.bRemove.text")); // NOI18N
-        bRemove.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                bRemoveActionPerformed(evt);
+                cbCheckPeriodActionPerformed(evt);
             }
         });
 
@@ -170,173 +192,182 @@ public class SettingsTab extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(cbOnlyModules, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab_cbOnlyModules")); // NOI18N
-        cbOnlyModules.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        cbOnlyModules.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(lGeneral, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.lGeneral.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(lPluginsView, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.lPluginsView.text")); // NOI18N
+
+        pluginsViewGroup.add(cbPlugins);
+        org.openide.awt.Mnemonics.setLocalizedText(cbPlugins, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.cbFeatures.text")); // NOI18N
+        cbPlugins.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        cbPlugins.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        cbPlugins.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cbOnlyModulesActionPerformed(evt);
+                cbPluginsActionPerformed(evt);
             }
         });
+
+        pluginsViewGroup.add(cbModules);
+        org.openide.awt.Mnemonics.setLocalizedText(cbModules, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.cbPlugins.text")); // NOI18N
+        cbModules.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        cbModules.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        cbModules.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbModulesActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(cbSharedInstall, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.cbSharedInstall.text")); // NOI18N
+        cbSharedInstall.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        cbSharedInstall.setEnabled(false);
+        cbSharedInstall.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(layout.createSequentialGroup()
-                                .add(lHeader)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 138, Short.MAX_VALUE)
-                                .add(lSearch)
-                                .add(4, 4, 4)
-                                .add(tfSearch, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 114, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 618, Short.MAX_VALUE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                            .add(bEdit, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(bNew, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(bRemove, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(cbOnlyModules)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 473, Short.MAX_VALUE)
-                        .add(bProxy)))
-                .addContainerGap())
-        );
-
-        layout.linkSize(new java.awt.Component[] {bEdit, bNew, bProxy, bRemove}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(tfSearch, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(lHeader)
-                    .add(lSearch))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(bEdit)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(bNew)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(bRemove))
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(bProxy)
-                    .add(cbOnlyModules))
-                .add(20, 20, 20))
+                        .addContainerGap()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(lGeneral)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(jSeparatorAdvanced, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 470, Short.MAX_VALUE))
+                            .add(layout.createSequentialGroup()
+                                .add(12, 12, 12)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(cbSharedInstall)
+                                    .add(lPluginsView, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 33, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))))
+                    .add(layout.createSequentialGroup()
+                        .add(12, 12, 12)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(24, 24, 24)
+                                .add(lCheckPeriod)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(layout.createSequentialGroup()
+                                        .add(cbCheckPeriod, 0, 293, Short.MAX_VALUE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(bProxy))
+                                    .add(cbPlugins, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 151, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(cbModules)))
+                            .add(lUpdateCenters)
+                            .add(layout.createSequentialGroup()
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(lConnection)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(jSeparatorConnection, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE))))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(addButton)
+                            .add(spTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 541, Short.MAX_VALUE))
+                        .add(1, 1, 1)))
+                .addContainerGap())
         );
-
-        lHeader.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.lHeader.adesc")); // NOI18N
-        lSearch.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.lSearch.adesc")); // NOI18N
-        bEdit.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.bEdit.adesc")); // NOI18N
-        bNew.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.bNew.adesc")); // NOI18N
-        bRemove.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.bRemove.adesc")); // NOI18N
-        bProxy.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.bProxy.adesc")); // NOI18N
-
-        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.AccessibleContext.accessibleName")); // NOI18N
-        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.adesc")); // NOI18N
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .add(lUpdateCenters)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(spTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 37, Short.MAX_VALUE)
+                .add(4, 4, 4)
+                .add(addButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(lConnection)
+                    .add(jSeparatorConnection, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lCheckPeriod)
+                    .add(cbCheckPeriod, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(bProxy))
+                .add(11, 11, 11)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(lGeneral, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 15, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jSeparatorAdvanced, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lPluginsView)
+                    .add(cbPlugins))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(cbModules)
+                .add(21, 21, 21)
+                .add(cbSharedInstall)
+                .add(55, 55, 55))
+        );
     }// </editor-fold>//GEN-END:initComponents
-    
-private void cbOnlyModulesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbOnlyModulesActionPerformed
-    JCheckBox cb = (JCheckBox) evt.getSource ();
-    if (modulesOnly != cb.isSelected ()) {
-        modulesOnly = cb.isSelected ();
-        Utilities.setModulesOnly (cb.isSelected ());
-        RequestProcessor.getDefault ().post (new Runnable () {
-            public void run () {
-                Utilities.presentRefreshProviders (getSettingsTableModel ().getPluginManager (), false);
-                getSettingsTableModel ().getPluginManager ().tableStructureChanged ();
-                getSettingsTableModel ().getPluginManager ().updateUnitsChanged ();
+
+private void cbCheckPeriodActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbCheckPeriodActionPerformed
+    setAutoUpdatePeriod (cbCheckPeriod.getSelectedIndex ());
+}//GEN-LAST:event_cbCheckPeriodActionPerformed
+
+private void cbModulesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbModulesActionPerformed
+    cbPluginsActionPerformed(evt);
+}//GEN-LAST:event_cbModulesActionPerformed
+
+    private void cbPluginsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbPluginsActionPerformed
+    if (Utilities.modulesOnly() != cbModules.isSelected()) {
+        Utilities.setModulesOnly(cbModules.isSelected());
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                Utilities.presentRefreshProviders(getSettingsTableModel().getPluginManager(), false);
+                getSettingsTableModel().getPluginManager().tableStructureChanged();
+                getSettingsTableModel().getPluginManager().updateUnitsChanged();
             }
         });
     }
-}//GEN-LAST:event_cbOnlyModulesActionPerformed
-
-private void bEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bEditActionPerformed
-    final int rowIndex = jTable1.getSelectedRow ();
-    if (rowIndex != -1) {
-        final UpdateUnitProvider provider = getSettingsTableModel ().getUpdateUnitProvider (rowIndex);
-        if (provider == null) return;
-        final UpdateUnitProviderPanel panel = new UpdateUnitProviderPanel (provider.isEnabled (),
-                provider.getDisplayName (), // display name
-                provider.getProviderURL ().toExternalForm (), // URL
-                true); // editing
-        DialogDescriptor descriptor = getCustomizerDescriptor (panel);
-        panel.getOKButton ().addActionListener (new ActionListener (){
-            public void actionPerformed (ActionEvent arg0) {
-                setData (provider, panel);
-                getSettingsTableModel ().refreshModel ();
-                jTable1.getSelectionModel ().setSelectionInterval (rowIndex, rowIndex);
-                
-            }
-        });
-        DialogDisplayer.getDefault ().createDialog (descriptor).setVisible (true);
-    }
+}//GEN-LAST:event_cbPluginsActionPerformed
     
-}//GEN-LAST:event_bEditActionPerformed
-
-private void bNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bNewActionPerformed
-    final UpdateUnitProviderPanel panel = new UpdateUnitProviderPanel (true,
-            NbBundle.getMessage (SettingsTab.class, "SettingsTab_NewProviderName"), // NOI18N
-            NbBundle.getMessage (SettingsTab.class, "SettingsTab_NewProviderURL"), // NOI18N
-            false);
-    DialogDescriptor descriptor = getCustomizerDescriptor (panel);
-    panel.getOKButton ().addActionListener (new ActionListener (){
-        public void actionPerformed (ActionEvent arg0) {
-            try {
-                getSettingsTableModel ().add
-                        (panel.getProviderName (),
-                        panel.getProviderName (),
-                        new URL (panel.getProviderURL ()),
-                        panel.isActive ());
-                getSettingsTableModel ().refreshModel ();
-                SettingsTableModel model = getSettingsTableModel ();
-                for (int i = 0; i < model.getRowCount (); i++) {
-                    String providerName = model.getValueAt (i, 1).toString ();
-                    if (panel.getProviderName () != null && panel.getProviderName ().equals (providerName)) {
-                        jTable1.getSelectionModel ().setSelectionInterval (i, i);
-                    }
-                    
-                }
-                
-                
-            } catch(MalformedURLException mex) {
-                Exceptions.printStackTrace (mex);
-            }
-        }
-    });
-    DialogDisplayer.getDefault ().createDialog (descriptor).setVisible (true);
-}//GEN-LAST:event_bNewActionPerformed
-
-
 private void bProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bProxyActionPerformed
     OptionsDisplayer.getDefault ().open ("General"); //NOI18N
 }//GEN-LAST:event_bProxyActionPerformed
 
-    private void bRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bRemoveActionPerformed
-        SettingsTableModel model = getSettingsTableModel ();
-        int[] rowIndexes = jTable1.getSelectedRows ();
-        for (int rowIndex : rowIndexes) {
-            if (rowIndex != -1) {
-                model.remove (rowIndex);
-            }
-        }
-        model.refreshModel ();
-        if (rowIndexes.length > 0) {
-            if (model.getRowCount () > rowIndexes[0]) {
-                jTable1.getSelectionModel ().setSelectionInterval (rowIndexes[0], rowIndexes[0]);
-            } else {
-                jTable1.getSelectionModel ().setSelectionInterval (0, 0);
-            }
-        }
-}//GEN-LAST:event_bRemoveActionPerformed
+public SettingsTableModel getSettingsTableModel() {
+    return ((SettingsTableModel)table.getModel());
+}
+
+private class Listener implements ListSelectionListener,  TableModelListener {
+    public void valueChanged(ListSelectionEvent arg0) {
+        modelOrSelectionChanged();
+    }
+       
+    public void tableChanged(TableModelEvent arg0) {
+        modelOrSelectionChanged();
+    }
     
+    private void modelOrSelectionChanged() {
+        int rowIndex = table.getSelectedRow();
+        if (rowIndex != -1) {
+            UpdateUnitProvider uup = ((SettingsTableModel)table.getModel()).getUpdateUnitProvider(rowIndex);
+            if (uup != null) {
+                StringBuffer sb = new StringBuffer();
+                details.setTitle(uup.getDisplayName());
+                URL u= uup.getProviderURL();
+                if (u != null) {
+                    sb.append("<b>" + getMessage("SettingsTab_UpdateUnitProvider_Description") + "</b><br>"); // NOI18N
+                    sb.append("<b>" + getMessage("SettingsTab_UpdateUnitProvider_URL") +  // NOI18N
+                            " </b><a href=\"" + u.toExternalForm() + "\">" + u.toExternalForm() + "<br>"); // NOI18N
+                }
+                details.setText(sb.toString());
+                details.setActionListener(removeAction);
+                details.setActionListener2(editAction);
+            }
+        } else {
+            details.setTitle(null);
+            details.setText(null);
+            details.setActionListener2(null);            
+            details.setActionListener(null);
+            
+            ListSelectionModel lsm = table.getSelectionModel();
+            lsm.setSelectionInterval(0, 0);
+        }
+    }
+}
+
     private void setData (final UpdateUnitProvider provider, UpdateUnitProviderPanel panel) {
         provider.setDisplayName (panel.getProviderName ());
         boolean forceRead = false;
@@ -373,6 +404,7 @@ private void bProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
             }
         }
     }
+    
     private static DialogDescriptor getCustomizerDescriptor (UpdateUnitProviderPanel panel) {
         JButton bOK = panel.getOKButton ();
         Object[] options = new Object[2];
@@ -383,97 +415,168 @@ private void bProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         return descriptor;
     }
     
-    public SettingsTableModel getSettingsTableModel () {
-        return ((SettingsTableModel)jTable1.getModel ());
+    private class EditAction extends AbstractAction {
+        EditAction () {
+            super(UnitTab.textForKey("SettingsTab.EditButton.text"));
+            putValue(MNEMONIC_KEY, UnitTab.mnemonicForKey("SettingsTab.EditButton.text"));
+        }
+        
+        public void actionPerformed(ActionEvent arg0) {
+            final int rowIndex = table.getSelectedRow();
+            if (rowIndex != -1) {
+                final UpdateUnitProvider provider = getSettingsTableModel().getUpdateUnitProvider(rowIndex);
+                if (provider == null) return;
+                final UpdateUnitProviderPanel panel = new UpdateUnitProviderPanel(provider.isEnabled(),
+                        provider.getDisplayName(), // display name
+                        provider.getProviderURL().toExternalForm(), // URL
+                        true); // editing
+                DialogDescriptor descriptor = getCustomizerDescriptor(panel);
+                panel.getOKButton().addActionListener(new ActionListener(){
+                    public void actionPerformed(ActionEvent arg0) {
+                        setData(provider, panel);
+                        getSettingsTableModel().refreshModel();
+                        table.getSelectionModel().setSelectionInterval(rowIndex, rowIndex);
+                        
+                    }
+                });
+                DialogDisplayer.getDefault().createDialog(descriptor).setVisible(true);
+            }
+        }
     }
     
-    private class Listener implements ListSelectionListener, FocusListener, TableModelListener, DocumentListener {
-        public void valueChanged (ListSelectionEvent arg0) {
-            modelOrSelectionChanged ();
+    private class RemoveAction extends AbstractAction {
+        RemoveAction() {
+            super(UnitTab.textForKey("SettingsTab.RemoveButton.text"));
+            putValue (MNEMONIC_KEY, UnitTab.mnemonicForKey ("SettingsTab.RemoveButton.text"));
         }
-        
-        public void focusGained (FocusEvent arg0) {
-            enableDisableRemove ();
-        }
-        
-        public void focusLost (FocusEvent arg0) {
-            enableDisableRemove ();
-        }
-        
-        private boolean canEditEnable (int [] rows) {
-            if (rows == null || rows.length != 1) {
-                return false;
-            }
-            UpdateUnitProvider p = getSettingsTableModel ().getUpdateUnitProvider (rows [0]);
-            return p != null && p.getProviderURL () != null;
-        }
-        
-        private void enableDisableRemove () {
-            int rowIndex = jTable1.getSelectedRow ();
-            SettingsTableModel model = getSettingsTableModel ();
-            UpdateUnitProvider uup = (rowIndex >=0) ? model.getUpdateUnitProvider (rowIndex) : null;
-            
-            boolean enable = rowIndex != -1 &&  uup != null;
-            bRemove.setEnabled (enable);
-            bEdit.setEnabled (canEditEnable (jTable1.getSelectedRows ()));
-        }
-        
-        public void tableChanged (TableModelEvent arg0) {
-            modelOrSelectionChanged ();
-        }
-        
-        private void modelOrSelectionChanged () {
-            int rowIndex = jTable1.getSelectedRow ();
-            if (rowIndex != -1) {
-                UpdateUnitProvider uup =
-                        ((SettingsTableModel)jTable1.getModel ()).getUpdateUnitProvider (rowIndex);
-                if (uup != null) {
-                    StringBuffer sb = new StringBuffer ();
-                    sb.append ("<h2>" + uup.getDisplayName () + "</h2>"); // NOI18N
-                    URL u= uup.getProviderURL ();
-                    if (u != null) {
-                        sb.append ("<b>" + getBundle ("SettingsTab_UpdateUnitProvider_Description") + "</b><br>"); // NOI18N
-                        sb.append ("<b>" + getBundle ("SettingsTab_UpdateUnitProvider_URL") +  // NOI18N
-                                " </b><a href=\"" + u.toExternalForm () + "\">" + u.toExternalForm () + "<br>"); // NOI18N
-                    }
-                    details.getDetails ().setText (sb.toString ());
+        public void actionPerformed(ActionEvent arg0) {
+            SettingsTableModel model = getSettingsTableModel();
+            int[] rowIndexes = table.getSelectedRows();
+            for (int rowIndex : rowIndexes) {
+                if (rowIndex != -1) {
+                    model.remove(rowIndex);
                 }
-            } else {
-                ListSelectionModel lsm = jTable1.getSelectionModel ();
-                lsm.setSelectionInterval (0, 0);
             }
-            enableDisableRemove ();
-        }
-        public void insertUpdate (DocumentEvent arg0) {
-            updateFilter ();
-        }
-        
-        public void removeUpdate (DocumentEvent arg0) {
-            updateFilter ();
-        }
-        
-        public void changedUpdate (DocumentEvent arg0) {
-            updateFilter ();
-        }
-        
-        private void updateFilter () {
-            searchTask.schedule (350);
+            model.refreshModel();
+            if (rowIndexes.length > 0) {
+                if (model.getRowCount() > rowIndexes[0]) {
+                    table.getSelectionModel().setSelectionInterval(rowIndexes[0], rowIndexes[0]);
+                } else {
+                    table.getSelectionModel().setSelectionInterval(0, 0);
+                }
+            }
         }
     }
+
+    private class AddAction extends AbstractAction {
+        AddAction() {
+            super(UnitTab.textForKey("SettingsTab.AddButton.text"));
+            putValue (MNEMONIC_KEY, UnitTab.mnemonicForKey ("SettingsTab.AddButton.text"));
+        }
+        public void actionPerformed(ActionEvent arg0) {
+            final UpdateUnitProviderPanel panel = new UpdateUnitProviderPanel(true,
+                    NbBundle.getMessage(SettingsTab.class, "SettingsTab_NewProviderName"), // NOI18N
+                    NbBundle.getMessage(SettingsTab.class, "SettingsTab_NewProviderURL"), // NOI18N
+                    false);
+            DialogDescriptor descriptor = getCustomizerDescriptor(panel);
+            panel.getOKButton().addActionListener(new ActionListener(){
+                public void actionPerformed(ActionEvent arg0) {
+                    try {
+                        getSettingsTableModel().add
+                                (panel.getProviderName(),
+                                panel.getProviderName(),
+                                new URL(panel.getProviderURL()),
+                                panel.isActive());
+                        getSettingsTableModel().refreshModel();
+                        SettingsTableModel model = getSettingsTableModel();
+                        for (int i = 0; i < model.getRowCount(); i++) {
+                            String providerName = model.getValueAt(i, 1).toString();
+                            if (panel.getProviderName() != null && panel.getProviderName().equals(providerName)) {
+                                table.getSelectionModel().setSelectionInterval(i, i);
+                            }
+                            
+                        }
+                        
+                        
+                    } catch(MalformedURLException mex) {
+                        Exceptions.printStackTrace(mex);
+                    }
+                }
+            });
+            DialogDisplayer.getDefault().createDialog(descriptor).setVisible(true);
+            
+        }
+    }
+    
+    private class Table extends JTable {
+        public Table() {
+            setShowGrid(false);
+            setIntercellSpacing(new Dimension(0, 0));            
+        }
+
+        @Override
+        public void addNotify() {
+            super.addNotify();
+            getParent().setBackground(getBackground());            
+        }
+        
+        
+        @Override
+        public Component prepareRenderer(TableCellRenderer renderer,
+                int rowIndex, int vColIndex) {
+            Component c = super.prepareRenderer(renderer, rowIndex, vColIndex);
+            Color bgColor = getBackground();
+            Color bgColorDarker = UnitTable.getDarkerColor(bgColor);
+            
+            if (isRowSelected(rowIndex)) {
+                c.setForeground(getSelectionForeground());
+            } else {
+                c.setForeground(getForeground());
+            }
+            
+            if (!isCellSelected(rowIndex, vColIndex)) {
+                if (rowIndex % 2 == 0) {
+                    c.setBackground(bgColorDarker);
+                } else {
+                    c.setBackground(bgColor);
+                }
+            }
+            
+            return c;
+        }
+        
+    }
+
+    int getAutoUpdatePeriod () {
+        return getAutoupdatePreferences ().getInt ("period", 2 /*EVERY_WEEK*/); // NOI18N
+    }
+    
+    void setAutoUpdatePeriod (int period) {
+        if (period != getAutoUpdatePeriod()) {
+            getAutoupdatePreferences ().putInt ("period", period); // NOI18N
+        }
+    }
+    
+    private static Preferences getAutoupdatePreferences () {
+        return NbPreferences.root ().node ("org/netbeans/modules/autoupdate");
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton bEdit;
-    private javax.swing.JButton bNew;
+    private javax.swing.JButton addButton;
     private javax.swing.JButton bProxy;
-    private javax.swing.JButton bRemove;
-    private javax.swing.JCheckBox cbOnlyModules;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JLabel lHeader;
-    private javax.swing.JLabel lSearch;
-    private javax.swing.JTextField tfSearch;
+    private javax.swing.JComboBox cbCheckPeriod;
+    private javax.swing.JRadioButton cbModules;
+    private javax.swing.JRadioButton cbPlugins;
+    private javax.swing.JCheckBox cbSharedInstall;
+    private javax.swing.JSeparator jSeparatorAdvanced;
+    private javax.swing.JSeparator jSeparatorConnection;
+    private javax.swing.JLabel lCheckPeriod;
+    private javax.swing.JLabel lConnection;
+    private javax.swing.JLabel lGeneral;
+    private javax.swing.JLabel lPluginsView;
+    private javax.swing.JLabel lUpdateCenters;
+    private javax.swing.ButtonGroup pluginsViewGroup;
+    private javax.swing.JSplitPane spTab;
     // End of variables declaration//GEN-END:variables
     
-    public static String getBundle (String key) {
-        return NbBundle.getMessage (SettingsTab.class, key);
-    }
 }

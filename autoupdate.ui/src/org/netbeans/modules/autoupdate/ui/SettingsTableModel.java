@@ -145,7 +145,7 @@ public class SettingsTableModel extends AbstractTableModel {
     
     @Override
     public boolean isCellEditable (int rowIndex, int columnIndex) {
-        return true;
+        return columnIndex == 0;
     }
     
     public int getRowCount () {

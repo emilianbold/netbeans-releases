@@ -322,12 +322,8 @@ private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:
         installedTab.addUpdateUnitListener (this);
         tpTabs.add (NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Installed_Title"), installedTab);
         
-        JSplitPane settingsSplit = new JSplitPane (JSplitPane.VERTICAL_SPLIT);
-        settingsSplit.setOneTouchExpandable (true);
-        SettingsTab tab = new SettingsTab (this, new DetailsPanel ());
-        settingsSplit.setLeftComponent (tab);
-        settingsSplit.setRightComponent (tab.details);
-        tpTabs.add (tab.getDisplayName (), settingsSplit);
+        SettingsTab tab = new SettingsTab (this);
+        tpTabs.add (tab.getDisplayName(), tab);
         
         decorateTitle (0, updateTable, NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Update_Title"));
         decorateTitle (1, availableTable, NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Available_Title"));

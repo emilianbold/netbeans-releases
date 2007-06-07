@@ -47,6 +47,7 @@ public class DetailsPanel extends JTextPane  {
     private HeaderPanel header;
     private JLabel title;
     private JButton button;
+    private JButton button2;
     private JPanel rightCornerHeader;
     
     public DetailsPanel() {
@@ -120,6 +121,15 @@ public class DetailsPanel extends JTextPane  {
             button.setAction(action);
         }
     }
+    
+    public void setActionListener2(Action action) {
+        button2.setVisible(action != null);
+        button2.setEnabled(action != null);
+        if (action != null) {
+            button2.setAction(action);
+        }
+    }
+    
 
     @Override
     public void setEnabled(boolean enabled) {
@@ -132,15 +142,22 @@ public class DetailsPanel extends JTextPane  {
     javax.swing.JEditorPane getDetails() {
         return this;
     }
+    
+    HeaderPanel getHeader() {
+        return header;
+    }
+    
     private void initComponents2() {
         header = new HeaderPanel();
         title = header.getTitle();
         button = header.getButton();
+        button2 = header.getButton2();
         Border outsideBorder = BorderFactory.createMatteBorder(0, 0, 1, 0, Color.gray);        
         Border insideBorder = BorderFactory.createEmptyBorder(3, 3, 3, 3);
         CompoundBorder compoundBorder = BorderFactory.createCompoundBorder(outsideBorder, insideBorder);
         header.setBorder(compoundBorder);
         button.setVisible(false);
+        button2.setVisible(false);        
         rightCornerHeader  = new JPanel();        
         rightCornerHeader.setBorder(compoundBorder);
         

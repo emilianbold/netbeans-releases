@@ -654,10 +654,16 @@ public class UnitTab extends javax.swing.JPanel {
     }
     
     
-    private static String textForKey (String key) {
+    static String textForKey (String key) {
         JButton jb = new JButton ();
         Mnemonics.setLocalizedText (jb, NbBundle.getMessage (UnitTab.class, key));
         return jb.getText ();
+    }
+    
+    static int mnemonicForKey(String key) {
+        JButton jb = new JButton();
+        Mnemonics.setLocalizedText(jb, NbBundle.getMessage(UnitTab.class, key));
+        return jb.getMnemonic();
     }
     
     private  abstract class TabAction extends AbstractAction {
@@ -746,13 +752,7 @@ public class UnitTab extends javax.swing.JPanel {
         }
         
         
-        public abstract void performerImpl ();
-        
-        private int mnemonicForKey (String key) {
-            JButton jb = new JButton ();
-            Mnemonics.setLocalizedText (jb, NbBundle.getMessage (UnitTab.class, key));
-            return jb.getMnemonic ();
-        }
+        public abstract void performerImpl ();        
     }
     
     private abstract class RowTabAction extends TabAction {

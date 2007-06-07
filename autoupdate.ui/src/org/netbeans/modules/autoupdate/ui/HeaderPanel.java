@@ -53,6 +53,7 @@ public class HeaderPanel extends javax.swing.JPanel {
 
         title = new javax.swing.JLabel();
         button = new javax.swing.JButton();
+        button2 = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -64,8 +65,17 @@ public class HeaderPanel extends javax.swing.JPanel {
 
         button.setText("jButton1");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
         add(button, gridBagConstraints);
+
+        button2.setText(org.openide.util.NbBundle.getMessage(HeaderPanel.class, "HeaderPanel.button2.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
+        add(button2, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
     JLabel getTitle() {
@@ -76,8 +86,14 @@ public class HeaderPanel extends javax.swing.JPanel {
         return button;
     }
     
+    JButton getButton2() {
+        return button2;
+    }
+    
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton button;
+    private javax.swing.JButton button2;
     private javax.swing.JLabel title;
     // End of variables declaration//GEN-END:variables
     

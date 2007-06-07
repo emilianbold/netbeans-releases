@@ -159,7 +159,7 @@ public class UpdateUnitProviderPanel extends javax.swing.JPanel {
 
     
     public String getDisplayName() {
-        return NbBundle.getMessage(SettingsTab.class, "UpdateUnitProviderPanel_displayName");//NOI18N
+        return NbBundle.getMessage(UpdateUnitProviderPanel.class, "UpdateUnitProviderPanel_displayName");//NOI18N
     }
     
     public boolean isActive() {
