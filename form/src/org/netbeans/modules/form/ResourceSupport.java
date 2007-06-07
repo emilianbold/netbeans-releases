@@ -173,8 +173,10 @@ public class ResourceSupport {
                     String key = getDefaultKey(property, AUTO_RESOURCING);
                     eValue = resourceService.changeKey((ResourceValue)value, key);
                 }
+                return eValue;
+            } else {
+                return newValue;
             }
-            return eValue;
         }
 
         if (value == null || !isConvertibleToResource(value) || isExcludedProperty0(property))
