@@ -30,11 +30,13 @@ Microsystems, Inc. All Rights Reserved.
         <type>javax.help.TOCView</type>
         <data>masterHelpToc.xml</data>
     </view>
+    <!--
     <view mergetype="javax.help.SortMerge">
         <name>Index</name>
         <label>Index</label>
         <type>javax.help.IndexView</type>
     </view>
+    -->
     <view>
         <name>Search</name>
         <label>Search</label>
