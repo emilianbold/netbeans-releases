@@ -49,7 +49,7 @@ public final class UseSuperTypeRefactoring extends AbstractRefactoring{
     
     /**
      * Creates a new instance of UseSuperTypeRefactoring
-     * @param Object The class whose occurences must be replaced by
+     * @param javaClassHandle  The class whose occurences must be replaced by
      * that of it's supertype
      */
     public UseSuperTypeRefactoring(TreePathHandle javaClassHandle) {

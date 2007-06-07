@@ -76,7 +76,7 @@ public final class ChangeParametersRefactoring extends AbstractRefactoring {
 
     /**
      * Sets modifiers for method
-     * @param modifier new modifiers
+     * @param modifiers new modifiers
      */
     public void setModifiers(Set<Modifier> modifiers) {
         this.modifiers = modifiers;

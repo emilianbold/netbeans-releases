@@ -22,9 +22,11 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.openide.util.lookup.Lookups;
 
-/** Extract Super Class Refactoring implementation class.
+/** 
+ * Extract Super Class Refactoring implementation class.
  *
- * @author Martin Matula, Jan Pokorsky
+ * @author Martin Matula
+ * @author Jan Pokorsky
  */
 public final class ExtractSuperclassRefactoring extends AbstractRefactoring {
     private static final MemberInfo[] EMPTY_MEMBERS = new MemberInfo[0];

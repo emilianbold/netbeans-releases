@@ -22,10 +22,12 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.openide.util.lookup.Lookups;
 
-/** Convert Inner to Top-Level refactoring implementation class. This refactoring
+/** 
+ * Convert Inner to Top-Level refactoring implementation class. This refactoring
  * is capable of converting an inner class into a top-level class.
  *
- * @author Martin Matula, Jan Becicka
+ * @author Martin Matula
+ * @author Jan Becicka
  */
 public final class InnerToOuterRefactoring extends AbstractRefactoring {
 

@@ -24,8 +24,6 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
 import javax.lang.model.element.*;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.JavaSource;
@@ -39,7 +37,6 @@ import org.openide.ErrorManager;
  * @author Jan Becicka
  */
 public class RefactoringVisitor extends TreePathScanner<Tree, Element> {
-    private Collection<TreePath> usages = new ArrayList<TreePath>();
     protected WorkingCopy workingCopy;
     protected TreeMaker make;
     
@@ -51,14 +48,6 @@ public class RefactoringVisitor extends TreePathScanner<Tree, Element> {
             ErrorManager.getDefault().notify(ioe);
         }
         this.make = workingCopy.getTreeMaker();
-    }
-    
-    public Collection<TreePath> getUsages() {
-        return usages;
-    }
-    
-    private void addUsage(TreePath tp) {
-        JavaRefactoringUtils.cacheTreePathInfo(tp, workingCopy);
     }
     
     protected void rewrite(Tree oldTree, Tree newTree) {

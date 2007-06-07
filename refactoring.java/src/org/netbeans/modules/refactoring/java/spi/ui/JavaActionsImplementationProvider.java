@@ -22,26 +22,51 @@ package org.netbeans.modules.refactoring.java.spi.ui;
 import org.openide.util.Lookup;
 
 /**
+ * Create your own provider of this class and register it in META-INF services, if you want to
+ * create your own implementations of refactorin actions.
+ * For instance Java module wants to have refactoring rename action for java files.
+ * So Java Refactoring module must implement 2 methods. 
  *
+ * <pre>
+ * public boolean canChangeParameters(Lookup lookup) {
+ *   Node[] nodes = lookup.lookupAll(Node.class);
+ *   if (..one node selected and the node belongs to java...)
+ *      return true;
+ *   else 
+ *      return false;
+ * }
+ *
+ * public void doChangeParameters(Lookup lookup) {
+ *   Node[] nodes = lookup.lookupAll(Node.class);
+ *   final FileObject fo = getFileFromNode(nodes[0]);
+ *   UI.openRefactoringUI(new ChangeParametersUI(fo);
+ * }
+ * </pre>     
+ *
+ * For help on creating and registering actions
+ * See <a href=http://wiki.netbeans.org/wiki/view/RefactoringFAQ>Refactoring FAQ</a>
+ * 
  * @author Jan Becicka
  */
 public class JavaActionsImplementationProvider {
 
     /**
+     * @param lookup 
      * @return true if provider can handle rename
      */
-    public boolean canEncapsulateFields(Lookup node) {
+    public boolean canEncapsulateFields(Lookup lookup) {
         return false;
     }
 
     /**
-     * @return implementation of Rename Action
+     * @param lookup 
      */
-    public void doEncapsulateFields(Lookup selectedNodes) {
+    public void doEncapsulateFields(Lookup lookup) {
         new UnsupportedOperationException("Not implemented");
     }
 
     /**
+     * @param lookup 
      * @return true if provider can handle find usages
      */
     public boolean canChangeParameters(Lookup lookup) {
@@ -49,88 +74,104 @@ public class JavaActionsImplementationProvider {
     }
 
     /**
-     * @return implementation of Find Usages Action
+     * implementation of "invoke Change Parameters"
+     * @param lookup 
      */
     public void doChangeParameters(Lookup lookup) {
         new UnsupportedOperationException("Not implemented");
     }
 
     /**
-     * @return true if provider can handle delete
+     * @param lookup 
+     * @return true if provider can handle Pull Up
      */
     public boolean canPullUp(Lookup lookup) {
         return false;
     }
     
     /**
-     * @return implementation of Delete Action
+     * implementation of "invoke Pull Up"
+     * @param lookup 
      */
     public void doPullUp(Lookup lookup) {
         new UnsupportedOperationException("Not implemented");
     }
 
     /**
-     * @return true if provider can handle move
+     * @param lookup 
+     * @return true if provider can handle push down
      */
     public boolean canPushDown(Lookup lookup) {
         return false;
     }
 
     /**
-     * @return implementation of Move Action
+     * implementation of "invoke Push Down"
+     * @param lookup 
      */
     public void doPushDown(Lookup lookup) {
         new UnsupportedOperationException("Not implemented");
     }
     
     /**
-     * @return true if provider can handle copy
+     * @param lookup 
+     * @return true if provider can handle Inner to Outer
      */
     public boolean canInnerToOuter(Lookup lookup) {
         return false;
     }
 
     /**
-     * @return implementation of Copy Action
+     * implementation of "invoke Inner To Outer"
+     * @param lookup 
      */
     public void doInnerToOuter(Lookup lookup) {
         new UnsupportedOperationException("Not implemented");
     }    
+    
     /**
-     * @return true if provider can handle copy
+     * @param lookup 
+     * @return true if provider can handle Use Super Type
      */
     public boolean canUseSuperType(Lookup lookup) {
         return false;
     }
 
     /**
-     * @return implementation of Copy Action
+     * implementation of "invoke Use Super Type"
+     * @param lookup 
      */
     public void doUseSuperType(Lookup lookup) {
         new UnsupportedOperationException("Not implemented");
     }    
+    
     /**
-     * @return true if provider can handle copy
+     * @param lookup 
+     * @return true if provider can handle extract superclass
      */
     public boolean canExtractSuperclass(Lookup lookup) {
         return false;
     }
 
     /**
-     * @return implementation of Copy Action
+     * implementation of "invoke Extract Superclass"
+     * @param lookup 
      */
     public void doExtractSuperclass(Lookup lookup) {
         new UnsupportedOperationException("Not implemented");
     }    
+    
     /**
-     * @return true if provider can handle copy
+     * @param lookup 
+     * @return true if provider can handle extract Interface
      */
     public boolean canExtractInterface(Lookup lookup) {
         return false;
     }
 
     /**
-     * @return implementation of Copy Action
+     * implementation of "invoke Extract Interface"
+     * @param lookup 
      */
     public void doExtractInterface(Lookup lookup) {
         new UnsupportedOperationException("Not implemented");

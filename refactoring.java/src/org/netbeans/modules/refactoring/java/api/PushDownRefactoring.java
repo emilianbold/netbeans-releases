@@ -33,7 +33,9 @@ public class PushDownRefactoring extends AbstractRefactoring {
     private static final MemberInfo<ElementHandle>[] EMPTY_MEMBERS = new MemberInfo[0];
     private MemberInfo<ElementHandle>[] members;
     
-    /** Creates a new instance of PushDownRefactoring */
+    /** Creates a new instance of PushDownRefactoring 
+     * @param sourceType 
+     */
     public PushDownRefactoring(Lookup sourceType) {
         super(sourceType);
     }
@@ -48,6 +50,7 @@ public class PushDownRefactoring extends AbstractRefactoring {
     }
 
     /** Sets members (using their descriptors) to pull up.
+     * @param members 
      * @members Descriptors of members to be pulled up.
      */
     public void setMembers(MemberInfo<ElementHandle>[] members) {

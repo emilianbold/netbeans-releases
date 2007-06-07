@@ -167,6 +167,7 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
      * general for all refactorings.)
      *
      * @param   e  element to check
+     * @param info 
      * @return  problem message or null if the element is valid
      */
     protected static Problem isElementAvail(TreePathHandle e, CompilationInfo info) {

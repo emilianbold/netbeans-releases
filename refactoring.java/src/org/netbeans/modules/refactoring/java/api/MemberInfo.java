@@ -37,6 +37,7 @@ import org.netbeans.api.java.source.UiUtils.PrintPart;
 
 /**
  *
+ * @param H 
  * @author Jan Becicka
  */
 public final class MemberInfo<H> {
@@ -62,7 +63,10 @@ public final class MemberInfo<H> {
     
     /** Creates a new instance of MemberInfo describing a field
      * to be pulled up.
-     * @param field Field to be pulled up.
+     * @param member 
+     * @param name 
+     * @param htmlText 
+     * @param icon 
      */
     private MemberInfo(H member, String name, String htmlText, Icon icon) {
         this.member = member;
@@ -75,6 +79,10 @@ public final class MemberInfo<H> {
         return member;
     }
     
+    /**
+     * 
+     * @return 
+     */
     public String getHtmlText() {
         return htmlText;
     }
@@ -133,6 +141,7 @@ public final class MemberInfo<H> {
         return group;
     }
     
+    @Override
     public boolean equals(Object o) {
         if (o instanceof MemberInfo && ((MemberInfo) o).member instanceof ElementHandle) {
             return ((ElementHandle) ((MemberInfo) o).member).signatureEquals((ElementHandle)this.member);
@@ -140,6 +149,7 @@ public final class MemberInfo<H> {
         return super.equals(o);
     }
     
+    @Override
     public int hashCode() {
         return member.hashCode();
     }
@@ -156,6 +166,7 @@ public final class MemberInfo<H> {
         this.makeAbstract = b;
     }
     
+    @Override
     public String toString() {
         return htmlText;
     }

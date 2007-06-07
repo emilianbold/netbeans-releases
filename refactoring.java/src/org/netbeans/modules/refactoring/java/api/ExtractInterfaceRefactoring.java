@@ -30,9 +30,12 @@ import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.openide.util.lookup.Lookups;
 
-/** Extract Interface Refactoring implementation class.
+/** 
+ * Extract Interface Refactoring implementation class.
  *
- * @author Martin Matula, Jan Becicka, Jan Pokorsky
+ * @author Martin Matula
+ * @author Jan Becicka
+ * @author Jan Pokorsky
  */
 public final class ExtractInterfaceRefactoring extends AbstractRefactoring {
     // name of the new class to be created
@@ -131,5 +134,4 @@ public final class ExtractInterfaceRefactoring extends AbstractRefactoring {
         List<TypeMirrorHandle<TypeMirror>> l = new ArrayList<TypeMirrorHandle<TypeMirror>>(implementz);
         this.implementz = Collections.<TypeMirrorHandle<TypeMirror>>unmodifiableList(l);
     }
-    
 }
