@@ -82,6 +82,27 @@ is the proper place.
 
     <changes>
 
+        <change id="BracesMatching.spi.related.deprecations">
+            <summary>Several things were deprecated in favor of BracesMatching SPI</summary>
+            <version major="1" minor="15"/>
+            <date day="7" month="6" year="2007"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" deprecation="yes" />
+            <description>
+                <p>
+                    Some fields and methods in <code>ExtCaret</code> and <code>ExtKit</code>
+                    that were related to highlighting matching braces in a document
+                    are no longer supported. There is new Braces Matching SPI available,
+                    which replaces them.
+                </p>
+                <p>
+                    The <code>ExtCaret.setMatchBraceOffset</code> and the <code>MATCH_BRACE_*</code>
+                    added in 1.14 were removed again. This is in fact no change,
+                    because these methods have never been part of any release.
+                </p>
+            </description>
+        </change>
+
         <change id="ExtCaret-matchBraceOffset">
             <summary>Adding ExtCaret.get/setMatchBraceOffset</summary>
             <version major="1" minor="14"/>
@@ -97,7 +118,7 @@ is the proper place.
                 </p>
             </description>
         </change>
-        
+
         <change id="JumpList-final">
             <summary>Making JumpList final</summary>
             <version major="1" minor="13"/>
