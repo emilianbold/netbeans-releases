@@ -135,6 +135,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="netbeans" depends="build-all"/>
+    <target name="nbm" depends="netbeans" description="Dummy target."/>
 
     <target name="clean-xtest">
         <ant dir="nbjunit" target="clean"/>
