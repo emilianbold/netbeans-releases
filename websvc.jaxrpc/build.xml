@@ -62,8 +62,9 @@
     </target>
     
     <target name="compile" depends="dd2beansgen, projectized-common.compile"/>
-    <!--
+
     <target name="ant-extra" depends="init">
+        <echo message = "ant-extra"/>
         <mkdir dir="build/antclasses"/>
         <javac srcdir="antsrc" destdir="build/antclasses" source="1.4" debug="true" deprecation="true">
             <classpath>
@@ -76,6 +77,7 @@
             <fileset dir="antsrc" excludes="${jar-excludes}"/>
         </copy>
         <mkdir dir="${cluster}/ant/extra"/>
+        <echo message="${cluster}/ant/extra/"/>
         <jar jarfile="${cluster}/ant/extra/wsclientuptodate.jar" compress="false">
             <fileset dir="build/antclasses"/>
         </jar>
@@ -85,7 +87,7 @@
     </target>
 
     <target name="netbeans-extra" depends="ant-extra"/>
--->
+
     <target name="clean" depends="projectized-common.clean,clean-ddgen-src"/>
     
     <target name="clean-ddgen-src">

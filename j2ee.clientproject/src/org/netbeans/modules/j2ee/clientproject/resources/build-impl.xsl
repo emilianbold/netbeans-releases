@@ -586,7 +586,7 @@ Microsystems, Inc. All Rights Reserved.
                 <target name="wscompile-init" depends="init">
                     <taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile"
                              classpath="${{wscompile.classpath}}"/>
-                    <taskdef name="wsclientuptodate" classname="org.netbeans.modules.websvc.core.ant.WsClientUpToDate"
+                    <taskdef name="wsclientuptodate" classname="org.netbeans.modules.websvc.jaxrpc.ant.WsClientUpToDate"
                              classpath="${{wsclientuptodate.classpath}}"/>
                     
                     <mkdir dir="${{classes.dir}}"/>
