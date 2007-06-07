@@ -24,9 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.Action;
-import org.netbeans.modules.j2ee.deployment.config.Utils;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
-import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.DebugAction;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.CustomizerAction;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.ProfileAction;
@@ -37,6 +35,7 @@ import org.netbeans.modules.j2ee.deployment.impl.ui.actions.StartAction;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.StopAction;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
@@ -149,7 +148,7 @@ public class InstanceNodeDecorator extends FilterNode
     
     public void stateChanged(int oldState, int newState) {
         // invoke icon change - this causes the server status icon badge to be updated
-        Utils.runInEventDispatchThread(new Runnable() {
+        Mutex.EVENT.readAccess(new Runnable() {
             public void run() {
                 fireIconChange();
             }

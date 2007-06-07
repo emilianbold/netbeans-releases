@@ -22,7 +22,6 @@ package org.netbeans.modules.j2ee.deployment.impl.ui.actions;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
-import org.netbeans.modules.j2ee.deployment.config.Utils;
 import org.netbeans.modules.j2ee.deployment.impl.ServerException;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
@@ -30,6 +29,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -130,7 +130,7 @@ public class DebugAction extends NodeAction {
         // ServerInstance.StateListener implementation --------------------------
         
         public void stateChanged(final int oldState, final int newState) {
-            Utils.runInEventDispatchThread(new Runnable() {
+            Mutex.EVENT.readAccess(new Runnable() {
                 public void run() {
                     firePropertyChange(
                         PROP_ENABLED, 
