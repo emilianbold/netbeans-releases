@@ -429,6 +429,7 @@ public class Project extends org.netbeans.modules.uml.core.metamodel.structure.M
 		IPreferenceAccessor pref = PreferenceAccessor.instance();
                 //kris richards - "DefaultMode" pref expunged. Set to "PSK_IMPLEMENTATION".
 		String modeName = "PSK_IMPLEMENTATION";
+//                String modeName = "Implementation";
 		XMLManip.setAttributeValue(m_Node,"mode",modeName);
                 String str = "Implementation";
 

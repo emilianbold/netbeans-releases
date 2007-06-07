@@ -120,40 +120,6 @@ public class PreferenceAccessor implements IPreferenceAccessor{
 	}
 
 	/**
-	 * Asks the preference manager to read the preference file and get the asked
-	 * for information and then translate the value from its coded string into its real value.
-	 * 
-	 *
-	 * @param key[in]	"key" preference is found under, if blank, look in "Default"
-	 * @param path[in]	Path to the preference (if preference is nested, this is the "|" delimited path
-	 * @param name[in]	Name of preference
-	 * @param pVal[out]	Preference value
-	 *
-	 * @return HRESULT
-	 *
-	 */
-	private String getTranslatedPreferenceValue(String key, String path, String name) {
-		String value = "";
-		ICoreProduct prod = ProductRetriever.retrieveProduct();
-		if (prod != null)
-		{
-			IPreferenceManager2 pMan = prod.getPreferenceManager();
-			if (pMan != null)
-			{
-				if (key.length() > 0)
-				{
-					value = pMan.getTranslatedPreferenceValue(key, path, name);
-				}
-				else
-				{
-					value = pMan.getTranslatedPreferenceValue(path, name);
-				}
-			}
-		}
-		return value;
-	}
-
-	/**
 	 * The default mode of a new Describe session found in the preferences file.
 	 *
 	 * @param *val[out]	The mode
@@ -177,10 +143,11 @@ public class PreferenceAccessor implements IPreferenceAccessor{
 	 *
 	 */
 	public String getDefaultLanguage(String mode) {
-		String str = "Modes|";
-		str += mode;
-		String value = getPreferenceValue("", str, "Language");
-		return value;
+            String lang = "Java" ;
+            if ( ! mode.equals("Implementation")) 
+                lang = "UML" ;
+
+                return lang ;
 	}
 
 	/**
@@ -196,11 +163,12 @@ public class PreferenceAccessor implements IPreferenceAccessor{
 	 *
 	 */
 	public String getDefaultRoundTripBehavior(String lang, String behavior) {
-		// String str = "RoundTrip|";
-		String str = "RoundTrip|";
-		str += lang;
-		String value = getPreferenceValue("", str, behavior);
-		return value;
+            throw new UnsupportedOperationException ("RoundTrip prefs are no long valid.");
+//		// String str = "RoundTrip|";
+//		String str = "RoundTrip|";
+//		str += lang;
+//		String value = getPreferenceValue("", str, behavior);
+//		return value;
 	}
 
 	/**
@@ -214,8 +182,9 @@ public class PreferenceAccessor implements IPreferenceAccessor{
 	 *
 	 */
 	public String getDefaultEditorCustomizationFile() {
-		String value = getPreferenceValue("", "PropertyEditor", "CustomizationFile");
-		return value;
+            throw new UnsupportedOperationException ("PropertyEditor|CustomizationFile pref is no long valid.");
+//		String value = getPreferenceValue("", "PropertyEditor", "CustomizationFile");
+//		return value;
 	}
 
 	/**

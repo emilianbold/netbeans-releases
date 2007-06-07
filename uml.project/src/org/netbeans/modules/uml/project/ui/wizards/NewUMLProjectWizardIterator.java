@@ -191,8 +191,15 @@ public class NewUMLProjectWizardIterator
         // depending on the mode      
         if (this.type == TYPE_UML || this.type == TYPE_UML_JAVA) 
         {
-            String modelingMode = (String)
-                wiz.getProperty(NewUMLProjectWizardIterator.PROP_MODELING_MODE);
+           String modelingMode = null ; 
+//                (String)wiz.getProperty(NewUMLProjectWizardIterator.PROP_MODELING_MODE);
+            
+            if (this.type == TYPE_UML_JAVA)
+               modelingMode = UMLProject.PROJECT_MODE_IMPL_STR ;
+            else if (this.type == TYPE_UML)
+               modelingMode = UMLProject.PROJECT_MODE_DESIGN_STR ;
+            else
+                modelingMode = UMLProject.PROJECT_MODE_ANALYSIS_STR ;
             
             // If the user chose the Mode Impl path, then we actually treat this
             // like a reverse enginneering case.
