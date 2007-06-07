@@ -543,7 +543,6 @@ introduced by support for multiple source roots. -jglick
                              classpath="${{wscompile.classpath}}"/>
                     <taskdef name="wsclientuptodate" classname="org.netbeans.modules.websvc.jaxrpc.ant.WsClientUpToDate"
                              classpath="${{wsclientuptodate.classpath}}"/>
-                    
                     <mkdir dir="${{build.web.dir.real}}/WEB-INF/wsdl"/>
                     <mkdir dir="${{webinf.dir}}/wsdl"/>
                     <mkdir dir="${{build.classes.dir.real}}"/>
