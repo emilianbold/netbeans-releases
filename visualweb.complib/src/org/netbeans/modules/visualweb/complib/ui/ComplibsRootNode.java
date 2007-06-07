@@ -90,7 +90,14 @@ public class ComplibsRootNode extends AbstractNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[] { new AddComplibAction(project) };
+        ArrayList<Action> actions = new ArrayList<Action>();
+        actions.add(new AddComplibAction(project));
+
+        String sharedCompLibs = System.getProperty("complib.sharedCompLibs");
+        if ("true".equalsIgnoreCase(sharedCompLibs)) {
+            actions.add(new SharedComplibAction());
+        }
+        return actions.toArray(new Action[0]);
     }
 
     private static class ComplibsChildren extends Children.Keys implements
