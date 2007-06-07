@@ -22,6 +22,8 @@ package org.netbeans.modules.java.j2seproject.ui.customizer;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.charset.Charset;
@@ -32,10 +34,13 @@ import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JTable;
 import javax.swing.ListCellRenderer;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.plaf.UIResource;
+import javax.swing.table.TableColumn;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.openide.DialogDescriptor;
@@ -124,8 +129,54 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
                 handleEncodingChange();
             }            
         });
+        initTableVisualProperties(sourceRoots);
+        initTableVisualProperties(testRoots);
     }
     
+    private class TableColumnSizeComponentAdapter extends ComponentAdapter {
+        private JTable table = null;
+        
+        public TableColumnSizeComponentAdapter(JTable table){
+            this.table = table;
+        }
+        
+        public void componentResized(ComponentEvent evt){
+            double pw = table.getParent().getParent().getSize().getWidth();
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+            TableColumn column = table.getColumnModel().getColumn(0);
+            column.setWidth( ((int)pw/2) - 1 );
+            column.setPreferredWidth( ((int)pw/2) - 1 );
+            column = table.getColumnModel().getColumn(1);
+            column.setWidth( ((int)pw/2) - 1 );
+            column.setPreferredWidth( ((int)pw/2) - 1 );
+        }
+    }
+    
+    private void initTableVisualProperties(JTable table) {
+
+        table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        table.setIntercellSpacing(new java.awt.Dimension(0, 0));
+        // set the color of the table's JViewport
+        table.getParent().setBackground(table.getBackground());
+        
+        //we'll get the parents width so we can use that to set the column sizes.
+        double pw = table.getParent().getParent().getPreferredSize().getWidth();
+        
+        //#88174 - Need horizontal scrollbar for library names
+        //ugly but I didn't find a better way how to do it
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        TableColumn column = table.getColumnModel().getColumn(0);
+        column.setMinWidth(226);
+        column.setWidth( ((int)pw/2) - 1 );
+        column.setPreferredWidth( ((int)pw/2) - 1 );
+        column.setMinWidth(75);
+        column = table.getColumnModel().getColumn(1);
+        column.setMinWidth(226);
+        column.setWidth( ((int)pw/2) - 1 );
+        column.setPreferredWidth( ((int)pw/2) - 1 );
+        column.setMinWidth(75);
+        this.addComponentListener(new TableColumnSizeComponentAdapter(table));
+    }
     
     private void handleEncodingChange () {
             Charset enc = (Charset) encoding.getSelectedItem();
