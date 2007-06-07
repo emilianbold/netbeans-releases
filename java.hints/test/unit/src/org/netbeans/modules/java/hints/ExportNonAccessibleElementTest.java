@@ -167,6 +167,13 @@ public class ExportNonAccessibleElementTest extends TreeRuleTestBase {
             "0:99-0:107:verifier:Non Accessible Type");       
         
     }
+    
+    public void testElementHandle() throws Exception {
+        String before = "public final class ElementHa";
+        String after = "ndle<T extends Element> { }";
+        
+        performAnalysisTest("test/Test.java", before + after, before.length());       
+    }
 
     public void testNonVisibleMethod() throws Exception {
         String before = "package test; " +

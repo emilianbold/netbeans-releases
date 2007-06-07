@@ -171,8 +171,10 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
 
     public Boolean visitType(TypeElement arg0, Void arg1) {
         for (TypeParameterElement e : arg0.getTypeParameters()) {
-            if (e.getGenericElement().accept(this, arg1)) {
-                return true;
+            for (TypeMirror b : e.getBounds()) {
+                if (b.accept(this, arg1)) {
+                    return true;
+                }
             }
         }
         return arg0.getSuperclass().accept(this, arg1);
