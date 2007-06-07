@@ -20,7 +20,6 @@
 package org.netbeans.test.cvsmodule;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
@@ -28,13 +27,13 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.javacvs.CVSRootStepOperator;
 import org.netbeans.jellytools.modules.javacvs.CheckoutWizardOperator;
 import org.netbeans.jellytools.modules.javacvs.ModuleToCheckoutStepOperator;
 import org.netbeans.jellytools.modules.javacvs.TagOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -101,6 +100,7 @@ public class TagTest extends JellyTestCase {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         TestKit.closeProject(projectName);
+        new ProjectsTabOperator().tree().clearSelection();
         OutputOperator oo = OutputOperator.invoke();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -170,8 +170,8 @@ public class TagTest extends JellyTestCase {
         JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
         open.push();
         
-        ProjectSupport.waitScanFinished();
-        new QueueTool().waitEmpty(1000);
+        //ProjectSupport.waitScanFinished();
+        //new QueueTool().waitEmpty(1000);
         ProjectSupport.waitScanFinished();
         
         //create new elements for testing

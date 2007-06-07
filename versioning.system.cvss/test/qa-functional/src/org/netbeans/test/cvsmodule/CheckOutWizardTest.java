@@ -27,13 +27,13 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.javacvs.BrowseCVSModuleOperator;
 import org.netbeans.jellytools.modules.javacvs.BrowseTagsOperator;
 import org.netbeans.jellytools.modules.javacvs.CVSRootStepOperator;
 import org.netbeans.jellytools.modules.javacvs.CheckoutWizardOperator;
 import org.netbeans.jellytools.modules.javacvs.EditCVSRootOperator;
 import org.netbeans.jellytools.modules.javacvs.ModuleToCheckoutStepOperator;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -122,14 +122,17 @@ public class CheckOutWizardTest extends JellyTestCase {
     }
     
     public void testInvokeCheckoutWizard() {
+        new ProjectsTabOperator().tree().clearSelection();
         CheckoutWizardOperator.invoke();
     }
     
     public void testCancelCheckoutWizard() {
+        new ProjectsTabOperator().tree().clearSelection();
         new CheckoutWizardOperator().cancel();
     }
     
     public void testCheckoutWizardLocal() {
+        new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -156,6 +159,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     }
     
     public void testCheckoutWizardFork() {
+        new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -182,6 +186,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     }
     
     public void testCheckoutWizardPserver() {
+        new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -223,6 +228,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     }
     
     public void testCheckoutWizardExt() {
+        new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -267,6 +273,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     }
     
     public void testRandomChange() {
+        new ProjectsTabOperator().tree().clearSelection();
         Random rand = new Random();
         int am;
         String[] cvsRoots = new String[] {":local:/cvs", ":fork:/cvs", ":pserver:test@localhost:2401/cvs", ":ext:test@localhost:2401/cvs"};
@@ -319,6 +326,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     }
     
     public void testPserverUI() {
+        new ProjectsTabOperator().tree().clearSelection();
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -357,6 +365,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     }
     
     public void testLocalUI() {
+        new ProjectsTabOperator().tree().clearSelection();
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -395,6 +404,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     
     
     public void testForkUI() {
+        new ProjectsTabOperator().tree().clearSelection();
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -432,6 +442,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     }
     
     public void testExtUI() {
+        new ProjectsTabOperator().tree().clearSelection();
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -473,6 +484,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     }
     
     public void testEditCVSRootDialogUI() {
+        new ProjectsTabOperator().tree().clearSelection();
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -514,6 +526,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     
     /** Test login for Pserver */
     public void testPserverLoginFailed() throws Exception{
+        new ProjectsTabOperator().tree().clearSelection();
         //invoke CVSCheckoutWizard
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         comOperator = new Operator.DefaultStringComparator(true, true);
@@ -559,6 +572,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     public void testPserverLoginSuccess() throws Exception{
         //invoke CVSCheckoutWizard
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -595,6 +609,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     
     
     public void testRepositoryBrowsing() throws Exception {
+        new ProjectsTabOperator().tree().clearSelection();
         String CVSroot = "";
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         comOperator = new Operator.DefaultStringComparator(true, true);
@@ -649,6 +664,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     }
     
     public void testAliasBrowsing() throws Exception {
+        new ProjectsTabOperator().tree().clearSelection();
         String CVSroot = "";
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         comOperator = new Operator.DefaultStringComparator(true, true);
@@ -702,6 +718,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     }
     
     public void testBranchBrowsing() throws Exception {
+        new ProjectsTabOperator().tree().clearSelection();
         String CVSroot;
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         comOperator = new Operator.DefaultStringComparator(true, true);
@@ -763,6 +780,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     }
     
     public void testTagBrowsing() throws Exception {
+        new ProjectsTabOperator().tree().clearSelection();
         String CVSroot;
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         comOperator = new Operator.DefaultStringComparator(true, true);
@@ -834,6 +852,7 @@ public class CheckOutWizardTest extends JellyTestCase {
     }
     
     public void testCheckWizardSecondStepUI() throws Exception {
+        new ProjectsTabOperator().tree().clearSelection();
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -906,7 +925,7 @@ public class CheckOutWizardTest extends JellyTestCase {
             JButtonOperator btnCancel = new JButtonOperator(crso, "Cancel");
             JButtonOperator btnHelp = new JButtonOperator(crso, "Help");
         } catch (TimeoutExpiredException ex) {
-            throw ex;
+        throw ex;
         }        
         cwo.cancel();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
@@ -916,6 +935,7 @@ public class CheckOutWizardTest extends JellyTestCase {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         TestKit.closeProject(projectName);
+        new ProjectsTabOperator().tree().clearSelection();
         String sessionCVSroot;
         OutputOperator oo = OutputOperator.invoke();
         comOperator = new Operator.DefaultStringComparator(true, true);

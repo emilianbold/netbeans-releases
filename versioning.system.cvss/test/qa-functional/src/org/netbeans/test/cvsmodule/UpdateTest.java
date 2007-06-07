@@ -10,8 +10,6 @@
 package org.netbeans.test.cvsmodule;
 
 import java.io.File;
-import javax.swing.JFileChooser;
-import javax.swing.JTextField;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
@@ -27,12 +25,9 @@ import org.netbeans.jellytools.modules.javacvs.ModuleToCheckoutStepOperator;
 import org.netbeans.jellytools.modules.javacvs.VersioningOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.Action;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbTestSuite;
@@ -1560,6 +1555,7 @@ public class UpdateTest extends JellyTestCase {
         File work = new File("/tmp/work/w" + System.currentTimeMillis());
         work.mkdir();
         OutputOperator oo = OutputOperator.invoke();
+        new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -1615,7 +1611,7 @@ public class UpdateTest extends JellyTestCase {
             if (i == nodes1.length - 1) 
                 eo.closeDiscardAll();
         }
-        
+     
     }
     
     public void openProject(File location, String project) throws Exception {

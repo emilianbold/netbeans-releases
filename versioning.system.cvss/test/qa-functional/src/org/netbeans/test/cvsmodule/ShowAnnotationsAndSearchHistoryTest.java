@@ -36,6 +36,7 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.javacvs.CVSRootStepOperator;
 import org.netbeans.jellytools.modules.javacvs.CheckoutWizardOperator;
 import org.netbeans.jellytools.modules.javacvs.ModuleToCheckoutStepOperator;
@@ -107,6 +108,7 @@ public class ShowAnnotationsAndSearchHistoryTest extends JellyTestCase {
             JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", timeout);
         }
         TestKit.closeProject(projectName);
+        new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);

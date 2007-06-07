@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.InputStream;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -33,7 +32,6 @@ import org.netbeans.jellytools.modules.javacvs.EditCVSRootOperator;
 import org.netbeans.jellytools.modules.javacvs.FolderToImportStepOperator;
 import org.netbeans.jellytools.modules.javacvs.ImportWizardOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
@@ -47,7 +45,6 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.ide.ProjectSupport;
 /**
  *
  * @author peter
@@ -118,6 +115,7 @@ public class ImportWizardTest extends JellyTestCase {
     public void testImportWizardPserverUI() {   
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
+        new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -159,6 +157,7 @@ public class ImportWizardTest extends JellyTestCase {
     public void testImportWizardLocalUI() {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
+        new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -198,6 +197,7 @@ public class ImportWizardTest extends JellyTestCase {
     public void testImportWizardForkUI() {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
+        new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -238,6 +238,7 @@ public class ImportWizardTest extends JellyTestCase {
     public void testImportWizardExtUI() {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
+        new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -281,6 +282,7 @@ public class ImportWizardTest extends JellyTestCase {
     public void testImportWizardLoginSuccess() throws Exception {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
+        new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -322,6 +324,7 @@ public class ImportWizardTest extends JellyTestCase {
     public void testImportWizardExt() {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
+        new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -367,6 +370,7 @@ public class ImportWizardTest extends JellyTestCase {
     public void testImportWizardLocal() {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
+        new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -396,6 +400,7 @@ public class ImportWizardTest extends JellyTestCase {
     public void testImportWizardFork() {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
+        new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -425,6 +430,7 @@ public class ImportWizardTest extends JellyTestCase {
     public void testImportWizardPserver() {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
+        new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -471,6 +477,7 @@ public class ImportWizardTest extends JellyTestCase {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
@@ -536,6 +543,7 @@ public class ImportWizardTest extends JellyTestCase {
         OutputOperator oo = OutputOperator.invoke();
         TestKit.unversionProject(file, projectName);
         
+        new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
