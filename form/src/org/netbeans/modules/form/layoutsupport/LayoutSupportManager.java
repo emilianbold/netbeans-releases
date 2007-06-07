@@ -299,19 +299,21 @@ public final class LayoutSupportManager implements LayoutSupportContext {
 
         if (componentCount > 0) {
             RADVisualComponent[] metacomps = metaContainer.getSubComponents();
-            if (extractConstraints)
-                constraints = new LayoutConstraints[componentCount];
-
-            for (int i=0; i < componentCount; i++) {
-                LayoutConstraints constr = layoutDelegate.getConstraints(i);
+            if (metacomps.length == componentCount) { // robustness: might be called after failed layout initialization
                 if (extractConstraints)
-                    constraints[i] = constr;
-                if (constr != null)
-                    metacomps[i].setLayoutConstraints(layoutDelegate.getClass(),
-                                                      constr);
-                code = layoutDelegate.getComponentCode(i);
-                if (code != null)
-                    CodeStructure.removeStatements(code.getStatementsIterator());
+                    constraints = new LayoutConstraints[componentCount];
+
+                for (int i=0; i < componentCount; i++) {
+                    LayoutConstraints constr = layoutDelegate.getConstraints(i);
+                    if (extractConstraints)
+                        constraints[i] = constr;
+                    if (constr != null)
+                        metacomps[i].setLayoutConstraints(layoutDelegate.getClass(),
+                                                          constr);
+                    code = layoutDelegate.getComponentCode(i);
+                    if (code != null)
+                        CodeStructure.removeStatements(code.getStatementsIterator());
+                }
             }
         }
 

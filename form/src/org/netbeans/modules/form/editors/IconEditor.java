@@ -199,7 +199,9 @@ public class IconEditor extends PropertyEditorSupport
 
     // FormAwareEditor implementation
     public void setContext(FormModel model, FormProperty prop) {
-        this.sourceFile = FormEditor.getFormDataObject(model).getPrimaryFile();
+        if (model != null) { // might be null when loaded as constraints property of JTabbedPane's tab
+            this.sourceFile = FormEditor.getFormDataObject(model).getPrimaryFile();
+        }
         if (prop != null)
             prop.setValue("canEditAsText", true); // NOI18N
         if (currentPackage == null)
