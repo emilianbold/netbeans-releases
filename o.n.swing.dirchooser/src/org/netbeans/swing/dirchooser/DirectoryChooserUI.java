@@ -225,13 +225,12 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             }
         }
         
-        if (Utilities.getOperatingSystem() >= Utilities.OS_WIN2000) { // ??? looks like bug (true for VMS FreeBSD, Win_Other)
+        if (Utilities.isWindows()) {
             if (useShellFolder) {
                 if (placesBar == null) {
                     placesBar = getPlacesBar();
                 }
                 if (placesBar != null) {
-                    placesBar.setBorder(BorderFactory.createLineBorder(new Color(127, 157, 185)));
                     fileChooser.add(placesBar, BorderLayout.BEFORE_LINE_BEGINS);
                     if (placesBar instanceof PropertyChangeListener) {
                         fileChooser.addPropertyChangeListener((PropertyChangeListener)placesBar);
@@ -521,7 +520,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         JToolBar topPanel = new JToolBar();
         topPanel.setFloatable(false);
         
-        if ( Utilities.getOperatingSystem() >= Utilities.OS_WIN2000) {
+        if (Utilities.isWindows()) {
             topPanel.putClientProperty("JToolBar.isRollover", Boolean.TRUE);
         }
         
@@ -584,7 +583,8 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     }
     
     private JComponent createTree() {
-        tree = new JTree();
+        // #106011: don't show "colors, food, sports" sample model after init :-)
+        tree = new JTree(new Object[0]);
         updateTree(fileChooser.getFileSystemView().getRoots()[0]);
         tree.setFocusable(true);
         tree.setOpaque(true);
@@ -620,7 +620,6 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     
     private void createPopup() {
         popupMenu = new JPopupMenu();
-        popupMenu.setBorder(BorderFactory.createLineBorder(new Color(127, 157, 185)));
         JMenuItem item1 = new JMenuItem(getBundle().getString("LBL_NewFolder"));
         item1.addActionListener(newFolderAction);
         
@@ -745,10 +744,6 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                     
                     if(showPopup) {
                         completionPopup = new FileCompletionPopup(fileChooser, filenameTextField, list);
-                        
-                        if(useShellFolder) {
-                            completionPopup.setBorder(BorderFactory.createLineBorder(new Color(127, 157, 185)));
-                        }
                         
                         if(showPopupCompletion && fileChooser.isShowing()) {
                             java.awt.Point los = filenameTextField.getLocation();
@@ -1265,7 +1260,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         
         // fix bug #96957, should use DirectoryChooserFileView
         // only on windows
-        if (Utilities.getOperatingSystem() >= Utilities.OS_WIN2000) {
+        if (Utilities.isWindows()) {
             if (useShellFolder) {
                 fileView = new DirectoryChooserFileView();
             }
