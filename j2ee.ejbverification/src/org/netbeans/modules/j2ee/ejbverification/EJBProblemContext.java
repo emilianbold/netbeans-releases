@@ -34,7 +34,13 @@ public class EJBProblemContext {
     private EjbJarMetadata metadata;
     private CompilationInfo complilationInfo;
 
-    public EJBProblemContext(FileObject fileObject, TypeElement clazz, Ejb ejb, EjbJarMetadata metadata) {
+    public EJBProblemContext(
+            CompilationInfo complilationInfo, 
+            FileObject fileObject,
+            TypeElement clazz,
+            Ejb ejb,
+            EjbJarMetadata metadata) {
+        this.complilationInfo = complilationInfo;
         this.fileObject = fileObject;
         this.clazz = clazz;
         this.ejb = ejb;

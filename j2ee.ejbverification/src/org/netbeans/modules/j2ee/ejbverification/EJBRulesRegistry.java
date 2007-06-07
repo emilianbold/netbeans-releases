@@ -32,7 +32,7 @@ public class EJBRulesRegistry {
     private static Collection<? extends EJBVerificationRule> rules = Arrays.asList(
             new HasNoArgContructor());
     
-    private static Collection<ErrorDescription> check(EJBProblemContext ctx){
+    public static Collection<ErrorDescription> check(EJBProblemContext ctx){
         Collection<ErrorDescription> problemsFound = new ArrayList<ErrorDescription>();
         
         for (EJBVerificationRule rule : rules){

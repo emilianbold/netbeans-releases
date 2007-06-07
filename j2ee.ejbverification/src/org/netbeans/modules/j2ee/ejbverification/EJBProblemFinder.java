@@ -87,8 +87,11 @@ public abstract class EJBProblemFinder {
                           
                             Ejb ejb = metadata.findByEjbClass(javaClass.getQualifiedName().toString());
                             
+                            EJBProblemContext ctx = new EJBProblemContext(
+                                    info, file, javaClass, ejb, metadata);
+                            
                             if (ejb != null){
-                                // LOGIC HERE
+                                problemsFound.addAll(EJBRulesRegistry.check(ctx));
                             }
                             
                             if (LOG.isLoggable(Level.FINE)){
