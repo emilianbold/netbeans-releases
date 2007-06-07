@@ -43,6 +43,10 @@ public class InstanceNumberCollector {
         if (type == null) {
             return 0;
         }
+        long id = var.getUniqueID();
+        if (id == 0L) {
+            return 0;
+        }
         long[] instancesID;
         synchronized (this) {
             instancesID = classes.get(type);
@@ -56,7 +60,6 @@ public class InstanceNumberCollector {
                 classes.put(type, instancesID);
             }
         }
-        long id = var.getUniqueID();
         int i;
         for (i = 0; i < instancesID.length; i++) {
             if (id == instancesID[i]) {
