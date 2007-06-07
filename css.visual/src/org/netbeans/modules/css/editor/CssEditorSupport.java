@@ -85,6 +85,10 @@ public class CssEditorSupport extends DataEditorSupport implements OpenCookie, E
                             throw new IllegalStateException("CssRuleContent event fired, but selected rule is null!");
                         }
                         
+                        //remember the selected rule since it synchronously
+                        //turns to null after each document modification
+                        CssRule myRule = selected; 
+                        
                         try {
                             if(oldRule != null && newRule == null) {
                                 //remove the old rule line - maybe we should just cut the exact part?!?!
@@ -92,7 +96,7 @@ public class CssEditorSupport extends DataEditorSupport implements OpenCookie, E
                                 int lineStart = Utilities.getRowStart(doc, offset);
                                 
                                 //do not remove the rule opening bracket if we are on it's line
-                                int ruleOpenBracketOffset = selected.getRuleOpenBracketOffset();
+                                int ruleOpenBracketOffset = myRule.getRuleOpenBracketOffset();
                                 if(lineStart <= ruleOpenBracketOffset) {
                                     lineStart = ruleOpenBracketOffset + 1;
                                 }
@@ -100,7 +104,7 @@ public class CssEditorSupport extends DataEditorSupport implements OpenCookie, E
                                 int lineEnd = Utilities.getRowEnd(doc, offset) + LINE_SEPARATOR.length();
                                 
                                 //do not remove the rule closing bracket if we are on it's line
-                                int ruleCloseBracketOffset = selected.getRuleCloseBracketOffset();
+                                int ruleCloseBracketOffset = myRule.getRuleCloseBracketOffset();
                                 if(lineEnd > ruleCloseBracketOffset) {
                                     lineEnd = ruleCloseBracketOffset;
                                 }
@@ -109,18 +113,28 @@ public class CssEditorSupport extends DataEditorSupport implements OpenCookie, E
                                 
                             } else if(oldRule == null && newRule != null) {
                                 //add the new rule at the end of the rule block:
-                                List<CssRuleItem> items = selected.ruleContent().ruleItems();
+                                List<CssRuleItem> items = myRule.ruleContent().ruleItems();
                                 int offset = -1;
+                                int ruleCloseBracketOffset = myRule.getRuleCloseBracketOffset();
+                                
                                 boolean increaseIndent = false;
                                 if(items.isEmpty()) {
                                     //no item so far, lets generate the position from the rule
                                     //opening bracket
-                                    offset = selected.getRuleOpenBracketOffset();
+                                    offset = myRule.getRuleOpenBracketOffset();
                                     increaseIndent = true;
                                 } else {
                                     //find latest rule and add the item behind
                                     CssRuleItem last = items.get(items.size() - 1);
                                     offset = last.key().offset();
+                                    
+                                    //check if the last item has semicolon
+                                    //add it if there is no semicolon
+                                    if(last.semicolonOffset() == -1) {
+                                        doc.insertString(last.value().offset() + last.value().name().length(), ";", null); //NOI18N
+                                        ruleCloseBracketOffset++; //we shifted the brace
+                                    }
+                                    
                                 }
                                 
                                 int line = Utilities.getLineOffset(doc, offset);
@@ -128,7 +142,6 @@ public class CssEditorSupport extends DataEditorSupport implements OpenCookie, E
                                 
                                 //check the case where the rule closing bracket is on the same line as the last item
                                 // h1 { color: red; }
-                                int ruleCloseBracketOffset = selected.getRuleCloseBracketOffset();
                                 if(lineEnd > ruleCloseBracketOffset) {
                                     lineEnd = ruleCloseBracketOffset;
                                 }

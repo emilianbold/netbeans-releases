@@ -30,9 +30,18 @@ public final class CssRuleItem {
 
     private Item key, value;
     
+    //offset of colon key-value separator and ending semicolon of the item
+    private int colon_offset, semicolon_offset;
+    
     public CssRuleItem(String key, int keyOffset, String val, int valOffset) {
+        this(key, keyOffset, val, valOffset, -1, -1);
+    }
+    
+    CssRuleItem(String key, int keyOffset, String val, int valOffset, int colon_offset, int semicolon_offset) {
         this.key = new Item(key, keyOffset);
         this.value = new Item(val, valOffset);
+        this.colon_offset = colon_offset;
+        this.semicolon_offset = semicolon_offset;
     }
     
     /** @return representation of the key of the rule item. */
@@ -47,6 +56,18 @@ public final class CssRuleItem {
     
     public String toString() {
         return "CssRuleItem[" + key + "; " + value + "]";
+    }
+    
+    /** Gets offset of the key - value separator in the css rule item.
+     */
+    public int colonOffset() {
+        return colon_offset;
+    }
+    
+    /** Gets offset of the ending semicolon in rule item or -1 if there is no ending semicolon.
+     */
+    public int semicolonOffset() {
+        return semicolon_offset;
     }
     
     /** A representation of the key or value of the rule item. 

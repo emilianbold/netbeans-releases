@@ -192,13 +192,38 @@ public final class CssModel {
                         
                         ASTNode declarations = body.getNode("declarations"); //NOI18N
                         if(declarations != null) {
-                            for(ASTItem item : declarations.getChildren()) {
+                            
+                            List<ASTItem> declarationsChildren = declarations.getChildren();
+                            for(int i = 0; i < declarationsChildren.size(); i++) {
+                                ASTItem item = declarationsChildren.get(i);
                                 if(item instanceof ASTNode) {
                                     ASTNode node = (ASTNode)item;
                                     if(node.getNT().equals("declaration")) { //NOI18N
+                                        //find ':' token
+                                        int colonOffset = -1;
+                                        ASTToken colon = node.getTokenType("css_operator");
+                                        if(colon != null && colon.getIdentifier().equals(":")) {
+                                            colonOffset = colon.getOffset();
+                                        }
+                                 
+                                        int semicolonOffset = -1;
+                                        //try to find ending semicolon
+                                        if(i < (declarationsChildren.size() - 1)) {
+                                            //not last item
+                                            ASTItem nextItem = declarationsChildren.get(i + 1);
+                                            if(nextItem instanceof ASTToken) {
+                                                ASTToken token = (ASTToken)nextItem;
+                                                if(token.getType().equals("css_operator")
+                                                        && token.getIdentifier().equals(";")) {
+                                                    semicolonOffset = token.getOffset();
+                                                }
+                                            }
+                                                    
+                                        }
+                                        
                                         ASTNode key = node.getNode("key"); //NOI18N
                                         ASTNode value = node.getNode("expr"); //NOI18N
-                                        CssRuleItem ruleItem = new CssRuleItem(key.getAsText().trim(), key.getOffset(), value.getAsText().trim(), value.getOffset());
+                                        CssRuleItem ruleItem = new CssRuleItem(key.getAsText().trim(), key.getOffset(), value.getAsText().trim(), value.getOffset(), colonOffset, semicolonOffset);
                                         items.add(ruleItem);
                                     }
                                 }
