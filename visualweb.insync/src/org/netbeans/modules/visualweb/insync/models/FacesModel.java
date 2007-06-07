@@ -339,6 +339,8 @@ public class FacesModel extends Model {
     
     private OperationListener operationListener = new ModelOperationListener();
     
+    private String beanName;
+    
 //    private final FacesDnDSupport dndSupport = new FacesDnDSupport(this);
     
 
@@ -526,8 +528,12 @@ public class FacesModel extends Model {
      * @return The logical bean name for this model.
      */
     public String getBeanName() {
-        return getBeanNameForJava(javaFile);
+        if (beanName == null) {
+            beanName = getBeanNameForJava(javaFile);
+        }
+        return beanName;
     }
+                    
 
     /**
      * Get the beans Unit for this model.
@@ -874,6 +880,8 @@ public class FacesModel extends Model {
             if (markupUnit != null){
                 markupUnit.setSourceDirty();
             }
+            //bean name is not valid anymore
+            beanName = null;
             
             // We could call syncAll here, since via setSourceDirty() we have added
             // only this model to ModelSet.modlesToSync. So sync happens only to

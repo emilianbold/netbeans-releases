@@ -628,13 +628,26 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
         return new DesignContext[0];
     }
     
-    public DesignContext findDesignContext(String variableName) {
-        return findDesignContext(variableName, false);
+    public DesignContext findDesignContext(String beanName) {
+        ManagedBean mb = getFacesConfigModel().getManagedBean(beanName);
+        if(mb != null) {
+            return findDesignContext(mb, false);
+        }
+        return null;
     }
     
-    public DesignContext findDesignContext(String variableName, boolean ignorePage) {
-        ManagedBean mb = getFacesConfigModel().getManagedBean(variableName);
-        if(mb != null) {
+    public DesignContext findDesignContext(ManagedBean mb, boolean ignorePage) {
+        FacesModel facesModel = null;
+        //getFacesModel(String beanName) relies on java file, in case of
+        //page bean, java file may not be set if the model is not synced yet
+        //Therefore, try to get the model by bean name, if it fails then the
+        //managed bean should be a page and it is handled next
+        facesModel = getFacesModel(mb.getManagedBeanName());
+        if(facesModel != null && facesModel.isPageBean() && ignorePage) {
+            return null;
+        }
+        
+        if(!ignorePage && facesModel == null) {
             String javaFileName = mb.getManagedBeanClass().replace('.', '/') + ".java";  //NOI18N;
             Sources sources = ProjectUtils.getSources(getProject());
             SourceGroup groups[] = sources.getSourceGroups("java");
@@ -645,27 +658,20 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
                 javaFile = sourceFolder.getFileObject(javaFileName);
                 if (javaFile != null) {
                     //Check if it is a page bean if it is to be ignored
-                    if(ignorePage && JsfProjectUtils.getJspForJava(javaFile) != null) {
-                        return null;
-                    }
-                    break;
-                }
-            }
-            
-            if(javaFile != null) {
-                Model model = getModel(javaFile);
-                if(model == null) {
-                    model = getModel(JsfProjectUtils.getJspForJava(javaFile));
-                }
-                if(model instanceof FacesModel) {
-                    FacesModel facesModel = (FacesModel)model;
-                    facesModel.sync();
-                    if(facesModel.isValid() && !facesModel.isBusted()) {
-                        return facesModel.getLiveUnit();
+                    FileObject jspFile = JsfProjectUtils.getJspForJava(javaFile);
+                    if( jspFile != null) {
+                        facesModel = getFacesModel(jspFile);
+                        break;
                     }
                 }
             }
-            
+        }
+        
+        if(facesModel != null) {
+            facesModel.sync();
+            if(facesModel.isValid() && !facesModel.isBusted()) {
+                return facesModel.getLiveUnit();
+            }
         }
         return null;
     }
@@ -681,7 +687,7 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
                 if(mbs[i].getManagedBeanScope().equals(ManagedBean.Scope.REQUEST)) {
                     ignorePage = true;
                 }
-                DesignContext dc = findDesignContext(mbs[i].getManagedBeanName(), ignorePage);
+                DesignContext dc = findDesignContext(mbs[i], ignorePage);
                 if(dc != null)
                     dcs.add(dc);
             }
