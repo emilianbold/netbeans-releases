@@ -27,8 +27,6 @@ import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.EventListener;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 
 import org.openide.*;
 import org.openide.cookies.EditorCookie;
@@ -41,7 +39,6 @@ import org.openide.nodes.CookieSet;
 
 import org.netbeans.modules.web.core.QueryStringCookie;
 import org.netbeans.modules.web.core.WebExecSupport;
-import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -173,6 +170,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         //            useEditorForEncoding = false;
         //            retrievedEncoding = tlps.getCachedOpenInfo(doReparse, useEditor).getEncoding();
         //        }
+        System.out.println("Retrieved encoding = " + retrievedEncoding);
         retrievedEncoding = retrievedEncoding != null ? retrievedEncoding : DEFAULT_ENCODING;
         return retrievedEncoding ;
     }
