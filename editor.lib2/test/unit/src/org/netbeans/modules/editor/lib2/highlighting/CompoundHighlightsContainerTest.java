@@ -26,10 +26,7 @@
 
 package org.netbeans.modules.editor.lib2.highlighting;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.ConcurrentModificationException;
 import java.util.Enumeration;
 import java.util.Random;
 import javax.swing.text.AttributeSet;
@@ -105,56 +102,28 @@ public class CompoundHighlightsContainerTest extends NbTestCase {
     }
 
     public void testConcurrentModification() throws Exception {
-        checkConcurrentModificationOnMethod("moveNext");
-        checkConcurrentModificationOnMethod("getStartOffset");
-        checkConcurrentModificationOnMethod("getEndOffset");
-        checkConcurrentModificationOnMethod("getAttributes");
-    }
-
-    private void checkConcurrentModificationOnMethod(String methodName) throws Exception {
         PlainDocument doc = new PlainDocument();
         PositionsBag bag = createRandomBag(doc, "layer");
         HighlightsContainer [] layers = new HighlightsContainer [] { bag };
         
-        {
-            CompoundHighlightsContainer hb = new CompoundHighlightsContainer(doc, layers);
-            HighlightsSequence hs = hb.getHighlights(0, Integer.MAX_VALUE);
+        CompoundHighlightsContainer hb = new CompoundHighlightsContainer(doc, layers);
+        HighlightsSequence hs = hb.getHighlights(0, Integer.MAX_VALUE);
+        
+        assertTrue("No highlights", hs.moveNext());
+        int s = hs.getStartOffset();
+        int e = hs.getEndOffset();
+        AttributeSet a = hs.getAttributes();
 
-            // Change the layers
-            hb.setLayers(doc, layers);
-
-            Throwable exc = null;
-            try {
-                Method m = hs.getClass().getMethod(methodName);
-                m.invoke(hs);
-            } catch (InvocationTargetException e) {
-                exc = e.getCause();
-            }
-
-            assertTrue("ConcurrentModificationException has not been thrown from " + 
-                methodName + "() after setLayers", exc instanceof ConcurrentModificationException);
-        }
-        {
-            CompoundHighlightsContainer hb = new CompoundHighlightsContainer(doc, layers);
-            HighlightsSequence hs = hb.getHighlights(0, Integer.MAX_VALUE);
-
-            // Modify the bag
-            bag.addHighlight(new SimplePosition(20), new SimplePosition(30), SimpleAttributeSet.EMPTY);
-
-            Throwable exc = null;
-            try {
-                Method m = hs.getClass().getMethod(methodName);
-                m.invoke(hs);
-            } catch (InvocationTargetException e) {
-                exc = e.getCause();
-            }
-            
-            assertTrue("ConcurrentModificationException has not been thrown from " + 
-                methodName + "() after changing the original bag", 
-                exc instanceof ConcurrentModificationException);
-        }
+        // Change the layers
+        hb.setLayers(doc, layers);
+        
+        assertEquals("Different startOffset", s, hs.getStartOffset());
+        assertEquals("Different endOffset", e, hs.getEndOffset());
+        assertEquals("Different attributes", a, hs.getAttributes());
+        
+        assertFalse("There should be no further highlighs after co-modification", hs.moveNext());
     }
-    
+
     public void testRandomMerging() {
         String [] layerNames = new String [] {
             "layer-1",
@@ -362,7 +331,7 @@ public class CompoundHighlightsContainerTest extends NbTestCase {
         int endOffset = 100;
 
         int maxGapSize = Math.max((int) (endOffset - startOffset) / 10, 1);
-        int maxHighlightSize = Math.max((int) (endOffset - startOffset) / 2, 1);
+        int maxHighlightSize = Math.max((int) (endOffset - startOffset) / 3, 1);
 
         for (int pointer = startOffset + rand.nextInt(maxGapSize); pointer <= endOffset; ) {
             int highlightSize = rand.nextInt(maxHighlightSize);

@@ -20,7 +20,6 @@
 package org.netbeans.modules.editor.lib2.highlighting;
 
 import java.lang.ref.WeakReference;
-import java.util.ConcurrentModificationException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
@@ -317,6 +316,10 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
         private HighlightsSequence seq;
         private long version;
         
+        private int startOffset = -1;
+        private int endOffset = -1;
+        private AttributeSet attibutes = null;
+        
         public Seq(long version, HighlightsSequence seq) {
             this.version = version;
             this.seq = seq;
@@ -324,48 +327,44 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
         
         public boolean moveNext() {
             synchronized (CompoundHighlightsContainer.this.LOCK) {
-                checkVersion();
+                if (checkVersion()) {
+                    if (seq.moveNext()) {
+                        startOffset = seq.getStartOffset();
+                        endOffset = seq.getEndOffset();
+                        attibutes = seq.getAttributes();
+                        return true;
+                    }
+                }
                 
-                return seq.moveNext();
+                return false;
             }
         }
 
         public int getStartOffset() {
             synchronized (CompoundHighlightsContainer.this.LOCK) {
-                checkVersion();
-                
-                return seq.getStartOffset();
+                assert startOffset != -1 : "Sequence not initialized, call moveNext() first."; //NOI18N
+                return startOffset;
             }
         }
 
         public int getEndOffset() {
             synchronized (CompoundHighlightsContainer.this.LOCK) {
-                checkVersion();
-                
-                return seq.getEndOffset();
+                assert endOffset != -1 : "Sequence not initialized, call moveNext() first."; //NOI18N
+                return endOffset;
             }
         }
 
         public AttributeSet getAttributes() {
             synchronized (CompoundHighlightsContainer.this.LOCK) {
-                checkVersion();
-                
-                return seq.getAttributes();
+                assert attibutes != null : "Sequence not initialized, call moveNext() first."; //NOI18N
+                return attibutes;
             }
         }
 
-        private void checkVersion() {
-            if (this.version != CompoundHighlightsContainer.this.version) {
-                ConcurrentModificationException cme = new ConcurrentModificationException(
-                    "The HighlighsSequence version (" + this.version + //NOI18N
-                    ") does not match the current version (" + CompoundHighlightsContainer.this.version + //NOI18N
-                    ") of its highlights container." //NOI18N
-                );
-                if (lastUpdater != null) {
-                    cme.initCause(lastUpdater);
-                }
-                throw cme;
-            }
+        // There can be concurrent modifications from different threads operating under
+        // document's read lock. See IZ#106069.
+        private boolean checkVersion() {
+            return this.version == CompoundHighlightsContainer.this.version;
         }
     } // End of Seq class
 }
