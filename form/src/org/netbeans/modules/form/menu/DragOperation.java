@@ -25,6 +25,7 @@ import java.awt.Point;
 import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
 import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.form.HandleLayer;
@@ -135,12 +136,25 @@ class DragOperation {
             // move the drag component
             dragComponent.setLocation(pt);
             
-            // open any relevant top-level menus
+            
+            // look at the rad component under the cursor before checking the popups
             RADComponent rad = menuEditLayer.formDesigner.getHandleLayer().getMetaComponentAt(pt, HandleLayer.COMP_DEEPEST);
+            
+            // if dragging a JMenu over an open spot in the menu bar
+            if(rad != null && JMenuBar.class.isAssignableFrom(rad.getBeanClass()) && JMenu.class.isAssignableFrom(dragComponent.getClass())) {
+                p("over the menu bar");
+                showMenuBarDropTarget(rad);
+                targetComponent = (JComponent) menuEditLayer.formDesigner.getComponent(rad);
+            }
+            
+            // open any relevant top-level menus
             if(rad != null && JMenu.class.isAssignableFrom(rad.getBeanClass())) {
                 //p("over a menu");
                 targetComponent = (JComponent) menuEditLayer.formDesigner.getComponent(rad);
                 menuEditLayer.openMenu(rad, targetComponent);
+                if(JMenu.class.isAssignableFrom(dragComponent.getClass())) {
+                    showMenuBarDropTarget(rad);
+                }
                 return;
             }
             
@@ -175,6 +189,11 @@ class DragOperation {
         }
     }
     
+    private void showMenuBarDropTarget(RADComponent comp) {
+        menuEditLayer.setDrawMenuBarNewComponentTarget(comp);
+        menuEditLayer.repaint();
+    }
+    
     private void styleMenu(JMenu menu, Point point) {
         menu.setBorderPainted(true);
         // if on the right side: 
@@ -194,7 +213,9 @@ class DragOperation {
         if(dragComponent == null) return;
         p("ending an operation at: " + pt);
         menuEditLayer.layers.remove(dragComponent);
+        menuEditLayer.setDrawMenuBarNewComponentTarget(null);
         
+        p("op = " + op);
         switch (op) {
         case PICK_AND_PLOP_FROM_PALETTE: completePickAndPlopFromPalette(pt); break;
         case INTER_MENU_DRAG: completeInterMenuDrag(pt); break ;
@@ -214,9 +235,11 @@ class DragOperation {
         }
     }
     
+    // only looks at JMenu and JMenubar RADComponents as well as anything in the popups
     JComponent getDeepestComponent(Point pt) {
         RADComponent rad = menuEditLayer.formDesigner.getHandleLayer().getMetaComponentAt(pt, HandleLayer.COMP_DEEPEST);
-        if(rad != null && JMenu.class.isAssignableFrom(rad.getBeanClass())) {
+        if(rad != null && (JMenu.class.isAssignableFrom(rad.getBeanClass()) ||
+                JMenuBar.class.isAssignableFrom(rad.getBeanClass()))) {
            return (JComponent) menuEditLayer.formDesigner.getComponent(rad);
         } else {
             return (JComponent) getDeepestComponentInPopups(pt);
@@ -224,6 +247,7 @@ class DragOperation {
     }
     
     private void completeInterMenuDrag(Point pt) {
+        p("complete inter menu drag: target comp = " + targetComponent);
         if(targetComponent == null) return;
         targetComponent.setBorder(MenuEditLayer.UNSELECTED_BORDER);
         
@@ -260,6 +284,7 @@ class DragOperation {
     }
     
     private void completePickAndPlopFromPalette(Point pt) {
+        p("complete pick and plop from palette: target comp = " + targetComponent);
         PaletteItem paletteItem = PaletteUtils.getSelectedItem();
         
         if(targetComponent == null) return;
@@ -314,16 +339,23 @@ class DragOperation {
                 menuEditLayer.addRadComponentToBefore(newRad, targetComponent);
             }
         } else {
-            /*
-            // add the new component to the target's containing menu
-            JComponent menuParent = menuEditLayer.getMenuParent(targetComponent);
-            RADVisualContainer targetContainer = (RADVisualContainer) menuEditLayer.formDesigner.getMetaComponent(menuParent);
-            boolean added = creator.addPrecreatedComponent(targetContainer, constraints);
-            */
-            p("doing the new kind of add");
-            RADVisualComponent newRad = creator.getPrecreatedMetaComponent();
-            p("new rad = " + newRad);
-            menuEditLayer.addRadComponentToBefore(newRad, targetComponent);
+            if(targetComponent instanceof JMenuBar) {
+                p("======= doing a new comp directly to the jmenubar");
+                RADVisualContainer targetContainer = (RADVisualContainer) menuEditLayer.formDesigner.getMetaComponent(targetComponent);
+                p("target container = " + targetContainer);
+                boolean added = creator.addPrecreatedComponent(targetContainer, constraints);
+            } else {
+                /*
+                // add the new component to the target's containing menu
+                JComponent menuParent = menuEditLayer.getMenuParent(targetComponent);
+                RADVisualContainer targetContainer = (RADVisualContainer) menuEditLayer.formDesigner.getMetaComponent(menuParent);
+                boolean added = creator.addPrecreatedComponent(targetContainer, constraints);
+                */
+                p("doing the new kind of add");
+                RADVisualComponent newRad = creator.getPrecreatedMetaComponent();
+                p("new rad = " + newRad);
+                menuEditLayer.addRadComponentToBefore(newRad, targetComponent);
+            }
         }
         
         menuEditLayer.formDesigner.toggleSelectionMode();
