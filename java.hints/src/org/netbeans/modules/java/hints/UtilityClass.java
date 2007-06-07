@@ -99,6 +99,10 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
             }
             
             if (clazz) {
+                if (e.getKind() == ElementKind.ENUM) {
+                    return null;
+                }
+                
                 for (Element m : e.getEnclosedElements()) {
                     if (m.accept(this, compilationInfo)) {
                         return null;

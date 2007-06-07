@@ -88,6 +88,14 @@ public class UtilityClassTest extends TreeRuleTestBase {
         
         performAnalysisTest("test/Test.java", before + after, before.length());
     }
+    public void testDisabledOnEnums() throws Exception {
+        String before = "package test; public enum Te";
+        String after = "st {" +
+            " ONE, TWO;" +
+            "}";
+        
+        performAnalysisTest("test/Test.java", before + after, before.length());
+    }
 
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
         SourceUtilsTestUtil.setSourceLevel(info.getFileObject(), sourceLevel);
