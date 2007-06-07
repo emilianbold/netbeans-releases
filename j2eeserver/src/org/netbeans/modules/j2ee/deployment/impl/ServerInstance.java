@@ -121,7 +121,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
     private final HashMap/*<Target, ServerDebugInfo>*/ debugInfo = new HashMap();
     
     // last known server state, the initial value is stopped
-    private int serverState = STATE_STOPPED;
+    private volatile int serverState = STATE_STOPPED;
     // server state listeners
     private List stateListeners = new ArrayList();
     
