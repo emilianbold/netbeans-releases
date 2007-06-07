@@ -30,6 +30,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.ejbverification.EJBProblemContext;
 import org.netbeans.modules.j2ee.ejbverification.EJBVerificationRule;
 import org.netbeans.modules.j2ee.ejbverification.HintsUtils;
+import org.netbeans.modules.j2ee.ejbverification.JavaUtils;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
@@ -43,20 +44,16 @@ public class SBSuperClassNotSB extends EJBVerificationRule{
     public Collection<ErrorDescription> check(EJBProblemContext ctx) {
         if (ctx.getEjb() instanceof Session){
             TypeMirror parentType = ctx.getClazz().getSuperclass();
+            String parentClassName = JavaUtils.extractClassNameFromType(parentType);
             
-            if (parentType instanceof DeclaredType){
-                Element parent = ((DeclaredType)parentType).asElement();
+            if (parentClassName != null){
+                Ejb parentEJB = ctx.getMetadata().findByEjbClass(parentClassName);
                 
-                if (parent.getKind() == ElementKind.CLASS){
-                    String parentClassName = ((TypeElement)parent).getQualifiedName().toString();
-                    Ejb parentEJB = ctx.getMetadata().findByEjbClass(parentClassName);
+                if (parentEJB instanceof Session){
+                    ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
+                            NbBundle.getMessage(SBSuperClassNotSB.class, "MSG_SBSuperClassNotSB"));
                     
-                    if (parentEJB instanceof Session){
-                        ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
-                                NbBundle.getMessage(SBSuperClassNotSB.class, "MSG_SBSuperClassNotSB"));
-                        
-                        return Collections.singletonList(err);
-                    }
+                    return Collections.singletonList(err);
                 }
             }
         }

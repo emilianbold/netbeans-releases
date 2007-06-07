@@ -21,6 +21,7 @@ package org.netbeans.modules.j2ee.ejbverification;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import org.netbeans.modules.j2ee.ejbverification.rules.BeanImplementsBI;
 import org.netbeans.modules.j2ee.ejbverification.rules.HasNoArgContructor;
 import org.netbeans.modules.j2ee.ejbverification.rules.SBSuperClassNotSB;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -32,7 +33,8 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 public class EJBRulesRegistry {
     private static Collection<? extends EJBVerificationRule> rules = Arrays.asList(
             new HasNoArgContructor(),
-            new SBSuperClassNotSB());
+            new SBSuperClassNotSB(),
+            new BeanImplementsBI());
     
     public static Collection<ErrorDescription> check(EJBProblemContext ctx){
         Collection<ErrorDescription> problemsFound = new ArrayList<ErrorDescription>();
