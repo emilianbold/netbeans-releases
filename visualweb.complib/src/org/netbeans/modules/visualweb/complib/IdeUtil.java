@@ -49,8 +49,7 @@ import org.openide.modules.InstalledFileLocator;
  * @author Edwin Goei
  */
 public class IdeUtil {
-    private static final Logger logger = Logger.getLogger(IdeUtil.class
-            .getPackage().getName());
+    private static final Logger logger = Logger.getLogger(IdeUtil.class.getPackage().getName());
 
     private static File raveClusterDir;
 
@@ -88,8 +87,7 @@ public class IdeUtil {
      * @return currently active project or null, if none.
      */
     public static Project getActiveProject() {
-        FileObject fileObject = DesignerServiceHack.getDefault()
-                .getCurrentFile();
+        FileObject fileObject = DesignerServiceHack.getDefault().getCurrentFile();
         if (fileObject == null) {
             return null;
         }
@@ -97,8 +95,7 @@ public class IdeUtil {
     }
 
     /**
-     * Returns a NB Project for a project directory or else null if not a
-     * project.
+     * Returns a NB Project for a project directory or else null if not a project.
      * 
      * @param projectDir
      * @return NB Project object or null if not a project
@@ -139,8 +136,7 @@ public class IdeUtil {
     }
 
     /**
-     * Unzip a zip or jar file into a dest directory. Derived from jar command
-     * in JDK.
+     * Unzip a zip or jar file into a dest directory. Derived from jar command in JDK.
      * 
      * @param zipFile
      *            a zip or jar file
@@ -153,19 +149,16 @@ public class IdeUtil {
                 new FileInputStream(zipFile)));
         ZipEntry e;
         while ((e = zis.getNextEntry()) != null) {
-            File f = new File(dest, e.getName()
-                    .replace('/', File.separatorChar));
+            File f = new File(dest, e.getName().replace('/', File.separatorChar));
             if (e.isDirectory()) {
                 if (!f.exists() && !f.mkdirs() || !f.isDirectory()) {
-                    throw new IOException("Unable to create dir: "
-                            + f.getPath());
+                    throw new IOException("Unable to create dir: " + f.getPath());
                 }
             } else {
                 if (f.getParent() != null) {
                     File d = new File(f.getParent());
                     if (!d.exists() && !d.mkdirs() || !d.isDirectory()) {
-                        throw new IOException("Unable to create dir: "
-                                + d.getPath());
+                        throw new IOException("Unable to create dir: " + d.getPath());
                     }
                 }
                 OutputStream os = new FileOutputStream(f);
@@ -190,10 +183,10 @@ public class IdeUtil {
      *            properties to set
      * @throws IOException
      */
-    public static void runAntTask(File antScript, String target,
-        Properties props) throws IOException {
-        ExecutorTask executorTask = ActionUtils.runTarget(FileUtil
-                .toFileObject(antScript), new String[] { target }, props);
+    public static void runAntTask(File antScript, String target, Properties props)
+            throws IOException {
+        ExecutorTask executorTask = ActionUtils.runTarget(FileUtil.toFileObject(antScript),
+                new String[] { target }, props);
 
         int result = executorTask.result();
         if (result != 0) {
@@ -216,8 +209,7 @@ public class IdeUtil {
     }
 
     /**
-     * Find unique file name within a directory which can either be a plain file
-     * or a directory.
+     * Find unique file name within a directory which can either be a plain file or a directory.
      * 
      * @param dir
      *            eg. an absoluteLibDir
@@ -227,8 +219,7 @@ public class IdeUtil {
      *            Can be empty string to mean no suffix. eg. ".jar", ""
      * @return
      */
-    public static File findUniqueFile(File dir, String baseFileName,
-        String suffix) {
+    public static File findUniqueFile(File dir, String baseFileName, String suffix) {
         assert dir.isDirectory();
 
         String testName = baseFileName + suffix;
@@ -274,8 +265,7 @@ public class IdeUtil {
         // Isn't there a better way to find the top level rave directory??
         if (raveClusterDir == null) {
             File file = InstalledFileLocator.getDefault().locate(
-                    "modules/org-netbeans-modules-visualweb-complib.jar", null,
-                    false); // NOI18N
+                    "modules/org-netbeans-modules-visualweb-complib.jar", null, false); // NOI18N
             if (file != null) {
                 raveClusterDir = file.getParentFile().getParentFile();
             }
@@ -283,8 +273,7 @@ public class IdeUtil {
         return raveClusterDir;
     }
 
-    public static void copyFileRecursive(File source, File dest)
-            throws IOException {
+    public static void copyFileRecursive(File source, File dest) throws IOException {
         File newItem = null;
         if (dest.isDirectory()) {
             newItem = new File(dest, source.getName());
@@ -305,9 +294,8 @@ public class IdeUtil {
     }
 
     /**
-     * Deletes all files and subdirectories under dir. Returns true if all
-     * deletions were successful. If a deletion fails, the method stops
-     * attempting to delete and returns false.
+     * Deletes all files and subdirectories under dir. Returns true if all deletions were
+     * successful. If a deletion fails, the method stops attempting to delete and returns false.
      * 
      * @param dir
      * @return
@@ -328,10 +316,10 @@ public class IdeUtil {
     }
 
     /**
-     * Possibly make a copy of a file to workaround a problem on Windows where a
-     * jar file can be locked and not allow the user to remove it. The tradeoff
-     * is that the file will be copied which may take time for large files. A
-     * System property can be set to override the default behavior.
+     * Possibly make a copy of a file to workaround a problem on Windows where a jar file can be
+     * locked and not allow the user to remove it. The tradeoff is that the file will be copied
+     * which may take time for large files. A System property can be set to override the default
+     * behavior.
      * 
      * @param origFile
      *            original file eg. jar or complib file
@@ -405,8 +393,8 @@ public class IdeUtil {
     }
 
     /**
-     * Return basename of a string similar to unix basename command. Uses
-     * platform file separator char. Basename of root dir is itself.
+     * Return basename of a string similar to unix basename command. Uses platform file separator
+     * char. Basename of root dir is itself.
      * 
      * @param name
      * @return
@@ -438,21 +426,22 @@ public class IdeUtil {
     }
 
     /**
-     * Get the directory where state of this module is kept. This will be in the
-     * userdir and also part of the NetBeans filesystem so that it will make it
-     * easier to migrate to future IDE versions.
+     * Get the directory where state of this module is kept. This will be in the userdir and also
+     * part of the NetBeans filesystem so that it will make it easier to migrate to future IDE
+     * versions.
      * 
      * @return
      * @throws IOException
      */
     public static File getComplibStateDir() {
         if (complibStateDir == null) {
-            File root = FileUtil.toFile(Repository.getDefault()
-                    .getDefaultFileSystem().getRoot());
-            complibStateDir = new File(root, getCodeNameBase());
+            File root = FileUtil.toFile(Repository.getDefault().getDefaultFileSystem().getRoot());
+            // Follow NetBeans convention of replacing dots with dashes
+            String stateDirName = getCodeNameBase().replace('.', '-');
+            complibStateDir = new File(root, stateDirName);
             if (!complibStateDir.exists() && !complibStateDir.mkdirs()) {
-                IllegalStateException ex = new IllegalStateException(
-                        "Unable to create dir: " + complibStateDir);
+                IllegalStateException ex = new IllegalStateException("Unable to create dir: "
+                        + complibStateDir);
                 logError(ex);
                 throw ex;
             }
