@@ -78,6 +78,11 @@ packageDefinition
              annotations 
 
              identifier 
+
+             (s:SEMI 
+                   { mController.tokenFound(#s, "Statement Terminator"); }
+             )?
+
           )
           
           {      
@@ -87,7 +92,7 @@ packageDefinition
 
 
 importDefinition
-   : #( i:IMPORT {mController.stateBegin("Dependency"); } { mController.tokenFound(#i, "Keyword"); } identifierStar { mController.stateEnd(); })
+   : #( i:IMPORT {mController.stateBegin("Dependency"); } { mController.tokenFound(#i, "Keyword"); } identifierStar (s:SEMI { mController.tokenFound(#s, "Statement Terminator"); })? { mController.stateEnd(); } )
 
      // TODO Handle Static Imports
    | #( ii:STATIC_IMPORT {mController.stateBegin("Static Dependency"); } { mController.tokenFound(#ii, "Keyword"); } identifierStar { mController.stateEnd(); }
@@ -96,21 +101,24 @@ importDefinition
 
 typeDefinition
    : (  { mController.stateBegin("Class Declaration"); } 
-        #(CLASS_DEF modifiers n:IDENT { mController.tokenFound(#n, "Name"); } 
+        #(CLASS_DEF kwc:"class" { mController.tokenFound(#kwc, "Keyword"); } 
+          modifiers n:IDENT { mController.tokenFound(#n, "Name"); } 
           (typeParameters)? extendsClause implementsClause objBlock )
 
         { mController.stateEnd(); }
      )
 
    | ( { mController.stateBegin("Interface Declaration"); }
-       #(INTERFACE_DEF modifiers in:IDENT { mController.tokenFound(#in, "Name"); }
+       #(INTERFACE_DEF kwi:"interface" { mController.tokenFound(#kwi, "Keyword"); } 
+         modifiers in:IDENT { mController.tokenFound(#in, "Name"); }
          (typeParameters)? extendsClause interfaceBlock )
 
        { mController.stateEnd(); }
      )          
      
    | ( { mController.stateBegin("Enumeration Declaration"); }
-       #(ENUM_DEF modifiers en:IDENT { mController.tokenFound(#en, "Name"); } 
+       #(ENUM_DEF kwe:"enum" { mController.tokenFound(#kwe, "Keyword"); } 
+         modifiers en:IDENT { mController.tokenFound(#en, "Name"); } 
          implementsClause enumBlock )
 
        { mController.stateEnd(); }

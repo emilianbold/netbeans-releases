@@ -58,6 +58,7 @@ public class FileBuilder
    private static final int BUFFER_SIZE= 256;
    private String newFile;
    private String oldFile;
+   private String targetFile;
    
    private RandomAccessFile raOldFile;
    private RandomAccessFile raNewFile;
@@ -65,25 +66,19 @@ public class FileBuilder
    
    public FileBuilder(String newFilename, String oldFilename)
    {
-      if ( newFilename != null && newFilename.length() > 0 )
-      {
          newFile = newFilename;
-      }
-      
-      if ( oldFilename != null && oldFilename.length() > 0 )
-      {
          oldFile = oldFilename;
-      }
-      
-      init(newFile, oldFile);
+	 targetFile = oldFilename;
    }
    
-   private void init(String newFile, String oldFile)
+   public FileBuilder(String newFilename, String oldFilename, String targetFilename)
    {
-      posMapper = new PositionMapper();
-      
+         newFile = newFilename;
+         oldFile = oldFilename;
+	 targetFile = targetFilename;
    }
    
+
    /**
     *  client calls this method to indicate that text fragment representing
     *  oldElem in the old file should be replaced by text fragment representing
@@ -168,6 +163,14 @@ public class FileBuilder
 	}      
     }
 
+    public void insert(ElementDescriptor newElem, ElementDescriptor oldElem, boolean after, int pr) {
+	if (after) {
+	    mods.add(new ModDesc(ModDesc.INSERT_AFTER, newElem, oldElem, -1, HEADER_AND_BODY, pr));
+	} else {
+	    mods.add(new ModDesc(ModDesc.INSERT_BEFORE, newElem, oldElem, -1, HEADER_AND_BODY, pr));
+	}      
+    }
+
    /**
     *  client calls this method to indicate that it finished
     *  with posting of the requests, and on return from this method
@@ -179,18 +182,20 @@ public class FileBuilder
    {
        String charset = REIntegrationUtil.getEncoding(newFile);
        processNewFile(newFile, charset);
-       charset = REIntegrationUtil.getEncoding(oldFile);
-       
+
+       charset = REIntegrationUtil.getEncoding(oldFile);       
+       File target = new File(targetFile);
        File of = new File(oldFile);
-       FileObject oldFO = FileUtil.toFileObject(of);
-       String name = of.getName();
-       String ext = oldFO.getExt();
-       String dir = of.getParent();
-       String tmpDir = System.getProperty("java.io.tmpdir");
-       File temp = File.createTempFile(name, ext, new File(new File(tmpDir).getCanonicalPath()));       
-       mergeOldFile(oldFile, temp.getCanonicalPath(), charset);
-       copyFile(temp, of);
-       temp.delete();
+       if ( ! (target == null || target.equals(of))) {
+	   mergeOldFile(oldFile, targetFile, charset);
+       } else {
+	   String name = of.getName();
+	   String tmpDir = System.getProperty("java.io.tmpdir");
+	   File temp = File.createTempFile(name, null, new File(new File(tmpDir).getCanonicalPath()));       
+	   mergeOldFile(oldFile, temp.getCanonicalPath(), charset);
+	   copyFile(temp, of);
+	   temp.delete();
+       }
    }
    
 
@@ -520,7 +525,11 @@ public class FileBuilder
 		if (m1.type != m2.type) {
 		    return m1.type - m2.type;
 		} else {
-		    return new NewStartModDescComparator().compare(m1, m2);
+		    if (m1.pr != m2.pr) {
+			return m1.pr - m2.pr;
+		    } else {
+			return new NewStartModDescComparator().compare(m1, m2);
+		    }
 		}
 	    }
 	}
@@ -544,6 +553,7 @@ public class FileBuilder
 	long oldEnd;
 	long oldEdPoint;
 	int scope;
+	int pr = 0;
 
 	private String patchContent;
 
@@ -590,6 +600,16 @@ public class FileBuilder
 	    }
 	}
 	
+	public ModDesc(int type, 
+		       ElementDescriptor newElem,
+		       ElementDescriptor oldElem,
+		       long oldEdPoint,
+		       int scope,
+		       int pr)
+	{
+	    this(type, newElem, oldElem, oldEdPoint, scope);
+	    this.pr = pr;
+	}
 	
 	String getPatchContent() {
 	    return patchContent;

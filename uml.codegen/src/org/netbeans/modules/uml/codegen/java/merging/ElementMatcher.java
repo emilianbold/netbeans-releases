@@ -72,8 +72,16 @@ public class ElementMatcher {
 	} else if (elem instanceof IClassifier) {
 	    elems = Merger.getSubTypes(scopingType);
 	}
-	if (elems != null) {
-	    Iterator iter = elems.iterator();
+	return findElementMatch(elem, elems, matchType);		
+    }
+
+
+    public INamedElement findElementMatch(INamedElement elem, 
+					  List<? extends INamedElement> elemList, 
+					  int matchType) 
+    {
+	if (elemList != null) {
+	    Iterator iter = elemList.iterator();
 	    while(iter.hasNext()) {
 		INamedElement e = (INamedElement)iter.next();
 		boolean isMatch = matchElements(elem, e, matchType);
@@ -269,10 +277,7 @@ public class ElementMatcher {
 		return false;
 	    }
 	}
-	if (elem instanceof IClassifier) {
-	    return false;
-	}
-	return true;
+	return false;
     }
 
     public static String getMarkerValue(Node elemNode, String markerValueName) 

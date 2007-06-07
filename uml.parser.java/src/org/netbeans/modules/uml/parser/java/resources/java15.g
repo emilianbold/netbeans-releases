@@ -353,7 +353,7 @@ methodCompilationUnit
 // Package statement: optional annotations followed by "package" then the package identifier.
 packageDefinition
 	options {defaultErrorHandler = true;} // let ANTLR handle errors
-	:	annotations p:"package"^ {#p.setType(PACKAGE_DEF);} identifier SEMI!
+	:	annotations p:"package"^ {#p.setType(PACKAGE_DEF);} identifier SEMI
 	;
 
 
@@ -361,7 +361,7 @@ packageDefinition
 importDefinition
 	options {defaultErrorHandler = true;}
 	{ boolean isStatic = false; }
-	:	i:"import"^ {#i.setType(IMPORT);} ( "static"! {#i.setType(STATIC_IMPORT);} )? identifierStar SEMI!
+	:	i:"import"^ {#i.setType(IMPORT);} ( "static"! {#i.setType(STATIC_IMPORT);} )? identifierStar SEMI
 	;
 
 // A type definition is either a class, interface, enum or annotation with possible additional semis.
@@ -664,7 +664,7 @@ superClassClause!
 
 // Definition of a Java class
 classDefinition![AST modifiers]
-	:	"class" IDENT
+	:	kw:"class" IDENT
 		// it _might_ have type paramaters
 		(tp:typeParameters)?
 		// it _might_ have a superclass...
@@ -674,12 +674,12 @@ classDefinition![AST modifiers]
 		// now parse the body of the class
 		cb:classBlock
 		{#classDefinition = #(#[CLASS_DEF,"CLASS_DEF"],
-								modifiers,IDENT,tp,sc,ic,cb);}
+								kw,modifiers,IDENT,tp,sc,ic,cb);}
 	;
 
 // Definition of a Java Interface
 interfaceDefinition![AST modifiers]
-	:	"interface" IDENT
+	:	kw:"interface" IDENT
 		// it _might_ have type paramaters
 		(tp:typeParameters)?
 		// it might extend some other interfaces
@@ -687,17 +687,17 @@ interfaceDefinition![AST modifiers]
 		// now parse the body of the interface (looks like a class...)
 		ib:interfaceBlock
 		{#interfaceDefinition = #(#[INTERFACE_DEF,"INTERFACE_DEF"],
-									modifiers,IDENT,tp,ie,ib);}
+									kw,modifiers,IDENT,tp,ie,ib);}
 	;
 
 enumDefinition![AST modifiers]
-	:	"enum" IDENT
+	:	kw:"enum" IDENT
 		// it might implement some interfaces...
 		ic:implementsClause
 		// now parse the body of the enum
 		eb:enumBlock
 		{#enumDefinition = #(#[ENUM_DEF,"ENUM_DEF"],
-								modifiers,IDENT,ic,eb);}
+								kw,modifiers,IDENT,ic,eb);}
 	;
 
 annotationDefinition![AST modifiers]

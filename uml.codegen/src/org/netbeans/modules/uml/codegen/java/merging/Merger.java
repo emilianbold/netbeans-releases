@@ -24,6 +24,7 @@ import java.lang.ref.WeakReference;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -79,10 +80,12 @@ public class Merger implements IUMLParserEventsSink {
 
     private String newFile;
     private String oldFile;
+    private String targetFile;
     private FileBuilder fileBuilder;
     private ElementMatcher matcher;
-    private ArrayList<Node> classNodes;
+    private ArrayList<IClassifier> classNodes;
     private ArrayList<Import> imports;
+    private ArrayList<Node> packageNodes;
     private HashSet<IElement> matchedNew = new HashSet<IElement>();
     private HashSet<IElement> matchedOld = new HashSet<IElement>();
     private static WeakHashMap<Node, WeakReference<IElement>> cache 
@@ -92,9 +95,17 @@ public class Merger implements IUMLParserEventsSink {
     /**
      *
      */
+    public Merger(String newFile, String oldFile, String targetFile) {
+	this.newFile = newFile;
+	this.oldFile = oldFile;
+	this.targetFile = targetFile;
+    }    
+
+
     public Merger(String newFile, String oldFile) {
 	this.newFile = newFile;
 	this.oldFile = oldFile;
+	this.targetFile = oldFile;
     }    
 
 
@@ -102,15 +113,19 @@ public class Merger implements IUMLParserEventsSink {
 	throws IOException
     {
 
-	fileBuilder = new FileBuilder(newFile, oldFile);
+	fileBuilder = new FileBuilder(newFile, oldFile, targetFile);
 			    
 	pParser = connectToParser();
-	Node newNode = parse(newFile);
+	parse(newFile);
 	ArrayList<Import> newImports = imports;
+	ArrayList<Node> newPack = packageNodes;
+	ArrayList<IClassifier> newClasses = classNodes;
 
 	pParser = connectToParser();
-	Node oldNode = parse(oldFile);
+	parse(oldFile);
 	ArrayList<Import> oldImports = imports;
+	ArrayList<Node> oldPack = packageNodes;
+	ArrayList<IClassifier> oldClasses = classNodes;
 	
 	// TBD using of Java Model, ie. Info* classes.
 	// At this moment the sequence of tranforms  are  
@@ -120,34 +135,76 @@ public class Merger implements IUMLParserEventsSink {
 	// The above reverse engineering for merging in generic case 
 	// should be done into and logical merging analysis should be performed at 
 	// the level of platform specific (in this case would be Java) model  
-	Classifier newClass = new Classifier();
-	Classifier oldClass = new Classifier();
-	newClass.setNode(newNode);
-	oldClass.setNode(oldNode);
 
 	// using stateless matching for now, though more 
 	// powerfull statefull matching may be an option later
 	matcher = new ElementMatcher();
 
-	mergeImports(newImports, oldImports, oldClass);
-	mergeTop(newClass, oldClass);
+	Node stImportNode = null;
+	if (oldImports.size() > 0) {
+	    Collections.sort(oldImports, new Comparator<Import>() {
+		public int compare(Import im1, Import im2) {
+		    return (int)(im1.getStartPos() - im2.getStartPos());
+		}
+	    });
+	    stImportNode = oldImports.get(0).getNode();
+	}
+
+	Node stClassNode = null;
+	if (oldClasses.size() > 0) {
+	    Collections.sort(oldClasses, new Comparator<IClassifier>() {
+		public int compare(IClassifier c1, IClassifier c2) {
+		    return (int) (new ElementDescriptor(c1.getNode()).getStartPos() 
+				  - new ElementDescriptor(c2.getNode()).getStartPos());
+		}
+	    });
+	    stClassNode = oldClasses.get(0).getNode();
+	}	
 	
+	mergePackages(newPack, oldPack, 
+		      stImportNode == null ? stClassNode : stImportNode);
+
+	mergeImports(newImports, oldImports, oldClasses.get(0));
+
+	//mergeTop(newClass, oldClass);
+	merge(null, oldClasses.get(oldClasses.size() - 1), newClasses, oldClasses); 
+
 	fileBuilder.completed();
     }
 
 
-    public Node parse(String fileName) 
+    public void parse(String fileName) 
     {
-	classNodes = new ArrayList<Node>();
+	classNodes = new ArrayList<IClassifier>();
 	imports = new ArrayList<Import>();
+	packageNodes = new ArrayList<Node>();
 	pParser.processStreamFromFile(fileName);	
-	if (classNodes.size() > 0) 
-	{
-	    establishIDs(classNodes.get(0));
-	    return classNodes.get(0);
-	}
-	return null;
+	//establishIDs(classNodes.get(0));
     }
+
+
+    /**
+     */
+    private void mergePackages(List<Node> newPacks, 
+			       List<Node> oldPacks, 
+			       Node insPoint) 
+    { 
+	if (newPacks == null || newPacks.size() == 0) {
+	    if (oldPacks != null &&  oldPacks.size() > 0) {
+		fileBuilder.remove(new ElementDescriptor(oldPacks.get(0)));
+	    } 
+	} else {
+	    if (oldPacks != null &&  oldPacks.size() > 0) {
+		fileBuilder.replace(new ElementDescriptor(newPacks.get(0)), 
+				    new ElementDescriptor(oldPacks.get(0)));
+	    } else {
+		fileBuilder.insert(new ElementDescriptor(newPacks.get(0)), 
+				   new ElementDescriptor(insPoint),
+				   false, 
+				   -1);		
+	    }
+	}	
+   }
 
 
     /**
@@ -215,7 +272,11 @@ public class Merger implements IUMLParserEventsSink {
 	// match names of passed in top level nodes
 	// if no match - undecided TBD
 
-	if (ElementMatcher.isMarked(oldClass)) {
+	String oldName = oldClass.getName();
+	String newName = newClass.getName();
+	if (ElementMatcher.isMarked(oldClass) 
+	    || (! newName.equals(oldName))) 
+	{
 	    fileBuilder.replace(new ElementDescriptor(newClass.getNode()), 
 				new ElementDescriptor(oldClass.getNode()),
 				ElementMatcher.isRegenBody(oldClass) 
@@ -257,7 +318,7 @@ public class Merger implements IUMLParserEventsSink {
     { 
 	// marker ID based matching
 	for(INamedElement newElem : newElems) {
-	    INamedElement elem = matcher.findElementMatch(newElem, oldClass, ElementMatcher.ID_MARKER_MATCH);
+	    INamedElement elem = matcher.findElementMatch(newElem, oldElems, ElementMatcher.ID_MARKER_MATCH);
 	    if (elem != null) {
 		if (! matchedOld.contains(elem)) {
 		    if (ElementMatcher.isMarked(elem)) 
@@ -291,7 +352,7 @@ public class Merger implements IUMLParserEventsSink {
 		// has been already matched using ID marker
 		continue;
 	    }
-	    INamedElement elem = matcher.findElementMatch(newElem, oldClass, ElementMatcher.BASE_MATCH);
+	    INamedElement elem = matcher.findElementMatch(newElem, oldElems, ElementMatcher.BASE_MATCH);
 	    if (elem != null) {
 		if (! matchedOld.contains(elem)) 
 		{
@@ -327,8 +388,9 @@ public class Merger implements IUMLParserEventsSink {
 		// has been already matched using ID marker
 		continue;
 	    }
+	    Node oldClassNode = (oldClass == null ? null : oldClass.getNode());
 	    fileBuilder.add(new ElementDescriptor(newElem.getNode()),
-			    new ElementDescriptor(oldClass.getNode()));
+			    new ElementDescriptor(oldClassNode));
 	}
 	    
 	// removing all un-matched regenerateable old elements
@@ -701,6 +763,7 @@ public class Merger implements IUMLParserEventsSink {
                         IUMLParserEventDispatcher m_Dispatcher = pParser.getUMLParserDispatcher();
                         if (m_Dispatcher != null)
                         {
+                            m_Dispatcher.revokeUMLParserSink(this);
                             m_Dispatcher.registerForUMLParserEvents(this, " ");
                         }
                         return pParser;
@@ -720,6 +783,16 @@ public class Merger implements IUMLParserEventsSink {
 
     
     public void onPackageFound(IPackageEvent data, IResultCell cell) {
+        Node dataNode = null;        
+        try {
+            dataNode = data.getEventData();
+            if (dataNode != null){		
+		packageNodes.add(dataNode);
+	    }
+            
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+        }
     }
     
 
@@ -728,7 +801,7 @@ public class Merger implements IUMLParserEventsSink {
         try {
             dataNode = data.getEventData();
             if (dataNode != null){		
-		imports.add(new Import(dataNode));
+		imports.add(new Import(dataNode));		
 	    }
             
         } catch (Exception e) {
@@ -746,8 +819,11 @@ public class Merger implements IUMLParserEventsSink {
             dataNode = data.getEventData();
             if (dataNode != null){
 		
-		classNodes.add(dataNode);
+		IClassifier cls = new Classifier();
+		cls.setNode(dataNode);
+		classNodes.add(cls);
 		/*		
+		System.out.println("\nMerger.onClassFound \n dataNode = "+dataNode);
 		String query = ".//TDescriptor";
 		List nodes = XMLManip.selectNodeList(dataNode, query);
 		for (Iterator iter = nodes.iterator(); iter.hasNext(); ) {
@@ -766,17 +842,19 @@ public class Merger implements IUMLParserEventsSink {
     }
     
     public void onEndParseFile(String fileName, IResultCell cell) {
-	/* 			
+	 			
 	try {	
+	    /*
 	    fileName = fileName.replace('\\', '_');
 	    fileName = fileName.replace('/', '_');
 	    fileName = fileName.replace(':', '_');
 	    if (classNodes.size() > 0) 
-		XMLManip.save(((Node)classNodes.get(0)).getDocument(), "/tmp/out.txt."+fileName);
+		XMLManip.save(classNodes.get(0).getNode().getDocument(), "/tmp/out.txt."+fileName);
+	    */
 	} catch (Exception ex) {
 	    ex.printStackTrace(System.out);
 	}
-	*/	
+		
     }
     
     public void onError(IErrorEvent data, IResultCell cell) {
