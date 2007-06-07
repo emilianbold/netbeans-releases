@@ -19,16 +19,15 @@
 
 package org.netbeans.modules.uml.project.ui;
 
-import org.openide.options.SystemOption;
-import org.openide.util.NbBundle;
-
 import java.io.File;
+import java.util.prefs.Preferences;
+import org.openide.util.NbPreferences;
 
 /**
  * Storage for some important incrementers and default values
  * @author Mike Frisino
  */
-public class UMLProjectSettings extends SystemOption {
+public class UMLProjectSettings {
 	
 	// TODO - I haven't exactly figured out how this is meant to be used.
 	// Craig might know from Jato system option work.
@@ -37,8 +36,6 @@ public class UMLProjectSettings extends SystemOption {
 	// project number and stuff like that. But I'm not sure if it is working
 	// flawlessly or not.
 
-    private static final long serialVersionUID = 2386225041150479082L;
-
     private static final String NEW_PROJECT_COUNT = "newProjectCount"; //NOI18N
 
     private static final String LAST_USED_ARTIFACT_FOLDER = "lastUsedArtifactFolder"; //NOI18N
@@ -46,49 +43,37 @@ public class UMLProjectSettings extends SystemOption {
     private static final String LAST_ROSE_FILE_LOCATION = "lastRoseFileLocation"; //NOI18N
     
     public static UMLProjectSettings getDefault () {
-        return (UMLProjectSettings) SystemOption.findObject (UMLProjectSettings.class, true);
+        return new UMLProjectSettings();
     }
     
-    public String displayName() {
-        return NbBundle.getMessage(UMLProjectSettings.class, "TXT_UMLProjectSettings");
+    private static Preferences prefs() {
+        return NbPreferences.forModule(UMLProjectSettings.class);
     }
-
+    
     public int getNewProjectCount () {
-        Integer value = (Integer) getProperty (NEW_PROJECT_COUNT);
-        return value == null ? 0 : value.intValue();
+        return prefs().getInt(NEW_PROJECT_COUNT, 0);
     }
 
-    public String getLastRoseFileLocation()
-    {
-       String retVal = "";
-       if(getProperty(LAST_ROSE_FILE_LOCATION) != null)
-       {
-          retVal = (String)getProperty(LAST_ROSE_FILE_LOCATION);
-       }
-       return retVal;
+    public String getLastRoseFileLocation() {
+        return prefs().get(LAST_ROSE_FILE_LOCATION, "");
     }
     
     public void setNewProjectCount (int count) {
-        this.putProperty(NEW_PROJECT_COUNT, new Integer(count),true);
+        prefs().putInt(NEW_PROJECT_COUNT, count);
     }
     
-    public void setLastRoseFileLocation(String loc)
-    {
-       putProperty(LAST_ROSE_FILE_LOCATION, loc, true);
+    public void setLastRoseFileLocation(String loc) {
+       prefs().put(LAST_ROSE_FILE_LOCATION, loc);
     }
 
     public File getLastUsedArtifactFolder () {
-        String folder = (String) this.getProperty (LAST_USED_ARTIFACT_FOLDER);
-        if (folder == null) {
-            folder = System.getProperty("user.home");    //NOI18N
-        }
-        return new File (folder);
+        return new File(prefs().get(LAST_USED_ARTIFACT_FOLDER, System.getProperty("user.home")));
     }
 
     public void setLastUsedArtifactFolder (File folder) {
         assert folder != null : "Folder can not be null";
         String path = folder.getAbsolutePath();
-        this.putProperty (LAST_USED_ARTIFACT_FOLDER, path, true);
+        prefs().put(LAST_USED_ARTIFACT_FOLDER, path);
     }   
 
 }
