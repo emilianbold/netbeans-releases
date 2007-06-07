@@ -387,6 +387,11 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
         }
 
         protected void openElementHandle() {
+        	if (fileObject == null) {
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaHierarchyModel.class, "MSG_CouldNotOpenElement", getLabel()));
+                return;
+            }
+        	
             if (elementHandle == null) {
                 return;
             }
