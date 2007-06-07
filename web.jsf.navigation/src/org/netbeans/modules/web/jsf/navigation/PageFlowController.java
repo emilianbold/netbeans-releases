@@ -28,6 +28,7 @@ package org.netbeans.modules.web.jsf.navigation;
 
 
 import java.awt.Dialog;
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -56,9 +57,7 @@ import org.netbeans.modules.web.jsf.navigation.NavigationCaseEdge;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import java.util.*;
-import java.util.Map.Entry;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -395,7 +394,13 @@ public class PageFlowController {
     
     private class OtherFacesModelListener implements PropertyChangeListener  {
         public void propertyChange(PropertyChangeEvent evt) {
-            setupGraph();
+            
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    
+                    setupGraph();
+                }
+            });
         }
     }
     
