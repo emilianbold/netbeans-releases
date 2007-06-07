@@ -159,7 +159,7 @@ public class MenuEditLayer extends JPanel {
     
     public boolean isPossibleNewMenuComponent(PaletteItem item) {
         if(item == null) return false;
-        
+        if(item.getComponentClass() == null) return false;
         if(JMenuItem.class.isAssignableFrom(item.getComponentClass())) {
             return true;
         }
