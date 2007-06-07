@@ -45,14 +45,12 @@ import org.openide.util.NbBundle;
  */
 public class CasaPalette {
     
-    private static final CasaBasePlugin mBasePlugin = new CasaBasePlugin();
-    
     public static final CasaPaletteCategoryID CATEGORY_ID_WSDL_BINDINGS = 
-            PaletteIDFactory.createCategoryID(mBasePlugin, NbBundle.getMessage(CasaPalette.class, "WSDLBindings"));  // NOI18N
+            PaletteIDFactory.createCategoryID(CasaBasePlugin.getInstance(), NbBundle.getMessage(CasaPalette.class, "WSDLBindings"));  // NOI18N
     public static final CasaPaletteCategoryID CATEGORY_ID_SERVICE_UNITS = 
-            PaletteIDFactory.createCategoryID(mBasePlugin, NbBundle.getMessage(CasaPalette.class, "ServiceUnits"));  // NOI18N
+            PaletteIDFactory.createCategoryID(CasaBasePlugin.getInstance(), NbBundle.getMessage(CasaPalette.class, "ServiceUnits"));  // NOI18N
     public static final CasaPaletteCategoryID CATEGORY_ID_END_POINTS    = 
-            PaletteIDFactory.createCategoryID(mBasePlugin, NbBundle.getMessage(CasaPalette.class, "EndPoints"));     // NOI18N
+            PaletteIDFactory.createCategoryID(CasaBasePlugin.getInstance(), NbBundle.getMessage(CasaPalette.class, "EndPoints"));     // NOI18N
     
     public static final CasaPaletteItemID ITEM_ID_CONSUME               = 
             new CasaPaletteItemID(CasaPalette.CATEGORY_ID_END_POINTS, 
@@ -102,7 +100,7 @@ public class CasaPalette {
         List<CasaPalettePlugin> plugins = new ArrayList<CasaPalettePlugin>();
         
         // CASA itself plugs into its own palette
-        plugins.add(mBasePlugin);
+        plugins.add(CasaBasePlugin.getInstance());
         
         // For now just hard code this in.
         // This eventually should be replaced with a lookup for 

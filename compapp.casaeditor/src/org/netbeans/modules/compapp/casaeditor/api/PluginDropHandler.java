@@ -20,21 +20,8 @@ package org.netbeans.modules.compapp.casaeditor.api;
 
 /**
  *
- * @author jsandusky
+ * @author Josh Sandusky
  */
-public interface CasaPalettePlugin {
+public interface PluginDropHandler {
 
-    enum REGION { WSDL_ENDPOINTS, JBI_MODULES, EXTERNAL };
-    
-    // Arbitrary display name of the plugin.
-    String getDisplayName();
-    
-    CasaPaletteCategoryID[] getCategoryIDs();
-
-    CasaPaletteItemID[] getItemIDs(CasaPaletteCategoryID categoryID);
-    
-    REGION getDropRegion(CasaPaletteItemID itemID);
-    
-    void handleDrop(PluginDropHandler dropHandler, CasaPaletteItemID itemID);
-    
 }

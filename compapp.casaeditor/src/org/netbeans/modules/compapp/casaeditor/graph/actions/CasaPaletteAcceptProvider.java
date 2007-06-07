@@ -35,6 +35,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.compapp.casaeditor.api.CasaPaletteCategoryID;
 import org.netbeans.modules.compapp.casaeditor.api.CasaPaletteItemID;
+import org.netbeans.modules.compapp.casaeditor.api.CasaPalettePlugin;
+import org.netbeans.modules.compapp.casaeditor.api.PluginDropHandler;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphUtilities;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidgetEngineExternal;
@@ -44,6 +46,7 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.model.casa.JBIServiceUnitTransferObject;
 import org.netbeans.modules.compapp.casaeditor.palette.CasaCommonAcceptProvider;
 import org.netbeans.modules.compapp.casaeditor.palette.CasaPalette;
+import org.netbeans.modules.compapp.casaeditor.palette.DefaultPluginDropHandler;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.ErrorManager;
@@ -230,25 +233,8 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
     }
     
     private void acceptFromPalette(Point point, CasaPaletteItemID itemID) {
-        CasaPaletteCategoryID categoryID = itemID.getCategory();
-        if        (categoryID.equals(CasaPalette.CATEGORY_ID_WSDL_BINDINGS)) {
-            point = getScene().getBindingRegion().convertSceneToLocal(point);
-            mModel.addCasaPort(
-                    itemID.getDisplayName(),
-                    (String) itemID.getDataObject(), // this is the component name
-                    point.x,
-                    point.y);
-        } else if (categoryID.equals(CasaPalette.CATEGORY_ID_SERVICE_UNITS)) {
-            if        (itemID.equals(CasaPalette.ITEM_ID_INTERNAL_SU)) {
-                // add an internal SU to the model
-                point = getScene().getEngineRegion().convertSceneToLocal(point);
-                mModel.addServiceEngineServiceUnit(true, point.x, point.y);
-            } else if (itemID.equals(CasaPalette.ITEM_ID_EXTERNAL_SU)) {
-                // add an external SU to the model
-                point = getScene().getExternalRegion().convertSceneToLocal(point);
-                mModel.addServiceEngineServiceUnit(false, point.x, point.y);
-            }
-        }
+        PluginDropHandler handler = new DefaultPluginDropHandler(getScene(), point);
+        itemID.getCategory().getPlugin().handleDrop(handler, itemID);
     }
     
     private void acceptFromOther(Point point, Transferable transferable)
@@ -356,19 +342,24 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
     }
     
     private CasaRegionWidget getApplicableRegion(CasaPaletteItemID itemID) {
+        CasaPalettePlugin.REGION regionID = 
+                itemID.getCategory().getPlugin().getDropRegion(itemID);
+        if (regionID == null) {
+            return null;
+        }
+        
         CasaRegionWidget region = null;
-        if (itemID != null) {
-            CasaPaletteCategoryID categoryID = itemID.getCategory();
-            if (categoryID.equals(CasaPalette.CATEGORY_ID_WSDL_BINDINGS)) {
+        switch(regionID) {
+            case WSDL_ENDPOINTS:
                 region = getScene().getBindingRegion();
-            } else if (categoryID.equals(CasaPalette.CATEGORY_ID_SERVICE_UNITS)) {
-                if        (itemID.equals(CasaPalette.ITEM_ID_INTERNAL_SU)) {
-                    region = getScene().getEngineRegion();
-                } else if (itemID.equals(CasaPalette.ITEM_ID_EXTERNAL_SU)) {
-                    region = getScene().getExternalRegion();
-                }
-            }
-        } 
+                break;
+            case JBI_MODULES:
+                region = getScene().getEngineRegion();
+                break;
+            case EXTERNAL:
+                region = getScene().getExternalRegion();
+                break;
+        }
         return region;
     }
     
@@ -386,4 +377,3 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
         return itemID;
     }
 }
-

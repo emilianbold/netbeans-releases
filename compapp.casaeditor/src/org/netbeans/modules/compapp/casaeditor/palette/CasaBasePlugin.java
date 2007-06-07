@@ -26,6 +26,7 @@ import java.util.Vector;
 import org.netbeans.modules.compapp.casaeditor.api.CasaPaletteCategoryID;
 import org.netbeans.modules.compapp.casaeditor.api.CasaPaletteItemID;
 import org.netbeans.modules.compapp.casaeditor.api.CasaPalettePlugin;
+import org.netbeans.modules.compapp.casaeditor.api.PluginDropHandler;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBindingInfo;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiDefaultComponentInfo;
 import org.netbeans.modules.xml.wsdl.bindingsupport.template.ExtensibilityElementTemplateFactory;
@@ -34,10 +35,19 @@ import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.Localized
 
 /**
  *
- * @author Josh
+ * @author Josh Sandusky
  */
 public class CasaBasePlugin implements CasaPalettePlugin {
-
+    
+    private static final CasaBasePlugin mInstance = new CasaBasePlugin();
+    
+    private CasaBasePlugin() {
+    }
+    
+    public static CasaBasePlugin getInstance() {
+        return mInstance;
+    }
+    
     public String getDisplayName() {
         return "";
     }
@@ -103,5 +113,39 @@ public class CasaBasePlugin implements CasaPalettePlugin {
             temps.put(ltg.getName(), ltg);
         }
         return temps;
+    }
+
+    public void handleDrop(PluginDropHandler handler, CasaPaletteItemID itemID) {
+        DefaultPluginDropHandler defaultHandler = (DefaultPluginDropHandler) handler;
+        CasaPaletteCategoryID categoryID = itemID.getCategory();
+        if        (categoryID.equals(CasaPalette.CATEGORY_ID_WSDL_BINDINGS)) {
+            defaultHandler.addCasaPort(
+                    itemID.getDisplayName(), 
+                    (String) itemID.getDataObject()); // this is the component name
+        } else if (categoryID.equals(CasaPalette.CATEGORY_ID_SERVICE_UNITS)) {
+            if        (itemID.equals(CasaPalette.ITEM_ID_INTERNAL_SU)) {
+                // add an internal SU to the model
+                defaultHandler.addServiceEngineServiceUnit(true);
+            } else if (itemID.equals(CasaPalette.ITEM_ID_EXTERNAL_SU)) {
+                // add an external SU to the model
+                defaultHandler.addServiceEngineServiceUnit(false);
+            }
+        }
+    }
+
+    public REGION getDropRegion(CasaPaletteItemID itemID) {
+        if (itemID != null) {
+            CasaPaletteCategoryID categoryID = itemID.getCategory();
+            if (categoryID.equals(CasaPalette.CATEGORY_ID_WSDL_BINDINGS)) {
+                return REGION.WSDL_ENDPOINTS;
+            } else if (categoryID.equals(CasaPalette.CATEGORY_ID_SERVICE_UNITS)) {
+                if        (itemID.equals(CasaPalette.ITEM_ID_INTERNAL_SU)) {
+                    return REGION.JBI_MODULES;
+                } else if (itemID.equals(CasaPalette.ITEM_ID_EXTERNAL_SU)) {
+                    return REGION.EXTERNAL;
+                }
+            }
+        }
+        return null;
     }
 }
