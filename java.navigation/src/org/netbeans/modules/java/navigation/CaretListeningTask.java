@@ -266,7 +266,7 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
                     break;
                 case VARIABLE:
                     e = ci.getTrees().getElement(tp);
-                    if (!e.getKind().isField()) {
+                    if (e != null && !e.getKind().isField()) {
                         e = null;
                     }
                     break;                
