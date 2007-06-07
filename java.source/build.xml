@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="netbeans" name="java/source">
@@ -107,15 +107,6 @@ Microsystems, Inc. All Rights Reserved.
         </copy>
         <copy todir="${build.classes.dir}">
            <fileset dir="${src.dir}" excludes="${jar-excludes}"/>
-        </copy>
-    </target>
-
-    <target name="netbeans-extra" depends="release">
-        <mkdir dir="${cluster}/modules/ext"/>
-        <copy todir="${cluster}/modules/ext">
-            <fileset dir="${external.dir}">
-                <include name="lucene-core-2.1.0.jar"/>
-            </fileset>
         </copy>
     </target>
 

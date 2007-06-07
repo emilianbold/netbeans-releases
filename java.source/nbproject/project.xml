@@ -65,6 +65,15 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.libs.lucene</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>2.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.classfile</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -326,10 +335,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.api.java.source.support</package>
                 <package>org.netbeans.spi.java.loaders</package>
             </public-packages>
-            <class-path-extension>
-                <runtime-relative-path>ext/lucene-core-2.1.0.jar</runtime-relative-path>
-                <binary-origin>../external/lucene-core-2.1.0.jar</binary-origin>
-            </class-path-extension>
         </data>
     </configuration>
 </project>
