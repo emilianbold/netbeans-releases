@@ -22,15 +22,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import org.netbeans.modules.j2ee.ejbverification.rules.HasNoArgContructor;
+import org.netbeans.modules.j2ee.ejbverification.rules.SBSuperClassNotSB;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 
 /**
- *
+ * 
  * @author Tomasz.Slota@Sun.COM
  */
 public class EJBRulesRegistry {
     private static Collection<? extends EJBVerificationRule> rules = Arrays.asList(
-            new HasNoArgContructor());
+            new HasNoArgContructor(),
+            new SBSuperClassNotSB());
     
     public static Collection<ErrorDescription> check(EJBProblemContext ctx){
         Collection<ErrorDescription> problemsFound = new ArrayList<ErrorDescription>();
