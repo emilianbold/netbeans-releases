@@ -93,7 +93,7 @@ public class ConditionBuilderUtil {
         if (havingByCondition == null){
             havingByCondition = SQLModelObjectFactory.getInstance().createSQLCondition("Having Condition");            
         }
-        ConditionBuilderView cView = new ConditionBuilderView(gContainer, tables, havingByCondition, IOperatorXmlInfoModel.CATEGORY_HAVING);
+        ConditionBuilderView cView = new ConditionBuilderView(gContainer, tables, havingByCondition, IOperatorXmlInfoModel.CATEGORY_FILTER);
         return cView;
     }
     
