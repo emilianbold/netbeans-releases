@@ -62,104 +62,109 @@ public class BPELExtensionXpathVisitor extends ValidationVisitor {
         // Check the property alias only if it has the Query
         //
         Query query = pa.getQuery();
+        if (query == null) {
+            return;
+        }
         String queryText = query.getContent();
-        if (queryText != null && queryText.length() > 0) {
-            String qLanguage = query.getQueryLanguage();
-            if (qLanguage == null || XPATH_EXPRESSION_TYPE.equals(qLanguage)) {
-                AbstractXPathModelHelper helper= AbstractXPathModelHelper.getInstance();
-                XPathModel model = helper.newXPathModel();
-                XPathExpression xpath = null;
-                try {
-                    xpath = model.parseExpression(queryText);
-                } catch (XPathException e) {
-                    Throwable initialThrowable = getInitialCause(e);
-                    String msg = initialThrowable.getMessage();
-                    addNewResultItem(ResultType.ERROR, pa, msg, "");
-                }
-                assert xpath != null;
-                if (!(xpath instanceof XPathLocationPath)) {
-                    // Error. Query has to be a Location Path expression
-                    String str = NbBundle.getMessage(BPELExtensionXpathValidator.class, 
-                            "LOCATION_PATH_REQUIRED");
-                    addNewResultItem(ResultType.ERROR, query, str, ""); // NOI18N
-                    return;
-                }
-                //
-                NamedComponentReference<GlobalElement> gElementRef = null;
-                NamedComponentReference<GlobalType> gTypeRef = null;
-                //
-                NamedComponentReference<Message> messageRef = pa.getMessageType();
-                if (messageRef != null) {
-                    Message message = messageRef.get();
-                    if (message == null) {
-                        // Error. Can not resolve message type
-                        String str = constructMessage("UNRESOLVED_MESSAGE_TYPE", 
-                                messageRef.getRefString()); // NOI18N 
-                        addNewResultItem(ResultType.ERROR, query, str, ""); // NOI18N
-                        return;
-                    }
-                    String partName = pa.getPart();
-                    Collection<Part> parts = message.getParts();
-                    Part part = null;
-                    for (Part aPart : parts) {
-                        if (aPart.getName().equals(partName)) {
-                            part = aPart;
-                        }
-                    }
-                    //
-                    if (part == null) {
-                        // Error. Can not find a part with the specified name
-                        String str = constructMessage("UNKNOWN_MESSAGE_PART", 
-                                partName, message.getName()); // NOI18N 
-                        addNewResultItem(ResultType.ERROR, query, str, ""); // NOI18N
-                        return;
-                    }
-                    //
-                    gElementRef = part.getElement();
-                    gTypeRef = part.getType();
-                } else {
-                    gElementRef = pa.getElement();
-                    gTypeRef = pa.getType();
-                }
-                //
-                if (gElementRef == null && gTypeRef == null) {
-                    // Error. Can not obtain the root type of the query
-                    String str = constructMessage("UNRESOLVED_QUERY_ROOT_TYPE", 
-                            queryText); // NOI18N 
-                    addNewResultItem(ResultType.ERROR, query, str, ""); // NOI18N
-                    return;
-                }
-                //
-                SchemaComponent contextSchemaComponent = null;
-                XPathLocationPath locationPath = (XPathLocationPath)xpath;
-                if (gElementRef != null) {
-                    GlobalElement gElement = gElementRef.get();
-                    if (gElement != null) {
-                        contextSchemaComponent = gElement;
-                    }
-                } else if (gTypeRef != null) {
-                    GlobalType gType = gTypeRef.get();
-                    if (gType != null) {
-                        contextSchemaComponent = gType;
-                    }
-                }
-                //
-                if (contextSchemaComponent == null) {
-                    // Error. Can not obtain root type of the query
-                    String str = constructMessage("UNRESOLVED_QUERY_ROOT_TYPE", 
-                            queryText); // NOI18N 
-                    addNewResultItem(ResultType.ERROR, query, str, ""); // NOI18N
-                    return;
-                }
-                //
-                PathValidationContext context =
-                        new PathValidationContext(mValidator, this, pa, query);
-                context.setSchemaContextComponent(contextSchemaComponent);
-                context.setSchemaContextModel(contextSchemaComponent.getModel());
-                //
-                PathValidatorVisitor pathVVisitor = new PathValidatorVisitor(context);
-                pathVVisitor.visit(locationPath);
+        if (queryText == null && queryText.length() == 0) {
+            return;
+        }
+        //
+        String qLanguage = query.getQueryLanguage();
+        if (qLanguage == null || XPATH_EXPRESSION_TYPE.equals(qLanguage)) {
+            AbstractXPathModelHelper helper= AbstractXPathModelHelper.getInstance();
+            XPathModel model = helper.newXPathModel();
+            XPathExpression xpath = null;
+            try {
+                xpath = model.parseExpression(queryText);
+            } catch (XPathException e) {
+                Throwable initialThrowable = getInitialCause(e);
+                String msg = initialThrowable.getMessage();
+                addNewResultItem(ResultType.ERROR, pa, msg, "");
             }
+            assert xpath != null;
+            if (!(xpath instanceof XPathLocationPath)) {
+                // Error. Query has to be a Location Path expression
+                String str = NbBundle.getMessage(BPELExtensionXpathValidator.class,
+                        "LOCATION_PATH_REQUIRED");
+                addNewResultItem(ResultType.ERROR, query, str, ""); // NOI18N
+                return;
+            }
+            //
+            NamedComponentReference<GlobalElement> gElementRef = null;
+            NamedComponentReference<GlobalType> gTypeRef = null;
+            //
+            NamedComponentReference<Message> messageRef = pa.getMessageType();
+            if (messageRef != null) {
+                Message message = messageRef.get();
+                if (message == null) {
+                    // Error. Can not resolve message type
+                    String str = constructMessage("UNRESOLVED_MESSAGE_TYPE",
+                            messageRef.getRefString()); // NOI18N
+                    addNewResultItem(ResultType.ERROR, query, str, ""); // NOI18N
+                    return;
+                }
+                String partName = pa.getPart();
+                Collection<Part> parts = message.getParts();
+                Part part = null;
+                for (Part aPart : parts) {
+                    if (aPart.getName().equals(partName)) {
+                        part = aPart;
+                    }
+                }
+                //
+                if (part == null) {
+                    // Error. Can not find a part with the specified name
+                    String str = constructMessage("UNKNOWN_MESSAGE_PART",
+                            partName, message.getName()); // NOI18N
+                    addNewResultItem(ResultType.ERROR, query, str, ""); // NOI18N
+                    return;
+                }
+                //
+                gElementRef = part.getElement();
+                gTypeRef = part.getType();
+            } else {
+                gElementRef = pa.getElement();
+                gTypeRef = pa.getType();
+            }
+            //
+            if (gElementRef == null && gTypeRef == null) {
+                // Error. Can not obtain the root type of the query
+                String str = constructMessage("UNRESOLVED_QUERY_ROOT_TYPE",
+                        queryText); // NOI18N
+                addNewResultItem(ResultType.ERROR, query, str, ""); // NOI18N
+                return;
+            }
+            //
+            SchemaComponent contextSchemaComponent = null;
+            XPathLocationPath locationPath = (XPathLocationPath)xpath;
+            if (gElementRef != null) {
+                GlobalElement gElement = gElementRef.get();
+                if (gElement != null) {
+                    contextSchemaComponent = gElement;
+                }
+            } else if (gTypeRef != null) {
+                GlobalType gType = gTypeRef.get();
+                if (gType != null) {
+                    contextSchemaComponent = gType;
+                }
+            }
+            //
+            if (contextSchemaComponent == null) {
+                // Error. Can not obtain root type of the query
+                String str = constructMessage("UNRESOLVED_QUERY_ROOT_TYPE",
+                        queryText); // NOI18N
+                addNewResultItem(ResultType.ERROR, query, str, ""); // NOI18N
+                return;
+            }
+            //
+            PathValidationContext context =
+                    new PathValidationContext(mValidator, this, pa, query);
+            context.setSchemaContextComponent(contextSchemaComponent);
+            context.setSchemaContextModel(contextSchemaComponent.getModel());
+            //
+            PathValidatorVisitor pathVVisitor = new PathValidatorVisitor(context);
+            pathVVisitor.visit(locationPath);
         }
     }
     
