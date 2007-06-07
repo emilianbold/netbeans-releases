@@ -48,6 +48,5 @@ public final class VersioningOutputManager {
         VersioningOutputTopComponent tc = VersioningOutputTopComponent.getInstance();
         tc.addComponent(key, component);
         tc.open();
-        tc.requestActive();
     }
 }
