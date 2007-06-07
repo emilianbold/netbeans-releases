@@ -35,18 +35,7 @@ import org.openide.util.NbBundle;
 public class AddServerInstanceAction extends NodeAction {
 
     public void performAction(Node[] nodes) {
-        AddServerInstanceWizard wizard = new AddServerInstanceWizard();
-        Dialog dialog = null;
-        try {
-            dialog = DialogDisplayer.getDefault().createDialog(wizard);
-            dialog.getAccessibleContext().setAccessibleDescription(
-                    NbBundle.getMessage(AddServerInstanceAction.class, "ACSD_Add_Server_Instance"));
-            dialog.setVisible(true);
-        } finally {
-            if (dialog != null) {
-                dialog.dispose();
-            }
-        }
+        AddServerInstanceWizard.showAddServerInstanceWizard();
     }
     
     public String getName() {

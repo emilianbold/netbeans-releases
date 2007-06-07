@@ -19,12 +19,17 @@
 
 package org.netbeans.modules.j2ee.deployment.impl.ui.wizard;
 
+import java.awt.Dialog;
 import java.text.MessageFormat;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.deployment.impl.Server;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
+import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
@@ -45,8 +50,10 @@ public class AddServerInstanceWizard extends WizardDescriptor {
 
     private AddServerInstanceWizardIterator iterator;
     private ServerChooserPanel chooser;
+    
+    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.j2ee.deployment"); // NOI18N
 
-    public AddServerInstanceWizard() {
+    private AddServerInstanceWizard() {
         this(new AddServerInstanceWizardIterator());
         
         putProperty(PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
@@ -62,6 +69,35 @@ public class AddServerInstanceWizard extends WizardDescriptor {
     private AddServerInstanceWizard(AddServerInstanceWizardIterator iterator) {
         super(iterator);
         this.iterator = iterator;
+    }
+    
+    
+    public static String showAddServerInstanceWizard() {
+        AddServerInstanceWizard wizard = new AddServerInstanceWizard();
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(wizard);
+        try {
+            dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddServerInstanceWizard.class, "ACSD_Add_Server_Instance"));
+            dialog.setVisible(true);
+        } finally {
+            dialog.dispose();
+        }
+        if (wizard.getValue() == WizardDescriptor.FINISH_OPTION) {
+            Set instantiatedObjects = wizard.getInstantiatedObjects();
+            if (instantiatedObjects != null && instantiatedObjects.size() > 0) {
+                Object result = instantiatedObjects.iterator().next();
+                if (result instanceof InstanceProperties) {
+                    return ((InstanceProperties) result).getProperty(InstanceProperties.URL_ATTR);
+                } else {
+                    LOGGER.warning(wizard.iterator.getSelectedServer() + "'s add server instance wizard iterator should return " + // NOI18N
+                            "a Set containing new server instance InstanceProperties object as a result of the " + // NOI18N
+                            "WizardDescriptor.InstantiatingIterator.instantiate() method."); // NOI18N
+                    // there is an error in the server plugin, cannot return the added instance
+                    return null;
+                }
+            }
+        }
+        // the wizard was cancelled
+        return null;
     }
     
     public void setErrorMessage(String message) {
@@ -228,7 +264,7 @@ public class AddServerInstanceWizard extends WizardDescriptor {
                 return null;
         }
         
-        private Server getSelectedServer() {
+        public Server getSelectedServer() {
             return (Server)wd.getProperty(PROP_SERVER);
         }
     }  

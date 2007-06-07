@@ -86,7 +86,24 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
-        <change id="ExposeFileDeploymentCapabilityToProjects">
+	<change id="AddServerWizard">
+            <api name="j2eeserver"/>
+            <summary>
+		Adds a method for displaying the Add server instance wizard.
+ 	    </summary>
+            <version major="1" minor="28"/>
+            <date day="7" month="6" year="2007"/>
+            <author login="sherold"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+		    Adds a method for displaying the Add server instance wizard.
+                </p>
+            </description>
+	    <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="ServerManager"/>
+            <issue number="105403"/>
+	</change>
+	<change id="ExposeFileDeploymentCapabilityToProjects">
             <api name="j2eeserver"/>
             <summary>
                 Add a method that will allow Java EE project to determine if 

@@ -13,12 +13,13 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.j2ee.deployment.devmodules.api;
 
 import java.awt.Dialog;
+import java.awt.EventQueue;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -27,6 +28,7 @@ import javax.swing.JButton;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ServersCustomizer;
+import org.netbeans.modules.j2ee.deployment.impl.ui.wizard.AddServerInstanceWizard;
 
 /**
  * ServerManager class provides access to the Server Manager dialog.
@@ -47,8 +49,12 @@ public final class ServerManager {
      *
      * @param serverInstanceID server instance which should be preselected, if 
      *        null the first server instance will be preselected.
+     * 
+     * @throws IllegalThreadStateException if the method is not called from the 
+     *         event dispatch thread.
      */
     public static void showCustomizer(String serverInstanceID) {
+        checkDispatchThread();
         ServerInstance instance =  ServerRegistry.getInstance().getServerInstance(serverInstanceID);
         ServersCustomizer customizer = new ServersCustomizer(instance);
         JButton close = new JButton(NbBundle.getMessage(ServerManager.class,"CTL_Close"));
@@ -62,14 +68,34 @@ public final class ServerManager {
                 DialogDescriptor.DEFAULT_ALIGN, 
                 new HelpCtx(ServerManager.class),
                 null);
-        Dialog dlg = null;
+        Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
         try {
-            dlg = DialogDisplayer.getDefault().createDialog(descriptor);
             dlg.setVisible(true);
         } finally {
-            if (dlg != null) {
-                dlg.dispose();
-            }
+            dlg.dispose();
         }
+    }
+    
+    /**
+     * Displays the add server instance wizarad and returns the ID of the added
+     * server instance.
+     * 
+     * @return server instance ID of the new server instance, or <code>null</code>
+     *         if the wizard was cancelled.
+     * 
+     * @throws IllegalThreadStateException if the method is not called from the 
+     *         event dispatch thread.
+     * 
+     * @since  1.28
+     */
+    public static String showAddServerInstanceWizard() {
+        checkDispatchThread();
+        return AddServerInstanceWizard.showAddServerInstanceWizard();
+    }
+    
+    private static void checkDispatchThread() {
+	if (!EventQueue.isDispatchThread()) {
+	    throw new IllegalThreadStateException("Can only be called from the event dispatch thread."); // NOI18N
+	}
     }
 }

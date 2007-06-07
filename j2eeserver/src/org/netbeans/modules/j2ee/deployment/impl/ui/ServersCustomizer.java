@@ -290,28 +290,13 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
     }//GEN-LAST:event_removeServer
     
     private void addServer(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addServer
-        AddServerInstanceWizard wizard = new AddServerInstanceWizard();
-        final Dialog dialog = DialogDisplayer.getDefault().createDialog(wizard);
-        dialog.getAccessibleContext().setAccessibleDescription(
-                NbBundle.getMessage(ServersCustomizer.class, "ACSD_Add_Server_Instance"));
-        dialog.setVisible(true);
-        if (wizard.getValue() == WizardDescriptor.FINISH_OPTION) {
+        String serverInstanceId = AddServerInstanceWizard.showAddServerInstanceWizard();
+        if (serverInstanceId != null) {
             getChildren().refreshServers();
-            ServerInstance servInst = null;
-            // PENDING : AddServerInstanceWizard.getInstantiatedObjects is expected to 
-            // return set of InstanceProperties instances - this should be ensured
-            Set result = wizard.getInstantiatedObjects();
-            if (result != null) {
-                for (Iterator i = result.iterator(); i.hasNext();) {
-                    Object instObj = i.next();
-                    if (instObj instanceof InstanceProperties) {
-                        InstanceProperties ip = (InstanceProperties)instObj;
-                        String url = ip.getProperty(InstanceProperties.URL_ATTR);
-                        servInst = ServerRegistry.getInstance().getServerInstance(url);
-                    }
-                }
+            ServerInstance serverInstance = ServerRegistry.getInstance().getServerInstance(serverInstanceId);
+            if (serverInstance != null) {
+                expandServers(serverInstance);
             }
-            expandServers(servInst);
         }
     }//GEN-LAST:event_addServer
     
