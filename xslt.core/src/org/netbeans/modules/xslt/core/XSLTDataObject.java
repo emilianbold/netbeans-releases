@@ -18,11 +18,15 @@
  */
 package org.netbeans.modules.xslt.core;
 
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import org.netbeans.modules.xslt.core.multiview.XsltMultiViewSupport;
 import org.netbeans.modules.xslt.mapper.model.MapperContext;
 import org.netbeans.modules.xslt.model.XslModel;
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
@@ -182,8 +186,9 @@ public class XSLTDataObject extends MultiDataObject {
         }
     }
     
+    @Override
     protected Node createNodeDelegate() {
-        return new XSLTDataNode(this);
+        return new XSLTDataNode(this, getEditorSupport());
     }
     
     public XSLTDataEditorSupport getEditorSupport() {
@@ -212,28 +217,31 @@ public class XSLTDataObject extends MultiDataObject {
     private static class XSLTDataNode extends DataNode {
         XSLTDataEditorSupport myEditorSupport;
         
-        public XSLTDataNode(XSLTDataObject obj) {
+        public XSLTDataNode(XSLTDataObject obj, XSLTDataEditorSupport support) {
             super(obj, Children.LEAF);
             setIconBaseWithExtension(XSLTDataLoaderBeanInfo.PATH_TO_IMAGE);
+            myEditorSupport = support;
         }
         
-//        public Action getPreferredAction() {
-//            return new AbstractAction() {
-//                private static final long serialVersionUID = 1L;
-//                public void actionPerformed(ActionEvent e) {
-//                    // Fix for #81066
-//                    if ( myEditorSupport.getOpenedPanes()==null ||
-//                            myEditorSupport.getOpenedPanes().length==0 ) {
-//                        myEditorSupport.open();
-//                        XsltMultiViewSupport support = XsltMultiViewSupport.getInstance();
-//                        support.requestViewOpen(myEditorSupport);
-//                    } else {
-//                        myEditorSupport.open();
-//                    }
-//                }
-//            };
-//        }
-//
+        @Override
+        public Action getPreferredAction() {
+            return new AbstractAction() {
+                    private static final long serialVersionUID = 1L;
+            public void actionPerformed(ActionEvent e) {
+                // Fix for #81066
+                if ( myEditorSupport.getOpenedPanes()==null ||
+                        myEditorSupport.getOpenedPanes().length==0 ) 
+                {
+                    myEditorSupport.open();
+                    XsltMultiViewSupport support = 
+                        XsltMultiViewSupport.getInstance();
+                    support.requestViewOpen(myEditorSupport);
+                } else {
+                    myEditorSupport.open();
+                }
+            }
+            };
+        }
         
     }
     
