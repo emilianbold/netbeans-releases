@@ -36,6 +36,7 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
@@ -69,8 +70,9 @@ public abstract class EJBProblemFinder {
             problemsFound.clear();
             EjbJar ejbModule = EjbJar.getEjbJar(file);
             
-            if (ejbModule == null){
-                return; // File doesn't belong to EJB project
+            if (ejbModule == null 
+                    || !ejbModule.getJ2eePlatformVersion().equals(EjbProjectConstants.JAVA_EE_5_LEVEL)){
+                return; // File doesn't belong to EJB project or the EJB version is not supported
             }
             
             ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
