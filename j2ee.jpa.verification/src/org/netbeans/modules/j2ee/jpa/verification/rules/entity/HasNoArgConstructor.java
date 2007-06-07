@@ -20,11 +20,10 @@
 package org.netbeans.modules.j2ee.jpa.verification.rules.entity;
 
 import java.util.Arrays;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementFilter;
 import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule;
 import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -32,7 +31,7 @@ import org.openide.util.NbBundle;
 
 /**
  * The class must have a public or protected, no-argument constructor.
- * 
+ *
  * @author Sanjeeb.Sahoo@Sun.COM
  * @author Tomasz.Slota@Sun.COM
  */
@@ -45,19 +44,23 @@ public class HasNoArgConstructor extends JPAClassRule {
     }
     
     @Override public ErrorDescription[] apply(TypeElement subject, ProblemContext ctx){
-        for (Element element : subject.getEnclosedElements()){
-            if (element.getKind() == ElementKind.CONSTRUCTOR){
-                ExecutableElement constr = (ExecutableElement) element;
-                
-                if (constr.getParameters().size() == 0
-                        && (constr.getModifiers().contains(Modifier.PUBLIC)
-                        || constr.getModifiers().contains(Modifier.PROTECTED))){
-                    return null; // found appropriate constructor
-                }
+        boolean hasDefaultContructor = true;
+        
+        for (ExecutableElement constr : ElementFilter.constructorsIn(subject.getEnclosedElements())){
+            hasDefaultContructor = false;
+            
+            if (constr.getParameters().size() == 0
+                    && (constr.getModifiers().contains(Modifier.PUBLIC)
+                    || constr.getModifiers().contains(Modifier.PROTECTED))){
+                return null; // found appropriate constructor
             }
         }
         
+        if (hasDefaultContructor){
+            return null; // OK
+        }
+        
         return new ErrorDescription[]{createProblem(subject, ctx,
-                NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_HasNoNoArgConstructor"))};
+                NbBundle.getMessage(HasNoArgConstructor.class, "MSG_HasNoNoArgConstructor"))};
     }
 }
