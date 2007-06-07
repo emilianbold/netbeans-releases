@@ -15,7 +15,8 @@ import com.sun.ws.rest.api.HttpMethod;
 import com.sun.ws.rest.api.ProduceMime;
 import com.sun.ws.rest.api.ConsumeMime;
 import com.sun.ws.rest.api.core.HttpContext;
-import com.sun.ws.rest.api.representation.StringRepresentation;
+import com.sun.ws.rest.api.response.HttpResponse;
+import com.sun.ws.rest.api.representation.Representation;
 import javax.annotation.Resource;
 
 /**

@@ -20,7 +20,6 @@ package org.netbeans.modules.websvc.rest.codegen.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,14 +33,10 @@ import org.netbeans.modules.websvc.rest.codegen.model.GenericResourceBean.HttpMe
  */
 public class GenericResourceBean {
     public static enum HttpMethodType { GET, PUT, POST, DELETE }
-    public static final String MIME_TYPE_TEXT = "text/plain";
-    public static final String MIME_TYPE_TEXT_HTML = "text/html";
-    public static final String MIME_TYPE_XML = "application/xml";
-    public static final String MIME_TYPE_JASON = "application/json";
     public static final String[] supportedMimeTypes = new String[] { 
-        MIME_TYPE_XML,  // first one is default
-        MIME_TYPE_TEXT, 
-        MIME_TYPE_TEXT_HTML,
+        Constants.MIME_TYPE_XML,  // first one is default
+        Constants.MIME_TYPE_TEXT, 
+        Constants.MIME_TYPE_TEXT_HTML,
     };
     
     public static final HttpMethodType[] CONTAINER_METHODS = new HttpMethodType[] {
@@ -52,27 +47,29 @@ public class GenericResourceBean {
          HttpMethodType.GET, HttpMethodType.PUT, HttpMethodType.DELETE 
     };
     
-    public static final HttpMethodType[] STAND_ALONE_METHODS = ITEM_METHODS;
+    public static final HttpMethodType[] STAND_ALONE_METHODS = HttpMethodType.values();
     
     private String name;
     private String packageName;
 
     private String uriTemplate;
-    private Set<String> mimeTypes;
+    private String[] mimeTypes;
+    private String[] representationTypes;
     private Set<HttpMethodType> methodTypes;
 
-    public GenericResourceBean(String name, String packageName, String uriTemplate) {
-         this(name, packageName, uriTemplate, supportedMimeTypes, HttpMethodType.values());
-     }
-    
     public GenericResourceBean(String name, String packageName, String uriTemplate, 
-            String[] mediaTypes, 
+            String[] mediaTypes, String[] representationTypes,
             HttpMethodType[] methodTypes) {
         this.name = name;
         this.packageName = packageName;
         this.uriTemplate = uriTemplate;
-        this.mimeTypes = new HashSet(Arrays.asList(mediaTypes));
         this.methodTypes = new HashSet(Arrays.asList(methodTypes));
+        
+        if (mediaTypes.length != representationTypes.length) {
+            throw new IllegalArgumentException("Unmatched media types and representation types");
+        }
+        this.mimeTypes = mediaTypes;
+        this.representationTypes = representationTypes;
     }
 
     public static String[] getSupportedMimeTypes() {
@@ -95,14 +92,14 @@ public class GenericResourceBean {
         this.uriTemplate = uriTemplate;
     }
 
-    public Set<String> getMimeTypes() {
+    public String[] getMimeTypes() {
         return mimeTypes;
     }
 
-    public void addMimeType(String mimeType) {
-        this.mimeTypes.add(mimeType);
+    public String[] getRepresentationTypes() {
+        return representationTypes;
     }
-
+    
     public Set<HttpMethodType> getMethodTypes() {
         return methodTypes;
     }

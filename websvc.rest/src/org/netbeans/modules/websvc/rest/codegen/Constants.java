@@ -99,10 +99,14 @@ public class Constants {
     
     public static final String XML_TRANSIENT_ANNOTATION = "XmlTransient"; //NOI18N
     
-    public static final String XML_MIME_TYPE = "application/xml";       //NOI18N
+    public static final String MIME_TYPE_TEXT = "text/plain";
     
-    public static final String HTML_MIME_TYPE = "text/html";       //NOI18N
+    public static final String MIME_TYPE_TEXT_HTML = "text/html";
     
+    public static final String MIME_TYPE_XML = "application/xml";
+    
+    public static final String MIME_TYPE_JASON = "application/json";
+
     public static final String HTTP_GET_METHOD = "GET";             //NOI18N
     
     public static final String HTTP_PUT_METHOD = "PUT";             //NOI18N

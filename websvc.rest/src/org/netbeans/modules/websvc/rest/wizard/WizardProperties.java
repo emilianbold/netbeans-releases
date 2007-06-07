@@ -26,12 +26,22 @@ public class WizardProperties {
     public static final String ENTITY_CLASSES = "EntityClasses"; //NOI18N
     public static final String REST_CLASSES_PACKAGE = "RESTBean"; //NOI18N
     public static final String PERSISTENCE_UNIT_NAME = "PersistenceUnitName";       //NOI18N
+    
     public static final String RESOURCE_NAME = "ResourceName"; //NOI18N
     public static final String RESOURCE_CLASS = "ResourceClass"; //NOI18N
     public static final String RESOURCE_URI = "ResourceURI"; //NOI18N
     public static final String MIME_TYPES = "MimeTypes"; //NOI18N
-    public static final String REPRESENTATION_CLASS = "RepresentationClass"; //NOI18N
+    public static final String REPRESENTATION_TYPES = "RepresentationTypes"; //NOI18N
+    
+    public static final String ITEM_RESOURCE_NAME = "ItemResourceName"; //NOI18N
+    public static final String ITEM_RESOURCE_CLASS = "ItemResourceClass"; //NOI18N
+    public static final String ITEM_RESOURCE_URI = "ItemResourceURI"; //NOI18N
+    public static final String ITEM_MIME_TYPES = "ItemMimeTypes"; //NOI18N
+    public static final String ITEM_REPRESENTATION_TYPES = "RepresentationTypes"; //NOI18N
+
     public static final String CONTAINER_RESOURCE_CLASS = "ContainerResourceClass"; //NOI18N
+    public static final String CONTAINER_REPRESENTATION_TYPES = "ContainerRepresentationTypes"; //NOI18N
     public static final String CONTAINER_RESOURCE_URI = "ContainerResourceURI"; //NOI18N
+    
     public static final String PATTERN_SELECTION = "SelectedPattern"; //NOI18N
 }

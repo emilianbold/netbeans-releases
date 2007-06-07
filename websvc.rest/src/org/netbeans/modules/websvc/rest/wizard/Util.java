@@ -201,20 +201,12 @@ public class Util {
         return resourceName + EntityRESTServicesCodeGenerator.RESOURCE_SUFFIX;
     }
 
-    public static String deriveContentClassName(String packageName, String className) {
-        String contentClass = packageName;
-        if (contentClass != null && contentClass.length() > 0) {
-            contentClass += "." + className;
-        }
-        return contentClass;
-    }
-    
-    //TODO unit testing
     public static String deriveUri(String resourceName, String currentUri) {
         if (resourceName.length() == 0 || currentUri == null || currentUri.length() == 0 || currentUri.charAt(0) != '/') {
             return currentUri;
         }
         resourceName = lowerFirstChar(resourceName);
+        resourceName = pluralize(resourceName);
         String root = currentUri;
         String params = null;
         int lastIndex = currentUri.indexOf('{');
