@@ -60,8 +60,8 @@ public final class FlowLayout implements Layout {
                 int y = preferredBounds.y;
                 int width = preferredBounds.width;
                 int height = preferredBounds.height;
-                int lx = - x + insets.left;
-                int ly = pos - y + insets.top;
+                int lx = -x;
+                int ly = pos - y;
                 switch (alignment) {
                     case CENTER:
                         lx += (max - width) / 2;
@@ -83,7 +83,7 @@ public final class FlowLayout implements Layout {
             }
         } else {
             for (Widget child : children) {
-                if (! child.isVisible ())
+                if (!child.isVisible ())
                     continue;
                 Rectangle preferredBounds = child.getPreferredBounds ();
                 int i = preferredBounds.height;
@@ -98,7 +98,7 @@ public final class FlowLayout implements Layout {
                 int width = preferredBounds.width;
                 int height = preferredBounds.height;
                 int lx = pos - x;
-                int ly = - y;
+                int ly = -y;
                 switch (alignment) {
                     case CENTER:
                         ly += (max - height) / 2;
@@ -122,38 +122,65 @@ public final class FlowLayout implements Layout {
     }
 
     public boolean requiresJustification (Widget widget) {
-        return alignment == LayoutFactory.SerialAlignment.JUSTIFY;
+        return true;
     }
 
     public void justify (Widget widget) {
-        if (alignment != LayoutFactory.SerialAlignment.JUSTIFY)
-            return;
+        Rectangle bounds = widget.getClientArea ();
+        int parentX1 = bounds.x;
+        int parentX2 = parentX1 + bounds.width;
+        int parentY1 = bounds.y;
+        int parentY2 = parentY1 + bounds.height;
+
         for (Widget child : widget.getChildren ()) {
-            Rectangle bounds = widget.getClientArea ();
-            Point location = child.getLocation ();
+            Point childLocation = child.getLocation ();
             Rectangle childBounds = child.getBounds ();
 
             if (verticalOrientation) {
-                int parentX1 = bounds.x;
-                int parentX2 = parentX1 + bounds.width;
-                int childX1 = location.x + childBounds.x;
+                int childX1 = childLocation.x + childBounds.x;
                 int childX2 = childX1 + childBounds.width;
 
-                childBounds.x = Math.min (parentX1, childX1);
-                childBounds.width = Math.max (parentX2, childX2) - childBounds.x;
-                childBounds.x -= location.x;
+                switch (alignment) {
+                    case CENTER:
+                        childLocation.x = (parentX1 + parentX2 - childBounds.width) / 2;
+                        break;
+                    case JUSTIFY:
+                        childLocation.x = parentX1;
+                        childBounds.width = parentX2 - parentX1;
+                        break;
+                    case LEFT_TOP:
+                        childLocation.x = parentX1;
+                        break;
+                    case RIGHT_BOTTOM:
+                        childLocation.x = parentX2 - childBounds.width;
+                        break;
+                }
+                childLocation.x -= childBounds.x;
+                childLocation.y += parentY1;
             } else {
-                int parentY1 = bounds.y;
-                int parentY2 = parentY1 + bounds.height;
-                int childY1 = location.y + childBounds.y;
+                int childY1 = childLocation.y + childBounds.y;
                 int childY2 = childY1 + childBounds.height;
 
-                childBounds.y = Math.min (parentY1, childY1);
-                childBounds.height = Math.max (parentY2, childY2) - childBounds.y;
-                childBounds.y -= location.y;
+                switch (alignment) {
+                    case CENTER:
+                        childLocation.y = (parentY1 + parentY2 - childBounds.height) / 2;
+                        break;
+                    case JUSTIFY:
+                        childLocation.y = parentY1;
+                        childBounds.height = parentY2 - parentY1;
+                        break;
+                    case LEFT_TOP:
+                        childLocation.y = parentY1;
+                        break;
+                    case RIGHT_BOTTOM:
+                        childLocation.y = parentY2 - childBounds.height;
+                        break;
+                }
+                childLocation.y -= childBounds.y;
+                childLocation.x += parentX1;
             }
 
-            child.resolveBounds (location, childBounds);
+            child.resolveBounds (childLocation, childBounds);
         }
     }
 
