@@ -83,7 +83,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
     private WsdlServiceHandler wsdlServiceHandler;
     private Project project;
     private WizardDescriptor wizardDescriptor;
-
+    
     private JAXWSSupport wss;
     private boolean jsr109Supported;
     private boolean jsr109oldSupported;
@@ -120,7 +120,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                     StreamSource source = new StreamSource(wsdlURL.toExternalForm());
                     try {
                         File wsdlFile = new File(System.getProperty("java.io.tmpdir"), WsdlWrapperGenerator.getWrapperName(wsdlURL)); //NOI18N
-
+                        
                         if(!wsdlFile.exists()) {
                             try {
                                 wsdlFile.createNewFile();
@@ -153,15 +153,15 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                                 portName = wsdlServiceHandler.getPortName();
                             } catch (ParserConfigurationException ex) {
                             } catch (SAXException ex) {
-                            } catch (IOException ex) {} 
+                            } catch (IOException ex) {}
                             if (serviceName!=null && portName!=null) {
                                 jTextFieldPort.setText(serviceName + "#" + portName);
                             } else {
                                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                                         NbBundle.getMessage(WebServiceFromWSDLPanel.class,"TXT_CannotGenerateService",
-                                                            wsdlModeler.getCreationException().getLocalizedMessage()),
+                                        wsdlModeler.getCreationException().getLocalizedMessage()),
                                         NotifyDescriptor.WARNING_MESSAGE)
-                                );
+                                        );
                             }
                         } else {
                             jButtonBrowsePort.setEnabled(true);
@@ -180,11 +180,11 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                                 if (bindingType!=null) port.setSOAPVersion(bindingType);
                             }
                         }
-
+                        
                         fireChange(); //refresh wizard buttons
                     }
                 });
-            }    
+            }
         });
     }
     
@@ -281,7 +281,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         Node root = new WsdlNode(wsdlModel);
         PortChooser chooser = new PortChooser(root);
         final DialogDescriptor dd = new DialogDescriptor(chooser, org.openide.util.NbBundle.getMessage(WebServiceFromWSDLPanel.class, "LBL_SelectPortDescription")); //NOI18N
-
+        
         chooser.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals(PortChooser.IS_VALID)) {
@@ -292,9 +292,9 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                 }
             }
         });
-
+        
         Object result = DialogDisplayer.getDefault().notify(dd);
-
+        
         if (result == DialogDescriptor.OK_OPTION) {
             if (Util.isJavaEE5orHigher(project) ||
                     (!jsr109Supported && !jsr109oldSupported ||
@@ -333,7 +333,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
     
     void validate(WizardDescriptor wizardDescriptor) {
     }
-
+    
     private void initJsr109Info() {
         wss = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
         if (wss != null) {
@@ -364,7 +364,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                     return false;
                 }
             }
-        }                    
+        }
         return true;
     }
     
@@ -399,7 +399,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                         NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_WsdlInvalid")); // NOI18N
                 return false; // invalid WSDL file
             }
-
+            
             if(!f.exists()) {
                 wizardDescriptor.putProperty("WizardPanel_errorMessage",  // NOI18N
                         NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_WsdlDoesNotExist")); // NOI18N
@@ -407,15 +407,15 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
             }
         }
         
-        //if (Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project) ||
-        //        (!jsr109Supported && !jsr109oldSupported ||
-        //        (!jsr109Supported && jsr109oldSupported && jwsdpSupported ))) {
+        if (Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project) ||
+                (!jsr109Supported && !jsr109oldSupported ||
+                (!jsr109Supported && jsr109oldSupported && jwsdpSupported ))) {
             if (wsdlModel != null) {
                 if (service == null) {
                     wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(WebServiceFromWSDLPanel.class, "MSG_NoService")); // NOI18N
                     return false;
                 }
-
+                
                 if (port == null) {
                     wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(WebServiceFromWSDLPanel.class, "MSG_NoPort")); // NOI18N
                     return false;
@@ -428,34 +428,33 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                     return false;
                 }
             }
-        //}
+        }
         
         //warning if the project directory has embedded spaces
         //TODO - Remove this when the jwsdp version that fixes this problem is available
         if(projectHasEmbeddedSpaces()){
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", 
+            wizardDescriptor.putProperty("WizardPanel_errorMessage",
                     NbBundle.getMessage(WebServiceFromWSDLPanel.class, "MSG_SPACE_IN_PROJECT_PATH")); // NOI18N
-        }
-        else{
+        } else{
             wizardDescriptor.putProperty("WizardPanel_errorMessage",  ""); // NOI18N
         }
-// Retouche      
-//        if (JavaMetamodel.getManager().isScanInProgress()) {
-//            if (!isWaitingForScan) {
-//                isWaitingForScan = true;
-//                RequestProcessor.getDefault().post(new Runnable() {
-//                    public void run() {
-//                        JavaMetamodel.getManager().waitScanFinished();
-//                        isWaitingForScan = false;
-//                        fireChange();
-//                    }
-//                });
-//            }
-//            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(WebServiceFromWSDLPanel.class, "MSG_ScanningInProgress")); //NOI18N
-//            return false;
-//        } else
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); //NOI18N
-
+        // Retouche
+        //        if (JavaMetamodel.getManager().isScanInProgress()) {
+        //            if (!isWaitingForScan) {
+        //                isWaitingForScan = true;
+        //                RequestProcessor.getDefault().post(new Runnable() {
+        //                    public void run() {
+        //                        JavaMetamodel.getManager().waitScanFinished();
+        //                        isWaitingForScan = false;
+        //                        fireChange();
+        //                    }
+        //                });
+        //            }
+        //            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(WebServiceFromWSDLPanel.class, "MSG_ScanningInProgress")); //NOI18N
+        //            return false;
+        //        } else
+        wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); //NOI18N
+        
         return true;
     }
     
@@ -598,5 +597,5 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
             return NbBundle.getMessage(WebServiceFromWSDLPanel.class, "LBL_WsdlFilterDescription"); // NOI18N
         }
     }
-
+    
 }
