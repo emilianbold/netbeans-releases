@@ -61,16 +61,16 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
         updateContentModel();
         initListeners();
     }
-   
+    
     
     public void updateContentModel() {
-//        if ( pageContentModel != null ){
-//            try         {
-//                pageContentModel.destroy();
-//            } catch (IOException ex) {
-//                Exceptions.printStackTrace(ex);
-//            }
-//        }
+        //        if ( pageContentModel != null ){
+        //            try         {
+        //                pageContentModel.destroy();
+        //            } catch (IOException ex) {
+        //                Exceptions.printStackTrace(ex);
+        //            }
+        //        }
         if( !isDataNode() ){
             return;
         }
@@ -121,12 +121,12 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
             String oldNodeDisplayName = nodeDisplayName;
             nodeDisplayName = getFolderDisplayName(pc.getWebFolder(), fileObj );
             
-//            if( !nodeDisplayName.equals(oldNodeDisplayName) ){
-                //DISPLAYNAME:
-                //                pc.replacePageName2Node(this, nodeDisplayName, oldNodeDisplayName );
-                //                pc.removePageName2Node(nodeDisplayName);
-                //                pc.putPageName2Node(nodeDisplayName, this);
-//            }
+            //            if( !nodeDisplayName.equals(oldNodeDisplayName) ){
+            //DISPLAYNAME:
+            //                pc.replacePageName2Node(this, nodeDisplayName, oldNodeDisplayName );
+            //                pc.removePageName2Node(nodeDisplayName);
+            //                pc.putPageName2Node(nodeDisplayName, this);
+            //            }
             
         }
         pc.putPageName2Page(nodeDisplayName, this);
@@ -218,7 +218,7 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
         destroyListeners();
     }
     
-
+    
     public void destroy() throws IOException {
         
         Object input = DialogDescriptor.NO_OPTION;       //This should be the default option especially if not a DataNode.
@@ -226,7 +226,7 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
         
         
         if ( isDataNode() ){
-            //Don't even ask unless DataNode. 
+            //Don't even ask unless DataNode.
             DialogDescriptor dialog = new DialogDescriptor(
                     NbBundle.getMessage(Page.class, "MSG_DELETE_QUESTION", getDisplayName()),
                     NbBundle.getMessage(Page.class, "MSG_DELETE_TITLE"),
@@ -247,17 +247,18 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
         if ( input == DialogDescriptor.YES_OPTION ){
             pc.removeSceneNodeEdges(this);
             original.destroy();
+            destroyListeners();
         } else if ( input == DialogDescriptor.NO_OPTION ) {
             pc.removeSceneNodeEdges(this);
-//            if ( removePageName2NodeReference ) {  //HACK Should I remove the node myself until Petr fixes this bug?
-//                //                pc.removePageName2Node(displayName);
-//                destroy();
-//            }
+            //            if ( removePageName2NodeReference ) {  //HACK Should I remove the node myself until Petr fixes this bug?
+            //                //                pc.removePageName2Node(displayName);
+            //                destroy();
+            //            }
             //            System.out.println("Only Node Removed");
         } else if ( input == DialogDescriptor.CANCEL_OPTION ) {
             //            System.out.println("Cancel... Do Nothing.");
         }
-        destroyListeners();
+        //        destroyListeners();
         //
         //        original.destroy();
         //        pc.pageName2Node.remove(getDisplayName());
@@ -276,7 +277,7 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
     public HelpCtx getHelpCtx() {
         return original.getHelpCtx();
     }
-
+    
     public Node getNode() {
         if ( isDataNode() )
             return original;
@@ -295,7 +296,7 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
         getCookie(SaveCookie.class).save();
     }
     
-//    @Override
+    //    @Override
     public <T extends Cookie> T getCookie(Class<T> type) {
         if( type.equals(SaveCookie.class)) {
             return pc.getConfigDataObject().getCookie(type);
@@ -408,10 +409,10 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
         return System.identityHashCode(this);
     }
     
-//    
-//    public final NonDataNode createNonDataNode() {
-//        return new NonDataNode(this);
-//    }
+    //
+    //    public final NonDataNode createNonDataNode() {
+    //        return new NonDataNode(this);
+    //    }
     
     public final class NonDataNode extends AbstractNode {
         Page page;
@@ -420,17 +421,17 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
             super.setName(pageName);
             this.page = page;
         }
-
+        
         @Override
         public boolean canRename() {
             return true;
         }
-
+        
         @Override
         public String getName() {
             return page.getName();
         }
-
+        
         @Override
         public void setName(String s) {
             super.setName(s);
