@@ -24,9 +24,13 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.xml.parsers.DocumentBuilder;
@@ -99,6 +103,7 @@ import org.w3c.dom.NodeList;
 public final class J2SEProject implements Project, AntProjectListener {
     
     private static final Icon J2SE_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png")); // NOI18N
+    private static final Logger LOG = Logger.getLogger(J2SEProject.class.getName());
 
     private final AuxiliaryConfiguration aux;
     private final AntProjectHelper helper;
@@ -495,6 +500,19 @@ public final class J2SEProject implements Project, AntProjectListener {
             J2SELogicalViewProvider physicalViewProvider = getLookup().lookup(J2SELogicalViewProvider.class);
             if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {   
                 BrokenReferencesSupport.showAlert();
+            }
+            String prop = eval.getProperty(J2SEProjectProperties.SOURCE_ENCODING);
+            if (prop != null) {
+                try {
+                    Charset c = Charset.forName(prop);
+                } catch (IllegalCharsetNameException e) {
+                    //Broken property, log & ignore
+                    LOG.warning("Illegal charset: " + prop+ " in project: " + FileUtil.getFileDisplayName(getProjectDirectory())); //NOI18N
+                }
+                catch (UnsupportedCharsetException e) {
+                    //todo: Needs UI notification like broken references.
+                    LOG.warning("Unsupported charset: " + prop+ " in project: " + FileUtil.getFileDisplayName(getProjectDirectory())); //NOI18N
+                }
             }
         }
         
