@@ -41,7 +41,6 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
     private WidgetAction lockedAction;
     private long eventIDcounter = 0;
     private AccessibleContext accessibleContext;
-    private Point shiftedMouseLocation = new Point ();
 
     public SceneComponent (Scene scene) {
         this.scene = scene;
@@ -82,7 +81,6 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
 
     public void setBounds (int x, int y, int width, int height) {
         super.setBounds (x, y, width, height);
-
 
         Rectangle bounds = scene.getBounds ();
         double zoomFactor = scene.getZoomFactor();
@@ -213,11 +211,11 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
     }
 
     private WidgetAction.State processLocationOperator (Operator operator, WidgetAction.WidgetLocationEvent event) {
+        Point oldSceneLocation = scene.getLocation ();
+        Rectangle oldVisibleRect = getVisibleRect ();
         Point viewPoint = event.getPoint ();
         Point oldScenePoint = scene.convertViewToScene (viewPoint);
-        Point scenePoint = new Point (oldScenePoint);
-        scenePoint.translate (- shiftedMouseLocation.x, - shiftedMouseLocation.y);
-        event.setPoint (scenePoint);
+        event.setPoint (new Point (oldScenePoint));
 
         WidgetAction.State state;
         Point location;
@@ -253,29 +251,16 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
         lockedAction = state.getLockedAction ();
         scene.validate ();
 
-        if (lockedWidget != null) {
-            Point previousScreenLocation = getLocationOnScreen ();
-            scrollRectToVisible (scene.convertSceneToView (lockedWidget.convertLocalToScene (lockedWidget.getBounds ())));
-            Point newScreenLocation = getLocationOnScreen ();
-            Point newViewPoint = new Point (viewPoint);
-            newViewPoint.translate (- (newScreenLocation.x - previousScreenLocation.x), - (newScreenLocation.y - previousScreenLocation.y));
-            Point newScenePoint = scene.convertViewToScene (newViewPoint);
-            shiftedMouseLocation.x += newScenePoint.x - oldScenePoint.x;
-            shiftedMouseLocation.y += newScenePoint.y - oldScenePoint.y;
-            if (operator == Operator.MOUSE_DRAGGED) {
-                Rectangle visibleRect = getVisibleRect ();
-                if (viewPoint.x < visibleRect.x)
-                    shiftedMouseLocation.x += AUTO_SHIFT;
-                else if (viewPoint.x >= visibleRect.x + visibleRect.width)
-                    shiftedMouseLocation.x -= AUTO_SHIFT;
-                if (viewPoint.y < visibleRect.y)
-                    shiftedMouseLocation.y += AUTO_SHIFT;
-                else if (viewPoint.y >= visibleRect.y + visibleRect.width)
-                    shiftedMouseLocation.y -= AUTO_SHIFT;
-            }
-        } else
-            shiftedMouseLocation.x = shiftedMouseLocation.y = 0;
-            
+        if (lockedAction != null) {
+            Point sceneLocation = scene.getLocation ();
+            Rectangle visibleRect = getVisibleRect ();
+            int xadd = (int) ((sceneLocation.x - oldSceneLocation.x) * scene.getZoomFactor ());
+            int yadd = (int) ((sceneLocation.y - oldSceneLocation.y) * scene.getZoomFactor ());
+            if (xadd != 0  ||  yadd != 0)
+                scrollRectToVisible (new Rectangle (oldVisibleRect.x + xadd, oldVisibleRect.y + yadd, visibleRect.width, visibleRect.height));
+            scrollRectToVisible (new Rectangle (scene.convertSceneToView (oldScenePoint)));
+        }
+
         return state;
     }
 

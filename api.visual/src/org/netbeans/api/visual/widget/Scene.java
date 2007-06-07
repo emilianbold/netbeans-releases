@@ -80,6 +80,7 @@ public class Scene extends Widget {
 
     private Widget focusedWidget = this;
     private WidgetAction widgetHoverAction;
+    boolean extendSceneOnly = false;
 
     /**
      * Creates a scene.
@@ -256,6 +257,7 @@ public class Scene extends Widget {
 
     // TODO - requires optimalization while changing preferred size and calling revalidate/repaint
     private void layoutScene () {
+        Rectangle prepreBounds = getBounds ();
         layout (false);
         resolveBounds (null, null);
         justify ();
@@ -281,6 +283,11 @@ public class Scene extends Widget {
 
         Point preLocation = getLocation ();
         Rectangle preBounds = getBounds ();
+        if (extendSceneOnly  &&  rect != null  &&  preBounds != null) {
+            System.out.println ("preBounds = " + preBounds);
+            System.out.println ("rect = " + rect);
+            rect.add (prepreBounds);
+        }
         resolveBounds (rect != null ? new Point (- rect.x, - rect.y) : new Point (), rect);
 
         Dimension preferredSize = rect != null ? rect.getSize () : new Dimension ();
@@ -363,6 +370,14 @@ public class Scene extends Widget {
             for (SceneListener listener : ls)
                 listener.sceneValidated ();
         }
+    }
+
+    /**
+     * This methods makes the scene to be extended only - no shrunk.
+     * @param extendSceneOnly if true, the scene is going to be extended only
+     */
+    void setExtendSceneOnly (boolean extendSceneOnly) {
+        this.extendSceneOnly = extendSceneOnly;
     }
 
     private void repaintSatellite () {
