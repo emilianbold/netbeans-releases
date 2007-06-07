@@ -241,7 +241,7 @@ Microsystems, Inc. All Rights Reserved.
         </description>
         <class package="org.netbeans.spi.viewmodel" name="ExtendedNodeModel" />
         <class package="org.netbeans.spi.viewmodel" name="ExtendedNodeModelFilter" />
-        <class package="org.netbeans.spi.viewmodel" name="Models.CompoundModel" />
+        <class package="org.netbeans.spi.viewmodel" name="Models" />
         <issue number="104281"/>
     </change>
     
