@@ -75,9 +75,9 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
             return;
         }
         FileObject fileObject = ((DataNode)original).getDataObject().getPrimaryFile();
-        Lookup.Template templ = new Lookup.Template(PageContentModelProvider.class);
-        final Lookup.Result result = Lookup.getDefault().lookup(templ);
-        Collection<PageContentModelProvider> impls = result.allInstances();
+        Lookup.Template<PageContentModelProvider> templ = new Lookup.Template<PageContentModelProvider>(PageContentModelProvider.class);
+        final Lookup.Result<PageContentModelProvider> result = Lookup.getDefault().lookup(templ);
+        Collection<? extends PageContentModelProvider> impls =  result.allInstances();
         
         for( PageContentModelProvider provider : impls){
             pageContentModel = provider.getPageContentModel(fileObject);

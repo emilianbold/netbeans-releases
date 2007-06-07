@@ -369,7 +369,7 @@ public class PageFlowController {
             Collection<String> pagesInConfig = getFacesConfigPageNames(rules);
             createAllProjectPages(pagesInConfig);
         } else if ( isCurrentScope( Scope.SCOPE_ALL_FACESCONFIG)){
-            List<NavigationRule> allRules = new ArrayList();
+            List<NavigationRule> allRules = new ArrayList<NavigationRule>();
             WebModule webModule = WebModule.getWebModule(getWebFolder());
             FileObject[] configFiles = ConfigurationUtils.getFacesConfigFiles(webModule);
             for( FileObject aConfigFile : configFiles ){

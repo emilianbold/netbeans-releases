@@ -121,7 +121,7 @@ public final class FreePlaceNodesLayouter {
     
     
     
-    Collection<Page> nodesAdded = new HashSet();
+    Collection<Page> nodesAdded = new HashSet<Page>();
     private class PageFlowObjectSceneListener implements ObjectSceneListener{
         PageFlowScene scene;
         public PageFlowObjectSceneListener(PageFlowScene scene) {
