@@ -48,6 +48,8 @@
 #
 # ant=/opt/ant-1.7.0/bin/ant
 # Ant 1.7.0 binary.
+# You can also set useful build options, e.g.
+# ant='.../ant -Dcluster.config=basic'
 #
 # testant=/opt/ant-1.7.0/bin/ant
 # By default, same as ant.
@@ -313,9 +315,10 @@ then
     # Intentionally skipping check-commit-validation.
     # Running sanity-start just so you have a good chance to see deprecation messages etc.
     # Make sure to explicitly set JDK (ignore any definition in user.build.properties).
-    $antcmd -f $sources/nbbuild/build.xml -Dnbjdk.home=$nbjdk nozip-check # XXX when fixed also add: commit-verification
+    # XXX when fixed also add: commit-verification
+    $antcmd -f $sources/nbbuild/build.xml -Dnbjdk.home=$nbjdk nozip-check
     status=$?
-    if [ $status != 0 ]
+    if [ $status '!=' 0 ]
     then
         echo "NetBeans build failed with status $status!" 1>&2
         exit 1
