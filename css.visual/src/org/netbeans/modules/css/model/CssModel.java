@@ -198,7 +198,7 @@ public final class CssModel {
                                     if(node.getNT().equals("declaration")) { //NOI18N
                                         ASTNode key = node.getNode("key"); //NOI18N
                                         ASTNode value = node.getNode("expr"); //NOI18N
-                                        CssRuleItem ruleItem = new CssRuleItem(key.getAsText(), key.getOffset(), value.getAsText(), value.getOffset());
+                                        CssRuleItem ruleItem = new CssRuleItem(key.getAsText().trim(), key.getOffset(), value.getAsText().trim(), value.getOffset());
                                         items.add(ruleItem);
                                     }
                                 }
