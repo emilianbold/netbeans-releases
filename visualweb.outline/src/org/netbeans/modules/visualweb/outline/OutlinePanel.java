@@ -68,6 +68,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeOp;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 
@@ -81,7 +82,7 @@ import org.openide.util.WeakListeners;
  *
  * @author Peter Zavadsky
  */
-class OutlinePanel extends JPanel implements ExplorerManager.Provider, Lookup.Provider {
+class OutlinePanel extends JPanel implements ExplorerManager.Provider, Lookup.Provider, HelpCtx.Provider {
 
     /** Debugging flag. */
     private static final boolean DEBUG = ErrorManager.getDefault()
@@ -362,6 +363,11 @@ class OutlinePanel extends JPanel implements ExplorerManager.Provider, Lookup.Pr
 //                (DesignProjectListener)WeakListeners.create(DesignProjectListener.class, designProjectListener, designProject));
 //    }
     
+    public HelpCtx getHelpCtx() {
+        return ExplorerUtils.getHelpCtx(
+                getExplorerManager().getSelectedNodes(),
+                new HelpCtx("projrave_ui_elements_project_nav_about_app_outline")); // NOI18N
+    }
     
     private static class OutlineTreeView extends BeanTreeView {
         
