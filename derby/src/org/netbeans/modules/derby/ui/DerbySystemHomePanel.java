@@ -107,6 +107,9 @@ public class DerbySystemHomePanel extends javax.swing.JPanel {
         }
         
         initComponents();
+        jTextPane1.setBackground(getBackground());
+        jTextPane2.setBackground(getBackground());
+        messageLabel.setBackground(getBackground());
         derbySystemHomeTextField.getDocument().addDocumentListener(docListener);
         derbySystemHomeTextField.setText(DerbyOptions.getDefault().getSystemHome());
         derbyInstall.getDocument().addDocumentListener(docListener);
@@ -222,18 +225,17 @@ public class DerbySystemHomePanel extends javax.swing.JPanel {
         });
 
         jScrollPane1.setBorder(null);
-        jScrollPane1.setOpaque(false);
+        jScrollPane1.setFocusable(false);
 
         jTextPane1.setEditable(false);
         jTextPane1.setText(org.openide.util.NbBundle.getMessage(DerbySystemHomePanel.class, "LBL_InstallationInfo")); // NOI18N
-        jTextPane1.setOpaque(false);
         jScrollPane1.setViewportView(jTextPane1);
 
         jScrollPane2.setBorder(null);
+        jScrollPane2.setFocusable(false);
 
         jTextPane2.setEditable(false);
         jTextPane2.setText(org.openide.util.NbBundle.getMessage(DerbySystemHomePanel.class, "LBL_DerbySystemHomeInfo")); // NOI18N
-        jTextPane2.setOpaque(false);
         jScrollPane2.setViewportView(jTextPane2);
 
         jScrollPane3.setBorder(null);
@@ -243,7 +245,6 @@ public class DerbySystemHomePanel extends javax.swing.JPanel {
         messageLabel.setForeground(nbErrorForeground);
         messageLabel.setText(" ");
         messageLabel.setFocusable(false);
-        messageLabel.setOpaque(false);
         jScrollPane3.setViewportView(messageLabel);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -295,9 +296,9 @@ public class DerbySystemHomePanel extends javax.swing.JPanel {
                     .add(browseButton)
                     .add(derbySystemHomeTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 58, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 30, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
