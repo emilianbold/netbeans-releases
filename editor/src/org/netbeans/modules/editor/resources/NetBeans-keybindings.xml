@@ -89,7 +89,6 @@ Microsystems, Inc. All Rights Reserved.
     <bind actionName="jump-list-next-component" key="OS-L"/>
     <bind actionName="jump-list-prev" key="O-K"/>
     <bind actionName="jump-list-prev-component" key="OS-K"/>
-    <bind actionName="match-brace" key="D-OPEN_BRACKET"/>
     <bind actionName="page-down" key="PAGE_DOWN"/>
     <bind actionName="page-up" key="PAGE_UP"/>
     <bind actionName="paste-formated" key="DS-V"/>
@@ -120,7 +119,6 @@ Microsystems, Inc. All Rights Reserved.
     <bind actionName="selection-end" key="DS-END"/>
     <bind actionName="selection-end-line" key="S-END"/>
     <bind actionName="selection-forward" key="S-RIGHT"/>
-    <bind actionName="selection-match-brace" key="DS-OPEN_BRACKET"/>
     <bind actionName="selection-next-word" key="DS-RIGHT"/>
     <bind actionName="selection-page-down" key="S-PAGE_DOWN"/>
     <bind actionName="selection-page-up" key="S-PAGE_UP"/>

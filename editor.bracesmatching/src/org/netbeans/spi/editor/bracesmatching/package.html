@@ -1,0 +1,45 @@
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+  <head>
+    <title>org.netbeans.spi.editor.bracesmatching</title>
+  </head>
+  <body>
+
+  <p>
+  The Braces Matching SPI for implementing <code>BracesMatcher</code>s that can search
+  through a document and find matching areas of text.
+  </p>
+  <p>
+  Implementations of <code>BracesMatcherFactory</code> can be registered in <code>MimeLookup</code>
+  under the mime type of documents that they wish to create <code>BracesMatcher</code>s for.
+  </p>
+  <p>
+  The infrastructure behind the SPI registers a special highlighting layer for visualization of search results
+  provided by registered matchers. The highlighting layer uses <code>Highlighting SPI</code> to
+  colorify parts of a document in a text component that have been identified by matchers. The infrastructure also
+  supplies an action for moving componet's caret between those areas. The action is registered
+  for all supported document types and bound to a shortcut.
+  </p>
+
+  </body>
+</html>
