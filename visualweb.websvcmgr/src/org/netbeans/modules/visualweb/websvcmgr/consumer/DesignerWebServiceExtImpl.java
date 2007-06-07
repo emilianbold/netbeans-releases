@@ -50,10 +50,13 @@ import org.netbeans.modules.visualweb.websvcmgr.codegen.WrapperClientWriter;
 import org.netbeans.modules.visualweb.websvcmgr.codegen.WrapperClientWriter;
 import org.netbeans.modules.visualweb.websvcmgr.util.Util;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.NbBundle;
 
 /**
  * WebServiceManagerExt implementation for the Visualweb page designer
@@ -81,18 +84,28 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
     public DesignerWebServiceExtImpl() {
     }
     
+    private void notifyError(int wsType) {
+        String bundleKey = (wsType == WebServiceDescriptor.JAX_WS_TYPE) ? 
+            "CODEGEN_ERROR_JAXWS" : "CODEGEN_ERROR_JAXRPC"; // NOI18N
+
+        String errorMessage = NbBundle.getMessage(DesignerWebServiceExtImpl.class, bundleKey);
+        NotifyDescriptor d = new NotifyDescriptor.Message(errorMessage);
+        DialogDisplayer.getDefault().notify(d);
+    }
+    
     public boolean wsServiceAddedExt(WebServiceDescriptor wsMetadataDesc) {
         boolean result = createClientClasses(wsMetadataDesc);
         
         if (!result) {
+            notifyError(wsMetadataDesc.getWsType());
             return false;
         }
 
         boolean jarResult = jarGeneratedClasses(wsMetadataDesc);
-        if (!jarResult) {
-            // TODO delete build, dt, and src directories in the ws directory
+        if (!jarResult) {            
             removeBuildFiles(wsMetadataDesc.getXmlDescriptorFile().getParentFile());
             wsMetadataDesc.removeConsumerData(CONSUMER_ID);
+            notifyError(wsMetadataDesc.getWsType());
         }else {
             wsMetadataDesc.addJar(wsMetadataDesc.getName() + "-dt.jar", VW_DESIGNTIME_JAR);
             wsMetadataDesc.addJar(wsMetadataDesc.getName() + "-dt-src.jar", WebServiceDescriptor.JarEntry.SRC_JAR_TYPE);
@@ -409,5 +422,6 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
             }
             files[i].delete();
         }
+        dir.delete();
     }
 }
