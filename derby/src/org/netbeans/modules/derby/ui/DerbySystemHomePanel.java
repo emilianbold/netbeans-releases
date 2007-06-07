@@ -183,31 +183,18 @@ public class DerbySystemHomePanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        infoScrollPane = new javax.swing.JScrollPane();
-        infoTextArea = new javax.swing.JTextArea();
         derbySystemHomeLabel = new javax.swing.JLabel();
         derbySystemHomeTextField = new javax.swing.JTextField();
         browseButton = new javax.swing.JButton();
-        messageLabel = new javax.swing.JLabel();
         installLabel = new javax.swing.JLabel();
         derbyInstall = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
-        infoScrollPane1 = new javax.swing.JScrollPane();
-        infoTextArea1 = new javax.swing.JTextArea();
-
-        infoScrollPane.setBorder(null);
-        infoScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        infoScrollPane.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-
-        infoTextArea.setColumns(20);
-        infoTextArea.setEditable(false);
-        infoTextArea.setLineWrap(true);
-        infoTextArea.setRows(5);
-        infoTextArea.setText(org.openide.util.NbBundle.getMessage(DerbySystemHomePanel.class, "LBL_DerbySystemHomeInfo")); // NOI18N
-        infoTextArea.setWrapStyleWord(true);
-        infoTextArea.setFocusable(false);
-        infoTextArea.setOpaque(false);
-        infoScrollPane.setViewportView(infoTextArea);
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTextPane1 = new javax.swing.JTextPane();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTextPane2 = new javax.swing.JTextPane();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        messageLabel = new javax.swing.JTextPane();
 
         derbySystemHomeLabel.setLabelFor(derbySystemHomeTextField);
         org.openide.awt.Mnemonics.setLocalizedText(derbySystemHomeLabel, org.openide.util.NbBundle.getMessage(DerbySystemHomePanel.class, "LBL_DerbySystemHome")); // NOI18N
@@ -219,9 +206,6 @@ public class DerbySystemHomePanel extends javax.swing.JPanel {
             }
         });
 
-        messageLabel.setForeground(nbErrorForeground);
-        org.openide.awt.Mnemonics.setLocalizedText(messageLabel, " ");
-
         org.openide.awt.Mnemonics.setLocalizedText(installLabel, org.openide.util.NbBundle.getMessage(DerbySystemHomePanel.class, "LBL_Install")); // NOI18N
 
         derbyInstall.addActionListener(new java.awt.event.ActionListener() {
@@ -230,26 +214,37 @@ public class DerbySystemHomePanel extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(DerbySystemHomePanel.class, "LBL_Browse")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(DerbySystemHomePanel.class, "LBL_Browse2")); // NOI18N
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
             }
         });
 
-        infoScrollPane1.setBorder(null);
-        infoScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        infoScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        jScrollPane1.setBorder(null);
+        jScrollPane1.setOpaque(false);
 
-        infoTextArea1.setColumns(20);
-        infoTextArea1.setEditable(false);
-        infoTextArea1.setLineWrap(true);
-        infoTextArea1.setRows(5);
-        infoTextArea1.setText(org.openide.util.NbBundle.getMessage(DerbySystemHomePanel.class, "LBL_InstallationInfo")); // NOI18N
-        infoTextArea1.setWrapStyleWord(true);
-        infoTextArea1.setFocusable(false);
-        infoTextArea1.setOpaque(false);
-        infoScrollPane1.setViewportView(infoTextArea1);
+        jTextPane1.setEditable(false);
+        jTextPane1.setText(org.openide.util.NbBundle.getMessage(DerbySystemHomePanel.class, "LBL_InstallationInfo")); // NOI18N
+        jTextPane1.setOpaque(false);
+        jScrollPane1.setViewportView(jTextPane1);
+
+        jScrollPane2.setBorder(null);
+
+        jTextPane2.setEditable(false);
+        jTextPane2.setText(org.openide.util.NbBundle.getMessage(DerbySystemHomePanel.class, "LBL_DerbySystemHomeInfo")); // NOI18N
+        jTextPane2.setOpaque(false);
+        jScrollPane2.setViewportView(jTextPane2);
+
+        jScrollPane3.setBorder(null);
+        jScrollPane3.setFocusable(false);
+
+        messageLabel.setEditable(false);
+        messageLabel.setForeground(nbErrorForeground);
+        messageLabel.setText(" ");
+        messageLabel.setFocusable(false);
+        messageLabel.setOpaque(false);
+        jScrollPane3.setViewportView(messageLabel);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -258,54 +253,51 @@ public class DerbySystemHomePanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(installLabel)
-                    .add(derbySystemHomeLabel))
+                    .add(derbySystemHomeLabel)
+                    .add(installLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(derbyInstall, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .add(derbySystemHomeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 283, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jButton1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 79, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(browseButton))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(derbySystemHomeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
+                        .add(derbyInstall, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 283, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(browseButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 79, Short.MAX_VALUE)))
+                        .add(jButton1)))
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .add(10, 10, 10)
-                .add(infoScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 502, Short.MAX_VALUE)
-                .addContainerGap(10, Short.MAX_VALUE))
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 386, Short.MAX_VALUE)
+                .add(95, 95, 95))
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(infoScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 502, Short.MAX_VALUE)
+                .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 471, Short.MAX_VALUE)
                 .addContainerGap())
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(messageLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 502, Short.MAX_VALUE)
-                .addContainerGap())
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 386, Short.MAX_VALUE)
+                .add(95, 95, 95))
         );
-
-        layout.linkSize(new java.awt.Component[] {browseButton, jButton1}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jButton1)
                     .add(installLabel)
-                    .add(derbyInstall, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jButton1))
+                    .add(derbyInstall, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(infoScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(derbySystemHomeLabel)
                     .add(browseButton)
                     .add(derbySystemHomeTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(infoScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 66, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(messageLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -356,13 +348,14 @@ private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     public javax.swing.JTextField derbyInstall;
     public javax.swing.JLabel derbySystemHomeLabel;
     public javax.swing.JTextField derbySystemHomeTextField;
-    public javax.swing.JScrollPane infoScrollPane;
-    public javax.swing.JScrollPane infoScrollPane1;
-    public javax.swing.JTextArea infoTextArea;
-    public javax.swing.JTextArea infoTextArea1;
     public javax.swing.JLabel installLabel;
     public javax.swing.JButton jButton1;
-    public javax.swing.JLabel messageLabel;
+    public javax.swing.JScrollPane jScrollPane1;
+    public javax.swing.JScrollPane jScrollPane2;
+    public javax.swing.JScrollPane jScrollPane3;
+    public javax.swing.JTextPane jTextPane1;
+    public javax.swing.JTextPane jTextPane2;
+    public javax.swing.JTextPane messageLabel;
     // End of variables declaration//GEN-END:variables
     
 }
