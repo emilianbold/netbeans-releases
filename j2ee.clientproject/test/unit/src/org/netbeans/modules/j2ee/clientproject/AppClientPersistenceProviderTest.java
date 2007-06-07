@@ -32,6 +32,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
 import org.netbeans.modules.j2ee.persistence.spi.support.PersistenceScopesHelper;
@@ -47,6 +48,7 @@ public class AppClientPersistenceProviderTest extends NbTestCase {
     // TODO also test the contents of the classpaths
 
     private Project project;
+    private FileObject root;
     private AppClientPersistenceProvider provider;
     private FileObject persistenceLocation;
 
@@ -71,6 +73,9 @@ public class AppClientPersistenceProviderTest extends NbTestCase {
         // setup the project
         File f = new File(getDataDir().getAbsolutePath(), "projects/ApplicationClient1");
         project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
+        Sources src = (Sources)project.getLookup().lookup(Sources.class);
+        SourceGroup[] groups = src.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        root = groups[0].getRootFolder();
         provider = (AppClientPersistenceProvider)project.getLookup().lookup(AppClientPersistenceProvider.class);
         persistenceLocation = project.getProjectDirectory().getFileObject("src/conf");
 
@@ -93,10 +98,6 @@ public class AppClientPersistenceProviderTest extends NbTestCase {
                 changeCount++;
             }
         }
-
-        Sources src = (Sources)project.getLookup().lookup(Sources.class);
-        SourceGroup[] groups = src.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        FileObject root = groups[0].getRootFolder();
 
         PersistenceScopes persistenceScopes = PersistenceScopes.getPersistenceScopes(project);
         PCL listener = new PCL();
@@ -138,9 +139,10 @@ public class AppClientPersistenceProviderTest extends NbTestCase {
         assertTrue("Should always return a valid persistence.xml", persistenceScope.getPersistenceXml().isValid());
     }
 
-    public void testPersistenceClassPath() throws Exception {
-        ClassPath persistenceCP = provider.getClassPath();
-        assertNotNull(persistenceCP);
-        assertSame("Should return the same classpath object", persistenceCP, provider.getClassPath());
+    public void testEntityClassScope() throws Exception {
+        EntityClassScope entityClassScope = provider.findEntityClassScope(root);
+        assertNotNull(entityClassScope);
+        assertNotNull(entityClassScope.getEntityMappingsModel(false));
+        assertNotNull(entityClassScope.getEntityMappingsModel(true));
     }
 }

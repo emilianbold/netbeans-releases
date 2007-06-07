@@ -30,12 +30,15 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 //retouche:
+import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 //import org.netbeans.modules.j2ee.metadata.ClassPathSupport;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
-import org.netbeans.modules.j2ee.persistence.spi.PersistenceClassPathProvider;
+import org.netbeans.modules.j2ee.persistence.spi.EntityClassScopeFactory;
+import org.netbeans.modules.j2ee.persistence.spi.EntityClassScopeImplementation;
+import org.netbeans.modules.j2ee.persistence.spi.EntityClassScopeProvider;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceLocationProvider;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeFactory;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeImplementation;
@@ -51,13 +54,14 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Andrei Badea
  */
-public class J2SEPersistenceProvider implements PersistenceLocationProvider, PersistenceScopeProvider, PersistenceScopesProvider, PersistenceClassPathProvider, PropertyChangeListener {
+public class J2SEPersistenceProvider implements PersistenceLocationProvider, PersistenceScopeProvider, PersistenceScopesProvider, EntityClassScopeProvider, PropertyChangeListener {
 
     private final J2SEProject project;
     private final ClassPathProviderImpl cpProvider;
 
-    private final PersistenceScopeImplementation persistenceScopeImpl = new PersistenceScopeImpl();
-    private final PersistenceScope persistenceScope = PersistenceScopeFactory.createPersistenceScope(persistenceScopeImpl);
+    private final ScopeImpl scopeImpl = new ScopeImpl();
+    private final PersistenceScope persistenceScope = PersistenceScopeFactory.createPersistenceScope(scopeImpl);
+    private final EntityClassScope entityClassScope = EntityClassScopeFactory.createEntityClassScope(scopeImpl);
 
     private final PersistenceScopesHelper scopesHelper = new PersistenceScopesHelper();
     private final EntityMappingsMetadataModelHelper modelHelper;
@@ -108,13 +112,18 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
         }
         return null;
     }
+    
+    public EntityClassScope findEntityClassScope(FileObject fo) {
+        Project project = FileOwnerQuery.getOwner(fo);
+        if (project != null) {
+            J2SEPersistenceProvider provider = (J2SEPersistenceProvider)project.getLookup().lookup(J2SEPersistenceProvider.class);
+            return provider.getEntityClassScope();
+        }
+        return null;
+    }
 
     public PersistenceScopes getPersistenceScopes() {
         return scopesHelper.getPersistenceScopes();
-    }
-
-    public ClassPath getClassPath() {
-        return getProjectSourcesClassPath();
     }
 
     private File getFirstSourceRoot() {
@@ -139,6 +148,10 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
             return persistenceScope;
         }
         return null;
+    }
+    
+    private EntityClassScope getEntityClassScope() {
+        return entityClassScope;
     }
 
     private ClassPath getProjectSourcesClassPath() {
@@ -181,9 +194,9 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
     }
 
     /**
-     * Implementation of PersistenceScopeImplementation.
+     * Implementation of PersistenceScopeImplementation and EntityClassScopeImplementation.
      */
-    private final class PersistenceScopeImpl implements PersistenceScopeImplementation {
+    private final class ScopeImpl implements PersistenceScopeImplementation, EntityClassScopeImplementation {
 
         public FileObject getPersistenceXml() {
             FileObject location = getLocation();
@@ -199,6 +212,10 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
 
         public MetadataModel<EntityMappingsMetadata> getEntityMappingsModel(String persistenceUnitName) {
             return modelHelper.getEntityMappingsModel(persistenceUnitName);
+        }
+        
+        public MetadataModel<EntityMappingsMetadata> getEntityMappingsModel(boolean withDeps) {
+            return modelHelper.getDefaultEntityMappingsModel(withDeps);
         }
     }
 }

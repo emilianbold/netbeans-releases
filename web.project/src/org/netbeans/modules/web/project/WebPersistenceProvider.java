@@ -28,10 +28,13 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.ClassPathSupport;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
-import org.netbeans.modules.j2ee.persistence.spi.PersistenceClassPathProvider;
+import org.netbeans.modules.j2ee.persistence.spi.EntityClassScopeFactory;
+import org.netbeans.modules.j2ee.persistence.spi.EntityClassScopeImplementation;
+import org.netbeans.modules.j2ee.persistence.spi.EntityClassScopeProvider;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceLocationProvider;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeFactory;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeImplementation;
@@ -43,21 +46,21 @@ import org.netbeans.modules.web.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NotImplementedException;
 
 /**
  * Provides persistence location and scope delegating to this project's WebModule.
  *
  * @author Andrei Badea
  */
-public class WebPersistenceProvider implements PersistenceLocationProvider, PersistenceScopeProvider, PersistenceScopesProvider, PersistenceClassPathProvider, PropertyChangeListener {
+public class WebPersistenceProvider implements PersistenceLocationProvider, PersistenceScopeProvider, PersistenceScopesProvider, EntityClassScopeProvider, PropertyChangeListener {
 
     private final WebProject project;
     private final PropertyEvaluator evaluator;
     private final ClassPathProviderImpl cpProvider;
 
-    private final PersistenceScopeImplementation persistenceScopeImpl = new PersistenceScopeImpl();
-    private final PersistenceScope persistenceScope = PersistenceScopeFactory.createPersistenceScope(persistenceScopeImpl);
+    private final ScopeImpl scopeImpl = new ScopeImpl();
+    private final PersistenceScope persistenceScope = PersistenceScopeFactory.createPersistenceScope(scopeImpl);
+    private final EntityClassScope entityClassScope = EntityClassScopeFactory.createEntityClassScope(scopeImpl);
 
     private final PersistenceScopesHelper scopesHelper = new PersistenceScopesHelper();
     private final EntityMappingsMetadataModelHelper modelHelper;
@@ -91,12 +94,17 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
         return null;
     }
 
-    public PersistenceScopes getPersistenceScopes() {
-        return scopesHelper.getPersistenceScopes();
+    public EntityClassScope findEntityClassScope(FileObject fo) {
+        Project project = FileOwnerQuery.getOwner(fo);
+        if (project != null) {
+            WebPersistenceProvider provider = (WebPersistenceProvider)project.getLookup().lookup(WebPersistenceProvider.class);
+            return provider.getEntityClassScope();
+        }
+        return null;
     }
 
-    public ClassPath getClassPath() {
-        return getProjectSourcesClassPath();
+    public PersistenceScopes getPersistenceScopes() {
+        return scopesHelper.getPersistenceScopes();
     }
 
     private PersistenceScope getPersistenceScope() {
@@ -105,6 +113,10 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
             return persistenceScope;
         }
         return null;
+    }
+
+    private EntityClassScope getEntityClassScope() {
+        return entityClassScope;
     }
 
     private ClassPath getProjectSourcesClassPath() {
@@ -147,9 +159,9 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
     }
 
     /**
-     * Implementation of PersistenceScopeImplementation.
+     * Implementation of PersistenceScopeImplementation and EntityClassScopeImplementation.
      */
-    private final class PersistenceScopeImpl implements PersistenceScopeImplementation {
+    private final class ScopeImpl implements PersistenceScopeImplementation, EntityClassScopeImplementation {
 
         public FileObject getPersistenceXml() {
             FileObject location = getLocation();
@@ -165,6 +177,10 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
 
         public MetadataModel<EntityMappingsMetadata> getEntityMappingsModel(String persistenceUnitName) {
             return modelHelper.getEntityMappingsModel(persistenceUnitName);
+        }
+
+        public MetadataModel<EntityMappingsMetadata> getEntityMappingsModel(boolean withDeps) {
+            return modelHelper.getDefaultEntityMappingsModel(withDeps);
         }
     }
 }
