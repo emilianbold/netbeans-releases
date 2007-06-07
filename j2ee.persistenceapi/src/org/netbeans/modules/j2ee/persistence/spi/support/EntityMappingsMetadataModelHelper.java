@@ -65,6 +65,10 @@ public class EntityMappingsMetadataModelHelper {
         // XXX trivial implementation which is not affected by the contents of
         // the persistence unit (i.e., the list of orm.xml files and the list
         // of entity classes)
+        return getDefaultEntityMappingsModel(false);
+    }
+    
+    public MetadataModel<EntityMappingsMetadata> getDefaultEntityMappingsModel(boolean withDeps) {
         synchronized (this) {
             if (model == null) {
                 model = EntityMappingsMetadataModelFactory.createMetadataModel(bootPath, compilePath, sourcePath);
