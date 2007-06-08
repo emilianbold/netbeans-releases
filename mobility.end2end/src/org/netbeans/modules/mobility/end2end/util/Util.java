@@ -43,6 +43,7 @@ import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 //import org.netbeans.modules.javacore.api.JavaModel;
+import org.netbeans.modules.mobility.javon.JavonMapping;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -169,45 +170,46 @@ public final class Util {
         }
         return result;
     }
-    public static void addServletToWebProject(final Project project, final String servletFQN){
+    public static void addServletToWebProject( final Project project, JavonMapping mapping ){
         /* mark Servlet */
         try{
             boolean servlet = false;
-            boolean mapping = false;
+            boolean mapped = false;
             
+            String servletName = mapping.getServerMapping().getClassName();
             FileObject fo = null;
             final WebModuleProvider provider = project.getLookup().lookup( WebModuleProvider.class );
             final WebModule wm = provider.findWebModule(project.getProjectDirectory());
             final WebApp webApp = DDProvider.getDefault().getDDRootCopy(fo = wm.getDeploymentDescriptor());
             final Servlet[] servlets = webApp.getServlet();
             for (int i = 0; i < servlets.length; i++){
-                if (servlets[i].getServletName().equals(servletFQN)){
+                if( servlets[i].getServletName().equals( servletName )) {
                     servlet = true; //already contains
                 }
             }
             
-            if (!servlet){
-                final Servlet newServlet = (Servlet)webApp.createBean("Servlet"); //NOI18N
-                newServlet.setServletName(servletFQN);
-                newServlet.setServletClass(servletFQN);
-                newServlet.setDescription( NbBundle.getMessage(Util.class, "TXT_servletElementDescription") );
-                newServlet.setDisplayName(servletFQN); // NOI18N
+            if( !servlet ){
+                final Servlet newServlet = (Servlet) webApp.createBean( "Servlet" ); //NOI18N
+                newServlet.setServletName( servletName );
+                newServlet.setServletClass( mapping.getServerMapping().getPackageName() + "." + mapping.getServerMapping().getClassName());
+                newServlet.setDescription( NbBundle.getMessage( Util.class, "TXT_servletElementDescription" ));
+                newServlet.setDisplayName( "Javon service for : " + mapping.getClientMapping().getClassName()); // NOI18N
                 webApp.addServlet(newServlet);
             }
             
             final ServletMapping[] servletsMapping = webApp.getServletMapping();
             for (int i = 0; i < servletsMapping.length; i++){
-                if (servletsMapping[i].getServletName().equals(servletFQN)){
-                    mapping = true; //already contains
+                if (servletsMapping[i].getServletName().equals( servletName )){
+                    mapped = true; //already contains
                 }
             }
-            if (!mapping){
-                final ServletMapping newServletMapping = (ServletMapping)webApp.createBean("ServletMapping"); //NOI18N
-                newServletMapping.setServletName(servletFQN);
-                newServletMapping.setUrlPattern("/servlet/" + servletFQN); //NOI18N
-                webApp.addServletMapping(newServletMapping);
+            if( !mapped ){
+                final ServletMapping newServletMapping = (ServletMapping) webApp.createBean( "ServletMapping" ); //NOI18N
+                newServletMapping.setServletName( servletName );
+                newServletMapping.setUrlPattern( "/servlet/" + mapping.getServerMapping().getPackageName() + "." + mapping.getServerMapping().getClassName()); //NOI18N
+                webApp.addServletMapping( newServletMapping );
             }
-            if (!servlet || !mapping) {
+            if( !servlet || !mapped ) {
                 webApp.write(fo);
             }
         }catch (Exception ex){
@@ -271,4 +273,25 @@ public final class Util {
         final String value = ep.getProperty("configs." + configuration + "." + propertyName); // NOI18N
         return value != null ? value : evaluateProperty(ep, propertyName, null);
     }
+    
+    /**
+     * 
+     * @param project 
+     * @return 
+     */
+    public static String getServerLocation( final Project project ) {
+        return "localhost";
+    }
+    
+    public static String getServerPort( final Project project ) {
+        String port = "8080"; //NOI18N
+        final J2eeModuleProvider provider  = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (provider != null){
+            final InstanceProperties ip = provider.getInstanceProperties();
+            if( ip != null ) {
+                port = ip.getProperty(InstanceProperties.HTTP_PORT_NUMBER) != null ? ip.getProperty(InstanceProperties.HTTP_PORT_NUMBER) : "8080";//NOI18N
+            }
+        }
+        return port;
+    }    
 }

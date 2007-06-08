@@ -36,6 +36,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import javax.swing.ComboBoxModel;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
@@ -48,6 +49,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListDataListener;
 
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceLevelQuery;
@@ -66,6 +68,9 @@ import org.netbeans.modules.mobility.end2end.client.config.ServerConfiguration;
 import org.netbeans.modules.mobility.end2end.util.Util;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientView;
+import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
+import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientView;
+import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -684,8 +689,9 @@ final public class WebApplicationPanel extends JPanel
     }
     
     boolean isWsdlCompiled(){
-        final FileObject fo = enterpriseProject.getProjectDirectory().getFileObject("build/generated/wsclient/"); //NOI18N
-        return fo != null;
+//        final FileObject fo = enterpriseProject.getProjectDirectory().getFileObject("build/generated/wsclient/"); //NOI18N
+//        return fo != null;
+        return true;
     }
     
     public String isValidServletLocation() {
@@ -826,35 +832,42 @@ final public class WebApplicationPanel extends JPanel
             servicesModel = new DefaultComboBoxModel(
                     new String[]{ NbBundle.getMessage( WebApplicationPanel.class, "ERR_NoWebServiceCombo")}); // NOI18N
         } else {
-            final WebServicesClientSupport wscs = WebServicesClientSupport.getWebServicesClientSupport(p.getProjectDirectory());
-            final FileObject rootFolder = wscs.getWsdlFolder();
-            if (rootFolder != null){
-                final WebServicesClientSupport clientSupport  = WebServicesClientSupport.getWebServicesClientSupport(rootFolder);
-                final WebServicesClientView clientView = WebServicesClientView.getWebServicesClientView(rootFolder);
-                
-                if (clientSupport.getWsdlFolder().getChildren().length == 0){ //NO WS
-                    servicesModel = new DefaultComboBoxModel(
-                            new String[]{ NbBundle.getMessage( WebApplicationPanel.class, "ERR_NoWebServiceCombo")}); // NOI18N
-                } else {
-                    final Node clientRoot = clientView.createWebServiceClientView(clientSupport.getWsdlFolder());
-                    final Node[] nodes = clientRoot.getChildren().getNodes();
-                    if (nodes.length == 0){
+//            final WebServicesClientSupport wscs = WebServicesClientSupport.getWebServicesClientSupport(p.getProjectDirectory());            
+//            final FileObject rootFolder = wscs.getWsdlFolder();
+            JAXWSClientSupport jaxws = JAXWSClientSupport.getJaxWsClientSupport( p.getProjectDirectory());
+            List wsclients = jaxws.getServiceClients();
+            if( wsclients.size() > 0 ){
+//                final WebServicesClientSupport clientSupport  = WebServicesClientSupport.getWebServicesClientSupport(rootFolder);
+//                final WebServicesClientSupport clientSupport  = WebServicesClientSupport.getWebServicesClientSupport( p.getProjectDirectory());
+                final JAXWSClientSupport jaxwsClientSupport = JAXWSClientSupport.getJaxWsClientSupport( p.getProjectDirectory());
+//                final WebServicesClientView clientView = WebServicesClientView.getWebServicesClientView( p.getProjectDirectory());
+//                final WebServicesClientView clientView = WebServicesClientView.getWebServicesClientView(rootFolder);
+                final JAXWSClientView jaxwsClientView = JAXWSClientView.getJAXWSClientView();
+//                if( clientSupport.getWsdlFolder().getChildren().length == 0 ){ //NO WS
+//                    servicesModel = new DefaultComboBoxModel(
+//                            new String[]{ NbBundle.getMessage( WebApplicationPanel.class, "ERR_NoWebServiceCombo")}); // NOI18N
+//                } else {
+                    final Node jaxwsClientRoot = jaxwsClientView.createJAXWSClientView( p );
+//                    final Node clientRoot = clientView.createWebServiceClientView(clientSupport.getWsdlFolder());
+                    final Node[] nodes = jaxwsClientRoot.getChildren().getNodes();
+                    if( nodes.length == 0 ){
                         servicesModel = new DefaultComboBoxModel(
-                                new String[]{ NbBundle.getMessage( WebApplicationPanel.class, "MSG_ComputingWebServices")} );
+                                new String[]{ NbBundle.getMessage( WebApplicationPanel.class, "MSG_ComputingWebServices" )} );
                         RequestProcessor.getDefault().post(new Runnable() {
                             public void run() {
                                 updateWebServices(p);
                             }
                         }, 500);
                     } else {
-                        final List<DataObject> services = new ArrayList<DataObject>();
-                        for (int i = 0; i < nodes.length; i++){
-                            services.add((DataObject)nodes[i].getCookie(DataObject.class));
+                        final List<Client> services = new ArrayList<Client>();
+                        for( int i = 0; i < nodes.length; i++ ) {
+                            Client client = nodes[i].getLookup().lookup( Client.class );
+                            services.add( client );
                         }
-                        servicesModel = new DefaultComboBoxModel(services.toArray(new DataObject[services.size()]) );
+                        servicesModel = new DefaultComboBoxModel( services.toArray( new Client[ services.size() ] ));                        
                         fireChange();
                     }
-                }
+//                }
             } else {
                 servicesModel = new DefaultComboBoxModel( new String[]{
                     NbBundle.getMessage( WebApplicationPanel.class, "ERR_NoWebServiceInProject" )} ); // NOI18N
@@ -862,11 +875,12 @@ final public class WebApplicationPanel extends JPanel
         }
         serviceCombo.setModel( servicesModel );
     }
-    
-    DataObject getSelectedService(){
+        
+    Client getSelectedService() {
         final Object o = serviceCombo.getSelectedItem();
-        if (o instanceof DataObject)
-            return (DataObject)o;
+        if( o instanceof Client ) {
+            return (Client) o;
+        }
         return null;
     }
     
@@ -897,7 +911,7 @@ final public class WebApplicationPanel extends JPanel
             return COLLATOR.compare( ProjectUtils.getInformation( p1 ).getDisplayName(),
                     ProjectUtils.getInformation( p2 ).getDisplayName());
         }
-    }
+    }    
     
     private class WebProjectsActionListener implements ActionListener {
         
@@ -958,7 +972,11 @@ final public class WebApplicationPanel extends JPanel
                 @SuppressWarnings("unused")
 				final boolean cellHasFocus) {
             
-            if (value instanceof DataObject) {
+            if( value instanceof Client ) {
+                final Client client = (Client) value;
+                setText( client.getName());
+                setIcon( null );
+            } else if (value instanceof DataObject) {
                 final DataObject doj = (DataObject) value;
                 setText(doj.getNodeDelegate().getDisplayName());
                 setIcon(new ImageIcon(doj.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16)));
@@ -1249,18 +1267,29 @@ final public class WebApplicationPanel extends JPanel
                 if ( os instanceof WSDLService ) { //is wsdl
                     wsdlService = (WSDLService)os;
                 }
-                if (gui.getSelectedService() != null){
-                    final DataObject doj = gui.getSelectedService();
-                    if ( wsdlService == null ||
-                            ( wsdlService.getFile() != null && !wsdlService.getFile().equals(doj.getPrimaryFile().getNameExt()))){
-                        wsdlService = new WSDLService();
-                        wsdlService.setName( doj.getName() );
-                        wsdlService.setFile( doj.getPrimaryFile().getNameExt() );
-                        final List<AbstractService> services = new ArrayList<AbstractService>();
-                        services.add(wsdlService);
-                        configuration.setServices(services);
-                    }
+                if( gui.getSelectedService() != null ) {
+//                    final String serviceName = gui.getSelectedService();
+                    final Client client = gui.getSelectedService();
+                    wsdlService = new WSDLService();
+                    wsdlService.setName( client.getName());
+                    wsdlService.setFile( client.getLocalWsdlFile());
+                    wsdlService.setUrl( client.getWsdlUrl());
+                    final List<AbstractService> services = new ArrayList<AbstractService>();
+                    services.add( wsdlService );
+                    configuration.setServices( services );
                 }
+//                if (gui.getSelectedService() != null){
+//                    final DataObject doj = gui.getSelectedService();
+//                    if ( wsdlService == null ||
+//                            ( wsdlService.getFile() != null && !wsdlService.getFile().equals(doj.getPrimaryFile().getNameExt()))){
+//                        wsdlService = new WSDLService();
+//                        wsdlService.setName( doj.getName() );
+//                        wsdlService.setFile( doj.getPrimaryFile().getNameExt() );
+//                        final List<AbstractService> services = new ArrayList<AbstractService>();
+//                        services.add(wsdlService);
+//                        configuration.setServices(services);
+//                    }
+//                }
             } else {
                 configuration.setServiceType(Configuration.CLASS_TYPE);
                 final List<AbstractService> services = new ArrayList<AbstractService>();

@@ -1,0 +1,227 @@
+//GEN-BEGIN:Client
+/**
+ * This file is generated. Please do not change
+ */
+package ${mapping.getClientMapping().getPackageName()};
+
+import java.util.*;
+import java.io.*;
+import javax.microedition.io.*;
+
+/**
+ *
+ */
+public class ${service.getClassName()} {
+
+    /** The URL of the servlet gateway */
+    private String serverURL;
+    
+    /** The session cookie of this client */
+    private String sessionCookie;
+    
+    /**
+     * Empty array used for no-argument calls, and to represent the value "void"
+     */
+    
+    private final static Object[] _ = new Object[0];
+
+    /**
+     * Constructs a new WebToMobileClient
+     * and initializes the URL to the servlet gateway from a hard-coded value.
+     */
+    public ${service.getClassName()}() {
+    <#assign server = mapping.getServerMapping()/>
+        this("http://${server.getLocation()}:${server.getPort()}/servlet/${server.getPackageName()}.${server.getClassName()}");
+    }
+    
+    /**
+     * Constructs a new WebToMobileClient
+     * and initializes the URL to the servlet gateway from the given value
+     *
+     * @param serverURL URL of the deployed servlet
+     */
+    public ${service.getClassName()}(String serverURL) {
+        this.serverURL = serverURL;
+    }
+
+<#list service.getMethods() as method>
+    public ${method.getReturnType().getName()} ${method.getName()}(<#rt>
+    <#lt><#list method.getParameters() as parameter>${parameter.getType().getName()} ${parameter.getName()}<#if parameter_has_next>, </#if></#list>) throws IOException {
+        <#if method.getParameters()?size != 0>
+            Object params[] = new Object[] {
+                <#list method.getParameters() as parameter>
+                ${mapping.getRegistry().getTypeSerializer( parameter.getType()).toObject( parameter.getType(), parameter.getName())}<#if parameter_has_next>, </#if>
+                </#list>
+            };
+        </#if>
+        <#if method.getParameters()?size != 0><#assign invocationParam = "params"/><#else><#assign invocationParam = "_"/></#if>
+        <#if method.getReturnType().getName() == "void"><#rt>
+            invokeServer(${method.getRequestID()}, ${invocationParam});
+        <#else><#rt>
+            return ${mapping.getRegistry().getTypeSerializer( method.getReturnType()).fromObject( method.getReturnType(), "invokeServer("+method.getRequestID()+", "+invocationParam+")" )};
+        </#if>
+    }
+
+</#list>
+
+    /**
+     *  This method performes a dynamic invocation on the server. It is generic in
+     *  order to reduce the code size.
+     *
+     *@param  requestID        The id of the server service (method) we wish to
+     *      invoke.
+     *@param  parameters       The parameters that should be passed to the server
+     *      (type safety is not checked by this method!)
+     *@param  returnType       Is used to indicate the return type we should read
+     *      from the server
+     *@return                  The return value from the invoked service
+     *@exception  IOException  When a communication error or a remove exception
+     * occurs
+     */
+    private Object invokeServer(int requestID, Object[] parameters) throws IOException {
+        HttpConnection connection = (HttpConnection) Connector.open( serverURL );
+        connection.setRequestMethod(HttpConnection.POST);
+        connection.setRequestProperty("Content-Type", "application/octet-stream");
+        connection.setRequestProperty("Accept", "application/octet-stream");
+        
+        if (sessionCookie == null) {
+            // if this is the first time this client contatcs the server,
+            // verify that the version matches
+            connection.setRequestProperty("version", "???");
+        } else {
+            connection.setRequestProperty("cookie", sessionCookie);
+        }
+        
+        DataOutputStream output = connection.openDataOutputStream();
+        
+        writeObject(output, this);
+        
+        /* Write the byte signifying that only one call
+         * is being made.
+         */
+        output.writeShort(1 /* one call to be made to the server */);
+        
+        output.writeInt(requestID);
+        for (int i = 0; i < parameters.length; i++ ) {
+            writeObject(output, parameters[i]);
+        }
+        
+        output.close();
+        
+        int response;
+        try {
+            response = connection.getResponseCode();
+        } catch (IOException e) {
+            throw new IOException("No response from " + serverURL);
+        }
+        if (response != 200) {
+            throw new IOException(response + " " + connection.getResponseMessage());
+        }
+        DataInputStream input = connection.openDataInputStream();
+        String sc = connection.getHeaderField("set-cookie");
+        if (sc != null) {
+            sessionCookie = sc;
+        }
+        short errorCode = input.readShort();
+        if (errorCode != 1) {
+            // there was a remote exception
+            throw new IOException((String) readObject(input));
+        }
+        
+        Object returnValue = readObject(input);
+        
+        input.close();
+        connection.close();
+        return returnValue;
+    }
+
+    private void writeObject(DataOutputStream out, Object o) throws IOException {
+        if (o == this) {
+            out.writeShort(1 /* invocation code */);
+        } else if (o == null) {
+            out.writeShort(-1);
+        <#assign arrayTypeID = 0/>
+        <#assign hasArrays = false/>
+        <#list utils.getRetunTypeInstances( service ) as type>
+            <#assign serializer = mapping.getRegistry().getTypeSerializer( type )/>
+            <#if type.getName() != "void" && !type.isArray()>                
+                } else if(o instanceof ${serializer.instanceOf( type )}) {
+                    out.writeShort(${registry.getRegisteredTypeId( type )});
+                    <#if type.isPrimitive()>
+                        ${serializer.toStream( mapping, type, "out", serializer.fromObject( type, "o" ))}
+                    <#else>
+                        ${serializer.toStream( mapping, type, "out", "o" )}
+                    </#if>
+                    return;
+            </#if>
+            <#if type.isArray()>
+                <#assign hasArrays = true/>
+                <#assign arrayTypeID = registry.getRegisteredTypeId( type )/>
+            </#if>
+        </#list>
+        <#if hasArrays>
+            } else if(o.getClass().isArray()) {
+            out.writeShort(${arrayTypeID});
+            <#list service.getReturnTypes() as type>
+                <#if type.isArray() && type.getName() != "void">
+                    if( o instanceof ${type.getName()}) {
+                        ${type.getName()} array = (${type.getName()}) o;
+                        out.writeShort(${registry.getRegisteredTypeId( type.getComponentType())});
+                        out.writeInt(array.length);
+                        for(int i = 0; i < array.length; i++) {
+                            ${registry.getTypeSerializer( type.getComponentType()).toStream( mapping, type.getComponentType(), "out", "array[i]" )}
+                        }
+                    }
+                </#if>
+            </#list>
+        </#if>
+        } else {
+                // default if a data type is not supported
+                throw new IllegalArgumentException("Unsupported parameter type: " + o.getClass());
+        }
+    }
+
+    private static Object readObject(DataInput in) throws IOException {
+        int type = in.readShort();
+        int length;
+        Object result;
+        switch (type) {
+        <#assign arrayTypeID = 0/>
+        <#assign hasArrays = false/>
+        <#list utils.getParameterTypeInstances( service ) as type>
+            <#assign serializer = mapping.getRegistry().getTypeSerializer( type )/>
+            <#if type.getName() != "void" && !type.isArray()>
+                case ${registry.getRegisteredTypeId( type )}:
+                    ${serializer.fromStream( mapping, type, "in", "result" )}
+                    return result;
+            </#if>
+            <#if type.isArray()>
+                <#assign hasArrays = true/>
+                <#assign arrayTypeID = registry.getRegisteredTypeId( type )/>
+            </#if>
+        </#list>
+        <#if hasArrays>
+            case ${arrayTypeID}:
+                short elementType = in.readShort();
+                length = in.readInt();
+                switch (elementType) {
+                <#list service.getReturnTypes() as type>
+                    <#if type.isArray() && type.getName() != "void">
+                        case ${registry.getRegisteredTypeId( type.getComponentType())}:
+                            ${type.getName()} data = new ${type.getComponentType().getName()}[length];
+                            for (int i = 0; i < length; i++) {
+                                ${registry.getTypeSerializer( type.getComponentType()).fromStream( mapping, type.getComponentType(), "in", "data[i]" )}
+                            }
+                            return data;
+                    </#if>
+                </#list>
+                }
+        </#if>
+            case -1: /* NULL */
+                return null;
+        }
+        throw new IllegalArgumentException("Unsupported return type (" + type + ")");
+    }
+
+}
+//GEN-END:Client

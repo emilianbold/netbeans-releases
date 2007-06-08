@@ -26,19 +26,35 @@
 package org.netbeans.modules.mobility.end2end;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.mobility.end2end.core.model.classdata.ClassDataRegistryFactory;
+import org.netbeans.modules.mobility.e2e.classdata.ClassDataRegistry;
+import org.netbeans.modules.mobility.e2e.mapping.JavonMappingImpl;
+import org.netbeans.modules.mobility.end2end.classdata.AbstractService;
+import org.netbeans.modules.mobility.end2end.classdata.ClassData;
+import org.netbeans.modules.mobility.end2end.classdata.MethodData;
+import org.netbeans.modules.mobility.end2end.classdata.OperationData;
+import org.netbeans.modules.mobility.end2end.client.config.ClientConfiguration;
 import org.netbeans.modules.mobility.end2end.client.config.Configuration;
 import org.netbeans.modules.mobility.end2end.client.config.ConfigurationReader;
 import org.netbeans.modules.mobility.end2end.client.config.ConfigurationWriter;
+import org.netbeans.modules.mobility.end2end.client.config.ServerConfiguration;
 import org.netbeans.modules.mobility.end2end.util.Util;
 import org.netbeans.modules.xml.multiview.DesignMultiViewDesc;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
@@ -51,6 +67,7 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.Node;
@@ -73,9 +90,7 @@ public class E2EDataObject extends XmlMultiViewDataObject {
     // Project the file is in
     transient private Project clientProject;
     transient private Project serverProject;
-    
-    transient private ClassDataRegistryFactory factory;
-    
+        
     transient protected Set<SaveCallback> saveCallbacks;
     
     transient protected boolean generating;
@@ -177,26 +192,28 @@ public class E2EDataObject extends XmlMultiViewDataObject {
     }
     
     // FIXME: this method should be rather in GenerateAction
-//    public JavonMapping getMapping() throws Exception {
+    public JavonMappingImpl getMapping() throws Exception {
 //        //System.err.println(" - GET MAPPING START - ");
 //        // run always
-//        JavonMapping mapping = null;
-//        final Configuration config = getConfiguration();
-//        final List<String> classPath = new ArrayList<String>();
+        final Configuration config = getConfiguration();
+        final List<String> classPath = new ArrayList<String>();
 //        
-//        final ServerConfiguration sc = config.getServerConfigutation();
-//        final Properties sprops = sc.getProperties();
-//        final Sources ssources = getServerProject().getLookup().lookup( Sources.class );
-//        final SourceGroup[] ssg = ssources.getSourceGroups( JavaProjectConstants.SOURCES_TYPE_JAVA );
-//        for (int i = 0; i < ssg.length; i++) {
-//            final ClassPath cp = ClassPath.getClassPath(ssg[i].getRootFolder() ,ClassPath.SOURCE);
-//            final FileObject[] roots = cp.getRoots();
-//            for (int j = 0; j < roots.length; j++) {
-//                File f;
-//                if ((f = FileUtil.toFile(roots[j])) != null)
-//                    classPath.add(f.getAbsolutePath());
-//            }
-//        }
+        final ServerConfiguration sc = config.getServerConfigutation();
+        final Properties sprops = sc.getProperties();
+        final Sources ssources = getServerProject().getLookup().lookup( Sources.class );
+        final SourceGroup[] ssg = ssources.getSourceGroups( JavaProjectConstants.SOURCES_TYPE_JAVA );
+        List<ClasspathInfo> classpaths = new ArrayList<ClasspathInfo>();
+        for( int i = 0; i < ssg.length; i++ ) {
+            final ClassPath cp = ClassPath.getClassPath( ssg[i].getRootFolder(), ClassPath.SOURCE );
+            final FileObject[] roots = cp.getRoots();
+            for( int j = 0; j < roots.length; j++ ) {
+                File f;
+                if(( f = FileUtil.toFile( roots[j] )) != null )
+                    classPath.add( f.getAbsolutePath());
+                classpaths.add( ClasspathInfo.create( roots[j] ));
+            }
+        }
+                
 //        
 //        for (int i = 0; i < ssg.length; i++) {
 //            final ClassPath cp = ClassPath.getClassPath(ssg[i].getRootFolder() ,ClassPath.EXECUTE);
@@ -207,25 +224,34 @@ public class E2EDataObject extends XmlMultiViewDataObject {
 //                    classPath.add(f.getAbsolutePath());
 //            }
 //        }
-//        
+//      
+        //TODO: Dirty hack
+        List<ClasspathInfo> classpathInfos = new ArrayList<ClasspathInfo>();
+        classpathInfos.add( ClasspathInfo.create( ssg[0].getRootFolder()));   // TODO: fix this!!!
+        // TODO: fix 
+        final ClassDataRegistry registry = ClassDataRegistry.getRegistry( "default", classpathInfos );  
 //        final ClassDataRegistry registry =
 //                getClassDataRegistryFactory().create( classPath );
 //        mapping = new MutableJavonMapping( registry );
 //        
 //        // FIXME: devel hack
 //        final MutableJavonMapping m = new MutableJavonMapping( mapping );
-//        
-//        /* Client part of the mapping */
-//        final ClientConfiguration cc = config.getClientConfiguration();
-//        final Properties cprops = cc.getProperties();
-//        m.setClientClassName( cc.getClassDescriptor().getLeafClassName());
-//        m.setClientPackageName( cc.getClassDescriptor().getPackageName());
-//        final Sources csources = getClientProject().getLookup().lookup( Sources.class );
-//        final SourceGroup csg = Util.getPreselectedGroup(
-//                csources.getSourceGroups( JavaProjectConstants.SOURCES_TYPE_JAVA ),
-//                cc.getClassDescriptor().getLocation());
+        // Create new mapping
+        JavonMappingImpl mapping = new JavonMappingImpl( registry );
+        
+        // Client part of the mapping
+        final ClientConfiguration cc = config.getClientConfiguration();
+        final JavonMappingImpl.Client jcc = new JavonMappingImpl.Client();
+        final Properties cprops = cc.getProperties();
+        jcc.setClassName( cc.getClassDescriptor().getLeafClassName());
+        jcc.setPackageName( cc.getClassDescriptor().getPackageName());
+        final Sources csources = getClientProject().getLookup().lookup( Sources.class );
+        final SourceGroup csg = Util.getPreselectedGroup(
+                csources.getSourceGroups( JavaProjectConstants.SOURCES_TYPE_JAVA ),
+                cc.getClassDescriptor().getLocation());
 //        //System.err.println(" - client path: " + FileUtil.getFileDisplayName( csg.getRootFolder()));
 //        m.setClientRootDirectory( FileUtil.toFile( csg.getRootFolder()).getPath());
+        jcc.setOutputDirectory( FileUtil.toFile( csg.getRootFolder()).getPath());
 //        if( TRUE.equals(cprops.getProperty( "trace" ))) {   // NOI18N
 //            m.setClientTraceLevel( 1 );
 //        } else {
@@ -233,16 +259,20 @@ public class E2EDataObject extends XmlMultiViewDataObject {
 //        }
 //        m.setDynamicInvocationSupported( false );
 //        m.setGroupingSupported( cprops.getProperty( "multipleCall" ).equals( TRUE )); // NOI18N
-//        m.setStubGeneration( cprops.getProperty( "createStubs" ).equals( TRUE ));     // NOI18N
+        mapping.setProperty( "create-stubs", cprops.getProperty( "createStubs" ).equals( TRUE ));     // NOI18N
 //        m.setSynchronousSupported( true );
 //        m.setFloatingPointSupported( true );
-//        
-//        /* Server part of the mapping */
-//        final ProjectInformation pi = getServerProject().getLookup().lookup( ProjectInformation.class );
-//        m.setServerProjectName( pi.getName());
-//        m.setServerClassName( sc.getClassDescriptor().getLeafClassName());
-//        m.setServerPackageName( sc.getClassDescriptor().getPackageName());
+        mapping.setClientMapping( jcc );
+        
+        /* Server part of the mapping */
+        final ProjectInformation pi = getServerProject().getLookup().lookup( ProjectInformation.class );
+        final JavonMappingImpl.Server jsc = new JavonMappingImpl.Server();
+        jsc.setProjectName( pi.getName());
+        jsc.setClassName( sc.getClassDescriptor().getLeafClassName());
+        jsc.setPackageName( sc.getClassDescriptor().getPackageName());
 //        //System.err.println(" - server path: " + FileUtil.getFileDisplayName( ssg.getRootFolder()));
+        jsc.setOutputDirectory( 
+                FileUtil.toFile( Util.getPreselectedGroup(ssg, sc.getClassDescriptor().getLocation()).getRootFolder()).getPath());
 //        m.setServerRootDirectory(
 //                FileUtil.toFile( Util.getPreselectedGroup(ssg, sc.getClassDescriptor().getLocation()).getRootFolder()).getPath());
 //        if( TRUE.equals(sprops.getProperty( "trace" ))) {   // NOI18N
@@ -250,62 +280,63 @@ public class E2EDataObject extends XmlMultiViewDataObject {
 //        } else {
 //            m.setClientTraceLevel( 0 );
 //        }
+        ;
+        jsc.setLocation( Util.getServerLocation( getServerProject()));
+        jsc.setPort( Util.getServerPort( getServerProject()) );
+        jsc.setServletLocation( configuration.getServerConfigutation().getProjectName() + "/servlet/" + //NOI18N
+                configuration.getServerConfigutation().getClassDescriptor().getType());
+        mapping.setServerMapping( jsc );
 //        
-//        m.setServletURL(Util.getServerURL(getServerProject(), getConfiguration()));
-//        
-//        int methodID = 1;
-//        final List<AbstractService> services = config.getServices();
+//        final JavonMapping.Service jss = mapping.new Service();
+        int methodID = 1;
+        final List<AbstractService> services = config.getServices();
 //        // there must be one and just one service
-//        //System.err.println(" - services count - " + services.size());
-//        final List<ClassData> classes = services.get(0).getData();
-//        for ( final ClassData ccd : classes ) {
-//            String className = ccd.getProxyClassType();
-//            if (className == null){
-//                className = ccd.getType();
-//            }
-//            final org.netbeans.mobility.end2end.core.model.classdata.ClassData classData = registry.getClassData( className );
-//            if( classData == null ) continue;
-//            //System.err.println(" - class: " + className );
-//            
-//            final List<OperationData>
-//                    methods = ccd.getOperations();
-//            final org.netbeans.mobility.end2end.core.model.classdata.MethodData methodData[] = classData.getMethods();
-//            //for( int j = 0; j < methods.size(); j++ ) {
-//            for ( final MethodData mmd : methods ) { 
-//                //System.err.println(" - method: " + mmd.getName());
-//                final int methodIndex = findMethod( methodData, mmd.getName());
-//                if( methodIndex >= 0 ) {
-//                    methodData[methodIndex].setRequestID( methodID++ );
-//                    m.addMethod( methodData[methodIndex] );
-//                    //System.err.println(" - adding method: " + methodData[methodIndex] );
-//                }
-//            }
-//        }
-//        m.resolveNamingConflicts();
-//        mapping = m;
-//        
-//        return mapping;
-//    }
-    
-    private int findMethod( final org.netbeans.mobility.end2end.core.model.classdata.MethodData[] methods, final String methodName ) {
-        final int result = -1;
-        for( int i = 0; i < methods.length; i++ ) {
-            // FIXME: check parameters and return types
-            if( methods[i].getName().equals( methodName )) {
-                return i;
+        
+        final List<ClassData> classes = services.get(0).getData();        
+        for( final ClassData ccd : classes ) {
+            JavonMappingImpl.Service javonService = new JavonMappingImpl.Service();
+            javonService.setPackageName( ccd.getPackageName());
+            javonService.setClassName( ccd.getClassName());
+            
+            String className = ccd.getProxyClassType();
+            if( className == null ){
+                className = ccd.getType();
             }
+            
+            final org.netbeans.modules.mobility.e2e.classdata.ClassData classData = registry.getClassData( className );
+            if( classData == null ) continue;
+            
+            final List<OperationData> methods = ccd.getOperations();
+            final List<org.netbeans.modules.mobility.e2e.classdata.MethodData> methodsData = classData.getMethods();
+            for( int j = 0; j < methods.size(); j++ ) {
+                final int methodIndex = findMethodIndex( methodsData, methods.get( j ).getName());
+                if( methodIndex >= 0 ) {
+                    org.netbeans.modules.mobility.e2e.classdata.MethodData mmd = methodsData.get(methodIndex);
+                    mmd.setRequestID( methodID++ );
+                    javonService.addMethod( mmd );
+                }
+            }
+            mapping.addServiceMaping( javonService );
+        }
+        mapping.setServletURL( Util.getServerURL( getServerProject(), getConfiguration()));
+        
+        return mapping;
+    }
+    
+    private int findMethodIndex( final List<org.netbeans.modules.mobility.e2e.classdata.MethodData> methods, final String methodName ) {
+        int result = 0;
+        for( org.netbeans.modules.mobility.e2e.classdata.MethodData method : methods ) {
+//        for( int i = 0; i < methods.size(); i++ ) {
+            // FIXME: check parameters and return types
+            if( method.getName().equals( methodName )) {
+                return result;
+            }
+            result++;
         }
         
-        return result;
+        return -1;
     }
-    
-    public ClassDataRegistryFactory getClassDataRegistryFactory() {
-//        if( factory == null ) {
-//            factory = new NetbeansClassDataRegistryFactory( clientProject );
-//        }
-        return factory;
-    }
-    
+        
     protected String getPrefixMark() {
         // FIXME: What the heck is this method for?
         return "";

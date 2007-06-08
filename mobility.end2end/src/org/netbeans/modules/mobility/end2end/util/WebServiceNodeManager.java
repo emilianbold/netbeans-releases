@@ -29,6 +29,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientView;
 //import org.netbeans.modules.websvc.core.ServiceInformation;
+import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
+import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientView;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
@@ -44,11 +46,13 @@ public final class WebServiceNodeManager {
     public static Node getAvailableWSRootNode(final Project p, final String wsdlFile){
         final WebServicesClientSupport wscs = WebServicesClientSupport.getWebServicesClientSupport(p.getProjectDirectory());
         final FileObject rootFolder = wscs.getWsdlFolder();
-        final WebServicesClientSupport clientSupport  = WebServicesClientSupport.getWebServicesClientSupport(rootFolder);
-        final WebServicesClientView clientView = WebServicesClientView.getWebServicesClientView(rootFolder);
+        final JAXWSClientSupport clientSupport = JAXWSClientSupport.getJaxWsClientSupport( p.getProjectDirectory());
+//        final WebServicesClientSupport clientSupport  = WebServicesClientSupport.getWebServicesClientSupport(rootFolder);
+        final JAXWSClientView clientView = JAXWSClientView.getJAXWSClientView();
+//        final WebServicesClientView clientView = WebServicesClientView.getWebServicesClientView(rootFolder);
         
-        final Node clientRoot = clientView.createWebServiceClientView(clientSupport.getWsdlFolder());
-        return new FilterNode(clientRoot, new WsFilteredChildren(clientRoot, wsdlFile));
+        final Node clientRoot = clientView.createJAXWSClientView( p );
+        return new FilterNode(clientRoot, new WsFilteredChildren( clientRoot, wsdlFile ));
     }
     
     private static class WsFilteredChildren extends FilterNode.Children{

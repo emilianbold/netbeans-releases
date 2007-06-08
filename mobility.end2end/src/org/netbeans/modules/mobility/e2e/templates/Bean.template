@@ -1,0 +1,36 @@
+/*
+ *
+ */
+
+package ${bean.getPackage()};
+
+/**
+ * 
+ */
+<#if bean.getParent().getFullyQualifiedName() == "java.lang.Object">
+public class ${bean.getClassName()} {
+<#else>
+public class ${bean.getClassName()} extends ${bean.getParent().getFullyQualifiedName()} {
+</#if>
+    <#list bean.getFields() as field>
+
+    <#if field.getType().getPackage() == "java.lang">
+        <#assign propertyType = field.getType().getClassName()/>
+    <#else>
+        <#assign propertyType = field.getType().getFullyQualifiedName()/>
+    </#if>
+    <#if createStubs || field.getModifier() == "PUBLIC">
+        public ${propertyType} ${field.getName()};
+    <#else>
+        private ${propertyType} ${field.getName()};
+
+        public void ${field.getSetter()}(${propertyType} ${field.getName()})  {
+            this.${field.getName()} = ${field.getName()};
+        }
+
+        public ${propertyType} ${field.getGetter()}() {
+            return ${field.getName()};
+        }
+    </#if>
+    </#list>
+}

@@ -19,44 +19,6 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="netbeans" name="mobility/end2end">
     <import file="../../nbbuild/templates/projectized.xml"/>
-    <target name="corelib" depends="init">
-        <mkdir dir="build/coreclasses"/>
-        <javac srcdir="corelibsrc" destdir="build/coreclasses" source="1.5" debug="true" deprecation="true">
-            <classpath>
-                <path refid="cp"/>
-            </classpath>
-        </javac>
-        <copy todir="build/coreclasses">
-            <fileset dir="corelibsrc" excludesfile="../standard-jar-excludes.txt"/>
-        </copy>
-        <echo>Creating Templates</echo>
-        <pathconvert property="src.templates" pathSep=" ">
-            <path>
-                <fileset dir="templates">
-                    <include name="*.java"/>
-                </fileset>
-            </path>
-        </pathconvert>
-        <java classname="org.netbeans.mobility.end2end.core.template.TemplateMain"
-                fork="true" failonerror="true">
-            <classpath>
-                <pathelement location="build/coreclasses"/>
-            </classpath>
-            <arg line = "-d build/coreclasses"/>
-            <arg line = "-javaDir build/coreclasses/org/netbeans/mobility/end2end/core/template"/>
-            <arg line = "-classpath build/coreclasses"/>
-            <arg line = "-package org.netbeans.mobility.end2end.core.template"/>
-            <arg line = "-dataClass org.netbeans.mobility.end2end.core.model.JavonMapping"/>
-            <arg line = "-outputClass org.netbeans.mobility.end2end.core.model.JavonOutput"/>
-            <arg line = "${src.templates}"/>
-        </java>    
-        <mkdir dir="${cluster}/modules/ext"/>
-        <jar jarfile="${cluster}/modules/ext/${end2end-core.jar}" compress="false">
-            <fileset dir="build/coreclasses">
-               <excludesfile name="../standard-jar-excludes.txt"/>
-            </fileset>
-        </jar>
-    </target>
 
-   <target name="compile" depends="corelib,projectized-common.compile"/>
+   <target name="compile" depends="projectized-common.compile"/>
 </project>

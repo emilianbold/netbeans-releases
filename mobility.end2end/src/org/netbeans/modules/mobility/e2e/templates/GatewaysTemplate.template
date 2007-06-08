@@ -1,0 +1,73 @@
+//GEN-BEGIN:Client
+/**
+ * This file is generated. Please do not change
+ */
+<#assign packageName = mapping.getServerMapping().getPackageName()/>
+package ${packageName};
+
+import java.io.*;
+import javax.servlet.http.HttpSession;
+import java.util.*;
+
+/**
+ * Invocation Gateways
+ */
+public class JavonGateways {
+    <#list mapping.getServiceMappings() as service>
+    <#list service.getMethods() as method>
+    <#assign serviceClassName = service.getClassName()/>
+    <#assign servicePackageName = service.getPackageName()/>
+    <#assign serviceType = service.getType()/>
+    <#assign className = service.getClassName()/>
+    <#assign classFQN = packageName + "." + className/>
+    /**
+     *  This class implements the application server connectivity specific to the needs.
+     */
+    public static class ${packageName?replace( ".", "_" )}_${className}${method.getName()}${method.getRequestID()}Gateway implements InvocationAbstraction {
+        /**
+         *  This method performs the actual invocation of server functionality. It is
+         *  used by the servlet to delegate functionality to external classes.
+         *
+         * @param input The stream from which we should read the parameters for the methods
+         * @return The return value for the method NULL IS NOT SUPPORTED!!!!
+         * @throws Exception  Thrown when a protocol error occurs
+         */
+        public Object invoke(HttpSession session, DataInput input) throws Exception {
+            <#list method.getParameters() as parameter>
+            <#assign paramType = parameter.getType()>
+            ${paramType.getName()} ${parameter.getName()} = ${registry.getTypeSerializer( paramType ).fromObject( paramType, "Utility.readObject( input )" ) };
+            </#list>
+                
+            ${serviceType} instance = (${serviceType})session.getAttribute("${serviceType}");
+            if (instance == null) {
+                instance = (${serviceType}) Class.forName("${serviceType}").newInstance();
+                session.setAttribute("${serviceType}", instance);
+            }
+            <#if method.getReturnType().getName() == "void">
+            instance.${method.getName()}(<@paramList method/>);
+            return Utility.VOID_VALUE;
+            <#else>
+                <#if method.getReturnType().isPrimitive()>
+                    <#assign returnType = method.getReturnType()/>
+                    <#assign param = "instance." + method.getName() + "("/>
+                    <#list method.getParameters() as parameter><#assign param = param + parameter.getName()><#if parameter_has_next><#assign param = param + ", "></#if></#list><#rt>
+                    <#assign param = param + ")"/>
+                    return ${registry.getTypeSerializer( returnType ).toObject( returnType, param )};
+                <#else>
+                    return instance.${method.getName()}(<@paramList method/>);
+                </#if>
+            </#if>
+        }
+    }
+
+    </#list>
+    </#list>
+
+    private static Object readObject(DataInput in) throws IOException {
+        return Utility.readObject(in);
+    }
+}
+//GEN-END:Client
+<#macro paramList method>
+<#list method.getParameters() as parameter>${parameter.getName()}<#if parameter_has_next>, </#if></#list><#rt>
+</#macro>
