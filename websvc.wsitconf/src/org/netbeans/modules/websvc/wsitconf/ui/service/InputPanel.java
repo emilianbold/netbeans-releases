@@ -216,14 +216,17 @@ public class InputPanel extends SectionInnerPanel {
         boolean bindingScopeTokenPresent = SecurityTokensModelHelper.getSupportingToken(binding, 
                 SecurityTokensModelHelper.SIGNED_SUPPORTING) != null;
         boolean securityEnabled = bSecurityEnabled || oSecurityEnabled;
-        boolean genericProfile = true;
         
-        tokenCombo.setEnabled(securityEnabled && genericProfile && !secConversation && !bindingScopeTokenPresent);
-        tokenComboLabel.setEnabled(securityEnabled && genericProfile && !secConversation && !bindingScopeTokenPresent);
-        targetsButton.setEnabled(securityEnabled && !ProfilesModelHelper.isSSLProfile(profile));
+        boolean isSSL = ProfilesModelHelper.isSSLProfile(profile);
+                
+        tokenCombo.setEnabled(securityEnabled && !secConversation && !bindingScopeTokenPresent && !isSSL);
+        tokenComboLabel.setEnabled(securityEnabled && !secConversation && !bindingScopeTokenPresent && !isSSL);
+        tokenCombo.setEnabled(securityEnabled && !secConversation && !bindingScopeTokenPresent && !isSSL);
+        tokenComboLabel.setEnabled(securityEnabled && !secConversation && !bindingScopeTokenPresent && !isSSL);
+        targetsButton.setEnabled(securityEnabled && !isSSL);
         boolean tokenSelected = !ComboConstants.NONE.equals((String)tokenCombo.getSelectedItem());
-        signedChBox.setEnabled(securityEnabled && tokenSelected && genericProfile && !secConversation && !bindingScopeTokenPresent);
-        endorsingChBox.setEnabled(securityEnabled && tokenSelected && genericProfile && !secConversation && !bindingScopeTokenPresent);
+        signedChBox.setEnabled(securityEnabled && tokenSelected && !secConversation && !bindingScopeTokenPresent && !isSSL);
+        endorsingChBox.setEnabled(securityEnabled && tokenSelected && !secConversation && !bindingScopeTokenPresent && !isSSL);
     }
     
     /** This method is called from within the constructor to
