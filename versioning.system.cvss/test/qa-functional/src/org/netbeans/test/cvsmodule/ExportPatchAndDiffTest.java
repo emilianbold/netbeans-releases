@@ -154,8 +154,8 @@ public class ExportPatchAndDiffTest extends JellyTestCase {
         JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
         open.push();
         
-        ProjectSupport.waitScanFinished();
-        new QueueTool().waitEmpty(1000);
+        //ProjectSupport.waitScanFinished();
+        //new QueueTool().waitEmpty(1000);
         ProjectSupport.waitScanFinished();
         
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
@@ -169,10 +169,11 @@ public class ExportPatchAndDiffTest extends JellyTestCase {
         OutputTabOperator oto;
         oto = new OutputTabOperator(sessionCVSroot);
         oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        new ProjectsTabOperator().tree().clearSelection();
         Node nodeClass = new Node(new SourcePackagesNode(projectName), pathToMain);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         comOperator = new Operator.DefaultStringComparator(true, true);
-              
+        
         nodeClass.performPopupAction("Open");
         EditorOperator eo = new EditorOperator("Main.java");
         eo.insert("// EXPORT PATCH", 5, 1);
@@ -180,7 +181,6 @@ public class ExportPatchAndDiffTest extends JellyTestCase {
         //nodeClass.performMenuActionNoBlock("Versioning|CVS|Export");
         Operator.setDefaultStringComparator(comOperator);
         new ProjectsTabOperator().tree().clearSelection();
-        nodeClass.select();
         nodeClass.performMenuActionNoBlock("Versioning|Export \"Main.java\" Diff Patch...");
         Operator.setDefaultStringComparator(oldOperator);
         NbDialogOperator dialog = new NbDialogOperator("Export");
@@ -238,7 +238,7 @@ public class ExportPatchAndDiffTest extends JellyTestCase {
         cvss = new PseudoCvsServer(in);
         new Thread(cvss).start();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", cvss.getCvsRoot());
-        node.performPopupAction("CVS|Diff...");
+        node.performPopupAction("CVS|Diff");
         
         //        oto.waitText("Diffing \"Main.java\" finished");
         Thread.sleep(1000);
@@ -254,14 +254,16 @@ public class ExportPatchAndDiffTest extends JellyTestCase {
         //
         try {
             TimeoutExpiredException afee = null;
-            diffOp.next();
-            diffOp.next();
+            //find the last difference            
             try {
                 diffOp.next();
+                diffOp.next();
+                diffOp.next();
             } catch (TimeoutExpiredException e) {
+                //want to be sure that the last difference was found
                 afee = e;
             }
-            assertNotNull("TimeoutExpiredException was expected.", afee);
+            assertNotNull("TimeoutExpiredException was expected - diff should have pointed to the last difference.", afee);
             
             //verify previous button
             afee = null;
@@ -272,9 +274,22 @@ public class ExportPatchAndDiffTest extends JellyTestCase {
             } catch (TimeoutExpiredException e) {
                 afee = e;
             }
-            assertNotNull("TimeoutExpiredException was expected.", afee);
+            assertNotNull("TimeoutExpiredException was expected - previous diff should have been disabled.", afee);
+            
+            //verify next button
+            afee = null;
+            diffOp.next();
+            diffOp.next();
+            try {
+                diffOp.next();
+            } catch (TimeoutExpiredException e) {
+                afee = e;
+            }
+            assertNotNull("TimeoutExpiredException was expected - next diff should have been disabled.", afee);
+            
         } catch (Exception e) {
             System.out.println("Problem with buttons of differences");
+            e.printStackTrace();
         }
         
         //refresh button
