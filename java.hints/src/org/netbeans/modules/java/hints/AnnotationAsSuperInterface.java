@@ -121,7 +121,7 @@ public class AnnotationAsSuperInterface extends AbstractHint {
     }
     
     public String getDescription() {
-        return NbBundle.getMessage(AssignmentToItself.class, "DSC__AnnotationAsSuperInterface"); // NOI18N
+        return NbBundle.getMessage(AssignmentToItself.class, "DSC_AnnotationAsSuperInterface"); // NOI18N
     }
     
     private Tree findTreeForAnnotation( ClassTree ct, Element annotation ) {
