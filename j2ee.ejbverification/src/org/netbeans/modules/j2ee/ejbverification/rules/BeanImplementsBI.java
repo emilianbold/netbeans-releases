@@ -83,7 +83,7 @@ public class BeanImplementsBI extends EJBVerificationRule {
     private void processAnnotation(Collection<String> businessInterFaces,
             TypeElement clazz, String annotClass){
           AnnotationMirror annLocal = JavaUtils.findAnnotation(clazz, EJBAPIAnnotations.LOCAL);
-            AnnotationValue value = JavaUtils.getAnnotationAttrValue(annLocal, "value"); //NOI18N
+            AnnotationValue value = JavaUtils.getAnnotationAttrValue(annLocal, EJBAPIAnnotations.VALUE);
             
             if (value != null){
                 for (AnnotationValue ifaceAttr : (List<? extends AnnotationValue>)value.getValue()){
