@@ -102,6 +102,12 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
                 if (e.getKind() == ElementKind.ENUM) {
                     return null;
                 }
+                if (e.getKind() == ElementKind.INTERFACE) {
+                    return null;
+                }
+                if (e.getKind() == ElementKind.ANNOTATION_TYPE) {
+                    return null;
+                }
                 
                 for (Element m : e.getEnclosedElements()) {
                     if (m.accept(this, compilationInfo)) {
@@ -134,7 +140,7 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
 
             ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
                 getSeverity().toEditorSeverity(),
-                NbBundle.getMessage(UtilityClass.class, clazz ? "MSG_UtilityClass" : "MSG_PublicConstructor"), // NOI18N
+                NbBundle.getMessage(UtilityClass.class, clazz ? "MSG_PrivateConstructor" : "MSG_MakePrivate"), // NOI18N
                 fixes,
                 doc,
                 doc.createPosition((int) span[0]),

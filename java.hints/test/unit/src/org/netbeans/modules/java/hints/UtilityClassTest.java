@@ -96,6 +96,20 @@ public class UtilityClassTest extends TreeRuleTestBase {
         
         performAnalysisTest("test/Test.java", before + after, before.length());
     }
+    public void testDisabledOnInterfaces() throws Exception {
+        String before = "package test; public interface Te";
+        String after = "st {" +
+            "}";
+        
+        performAnalysisTest("test/Test.java", before + after, before.length());
+    }
+    public void testDisabledOnAnnotations() throws Exception {
+        String before = "package test; public @interface Te";
+        String after = "st {" +
+            "}";
+        
+        performAnalysisTest("test/Test.java", before + after, before.length());
+    }
 
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
         SourceUtilsTestUtil.setSourceLevel(info.getFileObject(), sourceLevel);
