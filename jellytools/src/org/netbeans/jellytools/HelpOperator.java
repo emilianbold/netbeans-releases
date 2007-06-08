@@ -72,8 +72,6 @@ public class HelpOperator extends WindowOperator {
     private JSplitPaneOperator _splpHelpSplitPane;
     private JTabbedPaneOperator _tbpHelpTabPane;
     private JTreeOperator _treeContents;
-    private JTreeOperator _treeIndex;
-    private JTextFieldOperator _txtIndexFind;
     private JTreeOperator _treeSearch;
     private JTextFieldOperator _txtSearchFind;
     private JEditorPaneOperator _txtContentViewer;
@@ -185,30 +183,6 @@ public class HelpOperator extends WindowOperator {
         return _treeContents;
     }
 
-    /** Tries to find JTree in Index tab of this dialog.
-     * It throws TimeoutExpiredException when component not found
-     * @return JTreeOperator
-     */
-    public JTreeOperator treeIndex() {
-        selectPageIndex();
-        if (_treeIndex==null) {
-            _treeIndex = new JTreeOperator( tbpHelpTabPane(), 0 );
-        }
-        return _treeIndex;
-    }
-
-    /** Tries to find JTextField Find in Index tab of this dialog.
-     * It throws TimeoutExpiredException when component not found
-     * @return JTextFieldOperator
-     */
-    public JTextFieldOperator txtIndexFind() {
-        selectPageIndex();
-        if (_txtIndexFind==null) {
-            _txtIndexFind = new JTextFieldOperator( tbpHelpTabPane(), 0 );
-        }
-        return _txtIndexFind;
-    }
-
     /** Tries to find JTree in Search tab of this dialog.
      * It throws TimeoutExpiredException when component not found
      * @return JTreeOperator
@@ -277,21 +251,9 @@ public class HelpOperator extends WindowOperator {
         tbpHelpTabPane().selectPage(0);
     }
     
-    /** selects page Index */    
-    public void selectPageIndex() {
-        tbpHelpTabPane().selectPage(1);
-    }
-
     /** selects page Search */    
     public void selectPageSearch() {
-        tbpHelpTabPane().selectPage(2);
-    }
-
-    /** tries to find and set text of txtIndexFind
-     * @param text String text
-     */
-    public void indexFind( String text ) {
-        txtIndexFind().enterText(text);
+        tbpHelpTabPane().selectPage(1);
     }
 
     /** tries to find and set text of txtSearchFind
@@ -316,8 +278,6 @@ public class HelpOperator extends WindowOperator {
         btPrint();
         treeContents();
         txtContentViewer();
-        treeIndex();
-        txtIndexFind();
         treeSearch();
         txtSearchFind();
     }
