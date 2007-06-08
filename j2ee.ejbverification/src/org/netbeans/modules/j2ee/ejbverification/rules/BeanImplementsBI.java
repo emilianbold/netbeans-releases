@@ -52,7 +52,7 @@ public class BeanImplementsBI extends EJBVerificationRule {
             
             processAnnotation(businessInterFaces, ctx.getClazz(), EJBAPIAnnotations.LOCAL);
             processAnnotation(businessInterFaces, ctx.getClazz(), EJBAPIAnnotations.REMOTE);
-          
+            
             if (businessInterFaces.size() > 0){
                 Collection<String> implementedInterfaces = new TreeSet<String>();
                 
@@ -82,14 +82,16 @@ public class BeanImplementsBI extends EJBVerificationRule {
     
     private void processAnnotation(Collection<String> businessInterFaces,
             TypeElement clazz, String annotClass){
-          AnnotationMirror annLocal = JavaUtils.findAnnotation(clazz, EJBAPIAnnotations.LOCAL);
-            AnnotationValue value = JavaUtils.getAnnotationAttrValue(annLocal, EJBAPIAnnotations.VALUE);
-            
-            if (value != null){
-                for (AnnotationValue ifaceAttr : (List<? extends AnnotationValue>)value.getValue()){
+        AnnotationMirror annLocal = JavaUtils.findAnnotation(clazz, EJBAPIAnnotations.LOCAL);
+        AnnotationValue value = JavaUtils.getAnnotationAttrValue(annLocal, EJBAPIAnnotations.VALUE);
+        
+        if (value != null){
+            for (AnnotationValue ifaceAttr : (List<? extends AnnotationValue>)value.getValue()){
+                if (ifaceAttr.getValue() instanceof TypeMirror){
                     String className = JavaUtils.extractClassNameFromType((TypeMirror)ifaceAttr.getValue());
                     businessInterFaces.add(className);
                 }
             }
+        }
     }
 }
