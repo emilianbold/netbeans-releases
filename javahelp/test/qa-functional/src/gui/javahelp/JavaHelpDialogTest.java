@@ -54,7 +54,6 @@ public class JavaHelpDialogTest extends JellyTestCase {
         suite.addTest(new JavaHelpDialogTest("testHelpFromMenu"));
         suite.addTest(new JavaHelpDialogTest("testHelpByButtonNonModal"));
         suite.addTest(new JavaHelpDialogTest("testHelpByButtonModal"));
-        suite.addTest(new JavaHelpDialogTest("testSearchInIndex"));
         suite.addTest(new JavaHelpDialogTest("testContextualSearch"));
         suite.addTest(new JavaHelpDialogTest("testHelpByButtonNestedModal"));
         return suite;
@@ -125,25 +124,6 @@ public class JavaHelpDialogTest extends JellyTestCase {
         // close
         addJavaPlatform.cancel();
         javaPlatformManager.closeByButton();
-    }
-    
-    public void testSearchInIndex(){
-        new HelpAction().perform();
-        helpWindow = new HelpOperator();
-        helpWindow.selectPageIndex();
-        helpWindow.indexFind("compile");
-        try{
-            Thread.sleep(5000);
-        }catch(Exception exc){
-            exc.printStackTrace(getLog());
-        }
-        
-        JTreeOperator tree = helpWindow.treeIndex();
-        log("Selection path="+tree.getSelectionPath());
-        log("Selection count="+tree.getSelectionCount());
-        
-        if(tree.getSelectionCount()<1)
-            fail("None founded text in the help, it isn't obvious");
     }
     
     public void testContextualSearch(){
