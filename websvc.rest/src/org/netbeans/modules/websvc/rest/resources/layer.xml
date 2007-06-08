@@ -51,6 +51,11 @@
                 stringvalue="org.netbeans.modules.websvc.rest.component.palette.Bundle"/>
             <file name="googlemap.xml" url="/org/netbeans/modules/websvc/rest/component/palette/googlemap.xml" />
         </folder>
+        <folder name="Component">
+            <attr name="SystemFileSystem.localizingBundle" 
+                stringvalue="org.netbeans.modules.websvc.rest.component.palette.Bundle"/>
+            <file name="component.xml" url="/org/netbeans/modules/websvc/rest/component/palette/component.xml" />
+        </folder>
     </folder>    
     
 </filesystem>
