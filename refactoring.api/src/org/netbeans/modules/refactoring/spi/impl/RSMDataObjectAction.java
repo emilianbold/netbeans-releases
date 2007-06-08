@@ -43,7 +43,7 @@ public class RSMDataObjectAction extends SystemAction implements Menu, Popup, Co
     // create delegate (RefactoringSubMenuAction)
     private final RefactoringSubMenuAction action = new RefactoringSubMenuAction(false);
     
-    private static final RenameAction renameAction = (RenameAction) SystemAction.get(RenameAction.class);
+    private static final RenameAction renameAction = SystemAction.get(RenameAction.class);
     
     public void actionPerformed(ActionEvent ev) {
         // do nothing -- should never be called
@@ -68,12 +68,12 @@ public class RSMDataObjectAction extends SystemAction implements Menu, Popup, Co
     }
     
     public Action createContextAwareInstance(Lookup actionContext) {
-        DataObject dobj = (DataObject) actionContext.lookup(DataObject.class);
+        DataObject dobj = actionContext.lookup(DataObject.class);
         while (dobj instanceof DataShadow) {
             dobj = ((DataShadow) dobj).getOriginal();
         }
         
-        boolean isRecursive = !(actionContext.lookup(NonRecursiveFolder.class) != null);
+        //boolean isRecursive = !(actionContext.lookup(NonRecursiveFolder.class) != null);
         Action a = RefactoringActionsFactory.renameAction().createContextAwareInstance(actionContext);
         if (a.isEnabled()) {
             return this;
