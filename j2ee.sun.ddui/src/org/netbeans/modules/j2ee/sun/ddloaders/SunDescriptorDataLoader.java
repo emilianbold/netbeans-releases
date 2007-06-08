@@ -65,7 +65,7 @@ public class SunDescriptorDataLoader extends UniFileLoader {
     }
     
     protected String actionsContext() {
-        return "Loaders/text/x-dd/Actions/"; // NOI18N
+        return "Loaders/text/x-sun-dd/Actions/"; // NOI18N
     }
     
 //    protected void initialize() {
