@@ -561,7 +561,7 @@ final class Central implements ControllerHandler {
                 model.addModeClosedTopComponent(mode, tc);
             } else {
                 //mkleint since one cannot close the sliding mode just like that, we don't need to check the previous mode of the tc.
-                model.removeModeTopComponent(mode, tc);
+                model.removeModeTopComponent(mode, tc, null);
                 String id = WindowManagerImpl.getInstance().findTopComponentID(tc);
                 PersistenceManager.getDefault().removeGlobalTopComponentID(id);
             }
@@ -841,7 +841,7 @@ final class Central implements ControllerHandler {
             
             if(model.containsModeTopComponent(m, tc)) {
                 tcRemoved = true;
-                model.removeModeTopComponent(m, tc);
+                model.removeModeTopComponent(m, tc, null);
 //                debugLog("removeTopComponentFromOtherModes()");
 
                 // Remove mode from model if is not permanennt and emptied.
@@ -877,7 +877,12 @@ final class Central implements ControllerHandler {
             return;
         }
         
-        model.removeModeTopComponent(mode, tc);
+        TopComponent recentTc = null;
+        if( mode.getKind() == Constants.MODE_KIND_EDITOR ) {
+            //an editor document is being closed so let's find the most recent editor to select
+            recentTc = getRecentTopComponent( mode, tc );
+        }
+        model.removeModeTopComponent(mode, tc, recentTc);
         String id = WindowManagerImpl.getInstance().findTopComponentID(tc);
         PersistenceManager.getDefault().removeGlobalTopComponentID(id);
 
@@ -938,6 +943,34 @@ final class Central implements ControllerHandler {
             WindowManagerImpl.notifyRegistryTopComponentActivated(
                 null);
         }
+    }
+    
+    /**
+     * Find TopComponent to be selected when the currently selected TC is closed
+     * in the given mode.
+     * @param editorMode Editor mode
+     * @param closedTc TopComponent which is being closed in the given mode.
+     * @return TopComponent to select or null (e.g. the mode will be empty after close)
+     */
+    private TopComponent getRecentTopComponent( ModeImpl editorMode, TopComponent closedTc ) {
+        WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        TopComponent[] documents = wm.getRecentViewList();
+        
+        for (int i = 0; i < documents.length; i++) {
+            TopComponent tc = documents[i];
+            if (tc == null) {
+                continue;
+            }
+            ModeImpl mode = (ModeImpl)wm.findMode(tc);
+            if (mode == null 
+               || mode != editorMode
+               || tc == closedTc) {
+                continue;
+            }
+            
+            return tc;
+        }
+        return null;
     }
     
    // remove the mode only if there's no other component in sliding modes that has this one as the previous mode.
@@ -1140,7 +1173,7 @@ final class Central implements ControllerHandler {
                     if(WindowManagerImpl.getInstance().isTopComponentPersistentWhenClosed(tc)) {
                         model.addModeClosedTopComponent(mode, tc);
                     } else {
-                        model.removeModeTopComponent(mode, tc);
+                        model.removeModeTopComponent(mode, tc, null);
                         String id = WindowManagerImpl.getInstance().findTopComponentID(tc);
                         PersistenceManager.getDefault().removeGlobalTopComponentID(id);
                     }

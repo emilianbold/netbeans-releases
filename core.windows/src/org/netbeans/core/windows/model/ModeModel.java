@@ -63,7 +63,7 @@ interface ModeModel {
     /** Set top component that was selected before switching to/from maximized mode */
     public void setUnloadedPreviousSelectedTopComponent(String tcID);
     /** Removes TopComponent from mode. */
-    public void removeTopComponent(TopComponent tc);
+    public void removeTopComponent(TopComponent tc, TopComponent recentTc);
     // XXX
     public void removeClosedTopComponentID(String tcID);
     

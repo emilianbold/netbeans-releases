@@ -646,10 +646,10 @@ final class DefaultModel implements Model {
     }
     
     /** */
-    public void removeModeTopComponent(ModeImpl mode, TopComponent tc) {
+    public void removeModeTopComponent(ModeImpl mode, TopComponent tc, TopComponent recentTc) {
         ModeModel modeModel = getModelForMode(mode);
         if(modeModel != null) {
-            modeModel.removeTopComponent(tc);
+            modeModel.removeTopComponent(tc, recentTc);
         }
     }
     

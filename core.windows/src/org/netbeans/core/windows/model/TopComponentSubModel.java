@@ -178,7 +178,7 @@ final class TopComponentSubModel {
         if(index != -1) {
             openedTopComponents.remove(tc);
             if (selectedTopComponentID != null && selectedTopComponentID.equals(getID(tc))) {
-                adjustSelectedTopComponent(index);
+                adjustSelectedTopComponent(index, null);
             }
         } 
         
@@ -201,14 +201,20 @@ final class TopComponentSubModel {
         return true;
     }
     
-    public boolean removeTopComponent(TopComponent tc) {
+    /**
+     * Remove the given TopComponent from this Mode.
+     * @param tc TopComponent to be removed
+     * @param recentTc TopComponent to select if the removed one was selected. 
+     * If null then the TopComponent nearest to the removed one will be selected.
+     */
+    public boolean removeTopComponent(TopComponent tc, TopComponent recentTc) {
         boolean res;
         String tcID = getID(tc);
         if(openedTopComponents.contains(tc)) {
             if(selectedTopComponentID != null && selectedTopComponentID.equals(tcID)) {
                 int index = openedTopComponents.indexOf(getTopComponent(selectedTopComponentID));
                 openedTopComponents.remove(tc);
-                adjustSelectedTopComponent(index);
+                adjustSelectedTopComponent(index, recentTc);
             } else {
                 openedTopComponents.remove(tc);
             }
@@ -240,17 +246,22 @@ final class TopComponentSubModel {
         return tcIDs.isEmpty();
     }
     
-    private void adjustSelectedTopComponent(int index) {
+    private void adjustSelectedTopComponent(int index, TopComponent recentTc) {
         if(openedTopComponents.isEmpty() || isNullSelectionAllowed()) {
             selectedTopComponentID = null;
             return;
         }
         
-        if(index > openedTopComponents.size() - 1) {
-            index = openedTopComponents.size() - 1;
+        if( null != recentTc ) {
+            assert openedTopComponents.contains( recentTc );
+            selectedTopComponentID = getID(recentTc);
+        } else {
+            if(index > openedTopComponents.size() - 1) {
+                index = openedTopComponents.size() - 1;
+            }
+
+            selectedTopComponentID = getID((TopComponent)openedTopComponents.get(index));
         }
-        
-        selectedTopComponentID = getID((TopComponent)openedTopComponents.get(index));
     }
 
     /** @return true for sliding kind of model, false otherwise. It means that

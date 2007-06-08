@@ -93,9 +93,9 @@ final class DefaultModeModel implements ModeModel {
         }
     }
     
-    public void removeTopComponent(TopComponent tc) {
+    public void removeTopComponent(TopComponent tc, TopComponent recentTc) {
         synchronized(LOCK_TOPCOMPONENTS) {
-            topComponentSubModel.removeTopComponent(tc);
+            topComponentSubModel.removeTopComponent(tc, recentTc);
         }
     }
     

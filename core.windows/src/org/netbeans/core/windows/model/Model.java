@@ -207,7 +207,8 @@ public interface Model {
     /** Remember which top component was the selected one before switching to/from maximized mode */
     public void setModeUnloadedPreviousSelectedTopComponent(ModeImpl mode, String tcID);
     /** */
-    public void removeModeTopComponent(ModeImpl mode, TopComponent tc);
+    /** */
+    public void removeModeTopComponent(ModeImpl mode, TopComponent tc, TopComponent recentTc);
     // XXX
     public void removeModeClosedTopComponentID(ModeImpl mode, String tcID);
 
