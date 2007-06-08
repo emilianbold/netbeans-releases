@@ -439,7 +439,7 @@ public final class MasterMatcher {
                 // We were interrupted, no results
                 return;
             }
-            
+
             // Show the results
             synchronized (LOCK) {
                 // If the task was cancelled, we must exit immediately
@@ -447,19 +447,19 @@ public final class MasterMatcher {
                     return;
                 }
 
-                for (Object[] job : highlightingJobs) {
-                    highlightAreas(origin, matches, (OffsetsBag) job[0], (AttributeSet) job[1], (AttributeSet) job[2]);
-                    if (Boolean.valueOf((String) component.getClientProperty(PROP_SHOW_SEARCH_PARAMETERS))) {
-                        showSearchParameters((OffsetsBag) job[0]);
-                    }
-                }
-
-                for(Object [] job : navigationJobs) {
-                    navigateAreas(origin, matches, caretBias, (Caret) job[0], (Boolean) job[1]);
-                }
-
-                // Signal that the task is done.
+                // Signal that the task is done. No more jobs will be added to it.
                 MasterMatcher.this.task = null;
+            }
+
+            for (Object[] job : highlightingJobs) {
+                highlightAreas(origin, matches, (OffsetsBag) job[0], (AttributeSet) job[1], (AttributeSet) job[2]);
+                if (Boolean.valueOf((String) component.getClientProperty(PROP_SHOW_SEARCH_PARAMETERS))) {
+                    showSearchParameters((OffsetsBag) job[0]);
+                }
+            }
+
+            for(Object [] job : navigationJobs) {
+                navigateAreas(origin, matches, caretBias, (Caret) job[0], (Boolean) job[1]);
             }
         }
         
