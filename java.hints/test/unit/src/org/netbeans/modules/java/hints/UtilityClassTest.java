@@ -70,6 +70,13 @@ public class UtilityClassTest extends TreeRuleTestBase {
             gold
         );
     }
+    public void testDisabledWhenNoMethodIsThere() throws Exception {
+        String before = "package test; public class Te";
+        String after = "st extends Object {" +
+            "}";
+        
+        performAnalysisTest("test/Test.java", before + after, before.length());
+    }
     public void testDisabledWhenMehtodIsThere() throws Exception {
         String before = "package test; public class Te";
         String after = "st extends Object {" +

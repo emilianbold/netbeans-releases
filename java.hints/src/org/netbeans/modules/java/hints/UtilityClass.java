@@ -108,12 +108,21 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
                 if (e.getKind() == ElementKind.ANNOTATION_TYPE) {
                     return null;
                 }
-                
+
+                int cnt = 0;
                 for (Element m : e.getEnclosedElements()) {
                     if (m.accept(this, compilationInfo)) {
                         return null;
                     }
+                    if (m.getKind() == ElementKind.METHOD || m.getKind() == ElementKind.FIELD) {
+                        cnt++;
+                    }
                 }
+                
+                if (cnt == 0) {
+                    return null;
+                }
+                
             } else {
                 if (e.getKind() != ElementKind.CONSTRUCTOR) {
                     return null;

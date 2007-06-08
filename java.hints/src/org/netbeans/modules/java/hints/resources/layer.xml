@@ -50,7 +50,7 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="org-netbeans-modules-java-hints-AssignResultToVariable.instance" />
                     <file name="org-netbeans-modules-java-hints-AssignmentToItself.instance" />
                     <file name="org-netbeans-modules-java-hints-MissingHashCode.instance" />                    
-
+                    <file name="org-netbeans-modules-java-hints-DoubleCheck.instance" />                    
                 </folder>    
 
                 <folder name="rules15">
