@@ -51,7 +51,7 @@ public class InstallUnitWizardModel extends OperationWizardModel {
     }
     
     public OperationContainer getBaseContainer () {
-        OperationContainer c = null;
+        OperationContainer<InstallSupport> c = null;
         switch (getOperation ()) {
         case INSTALL :
             c = Containers.forAvailable ();
@@ -62,11 +62,12 @@ public class InstallUnitWizardModel extends OperationWizardModel {
             support = Containers.forUpdate ().getSupport ();
             break;
         case LOCAL_DOWNLOAD :
-            c = Containers.forAvailableNbms ();
-            support = Containers.forAvailableNbms ().getSupport ();
-            if (support == null) {
-                support = Containers.forUpdateNbms ().getSupport ();
+            if (Containers.forUpdateNbms ().listAll ().isEmpty ()) {
+                c = Containers.forAvailableNbms ();
+            } else {
+                c = Containers.forUpdateNbms ();
             }
+            support = c.getSupport ();
             break;
         }
         return c;
@@ -105,9 +106,20 @@ public class InstallUnitWizardModel extends OperationWizardModel {
     public void doCleanup () throws OperationException {
         super.doCleanup ();
         if (getBaseContainer ().getSupport () instanceof InstallSupport) {
-            InstallSupport isupp = (InstallSupport) getBaseContainer ().getSupport ();
-            if (isupp != null) {
-                isupp.doCancel ();
+            if (OperationType.LOCAL_DOWNLOAD == getOperation ()) {
+                InstallSupport asupp = Containers.forAvailableNbms ().getSupport ();
+                if (asupp != null) {
+                    asupp.doCancel ();
+                }
+                InstallSupport usupp = Containers.forUpdateNbms ().getSupport ();
+                if (usupp != null) {
+                    usupp.doCancel ();
+                }
+            } else {
+                InstallSupport isupp = (InstallSupport) getBaseContainer ().getSupport ();
+                if (isupp != null) {
+                    isupp.doCancel ();
+                }
             }
         } else {
             OperationSupport osupp = (OperationSupport) getBaseContainer ().getSupport ();

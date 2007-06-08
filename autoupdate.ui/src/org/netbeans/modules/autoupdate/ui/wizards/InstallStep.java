@@ -282,15 +282,10 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 return ;
             }
         }
-        if (WizardDescriptor.CANCEL_OPTION.equals (wd.getValue ()) || WizardDescriptor.CLOSED_OPTION.equals (wd.getValue ())) {
-            try {
-                model.doCleanup ();
-            } catch (OperationException x) {
-                log.log (Level.INFO, x.getMessage (), x);
-            }
-        } else {
-            model.getBaseContainer ().removeAll ();
-            model.getCustomHandledContainer ().removeAll ();
+        try {
+            model.doCleanup ();
+        } catch (OperationException x) {
+            log.log (Level.INFO, x.getMessage (), x);
         }
     }
 

@@ -34,6 +34,7 @@ import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.modules.autoupdate.ui.Containers;
 import org.netbeans.modules.autoupdate.ui.Utilities;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -81,6 +82,16 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
             String content = null;
             switch (model.getOperation ()) {
             case LOCAL_DOWNLOAD :
+                if (Containers.forUpdateNbms ().listAll ().isEmpty ()) {
+                    tableTitle = getBundle (TABLE_TITLE_INSTALL);
+                    dependenciesTitle = getBundle (DEPENDENCIES_TITLE_INSTALL);
+                } else {
+                    tableTitle = getBundle (TABLE_TITLE_UPDATE);
+                    dependenciesTitle = getBundle (DEPENDENCIES_TITLE_UPDATE);
+                }
+                head = getBundle (HEAD);
+                content = getBundle (CONTENT);
+                break;
             case INSTALL :
                 tableTitle = getBundle (TABLE_TITLE_INSTALL);
                 dependenciesTitle = getBundle (DEPENDENCIES_TITLE_INSTALL);

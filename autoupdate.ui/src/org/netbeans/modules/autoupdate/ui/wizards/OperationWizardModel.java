@@ -71,6 +71,7 @@ public abstract class OperationWizardModel {
         ENABLE,
         /** Disable <code>UpdateElement</code> */
         DISABLE,
+        /** Install or update <code>UpdateElement</code> from local NBM. */
         LOCAL_DOWNLOAD
     }
     
@@ -136,6 +137,7 @@ public abstract class OperationWizardModel {
         List<OperationInfo> infos = new ArrayList<OperationInfo> ();
         infos.addAll (getBaseContainer ().listAll ());
         if (OperationType.LOCAL_DOWNLOAD == getOperation ()) {
+            infos.addAll (Containers.forAvailableNbms ().listAll ());
             infos.addAll (Containers.forUpdateNbms ().listAll ());
         }
         return infos;
@@ -201,6 +203,12 @@ public abstract class OperationWizardModel {
         removeFinish (wd);
         switch (getOperation ()) {
         case LOCAL_DOWNLOAD :
+            if (Containers.forUpdateNbms ().listAll ().isEmpty ()) {
+            Mnemonics.setLocalizedText (getOriginalNext (wd), getBundle ("InstallUnitWizardModel_Buttons_Install"));
+            } else {
+                Mnemonics.setLocalizedText (getOriginalNext (wd), getBundle ("InstallUnitWizardModel_Buttons_Update"));
+            }
+            break;
         case INSTALL :
             Mnemonics.setLocalizedText (getOriginalNext (wd), getBundle ("InstallUnitWizardModel_Buttons_Install"));
             break;
