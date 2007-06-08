@@ -239,6 +239,20 @@
             <class package="org.netbeans.api.visual.action" name="ActionFactory" link="yes"/>
             <issue number="104718"/>
         </change>
+
+        <change>
+            <api name="general"/>
+            <summary>AnchorShapeFactory.createArrowAnchorShape method introduced</summary>
+            <version major="2" minor="4"/>
+            <date day="8" month="6" year="2007"/>
+            <author login="dkaspar"/>
+            <compatibility addition="yes"/>
+            <description>
+                AnchorShapeFactory.createArrowAnchorShape method introduced.
+            </description>
+            <class package="org.netbeans.api.visual.anchor" name="AnchorShapeFactory" link="yes"/>
+            <issue number="105499"/>
+        </change>
     </changes>
 
     <htmlcontents>

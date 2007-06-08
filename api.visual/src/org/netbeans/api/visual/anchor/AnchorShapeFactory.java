@@ -20,6 +20,7 @@ package org.netbeans.api.visual.anchor;
 
 import org.netbeans.modules.visual.anchor.ImageAnchorShape;
 import org.netbeans.modules.visual.anchor.TriangleAnchorShape;
+import org.netbeans.modules.visual.anchor.ArrowAnchorShape;
 
 import java.awt.*;
 
@@ -74,6 +75,17 @@ public class AnchorShapeFactory {
      */
     public static AnchorShape createTriangleAnchorShape (int size, boolean filled, boolean output, int cutDistance) {
         return new TriangleAnchorShape (size, filled, output, false, cutDistance);
+    }
+
+    /**
+     * Creates an arrow anchor shape.
+     * @param degrees the angle of the arrow in degrees (not radians)
+     * @param size the size of the arrow
+     * @return the anchor shape
+     * @since 2.4
+     */
+    public static AnchorShape createArrowAnchorShape (int degrees, int size) {
+        return new ArrowAnchorShape (degrees, size);
     }
 
 }
