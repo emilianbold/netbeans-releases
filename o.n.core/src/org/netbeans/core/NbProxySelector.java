@@ -145,22 +145,29 @@ public final class NbProxySelector extends ProxySelector {
     private void copySettingsToSystem () {
         String host = null, port = null, nonProxyHosts = null;
         String sHost = null, sPort = null;
+        String httpsHost = null, httpsPort = null;
         int proxyType = ProxySettings.getProxyType ();
         if (ProxySettings.DIRECT_CONNECTION == proxyType) {
             host = null;
             port = null;
+            httpsHost = null;
+            httpsPort = null;
             nonProxyHosts = null;
             sHost = null;
             sPort = null;
         } else if (ProxySettings.AUTO_DETECT_PROXY == proxyType) {
             host = ProxySettings.SystemProxySettings.getHttpHost ();
             port = ProxySettings.SystemProxySettings.getHttpPort ();
+            httpsHost = ProxySettings.SystemProxySettings.getHttpsHost ();
+            httpsPort = ProxySettings.SystemProxySettings.getHttpsPort ();
             nonProxyHosts = ProxySettings.SystemProxySettings.getNonProxyHosts ();
             sHost = ProxySettings.SystemProxySettings.getSocksHost ();
             sPort = ProxySettings.SystemProxySettings.getSocksPort ();
         } else if (ProxySettings.MANUAL_SET_PROXY == proxyType) {
             host = ProxySettings.getHttpHost ();
             port = ProxySettings.getHttpPort ();
+            httpsHost = ProxySettings.getHttpsHost ();
+            httpsPort = ProxySettings.getHttpsPort ();
             nonProxyHosts = ProxySettings.getNonProxyHosts ();
             sHost = ProxySettings.getSocksHost ();
             sPort = ProxySettings.getSocksPort ();
@@ -170,13 +177,14 @@ public final class NbProxySelector extends ProxySelector {
         setOrClearProperty ("http.proxyHost", host, false);
         setOrClearProperty ("http.proxyPort", port, true);
         setOrClearProperty ("http.nonProxyHosts", nonProxyHosts, false);
-        setOrClearProperty ("https.proxyHost", host, false);
-        setOrClearProperty ("https.proxyPort", port, true);
+        setOrClearProperty ("https.proxyHost", httpsHost, false);
+        setOrClearProperty ("https.proxyPort", httpsPort, true);
         setOrClearProperty ("https.nonProxyHosts", nonProxyHosts, false);
         setOrClearProperty ("socksProxyHost", sHost, false);
         setOrClearProperty ("socksProxyPort", sPort, true);
-        log.finest ("Set System's http.proxyHost/Port/NonProxyHost to " + host + "/" + port + "/" + nonProxyHosts);
-        log.finest ("Set System's socksProxyHost/Port to " + sHost + "/" + sPort);
+        log.fine ("Set System's http.proxyHost/Port/NonProxyHost to " + host + "/" + port + "/" + nonProxyHosts);
+        log.fine ("Set System's https.proxyHost/Port to " + httpsHost + "/" + httpsPort);
+        log.fine ("Set System's socksProxyHost/Port to " + sHost + "/" + sPort);
     }
     
     private void setOrClearProperty (String key, String value, boolean isInteger) {

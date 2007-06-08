@@ -42,6 +42,8 @@ public class HttpSettingsTest extends NbTestCase {
     private static String SYSTEM_PROXY_PORT = "777";
     private static String USER_PROXY_HOST = "my.webcache";
     private static String USER_PROXY_PORT = "8080";
+    private static String USER_HTTPS_PROXY_HOST = "secure.webcache";
+    private static String USER_HTTPS_PROXY_PORT = "8080";
 
     private Preferences proxyPreferences;
     private static String SILLY_USER_PROXY_HOST = "http://my.webcache";
@@ -93,6 +95,18 @@ public class HttpSettingsTest extends NbTestCase {
         synchronized (sync) {
             if (! USER_PROXY_PORT.equals (proxyPreferences.get ("proxyHttpPort", ""))) {
                 proxyPreferences.put ("proxyHttpPort", USER_PROXY_PORT);
+                sync.wait (10000);
+            }
+        }
+        synchronized (sync) {
+            if (! USER_HTTPS_PROXY_HOST.equals (proxyPreferences.get ("proxyHttpsHost", ""))) {
+                proxyPreferences.put ("proxyHttpsHost", USER_HTTPS_PROXY_HOST);
+                sync.wait (10000);
+            }
+        }
+        synchronized (sync) {
+            if (! USER_HTTPS_PROXY_PORT.equals (proxyPreferences.get ("proxyHttpsPort", ""))) {
+                proxyPreferences.put ("proxyHttpsPort", USER_HTTPS_PROXY_PORT);
                 sync.wait (10000);
             }
         }
@@ -188,6 +202,28 @@ public class HttpSettingsTest extends NbTestCase {
         assertEquals ("Manual Set Proxy Port from ProxySettings: ", USER_PROXY_PORT, ProxySettings.getHttpPort ());
         assertEquals ("Manual Set Proxy Host from System.getProperty(): ", USER_PROXY_HOST, System.getProperty ("http.proxyHost"));
         assertEquals ("Manual Set Proxy Port from System.getProperty(): ", USER_PROXY_PORT, System.getProperty ("http.proxyPort"));
+    }
+    
+    public void testHttpsManualSetProxy () throws InterruptedException {
+        synchronized (sync) {
+            if (ProxySettings.MANUAL_SET_PROXY != (proxyPreferences.getInt ("proxyType", -1))) {
+                proxyPreferences.putInt ("proxyType", ProxySettings.MANUAL_SET_PROXY);
+                sync.wait ();
+            }
+        }
+        assertEquals ("Proxy type MANUAL_SET_PROXY.", ProxySettings.MANUAL_SET_PROXY, ProxySettings.getProxyType ());
+        
+        // HTTP
+        assertEquals ("Manual Set Proxy Host from ProxySettings: ", USER_PROXY_HOST, ProxySettings.getHttpHost ());
+        assertEquals ("Manual Set Proxy Port from ProxySettings: ", USER_PROXY_PORT, ProxySettings.getHttpPort ());
+        assertEquals ("Manual Set Proxy Host from System.getProperty(): ", USER_PROXY_HOST, System.getProperty ("http.proxyHost"));
+        assertEquals ("Manual Set Proxy Port from System.getProperty(): ", USER_PROXY_PORT, System.getProperty ("http.proxyPort"));
+        
+        // HTTPS
+        assertEquals ("Manual Set HTTPS Proxy Host from ProxySettings: ", USER_HTTPS_PROXY_HOST, ProxySettings.getHttpsHost ());
+        assertEquals ("Manual Set HTTPS Proxy Port from ProxySettings: ", USER_HTTPS_PROXY_PORT, ProxySettings.getHttpsPort ());
+        assertEquals ("Manual Set HTTPS Proxy Host from System.getProperty(): ", USER_HTTPS_PROXY_HOST, System.getProperty ("https.proxyHost"));
+        assertEquals ("Manual Set HTTPS Proxy Port from System.getProperty(): ", USER_HTTPS_PROXY_PORT, System.getProperty ("https.proxyPort"));
     }
     
     public void testIfTakeUpNonProxyFromProperty () {
