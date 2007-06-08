@@ -27,6 +27,7 @@ import org.netbeans.jellytools.TopComponentOperator;
 
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -53,15 +54,13 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
     
     public WebFormDesignerOperator(String topComponentName, int Index) {
         super(topComponentName,Index);
-        
-        long oldTimeout = this.getTimeouts().getTimeout("ComponentOperator.WaitComponentTimeout");
-        this.getTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout", 120000);
         try {
             surfacecomp = new ComponentOperator(this, new DesignerPaneChooser());
         } catch(TimeoutExpiredException tex) {
-            System.out.println("Timeout exceed "+tex.getMessage());            
-        }
-        this.getTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout",oldTimeout);        
+            System.out.println("Timeout exceed "+tex.getMessage());
+            throw new JemmyException("Cannot find designer surface because of expired timeout");
+            
+        }      
     }
     
     /**
@@ -79,12 +78,16 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
      * @return WebFOrmDesignerOperator
      */
     public static WebFormDesignerOperator findWebFormDesignerOperator(String topComponentName, boolean exactlyMatch){
+        long oldTimeout = JemmyProperties.getCurrentTimeouts().getTimeout("ComponentOperator.WaitComponentTimeout");
+        JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout",120000);
+        
         StringComparator oldOperator = Operator.getDefaultStringComparator();
         if(exactlyMatch) {            
             Operator.setDefaultStringComparator(new DefaultStringComparator(false, false));            
         }
         WebFormDesignerOperator webFormDesignerOperator =  new WebFormDesignerOperator(topComponentName);
         Operator.setDefaultStringComparator(oldOperator);
+        JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout",oldTimeout);
         return webFormDesignerOperator;
     }
         
