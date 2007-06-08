@@ -29,6 +29,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import javax.swing.*;
 import java.util.Set;
 import org.netbeans.modules.websvc.wsitconf.ui.ClassDialog;
+import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 
 /**
  *
@@ -42,12 +43,14 @@ public class ValidatorsPanel extends JPanel {
     private Project p;
     
     private boolean inSync = false;
+    private String profile;
         
-    public ValidatorsPanel(WSDLComponent comp, Project p) {
+    public ValidatorsPanel(WSDLComponent comp, Project p, String profile) {
         super();
         this.model = comp.getModel();
         this.comp = comp;
         this.p = p;
+        this.profile = profile;
         
         initComponents();
 
@@ -97,7 +100,54 @@ public class ValidatorsPanel extends JPanel {
         if (samlValidator != null) {
             setValidator(Validator.SAML_VALIDATOR, samlValidator);
         }
+        
+        enableDisable();
+        
         inSync = false;
+    }
+    
+    private void enableDisable() {
+
+        boolean samlRequired = true;
+        boolean userRequired = true;
+        boolean certRequired = true;
+        boolean timeRequired = true;
+        if (ComboConstants.PROF_USERNAME.equals(profile)) {
+             samlRequired = false;
+             certRequired = false;
+             timeRequired = false;
+        }
+        if (ComboConstants.PROF_MUTUALCERT.equals(profile) ||
+            ComboConstants.PROF_ENDORSCERT.equals(profile)) {
+             samlRequired = false;
+             userRequired = false;
+             timeRequired = false;
+        }
+        if (ComboConstants.PROF_MSGAUTHSSL.equals(profile)) {
+             //TODO - depends on username  or certificate token in the profile
+             samlRequired = false;
+             timeRequired = false;
+        }
+        if (ComboConstants.PROF_SAMLSSL.equals(profile) || 
+            ComboConstants.PROF_SAMLHOLDER.equals(profile) ||
+            ComboConstants.PROF_SAMLSENDER.equals(profile)) {
+             certRequired = false;
+             userRequired = false;
+             timeRequired = false;
+        }
+        
+        samlValidatorButton.setEnabled(samlRequired);
+        samlValidatorLabel.setEnabled(samlRequired);
+        samlValidatorTextField.setEnabled(samlRequired);
+        usernameValidatorButton.setEnabled(userRequired);
+        usernameValidatorLabel.setEnabled(userRequired);
+        usernameValidatorTextField.setEnabled(userRequired);
+        timestampValidatorButton.setEnabled(timeRequired);
+        timestampValidatorLabel.setEnabled(timeRequired);
+        timestampValidatorTextField.setEnabled(timeRequired);
+        certificateValidatorButton.setEnabled(certRequired);
+        certificateValidatorLabel.setEnabled(certRequired);
+        certificateValidatorTextField.setEnabled(certRequired);
     }
     
     public void setValue(javax.swing.JComponent source, Object value) {

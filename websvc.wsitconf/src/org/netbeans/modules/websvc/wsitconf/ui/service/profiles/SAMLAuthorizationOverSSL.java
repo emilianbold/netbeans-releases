@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.websvc.wsitconf.ui.service.profiles;
 
-import java.util.Collection;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
@@ -30,8 +29,6 @@ import org.netbeans.modules.websvc.wsitmodelext.security.WssElement;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.HttpsToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.TransportToken;
 import org.netbeans.modules.xml.wsdl.model.Binding;
-import org.netbeans.modules.xml.wsdl.model.BindingInput;
-import org.netbeans.modules.xml.wsdl.model.BindingOperation;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 
@@ -102,20 +99,7 @@ public class SAMLAuthorizationOverSSL extends javax.swing.JPanel implements Comb
         WSDLComponent secBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(comp);        
 
         if (comp instanceof Binding) {
-            Collection<BindingOperation> ops = ((Binding)comp).getBindingOperations();
-            for (BindingOperation o : ops) {
-                if (!SecurityPolicyModelHelper.isSecurityEnabled(o)) {
-                    BindingInput input = o.getBindingInput();
-                    WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(input, SecurityTokensModelHelper.SIGNED_SUPPORTING);
-                    WSDLComponent token = SecurityTokensModelHelper.getTokenTypeElement(tokenKind);
-                    String samlVersion = SecurityTokensModelHelper.getTokenProfileVersion(token);
-                    setCombo(samlVersionCombo, samlVersion);
-                    break;
-                }
-            }
-        } else {
-            BindingInput input = ((BindingOperation)comp).getBindingInput();
-            WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(input, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+            WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(comp, SecurityTokensModelHelper.SIGNED_SUPPORTING);
             WSDLComponent token = SecurityTokensModelHelper.getTokenTypeElement(tokenKind);
             String samlVersion = SecurityTokensModelHelper.getTokenProfileVersion(token);
             setCombo(samlVersionCombo, samlVersion);
@@ -170,31 +154,12 @@ public class SAMLAuthorizationOverSSL extends javax.swing.JPanel implements Comb
         }
         if (source.equals(samlVersionCombo)) {            
             if (comp instanceof Binding) {
-                Collection<BindingOperation> ops = ((Binding)comp).getBindingOperations();
-                for (BindingOperation o : ops) {
-                    if (!SecurityPolicyModelHelper.isSecurityEnabled(o)) {
-                        BindingInput input = o.getBindingInput();
-                        WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(input, 
-                                                    SecurityTokensModelHelper.SIGNED_SUPPORTING);
-                        WSDLComponent token = SecurityTokensModelHelper.getTokenTypeElement(tokenKind);
-                        SecurityTokensModelHelper.setTokenProfileVersion(token, (String) samlVersionCombo.getSelectedItem());
-                    }
-                }
-            } else {
-                BindingInput input = ((BindingOperation)comp).getBindingInput();
-                WSDLComponent token = SecurityTokensModelHelper.getSupportingToken(input, 
+                WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(comp, 
                                             SecurityTokensModelHelper.SIGNED_SUPPORTING);
+                WSDLComponent token = SecurityTokensModelHelper.getTokenTypeElement(tokenKind);
                 SecurityTokensModelHelper.setTokenProfileVersion(token, (String) samlVersionCombo.getSelectedItem());
             }
         }
-//        if (source.equals(requireDerivedKeysChBox)) {
-//            boolean enable = requireDerivedKeysChBox.isSelected();
-//            if (SecurityPolicyModelHelper.isAttributeEnabled((ExtensibilityElement) tokenType, RequireDerivedKeys.class) != enable) {
-//                SecurityPolicyModelHelper.enableRequireDerivedKeys(tokenType, enable);
-//            }
-//            return;
-//        }
-        
         enableDisable();
     }
 

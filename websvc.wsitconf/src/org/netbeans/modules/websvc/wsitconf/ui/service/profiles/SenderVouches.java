@@ -19,23 +19,21 @@
 
 package org.netbeans.modules.websvc.wsitconf.ui.service.profiles;
 
-import java.util.Collection;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.AlgoSuiteModelHelper;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelper;
+import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
 import org.netbeans.modules.websvc.wsitmodelext.security.BootstrapPolicy;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.InitiatorToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.ProtectionToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.RecipientToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SecureConversationToken;
-import org.netbeans.modules.xml.wsdl.model.Binding;
-import org.netbeans.modules.xml.wsdl.model.BindingInput;
-import org.netbeans.modules.xml.wsdl.model.BindingOperation;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 
@@ -100,6 +98,7 @@ public class SenderVouches extends javax.swing.JPanel {
         inSync = true;
 
         WSDLComponent secBinding = null;
+        WSDLComponent bootPolicy = null;
         WSDLComponent topSecBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(comp);
         WSDLComponent protTokenKind = SecurityTokensModelHelper.getTokenElement(topSecBinding, ProtectionToken.class);
         WSDLComponent protToken = SecurityTokensModelHelper.getTokenTypeElement(protTokenKind);
@@ -107,7 +106,7 @@ public class SenderVouches extends javax.swing.JPanel {
         boolean secConv = (protToken instanceof SecureConversationToken);
         
         if (secConv) {
-            WSDLComponent bootPolicy = SecurityTokensModelHelper.getTokenElement(protToken, BootstrapPolicy.class);
+            bootPolicy = SecurityTokensModelHelper.getTokenElement(protToken, BootstrapPolicy.class);
             secBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(bootPolicy);
             setChBox(secConvChBox, true);
             setChBox(derivedKeysChBox, SecurityPolicyModelHelper.isRequireDerivedKeys(protToken));
@@ -121,28 +120,20 @@ public class SenderVouches extends javax.swing.JPanel {
             setChBox(encryptOrderChBox, SecurityPolicyModelHelper.isEncryptBeforeSigning(comp));
         }
 
-        if (comp instanceof Binding) {
-            Collection<BindingOperation> ops = ((Binding)comp).getBindingOperations();
-            for (BindingOperation o : ops) {
-                if (!SecurityPolicyModelHelper.isSecurityEnabled(o)) {
-                    BindingInput input = o.getBindingInput();
-                    WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(input, SecurityTokensModelHelper.SIGNED_SUPPORTING);
-                    WSDLComponent token = SecurityTokensModelHelper.getTokenTypeElement(tokenKind);
-                    String samlVersion = SecurityTokensModelHelper.getTokenProfileVersion(token);
-                    setCombo(samlVersionCombo, samlVersion);
-                    break;
-                }
-            }
+        String samlVersion = null;
+        WSDLComponent tokenKind = null;
+        if (secConv) {
+            Policy pp = PolicyModelHelper.getTopLevelElement(bootPolicy, Policy.class);
+            tokenKind = SecurityTokensModelHelper.getSupportingToken(pp, SecurityTokensModelHelper.SIGNED_SUPPORTING);
         } else {
-            BindingInput input = ((BindingOperation)comp).getBindingInput();
-            WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(input, SecurityTokensModelHelper.SIGNED_SUPPORTING);
-            WSDLComponent token = SecurityTokensModelHelper.getTokenTypeElement(tokenKind);
-            String samlVersion = SecurityTokensModelHelper.getTokenProfileVersion(token);
-            setCombo(samlVersionCombo, samlVersion);
+            tokenKind = SecurityTokensModelHelper.getSupportingToken(comp, SecurityTokensModelHelper.SIGNED_SUPPORTING);
         }
-        
-        WSDLComponent tokenKind = SecurityTokensModelHelper.getTokenElement(secBinding, RecipientToken.class);
         WSDLComponent token = SecurityTokensModelHelper.getTokenTypeElement(tokenKind);
+        samlVersion = SecurityTokensModelHelper.getTokenProfileVersion(token);
+        setCombo(samlVersionCombo, samlVersion);
+            
+        tokenKind = SecurityTokensModelHelper.getTokenElement(secBinding, RecipientToken.class);
+        token = SecurityTokensModelHelper.getTokenTypeElement(tokenKind);
         setChBox(reqDerivedKeys, SecurityPolicyModelHelper.isRequireDerivedKeys(token));
 
         setCombo(algoSuiteCombo, AlgoSuiteModelHelper.getAlgorithmSuite(secBinding));
@@ -158,19 +149,19 @@ public class SenderVouches extends javax.swing.JPanel {
         if (inSync) return;
             
         WSDLComponent secBinding = null;
+        WSDLComponent bootPolicy = null;
         WSDLComponent topSecBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(comp);
         WSDLComponent protTokenKind = SecurityTokensModelHelper.getTokenElement(topSecBinding, ProtectionToken.class);
         WSDLComponent protToken = SecurityTokensModelHelper.getTokenTypeElement(protTokenKind);
         
         boolean secConv = (protToken instanceof SecureConversationToken);
-
         if (source.equals(secConvChBox)) {
             ProfilesModelHelper.enableSecureConversation(comp, secConvChBox.isSelected(), ComboConstants.PROF_MSGAUTHSSL);
             sync();
         }
         
         if (secConv) {
-            WSDLComponent bootPolicy = SecurityTokensModelHelper.getTokenElement(protToken, BootstrapPolicy.class);
+            bootPolicy = SecurityTokensModelHelper.getTokenElement(protToken, BootstrapPolicy.class);
             secBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(bootPolicy);
             if (source.equals(derivedKeysChBox)) {
                 SecurityPolicyModelHelper.enableRequireDerivedKeys(protToken, derivedKeysChBox.isSelected());
@@ -212,25 +203,19 @@ public class SenderVouches extends javax.swing.JPanel {
             SecurityPolicyModelHelper.enableRequireDerivedKeys(token, reqDerivedKeys.isSelected());
             return;
         }
-        if (source.equals(samlVersionCombo)) {            
-            if (comp instanceof Binding) {
-                Collection<BindingOperation> ops = ((Binding)comp).getBindingOperations();
-                for (BindingOperation o : ops) {
-                    if (!SecurityPolicyModelHelper.isSecurityEnabled(o)) {
-                        BindingInput input = o.getBindingInput();
-                        WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(input, 
-                                                    SecurityTokensModelHelper.SIGNED_SUPPORTING);
-                        WSDLComponent token = SecurityTokensModelHelper.getTokenTypeElement(tokenKind);
-                        SecurityTokensModelHelper.setTokenProfileVersion(token, (String) samlVersionCombo.getSelectedItem());
-                    }
-                }
+        if (source.equals(samlVersionCombo)) {
+            WSDLComponent tokenKind = null;
+            if (secConv){
+                Policy pp = PolicyModelHelper.getTopLevelElement(bootPolicy, Policy.class);
+                tokenKind = SecurityTokensModelHelper.getSupportingToken(pp, 
+                                                SecurityTokensModelHelper.SIGNED_SUPPORTING);
             } else {
-                BindingInput input = ((BindingOperation)comp).getBindingInput();
-                WSDLComponent token = SecurityTokensModelHelper.getSupportingToken(input, 
-                                            SecurityTokensModelHelper.SIGNED_SUPPORTING);
-                SecurityTokensModelHelper.setTokenProfileVersion(token, (String) samlVersionCombo.getSelectedItem());
+                tokenKind = SecurityTokensModelHelper.getSupportingToken(comp, 
+                                                SecurityTokensModelHelper.SIGNED_SUPPORTING);
             }
-        }        
+            WSDLComponent token = SecurityTokensModelHelper.getTokenTypeElement(tokenKind);
+            SecurityTokensModelHelper.setTokenProfileVersion(token, (String) samlVersionCombo.getSelectedItem());
+        }
         
         enableDisable();
     }

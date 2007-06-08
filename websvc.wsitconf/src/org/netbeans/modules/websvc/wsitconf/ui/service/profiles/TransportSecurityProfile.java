@@ -22,11 +22,14 @@ package org.netbeans.modules.websvc.wsitconf.ui.service.profiles;
 import java.awt.Dialog;
 import javax.swing.JPanel;
 import javax.swing.undo.UndoManager;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.util.UndoCounter;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
+import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.DialogDescriptor;
@@ -94,4 +97,27 @@ public class TransportSecurityProfile extends SecurityProfile {
         
         model.removeUndoableEditListener(undoCounter);
     }
+    
+    @Override
+    public void setClientDefaults(WSDLComponent component, WSDLComponent serviceBinding, Project p) {
+        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, true);
+        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, true);
+    }
+
+    @Override
+    public void setServiceDefaults(WSDLComponent component, Project p) {
+        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, false);
+        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
+    }
+    
+    @Override
+    public boolean isClientDefaultSetupUsed(WSDLComponent component, Binding serviceBinding, Project p) {
+        return true;
+    }
+ 
+    @Override
+    public boolean isServiceDefaultSetupUsed(WSDLComponent component, Project p) {
+        return true;
+    }
+
 }

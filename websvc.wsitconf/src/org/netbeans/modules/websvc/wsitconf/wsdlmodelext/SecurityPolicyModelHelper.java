@@ -999,7 +999,8 @@ public class SecurityPolicyModelHelper {
         return secBindingType;
     }
 
-    public static void setDefaultTargets(WSDLComponent c, boolean wss11) {
+    public static void setDefaultTargets(WSDLComponent c,boolean headers) {
+
         Vector<Vector> targets = new Vector<Vector>();
 
         Vector row = new Vector();
@@ -1010,13 +1011,13 @@ public class SecurityPolicyModelHelper {
         row.add(TargetElement.REQUIRE, Boolean.FALSE);
         targets.add(row);
 
-        if (wss11) {
+        if (headers) {
             for (String s : MessageHeader.ALL_HEADERS) {
                 row = new Vector();
                 MessageHeader h = new MessageHeader(s);
                 row.add(TargetElement.DATA, h);
                 row.add(TargetElement.SIGN, Boolean.TRUE);
-                row.add(TargetElement.ENCRYPT, Boolean.TRUE);
+                row.add(TargetElement.ENCRYPT, Boolean.FALSE);
                 row.add(TargetElement.REQUIRE, Boolean.FALSE);
                 targets.add(row);
             }

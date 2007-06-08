@@ -165,4 +165,8 @@ public interface ComboConstants {
     String STATIC = NbBundle.getMessage(ComboConstants.class, "COMBO_Static");         //NOI18N
     String DYNAMIC = NbBundle.getMessage(ComboConstants.class, "COMBO_Dynamic");         //NOI18N
     
+    String MEX_NONE = NbBundle.getMessage(ComboConstants.class, "COMBO_MEX_NONE");      //NOI18N
+    String MEX_HTTP = NbBundle.getMessage(ComboConstants.class, "COMBO_MEX_HTTP");      //NOI18N
+    String MEX_HTTPS = NbBundle.getMessage(ComboConstants.class, "COMBO_MEX_HTTPS");    //NOI18N
+
 }

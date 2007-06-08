@@ -21,7 +21,6 @@ package org.netbeans.modules.websvc.wsitconf.ui.service;
 
 import java.awt.Color;
 import java.awt.Dialog;
-import java.util.Collection;
 import java.util.Set;
 import javax.swing.undo.UndoManager;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
@@ -57,7 +56,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityCheckerRegistry;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
-import org.netbeans.modules.xml.wsdl.model.BindingOperation;
 import org.openide.util.NbBundle;
 
 /**
@@ -119,9 +117,15 @@ public class ServicePanel extends SectionInnerPanel {
         stsChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         tcpChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         fiChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+//        mexBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+//        mexSslBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        devDefaultsChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         jSeparator1.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         jSeparator2.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         jSeparator3.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+
+//        mexBox.setText(NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_mexBox"));
+//        mexSslBox.setText(NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_mexSslBox"));
         
         addImmediateModifier(mtomChBox);
         addImmediateModifier(rmChBox);
@@ -131,19 +135,10 @@ public class ServicePanel extends SectionInnerPanel {
         addImmediateModifier(stsChBox);
         addImmediateModifier(tcpChBox);
         addImmediateModifier(fiChBox);
+//        addImmediateModifier(mexBox);
+//        addImmediateModifier(mexSslBox);
+        addImmediateModifier(devDefaultsChBox);
 
-        inSync = true;
-        profileCombo.removeAllItems();
-        
-        Set<SecurityProfile> profiles = SecurityProfileRegistry.getDefault().getSecurityProfiles();
-
-        for (SecurityProfile profile : profiles) {
-            if (profile.isProfileSupported(project, binding)) {
-                profileCombo.addItem(profile.getDisplayName());
-            }
-        }
-
-        inSync = false;
         sync();
 
         model.addComponentListener(new ComponentListener() {
@@ -165,6 +160,16 @@ public class ServicePanel extends SectionInnerPanel {
         });
     }
 
+    private void fillProfileCombo(boolean sts) {
+        profileCombo.removeAllItems();
+        Set<SecurityProfile> profiles = SecurityProfileRegistry.getDefault().getSecurityProfiles();
+        for (SecurityProfile profile : profiles) {
+            if (profile.isProfileSupported(project, binding, sts)) {
+                profileCombo.addItem(profile.getDisplayName());
+            }
+        }
+    }
+    
     private void sync() {
         inSync = true;
         
@@ -180,17 +185,31 @@ public class ServicePanel extends SectionInnerPanel {
         boolean rmEnabled = RMModelHelper.isRMEnabled(binding);
         setChBox(rmChBox, rmEnabled);        
         setChBox(orderedChBox, RMSunModelHelper.isOrderedEnabled(binding));
+
+        boolean stsEnabled = ProprietarySecurityPolicyModelHelper.isSTSEnabled(binding);
+        setChBox(stsChBox, stsEnabled);
+        
+        fillProfileCombo(stsEnabled);
         
         boolean securityEnabled = SecurityPolicyModelHelper.isSecurityEnabled(binding);
         setChBox(securityChBox, securityEnabled);
         if (securityEnabled) {
-            setSecurityProfile(ProfilesModelHelper.getSecurityProfile(binding));
+            String profile = ProfilesModelHelper.getSecurityProfile(binding);
+            setSecurityProfile(profile);
+            boolean defaults = ProfilesModelHelper.isServiceDefaultSetupUsed(profile, binding, project);
+            setChBox(devDefaultsChBox, defaults);
         } else {
             setSecurityProfile(ComboConstants.PROF_USERNAME);
+            setChBox(devDefaultsChBox, true);
         }
-
-        boolean stsEnabled = ProprietarySecurityPolicyModelHelper.isSTSEnabled(binding);
-        setChBox(stsChBox, stsEnabled);
+        
+//        boolean mexEnabled = false; //todo
+//        setChBox(mexBox, mexEnabled);
+        
+//        if (mexEnabled) {
+//            boolean mexSslEnabled = false; //todo
+//            setChBox(mexSslBox, mexSslEnabled);
+//        }
         
         enableDisable();
         inSync = false;
@@ -237,7 +256,7 @@ public class ServicePanel extends SectionInnerPanel {
                 if (TransportModelHelper.isMtomEnabled(binding)) {
                     TransportModelHelper.disableMtom(binding);
                 }
-            }
+            }            
         }
 
         if (source.equals(fiChBox)) {
@@ -270,26 +289,43 @@ public class ServicePanel extends SectionInnerPanel {
                 String profile = (String) profileCombo.getSelectedItem();
                 profileCombo.setSelectedItem(profile);
                 oldProfile = profile;
+                if (devDefaultsChBox.isSelected()) {
+                    Util.fillDefaults(project);
+                    ProfilesModelHelper.setServiceDefaults((String) profileCombo.getSelectedItem(), binding, project);
+                }
             } else {
                 SecurityPolicyModelHelper.disableSecurity(binding, true);
             }
         }
 
-        if (source.equals(stsChBox)) {
-            if (stsChBox.isSelected()) {
-                ProprietarySecurityPolicyModelHelper.enableSTS(binding);
-            } else {
-                ProprietarySecurityPolicyModelHelper.disableSTS(binding);
+        if (source.equals(devDefaultsChBox)) {
+            if (devDefaultsChBox.isSelected()) {
+                Util.fillDefaults(project);
+                ProfilesModelHelper.setServiceDefaults((String) profileCombo.getSelectedItem(), binding, project);
             }
         }
         
+        if (source.equals(stsChBox)) {
+            if (stsChBox.isSelected()) {
+                ProprietarySecurityPolicyModelHelper.enableSTS(binding);
+                inSync = true; fillProfileCombo(true); inSync = false;
+            } else {
+                ProprietarySecurityPolicyModelHelper.disableSTS(binding);
+                inSync = true; fillProfileCombo(false); inSync = false;
+            }
+        }
+
         if (source.equals(profileCombo)) {
             doNotSync = true;
             try {
                 String profile = (String) profileCombo.getSelectedItem();
                 ProfilesModelHelper.setSecurityProfile(binding, profile, oldProfile);
-                SecurityProfile sp = SecurityProfileRegistry.getDefault().getProfile(profile);
-                profileInfoField.setText(sp.getDescription());
+                if (devDefaultsChBox.isSelected()) {
+                    ProfilesModelHelper.setServiceDefaults(profile, binding, project);
+                }
+                boolean defUsed = ProfilesModelHelper.isServiceDefaultSetupUsed(profile, binding, project);
+                inSync = true; devDefaultsChBox.setSelected(defUsed); inSync = false;
+                profileInfoField.setText(SecurityProfileRegistry.getDefault().getProfile(profile).getDescription());
                 oldProfile = profile;
             } finally {
                 doNotSync = false;
@@ -357,41 +393,90 @@ public class ServicePanel extends SectionInnerPanel {
         // everything is ok, disable security
         if (!amSec) {
 
-            boolean jsr109 = isJsr109Supported();
-
+            boolean gf = Util.isGlassfish(project);
+            
             securityChBox.setEnabled(true);
             profileInfoField.setForeground(REGULAR);
             
             boolean secSelected = securityChBox.isSelected();
+                
+            devDefaultsChBox.setEnabled(true);
+            boolean defaults = devDefaultsChBox.isSelected();
+            
             profileComboLabel.setEnabled(secSelected);
             profileCombo.setEnabled(secSelected);
             profileInfoField.setEnabled(secSelected);
             profConfigButton.setEnabled(secSelected);
-            stsChBox.setEnabled(secSelected && !isFromJava);
+
+            boolean storeConfigRequired = true;
+            boolean keyStoreConfigRequired = true;
+            boolean trustStoreConfigRequired = true;
+            boolean validatorsRequired = true;
+            boolean stsAllowed = true;
+            
+            if (secSelected) {                
+
+                String secProfile = ProfilesModelHelper.getSecurityProfile(binding);
+                boolean isSSL = ProfilesModelHelper.isSSLProfile(secProfile);
+                if (isSSL) {
+                    keyStoreConfigRequired = false;
+                    trustStoreConfigRequired = false;
+                }
+
+                if (stsAllowed) {
+                    if (ComboConstants.PROF_SAMLHOLDER.equals(secProfile) || 
+                        ComboConstants.PROF_SAMLSENDER.equals(secProfile) ||
+                        ComboConstants.PROF_SAMLSSL.equals(secProfile)) {
+                            stsAllowed = false;
+                    }
+                }
+                
+                if (trustStoreConfigRequired && gf) {
+                    if (ComboConstants.PROF_USERNAME.equals(secProfile) || 
+                        ComboConstants.PROF_MUTUALCERT.equals(secProfile) ||
+                        ComboConstants.PROF_ENDORSCERT.equals(secProfile) ||
+                        ComboConstants.PROF_SAMLSENDER.equals(secProfile) ||
+                        ComboConstants.PROF_SAMLHOLDER.equals(secProfile) ||
+                        ComboConstants.PROF_STSISSUED.equals(secProfile) ||
+                        ComboConstants.PROF_STSISSUEDCERT.equals(secProfile) ||
+                        ComboConstants.PROF_STSISSUEDENDORSE.equals(secProfile)
+                        ) {
+                            trustStoreConfigRequired = false;
+                    }
+                }
+                
+                if (validatorsRequired) {
+                    if (ComboConstants.PROF_STSISSUED.equals(secProfile) || 
+                        ComboConstants.PROF_STSISSUEDCERT.equals(secProfile) ||
+                        ComboConstants.PROF_STSISSUEDENDORSE.equals(secProfile)) {
+                            validatorsRequired = false;
+                    }
+                }
+            } else {
+                devDefaultsChBox.setEnabled(false);
+            }
+                        
+            stsChBox.setEnabled(secSelected && !isFromJava && stsAllowed);
 
             boolean stsSelected = stsChBox.isSelected();
             stsConfigButton.setEnabled(stsSelected);
 
-            boolean storeConfigRequired = true;
-
-            boolean someSecSelected = secSelected;
-            if (!someSecSelected) {
-                Collection<BindingOperation> bops = binding.getBindingOperations();
-                for (BindingOperation bop : bops) {
-                    someSecSelected = SecurityPolicyModelHelper.isSecurityEnabled(bop);
-                    if (someSecSelected) break;
-                }
+            if (stsSelected) {
+                trustStoreConfigRequired = true;
+                keyStoreConfigRequired = true;
+                validatorsRequired = true;
             }
-
-            validatorsButton.setEnabled(someSecSelected && !jsr109);
-            keyButton.setEnabled(storeConfigRequired && someSecSelected);
-            trustButton.setEnabled(storeConfigRequired && someSecSelected);
+            
+            validatorsButton.setEnabled(secSelected && !gf && !defaults && validatorsRequired);
+            keyButton.setEnabled(storeConfigRequired && secSelected && keyStoreConfigRequired && !defaults);
+            trustButton.setEnabled(storeConfigRequired && secSelected && trustStoreConfigRequired && !defaults);
         } else { // no wsit fun, there's access manager security selected
             profileComboLabel.setEnabled(false);
             profileCombo.setEnabled(false);
             profileInfoField.setEnabled(false);
             profConfigButton.setEnabled(false);
             stsChBox.setEnabled(false);
+            devDefaultsChBox.setEnabled(false);
             stsConfigButton.setEnabled(false);
             securityChBox.setEnabled(false);
             validatorsButton.setEnabled(false);
@@ -440,6 +525,7 @@ public class ServicePanel extends SectionInnerPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         profileInfoField = new javax.swing.JTextArea();
         validatorsButton = new javax.swing.JButton();
+        devDefaultsChBox = new javax.swing.JCheckBox();
 
         addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -458,19 +544,15 @@ public class ServicePanel extends SectionInnerPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(mtomChBox, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_mtomChBox")); // NOI18N
         mtomChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        mtomChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         org.openide.awt.Mnemonics.setLocalizedText(rmChBox, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_rmChBox")); // NOI18N
         rmChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        rmChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         org.openide.awt.Mnemonics.setLocalizedText(securityChBox, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_securityChBox")); // NOI18N
         securityChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        securityChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         org.openide.awt.Mnemonics.setLocalizedText(orderedChBox, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_OrderedChBox")); // NOI18N
         orderedChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        orderedChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         profileComboLabel.setLabelFor(profileCombo);
         org.openide.awt.Mnemonics.setLocalizedText(profileComboLabel, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_profileComboLabel")); // NOI18N
@@ -486,11 +568,9 @@ public class ServicePanel extends SectionInnerPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(stsChBox, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_stsChBox")); // NOI18N
         stsChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        stsChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         org.openide.awt.Mnemonics.setLocalizedText(tcpChBox, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_tcpChBox")); // NOI18N
         tcpChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        tcpChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         org.openide.awt.Mnemonics.setLocalizedText(keyButton, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_keystoreButton")); // NOI18N
         keyButton.addActionListener(new java.awt.event.ActionListener() {
@@ -522,7 +602,6 @@ public class ServicePanel extends SectionInnerPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(fiChBox, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_fiChBox")); // NOI18N
         fiChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        fiChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         profileInfoField.setEditable(false);
         profileInfoField.setLineWrap(true);
@@ -540,6 +619,9 @@ public class ServicePanel extends SectionInnerPanel {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(devDefaultsChBox, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_Defaults")); // NOI18N
+        devDefaultsChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -547,41 +629,47 @@ public class ServicePanel extends SectionInnerPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, jSeparator1)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, mtomChBox)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, rmChBox)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                            .add(17, 17, 17)
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                .add(rmAdvanced)
-                                .add(orderedChBox))
-                            .add(79, 79, 79))
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, securityChBox)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                            .add(17, 17, 17)
-                            .add(profileComboLabel)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                            .add(profileCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 228, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(6, 6, 6)
-                            .add(profConfigButton))
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 427, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE)
+                    .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE)
+                    .add(mtomChBox)
+                    .add(rmChBox)
+                    .add(layout.createSequentialGroup()
+                        .add(17, 17, 17)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(rmAdvanced)
+                            .add(orderedChBox))
+                        .add(79, 79, 79))
+                    .add(securityChBox)
+                    .add(layout.createSequentialGroup()
+                        .add(17, 17, 17)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(12, 12, 12)
+                                .add(jScrollPane1))
+                            .add(layout.createSequentialGroup()
+                                .add(profileComboLabel)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(profileCombo, 0, 160, Short.MAX_VALUE)
+                                .add(6, 6, 6)
+                                .add(profConfigButton))))
+                    .add(layout.createSequentialGroup()
+                        .add(17, 17, 17)
+                        .add(devDefaultsChBox))
+                    .add(jSeparator3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(stsChBox)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(stsConfigButton))
+                    .add(tcpChBox)
+                    .add(fiChBox)
                     .add(layout.createSequentialGroup()
                         .add(17, 17, 17)
                         .add(keyButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(trustButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(validatorsButton))
-                    .add(jSeparator3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 436, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(tcpChBox)
-                    .add(fiChBox))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .add(validatorsButton)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -608,6 +696,8 @@ public class ServicePanel extends SectionInnerPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 58, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(devDefaultsChBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(trustButton)
                     .add(keyButton)
@@ -618,7 +708,7 @@ public class ServicePanel extends SectionInnerPanel {
                     .add(stsConfigButton))
                 .add(11, 11, 11)
                 .add(jSeparator3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(8, 8, 8)
                 .add(tcpChBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(fiChBox)
@@ -635,7 +725,8 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
 }//GEN-LAST:event_formAncestorAdded
 
     private void validatorsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_validatorsButtonActionPerformed
-        ValidatorsPanel vPanel = new ValidatorsPanel(binding, project); //NOI18N
+        String profile = (String) profileCombo.getSelectedItem();
+        ValidatorsPanel vPanel = new ValidatorsPanel(binding, project, profile); //NOI18N
         DialogDescriptor dlgDesc = new DialogDescriptor(vPanel, 
                 NbBundle.getMessage(ServicePanel.class, "LBL_Validators_Panel_Title")); //NOI18N
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
@@ -677,7 +768,8 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
 
     private void trustButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_trustButtonActionPerformed
         boolean jsr109 = isJsr109Supported();
-        TruststorePanel storePanel = new TruststorePanel(binding, project, jsr109);
+        String profile = (String) profileCombo.getSelectedItem();
+        TruststorePanel storePanel = new TruststorePanel(binding, project, jsr109, profile, false, null);
         DialogDescriptor dlgDesc = new DialogDescriptor(storePanel, 
                 NbBundle.getMessage(ServicePanel.class, "LBL_Truststore_Panel_Title")); //NOI18N
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
@@ -689,9 +781,8 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
     }//GEN-LAST:event_trustButtonActionPerformed
 
     private void keyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keyButtonActionPerformed
-
         boolean jsr109 = isJsr109Supported();
-        KeystorePanel storePanel = new KeystorePanel(binding, project, jsr109);
+        KeystorePanel storePanel = new KeystorePanel(binding, project, jsr109, false, null);
         DialogDescriptor dlgDesc = new DialogDescriptor(storePanel, 
                 NbBundle.getMessage(ServicePanel.class, "LBL_Keystore_Panel_Title")); //NOI18N
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
@@ -717,6 +808,7 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
     }//GEN-LAST:event_rmAdvancedActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox devDefaultsChBox;
     private javax.swing.JCheckBox fiChBox;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;

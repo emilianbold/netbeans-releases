@@ -36,10 +36,7 @@ import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 
 /**
  *
@@ -59,15 +56,22 @@ public class TruststorePanel extends JPanel {
 
     private boolean jsr109 = false;
     private Project project = null;
+    private String profile = null;
     
     private boolean inSync = false;
     
-    public TruststorePanel(WSDLComponent comp, Project p, boolean jsr109) {
+    private WSDLModel clientServiceModel;
+    private boolean client;
+    
+    public TruststorePanel(WSDLComponent comp, Project p, boolean jsr109, String profile, boolean client, WSDLModel clientServiceModel) {
         super();
         this.model = comp.getModel();
         this.comp = comp;
         this.jsr109 = jsr109;
         this.project = p;
+        this.profile = profile;
+        this.clientServiceModel = clientServiceModel;
+        this.client = client;
         
         initComponents();
 
@@ -132,7 +136,7 @@ public class TruststorePanel extends JPanel {
         if (storeLocation != null) {
             setStoreLocation(storeLocation);
         } else if (jsr109) {
-            setStoreLocation(getServerStoreLocation());            
+            setStoreLocation(Util.getStoreLocation(project, true, client));
         }
 
         String storeType = ProprietarySecurityPolicyModelHelper.getStoreType(comp, true);
@@ -162,41 +166,27 @@ public class TruststorePanel extends JPanel {
         
         inSync = false;
     }
-
-    private String getServerStoreLocation() {
-        String keystoreLocation = null;
-        J2eeModuleProvider mp = project.getLookup().lookup(J2eeModuleProvider.class);
-        if (mp != null) {
-            String sID = mp.getServerInstanceID();
-
-            InstanceProperties ip = mp.getInstanceProperties();
-            if ("".equals(ip.getProperty("LOCATION"))) {              //NOI18N
-                return "";
-            }
-            
-            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(sID);
-            File[] keyLocs = null;
-            keyLocs = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_TRUSTSTORE);
-            if ((keyLocs != null) && (keyLocs.length > 0)) {
-                keystoreLocation = keyLocs[0].getAbsolutePath();
-            }
-        }
-        return keystoreLocation;
-    }
     
-    private void enableDisable() {        
-        
-//        boolean storeLocKnown = false;
-        
-//        String storeLoc = getServerStoreLocation();
-//        if ((storeLoc != null) && !(storeLoc.equals(""))) {
-//            storeLocKnown = true;
-//        }
-        
-        //these depend on jsr109 stateand whether location of the store is known or not
-//        storeLocationButton.setEnabled(!jsr109 || !storeLocKnown);
-//        storeLocationLabel.setEnabled(!jsr109 || !storeLocKnown);
-//        storeLocationTextField.setEnabled(!jsr109 || !storeLocKnown);
+    private void enableDisable() {
+        if (!client) {
+            boolean aliasRequired = true;
+            if (ComboConstants.PROF_USERNAME.equals(profile) ||
+                ComboConstants.PROF_ENDORSCERT.equals(profile) ||
+                ComboConstants.PROF_SAMLSENDER.equals(profile) ||
+                ComboConstants.PROF_SAMLHOLDER.equals(profile) ||
+                ComboConstants.PROF_STSISSUED.equals(profile) ||
+                ComboConstants.PROF_STSISSUEDCERT.equals(profile) ||
+                ComboConstants.PROF_STSISSUEDENDORSE.equals(profile) ||
+                ComboConstants.PROF_MUTUALCERT.equals(profile)) {
+                aliasRequired = false;
+            }
+            keyAliasCombo.setEnabled(aliasRequired);
+            keyAliasLabel.setEnabled(aliasRequired);
+            loadkeysButton.setEnabled(aliasRequired);
+        } else {
+            
+        }
+                
     }
     
     /** This method is called from within the constructor to
@@ -249,19 +239,19 @@ public class TruststorePanel extends JPanel {
                     .add(storePasswordLabel)
                     .add(keyAliasLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(storeLocationTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 239, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(storeLocationButton))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, keyAliasCombo, 0, 159, Short.MAX_VALUE)
-                            .add(storePasswordField))
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, keyAliasCombo, 0, 158, Short.MAX_VALUE)
+                            .add(storePasswordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(loadkeysButton)
-                        .add(68, 68, 68)))
-                .addContainerGap(18, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 74, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(storeLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
+                .add(storeLocationButton)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -269,8 +259,8 @@ public class TruststorePanel extends JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(storeLocationLabel)
-                    .add(storeLocationTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(storeLocationButton))
+                    .add(storeLocationButton)
+                    .add(storeLocationTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(storePasswordLabel)
@@ -329,17 +319,18 @@ public class TruststorePanel extends JPanel {
         } else {
             ProprietarySecurityPolicyModelHelper.setTrustPeerAlias(comp, peerAlias, false);
         }
+        if (!Util.isGlassfish(project)) {
+            String storePasswd = getStorePassword();
+            if ((storePasswd != null) && (storePasswd.length() == 0)) {
+                ProprietarySecurityPolicyModelHelper.setStorePassword(comp, null, true, false);
+            } else {
+                ProprietarySecurityPolicyModelHelper.setStorePassword(comp, storePasswd, true, false);
+            }
 
-        String storePasswd = getStorePassword();
-        if ((storePasswd != null) && (storePasswd.length() == 0)) {
-            ProprietarySecurityPolicyModelHelper.setStorePassword(comp, null, true, false);
-        } else {
-            ProprietarySecurityPolicyModelHelper.setStorePassword(comp, storePasswd, true, false);
+            ProprietarySecurityPolicyModelHelper.setStoreType(comp, storeType, true, false);
+
+            ProprietarySecurityPolicyModelHelper.setStoreLocation(comp, getStoreLocation(), true, false);
         }
-        
-        ProprietarySecurityPolicyModelHelper.setStoreType(comp, storeType, true, false);
-        
-        ProprietarySecurityPolicyModelHelper.setStoreLocation(comp, getStoreLocation(), true, false);
     }
     
     private boolean reloadAliases() {

@@ -213,10 +213,7 @@ public class SecurityTokensModelHelper {
         List<Policy> policies = e.getExtensibilityElements(Policy.class);
         if ((policies != null) && (!policies.isEmpty())) {
             Policy p = policies.get(0);
-            List<WSDLComponent> ptokens = p.getExtensibilityElements(tokenClass);
-            if ((ptokens != null) && (!ptokens.isEmpty())) {
-                return ptokens.get(0);
-            }
+            return PolicyModelHelper.getTopLevelElement(p, tokenClass);
         }
         return null;
     }

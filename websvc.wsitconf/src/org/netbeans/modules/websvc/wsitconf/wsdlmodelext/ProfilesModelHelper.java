@@ -21,6 +21,7 @@ package org.netbeans.modules.websvc.wsitconf.wsdlmodelext;
 
 import java.util.Collection;
 import java.util.Set;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfileRegistry;
 import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyQName;
@@ -47,6 +48,11 @@ import org.netbeans.modules.xml.wsdl.model.*;
  */
 public class ProfilesModelHelper {
 
+    public static final String XWS_SECURITY_SERVER = "xws-security-server";
+    public static final String XWS_SECURITY_CLIENT = "xws-security-client";
+    public static final String DEFAULT_PASSWORD = "wsit";
+    public static final String DEFAULT_USERNAME = "wsit";
+            
     /**
      * Creates a new instance of ProfilesModelHelper
      */
@@ -252,7 +258,27 @@ public class ProfilesModelHelper {
         
         return;
     }
-        
+    
+    public static boolean isServiceDefaultSetupUsed(String profile, Binding binding, Project project) {
+        SecurityProfile p = SecurityProfileRegistry.getDefault().getProfile(profile);
+        return p.isServiceDefaultSetupUsed(binding, project);
+    }
+
+    public static boolean isClientDefaultSetupUsed(String profile, Binding binding, WSDLComponent serviceBinding, Project project) {
+        SecurityProfile p = SecurityProfileRegistry.getDefault().getProfile(profile);
+        return p.isClientDefaultSetupUsed(binding, (Binding)serviceBinding, project);
+    }
+    
+    public static void setClientDefaults(String profile, Binding binding, WSDLComponent serviceBinding, Project project) {
+        SecurityProfile p = SecurityProfileRegistry.getDefault().getProfile(profile);
+        p.setClientDefaults(binding, serviceBinding, project);
+    }
+
+    public static void setServiceDefaults(String profile, Binding binding, Project project) {
+        SecurityProfile p = SecurityProfileRegistry.getDefault().getProfile(profile);
+        p.setServiceDefaults(binding, project);
+    }
+    
     /** Sets security profile on Binding or BindingOperation
      */
     public static void setSecurityProfile(WSDLComponent c, String profile) {
@@ -573,8 +599,8 @@ public class ProfilesModelHelper {
             }
             // Profile #5
             if (ComboConstants.PROF_MUTUALCERT.equals(profile)) {
-                SecurityPolicyModelHelper.setDefaultTargets(input, wss11);
-                SecurityPolicyModelHelper.setDefaultTargets(output, wss11);
+                SecurityPolicyModelHelper.setDefaultTargets(input, true);
+                SecurityPolicyModelHelper.setDefaultTargets(output, true);
                 return;
             }
             // Profile #6

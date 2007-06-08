@@ -19,18 +19,25 @@
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-<folder name="Templates">
-   <folder name="WebServices">
-     <attr name="WebService/STSWizard" boolvalue="true"/>
-     <file name="STSWizard.java">
-         <attr name="template" boolvalue="true"/>
-         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.wsitconf.wizard.STSWizard.create"/>
-         <attr name="templateCategory" stringvalue="web-services"/>
-         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/wsitconf/resources/STSWizard.html"/>
-         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.wsitconf.wizard.Bundle"/>
-         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/wsitconf/resources/XMLServiceDataIcon.png"/> 
-     </file>
-     
+   <folder name="Templates">
+        <folder name="WebServices">
+            <attr name="WebService/STSWizard" boolvalue="true"/>
+            <file name="STSWizard.java">
+             <attr name="template" boolvalue="true"/>
+             <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.wsitconf.wizard.STSWizard.create"/>
+             <attr name="templateCategory" stringvalue="web-services"/>
+             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/wsitconf/resources/STSWizard.html"/>
+             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.wsitconf.wizard.Bundle"/>
+             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/dev/resources/XMLServiceDataIcon.png"/> 
+            </file>
+            <file name="Saml11hok.java" url="templates/Saml11HOKCallbackHandler.template"/>
+            <file name="Saml11sv.java" url="templates/Saml11SVCallbackHandler.template"/>
+            <file name="Saml20hok.java" url="templates/Saml20HOKCallbackHandler.template"/>
+            <file name="Saml20sv.java" url="templates/Saml20SVCallbackHandler.template"/>
+            <file name="client-keystore.jks" url="client-keystore.jks"/>
+            <file name="client-truststore.jks" url="client-truststore.jks"/>
+            <file name="server-keystore.jks" url="server-keystore.jks"/>
+            <file name="server-truststore.jks" url="server-truststore.jks"/>
+        </folder>
    </folder>
- </folder>
 </filesystem>

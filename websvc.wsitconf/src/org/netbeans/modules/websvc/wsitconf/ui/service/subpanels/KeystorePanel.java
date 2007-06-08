@@ -42,27 +42,32 @@ import org.netbeans.api.project.Project;
  */
 public class KeystorePanel extends JPanel {
 
-    private static final String PKCS12 = "PKCS12";      //NOI18N
-    private static final String JKS = "JKS";            //NOI18N
+    public static final String PKCS12 = "PKCS12";      //NOI18N
+    public static final String JKS = "JKS";            //NOI18N
 
-    private static final String DEFAULT_PASSWORD="changeit";    //NOI18N
+    public static final String DEFAULT_PASSWORD="changeit";    //NOI18N
     
     private WSDLModel model;
+    private WSDLModel clientServiceModel;
+    
     private WSDLComponent comp;
 
     private boolean jsr109 = false;
     private Project project = null;
     
+    private boolean client;
     private String keystoreType = JKS;
     
     private boolean inSync = false;
     
-    public KeystorePanel(WSDLComponent comp, Project p, boolean jsr109) {
+    public KeystorePanel(WSDLComponent comp, Project p, boolean jsr109, boolean client, WSDLModel clientServiceModel) {
         super();
         this.model = comp.getModel();
         this.comp = comp;
         this.jsr109 = jsr109;
         this.project = p;
+        this.client = client;
+        this.clientServiceModel = clientServiceModel;
         
         initComponents();
 
@@ -137,7 +142,7 @@ public class KeystorePanel extends JPanel {
         if (keystoreLocation != null) {
             setKeystorePath(keystoreLocation);
         } else if (jsr109) {
-            setKeystorePath(Util.getServerStoreLocation(project, false));
+            setKeystorePath(Util.getStoreLocation(project, false, client));
         }
 
         String keystoreType = ProprietarySecurityPolicyModelHelper.getStoreType(comp, false);
@@ -174,44 +179,35 @@ public class KeystorePanel extends JPanel {
     }
 
     private void enableDisable() {
-        
-        boolean storeLocKnown = false;
-        
-        String storeLoc = Util.getServerStoreLocation(project, false);
-        if ((storeLoc != null) && !(storeLoc.equals(""))) {
-            storeLocKnown = true;
-        }
-        
-        //these depend on jsr109 stateand whether location of the store is known or not
-//        keystoreLocationButton.setEnabled(!jsr109 || !storeLocKnown);
-//        keystoreLocationLabel.setEnabled(!jsr109 || !storeLocKnown);
-//        keystoreLocationTextField.setEnabled(!jsr109 || !storeLocKnown);
+        boolean gf = Util.isGlassfish(project);
+        keyPasswordField.setEnabled(!gf);
+        keyPasswordLabel.setEnabled(!gf);
     }
-    
+        
     public void storeState() {
         String keystoreAlias = getKeystoreAlias();
         if ((keystoreAlias == null) || (keystoreAlias.length() == 0)) {
-            ProprietarySecurityPolicyModelHelper.setKeyStoreAlias(comp, null, false);
+            ProprietarySecurityPolicyModelHelper.setKeyStoreAlias(comp, null, client);
         } else {
-            ProprietarySecurityPolicyModelHelper.setKeyStoreAlias(comp, keystoreAlias, false);
+            ProprietarySecurityPolicyModelHelper.setKeyStoreAlias(comp, keystoreAlias, client);
         }
-        String keyPasswd = getKeyPassword();
-        if ((keyPasswd == null) || (keyPasswd.length() == 0)) {
-            ProprietarySecurityPolicyModelHelper.setKeyPassword(comp, null, false);
-        } else {
-            ProprietarySecurityPolicyModelHelper.setKeyPassword(comp, keyPasswd, false);
+        // do not store anything else if GF is target server
+        if (!Util.isGlassfish(project)) {
+            String keyPasswd = getKeyPassword();
+            if ((keyPasswd == null) || (keyPasswd.length() == 0)) {
+                ProprietarySecurityPolicyModelHelper.setKeyPassword(comp, null, client);
+            } else {
+                ProprietarySecurityPolicyModelHelper.setKeyPassword(comp, keyPasswd, client);
+            }
+            String keyStorePasswd = getKeystorePassword();
+            if ((keyStorePasswd == null) || (keyStorePasswd.length() == 0)) {
+                ProprietarySecurityPolicyModelHelper.setStorePassword(comp, null, false, client);
+            } else {
+                ProprietarySecurityPolicyModelHelper.setStorePassword(comp, keyStorePasswd, false, client);
+            }
+            ProprietarySecurityPolicyModelHelper.setStoreType(comp, keystoreType, false, client);
+            ProprietarySecurityPolicyModelHelper.setStoreLocation(comp, getKeystorePath(), false, client);
         }
-
-        String keyStorePasswd = getKeystorePassword();
-        if ((keyStorePasswd == null) || (keyStorePasswd.length() == 0)) {
-            ProprietarySecurityPolicyModelHelper.setStorePassword(comp, null, false, false);
-        } else {
-            ProprietarySecurityPolicyModelHelper.setStorePassword(comp, keyStorePasswd, false, false);
-        }
-        
-        ProprietarySecurityPolicyModelHelper.setStoreType(comp, keystoreType, false, false);
-        
-        ProprietarySecurityPolicyModelHelper.setStoreLocation(comp, getKeystorePath(), false, false);
     }
     
     /** This method is called from within the constructor to
@@ -269,20 +265,21 @@ public class KeystorePanel extends JPanel {
                     .add(keyAliasLabel)
                     .add(keyPasswordLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(layout.createSequentialGroup()
-                        .add(keystoreLocationTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 239, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(keystoreLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 247, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(keystoreLocationButton))
+                        .add(keystoreLocationButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, keyAliasCombo, 0, 159, Short.MAX_VALUE)
-                            .add(keystorePasswordField)
+                            .add(keystorePasswordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 159, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, keyPasswordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 159, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(loadkeysButton)
                         .add(68, 68, 68)))
-                .addContainerGap())
+                .add(4, 4, 4))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -290,8 +287,8 @@ public class KeystorePanel extends JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(keystoreLocationLabel)
-                    .add(keystoreLocationTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(keystoreLocationButton))
+                    .add(keystoreLocationButton)
+                    .add(keystoreLocationTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(keystorePasswordLabel)
@@ -329,7 +326,6 @@ public class KeystorePanel extends JPanel {
         chooser.setMultiSelectionEnabled(false);
         chooser.setFileFilter(new StoreFileFilter());
         File f = new File(keystoreLocationTextField.getText());
-        File dir = null;
         if ((f != null) && (f.exists())) {
             if (f.isDirectory()) {
                 chooser.setCurrentDirectory(f);

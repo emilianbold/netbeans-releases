@@ -25,13 +25,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.wsitconf.ui.client.nodes.AdvancedConfigurationClientNode;
 import org.netbeans.modules.websvc.wsitconf.ui.client.nodes.CallbackClientNode;
 import org.netbeans.modules.websvc.wsitconf.ui.client.nodes.BindingContainerClientNode;
-import org.netbeans.modules.websvc.wsitconf.ui.client.nodes.KeystoreClientNode;
 import org.netbeans.modules.websvc.wsitconf.ui.client.nodes.STSClientNode;
 import org.netbeans.modules.websvc.wsitconf.ui.client.nodes.TransportClientNode;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RequiredConfigurationHelper;
-import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.WSITModelSupport;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.*;
@@ -44,8 +42,10 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-
 import java.util.Collection;
+import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 
 /**
  * @author Martin Grebac
@@ -81,7 +81,7 @@ public class ClientView extends SectionView {
         Children rootChildren = new Children.Array();
         Node root = new AbstractNode(rootChildren);
 
-        Collection<Binding> bindings = new HashSet();
+        Collection<Binding> bindings = new HashSet<Binding>();
         WSITModelSupport.fillImportedBindings(clientModel, bindings, new HashSet());
         
         Collection<Port> ports = s.getPorts();
@@ -91,10 +91,10 @@ public class ClientView extends SectionView {
             bindings.add(b);
         }
 
-        ArrayList bindingNodes = new ArrayList();
+        ArrayList<Node> bindingNodes = new ArrayList<Node>();
         if (bindings.size() > 1) {
             for (Binding binding : bindings) {
-                ArrayList nodes = new ArrayList();
+                ArrayList<Node> nodes = new ArrayList<Node>();
 
                 // main node container for a specific binding
                 Children bindingChildren = new Children.Array();
@@ -105,23 +105,19 @@ public class ClientView extends SectionView {
 
                 Node transportNode = new TransportClientNode(this, binding);
                 SectionPanel transportPanel = new SectionPanel(this, transportNode, 
-                        TRANSPORT_NODE_ID + binding.getName());
+                        TRANSPORT_NODE_ID + binding.getName(), false);
                 bindingCont.addSection(transportPanel);
                 nodes.add(transportNode);
-                
-                Node keystoreNode = new KeystoreClientNode(this, binding);
-                SectionPanel keystorePanel = new SectionPanel(this, keystoreNode, 
-                        KEYSTORE_NODE_ID + binding.getName());
-                bindingCont.addSection(keystorePanel);
-                nodes.add(keystoreNode);
+    
+                if (isCallBackConfigRequired(binding, serviceModel) || isStoreConfigRequired(binding, serviceModel)) {
+                    Node callbackNode = new CallbackClientNode(this, binding);
+                    SectionPanel callbackPanel = new SectionPanel(this, callbackNode, 
+                            CALLBACK_NODE_ID + binding.getName(), true);
+                    bindingCont.addSection(callbackPanel);
+                    nodes.add(callbackNode);
+                }
 
-                Node callbackNode = new CallbackClientNode(this, binding);
-                SectionPanel callbackPanel = new SectionPanel(this, callbackNode, 
-                        CALLBACK_NODE_ID + binding.getName());
-                bindingCont.addSection(callbackPanel);
-                nodes.add(callbackNode);
-
-                if (isClientSTSConfigRequired(binding)) {
+                if (isClientSTSConfigRequired(binding, serviceModel)) {
                     Node stsNode = new STSClientNode(this, binding);
                     SectionPanel stsPanel = new SectionPanel(this, stsNode, 
                             STS_NODE_ID + binding.getName());
@@ -137,34 +133,30 @@ public class ClientView extends SectionView {
                     nodes.add(advancedConfigNode);
                 }
                 
-                bindingChildren.add((Node[]) nodes.toArray(new Node[nodes.size()]));
+                bindingChildren.add(nodes.toArray(new Node[nodes.size()]));
                 addSection(bindingCont, false);
                 bindingNodes.add(bindingNodeContainer);
             }
             rootChildren.add((Node[]) bindingNodes.toArray(new Node[bindingNodes.size()]));
         } else {
             Binding binding = (Binding) bindings.toArray()[0];
-            ArrayList nodes = new ArrayList();
+            ArrayList<Node> nodes = new ArrayList<Node>();
 
             Node transportNode = new TransportClientNode(this, binding);
             SectionPanel transportPanel = new SectionPanel(this, transportNode, 
-                    TRANSPORT_NODE_ID + binding.getName());
+                    TRANSPORT_NODE_ID + binding.getName(), false);
             addSection(transportPanel);
             nodes.add(transportNode);
             
-            Node keystoreNode = new KeystoreClientNode(this, binding);
-            SectionPanel keystorePanel = new SectionPanel(this, keystoreNode, 
-                    KEYSTORE_NODE_ID + binding.getName());
-            addSection(keystorePanel);
-            nodes.add(keystoreNode);
+            if (isCallBackConfigRequired(binding, serviceModel) || isStoreConfigRequired(binding, serviceModel)) {
+                Node callbackNode = new CallbackClientNode(this, binding);
+                SectionPanel callbackPanel = new SectionPanel(this, callbackNode, 
+                        CALLBACK_NODE_ID + binding.getName(), true);
+                addSection(callbackPanel);
+                nodes.add(callbackNode);
+            }
 
-            Node callbackNode = new CallbackClientNode(this, binding);
-            SectionPanel callbackPanel = new SectionPanel(this, callbackNode, 
-                    CALLBACK_NODE_ID + binding.getName());
-            addSection(callbackPanel);
-            nodes.add(callbackNode);
-
-            if (isClientSTSConfigRequired(binding)) {
+            if (isClientSTSConfigRequired(binding, serviceModel)) {
                 Node stsNode = new STSClientNode(this, binding);
                 SectionPanel stsPanel = new SectionPanel(this, stsNode, 
                         STS_NODE_ID + binding.getName());
@@ -179,9 +171,7 @@ public class ClientView extends SectionView {
                 addSection(advancedConfigPanel);
                 nodes.add(advancedConfigNode);
             }
-
             rootChildren.add((Node[]) nodes.toArray(new Node[nodes.size()]));
-            
         }
         setRoot(root);
     }
@@ -208,16 +198,53 @@ public class ClientView extends SectionView {
         return rootNode;
     }    
 
-    private boolean isClientSTSConfigRequired(Binding binding) {        
-        return true;
+    private boolean isClientSTSConfigRequired(Binding binding, WSDLModel serviceModel) {        
+        Binding serviceBinding = PolicyModelHelper.getBinding(serviceModel, binding.getName());
+        String profile = ProfilesModelHelper.getWSITSecurityProfile(serviceBinding);
+        if (ComboConstants.PROF_STSISSUED.equals(profile) ||
+            ComboConstants.PROF_STSISSUEDENDORSE.equals(profile) ||
+            ComboConstants.PROF_STSISSUEDCERT.equals(profile)) {
+                return true;
+        }
+        return false;
     }
 
     private boolean isClientAdvancedConfigRequired(Binding binding, WSDLModel serviceModel) {
         Binding serviceBinding = PolicyModelHelper.getBinding(serviceModel, binding.getName());
         boolean rmEnabled = RMModelHelper.isRMEnabled(serviceBinding);
-        boolean timestampEnabled = SecurityPolicyModelHelper.isIncludeTimestamp(serviceBinding); 
+//        boolean timestampEnabled = SecurityPolicyModelHelper.isIncludeTimestamp(serviceBinding); 
         boolean secConvRequired = RequiredConfigurationHelper.isSecureConversationParamRequired(serviceBinding);
-        return rmEnabled || secConvRequired || timestampEnabled;
+        
+        //TODO - enable when timestamp becomes supported
+        
+        return rmEnabled || secConvRequired /* || timestampEnabled*/;
     }
 
+    private boolean isStoreConfigRequired(Binding binding, WSDLModel serviceModel) {
+        Binding serviceBinding = PolicyModelHelper.getBinding(serviceModel, binding.getName());
+        String profile = ProfilesModelHelper.getWSITSecurityProfile(serviceBinding);
+        if (!SecurityPolicyModelHelper.isSecurityEnabled(serviceBinding)) {
+            return false;
+        }
+        return CallbackPanel.isStoreConfigRequired(profile, false) || 
+               CallbackPanel.isStoreConfigRequired(profile, true);
+    }
+
+    private boolean isCallBackConfigRequired(Binding binding, WSDLModel serviceModel) {
+        Binding serviceBinding = PolicyModelHelper.getBinding(serviceModel, binding.getName());
+        String profile = ProfilesModelHelper.getWSITSecurityProfile(serviceBinding);
+        if (!SecurityPolicyModelHelper.isSecurityEnabled(serviceBinding)) {
+            return false;
+        }
+        if (ComboConstants.PROF_MUTUALCERT.equals(profile) ||
+            ComboConstants.PROF_ENDORSCERT.equals(profile) ||
+            ComboConstants.PROF_TRANSPORT.equals(profile)) {
+            return false;
+        }
+        if (ComboConstants.PROF_MSGAUTHSSL.equals(profile)) {
+            // TODO - return false if callback is not required - depends on supporting token type
+        }
+        return true;
+    }
+    
 }

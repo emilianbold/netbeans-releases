@@ -20,18 +20,25 @@
 package org.netbeans.modules.websvc.wsitconf.ui.service.profiles;
 
 import java.awt.Dialog;
+import java.io.File;
 import javax.swing.JPanel;
 import javax.swing.undo.UndoManager;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
+import org.netbeans.modules.websvc.wsitconf.ui.service.subpanels.KeystorePanel;
 import org.netbeans.modules.websvc.wsitconf.util.UndoCounter;
+import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
+import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileObject;
 
 /**
  * Transport Security Profile definition
@@ -99,4 +106,46 @@ public class STSIssuedCertProfile extends SecurityProfile {
         
         model.removeUndoableEditListener(undoCounter);
     }
+
+    @Override
+    public void setServiceDefaults(WSDLComponent component, Project p) {
+        if (Util.isTomcat(p)) {
+            FileObject tomcatLoc = Util.getTomcatLocation(p);
+            ProprietarySecurityPolicyModelHelper.setStoreLocation(component, 
+                    tomcatLoc.getPath() + File.separator + "certs" + File.separator + "server-keystore.jks", false, false);
+            ProprietarySecurityPolicyModelHelper.setStoreType(component, KeystorePanel.JKS, false, false);
+            ProprietarySecurityPolicyModelHelper.setStorePassword(component, KeystorePanel.DEFAULT_PASSWORD, false, false);
+        }
+        ProprietarySecurityPolicyModelHelper.setKeyStoreAlias(component, ProfilesModelHelper.XWS_SECURITY_SERVER, false);
+        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
+    }
+
+    @Override
+    public void setClientDefaults(WSDLComponent component, WSDLComponent securityBinding, Project p) {
+        // TODO
+    }
+    
+    @Override
+    public boolean isServiceDefaultSetupUsed(WSDLComponent component, Project p) {
+        if (ProfilesModelHelper.XWS_SECURITY_SERVER.equals(ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false))) {
+            if (Util.isTomcat(p)) {
+                FileObject tomcatLoc = Util.getTomcatLocation(p);
+                String loc = tomcatLoc.getPath() + File.separator + "certs" + File.separator + "server-keystore.jks";
+                if (loc.equals(ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false))) {
+                    if (KeystorePanel.DEFAULT_PASSWORD.equals(ProprietarySecurityPolicyModelHelper.getStorePassword(component, false))) {
+                        return true;
+                    }
+                }
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isClientDefaultSetupUsed(WSDLComponent component, Binding serviceBinding, Project p) {
+        return false;
+    }
+    
 }

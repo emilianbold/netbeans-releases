@@ -54,13 +54,9 @@ public class ClientPanelFactory implements org.netbeans.modules.xml.multiview.ui
     public SectionInnerPanel createInnerPanel(Object key) {
         if (key instanceof String) {
             String id = (String)key;
-            if (id.startsWith(ClientView.KEYSTORE_NODE_ID)) {
-                Binding b = PolicyModelHelper.getBinding(clientModel, id.substring(ClientView.KEYSTORE_NODE_ID.length()));
-                return new KeystorePanel((SectionView) editor.getContentView(), clientModel, node, b, jaxwsmodel);
-            }
             if (id.startsWith(ClientView.CALLBACK_NODE_ID)) {
                 Binding b = PolicyModelHelper.getBinding(clientModel, id.substring(ClientView.CALLBACK_NODE_ID.length()));
-                return new CallbackPanel((SectionView) editor.getContentView(), clientModel, node, b, jaxwsmodel);
+                return new CallbackPanel((SectionView) editor.getContentView(), clientModel, node, b, jaxwsmodel, serviceModel);
             }
             if (id.startsWith(ClientView.STS_NODE_ID)) {
                 Binding b = PolicyModelHelper.getBinding(clientModel, id.substring(ClientView.STS_NODE_ID.length()));
@@ -77,4 +73,5 @@ public class ClientPanelFactory implements org.netbeans.modules.xml.multiview.ui
         }
         return null;
     }
+
 }

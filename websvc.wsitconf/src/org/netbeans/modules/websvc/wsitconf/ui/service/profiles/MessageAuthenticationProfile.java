@@ -22,12 +22,16 @@ package org.netbeans.modules.websvc.wsitconf.ui.service.profiles;
 import java.awt.Dialog;
 import javax.swing.JPanel;
 import javax.swing.undo.UndoManager;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.util.UndoCounter;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
+import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.CallbackHandler;
+import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.DialogDescriptor;
@@ -39,6 +43,9 @@ import org.openide.DialogDisplayer;
  * @author Martin Grebac
  */
 public class MessageAuthenticationProfile extends SecurityProfile {
+
+    private static final String DEFAULT_USERNAME = "wsit";
+    private static final String DEFAULT_PASSWORD = "wsitPassword";
     
     public int getId() {
         return 40;
@@ -99,4 +106,45 @@ public class MessageAuthenticationProfile extends SecurityProfile {
         
         model.removeUndoableEditListener(undoCounter);
     }
+    
+    @Override
+    public void setServiceDefaults(WSDLComponent component, Project p) {
+        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, false);
+        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
+    }
+ 
+    @Override
+    public void setClientDefaults(WSDLComponent component, WSDLComponent serviceBinding, Project p) {
+        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, true);
+        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, true);
+        ProprietarySecurityPolicyModelHelper.setCallbackHandler(
+                (Binding)component, CallbackHandler.USERNAME_CBHANDLER, null, DEFAULT_USERNAME, true);
+        ProprietarySecurityPolicyModelHelper.setCallbackHandler(
+                (Binding)component, CallbackHandler.PASSWORD_CBHANDLER, null, DEFAULT_PASSWORD, true);
+    }
+    
+    @Override
+    public boolean isServiceDefaultSetupUsed(WSDLComponent component, Project p) {
+        String keyAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false);
+        String trustAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, true);
+        if ((keyAlias == null) && (trustAlias == null)) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isClientDefaultSetupUsed(WSDLComponent component, Binding serviceBinding, Project p) {
+        String keyAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false);
+        String trustAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, true);
+        if ((keyAlias == null) && (trustAlias == null)) {
+            String user = ProprietarySecurityPolicyModelHelper.getDefaultUsername((Binding)component);
+            String passwd = ProprietarySecurityPolicyModelHelper.getDefaultPassword((Binding)component);
+            if ((DEFAULT_PASSWORD.equals(passwd)) && (DEFAULT_USERNAME.equals(user))) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
 }
