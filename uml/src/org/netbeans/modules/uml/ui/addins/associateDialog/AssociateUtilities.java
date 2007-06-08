@@ -88,25 +88,25 @@ public class AssociateUtilities {
     public static ETList<String> buildColumns() {
         Preferences prefs = NbPreferences.forModule(AssociateUtilities.class);
         ETList<String> strs = new ETArrayList<String>();
-        if (prefs.getBoolean("UML_Find_Dialog_Icon", false)) {
+        if (prefs.getBoolean("UML_Find_Dialog_Icon", true)) {
             strs.add("IDS_ICON");
         }
-        if (prefs.getBoolean("UML_Find_Dialog_Name", false)) {
+        if (prefs.getBoolean("UML_Find_Dialog_Name", true)) {
             strs.add("IDS_NAME");
         }
-        if (prefs.getBoolean("UML_Find_Dialog_Alias", false)) {
+        if (prefs.getBoolean("UML_Find_Dialog_Alias", true)) {
             strs.add("IDS_ALIAS");
         }
-        if (prefs.getBoolean("UML_Find_Dialog_Type", false)) {
+        if (prefs.getBoolean("UML_Find_Dialog_Type", true)) {
             strs.add("IDS_TYPE");
         }
-        if (prefs.getBoolean("UML_Find_Dialog_Full", false)) {
+        if (prefs.getBoolean("UML_Find_Dialog_Full", true)) {
             strs.add("IDS_FULLNAME");
         }
-        if (prefs.getBoolean("UML_Find_Dialog_Project", false)) {
+        if (prefs.getBoolean("UML_Find_Dialog_Project", true)) {
             strs.add("IDS_PROJECT");
         }
-        if (prefs.getBoolean("UML_Find_Dialog_XMIID", false)) {
+        if (prefs.getBoolean("UML_Find_Dialog_XMIID", true)) {
             strs.add("IDS_ID");
         }
         return strs;
