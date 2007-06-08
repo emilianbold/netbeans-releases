@@ -272,9 +272,24 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         class ContentAndAttrs {
             final byte[] contents;
             final Map<String,Object> attrs;
-            ContentAndAttrs(byte[] contents, Map<String,Object> attrs) {
+            private final URL layerURL;
+            ContentAndAttrs(byte[] contents, Map<String,Object> attrs, URL layerURL) {
                 this.contents = contents;
                 this.attrs = attrs;
+                this.layerURL = layerURL;
+            }
+            public @Override String toString() {
+                return "ContentAndAttrs[contents=" + Arrays.toString(contents) + ",attrs=" + attrs + ";from=" + layerURL + "]";
+            }
+            public @Override int hashCode() {
+                return Arrays.hashCode(contents) ^ attrs.hashCode();
+            }
+            public @Override boolean equals(Object o) {
+                if (!(o instanceof ContentAndAttrs)) {
+                    return false;
+                }
+                ContentAndAttrs caa = (ContentAndAttrs) o;
+                return Arrays.equals(contents, caa.contents) && attrs.equals(caa.attrs);
             }
         }
         /* < FO path , { content, attributes } > */
@@ -315,19 +330,19 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                     list = new ArrayList<String>();
                     files.put (path, list);
                     list.add (module);
-                    contents.put(path, new ContentAndAttrs(getFileContent(fo), getAttributes(fo)));
+                    contents.put(path, new ContentAndAttrs(getFileContent(fo), getAttributes(fo), layerURL));
                 } else {
                     ContentAndAttrs contentAttrs = contents.get(path);
-                    byte[] foc = getFileContent(fo);
-                    Map<String,Object> foa = getAttributes(fo);
-                    if (!Arrays.equals(foc, contentAttrs.contents) || !foa.equals(contentAttrs.attrs)) {
+                    ContentAndAttrs nue = new ContentAndAttrs(getFileContent(fo), getAttributes(fo), layerURL);
+                    if (!nue.equals(contentAttrs)) {
+                        //System.err.println("Found differences in " + path + " between " + nue + " and " + contentAttrs);
                         Map<String,ContentAndAttrs> diffs = differentContents.get(path);
                         if (diffs == null) {
                             diffs = new HashMap<String,ContentAndAttrs>();
                             differentContents.put(path, diffs);
                             diffs.put(list.get(0), contentAttrs);
                         }
-                        diffs.put(module, new ContentAndAttrs(foc, foa));
+                        diffs.put(module, nue);
                         list.add (module);
                     }
                 }
@@ -345,18 +360,19 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             Collection<? extends ModuleInfo> res = Lookup.getDefault().lookupAll(ModuleInfo.class);
             assertFalse("Some modules found", res.isEmpty());
             
-            for (String name : new ArrayList<String>(list)) {
+            List<String> list2 = new ArrayList<String>(list);
+            for (String name : list) {
                 for (ModuleInfo info : res) {
                     if (name.equals (info.getCodeName ())) {
                         // remove dependencies
                         for (Dependency d : info.getDependencies()) {
-                            list.remove (d.getName ());
+                            list2.remove(d.getName());
                         }
                     }
                 }
             }
             // ok, modules depend on each other
-            if (list.size () <= 1) continue;
+            if (list2.size() <= 1) continue;
             
             sb.append (e.getKey ()).append( " is provided by: " ).append(list).append('\n');
             Map<String,ContentAndAttrs> diffList = differentContents.get(e.getKey());
