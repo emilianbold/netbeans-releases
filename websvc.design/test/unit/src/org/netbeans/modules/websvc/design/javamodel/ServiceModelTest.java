@@ -144,8 +144,9 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
     
     protected void tearDown() throws Exception {
     }
+ 
     
-    /** generates java artifacts for selected schema element
+    /** Test service model for AddNumbers service
      */
     public void testServiceModel () throws IOException {
         FileObject sourceFileObject = dataDir.getFileObject("add/AddNumbers.java");
@@ -194,8 +195,70 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
                 }
                 
                 i++;
+            }            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+    
+    /** Test service model for implementation class with 
+     * @WebService(endpointInterface="...") specified
+     */
+    public void testSEI () throws IOException {
+        FileObject sourceFileObject = dataDir.getFileObject("hello/Hello.java");
+        assertNotNull(sourceFileObject);
+        
+        try {
+            // compare model values
+            ServiceModel model = ServiceModel.getServiceModel(sourceFileObject);
+            assertEquals("Hello", model.getName());
+            assertEquals("HelloService", model.getServiceName());
+            assertEquals("HelloPort", model.getPortName());
+            assertEquals("hello.HelloInterface", model.getEndpointInterface());
+            assertEquals(1,model.getOperations().size());
+            List<MethodModel> operations = model.getOperations();
+            MethodModel op = operations.get(0);
+            
+            assertEquals("hello_operation", op.getOperationName());
+            ResultModel result = op.getResult();
+            assertEquals("echoString", result==null? null:result.getName());
+            assertEquals("java.lang.String", result==null? null:result.getResultType());
+            assertEquals(false, op.isOneWay());
+            List<ParamModel> params = op.getParams();
+            assertEquals(1,params.size());
+            
+            ParamModel param = params.get(0);
+
+            assertEquals("name", param.getName());
+            assertEquals("java.lang.String", param.getParamType());
+            assertEquals(Mode.IN, param.getMode());
+            
+            System.out.println("SOAP REQUEST :");
+            System.out.println(getFormatedDocument(op.getSoapRequest()));
+
+            System.out.println("");
+            System.out.println("------------------");
+            if (!op.isOneWay()) {
+                System.out.println("SOAP RESPONSE :");
+                System.out.println(getFormatedDocument(op.getSoapResponse()));
+                System.out.println("");
+                System.out.println("------------------");
             }
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    
+    /** Model Merge test 
+    */
+    public void testModelMerge() {
             // testing merge
+        FileObject sourceFileObject = dataDir.getFileObject("add/AddNumbers.java");
+        assertNotNull(sourceFileObject);
+        try {
+            ServiceModel model = ServiceModel.getServiceModel(sourceFileObject);
             FileObject sourceFileObject_1 = dataDir.getFileObject("add/AddNumbers_1.java");
             assertNotNull(sourceFileObject_1);
             ServiceModel model_1 = ServiceModel.getServiceModel(sourceFileObject_1);
@@ -221,7 +284,7 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
                 }
             });
             model.mergeModel(model_1);
-            i=0;
+            int i=0;
             for (String[] event:events) {
                 int j=0;
                 for (String eventPart:event) {
@@ -236,7 +299,7 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
             assertEquals(SERVICE_NAME_1, model.getServiceName());
             assertEquals(PORT_NAME_1, model.getPortName());
             assertEquals(NUMBER_OF_METHODS_1,model.getOperations().size());
-            operations = model.getOperations();
+            List<MethodModel> operations = model.getOperations();
             i=0;
             for (MethodModel op:operations) {
                 assertEquals(OP_NAMES_1[i], op.getOperationName());
@@ -257,7 +320,7 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
             
         } catch (Exception ex) {
             ex.printStackTrace();
-        }
+        }        
     }
     
     private String getFormatedDocument(SOAPMessage message) {
