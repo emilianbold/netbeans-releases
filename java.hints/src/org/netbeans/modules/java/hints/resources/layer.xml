@@ -42,21 +42,51 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="org-netbeans-modules-java-hints-errors-RemoveUselessCast.instance"/>
                 <file name="org-netbeans-modules-java-hints-errors-SuppressWarningsFixer.instance"/>                
             </folder>
-        
-        
+                
             <folder name="hints">
                 <folder name="general">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
                     <file name="org-netbeans-modules-java-hints-WrongPackageSuggestion.instance" />
-                    <file name="org-netbeans-modules-java-hints-AssignResultToVariable.instance" />                    
+                    <file name="org-netbeans-modules-java-hints-AssignResultToVariable.instance" />
+                    <file name="org-netbeans-modules-java-hints-AssignmentToItself.instance" />
                     <file name="org-netbeans-modules-java-hints-MissingHashCode.instance" />                    
+
                 </folder>    
 
                 <folder name="rules15">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>                    
                     <file name="org-netbeans-modules-java-hints-AddOverrideAnnotation.instance" />
+                    <file name="org-netbeans-modules-java-hints-AnnotationAsSuperInterface.instance" />
                 </folder>
                 
+                <folder name="imports">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>                    
+                    
+                    <file name="ImportsDelegate.instance">
+                        <attr name="nonGUI" boolvalue="true"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.Imports.createDelegate" />
+                    </file>
+                    
+                    <!-- file name="ImportsDuplicate.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.Imports.createDuplicate" />
+                    </file -->
+                    <file name="ImportsDefault.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.Imports.createDefaultPackage" />
+                    </file>
+                    <file name="ImportsSamePackage.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.Imports.createSamePackage" />
+                    </file>
+                    <file name="ImportsForbidden.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.Imports.createForbidden" />
+                    </file>
+                    <file name="ImportsStar.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.Imports.createStar" />
+                    </file>
+                    <file name="ImportsUnused.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.Imports.createUnused" />
+                    </file>
+                </folder>
+
                 <folder name="braces">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>                    
                     
@@ -84,6 +114,37 @@ Microsystems, Inc. All Rights Reserved.
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.UtilityClass.withConstructor"/>
                     </file>
                 </folder>    
+
+                <folder name="javac">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
+                    <file name="Deprecated.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.StandardJavacWarnings.createDeprecated" />
+                    </file>
+                    <file name="Unchecked.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.StandardJavacWarnings.createUnchecked" />
+                    </file>
+                    <file name="Fallthrough.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.StandardJavacWarnings.createFallthrough" />
+                    </file>
+                    <file name="Serialization.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.StandardJavacWarnings.createSerialization" />
+                    </file>
+                    <file name="Fajnly.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.StandardJavacWarnings.createFinally" />
+                    </file>
+                    <file name="UnnecessaryCast.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.StandardJavacWarnings.createUnnecessaryCast" />
+                    </file>
+                    <file name="EmptyStatementAfterIf.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.StandardJavacWarnings.createEmptyStatementAfterIf" />
+                    </file>
+                    <file name="Overrides.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.StandardJavacWarnings.createOverrides" />
+                    </file>
+                    <file name="DivisionByZero.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.StandardJavacWarnings.createDivisionByZero" />
+                    </file>
+                </folder>
 
                 <!--
                 <folder name="typos">

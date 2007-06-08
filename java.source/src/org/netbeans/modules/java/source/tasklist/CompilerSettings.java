@@ -21,6 +21,7 @@ package org.netbeans.modules.java.source.tasklist;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.Preferences;
+import org.netbeans.api.java.source.JavaSource;
 import org.openide.util.NbPreferences;
 
 /**
@@ -61,14 +62,11 @@ public class CompilerSettings {
     }
     
     public static Preferences getNode() {
-        return NbPreferences.forModule(CompilerSettings.class).node("compiler_settings");
+        return NbPreferences.forModule(JavaSource.class).node("compiler_settings");
     }
     
     public static String getCommandLine() {
         Preferences p = getNode();
-        
-        if (!get(p, ENABLE_LINT))
-            return "";
         
         StringBuilder sb = new StringBuilder();
         
@@ -91,7 +89,7 @@ public class CompilerSettings {
         if (get(p, ENABLE_LINT_OVERRIDES))
             sb.append("-Xlint:overrides ");
         
-        if (sb.charAt(sb.length() - 1) == ' ') {
+        if (sb.length() > 0 && sb.charAt(sb.length() - 1) == ' ') {
             sb.deleteCharAt(sb.length() - 1);
         }
         

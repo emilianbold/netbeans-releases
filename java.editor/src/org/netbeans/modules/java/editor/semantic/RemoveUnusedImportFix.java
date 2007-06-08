@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -35,12 +36,16 @@ import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class RemoveUnusedImportFix implements Fix {
+public class RemoveUnusedImportFix implements Fix  {
+    
+    public static String IS_ENABLED_KEY = "Enabled";
+    private static Preferences preferences;
     
     public static RemoveUnusedImportFix create(FileObject file, TreePathHandle importToRemove) {
         return new RemoveUnusedImportFix(file, Collections.singletonList(importToRemove), "FIX_Remove_Unused_Import");
@@ -97,4 +102,19 @@ public class RemoveUnusedImportFix implements Fix {
         return null;
     }
 
+    private static synchronized Preferences getPreferences() {
+        if( preferences == null ) {
+            preferences = NbPreferences.forModule(RemoveUnusedImportFix.class);
+        }
+        return preferences;
+    }
+    
+    public static synchronized boolean isEnabled() {
+        return getPreferences().getBoolean(IS_ENABLED_KEY, true);
+    }
+    
+    public static void setEnabled( boolean enabled ) {
+        getPreferences().putBoolean(IS_ENABLED_KEY, enabled);
+    }
+    
 }

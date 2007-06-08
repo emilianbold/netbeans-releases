@@ -66,7 +66,6 @@ public class TasklistOptions extends AdvancedOption {
             panel.setBadgesEnabled(TasklistSettings.isBadgesEnabled());
             panel.setTasklistEnabled(TasklistSettings.isTasklistEnabled());
             
-            panel.fillInCompilerSettings();
         }
 
         public void applyChanges() {
@@ -77,8 +76,6 @@ public class TasklistOptions extends AdvancedOption {
             TasklistSettings.setDependencyTrackingEnabled(panel.getDependenciesEnabled());
             TasklistSettings.setBadgesEnabled(panel.getBadgesEnabled());
             
-            if (panel.isCompilerSettingsChanged())
-                panel.storeCompilerSettings();
         }
 
         public void cancel() {
@@ -87,8 +84,6 @@ public class TasklistOptions extends AdvancedOption {
             panel.setTasklistEnabled(TasklistSettings.isTasklistEnabled());
             panel.setDependenciesEnabled(TasklistSettings.isDependencyTrackingEnabled());
             panel.setBadgesEnabled(TasklistSettings.isBadgesEnabled());
-            
-            panel.fillInCompilerSettings();
         }
 
         public boolean isValid() {
@@ -101,8 +96,7 @@ public class TasklistOptions extends AdvancedOption {
 
             return    TasklistSettings.isTasklistEnabled() != panel.getTasklistEnabled()
                    || TasklistSettings.isDependencyTrackingEnabled() != panel.getDependenciesEnabled()
-                   || TasklistSettings.isBadgesEnabled() != panel.getBadgesEnabled()
-                   || panel.isCompilerSettingsChanged();
+                   || TasklistSettings.isBadgesEnabled() != panel.getBadgesEnabled();
         }
 
         public JComponent getComponent(Lookup masterLookup) {

@@ -54,7 +54,7 @@ public abstract class AbstractHint implements TreeRule {
      * @return Preferences node for given hint.
      */
     public Preferences getPreferences( String profile ) { 
-        profile = profile == null ? HintsSettings.getCurrentProfileId() :  profile;
+        profile = profile == null ? HintsSettings.getCurrentProfileId() : profile;
         return NbPreferences.forModule(this.getClass()).node(profile).node(getId());
     }
         
@@ -72,6 +72,13 @@ public abstract class AbstractHint implements TreeRule {
     }
     
     public abstract String getDescription();
+    
+    /** Finds out whether the rule is currently enabled.
+     * @return true if enabled false otherwise.
+     */
+    public final boolean isEnabled() {
+        return HintsSettings.isEnabled( this, getPreferences(HintsSettings.getCurrentProfileId()));        
+    }
     
     /** Gets current severiry of the hint.
      * @return Hints severity in current profile.

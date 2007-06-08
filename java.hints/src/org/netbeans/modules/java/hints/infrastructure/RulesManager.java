@@ -63,6 +63,9 @@ public class RulesManager {
     // Extensions of files
     private static final String INSTANCE_EXT = ".instance";
 
+    // Non GUI attribute for NON GUI rules
+    private static final String NON_GUI = "nonGUI"; // NOI18N
+    
     private static final String RULES_FOLDER = "org-netbeans-modules-java-hints/rules/";  // NOI18N
     private static final String ERRORS = "errors"; // NOI18N
     private static final String HINTS = "hints"; // NOI18N
@@ -260,6 +263,16 @@ public class RulesManager {
             FileObject fo = pair.getB();
 
             if ( rule instanceof TreeRule ) {
+                
+                Object nonGuiObject = fo.getAttribute(NON_GUI);
+                boolean toGui = true;
+                
+                if ( nonGuiObject != null && 
+                     nonGuiObject instanceof Boolean &&
+                     ((Boolean)nonGuiObject).booleanValue() ) {
+                    toGui = false;
+                }
+                
                 addRule( (TreeRule)rule, dest );
                 FileObject parent = fo.getParent();
                 DefaultMutableTreeNode category = dir2node.get( parent );
@@ -268,7 +281,9 @@ public class RulesManager {
                     rootNode.add( category );
                     dir2node.put( parent, category );
                 }
-                category.add( new DefaultMutableTreeNode( rule, false ) );
+                if ( toGui ) {
+                    category.add( new DefaultMutableTreeNode( rule, false ) );
+                }
             }
             else {
                 LOG.log( Level.WARNING, "The rule defined in " + fo.getPath() + "is not instance of TreeRule" );

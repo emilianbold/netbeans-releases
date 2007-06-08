@@ -245,7 +245,9 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
             final Fix removeImport = RemoveUnusedImportFix.create(file, handle);
             
             allUnusedImports.add(handle);
-            errors.add(ErrorDescriptionFactory.createErrorDescription(Severity.VERIFIER, "Unused import", new FixAllImportsFixList(removeImport, removeAllUnusedImports, allUnusedImports), doc, line));
+            if (RemoveUnusedImportFix.isEnabled()) {
+                errors.add(ErrorDescriptionFactory.createErrorDescription(Severity.VERIFIER, "Unused import", new FixAllImportsFixList(removeImport, removeAllUnusedImports, allUnusedImports), doc, line));
+            }
         }
         
         for (Element decl : v.type2Uses.keySet()) {
