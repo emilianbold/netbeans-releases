@@ -159,6 +159,9 @@ public class FacesRefactoringActionsProvider extends ActionsImplementationProvid
         if (n==null)
             return null;
         PasteType[] pt = n.getPasteTypes(orig); // NOI18N
+        if (pt.length==1) {
+            return null;
+        }
         return pt[1];
     }
     
