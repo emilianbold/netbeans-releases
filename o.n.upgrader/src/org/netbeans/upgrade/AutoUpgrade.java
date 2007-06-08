@@ -90,7 +90,7 @@ public final class AutoUpgrade {
     // the order of VERSION_TO_CHECK here defines the precedence of imports
     // the first one will be choosen for import
     final static private List VERSION_TO_CHECK = 
-            Arrays.asList (new String[] { ".netbeans/5.5",".netbeans/5.0",".Creator/2_1",".Creator/2_0" });//NOI18N
+            Arrays.asList (new String[] { ".netbeans/5.5.1",".netbeans/5.5",".netbeans/5.0",".Creator/2_1" });//NOI18N
             
     static private File checkPrevious (String[] version, final List versionsToCheck) {        
         String userHome = System.getProperty ("user.home"); // NOI18N
