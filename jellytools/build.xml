@@ -73,6 +73,11 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="jelly2-nb.jar" todir="${cluster}/modules/ext"/>
         <copy file="${netbeans.javadoc.dir}/org-netbeans-modules-jellytools.zip" tofile="${cluster}/docs/jelly2-nb-javadoc.zip"/>
         <copy file="jelly2-nb-src.zip" tofile="${cluster}/sources/jelly2-nb-src.zip"/>
+        <!-- To prevent Javadoc from being picked up spuriously by apisupport/apidocs: -->
+        <delete file="${netbeans.javadoc.dir}/org-netbeans-modules-jellytools.zip" failonerror="false"/>
+        <delete dir="${netbeans.javadoc.dir}/org-netbeans-modules-jellytools" failonerror="false"/>
+        <delete file="${export.interfaces}/org-netbeans-modules-jellytools" failonerror="false"/>
+        <delete file="${export.apichanges}/org-netbeans-modules-jellytools" failonerror="false"/>
     </target>
     
     <target name="javadocWithJemmy" description="Javadoc for Jellytools and Jemmy">
