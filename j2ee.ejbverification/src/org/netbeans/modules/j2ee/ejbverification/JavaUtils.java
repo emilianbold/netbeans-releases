@@ -55,7 +55,7 @@ public class JavaUtils {
         return null;
     }
     
-        /**
+    /**
      * @return the value of annotation attribute, null if the attribute
      * was not found or when ann was null
      */
@@ -69,5 +69,9 @@ public class JavaUtils {
         }
         
         return null;
+    }
+    
+    public static String getShortClassName(String qualifiedClassName){
+        return qualifiedClassName.substring(qualifiedClassName.lastIndexOf(".") + 1); //NOI18N
     }
 }

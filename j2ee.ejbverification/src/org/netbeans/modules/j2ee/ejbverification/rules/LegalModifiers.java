@@ -22,10 +22,14 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.ejbverification.EJBProblemContext;
 import org.netbeans.modules.j2ee.ejbverification.EJBVerificationRule;
 import org.netbeans.modules.j2ee.ejbverification.HintsUtils;
+import org.netbeans.modules.j2ee.ejbverification.fixes.MakeClassPublic;
+import org.netbeans.modules.j2ee.ejbverification.fixes.RemoveModifier;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 
 /**
@@ -42,22 +46,32 @@ public class LegalModifiers extends EJBVerificationRule {
             Set<Modifier> modifiers = ctx.getClazz().getModifiers();
             
             if (!modifiers.contains(Modifier.PUBLIC)){
+                Fix fix = new MakeClassPublic(ctx.getFileObject(), ElementHandle.create(ctx.getClazz()));
+                
                 ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
-                NbBundle.getMessage(LegalModifiers.class, "MSG_BeanClassMustBePublic"));
+                NbBundle.getMessage(LegalModifiers.class, "MSG_BeanClassMustBePublic"), fix);
                 
                 problemsFounds.add(err);
             }
             
             if (modifiers.contains(Modifier.FINAL)){
+                Fix fix = new RemoveModifier(ctx.getFileObject(),
+                        ElementHandle.create(ctx.getClazz()),
+                        Modifier.FINAL);
+                
                 ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
-                NbBundle.getMessage(LegalModifiers.class, "MSG_BeanClassMustNotBeFinal"));
+                NbBundle.getMessage(LegalModifiers.class, "MSG_BeanClassMustNotBeFinal"), fix);
                 
                 problemsFounds.add(err);
             }
             
             if (modifiers.contains(Modifier.ABSTRACT)){
+                Fix fix = new RemoveModifier(ctx.getFileObject(),
+                        ElementHandle.create(ctx.getClazz()),
+                        Modifier.ABSTRACT);
+                
                 ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
-                NbBundle.getMessage(LegalModifiers.class, "MSG_BeanClassMustNotBeAbstract"));
+                NbBundle.getMessage(LegalModifiers.class, "MSG_BeanClassMustNotBeAbstract"), fix);
                 
                 problemsFounds.add(err);
             }
