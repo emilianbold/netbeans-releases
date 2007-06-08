@@ -21,10 +21,10 @@
 <filesystem>
     
     <folder name="Services">
-        <!-- Recognize text/x-wsdl+xml: -->
         <folder name="JavaHelp">
             <file name="wsdlui-helpset.xml" url="wsdlui-helpset.xml"/>
         </folder>
+        <!-- Recognize text/x-wsdl+xml: -->
         <folder name="MIMEResolver">
             <file name="org-netbeans-modules-xml-wsdl-ui-netbeans-module-resources-mime-resolver.xml" url="mime-resolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdl.ui.netbeans.module.resources.Bundle"/>
@@ -129,7 +129,7 @@
     </folder>
     
     <folder name="Templates">
-        <!--
+        <!-- Override the wsdl wizard from websvc/core -->
     	<folder name="WebServices">
     		<file name="WSDL.wsdl" url="WSDL.template">
     			<attr name="template" boolvalue="true" />
@@ -145,7 +145,7 @@
     		</file>
     		<file name="WSDL_import.wsdl" url="WSDL_import.template" />
     	</folder>
-        -->
+
     	<folder name="XML">
     		<file name="WSDL.wsdl" url="WSDL.template">
     			<attr name="template" boolvalue="true" />
