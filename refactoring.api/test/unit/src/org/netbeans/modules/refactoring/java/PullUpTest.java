@@ -56,7 +56,7 @@ public class PullUpTest extends RefactoringTestCase {
         final PullUpRefactoring pullUp = new PullUpRefactoring(Lookups.fixed(test,destClassSelector.tph));
         perform(pullUp,new ParameterSetter() {
             public void setParameters() {
-                MemberInfo[] mi = new MemberInfo[]{new MemberInfo(fieldSelector.tph.resolveElement(fieldSelector.info),fieldSelector.info)};
+                MemberInfo[] mi = new MemberInfo[]{ MemberInfo.create(fieldSelector.tph.resolveElement(fieldSelector.info),fieldSelector.info)};
                 pullUp.setMembers(mi);
                 ElementHandle el = ElementHandle.create(srcClassSelector.tph.resolveElement(srcClassSelector.info));
                 pullUp.setTargetType(el);                                
