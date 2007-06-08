@@ -128,14 +128,17 @@ public class UMLPanelController extends OptionsPanelController {
         }
         
         // ((n+1)..m) create the Misc panel and populate it.
-        misc = new MiscOptionsPanel() ;
-        UMLMiscOptionsPanelForm miscPanel = (UMLMiscOptionsPanelForm) misc.create() ;
-        
-        pane.addTab(misc.getDisplayName(), miscPanel) ;
-        
-        for (UMLOptionsPanel panel:support.getMiscPanels()) {
-            miscPanel.addTab(panel) ;
-        }
+        //the following will add a "Misc" tab to this tabbed pane and populate
+        //the panel with panels registered in their layer files as UML|Misc panels.
+        //It is removed for now because there is no need for such a category.
+//        misc = new MiscOptionsPanel() ;
+//        UMLMiscOptionsPanelForm miscPanel = (UMLMiscOptionsPanelForm) misc.create() ;
+//        
+//        pane.addTab(misc.getDisplayName(), miscPanel) ;
+//        
+//        for (UMLOptionsPanel panel:support.getMiscPanels()) {
+//            miscPanel.addTab(panel) ;
+//        }
         
         
         return pane ;

@@ -20,7 +20,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 <?xml-stylesheet type="text/xml" href="http://openide.netbeans.org/fs/filesystem.xsl"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
- <!--
+    <!--
     <folder name="Actions">
         <folder name="Build">
             <file name="com-sun-tools-ide-uml-propertysupport-customizers-TestUseCaseSteps.instance">
@@ -46,16 +46,16 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
         </folder> 
     </folder>
     -->
-     <folder name="OptionsDialog">
+    <folder name="OptionsDialog">
         <file name="UMLOptionsCategory.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.propertysupport.options.UMLOptions"/>
         </file>
         <attr boolvalue="true" name="UMLOptions.instance/Advanced.instance"/>
     </folder>
-
+    
     <folder name="UML">
         <folder name="UMLOptions">
-            <folder name="Misc">
+            <folder name="Panels">
                 <file name="JavaPlatformOptions.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.propertysupport.options.panels.JavaPlatformOptions"/>
                 </file>
@@ -63,8 +63,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.propertysupport.options.panels.ShowMeDialogsList"/>
                 </file>
             </folder>
-            
         </folder>
     </folder>
-
+    
 </filesystem>

@@ -19,9 +19,6 @@
 
 package org.netbeans.modules.uml.core.preferenceframework;
 
-import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
-import org.netbeans.modules.uml.core.coreapplication.IPreferenceManager2;
-import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
 import org.openide.util.NbBundle;
 
 /**

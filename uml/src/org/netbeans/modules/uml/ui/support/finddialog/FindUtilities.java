@@ -75,34 +75,21 @@ public class FindUtilities
 		// Don't think we need to do this anymore because it will
 		// be handled by the FindTableModel
 	}
+        
 	/**
 	 * Determines from preferences what columns to hide/show for find results
 	 * @param tableData[in]		The grid to hide/show the columns for
 	 */
-	public static ETList<String> buildColumns() {
-            Preferences prefs = NbPreferences.forModule(FindUtilities.class);
+        public static ETList<String> buildColumns() {
+            
             ETList<String> strs = new ETArrayList<String>();
-            if (prefs.getBoolean("UML_Find_Dialog_Icon", false)) {
-                strs.add("IDS_ICON");
-            }
-            if (prefs.getBoolean("UML_Find_Dialog_Name", false)) {
-                strs.add("IDS_NAME");
-            }
-            if (prefs.getBoolean("UML_Find_Dialog_Alias", false)) {
-                strs.add("IDS_ALIAS");
-            }
-            if (prefs.getBoolean("UML_Find_Dialog_Type", false)) {
-                strs.add("IDS_TYPE");
-            }
-            if (prefs.getBoolean("UML_Find_Dialog_Full", false)) {
-                strs.add("IDS_FULLNAME");
-            }
-            if (prefs.getBoolean("UML_Find_Dialog_Project", false)) {
-                strs.add("IDS_PROJECT");
-            }
-            if (prefs.getBoolean("UML_Find_Dialog_XMIID", false)) {
-                strs.add("IDS_ID");
-            }
+            strs.add("IDS_ICON");
+            strs.add("IDS_NAME");
+            strs.add("IDS_ALIAS");
+            strs.add("IDS_TYPE");
+            strs.add("IDS_FULLNAME");
+            strs.add("IDS_PROJECT");
+            
             return strs;
         }
 	

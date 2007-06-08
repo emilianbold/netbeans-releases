@@ -63,6 +63,7 @@ import org.netbeans.modules.uml.ui.addins.associateDialog.AssociateTableModel;
 //import org.netbeans.modules.uml.project.UMLProjectHelper;
 //import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.uml.ui.support.finddialog.FindUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 
@@ -86,31 +87,21 @@ public class AssociateUtilities {
      * @param tableData[in]		The grid to hide/show the columns for
      */
     public static ETList<String> buildColumns() {
-        Preferences prefs = NbPreferences.forModule(AssociateUtilities.class);
+        
         ETList<String> strs = new ETArrayList<String>();
-        if (prefs.getBoolean("UML_Find_Dialog_Icon", true)) {
-            strs.add("IDS_ICON");
-        }
-        if (prefs.getBoolean("UML_Find_Dialog_Name", true)) {
-            strs.add("IDS_NAME");
-        }
-        if (prefs.getBoolean("UML_Find_Dialog_Alias", true)) {
-            strs.add("IDS_ALIAS");
-        }
-        if (prefs.getBoolean("UML_Find_Dialog_Type", true)) {
-            strs.add("IDS_TYPE");
-        }
-        if (prefs.getBoolean("UML_Find_Dialog_Full", true)) {
-            strs.add("IDS_FULLNAME");
-        }
-        if (prefs.getBoolean("UML_Find_Dialog_Project", true)) {
-            strs.add("IDS_PROJECT");
-        }
-        if (prefs.getBoolean("UML_Find_Dialog_XMIID", true)) {
-            strs.add("IDS_ID");
-        }
+        
+        strs.add("IDS_ICON");
+        strs.add("IDS_NAME");
+        strs.add("IDS_ALIAS");
+        strs.add("IDS_TYPE");
+        strs.add("IDS_FULLNAME");
+        strs.add("IDS_PROJECT");
+        
+        
         return strs;
     }
+    
+    
     /**
      * Load the combo boxes with the last few selections
      *
