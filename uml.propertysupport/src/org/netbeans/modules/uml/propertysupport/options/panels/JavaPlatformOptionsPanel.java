@@ -19,6 +19,9 @@
 
 package org.netbeans.modules.uml.propertysupport.options.panels;
 
+import java.util.prefs.Preferences;
+import javax.swing.JComboBox;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 /**
@@ -41,6 +44,8 @@ public class JavaPlatformOptionsPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         jLabel9 = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jPanel3 = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -72,7 +77,7 @@ public class JavaPlatformOptionsPanel extends javax.swing.JPanel {
         jLabel12 = new javax.swing.JLabel();
         jLabel13 = new javax.swing.JLabel();
         jLabel14 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox();
+        jComboBox1 = new JComboBox (displayChoices);
         jTextField1 = new javax.swing.JTextField();
         jTextField2 = new javax.swing.JTextField();
         jTextField3 = new javax.swing.JTextField();
@@ -158,15 +163,25 @@ public class JavaPlatformOptionsPanel extends javax.swing.JPanel {
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .add(jLabel8)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 26, Short.MAX_VALUE)
-                        .add(y8))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .add(jLabel7)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 121, Short.MAX_VALUE)
-                        .add(y7)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(jLabel8)
+                    .add(jLabel7)
+                    .add(jLabel6)
+                    .add(jLabel5)
+                    .add(jLabel4)
+                    .add(jLabel3)
+                    .add(jLabel2)
+                    .add(jLabel1))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 13, Short.MAX_VALUE)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(y1)
+                    .add(y2)
+                    .add(y3)
+                    .add(y4)
+                    .add(y5)
+                    .add(y6)
+                    .add(y7)
+                    .add(y8))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 2, Short.MAX_VALUE)
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, n1)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, n2)
@@ -176,37 +191,7 @@ public class JavaPlatformOptionsPanel extends javax.swing.JPanel {
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, n6)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, n7)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, n8))
-                .addContainerGap(34, Short.MAX_VALUE))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
-                .add(jLabel6)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 41, Short.MAX_VALUE)
-                .add(y6)
-                .add(74, 74, 74))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
-                .add(jLabel5)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 113, Short.MAX_VALUE)
-                .add(y5)
-                .add(74, 74, 74))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
-                .add(jLabel4)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 86, Short.MAX_VALUE)
-                .add(y4)
-                .add(74, 74, 74))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
-                .add(jLabel3)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 104, Short.MAX_VALUE)
-                .add(y3)
-                .add(74, 74, 74))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
-                .add(jLabel2)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 57, Short.MAX_VALUE)
-                .add(y2)
-                .add(74, 74, 74))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
-                .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 17, Short.MAX_VALUE)
-                .add(y1)
-                .add(74, 74, 74))
+                .addContainerGap(36, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -292,7 +277,7 @@ public class JavaPlatformOptionsPanel extends javax.swing.JPanel {
                         .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(jTextField2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 57, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 72, Short.MAX_VALUE)
                         .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jLabel14)
                             .add(jLabel12))
@@ -305,7 +290,7 @@ public class JavaPlatformOptionsPanel extends javax.swing.JPanel {
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addContainerGap(20, Short.MAX_VALUE)
+                .addContainerGap(60, Short.MAX_VALUE)
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(jPanel2Layout.createSequentialGroup()
                         .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -327,21 +312,40 @@ public class JavaPlatformOptionsPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
+        org.jdesktop.layout.GroupLayout jPanel3Layout = new org.jdesktop.layout.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jPanel3Layout.createSequentialGroup()
+                        .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 234, Short.MAX_VALUE))
+                    .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        jScrollPane1.setViewportView(jPanel3);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(201, Short.MAX_VALUE))
-            .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -352,69 +356,108 @@ public class JavaPlatformOptionsPanel extends javax.swing.JPanel {
      */
     public void load() {
         
-        if (NbPreferences.forModule(JavaPlatformOptionsPanel.class).getBoolean("dummy", true)) {
+        Preferences prefs = NbPreferences.forModule(JavaPlatformOptionsPanel.class) ;
+        
+        if (prefs.getBoolean("UML_CAP_ON_ACCESSORS", true)) {
             y1.setSelected(true);
         } else {
             n1.setSelected(true);
         }
         
-        if (NbPreferences.forModule(JavaPlatformOptionsPanel.class).getBoolean("dummy", true)) {
+        if (prefs.getBoolean("UML_USE_GENERICS_DEFAULT", true)) {
             y2.setSelected(true);
         } else {
             n2.setSelected(true);
         }
         
-        if (NbPreferences.forModule(JavaPlatformOptionsPanel.class).getBoolean("dummy", true)) {
+        if (prefs.getBoolean("UML_ADD_ACCESSORS", true)) {
             y3.setSelected(true);
         } else {
             n3.setSelected(true);
         }
         
-        if (NbPreferences.forModule(JavaPlatformOptionsPanel.class).getBoolean("dummy", true)) {
+        if (prefs.getBoolean("UML_ADD_CTORS", true)) {
             y4.setSelected(true);
         } else {
             n4.setSelected(true);
         }
         
-        if (NbPreferences.forModule(JavaPlatformOptionsPanel.class).getBoolean("dummy", true)) {
+        if (prefs.getBoolean("UML_ADD_DTORS", false)) {
             y5.setSelected(true);
         } else {
             n5.setSelected(true);
         }
         
-        if (NbPreferences.forModule(JavaPlatformOptionsPanel.class).getBoolean("dummy", true)) {
+        if (prefs.getBoolean("UML_SHOW_DUPE_OP_DIALOG", true)) {
             y6.setSelected(true);
         } else {
             n6.setSelected(true);
         }
         
-        if (NbPreferences.forModule(JavaPlatformOptionsPanel.class).getBoolean("dummy", true)) {
+        if (prefs.getBoolean("UML_SET_NAVIGABLE_END_ROLE_NAME", true)) {
             y7.setSelected(true);
         } else {
             n7.setSelected(true);
         }
         
-        if (NbPreferences.forModule(JavaPlatformOptionsPanel.class).getBoolean("dummy", true)) {
+        if (prefs.getBoolean("NO_PREFIX_ON_ACCESSORS", true)) {
             y8.setSelected(true);
         } else {
             n8.setSelected(true);
         }
         
+        String s = prefs.get("UML_MODIFY_REDEFINING_METHOD", PSK_ASK);
+        jComboBox1.setSelectedItem(s);
+        
+        s = prefs.get("UML_COLLECTION_OVERRIDE_DEFAULT", PSK_ASK);
+        jTextField1.setText(s);
+        
+        s = prefs.get("UML_READ_ACCESSOR_PREFIX", PSK_ASK);
+        jTextField2.setText(s);
+        
+        s = prefs.get("UML_ATTRIBUTE_PREFIX", PSK_ASK);
+        jTextField3.setText(s);
+        
+        s = prefs.get("UML_WRITE_ACCESSOR_PREFIX", PSK_ASK);
+        jTextField4.setText(s);
+        
     }
     
     public void store() {
         
-        NbPreferences.forModule(JavaPlatformOptionsPanel.class).putBoolean("dummy", y1.isSelected());
-        NbPreferences.forModule(JavaPlatformOptionsPanel.class).putBoolean("dummy", y2.isSelected());
-        NbPreferences.forModule(JavaPlatformOptionsPanel.class).putBoolean("dummy", y3.isSelected());
-        NbPreferences.forModule(JavaPlatformOptionsPanel.class).putBoolean("dummy", y4.isSelected());
-        NbPreferences.forModule(JavaPlatformOptionsPanel.class).putBoolean("dummy", y5.isSelected());
-        NbPreferences.forModule(JavaPlatformOptionsPanel.class).putBoolean("dummy", y6.isSelected());
-        NbPreferences.forModule(JavaPlatformOptionsPanel.class).putBoolean("dummy", y7.isSelected());
-        NbPreferences.forModule(JavaPlatformOptionsPanel.class).putBoolean("dummy", y8.isSelected());
+        Preferences prefs = NbPreferences.forModule(JavaPlatformOptionsPanel.class) ;
+        
+        prefs.putBoolean("UML_CAP_ON_ACCESSORS", y1.isSelected());
+        prefs.putBoolean("UML_USE_GENERICS_DEFAULT", y2.isSelected());
+        prefs.putBoolean("UML_ADD_ACCESSORS", y3.isSelected());
+        prefs.putBoolean("UML_ADD_CTORS", y4.isSelected());
+        prefs.putBoolean("UML_ADD_DTORS", y5.isSelected());
+        prefs.putBoolean("UML_SHOW_DUPE_OP_DIALOG", y6.isSelected());
+        prefs.putBoolean("UML_SET_NAVIGABLE_END_ROLE_NAME", y7.isSelected());
+        
+        int index = jComboBox1.getSelectedIndex() ;        
+        prefs.put("UML_MODIFY_REDEFINING_METHOD", mappedChoices[index]);
+        
+        prefs.put("UML_COLLECTION_OVERRIDE_DEFAULT", jTextField1.getText());
+        prefs.put("UML_READ_ACCESSOR_PREFIX", jTextField2.getText());
+        prefs.put("UML_ATTRIBUTE_PREFIX", jTextField3.getText());
+        prefs.put("UML_WRITE_ACCESSOR_PREFIX", jTextField4.getText());
         
     }
         
+    private String PSK_ASK = "PSK_ASK" ;
+    private String PSK_ALWAYS = "PSK_ALWAYS" ;
+    private String PSK_NEVER = "PSK_NEVER" ;
+    
+    private String ASK = NbBundle.getMessage(JavaPlatformOptionsPanel.class, "ASK") ;
+    private String ALWAYS = NbBundle.getMessage(JavaPlatformOptionsPanel.class, "ALWAYS") ;
+    private String NEVER = NbBundle.getMessage(JavaPlatformOptionsPanel.class, "NEVER") ;
+    
+    private String[] displayChoices = {ASK, ALWAYS, NEVER} ;
+    private String[] mappedChoices = {PSK_ASK, PSK_ALWAYS, PSK_NEVER} ;
+    
+ 
+
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox jComboBox1;
@@ -434,6 +477,8 @@ public class JavaPlatformOptionsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
     private javax.swing.JTextField jTextField3;
