@@ -49,11 +49,6 @@ public final class NewUMLDiagWizardIterator implements WizardDescriptor.Iterator
     private int index;
     
     private WizardDescriptor.Panel[] panels;
-    public static final String DIAGRAM_DETAILS = "DIAGRAM_DETAILS";      //NOI18N
-    static final String PROP_DIAG_KIND = "DIAGRAM_KIND"; //NOI18N
-    static final String PROP_DIAG_NAME = "DIAGRAM_NAME"; //NOI18N
-    static final String PROP_NAMESPACE = "NAMESPACE"; //NOI18N
-    
     
     /**
      * Initialize panels representing individual wizard's steps and sets
@@ -92,7 +87,6 @@ public final class NewUMLDiagWizardIterator implements WizardDescriptor.Iterator
     }
     
     public String name() {
-        //return index + 1 + " of " + getPanels().length;
         // Get the string from the bundle for l10n purpose
         return  NbBundle.getMessage(
                 NewUMLDiagWizardIterator.class,

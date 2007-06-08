@@ -334,6 +334,7 @@ public class NewDialogUtilities
       {
          String fsn = space.getQualifiedName();
          int count = box.getItemCount();
+         m_Elements.add(space);
          
          boolean foundInList = false;
          for (int i=0; i<count; i++)
@@ -345,12 +346,13 @@ public class NewDialogUtilities
                break;
             }
          }
+         
          if (!foundInList)
          {
             box.addItem(fsn);
          }
          
-         m_Elements.add(space);
+         //m_Elements.add(space);
          
          if (addParent)
          {

@@ -25,17 +25,11 @@ import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
-import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
-import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
-import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
-import org.netbeans.modules.uml.ui.support.NewPackageKind;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
-public class AddPackageWizardPanel1 implements WizardDescriptor.Panel
+public class AddPackageWizardPanel1 
+      implements WizardDescriptor.FinishablePanel, INewUMLFileTemplates
 {
     
     /**
@@ -43,19 +37,8 @@ public class AddPackageWizardPanel1 implements WizardDescriptor.Panel
      * component from this class, just use getComponent().
      */
     private AddPackageVisualPanel1 component;
-    private INewDialogPackageDetails m_details;
-    private AddPackageVisualPanel1 panelComponent = null;
-    private boolean resultFlag = false;
     private WizardDescriptor wizardDescriptor;
     private final Set/*<ChangeListener>*/ listeners = new HashSet (1);
-    
-    
-    public AddPackageWizardPanel1 (INewDialogPackageDetails details)
-    {
-        super ();
-        this.m_details = details;
-    }
-    
     
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
@@ -65,7 +48,7 @@ public class AddPackageWizardPanel1 implements WizardDescriptor.Panel
     {
         if (component == null)
         {
-            component = new AddPackageVisualPanel1 (this, m_details);
+            component = new AddPackageVisualPanel1 (this);
         }
         return component;
     }
@@ -80,6 +63,7 @@ public class AddPackageWizardPanel1 implements WizardDescriptor.Panel
     
     public boolean isValid ()
     {
+        getComponent();
         return component.isValid (wizardDescriptor);
     }
     
@@ -123,96 +107,19 @@ public class AddPackageWizardPanel1 implements WizardDescriptor.Panel
     public void readSettings (Object settings)
     {
         wizardDescriptor = (WizardDescriptor)settings;
+        AddPackageVisualPanel1 comp = (AddPackageVisualPanel1) getComponent();
+        comp.read(wizardDescriptor);
     }
     
     public void storeSettings (Object settings)
     {
-        if (resultFlag)
-        {
-            return;
-        }
-        //get the user selected data from the panel
-        INewDialogPackageDetails details = getResults ();
-        if (details != null)
-        {
-            //set the details object
-            WizardDescriptor wizDesc = (WizardDescriptor)settings;
-            wizDesc.putProperty (AddPackageWizardIterator.PACKAGE_DETAILS, details);
-        }
-    }
-    
-    private INewDialogPackageDetails getResults ()
-    {
-        if (component instanceof AddPackageVisualPanel1)
-        {
-            panelComponent = (AddPackageVisualPanel1)component;
-        }
-        
-        INewDialogPackageDetails details = new NewDialogPackageDetails ();
-        //        if (validData()) {
-        details.setPackageKind (NewPackageKind.NPKGK_PACKAGE);
-        
-        // Get the name
-        details.setName (panelComponent.getPackageName ());
-        
-        // Get the scoped diagram flag
-        details.setCreateScopedDiagram (panelComponent.isCheckboxSelected ());
-        
-        // Get the scoped diagram name
-        details.setScopedDiagramName ((String)panelComponent.getScopedDiagramName ());
-        
-        // Get the namespace
-        INamespace pSelectedNamespace = NewDialogUtilities
-                .getNamespace ((String)panelComponent.getPackageNamespace ());
-        details.setNamespace (pSelectedNamespace);
-        
-        // Get the diagram kind
-        String diaType = (String)panelComponent.getScopedDiagramKind ();
-        if (diaType.equals (NewDialogResources
-                .getString ("PSK_SEQUENCE_DIAGRAM"))) // NOI18N
-        {
-            details.setScopedDiagramKind (IDiagramKind.DK_SEQUENCE_DIAGRAM);
-        }
-        else if (diaType.equals (NewDialogResources
-                .getString ("PSK_ACTIVITY_DIAGRAM"))) // NOI18N
-        {
-            details.setScopedDiagramKind (IDiagramKind.DK_ACTIVITY_DIAGRAM);
-        }
-        else if (diaType.equals (NewDialogResources
-                .getString ("PSK_CLASS_DIAGRAM"))) // NOI18N
-        {
-            details.setScopedDiagramKind (IDiagramKind.DK_CLASS_DIAGRAM);
-        }
-        else if (diaType.equals (NewDialogResources
-                .getString ("PSK_COLLABORATION_DIAGRAM"))) // NOI18N
-        {
-            details.setScopedDiagramKind (IDiagramKind.DK_COLLABORATION_DIAGRAM);
-        }
-        else if (diaType.equals (NewDialogResources
-                .getString ("PSK_COMPONENT_DIAGRAM"))) // NOI18N
-        {
-            details.setScopedDiagramKind (IDiagramKind.DK_COMPONENT_DIAGRAM);
-        }
-        else if (diaType.equals (NewDialogResources
-                .getString ("PSK_DEPLOYMENT_DIAGRAM"))) // NOI18N
-        {
-            details.setScopedDiagramKind (IDiagramKind.DK_DEPLOYMENT_DIAGRAM);
-        }
-        else if (diaType.equals (NewDialogResources
-                .getString ("PSK_STATE_DIAGRAM"))) // NOI18N
-        {
-            details.setScopedDiagramKind (IDiagramKind.DK_STATE_DIAGRAM);
-        }
-        else if (diaType.equals (NewDialogResources
-                .getString ("PSK_USE_CASE_DIAGRAM"))) // NOI18N
-        {
-            details.setScopedDiagramKind (IDiagramKind.DK_USECASE_DIAGRAM);
-        }
-        resultFlag = true;
-        return details;
-        //        }
-        //        return null;
+        wizardDescriptor = (WizardDescriptor)settings;
+        AddPackageVisualPanel1 comp = (AddPackageVisualPanel1) getComponent();
+        comp.store(wizardDescriptor);
     }
 
+    public boolean isFinishPanel() {
+        return true;
+    }
 }
 

@@ -24,6 +24,7 @@ import java.util.NoSuchElementException;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
 
 public final class AddElementWizardIterator implements WizardDescriptor.Iterator {
     
@@ -46,9 +47,7 @@ public final class AddElementWizardIterator implements WizardDescriptor.Iterator
      */
     
     private int index;
-    
     private WizardDescriptor.Panel[] panels;
-    public static final String ELEMENT_DETAILS = "elementDetails";      //NOI18N
     
     /**
      * Initialize panels representing individual wizard's steps and sets
@@ -57,7 +56,7 @@ public final class AddElementWizardIterator implements WizardDescriptor.Iterator
     private WizardDescriptor.Panel[] getPanels() {
         if (panels == null) {
             panels = new WizardDescriptor.Panel[] {
-                new AddElementWizardPanel1(m_details)
+                new AddElementWizardPanel1()
             };
             String[] steps = new String[panels.length];
             for (int i = 0; i < panels.length; i++) {
@@ -87,7 +86,12 @@ public final class AddElementWizardIterator implements WizardDescriptor.Iterator
     }
     
     public String name() {
-        return index + 1 + ". from " + getPanels().length;
+        // Get the string from the bundle for l10n purpose
+        return  NbBundle.getMessage(
+                NewUMLDiagWizardIterator.class,
+                "PSK_NEWWIZARD_TITLE_INDEX", // NOI18N
+                String.valueOf((index + 1)),
+                String.valueOf(getPanels().length) );
     }
     
     public boolean hasNext() {
@@ -116,36 +120,4 @@ public final class AddElementWizardIterator implements WizardDescriptor.Iterator
     public void addChangeListener(ChangeListener l) {}
     public void removeChangeListener(ChangeListener l) {}
     
-    // If something changes dynamically (besides moving between panels), e.g.
-    // the number of panels changes in response to user input, then uncomment
-    // the following and call when needed: fireChangeEvent();
-    /*
-    private Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
-    public final void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
-    }
-    public final void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
-    }
-    protected final void fireChangeEvent() {
-        Iterator<ChangeListener> it;
-        synchronized (listeners) {
-            it = new HashSet<ChangeListener>(listeners).iterator();
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            it.next().stateChanged(ev);
-        }
-    }
-     */
-    
-    public void setDetails(INewDialogElementDetails details) {        
-        m_details = details;
-    }
-    
-    private INewDialogElementDetails m_details = null;
 }

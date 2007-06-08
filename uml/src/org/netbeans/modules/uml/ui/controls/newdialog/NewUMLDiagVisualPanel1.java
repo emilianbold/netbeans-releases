@@ -48,7 +48,7 @@ import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
 public final class NewUMLDiagVisualPanel1 extends JPanel
-        implements DocumentListener, ListSelectionListener, ActionListener {
+        implements DocumentListener, ListSelectionListener, ActionListener, INewUMLFileTemplates {
     
     private NewUMLDiagWizardPanel1 panel;
     private Document m_doc = null;
@@ -75,8 +75,7 @@ public final class NewUMLDiagVisualPanel1 extends JPanel
     }
     
     public void read(WizardDescriptor wizDesc) {
-        mDetails = (INewDialogDiagramDetails) wizDesc.getProperty(
-                NewUMLDiagWizardIterator.DIAGRAM_DETAILS);
+        mDetails = (INewDialogDiagramDetails) wizDesc.getProperty(DIAGRAM_DETAILS);
         
         if ( mDetails != null ) {
             populateList();
@@ -86,14 +85,11 @@ public final class NewUMLDiagVisualPanel1 extends JPanel
     
     void store(WizardDescriptor wizDesc) {
         // store the diagram kind
-        wizDesc.putProperty(NewUMLDiagWizardIterator.PROP_DIAG_KIND,
-                (String) getSelectedDiagramType());
+        wizDesc.putProperty(PROP_DIAG_KIND, (String) getSelectedDiagramType());
         // store diagram name
-        wizDesc.putProperty(NewUMLDiagWizardIterator.PROP_DIAG_NAME,
-                (String) getDiagramName());
+        wizDesc.putProperty(PROP_DIAG_NAME, (String) getDiagramName());
         // store the namespace
-        wizDesc.putProperty(NewUMLDiagWizardIterator.PROP_NAMESPACE,
-                (String) getSelectedNamespace());
+        wizDesc.putProperty(PROP_NAMESPACE, (String) getSelectedNamespace());
         
     }
     
@@ -122,19 +118,6 @@ public final class NewUMLDiagVisualPanel1 extends JPanel
             {
                 nameHasBadChar = true;
             }
-//            if (badCharList != null && badCharList.length() > 0) {
-//                charList = badCharList.trim();
-//                String []badCharArray = charList.split(" ");
-//                for (String c : badCharArray) {
-//                    if (c.length() == 0) {
-//                        continue;
-//                    }
-//                    if ( sDiagramName.indexOf(c) != -1) {   // name contains bad char
-//                        nameHasBadChar = true;
-//                        break;
-//                    }
-//                }
-//            }
             
             if (trimmedLen == 0) {
                 errorMsg = bundle.getString("IDS_DIAGRAMNAME_EMPTY"); // NOI18N
@@ -166,9 +149,7 @@ public final class NewUMLDiagVisualPanel1 extends JPanel
             }
         }
         
-        wizDesc.putProperty(
-                NewUMLDiagWizardPanel1.PROP_WIZARD_ERROR_MESSAGE,
-                errorMsg);
+        wizDesc.putProperty(PROP_WIZARD_ERROR_MESSAGE,errorMsg);
         
         return valid;
     }
@@ -345,16 +326,6 @@ public final class NewUMLDiagVisualPanel1 extends JPanel
                     }
                 }
                 diagramTypes.setListData(elements);
-//            UserSettings userSettings = new UserSettings();
-//            if (userSettings != null) {
-//                String value = userSettings.getSettingValue(
-//                        "NewDialog", "LastChosenDiagramType");  // NOI18N
-//
-//                if (value != null && value.length() > 0) {
-//                    diagramTypes.setSelectedValue(value, true);
-//                }
-//            }
-//
                 if (diagramTypes.getSelectedIndex() == -1) {
                     diagramTypes.setSelectedIndex(0);
                 }

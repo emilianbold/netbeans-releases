@@ -26,19 +26,18 @@ import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.uml.common.generics.ETPairT;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.metamodel.dynamics.IInteraction;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.ui.support.diagramsupport.IProxyDiagramManager;
 import org.netbeans.modules.uml.ui.support.diagramsupport.ProxyDiagramManager;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
-public class NewUMLDiagWizardPanel1 implements WizardDescriptor.Panel {
+public class NewUMLDiagWizardPanel1 
+      implements WizardDescriptor.FinishablePanel, INewUMLFileTemplates {
     
     /**
      * The visual component that displays this panel. If you need to access the
@@ -48,7 +47,6 @@ public class NewUMLDiagWizardPanel1 implements WizardDescriptor.Panel {
     private Component component;
     private NewUMLDiagVisualPanel1 panelComponent = null;
     private WizardDescriptor wizardDescriptor;
-    public static final String PROP_WIZARD_ERROR_MESSAGE = "WizardPanel_errorMessage"; //NOI18N
     
     public NewUMLDiagWizardPanel1() {
         super();
@@ -120,17 +118,14 @@ public class NewUMLDiagWizardPanel1 implements WizardDescriptor.Panel {
         NewUMLDiagVisualPanel1 comp = (NewUMLDiagVisualPanel1) getComponent();
         comp.store(wizardDescriptor);
         
-        INewDialogDiagramDetails details = (INewDialogDiagramDetails) wizardDescriptor.getProperty(
-                NewUMLDiagWizardIterator.DIAGRAM_DETAILS);
+        INewDialogDiagramDetails details = (INewDialogDiagramDetails) 
+              wizardDescriptor.getProperty(DIAGRAM_DETAILS);
         // get the diagram type
-        String diagTypeName = (String) wizardDescriptor.getProperty(
-                NewUMLDiagWizardIterator.PROP_DIAG_KIND);
+        String diagTypeName = (String) wizardDescriptor.getProperty(PROP_DIAG_KIND);
         // get diagram name
-        String diagName = (String) wizardDescriptor.getProperty(
-                NewUMLDiagWizardIterator.PROP_DIAG_NAME);
+        String diagName = (String) wizardDescriptor.getProperty(PROP_DIAG_NAME);
         // get the namespace
-        String nameSpace = (String) wizardDescriptor.getProperty(
-                NewUMLDiagWizardIterator.PROP_NAMESPACE);
+        String nameSpace = (String) wizardDescriptor.getProperty(PROP_NAMESPACE);
         
         details.setDiagramKind(NewDialogUtilities.diagramNameToKind(diagTypeName));
         details.setName(diagName);
@@ -139,8 +134,7 @@ public class NewUMLDiagWizardPanel1 implements WizardDescriptor.Panel {
                 NewDialogUtilities.getNamespace(nameSpace);
         
         details.setNamespace(nameSpaceObj);
-        wizardDescriptor.putProperty(
-                NewUMLDiagWizardIterator.DIAGRAM_DETAILS, details);
+        wizardDescriptor.putProperty(DIAGRAM_DETAILS, details);
         
     }
     
@@ -212,8 +206,6 @@ public class NewUMLDiagWizardPanel1 implements WizardDescriptor.Panel {
 //                    }
 //                }
 //            }
-            
-            
         }
         
         if(message != null)
@@ -277,6 +269,9 @@ public class NewUMLDiagWizardPanel1 implements WizardDescriptor.Panel {
         
         return message;
     }
-    
+
+    public boolean isFinishPanel() {
+        return true;
+    }
 }
 
