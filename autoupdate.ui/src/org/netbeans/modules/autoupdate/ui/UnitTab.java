@@ -132,6 +132,11 @@ public class UnitTab extends javax.swing.JPanel {
             @Override
             public void componentShown (ComponentEvent e) {
                 super.componentShown (e);
+                if (Utilities.modulesOnly()) {
+                    lTabActionDescription.setText(textForKey("SettingsTab.cbModules.text"));
+                } else {
+                    lTabActionDescription.setText(textForKey("SettingsTab.cbPlugins.text"));
+                }
                 focusTable ();
                 
             }

@@ -177,6 +177,7 @@ public class SettingsTab extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(lConnection, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.lConnection.text")); // NOI18N
 
+        lCheckPeriod.setLabelFor(cbCheckPeriod);
         org.openide.awt.Mnemonics.setLocalizedText(lCheckPeriod, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.lCheckPeriod.text")); // NOI18N
 
         cbCheckPeriod.addActionListener(new java.awt.event.ActionListener() {
@@ -197,7 +198,7 @@ public class SettingsTab extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(lPluginsView, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.lPluginsView.text")); // NOI18N
 
         pluginsViewGroup.add(cbPlugins);
-        org.openide.awt.Mnemonics.setLocalizedText(cbPlugins, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.cbFeatures.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cbPlugins, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.cbPlugins.text")); // NOI18N
         cbPlugins.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         cbPlugins.setMargin(new java.awt.Insets(0, 0, 0, 0));
         cbPlugins.addActionListener(new java.awt.event.ActionListener() {
@@ -207,7 +208,7 @@ public class SettingsTab extends javax.swing.JPanel {
         });
 
         pluginsViewGroup.add(cbModules);
-        org.openide.awt.Mnemonics.setLocalizedText(cbModules, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.cbPlugins.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cbModules, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.cbModules.text")); // NOI18N
         cbModules.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         cbModules.setMargin(new java.awt.Insets(0, 0, 0, 0));
         cbModules.addActionListener(new java.awt.event.ActionListener() {
@@ -296,7 +297,7 @@ public class SettingsTab extends javax.swing.JPanel {
                         .add(cbModules)))
                 .add(21, 21, 21)
                 .add(cbSharedInstall)
-                .add(56, 56, 56))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
