@@ -22,9 +22,11 @@ package org.netbeans.modules.refactoring.java.ui;
 import java.util.Collection;
 import java.util.Dictionary;
 import javax.lang.model.element.Element;
+import javax.swing.Action;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory;
 import org.netbeans.modules.refactoring.java.spi.ui.JavaActionsImplementationProvider;
 import org.netbeans.modules.refactoring.java.ui.ExtractInterfaceRefactoringUI;
 import org.netbeans.modules.refactoring.java.ui.RefactoringActionsProvider.NodeToFileObjectTask;
@@ -64,7 +66,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 }
             };
         }
-        task.run();
+        RetoucheUtils.invokeAfterScanFinished(task, (String) JavaRefactoringActionsFactory.extractInterfaceAction().getValue(Action.NAME));
     }
 
     @Override
@@ -105,7 +107,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 }
             };
         }
-        task.run();
+        RetoucheUtils.invokeAfterScanFinished(task, (String) JavaRefactoringActionsFactory.extractSuperclassAction().getValue(Action.NAME));
     }
 
     @Override
@@ -147,7 +149,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 }
             };
         }
-        task.run();
+        RetoucheUtils.invokeAfterScanFinished(task, (String) JavaRefactoringActionsFactory.pushDownAction().getValue(Action.NAME));
     }
 
     @Override
@@ -189,7 +191,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 }
             };
         }
-        task.run();
+        RetoucheUtils.invokeAfterScanFinished(task, (String) JavaRefactoringActionsFactory.pullUpAction().getValue(Action.NAME));
     }
 
     @Override
@@ -241,7 +243,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                     return new UseSuperTypeRefactoringUI(selectedElement);
                 }
             };
-            task.run();
+        RetoucheUtils.invokeAfterScanFinished(task, (String) JavaRefactoringActionsFactory.useSuperTypeAction().getValue(Action.NAME));
         }
     }
     
@@ -278,7 +280,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 return new ChangeParametersUI(selectedElement, info);
             }
         };
-        task.run();
+        RetoucheUtils.invokeAfterScanFinished(task, (String) JavaRefactoringActionsFactory.changeParametersAction().getValue(Action.NAME));
     }
     
     @Override
@@ -313,6 +315,6 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 return new InnerToOuterRefactoringUI(selectedElement, info);
             }
         };
-        task.run();
+        RetoucheUtils.invokeAfterScanFinished(task, (String) JavaRefactoringActionsFactory.innerToOuterAction().getValue(Action.NAME));
     }    
 }

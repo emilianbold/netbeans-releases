@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.swing.Action;
 import javax.swing.JOptionPane;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
@@ -46,6 +47,8 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
@@ -126,7 +129,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 }
             };
         }
-        task.run();
+        RetoucheUtils.invokeAfterScanFinished(task, (String) RefactoringActionsFactory.renameAction().getValue(Action.NAME));
     }
 
     /**
@@ -181,7 +184,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 }
             };
 //        }
-        task.run();
+        RetoucheUtils.invokeAfterScanFinished(task, (String) RefactoringActionsFactory.copyAction().getValue(Action.NAME));
     }
 
     /**
@@ -255,7 +258,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 }
             };
         }
-        task.run();
+        RetoucheUtils.invokeAfterScanFinished(task, (String) RefactoringActionsFactory.whereUsedAction().getValue(Action.NAME));
     }
 
     /**
@@ -303,7 +306,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 
             };
         }
-        task.run();
+        RetoucheUtils.invokeAfterScanFinished(task, (String) RefactoringActionsFactory.safeDeleteAction().getValue(Action.NAME));
     }
     
     private FileObject getTarget(Dictionary dict) {
@@ -464,7 +467,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 
             };
         }
-        task.run();
+        RetoucheUtils.invokeAfterScanFinished(task, (String) RefactoringActionsFactory.renameAction().getValue(Action.NAME));
     }    
 
     
