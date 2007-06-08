@@ -219,14 +219,12 @@ public class InputPanel extends SectionInnerPanel {
         
         boolean isSSL = ProfilesModelHelper.isSSLProfile(profile);
                 
-        tokenCombo.setEnabled(securityEnabled && !secConversation && !bindingScopeTokenPresent && !isSSL);
-        tokenComboLabel.setEnabled(securityEnabled && !secConversation && !bindingScopeTokenPresent && !isSSL);
-        tokenCombo.setEnabled(securityEnabled && !secConversation && !bindingScopeTokenPresent && !isSSL);
-        tokenComboLabel.setEnabled(securityEnabled && !secConversation && !bindingScopeTokenPresent && !isSSL);
+        tokenCombo.setEnabled(securityEnabled && !secConversation && !bindingScopeTokenPresent);
+        tokenComboLabel.setEnabled(securityEnabled && !secConversation && !bindingScopeTokenPresent);
         targetsButton.setEnabled(securityEnabled && !isSSL);
         boolean tokenSelected = !ComboConstants.NONE.equals((String)tokenCombo.getSelectedItem());
-        signedChBox.setEnabled(securityEnabled && tokenSelected && !secConversation && !bindingScopeTokenPresent && !isSSL);
-        endorsingChBox.setEnabled(securityEnabled && tokenSelected && !secConversation && !bindingScopeTokenPresent && !isSSL);
+        signedChBox.setEnabled(securityEnabled && tokenSelected && !secConversation && !bindingScopeTokenPresent);
+        endorsingChBox.setEnabled(securityEnabled && tokenSelected && !secConversation && !bindingScopeTokenPresent);
     }
     
     /** This method is called from within the constructor to
