@@ -152,7 +152,11 @@ public class InputPanel extends SectionInnerPanel {
                 String token = (String) tokenCombo.getSelectedItem();
                 if (token != null) {
                     SecurityTokensModelHelper.removeSupportingTokens(input);
-                    tokenElement = SecurityTokensModelHelper.setSupportingTokens(input, token, getSuppType(signed, endorsing));
+                    if (ComboConstants.USERNAME.equals(token)) {
+                        tokenElement = SecurityTokensModelHelper.setSupportingTokens(input, token, getSuppType(signed, false));
+                    } else {
+                        tokenElement = SecurityTokensModelHelper.setSupportingTokens(input, token, getSuppType(signed, endorsing));
+                    }
                 }
                 enableDisable();
             }
@@ -218,8 +222,8 @@ public class InputPanel extends SectionInnerPanel {
         boolean secConversation = ProfilesModelHelper.isSCEnabled(binding);
         boolean bindingScopeTokenPresent = SecurityTokensModelHelper.getSupportingToken(binding, 
                 SecurityTokensModelHelper.SIGNED_SUPPORTING) != null;
+        boolean isUsernameToken = ComboConstants.USERNAME.equals(tokenCombo.getSelectedItem());
         boolean securityEnabled = bSecurityEnabled || oSecurityEnabled;
-        
         boolean isSSL = ProfilesModelHelper.isSSLProfile(profile);
                 
         tokenCombo.setEnabled(securityEnabled && !secConversation && !bindingScopeTokenPresent);
@@ -227,7 +231,8 @@ public class InputPanel extends SectionInnerPanel {
         targetsButton.setEnabled(securityEnabled && !isSSL);
         boolean tokenSelected = !ComboConstants.NONE.equals((String)tokenCombo.getSelectedItem());
         signedChBox.setEnabled(securityEnabled && tokenSelected && !secConversation && !bindingScopeTokenPresent);
-        endorsingChBox.setEnabled(securityEnabled && tokenSelected && !secConversation && !bindingScopeTokenPresent);
+        endorsingChBox.setEnabled(securityEnabled && tokenSelected && 
+                !secConversation && !bindingScopeTokenPresent && !isUsernameToken);
     }
     
     /** This method is called from within the constructor to
