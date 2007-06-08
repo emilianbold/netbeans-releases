@@ -141,6 +141,14 @@ public class Utils {
                         //TODO: Also have to apply JAXWS/JAXB rules regarding collision of names
                     }
                     
+                    
+                    // use SEI class annotations if endpointInterface annotation is specified
+                    TypeElement seiClassEl = null;
+                    if (serviceModel.endpointInterface!=null) {
+                        seiClassEl = controller.getElements().getTypeElement(serviceModel.endpointInterface);
+                        if (seiClassEl != null) classEl = seiClassEl;
+                    }
+                                       
                     boolean foundWebMethodAnnotation=false;
                     TypeElement methodAnotationEl = controller.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
                     List<ExecutableElement> methods = new ArrayList<ExecutableElement>();
@@ -336,11 +344,11 @@ public class Utils {
         // populate params
         List<? extends VariableElement> paramElements = methodEl.getParameters();
         List<ParamModel> params = new ArrayList<ParamModel>();
-        for (int i=0;i<paramElements.size();i++) {
-            VariableElement paramEl = paramElements.get(i);
-            ParamModel param = new ParamModel("arg"+String.valueOf(i));
+        int i=0;
+        for (VariableElement paramEl:paramElements) {
+            ParamModel param = new ParamModel("arg"+String.valueOf(i++));
             populateParam(controller, paramEl, param);
-            params.add(param);
+            params.add(param);            
         }
         methodModel.setParams(params);
         
@@ -360,8 +368,8 @@ public class Utils {
             paramModel.setParamType(type.toString());
         }
         TypeElement paramAnotationEl = controller.getElements().getTypeElement("javax.jws.WebParam"); //NOI18N
-        List<? extends AnnotationMirror> methodAnnotations = paramEl.getAnnotationMirrors();
-        for (AnnotationMirror anMirror : methodAnnotations) {
+        List<? extends AnnotationMirror> paramAnnotations = paramEl.getAnnotationMirrors();                
+        for (AnnotationMirror anMirror : paramAnnotations) {
             if (controller.getTypes().isSameType(paramAnotationEl.asType(), anMirror.getAnnotationType())) {
                 Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
                 for(ExecutableElement ex:expressions.keySet()) {
