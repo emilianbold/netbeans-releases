@@ -57,6 +57,12 @@ public class DeleteTransformer extends RefactoringVisitor {
                 newOne = make.removeClassMember((ClassTree) parent, tree);
             } else if (parent.getKind() == Tree.Kind.COMPILATION_UNIT) {
                 newOne = make.removeCompUnitTypeDecl((CompilationUnitTree) parent, tree);
+            } else if (tree.getKind() == Tree.Kind.VARIABLE) {
+                if (parent.getKind() == Tree.Kind.METHOD) {
+                    newOne = make.removeMethodParameter((MethodTree)parent, (VariableTree) tree);
+                } else {
+                    newOne = make.removeBlockStatement((BlockTree)parent, (VariableTree) tree);
+                }
             }
             if (newOne!=null) {
                 rewrite(parent,newOne);
