@@ -21,6 +21,9 @@ Microsystems, Inc. All Rights Reserved.
 
 <fontscolors>
     <fontcolor name="default" foreColor="green" bgColor="black"/>
+
+    <!-- syntax colorings -->
+
     <fontcolor name="char" foreColor="yellow"/>
     <fontcolor name="comment" foreColor="red"/>
     <fontcolor name="error" foreColor="white" bgColor="red"/>
@@ -30,4 +33,34 @@ Microsystems, Inc. All Rights Reserved.
     <fontcolor name="operator"/>
     <fontcolor name="string" foreColor="yellow"/>
     <fontcolor name="whitespace"/>
+
+    
+    <!-- semantic colorings -->
+    
+    <fontcolor name="constructor" >
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="method" >
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="field" foreColor="098618" >
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="local-variable" />
+    <fontcolor name="method-parameter" foreColor="A06001"/>
+    
+    <fontcolor name="class" />
+    <fontcolor name="interface" />
+    <fontcolor name="enum" />
+    
+    <fontcolor name="unused" foreColor="gray"/>
+    <fontcolor name="deprecated" strikeThrough="404040" />
+    <fontcolor name="abstract" />
+    <fontcolor name="static" >
+        <font style="italic" />
+    </fontcolor>
+    <fontcolor name="private" />
+    <fontcolor name="protected" />
+    <fontcolor name="public" />
+    
 </fontscolors>

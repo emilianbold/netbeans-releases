@@ -33,53 +33,35 @@ Microsystems, Inc. All Rights Reserved.
     <fontcolor name="whitespace" default="whitespace"/>
     
     <!--"semantic" highlighting:-->
-    <fontcolor name="mod-unused" foreColor="gray"/>
-    <fontcolor name="mod-abstract" />
     
-    <fontcolor name="mod-field-declaration" foreColor="098618" >
-        <font style="bold" />
-    </fontcolor>
-    <fontcolor name="mod-local-variable-declaration" />
-    <fontcolor name="mod-parameter-declaration" foreColor="A06001"/>
-    <fontcolor name="mod-method-declaration" >
-        <font style="bold" />
-    </fontcolor>
-    <fontcolor name="mod-constructor-declaration" >
-        <font style="bold" />
-    </fontcolor>
-    <fontcolor name="mod-class-declaration" />
-    <fontcolor name="mod-interface-declaration" />
-    <fontcolor name="mod-annotation-type-declaration" />
-    <fontcolor name="mod-enum-declaration" />
-    
-    <fontcolor name="mod-field" foreColor="098618" >
-        <font style="bold" />
-    </fontcolor>
-    <fontcolor name="mod-local-variable" />
-    <fontcolor name="mod-parameter" foreColor="A06001"/>
-    <fontcolor name="mod-method" >
-        <font style="bold" />
-    </fontcolor>
-    <fontcolor name="mod-constructor" >
-        <font style="bold" />
-    </fontcolor>
-    <fontcolor name="mod-class" />
-    <fontcolor name="mod-interface" />
-    <fontcolor name="mod-annotation-type" />
-    <fontcolor name="mod-enum" />
-    <fontcolor name="mod-deprecated" strikeThrough="404040" />
-    <fontcolor name="mod-static" >
-        <font style="italic" />
-    </fontcolor>
-    <fontcolor name="mod-private" />
-    <fontcolor name="mod-package-private" />
-    <fontcolor name="mod-protected" />
-    <fontcolor name="mod-public" />
-    
-    <!--currently not used:-->
-<!--    <fontcolor name="mod-type-parameter-declaration" bgColor="lightGray"/>
-    <fontcolor name="mod-type-parameter-use" bgColor="green"/>
-    <fontcolor name="mod-undefined" foreColor="red"/>-->
+    <fontcolor name="mod-constructor-declaration" default="constructor" />
+    <fontcolor name="mod-constructor" default="constructor" />
+    <fontcolor name="mod-method-declaration" default="method" />
+    <fontcolor name="mod-method" default="method" />
+    <fontcolor name="mod-field-declaration" default="field" />
+    <fontcolor name="mod-field" default="field" />
+    <fontcolor name="mod-local-variable-declaration" default="local-variable" />
+    <fontcolor name="mod-local-variable" default="local-variable" />
+    <fontcolor name="mod-parameter-declaration" default="method-parameter" />
+    <fontcolor name="mod-parameter" default="method-parameter" />
+
+    <fontcolor name="mod-class-declaration" default="class"/>
+    <fontcolor name="mod-class" default="class" />
+    <fontcolor name="mod-interface-declaration" default="interface"/>
+    <fontcolor name="mod-interface" default="interface" />
+    <fontcolor name="mod-annotation-type-declaration" default="interface"/>
+    <fontcolor name="mod-annotation-type" default="interface" />
+    <fontcolor name="mod-enum-declaration" default="enum"/>
+    <fontcolor name="mod-enum" default="enum" />
+
+    <fontcolor name="mod-unused" default="unused" />
+    <fontcolor name="mod-deprecated" default="deprecated" />
+    <fontcolor name="mod-abstract" default="abstract" />
+    <fontcolor name="mod-static" default="static" />
+    <fontcolor name="mod-private" default="private" />
+    <fontcolor name="mod-package-private" default="private"/>
+    <fontcolor name="mod-protected" default="protected" />
+    <fontcolor name="mod-public" default="public" />
     
     <!--mark occurrences:-->
     <fontcolor name="mark-occurrences" bgColor="ECEBA3"/>
@@ -98,17 +80,4 @@ Microsystems, Inc. All Rights Reserved.
     </fontcolor>
     <fontcolor name="html-tag" foreColor="blue" default="default"/>
 
-<!-- XXX: should java module really define these colorings ??
-
-    <fontcolor name="html-argument" foreColor="ff007c00" default="identifier"/>
-    <fontcolor name="html-block-comment" foreColor="gray" default="comment"/>
-    <fontcolor name="html-character" foreColor="ffb20000" default="char"/>
-    <fontcolor name="html-error" foreColor="black" bgColor="pink" default="error"/>
-    <fontcolor name="html-operator" foreColor="ff007c00" default="operator"/>
-    <fontcolor name="html-sgml-comment" foreColor="gray" default="comment"/>
-    <fontcolor name="html-sgml-declaration" foreColor="ffbf9221" default="default"/>
-    <fontcolor name="html-text" default="default"/>
-    <fontcolor name="html-value" foreColor="ff99006b" default="default"/>
-    <fontcolor name="html-ws" default="whitespace"/>
--->
 </fontscolors>
