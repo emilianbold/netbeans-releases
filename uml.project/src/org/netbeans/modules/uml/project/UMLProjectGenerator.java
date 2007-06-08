@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.uml.project;
 
-import org.netbeans.modules.uml.core.coreapplication.IPreferenceManager2;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
@@ -613,4 +612,17 @@ public class UMLProjectGenerator
 		}
 		h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, epPriv);
 	}
+        
+        public static void createNewDiagram(INamespace namespace, int diagramKind, String diagramName)
+              throws IOException
+        {
+           IDiagram newDiagram = ProductHelper.getProductDiagramManager().
+                 createDiagram(diagramKind, namespace, diagramName, null);
+           if (newDiagram != null)
+           {
+              newDiagram.setIsDirty(true);
+              newDiagram.save();
+           }
+           
+        }
 }

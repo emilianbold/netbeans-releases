@@ -30,13 +30,11 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 
-//import org.netbeans.api.mdr.events.MDRChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -81,8 +79,6 @@ import org.netbeans.modules.uml.project.ui.customizer.UMLProjectProperties;
 import org.netbeans.modules.uml.project.ui.nodes.UMLPhysicalViewProvider;
 import org.netbeans.modules.uml.project.ui.customizer.UMLImportsUiSupport;
 import org.openide.loaders.DataObject;
-
-
 
 
 /**
@@ -740,24 +736,17 @@ public class UMLProject implements Project, AntProjectListener
         RecommendedTemplatesImpl()
         {
         }
-        
         // List of primarily supported templates
-        
         private static final String[] APPLICATION_TYPES = new String[]
         {
-            "uml-modeling-diagrams",         // NOI18N
-            "uml-modeling-elements"         // NOI18N
+            "uml-type",         // NOI18N
         };
         
         private static final String[] PRIVILEGED_NAMES = new String[]
         {
-            "Templates/UMLDiagrams/class-diagram", // NOI18N
-            "Templates/UMLDiagrams/sequence-diagram", // NOI18N
-            "Templates/UMLDiagrams/collaboration-diagram", // NOI18N
-            "Templates/UMLDiagrams/activity-diagram", // NOI18N
-            "Templates/UMLDiagrams/component-diagram", // NOI18N
-            "Templates/UMLDiagrams/deployment-diagram", // NOI18N
-            "Templates/UMLDiagrams/state-diagram", // NOI18N
+            "Templates/UML/newUMLDiagram",  // NOI18N
+            "Templates/UML/newUMLPackage",  // NOI18N
+            "Templates/UML/newUMLElement"   // NOI18N
         };
         
         public String[] getRecommendedTypes()
@@ -769,7 +758,6 @@ public class UMLProject implements Project, AntProjectListener
         {
             return PRIVILEGED_NAMES;
         }
-        
     }
     
     final class AntProjectHelperProvider

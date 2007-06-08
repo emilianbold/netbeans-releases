@@ -81,9 +81,7 @@ import org.netbeans.modules.uml.ui.support.applicationmanager.IProduct;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.actions.NewAction;
 import org.openide.util.Mutex;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
 
 
@@ -499,7 +497,8 @@ public class UMLPhysicalViewProvider implements LogicalViewProvider
             // Set As Main Project not beneficial for UML Project types
             // actions.add(CommonProjectActions.setAsMainProjectAction());
             
-            actions.add(SystemAction.get(NewAction.class));
+            //actions.add(SystemAction.get(NewAction.class));  // remove 'Add' menu item and
+            actions.add(CommonProjectActions.newFileAction()); // replace with 'New' menu item.
             actions.add(null);
             actions.add(CommonProjectActions.openSubprojectsAction());
             actions.add(CommonProjectActions.closeProjectAction());
