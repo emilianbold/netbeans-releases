@@ -57,6 +57,7 @@ public class ProductInformationPanel extends JPanel implements HyperlinkListener
                 getOperatingSystemValue(), getEncodingValue(), getSystemLocaleValue(), getUserDirValue()}));
         description.addHyperlinkListener(this);
         copyright.addHyperlinkListener(this);
+        copyright.setBackground(getBackground());
     }
 
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
@@ -93,7 +94,6 @@ public class ProductInformationPanel extends JPanel implements HyperlinkListener
         copyright.setContentType("text/html");
         copyright.setEditable(false);
         copyright.setText(org.openide.util.NbBundle.getBundle(ProductInformationPanel.class).getString("LBL_Copyright")); // NOI18N
-        copyright.setOpaque(false);
         copyright.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 copyrightMouseClicked(evt);
@@ -107,7 +107,7 @@ public class ProductInformationPanel extends JPanel implements HyperlinkListener
         jScrollPane2.setViewportView(description);
 
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/core/resources/about.png"))); // NOI18N
-        jLabel1.setText("sfsdfs");
+        jLabel1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         jLabel1.setMaximumSize(new java.awt.Dimension(531, 254));
         jLabel1.setMinimumSize(new java.awt.Dimension(531, 254));
         jLabel1.setPreferredSize(new java.awt.Dimension(531, 254));
@@ -129,10 +129,10 @@ public class ProductInformationPanel extends JPanel implements HyperlinkListener
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE)
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE)
-                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE)
-                    .add(jLayeredPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 531, Short.MAX_VALUE)
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 531, Short.MAX_VALUE)
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 531, Short.MAX_VALUE)
+                    .add(jLayeredPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 531, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(

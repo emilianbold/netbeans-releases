@@ -20,6 +20,7 @@
 package org.netbeans.core.actions;
 
 import java.awt.Dialog;
+import java.awt.Dimension;
 import javax.swing.JButton;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -53,6 +54,8 @@ public class AboutAction extends CallableSystemAction {
         try {
             dlg = DialogDisplayer.getDefault().createDialog(descriptor);
             dlg.setResizable(false);
+            dlg.setMinimumSize(new Dimension(514, 563));
+            dlg.setMaximumSize(new Dimension(514, 563));
             dlg.setVisible(true);
         } finally {
             if (dlg != null) {

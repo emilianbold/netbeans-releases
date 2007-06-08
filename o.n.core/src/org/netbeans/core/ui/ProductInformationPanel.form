@@ -17,10 +17,10 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jScrollPane3" alignment="1" pref="535" max="32767" attributes="0"/>
-                  <Component id="jScrollPane2" alignment="0" pref="535" max="32767" attributes="0"/>
-                  <Component id="jPanel1" alignment="0" pref="535" max="32767" attributes="1"/>
-                  <Component id="jLayeredPane1" alignment="0" pref="535" max="32767" attributes="0"/>
+                  <Component id="jScrollPane3" alignment="1" pref="531" max="32767" attributes="0"/>
+                  <Component id="jScrollPane2" alignment="0" pref="531" max="32767" attributes="0"/>
+                  <Component id="jPanel1" alignment="0" pref="531" max="32767" attributes="1"/>
+                  <Component id="jLayeredPane1" alignment="0" pref="531" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -89,7 +89,6 @@
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/core/ui/Bundle.properties" key="LBL_Copyright" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
             </Property>
-            <Property name="opaque" type="boolean" value="false"/>
           </Properties>
           <Events>
             <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="copyrightMouseClicked"/>
@@ -122,7 +121,7 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/org/netbeans/core/resources/about.png"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="sfsdfs"/>
+            <Property name="horizontalTextPosition" type="int" value="0"/>
             <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[531, 254]"/>
             </Property>
