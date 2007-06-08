@@ -60,6 +60,8 @@ public class InputPanel extends SectionInnerPanel {
 
     private boolean signed = false;
     private boolean endorsing = false;
+
+    private WSDLComponent tokenElement = null;
     
     public InputPanel(SectionView view, Node node, BindingInput input, UndoManager undoManager) {
         super(view);
@@ -109,36 +111,34 @@ public class InputPanel extends SectionInnerPanel {
     private void sync() {
         inSync = true;
 
-        WSDLComponent token = null;
-        
         WSDLComponent t = SecurityTokensModelHelper.getSupportingToken(input, SecurityTokensModelHelper.SUPPORTING);
         if (t != null) {
-            token = t;
+            tokenElement = t;
             signed = false;
             endorsing = false;
         }
         t = SecurityTokensModelHelper.getSupportingToken(input, SecurityTokensModelHelper.SIGNED_SUPPORTING);
         if (t != null) {
-            token = t;
+            tokenElement = t;
             signed = true;
             endorsing = false;
         }
         t = SecurityTokensModelHelper.getSupportingToken(input, SecurityTokensModelHelper.ENDORSING);
         if (t != null) {
-            token = t;
+            tokenElement = t;
             signed = false;
             endorsing = true;
         }
         t = SecurityTokensModelHelper.getSupportingToken(input, SecurityTokensModelHelper.SIGNED_ENDORSING);
         if (t != null) {
-            token = t;
+            tokenElement = t;
             signed = true;
             endorsing = true;
         }
 
         signedChBox.setSelected(signed);
         endorsingChBox.setSelected(endorsing);
-        tokenCombo.setSelectedItem(SecurityTokensModelHelper.getTokenType(token));
+        tokenCombo.setSelectedItem(SecurityTokensModelHelper.getTokenType(tokenElement));
 
         enableDisable();
         
@@ -151,20 +151,23 @@ public class InputPanel extends SectionInnerPanel {
             if (source.equals(tokenCombo)) {
                 String token = (String) tokenCombo.getSelectedItem();
                 if (token != null) {
-                    SecurityTokensModelHelper.setSupportingTokens(input, token, getSuppType(signed, endorsing));
+                    SecurityTokensModelHelper.removeSupportingTokens(input);
+                    tokenElement = SecurityTokensModelHelper.setSupportingTokens(input, token, getSuppType(signed, endorsing));
                 }
                 enableDisable();
             }
             if (source.equals(signedChBox)) {
                 String token = (String) tokenCombo.getSelectedItem();
                 signed = signedChBox.isSelected();
-                SecurityTokensModelHelper.setSupportingTokens(input, token, getSuppType(signed, endorsing));
+                SecurityTokensModelHelper.removeSupportingTokens(input);
+                tokenElement = SecurityTokensModelHelper.setSupportingTokens(input, token, getSuppType(signed, endorsing));
                 enableDisable();
             }
             if (source.equals(endorsingChBox)) {
                 String token = (String) tokenCombo.getSelectedItem();
                 endorsing = endorsingChBox.isSelected();
-                SecurityTokensModelHelper.setSupportingTokens(input, token, getSuppType(signed, endorsing));
+                SecurityTokensModelHelper.removeSupportingTokens(input);
+                tokenElement = SecurityTokensModelHelper.setSupportingTokens(input, token, getSuppType(signed, endorsing));
                 enableDisable();
             }
         }

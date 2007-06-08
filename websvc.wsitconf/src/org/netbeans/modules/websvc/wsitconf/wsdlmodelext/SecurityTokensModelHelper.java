@@ -514,6 +514,7 @@ public class SecurityTokensModelHelper {
 
     public static void removeSupportingTokens(WSDLComponent c) {
         if (c == null) return;
+        WSDLModel model = c.getModel();
         WSDLComponent p = c;
         if ((c instanceof Binding) || (c instanceof BindingOperation) || 
            (c instanceof BindingInput) || (c instanceof BindingOutput) || (c instanceof BindingFault)) {
@@ -524,24 +525,34 @@ public class SecurityTokensModelHelper {
         
         ExtensibilityElement rem = null;
 
-        rem = PolicyModelHelper.getTopLevelElement(p, SupportingTokens.class);
-        if (rem != null) {
-            rem.getParent().removeExtensibilityElement(rem);
+        boolean isTransaction = model.isIntransaction();
+        if (!isTransaction) {
+            model.startTransaction();
         }
-        
-        rem = PolicyModelHelper.getTopLevelElement(p, SignedSupportingTokens.class);
-        if (rem != null) {
-            rem.getParent().removeExtensibilityElement(rem);
-        }
+        try {
+            rem = PolicyModelHelper.getTopLevelElement(p, SupportingTokens.class);
+            if (rem != null) {
+                rem.getParent().removeExtensibilityElement(rem);
+            }
 
-        rem = PolicyModelHelper.getTopLevelElement(p, EndorsingSupportingTokens.class);
-        if (rem != null) {
-            rem.getParent().removeExtensibilityElement(rem);
-        }
+            rem = PolicyModelHelper.getTopLevelElement(p, SignedSupportingTokens.class);
+            if (rem != null) {
+                rem.getParent().removeExtensibilityElement(rem);
+            }
 
-        rem = PolicyModelHelper.getTopLevelElement(p, SignedEndorsingSupportingTokens.class);
-        if (rem != null) {
-            rem.getParent().removeExtensibilityElement(rem);
+            rem = PolicyModelHelper.getTopLevelElement(p, EndorsingSupportingTokens.class);
+            if (rem != null) {
+                rem.getParent().removeExtensibilityElement(rem);
+            }
+
+            rem = PolicyModelHelper.getTopLevelElement(p, SignedEndorsingSupportingTokens.class);
+            if (rem != null) {
+                rem.getParent().removeExtensibilityElement(rem);
+            }
+        } finally {
+            if (!isTransaction) {
+                model.endTransaction();
+            }
         }
     }
     
