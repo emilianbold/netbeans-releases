@@ -223,6 +223,10 @@ public class ServicePanel extends SectionInnerPanel {
             if (rmChBox.isSelected()) {
                 if (!(RMModelHelper.isRMEnabled(binding))) {
                     RMModelHelper.enableRM(binding);
+                    if (securityChBox.isSelected()) {
+                        String profile = (String) profileCombo.getSelectedItem();
+                        ProfilesModelHelper.enableSecureConversation(binding, true, profile);
+                    }
                 }
             } else {
                 if (RMModelHelper.isRMEnabled(binding)) {
