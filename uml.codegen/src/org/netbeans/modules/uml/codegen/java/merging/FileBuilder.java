@@ -612,6 +612,9 @@ public class FileBuilder
 	}
 	
 	String getPatchContent() {
+	    if (patchContent == null) {
+		return "";
+	    }
 	    return patchContent;
 	}
 	
