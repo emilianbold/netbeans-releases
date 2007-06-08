@@ -22,10 +22,13 @@ package org.netbeans.modules.j2ee.jpa.verification.rules.entity;
 import java.util.Arrays;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule;
 import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule.ClassConstraints;
 import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
+import org.netbeans.modules.j2ee.jpa.verification.fixes.MakeClassPublic;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 
 /**
@@ -46,7 +49,9 @@ public class PublicClass extends JPAClassRule {
             return null;
         }
         
+        Fix fix = new MakeClassPublic(ctx.getFileObject(), ElementHandle.create(subject));
+        
         return new ErrorDescription[]{createProblem(subject, ctx, 
-                NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_NonPublicClassAsEntity"))};
+                NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_NonPublicClassAsEntity"), fix)};
     }
 }

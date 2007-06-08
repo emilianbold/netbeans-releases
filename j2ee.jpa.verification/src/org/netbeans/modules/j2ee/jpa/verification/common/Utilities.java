@@ -119,6 +119,10 @@ public class Utilities {
         return new TextSpan(startOffset, endOffset);
     }
     
+    public static String getShortClassName(String qualifiedClassName){
+        return qualifiedClassName.substring(qualifiedClassName.lastIndexOf(".") + 1); //NOI18N
+    }
+    
     /**
      * Represents a span of text
      */

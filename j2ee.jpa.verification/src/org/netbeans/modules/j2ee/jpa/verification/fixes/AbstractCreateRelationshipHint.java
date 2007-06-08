@@ -54,6 +54,7 @@ import org.netbeans.modules.j2ee.jpa.model.AccessType;
 import org.netbeans.modules.j2ee.jpa.model.JPAAnnotations;
 import org.netbeans.modules.j2ee.jpa.model.ModelUtils;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemFinder;
+import org.netbeans.modules.j2ee.jpa.verification.common.Utilities;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
@@ -119,8 +120,8 @@ public abstract class AbstractCreateRelationshipHint implements Fix {
             CreateRelationshipPanel pnlPickOrCreateField = new CreateRelationshipPanel();
             
             pnlPickOrCreateField.setEntityClassNames(
-                    getShortClassName(classHandle.getQualifiedName()),
-                    getShortClassName(targetEntityClassName));
+                    Utilities.getShortClassName(classHandle.getQualifiedName()),
+                    Utilities.getShortClassName(targetEntityClassName));
             
             pnlPickOrCreateField.setAvailableSelection(getAvailableRelationTypeSelection());
             pnlPickOrCreateField.setAvailableFields(compatibleFieldsExistingAtTargetClass);
@@ -400,7 +401,7 @@ public abstract class AbstractCreateRelationshipHint implements Fix {
     
     
     protected String genDefaultFieldName() {
-        String defaultFieldNameBase = getShortClassName(classHandle.getQualifiedName());
+        String defaultFieldNameBase = Utilities.getShortClassName(classHandle.getQualifiedName());
         
         char initial = Character.toLowerCase(defaultFieldNameBase.charAt(0));
         defaultFieldNameBase = initial + defaultFieldNameBase.substring(1);
@@ -419,10 +420,6 @@ public abstract class AbstractCreateRelationshipHint implements Fix {
         while (fieldsExistingAtTargetClass.contains(defaultFieldName));
         
         return defaultFieldName;
-    }
-    
-    private String getShortClassName(String qualifiedClassName){
-        return qualifiedClassName.substring(qualifiedClassName.lastIndexOf(".") + 1); //NOI18N
     }
     
     public String getText(){
