@@ -23,10 +23,14 @@ import java.util.Collections;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.j2ee.dd.api.common.CreateCapability;
 import org.netbeans.modules.j2ee.ejbverification.EJBProblemContext;
 import org.netbeans.modules.j2ee.ejbverification.EJBVerificationRule;
 import org.netbeans.modules.j2ee.ejbverification.HintsUtils;
+import org.netbeans.modules.j2ee.ejbverification.fixes.CreateDefaultConstructor;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 
 /**
@@ -56,8 +60,11 @@ public class HasNoArgContructor extends EJBVerificationRule {
             return null; // OK
         }
         
+        Fix fix = new CreateDefaultConstructor(ctx.getFileObject(),
+                ElementHandle.create(ctx.getClazz()));
+        
         ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
-                NbBundle.getMessage(HasNoArgContructor.class, "MSG_HasNoNoArgConstructor"));
+                NbBundle.getMessage(HasNoArgContructor.class, "MSG_HasNoNoArgConstructor"), fix);
         
         return Collections.singletonList(err);
     }
