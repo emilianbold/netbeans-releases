@@ -97,6 +97,10 @@ import org.openide.util.lookup.Lookups;
 public class J2EEUtils {
     /** Determines whether related entities should be generated.  */
     public static final boolean TABLE_CLOSURE = true;
+    
+    // Utility class - no need to instantiate
+    private J2EEUtils() {
+    }
 
     /**
      * Returns persistence unit that corresponds to given database URL.
@@ -624,6 +628,7 @@ public class J2EEUtils {
         
         public static ListCellRenderer getRenderer() {
             return new DefaultListCellRenderer() {
+                @Override
                 public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                     super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                     if (value instanceof DBColumnInfo) {

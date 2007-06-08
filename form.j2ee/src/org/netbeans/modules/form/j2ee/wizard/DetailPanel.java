@@ -750,6 +750,7 @@ public class DetailPanel implements WizardDescriptor.Panel {
          *
          * @return textual representation of the foreign key.
          */
+        @Override
         public String toString() {
             // It would be more elegant to use custom combobox renderer,
             // but it would require addtional class.

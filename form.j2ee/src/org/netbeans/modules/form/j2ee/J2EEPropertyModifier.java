@@ -136,6 +136,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
          * @return <code>true</code> if the property supports default value,
          * returns <code>false</code> otherwise.
          */
+        @Override
         public boolean supportsDefaultValue() {
             return false;
         }
@@ -145,6 +146,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
          *
          * @return property editor for this property.
          */
+        @Override
         public PropertyEditor getExpliciteEditor() {
             FileObject fob = FormEditor.getFormDataObject(getRADComponent().getFormModel()).getFormFile();
             String[] names = J2EEUtils.getPersistenceUnitNames(FileOwnerQuery.getOwner(fob));
@@ -169,6 +171,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
          */
         FlushModeProperty(RADComponent comp) throws IntrospectionException {
             super(comp, new FakePropertyDescriptor("flushModeType", Object.class) { // NOI18N
+                @Override
                 public java.lang.reflect.Method getWriteMethod() {
                     java.lang.reflect.Method m = null;
                     try {
@@ -192,6 +195,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
          * @return <code>true</code> if the property supports default value,
          * returns <code>false</code> otherwise.
          */
+        @Override
         public boolean supportsDefaultValue() {
             return true;
         }
@@ -201,6 +205,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
          *
          * @return the default value of the property.
          */
+        @Override
         public Object getDefaultValue() {
             return null;
         }
@@ -210,6 +215,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
          *
          * @return property editor for this property.
          */
+        @Override
         public PropertyEditor getExpliciteEditor() {
             Object[] enumValues = new Object[9];
             enumValues[0] = NbBundle.getMessage(FlushModeProperty.class, "LBL_FlushModeType.DEFAULT"); // NOI18N
@@ -248,6 +254,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
          * @return <code>true</code> if the property supports default value,
          * returns <code>false</code> otherwise.
          */
+        @Override
         public boolean supportsDefaultValue() {
             return false;
         }
@@ -257,6 +264,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
          *
          * @return property editor for this property.
          */
+        @Override
         public PropertyEditor getExpliciteEditor() {
             return new EntityManagerEditor();
         }
@@ -290,6 +298,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
             setShortDescription(NbBundle.getMessage(QueryBeanProperty.class, "HINT_QueryBeanProperty")); // NOI18N
         }
 
+        @Override
         public void setValue(Object value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
             super.setValue(value);
             if (!isList) {
@@ -316,6 +325,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
          * @return <code>true</code> if the property supports default value,
          * returns <code>false</code> otherwise.
          */
+        @Override
         public boolean supportsDefaultValue() {
             return false;
         }
@@ -325,6 +335,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
          *
          * @return property editor for this property.
          */
+        @Override
         public PropertyEditor getExpliciteEditor() {
             return new QueryEditor();
         }
@@ -365,6 +376,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
          * @return <code>true</code> if the property supports default value,
          * returns <code>false</code> otherwise.
          */
+        @Override
         public boolean supportsDefaultValue() {
             return false;
         }
@@ -393,6 +405,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
          * @return <code>true</code> if the property supports default value,
          * returns <code>false</code> otherwise.
          */
+        @Override
         public boolean supportsDefaultValue() {
             return true;
         }
@@ -402,6 +415,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
          *
          * @return the default value of the property.
          */
+        @Override
         public Object getDefaultValue() {
             return Integer.valueOf(0);
         }
@@ -430,6 +444,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
          * @return <code>true</code> if the property supports default value,
          * returns <code>false</code> otherwise.
          */
+        @Override
         public boolean supportsDefaultValue() {
             return true;
         }
@@ -439,6 +454,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
          *
          * @return the default value of the property.
          */
+        @Override
         public Object getDefaultValue() {
             return Integer.valueOf(-1);
         }
@@ -467,6 +483,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
          * @return <code>true</code> if the property supports default value,
          * returns <code>false</code> otherwise.
          */
+        @Override
         public boolean supportsDefaultValue() {
             return true;
         }
@@ -476,6 +493,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
          *
          * @return the default value of the property.
          */
+        @Override
         public Object getDefaultValue() {
             return Boolean.FALSE;
         }
@@ -509,6 +527,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
          * @return <code>true</code> if the component should be offered by the property editor,
          * returns <code>false</code> otherwise.
          */
+        @Override
         protected boolean acceptBean(RADComponent comp) {
             return beanClassName.equals(comp.getBeanClass().getName());
         }
@@ -518,6 +537,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
          *
          * @return display name of the property editor.
          */
+        @Override
         public String getDisplayName() {
             return displayName;
         }
@@ -527,6 +547,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
          *
          * @return list of items offered by this property editor.
          */
+        @Override
         public String[] getTags() {
             // Remove <none> (= null)
             String[] superTags = super.getTags();
@@ -562,6 +583,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
          *
          * @return type of the property.
          */
+        @Override
         public Class getPropertyType() {
             return propType;
         }

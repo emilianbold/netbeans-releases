@@ -64,6 +64,7 @@ public class DBTableDrop extends DBConnectionDrop {
      * @param dtde corresponding drop target drag event.
      * @return <code>JTable</code> palette item.
      */
+    @Override
     public PaletteItem getPaletteItem(DropTargetDragEvent dtde) {
         if (!assistantInitialized) {
             initAssistant();
@@ -116,6 +117,7 @@ public class DBTableDrop extends DBConnectionDrop {
      * component e.g. the enclosing scroll pane).
      * @param droppedOverId ID of a component the new component has been dropped over.
      */
+    @Override
     public void componentAdded(String componentId, String droppedOverId) {
         try {
             FileObject formFile = FormEditor.getFormDataObject(model).getFormFile();

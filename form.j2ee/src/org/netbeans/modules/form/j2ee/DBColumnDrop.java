@@ -69,6 +69,7 @@ public class DBColumnDrop extends DBConnectionDrop {
      * @param dtde corresponding drop target drag event.
      * @return <code>JTextField</code> palette item.
      */
+    @Override
     public PaletteItem getPaletteItem(DropTargetDragEvent dtde) {
         PaletteItem pItem;
         if (!assistantInitialized) {
@@ -120,6 +121,7 @@ public class DBColumnDrop extends DBConnectionDrop {
      * @param componentId ID of the corresponding UI component.
      * @param droppedOverId ID of a component the new component has been dropped over.
      */
+    @Override
     public void componentAdded(String componentId, String droppedOverId) {
         try {
             FileObject formFile = FormEditor.getFormDataObject(model).getFormFile();

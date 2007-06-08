@@ -32,9 +32,11 @@ public class Installer extends ModuleInstall {
     /**
      * Registers creation descriptors.
      */
+    @Override
     public void restored() {
         // Install creator for EntityManager
         CreationDescriptor cd = new CreationDescriptor() {
+            @Override
             public String getDescribedClassName() {
                 return "javax.persistence.EntityManager";  // NOI18N
             }
@@ -44,6 +46,7 @@ public class Installer extends ModuleInstall {
 
         // Install creator for Query
         cd = new CreationDescriptor() {
+            @Override
             public String getDescribedClassName() {
                 return "javax.persistence.Query";  // NOI18N
             }
@@ -54,6 +57,7 @@ public class Installer extends ModuleInstall {
         cd = CreationFactory.getDescriptor(java.util.List.class);
         if (cd == null) {
             cd = new CreationDescriptor() {
+                @Override
                 public Class getDescribedClass() {
                     return java.util.List.class;
                 }
