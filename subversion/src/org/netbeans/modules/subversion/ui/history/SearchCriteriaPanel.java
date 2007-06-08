@@ -175,9 +175,9 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         jLabel6 = new javax.swing.JLabel();
         bBrowseTo = new javax.swing.JButton();
 
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 12, 0, 11));
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 12, 0, 11));
         jLabel1.setLabelFor(tfCommitMessage);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/history/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, bundle.getString("CTL_UseCommitMessage")); // NOI18N
@@ -211,7 +211,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(3, 4, 0, 0);
         add(tfUsername, gridBagConstraints);
 
         jLabel3.setLabelFor(tfFrom);
@@ -245,7 +245,6 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
                 onFromBrowse(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 2;
@@ -290,7 +289,6 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
                 onToBrowse(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 3;
@@ -299,7 +297,6 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         add(bBrowseTo, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
 
     private void onToBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onToBrowse
