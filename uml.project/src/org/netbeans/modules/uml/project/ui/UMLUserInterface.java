@@ -42,20 +42,19 @@ import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.ui.controls.newdialog.INewDialogElementDetails;
 import org.netbeans.modules.uml.ui.controls.newdialog.INewDialogPackageDetails;
 import org.netbeans.modules.uml.ui.controls.newdialog.INewDialogResultProcessor;
+import org.netbeans.modules.uml.ui.controls.newdialog.INewUMLFileTemplates;
 import org.netbeans.modules.uml.ui.controls.newdialog.NewDialogElementDetails;
 import org.netbeans.modules.uml.ui.controls.newdialog.NewDialogPackageDetails;
 import org.netbeans.modules.uml.ui.controls.newdialog.NewDialogResultProcessor;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProxyUserInterface;
-import org.netbeans.modules.uml.ui.swing.drawingarea.DiagramEngine;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
 
 /**
  *
  * @author Trey Spiva
  * @author Craig Conover, craig.conover@sun.com
  */
-public class UMLUserInterface implements IProxyUserInterface
+public class UMLUserInterface 
+      implements IProxyUserInterface, INewUMLFileTemplates
 {
 	
 	/**
@@ -218,19 +217,20 @@ public class UMLUserInterface implements IProxyUserInterface
 //		diag.display( null );
                 //Jyothi:
                 WizardDescriptor.Iterator iterator = new AddPackageWizardIterator();
-                ((AddPackageWizardIterator)iterator).setDetails(details); //this is a hack to pass the details object
                 WizardDescriptor wizardDescriptor = new WizardDescriptor(iterator);
                 // {0} will be replaced by WizardDescriptor.Panel.getComponent().getName()
                 // {1} will be replaced by WizardDescriptor.Iterator.name()
                 wizardDescriptor.setTitleFormat(new MessageFormat("{0} ({1})"));
-                wizardDescriptor.setTitle(org.openide.util.NbBundle.getMessage(UMLUserInterface.class, "IDS_NEW_PACKAGE_WIZARD_TITLE"));                
+                wizardDescriptor.setTitle(org.openide.util.NbBundle.getMessage(UMLUserInterface.class, "IDS_NEW_PACKAGE_WIZARD_TITLE"));
+                wizardDescriptor.putProperty(PACKAGE_DETAILS, details);
+                
                 Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
                 dialog.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UMLUserInterface.class, "IDS_NEW_PACKAGE_WIZARD_TITLE_DESCRIPTION"));
                 dialog.setVisible(true);
                 dialog.toFront();
                 boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
                 if (!cancelled) {
-                    Object results = wizardDescriptor.getProperty(AddPackageWizardIterator.PACKAGE_DETAILS);                                        
+                    Object results = wizardDescriptor.getProperty(PACKAGE_DETAILS);                                        
                     
                     if( results != null && results instanceof NewDialogPackageDetails) {
                         NewDialogPackageDetails packResults = (NewDialogPackageDetails)results;
@@ -257,12 +257,12 @@ public class UMLUserInterface implements IProxyUserInterface
                 
                 //jyothi:                
                 WizardDescriptor.Iterator iterator = new AddElementWizardIterator();
-                ((AddElementWizardIterator)iterator).setDetails(details); //this is a hack to pass the details object
                 WizardDescriptor wizardDescriptor = new WizardDescriptor(iterator);
                 // {0} will be replaced by WizardDescriptor.Panel.getComponent().getName()
                 // {1} will be replaced by WizardDescriptor.Iterator.name()
                 wizardDescriptor.setTitleFormat(new MessageFormat("{0} ({1})"));                
                 wizardDescriptor.setTitle(org.openide.util.NbBundle.getMessage(UMLUserInterface.class, "IDS_NEW_ELEMENT_WIZARD_TITLE"));
+                wizardDescriptor.putProperty(ELEMENT_DETAILS, details);
                 Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
                 dialog.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UMLUserInterface.class, "IDS_NEW_ELEMENT_WIZARD_TITLE_DESCRIPTION"));
                 dialog.setVisible(true);
@@ -270,7 +270,7 @@ public class UMLUserInterface implements IProxyUserInterface
                 boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
                 if (!cancelled) {
                     // do something
-                    Object obj = wizardDescriptor.getProperty(AddElementWizardIterator.ELEMENT_DETAILS);
+                    Object obj = wizardDescriptor.getProperty(ELEMENT_DETAILS);
                     if (obj instanceof INewDialogElementDetails ) {
                         INewDialogElementDetails elementResults = (INewDialogElementDetails)obj;
                         if (elementResults != null) {
