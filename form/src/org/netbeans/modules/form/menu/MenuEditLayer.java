@@ -507,8 +507,10 @@ public class MenuEditLayer extends JPanel {
                     showMenuPopup(menu);
                 }
             }
+            repaint();
+        } else {
+            setVisible(false);
         }
-        repaint();
             
     }
     
@@ -908,9 +910,17 @@ public class MenuEditLayer extends JPanel {
             if(rad != null) {
                 JComponent c = (JComponent) formDesigner.getComponent(rad);
                 if(c != null && c instanceof JMenu && c.getParent() instanceof JMenuBar) {
-                    p("this is a top menu bar component");
+                    p("this is a top menu bar component asdf");
                     openMenu(rad, c);
+                    p("here");
                     setSelectedComponent(c);
+                    p("here 2");
+                    
+                    p("calling popup trigger");
+                    if(e.isPopupTrigger()) {
+                        p("popping");
+                        showContextMenu(e.getPoint());
+                    }
                     return;
                 }
             }
