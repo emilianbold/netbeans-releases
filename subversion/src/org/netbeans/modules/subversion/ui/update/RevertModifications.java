@@ -68,8 +68,9 @@ public class RevertModifications implements PropertyChangeListener {
     /** Creates a new instance of RevertModifications */
     public RevertModifications(RepositoryFile repositoryFile, String defaultRevision) {
         OneCommitRevertType ocrt = new OneCommitRevertType(repositoryFile, getPanel().oneCommitRadioButton);
+        LocalRevertType lrt = new LocalRevertType(getPanel().localChangesRadioButton);
         types = new RevertType[] {
-            new LocalRevertType(getPanel().localChangesRadioButton),
+            lrt,
             ocrt,
             new MoreCommitsRevertType(repositoryFile, getPanel().moreCommitsRadioButton)
         };
@@ -81,6 +82,9 @@ public class RevertModifications implements PropertyChangeListener {
             panel.oneCommitRadioButton.setSelected(true);
             panel.oneRevisionTextField.setText(defaultRevision);
             ocrt.actionPerformed(null);
+        } else {
+            panel.localChangesRadioButton.setSelected(true);
+            lrt.actionPerformed(null);
         }
     } 
     
