@@ -19,7 +19,6 @@
 
 package org.netbeans.spi.editor.highlighting.support;
 
-import java.util.ConcurrentModificationException;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
@@ -634,74 +633,27 @@ public class PositionsBagTest extends NbTestCase {
     }
     
     public void testConcurrentModification() {
-        {
-            PositionsBag hb = new PositionsBag(doc);
-            HighlightsSequence hs = hb.getHighlights(Integer.MIN_VALUE, Integer.MAX_VALUE);
+        PositionsBag hb = new PositionsBag(doc);
 
-            // Modify the bag
-            hb.addHighlight(pos(5), pos(10), EMPTY);
-
-            try {
-                hs.moveNext();
-                fail("ConcurrentModificationException has not been thrown from moveNext()");
-            } catch (ConcurrentModificationException e) {
-                // pass
-            }
-        }
-
-        {
-            PositionsBag hb = new PositionsBag(doc);
-            hb.addHighlight(pos(5), pos(10), EMPTY);
-
-            HighlightsSequence hs = hb.getHighlights(Integer.MIN_VALUE, Integer.MAX_VALUE);
-            assertTrue("Sequence should not be empty", hs.moveNext());
-            
-            // Modify the bag
-            hb.addHighlight(pos(20), pos(30), EMPTY);
-
-            try {
-                hs.getStartOffset();
-                fail("ConcurrentModificationException has not been thrown from getStartPosition()");
-            } catch (ConcurrentModificationException e) {
-                // pass
-            }
-        }
-
-        {
-            PositionsBag hb = new PositionsBag(doc);
-            hb.addHighlight(pos(5), pos(10), EMPTY);
-
-            HighlightsSequence hs = hb.getHighlights(Integer.MIN_VALUE, Integer.MAX_VALUE);
-            assertTrue("Sequence should not be empty", hs.moveNext());
-            
-            // Modify the bag
-            hb.addHighlight(pos(20), pos(30), EMPTY);
-
-            try {
-                hs.getEndOffset();
-                fail("ConcurrentModificationException has not been thrown from getEndPosition()");
-            } catch (ConcurrentModificationException e) {
-                // pass
-            }
-        }
-
-        {
-            PositionsBag hb = new PositionsBag(doc);
-            hb.addHighlight(pos(5), pos(10), EMPTY);
-
-            HighlightsSequence hs = hb.getHighlights(Integer.MIN_VALUE, Integer.MAX_VALUE);
-            assertTrue("Sequence should not be empty", hs.moveNext());
-            
-            // Modify the bag
-            hb.addHighlight(pos(20), pos(30), EMPTY);
-
-            try {
-                hs.getAttributes();
-                fail("ConcurrentModificationException has not been thrown from getAttributes()");
-            } catch (ConcurrentModificationException e) {
-                // pass
-            }
-        }
+        // Modify the bag
+        hb.addHighlight(pos(5), pos(10), EMPTY);
+        hb.addHighlight(pos(15), pos(20), EMPTY);
+        hb.addHighlight(pos(25), pos(30), EMPTY);
+        
+        HighlightsSequence hs = hb.getHighlights(Integer.MIN_VALUE, Integer.MAX_VALUE);
+        assertTrue("There should be some highlights", hs.moveNext());
+        
+        int s = hs.getStartOffset();
+        int e = hs.getEndOffset();
+        AttributeSet a = hs.getAttributes();
+        
+        // Modification after the sequence was acquired
+        hb.addHighlight(pos(100), pos(110), EMPTY);
+        
+        assertEquals("Wrong highlight start", s, hs.getStartOffset());
+        assertEquals("Wrong highlight end", e, hs.getEndOffset());
+        assertEquals("Wrong highlight attributes", a, hs.getAttributes());
+        assertFalse("There should be no more highlights after co-modification", hs.moveNext());
     }
 
     public void testDocumentChanges() throws BadLocationException {

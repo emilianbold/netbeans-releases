@@ -19,8 +19,6 @@
 
 package org.netbeans.spi.editor.highlighting.support;
 
-import java.util.ConcurrentModificationException;
-import java.util.NoSuchElementException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
@@ -221,6 +219,7 @@ public final class PositionsBag extends AbstractHighlightsContainer {
      *
      * @param startPosition    The beginning of the area to clear.
      * @param endPosition      The end of the area to clear.
+     * @param clip             Whether to clip the partially overlapping highlights.
      */
     public void removeHighlights(Position startPosition, Position endPosition, boolean clip) {
         if (!clip) {
@@ -634,6 +633,10 @@ public final class PositionsBag extends AbstractHighlightsContainer {
         private int startOffset;
         private int endOffset;
 
+        private int highlightStart;
+        private int highlightEnd;
+        private AttributeSet highlightAttributes;
+        
         private int idx = -1;
 
         public Seq(long version, int startOffset, int endOffset) {
@@ -644,26 +647,29 @@ public final class PositionsBag extends AbstractHighlightsContainer {
 
         public boolean moveNext() {
             synchronized (PositionsBag.this.marks) {
-                checkVersion();
+                if (checkVersion()) {
+                    if (idx == -1) {
+                        idx = indexBeforeOffset(startOffset);
+                        if (idx == -1 && marks.size() > 0) {
+                            idx = 0;
+                        }
+                    } else {
+                        idx++;
+                    }
+
+                    while (isIndexValid(idx)) {
+                        if (attributes.get(idx) != null) {
+                            highlightStart = Math.max(marks.get(idx).getOffset(), startOffset);
+                            highlightEnd = Math.min(marks.get(idx + 1).getOffset(), endOffset);
+                            highlightAttributes = attributes.get(idx);
+                            return true;
+                        }
+
+                        // Skip any empty areas
+                        idx++;
+                    }
+                }
                 
-                if (idx == -1) {
-                    idx = indexBeforeOffset(startOffset);
-                    if (idx == -1 && marks.size() > 0) {
-                        idx = 0;
-                    }
-                } else {
-                    idx++;
-                }
-
-                while (isIndexValid(idx)) {
-                    if (attributes.get(idx) != null) {
-                        return true;
-                    }
-
-                    // Skip any empty areas
-                    idx++;
-                }
-
                 return false;
             }
         }
@@ -671,39 +677,21 @@ public final class PositionsBag extends AbstractHighlightsContainer {
         public int getStartOffset() {
             synchronized (PositionsBag.this.marks) {
                 assert idx != -1 : "Sequence not initialized, call moveNext() first."; //NOI18N
-                checkVersion();
-                
-                if (isIndexValid(idx)) {
-                    return Math.max(marks.get(idx).getOffset(), startOffset);
-                } else {
-                    throw new NoSuchElementException();
-                }
+                return highlightStart;
             }
         }
 
         public int getEndOffset() {
             synchronized (PositionsBag.this.marks) {
                 assert idx != -1 : "Sequence not initialized, call moveNext() first."; //NOI18N
-                checkVersion();
-                
-                if (isIndexValid(idx)) {
-                    return Math.min(marks.get(idx + 1).getOffset(), endOffset);
-                } else {
-                    throw new NoSuchElementException();
-                }
+                return highlightEnd;
             }
         }
 
         public AttributeSet getAttributes() {
             synchronized (PositionsBag.this.marks) {
                 assert idx != -1 : "Sequence not initialized, call moveNext() first."; //NOI18N
-                checkVersion();
-                
-                if (isIndexValid(idx)) {
-                    return attributes.get(idx);
-                } else {
-                    throw new NoSuchElementException();
-                }
+                return highlightAttributes;
             }
         }
         
@@ -714,10 +702,8 @@ public final class PositionsBag extends AbstractHighlightsContainer {
                     marks.get(idx + 1).getOffset() > startOffset;
         }
         
-        private void checkVersion() {
-            if (PositionsBag.this.version != version) {
-                throw new ConcurrentModificationException();
-            }
+        private boolean checkVersion() {
+            return PositionsBag.this.version == version;
         }
     } // End of Seq class
 }
