@@ -216,7 +216,11 @@ public class Event extends BeansNode {
     public void setHandler(String name) {
         if (handler != null) {
             if (!getUnit().hasEventMethod(descriptor, name)) {
-                handler.rename(name);  // rename existing method in place
+                //rename existing method
+                handler.rename(name);
+                //re-initialize handler
+                Class[] params = descriptor.getMethod().getParameterTypes();
+                handler = handler.getJavaClass().getEventMethod(name, params);
             }
         } else {
             handler = getUnit().ensureEventMethod(descriptor, name,
