@@ -44,6 +44,10 @@ public class CustomProviderFactory {
                 return "Test Provider provides self-installed components.";
             }
 
+            public String getDescription () {
+                return null;
+            }
+
             public Map<String, UpdateItem> getUpdateItems() {
                 Map<String, UpdateItem> res = new HashMap<String, UpdateItem> ();
                 res.put ("test-module", createNbmModule ());

@@ -71,6 +71,10 @@ public class TestUtils {
             return "Provides item with own custom installer";
         }
 
+        public String getDescription () {
+            return null;
+        }
+
         public Map<String, UpdateItem> getUpdateItems() {
             return Collections.singletonMap ("hello-installer", getUpdateItemWithCustomInstaller ());
         }

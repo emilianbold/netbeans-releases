@@ -67,6 +67,14 @@ public final class UpdateUnitProvider {
         impl.setDisplayName (name);
     }
     
+    /** Description of provider. This description can be visualized in UI.
+     * 
+     * @return description of provider or null
+     */
+    public String getDescription () {
+        return impl.getDescription ();
+    }
+
     /** It's special support for <code>UpdateProvider</code> based on Autoupdate Catalog.
      * It's most kind of Update Providers and have a special support in UI.
      * 

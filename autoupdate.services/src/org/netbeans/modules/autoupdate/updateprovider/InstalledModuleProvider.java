@@ -84,6 +84,10 @@ public class InstalledModuleProvider implements InstalledUpdateProvider {
         return getName ();
     }
 
+    public String getDescription () {
+        return null;
+    }
+
     public Map<String, UpdateItem> getUpdateItems () throws IOException {
         Map<String, UpdateItem> res = new HashMap<String, UpdateItem> ();
         for (ModuleInfo info : getModuleInfos ().values ()) {

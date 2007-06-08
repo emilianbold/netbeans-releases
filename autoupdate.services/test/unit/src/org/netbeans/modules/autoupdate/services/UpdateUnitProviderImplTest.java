@@ -156,6 +156,10 @@ public class UpdateUnitProviderImplTest extends NbTestCase {
             return "lookupBasedUpdateProvider";
         }
         
+        public String getDescription () {
+            return null;
+        }
+
         public Map<String, UpdateItem> getUpdateItems() throws IOException {
             return providers;
         }

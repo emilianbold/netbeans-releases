@@ -66,6 +66,10 @@ public class ArtificialFeaturesProvider implements UpdateProvider {
         return getName ();
     }
     
+    public String getDescription () {
+        return null;
+    }
+
     private static boolean generateArtificialFeatures () {
         String tmp = System.getProperty ("autoupdate.services.generate.features");
         return tmp == null || Boolean.valueOf (tmp);
@@ -222,5 +226,5 @@ public class ArtificialFeaturesProvider implements UpdateProvider {
         
         return digits;
     }
-    
+
 }

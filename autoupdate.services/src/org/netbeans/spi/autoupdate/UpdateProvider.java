@@ -49,6 +49,12 @@ public interface UpdateProvider {
      */
     public String getDisplayName ();
     
+    /** Description of provider. This description can be visualized in UI.
+     * 
+     * @return description of provider or null
+     */
+    public String getDescription ();
+    
     /** Returns <code>UpdateItem</code>s which is mapped to its unique ID.
      * Unique ID depends on the type of <code>UpdateItem</code>.
      * 

@@ -92,13 +92,11 @@ public class AutoupdateCatalogFactory {
         Boolean en = (Boolean) fo.getAttribute("enabled"); // NOI18N
         AutoupdateCatalogProvider au_catalog = new AutoupdateCatalogProvider (sKey, displayName (fo), url);
         
-        // XXX: store Url to Preferences if doesn't exist yet
         try {
             if (! getPreferences ().nodeExists (sKey)) {
                 Preferences providerPreferences = getPreferences ().node (sKey);
                 providerPreferences.put ("url", url.toExternalForm ());
                 providerPreferences.put ("displayName", au_catalog.getDisplayName ());
-                // XXX: What enabled?
                 if (en != null) {
                     providerPreferences.put ("enabled", en.toString ());
                 }

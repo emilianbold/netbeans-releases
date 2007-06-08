@@ -47,6 +47,10 @@ public class LocalNBMsProvider implements UpdateProvider {
         return getName ();
     }
 
+    public String getDescription () {
+        return null;
+    }
+
     public Map<String, UpdateItem> getUpdateItems() {
         Map<String, UpdateItem> res = new HashMap<String, UpdateItem> ();
         for (int i = 0; i < nbms.length; i++) {

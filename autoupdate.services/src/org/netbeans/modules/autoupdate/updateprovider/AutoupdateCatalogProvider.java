@@ -40,6 +40,7 @@ public class AutoupdateCatalogProvider implements UpdateProvider {
     private AutoupdateCatalogCache cache = AutoupdateCatalogCache.getDefault ();
     private Logger log = Logger.getLogger ("org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalog");
     private boolean firstRefreshDone;
+    private String description = null;
     
     /**
      * Creates a new instance of AutoupdateCatalog
@@ -59,6 +60,18 @@ public class AutoupdateCatalogProvider implements UpdateProvider {
         return displayName == null ? codeName : displayName;
     }
     
+    public String getDescription () {
+        if (description == null) {
+            URL toParse = cache.getCatalogURL (codeName);
+            if (toParse == null) {
+                return null;
+            }
+
+            description = AutoupdateCatalogParser.getNotification (toParse, getUpdateCenterURL ());
+        }
+        return description;
+    }
+
     public Map<String, UpdateItem> getUpdateItems () throws IOException {
         URL toParse = cache.getCatalogURL (codeName);
         if (toParse == null && !firstRefreshDone) {
@@ -79,9 +92,11 @@ public class AutoupdateCatalogProvider implements UpdateProvider {
         log.log (Level.FINER, "Try write(force? " + force + ") to cache Update Provider " + codeName + " from "  + getUpdateCenterURL ());
         if (force) {
             res = cache.writeCatalogToCache (codeName, getUpdateCenterURL ()) != null;
+            description = null;
         } else {
             if (AutoupdateCheckScheduler.timeToCheck ()) {
                 res = cache.writeCatalogToCache (codeName, getUpdateCenterURL ()) != null;
+                description = null;
             } else {
                 res = true;
             }

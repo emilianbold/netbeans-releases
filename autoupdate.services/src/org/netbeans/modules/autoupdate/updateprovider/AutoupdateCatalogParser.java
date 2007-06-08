@@ -121,6 +121,48 @@ public class AutoupdateCatalogParser {
         return res;
     }
     
+    public static String getNotification (URL url, URL providerUrl) {
+        String notification = null;
+        
+        try {
+            
+            Document doc = getDocument (url, providerUrl);
+            NodeList moduleUpdatesList = doc.getElementsByTagName (TAG_MODULE_UPDATES);
+            assert moduleUpdatesList != null && moduleUpdatesList.getLength() == 1;
+            NodeList moduleUpdatesChildren = moduleUpdatesList.item (0).getChildNodes ();
+            for (int i = 0; i < moduleUpdatesChildren.getLength (); i++) {
+                Node n = moduleUpdatesChildren.item (i);
+                if (Node.ELEMENT_NODE != n.getNodeType()) {
+                    continue;
+                }
+                assert n instanceof Element : n + " is instanceof Element";
+                String tagName = ((Element) n).getTagName ();
+                if (TAG_NOTIFICATION.equals (tagName)) {
+                    NodeList innerList = n.getChildNodes ();
+                    assert innerList != null && innerList.getLength() == 1 : "Notification " + n + " should contain only once data.";
+
+                    String notificationText = innerList.item (0).getNodeValue ();
+                    notification = "";
+                    if (notificationText != null && notificationText.length () > 0) {
+                        notification = notificationText;
+                    }
+                    String notificationUrl = SimpleItem.getAttribute (n, ATTR_NOTIFICATION_URL);
+                    if (notificationUrl != null && notificationUrl.length () > 0) {
+                        notification += (notification.length () > 0 ? "<br>" : "") +
+                                "<a href=\"" + notificationUrl + "\">" + notificationUrl + "</a>"; // NOI18N
+                    }
+                    break;
+                }
+            }
+        } catch (IOException ex) {
+            ERR.log (Level.INFO, ex.getMessage (), ex);
+        } catch (SAXException ex) {
+            ERR.log (Level.INFO, ex.getMessage (), ex);
+        };
+        
+        return notification;
+    }
+    
     static Document getDocument (URL url, URL providerUrl) throws IOException, SAXException {
         Document doc = XMLUtil.parse (new InputSource (url.toString ()), false, false, null /* logger */, createAUResolver ());
         if (providerUrl != null) {
@@ -216,6 +258,8 @@ public class AutoupdateCatalogParser {
                 res.add (new SimpleItem.Feature (n, group));
             } else if (TAG_LICENSE.equals (tagName)) {
                 res.add (new SimpleItem.License (n));
+            } else if (TAG_NOTIFICATION.equals (tagName)) {
+                // don't read it now
             } else {
                 assert false : "Unknown element tag " + tagName;
             }

@@ -346,11 +346,15 @@ private class Listener implements ListSelectionListener,  TableModelListener {
             if (uup != null) {
                 StringBuffer sb = new StringBuffer();
                 details.setTitle(uup.getDisplayName());
-                URL u= uup.getProviderURL();
+                URL u = uup.getProviderURL();
+                String desc = uup.getDescription () == null ? "" : uup.getDescription ();
                 if (u != null) {
-                    sb.append("<b>" + getMessage("SettingsTab_UpdateUnitProvider_Description") + "</b><br>"); // NOI18N
+                    if (desc.length () > 0) {
+                        sb.append("<b>" + getMessage("SettingsTab_UpdateUnitProvider_Description") + "</b><br>"); // NOI18N
+                        sb.append (desc + "<br><br>"); // NOI18N
+                    }
                     sb.append("<b>" + getMessage("SettingsTab_UpdateUnitProvider_URL") +  // NOI18N
-                            " </b><a href=\"" + u.toExternalForm() + "\">" + u.toExternalForm() + "<br>"); // NOI18N
+                            " </b><a href=\"" + u.toExternalForm() + "\">" + u.toExternalForm() + "</a><br>"); // NOI18N
                 }
                 details.setText(sb.toString());
                 details.setActionListener(removeAction);

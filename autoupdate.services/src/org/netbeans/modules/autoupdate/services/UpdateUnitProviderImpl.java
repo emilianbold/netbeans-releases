@@ -73,6 +73,10 @@ public final class UpdateUnitProviderImpl {
         return getUpdateProvider ().getName ();
     }
     
+    public String getDescription () {
+        return getUpdateProvider ().getDescription ();
+    }
+
     /** Display name of provider. This display name can be visualized in UI.
      * 
      * @return display name of provider
