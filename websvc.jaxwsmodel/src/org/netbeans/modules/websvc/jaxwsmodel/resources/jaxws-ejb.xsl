@@ -58,7 +58,7 @@ Microsystems, Inc. All Rights Reserved.
                 </xsl:if>
             </xsl:if>
             <xsl:for-each select="/jaxws:jax-ws/jaxws:services/jaxws:service">
-                <xsl:if test="not(jaxws:from-wsdl)">
+                <xsl:if test="not(jaxws:wsdl-url)">
                     <xsl:variable name="wsname" select="@name"/>
                     <xsl:variable name="seiclass" select="jaxws:implementation-class"/>
                     <target name="wsgen-{$wsname}" depends="wsgen-init, compile">
