@@ -35,7 +35,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.Mutex;
@@ -45,6 +44,7 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -107,22 +107,21 @@ public class UpdateHelper  {
      * @param props a set of properties
      */
     public void putProperties (final String path, final EditableProperties props) {
-        ProjectManager.mutex().writeAccess(
-            new Runnable () {
-                public void run() {
+        ProjectManager.mutex().writeAccess(new Runnable() {
+            public void run() {
                     if (isCurrent() || !AntProjectHelper.PROJECT_PROPERTIES_PATH.equals(path)) {  //Only project props should cause update
                         helper.putProperties(path,props);
                     }
                     else if (canUpdate()) {
-                        try {
+                    try {
                             saveUpdate (props);
                             helper.putProperties(path,props);
-                        } catch (IOException ioe) {
-                            ErrorManager.getDefault().notify (ioe);
-                        }
+                    } catch (IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
                     }
                 }
-            });
+            }
+        });
     }
 
     /**
@@ -165,7 +164,7 @@ public class UpdateHelper  {
                         saveUpdate (null);
                         helper.putPrimaryConfigurationData(element, shared);
                     } catch (IOException ioe) {
-                        ErrorManager.getDefault().notify(ioe);
+                        Exceptions.printStackTrace(ioe);
                     }
                 }
             }

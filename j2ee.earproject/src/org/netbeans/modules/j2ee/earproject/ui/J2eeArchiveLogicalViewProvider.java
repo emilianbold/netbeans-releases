@@ -36,6 +36,8 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JSeparator;
@@ -67,7 +69,6 @@ import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
-import org.openide.ErrorManager;
 import org.openide.actions.FindAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -84,6 +85,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeOp;
 import org.openide.util.ContextAwareAction;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -320,9 +322,8 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
                     fs.addFileStatusListener(fsl);
                     fileSystemListeners.put(fs, fsl);
                 } catch (FileStateInvalidException e) {
-                    ErrorManager err = ErrorManager.getDefault();
-                    err.annotate(e, "Can not get " + fo + " filesystem, ignoring...");  // NO18N // NOI18N
-                    err.notify(ErrorManager.INFORMATIONAL, e);
+                    Exceptions.attachLocalizedMessage(e, "Can not get " + fo + " filesystem, ignoring...");  // NO18N
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                 }
             }
         }
@@ -366,7 +367,7 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
                     FileObject fo = (FileObject) files.iterator().next();
                     img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
                 } catch (FileStateInvalidException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                 }
             }
             
@@ -381,7 +382,7 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
                     FileObject fo = (FileObject) files.iterator().next();
                     img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
                 } catch (FileStateInvalidException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                 }
             }
             
@@ -524,7 +525,7 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
                 }
             } catch (DataObjectNotFoundException ex) {
                 // data folder for existing fileobject expected
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
             
             actions.add(null);

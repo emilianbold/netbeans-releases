@@ -23,13 +23,14 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.VisualClassPathItem;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -134,7 +135,7 @@ public final class BrokenProjectSupport {
         try {
             ProjectManager.getDefault().saveProject(project);
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe);
+            Logger.getLogger("global").log(Level.WARNING, null, ioe);
         }
     }
     

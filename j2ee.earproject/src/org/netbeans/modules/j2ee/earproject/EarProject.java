@@ -25,6 +25,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -64,13 +66,13 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -394,7 +396,7 @@ public final class EarProject implements Project, AntProjectListener, FileChange
                 
                 epp.ensurePlatformIsSet(true);
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
             
             // register project's classpaths to GlobalPathRegistry
@@ -414,7 +416,7 @@ public final class EarProject implements Project, AntProjectListener, FileChange
                     try {
                         ProjectManager.getDefault().saveProject(EarProject.this);
                     } catch (IOException e) {
-                        ErrorManager.getDefault().notify(e);
+                        Exceptions.printStackTrace(e);
                     }
                     return null;
                 }
@@ -430,7 +432,7 @@ public final class EarProject implements Project, AntProjectListener, FileChange
             try {
                 ProjectManager.getDefault().saveProject(EarProject.this);
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
             
             brokenProjectSupport.cleanUp();
@@ -484,7 +486,7 @@ public final class EarProject implements Project, AntProjectListener, FileChange
             File projectProperties = helper.resolveFile(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             if (projectProperties.exists()) {
                 // file exists, log warning
-                ErrorManager.getDefault().log(ErrorManager.WARNING,
+                Logger.getLogger("global").log(Level.WARNING,
                         "Cannot resolve " + EarProjectProperties.META_INF + // NOI18N
                         " property for " + this); // NOI18N
             }

@@ -26,6 +26,8 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -55,13 +57,12 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -214,7 +215,7 @@ public final class EarProjectGenerator {
                     }
                 }
             } catch (IOException ioe) {
-                ErrorManager.getDefault().log(ioe.getLocalizedMessage());
+                Logger.getLogger("global").log(Level.INFO, ioe.getLocalizedMessage());
             }
         }
         
@@ -412,10 +413,9 @@ public final class EarProjectGenerator {
                     sb.append(newLine);
                 }*/
 
-                ErrorManager.getDefault().log(ErrorManager.WARNING,
-                        "Deployment descriptor (application.xml) is not compulsory for JAVA EE 5." + newLine
-                        + "If it's *really* needed, set force param to true." + newLine
-                        /*+ sb.toString()*/);
+                Logger.getLogger("global").log(Level.WARNING,
+                        "Deployment descriptor (application.xml) is not compulsory for JAVA EE 5." + newLine +
+                        "If it\'s *really* needed, set force param to true." + newLine);
             }
         } else {
             assert false : "Unknown j2eeLevel: " + j2eeLevel;
@@ -532,7 +532,7 @@ public final class EarProjectGenerator {
                     EarProjectProperties.ANT_DEPLOY_BUILD_SCRIPT),
                     J2eeModule.EAR, serverInstanceID);
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+            Logger.getLogger("global").log(Level.INFO, null, ioe);
         }
         File deployAntPropsFile = AntDeploymentHelper.getDeploymentPropertiesFile(serverInstanceID);
         if (deployAntPropsFile != null) {
@@ -567,13 +567,13 @@ public final class EarProjectGenerator {
                     // #89131: these levels are not actually distinct from 1.5.
                     String srcLevel = sourceLevel;
                     if (sourceLevel.equals("1.6") || sourceLevel.equals("1.7"))
-                        srcLevel = "1.5";       
+                        srcLevel = "1.5";
                     ep.setProperty(EarProjectProperties.JAVAC_SOURCE, srcLevel);
                     ep.setProperty(EarProjectProperties.JAVAC_TARGET, srcLevel);
                     helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                     ProjectManager.getDefault().saveProject(ProjectManager.getDefault().findProject(helper.getProjectDirectory()));
                 } catch (IOException e) {
-                    ErrorManager.getDefault().notify(e);
+                    Exceptions.printStackTrace(e);
                 }
             }
         });

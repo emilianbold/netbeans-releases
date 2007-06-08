@@ -39,6 +39,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -55,7 +57,6 @@ import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
-import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.application.Module;
 import org.netbeans.modules.j2ee.dd.api.application.Web;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
@@ -79,12 +80,12 @@ import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
@@ -346,7 +347,7 @@ public final class EarProjectProperties {
             try {
                 app.write(earProject.getAppModule().getDeploymentDescriptor());
             } catch (IOException ioe) {
-                ErrorManager.getDefault().log(ioe.getLocalizedMessage());
+                Logger.getLogger("global").log(Level.INFO, ioe.getLocalizedMessage());
             }
         }
     }
@@ -474,7 +475,7 @@ public final class EarProjectProperties {
             }
         }
         catch (ClassNotFoundException cnfe) {
-            ErrorManager.getDefault().notify(cnfe);
+            Exceptions.printStackTrace(cnfe);
         }
         return mod;
     }
@@ -537,9 +538,9 @@ public final class EarProjectProperties {
                     return null;
                 }
             } catch (ClassNotFoundException cnfe) {
-                ErrorManager.getDefault().log(cnfe.getLocalizedMessage());
+                Logger.getLogger("global").log(Level.INFO, cnfe.getLocalizedMessage());
             } catch (IOException ioe) {
-                ErrorManager.getDefault().log(ioe.getLocalizedMessage());
+                Logger.getLogger("global").log(Level.INFO, ioe.getLocalizedMessage());
             } finally {
                 try {
                     if (null != jar) {
@@ -777,7 +778,7 @@ public final class EarProjectProperties {
         for( Iterator/*<Project>*/ it = spp.getSubprojects().iterator(); it.hasNext(); ) {
             Project sp = (Project) it.next();
             if (ProjectUtils.hasSubprojectCycles(project, sp)) {
-                ErrorManager.getDefault().log(ErrorManager.WARNING, "There would be cyclic " +
+                Logger.getLogger("global").log(Level.WARNING, "There would be cyclic " + // NOI18N
                         "dependencies if the " + sp + " would be added. Skipping..."); // NOI18N
                 continue;
             }
@@ -868,9 +869,9 @@ public final class EarProjectProperties {
                 ProjectManager.getDefault().saveProject(earProject);
             }
         } catch (MutexException e) {
-            ErrorManager.getDefault().notify((IOException)e.getException());
+            Exceptions.printStackTrace((IOException) e.getException());
         } catch ( IOException ex ) {
-            ErrorManager.getDefault().notify( ex );
+            Exceptions.printStackTrace(ex);
         }
     }
     
@@ -932,6 +933,7 @@ public final class EarProjectProperties {
             PropertyInfo pi = (PropertyInfo) it.next();
             PropertyDescriptor pd = pi.getPropertyDescriptor();
             String newValueEncoded = pi.getNewValueEncoded();
+
             if (newValueEncoded != null && pd.dest != null) {
                 // Standard properties
                 EditableProperties ep = eProps.get(pd.dest);
@@ -940,6 +942,7 @@ public final class EarProjectProperties {
                     // XXX: perhaps PATH_PARSER could return List of paths so that
                     // tokenizing could be omitted here:
                     String[] items = PropertyUtils.tokenizePath(newValueEncoded);
+
                     for (int i = 0; i < items.length - 1; i++) {
                         items[i] += File.pathSeparatorChar;
                     }
@@ -966,10 +969,10 @@ public final class EarProjectProperties {
                         updateSourceLevel(defaultPlatform.booleanValue(), newValueEncoded, ep);
                     } else if (JAVAC_CLASSPATH.equals(pd.name)) {
                         writeWebLibraries(refHelper, (List) pi.getValue(),
-                                TAG_WEB_MODULE_LIBRARIES);
+                                          TAG_WEB_MODULE_LIBRARIES);
                     } else if (JAR_CONTENT_ADDITIONAL.equals(pd.name)) {
                         writeWebLibraries(refHelper, (List) pi.getValue(),
-                                TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
+                                          TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
                     } else if (J2EE_SERVER_INSTANCE.equals(pd.name)) {
                         String serverInstanceID = (String) pi.getValue();
                         
@@ -978,7 +981,7 @@ public final class EarProjectProperties {
                         try {
                             AntDeploymentHelper.writeDeploymentScript(new File(projectFolder, ANT_DEPLOY_BUILD_SCRIPT), J2eeModule.EAR, serverInstanceID);
                         } catch (IOException ioe) {
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                            Logger.getLogger("global").log(Level.INFO, null, ioe);
                         }
                         File deployAntPropsFile = AntDeploymentHelper.getDeploymentPropertiesFile(serverInstanceID);
                         if (deployAntPropsFile == null) {
@@ -1035,7 +1038,7 @@ public final class EarProjectProperties {
                     updateHelper.putProperties(PRIVATE, priv);
                     ProjectManager.getDefault().saveProject(earProject);
                 } catch (IOException e) {
-                    ErrorManager.getDefault().notify(e);
+                    Exceptions.printStackTrace(e);
                 }
             }
         });
@@ -1170,7 +1173,7 @@ public final class EarProjectProperties {
                         try {
                             ProjectManager.getDefault().saveProject(earProject);
                         } catch (IOException e) {
-                            ErrorManager.getDefault().notify(e);
+                            Exceptions.printStackTrace(e);
                         }
                     }
                 }
@@ -1201,7 +1204,7 @@ public final class EarProjectProperties {
                 AntDeploymentHelper.writeDeploymentScript(antDeploymentScript, J2eeModule.EAR, serverInstanceID);
             }
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+            Logger.getLogger("global").log(Level.INFO, null, ioe);
         }
         
         // check the Ant deployment properties
@@ -1239,9 +1242,8 @@ public final class EarProjectProperties {
                     helper.putProperties(PROJECT, projectProps);
                     helper.putProperties(PRIVATE, privateProps);
                     ProjectManager.getDefault().saveProject(project);
-                }
-                catch (IOException e) {
-                    ErrorManager.getDefault().notify(e);
+                } catch (IOException e) {
+                    Exceptions.printStackTrace(e);
                 }
             }
         });

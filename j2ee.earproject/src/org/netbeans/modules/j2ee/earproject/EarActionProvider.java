@@ -41,10 +41,10 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -129,7 +129,7 @@ public class EarActionProvider implements ActionProvider {
             public void run () {
                 Properties p = new Properties();
                 String[] targetNames;
-        
+
                 targetNames = getTargetNames(command, context, p);
                 if (targetNames == null) {
                     return;
@@ -142,11 +142,11 @@ public class EarActionProvider implements ActionProvider {
                 }
                 try {
                     ActionUtils.runTarget(findBuildXml(), targetNames, p);
-                } 
-                catch (IOException e) {
-                    ErrorManager.getDefault().notify(e);
                 }
-            }            
+                catch (IOException e) {
+                    Exceptions.printStackTrace(e);
+                }
+            }
         };
         
         action.run();

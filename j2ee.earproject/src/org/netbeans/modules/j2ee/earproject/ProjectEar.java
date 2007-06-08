@@ -30,6 +30,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -61,10 +63,10 @@ import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.util.Exceptions;
 import org.openide.util.NotImplementedException;
 import org.openide.util.WeakListeners;
 
@@ -220,7 +222,7 @@ public final class ProjectEar extends J2eeApplicationProvider
             // application.xml doesn't exist
             return setupDDFromVirtual();
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
         
         // maybe exception?
@@ -417,7 +419,7 @@ public final class ProjectEar extends J2eeApplicationProvider
             try {
                 ml.addModule(jm);
             } catch (RuntimeException rex) {
-                ErrorManager.getDefault().log(rex.getLocalizedMessage());                
+                Logger.getLogger("global").log(Level.INFO, rex.getLocalizedMessage());
             }
         }
     }
@@ -427,7 +429,7 @@ public final class ProjectEar extends J2eeApplicationProvider
             try {
                 ml.removeModule(jm);
             } catch (RuntimeException rex) {
-                ErrorManager.getDefault().log(rex.getLocalizedMessage());                
+                Logger.getLogger("global").log(Level.FINE, rex.getLocalizedMessage());
             }
         }
     }
@@ -498,8 +500,8 @@ public final class ProjectEar extends J2eeApplicationProvider
             owner = FileOwnerQuery.getOwner(childFO);
         }
         if (owner == null) {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL,
-                    "Unable to add module to the Enterpise Application. Owner project not found."); // NOI18N
+            Logger.getLogger("global").log(Level.INFO,
+                                           "Unable to add module to the Enterpise Application. Owner project not found."); // NOI18N
         } else {
             ((EarProjectProperties)project.getProjectProperties()).addJ2eeSubprojects(new Project [] {owner});
         }

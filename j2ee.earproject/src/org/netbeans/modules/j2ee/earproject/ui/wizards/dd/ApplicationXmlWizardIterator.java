@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -31,7 +33,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.modules.j2ee.earproject.EarProjectGenerator;
 import org.netbeans.modules.j2ee.earproject.ProjectEar;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 
@@ -97,7 +98,7 @@ public final class ApplicationXmlWizardIterator implements WizardDescriptor.Inst
                         EarProjectGenerator.setupDD(earProject.getJ2eePlatformVersion(), projectEar.getMetaInf(), earProject, true);
                 return Collections.singleton(dd);
             } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                Logger.getLogger("global").log(Level.INFO, null, ioe);
             }
         }
         return Collections.EMPTY_SET;

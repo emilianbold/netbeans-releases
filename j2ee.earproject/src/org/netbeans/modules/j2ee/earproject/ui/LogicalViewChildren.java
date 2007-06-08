@@ -22,6 +22,8 @@ package org.netbeans.modules.j2ee.earproject.ui;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
@@ -31,7 +33,6 @@ import org.netbeans.modules.j2ee.earproject.ui.customizer.VisualClassPathItem;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
-import org.openide.ErrorManager;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
@@ -67,8 +68,8 @@ public class LogicalViewChildren extends Children.Keys  implements AntProjectLis
         Project p = FileOwnerQuery.getOwner(model.getProjectDirectory());
         //#62823 debug
         if(p == null) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, 
-                    new IllegalStateException("FileOwnerQuery.getOwner("+ model.getProjectDirectory() + ") returned null. " + // NOI18N
+            Logger.getLogger("global").log(Level.WARNING, null,
+                    new IllegalStateException("FileOwnerQuery.getOwner(" + model.getProjectDirectory() + ") returned null. " + // NOI18N
                     "Please report this with the situation description to issue #62823 " + // NOI18N
                     "(http://www.netbeans.org/issues/show_bug.cgi?id=62823)."));
             return ;
