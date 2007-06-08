@@ -199,6 +199,9 @@ private void connectionComboActionPerformed(java.awt.event.ActionEvent evt) {//G
 
                 mappings = scope.getEntityMappingsModel(unit.getName());
                 entityInfo = J2EEUtils.findEntity(mappings, tableName);
+            } else {
+                // Add the entity into the persistence unit if it is not there already
+                J2EEUtils.addEntityToUnit(entityInfo[1], unit, project);
             }
 
             String puName = unit.getName();

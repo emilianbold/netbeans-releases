@@ -193,6 +193,23 @@ public class J2EEUtils {
         return names;
     }
 
+    public static void addEntityToUnit(String entityClass, PersistenceUnit unit, Project project) {
+        boolean added = false;
+        for (String clazz : unit.getClass2()) {
+            if (entityClass.equals(clazz)) {
+                added = true;
+                break;
+            }
+        }
+        if (!added) {
+            try {
+                ProviderUtil.addManagedClass(unit, entityClass, ProviderUtil.getPUDataObject(project));
+            } catch (InvalidPersistenceXmlException ipxex) {
+                ipxex.printStackTrace();
+            }
+        }
+    }
+
     /**
      * Updates project classpath with the TopLink library.
      *
@@ -943,7 +960,11 @@ public class J2EEUtils {
                 if (!all) {
                     for (String column : columns) {
                         String propName = columnToProperty.get(column);
-                        props.add(propName);
+                        if (propName == null) {
+                            System.err.println("WARNING: Cannot find property for column " + column); // NOI18N
+                        } else {
+                            props.add(propName);
+                        }
                     }
                 }
                 return props;

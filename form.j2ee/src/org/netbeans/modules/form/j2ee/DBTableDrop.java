@@ -146,6 +146,9 @@ public class DBTableDrop extends DBConnectionDrop {
 
                 mappings = scope.getEntityMappingsModel(unit.getName());
                 entityInfo = J2EEUtils.findEntity(mappings, table.getTableName());
+            } else {
+                // Add the entity into the persistence unit if it is not there already
+                J2EEUtils.addEntityToUnit(entityInfo[1], unit, project);
             }
 
             // Find (or create) entity manager "bean" for the persistence unit

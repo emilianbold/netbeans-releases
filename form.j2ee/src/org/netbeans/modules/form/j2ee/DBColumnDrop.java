@@ -149,6 +149,9 @@ public class DBColumnDrop extends DBConnectionDrop {
                 J2EEUtils.createEntity(formFile.getParent(), scope, unit, column.getDatabaseConnection(), column.getTableName(), null);
 
                 entityInfo = J2EEUtils.findEntity(mappings, column.getTableName());
+            } else {
+                // Add the entity into the persistence unit if it is not there already
+                J2EEUtils.addEntityToUnit(entityInfo[1], unit, project);
             }
 
             // Find (or create) entity manager "bean" for the persistence unit
@@ -186,6 +189,10 @@ public class DBColumnDrop extends DBConnectionDrop {
             
             List<String> l = Collections.singletonList(column.getColumnName());
             l = J2EEUtils.propertiesForColumns(mappings, entityInfo[0], l);
+            if (l.isEmpty()) {
+                // There is no property corresponding to the dragged column
+                return;
+            }
             String sourcePath = l.get(0);
             
             RADComponent metaTable = null;
