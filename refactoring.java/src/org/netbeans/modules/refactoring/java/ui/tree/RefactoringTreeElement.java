@@ -23,8 +23,10 @@ import com.sun.source.tree.Tree;
 import javax.swing.Icon;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.ui.UIUtilities;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 import org.netbeans.modules.refactoring.spi.ui.*;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -65,7 +67,15 @@ public class RefactoringTreeElement implements TreeElement {
     }
 
     public String getText(boolean isLogical) {
-        return refactoringElement.getDisplayText();
+        String text = refactoringElement.getDisplayText();
+        if (refactoringElement.getStatus() == RefactoringElement.GUARDED) {
+            text = text + " [<font color=#CC0000>" + // NOI18N
+                            NbBundle.getMessage(UIUtilities.class, "LBL_InGuardedBlock") + "</font>]";
+        } else if (refactoringElement.getStatus() == refactoringElement.READ_ONLY) {
+            text = text + " [<font color=#CC0000>" + // NOI18N
+                            NbBundle.getMessage(UIUtilities.class, "LBL_InReadOnlyFile") + "</font>]";
+        }
+        return text;
     }
 
     public Object getUserObject() {
