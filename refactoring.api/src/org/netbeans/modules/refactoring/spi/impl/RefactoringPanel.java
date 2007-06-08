@@ -795,6 +795,17 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         selectNextPrev(false);
     }
     
+    private int location;
+    public void storeDividerLocation() {
+        if (splitPane.getRightComponent()!=null)
+            location = splitPane.getDividerLocation();
+    }
+    
+    public void restoreDeviderLocation() {
+        if (splitPane.getRightComponent()!=null)
+            splitPane.setDividerLocation(location);
+    }
+    
     private void selectNextPrev(final boolean next) {
         int newRow = getSelectedRow();
         int maxcount = tree.getRowCount();

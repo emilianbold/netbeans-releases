@@ -21,8 +21,6 @@ package org.netbeans.modules.refactoring.spi.ui;
 
 import java.awt.Component;
 import javax.swing.Action;
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.impl.RefactoringPanel;
@@ -100,7 +98,9 @@ public final class UI {
             if (refactoringPanel.splitPane.getRightComponent() == null)
                 return false;
         }
+        refactoringPanel.storeDividerLocation();
         refactoringPanel.splitPane.setRightComponent(component);
+        refactoringPanel.restoreDeviderLocation();
         return true;
         
     }
