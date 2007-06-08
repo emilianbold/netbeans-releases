@@ -181,7 +181,7 @@ public class StandardJavacWarnings extends AbstractHint implements PreferenceCha
         DIVISION_BY_ZERO;
         
         boolean defaultOn() {        
-            return true;
+            return false;
         }
         
         String key() {
