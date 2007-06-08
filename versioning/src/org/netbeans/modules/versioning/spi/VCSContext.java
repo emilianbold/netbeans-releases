@@ -322,6 +322,7 @@ public final class VCSContext {
     }
 
     private static void addSiblings(Set<File> files, File exclusion, FileFilter filter) {
+        if (exclusion.getParentFile() == null) return;  // roots have no siblings
         File [] siblings = exclusion.getParentFile().listFiles();
         for (File sibling : siblings) {
             if (filter.accept(sibling)) files.add(sibling);
