@@ -36,8 +36,8 @@ rm -rf $DIST/
 
 ant -Dbuildnum=$BUILD_TAG -f nbbuild/build.xml build-nozip || exit
 
-# XXX(ttran) uncomment to enable commit validation
-#ant -f nbbuild/build.xml commitValidation || exit
+# XXX add "|| exit" to make broken C/V break build
+ant -f nbbuild/build.xml commitValidation
 
 # we can't afford to run build-nbms in hudson builds, on deadlock.netbeans.org it takes 6 minutes from a typical 15 min build run
 # mkdir -p $DIST/nbms
