@@ -21,19 +21,19 @@ Microsystems, Inc. All Rights Reserved.
 
 <fontscolors>
     <fontcolor name="xml-EOL" default="whitespace"/>
-    <fontcolor name="xml-attribute" default="identifier"/>
+    <fontcolor name="xml-attribute" default="markup-attribute"/>
     <fontcolor name="xml-cdata-section" foreColor="yellow" default="default"/>
-    <fontcolor name="xml-comment" foreColor="red" default="comment"/>
+    <fontcolor name="xml-comment" default="comment"/>
     <fontcolor name="xml-doctype" foreColor="lightGray" default="default"/>
     <fontcolor name="xml-error" default="error"/>
-    <fontcolor name="xml-operator" default="default"/>
+    <fontcolor name="xml-operator" default="xml-attribute"/>
     <fontcolor name="xml-pi-content" foreColor="lightGray" default="default"/>
     <fontcolor name="xml-pi-end" foreColor="lightGray" default="default"/>
     <fontcolor name="xml-pi-start" foreColor="lightGray" default="default"/>
     <fontcolor name="xml-pi-target" foreColor="lightGray" default="default"/>
-    <fontcolor name="xml-ref" foreColor="cyan" default="default"/>
-    <fontcolor name="xml-tag" foreColor="orange" default="default"/>
+    <fontcolor name="xml-ref" default="entity-reference"/>
+    <fontcolor name="xml-tag" default="markup-element"/>
     <fontcolor name="xml-text" default="default"/>
-    <fontcolor name="xml-value" default="string"/>
+    <fontcolor name="xml-value" default="markup-attribute-value"/>
     <fontcolor name="xml-ws" default="whitespace"/>
 </fontscolors>

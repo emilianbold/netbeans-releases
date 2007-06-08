@@ -34,6 +34,10 @@ Microsystems, Inc. All Rights Reserved.
     <fontcolor name="string" foreColor="yellow"/>
     <fontcolor name="whitespace"/>
 
+    <fontcolor name="markup-element" foreColor="orange"/>
+    <fontcolor name="markup-attribute" foreColor="ff007c00"/>
+    <fontcolor name="markup-attribute-value" default="string"/>
+    <fontcolor name="entity-reference" foreColor="cyan"/>
     
     <!-- semantic colorings -->
     
