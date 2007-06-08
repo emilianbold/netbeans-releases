@@ -23,11 +23,6 @@ import org.netbeans.modules.localhistory.store.LocalHistoryStore;
 import org.netbeans.modules.localhistory.store.LocalHistoryStoreFactory;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
-import org.openide.cookies.EditCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 
 /** 
  * 

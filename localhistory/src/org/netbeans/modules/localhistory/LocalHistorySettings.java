@@ -24,7 +24,7 @@ import org.openide.util.NbPreferences;
 
 /**
  *
- * Manages the Local Hisotry Settings
+ * Manages the Local History Settings
  * 
  * @author Tomas Stupka
  */

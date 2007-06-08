@@ -30,7 +30,17 @@ import org.openide.filesystems.FileUtil;
 public class FileUtils {
 
     /**
+     * This utility class needs not to be instantiated anywhere.
+     */
+    private FileUtils() {
+    }
+    
+    /**
      * Copies the specified sourceFile to the specified targetFile.
+     * 
+     * @param sourceFile
+     * @param targetFile
+     * 
      */
     public static void copyFile(File sourceFile, File targetFile) throws IOException {
         if (sourceFile == null || targetFile == null) {
@@ -53,6 +63,14 @@ public class FileUtils {
         }
     }
 
+    /**
+     * Copies the specified file to the specified outputstream.
+     * It <b>closes</b> the output stream.
+     * 
+     * @param file
+     * @param os
+     * 
+     */    
     public static void copy(File file, OutputStream os) throws IOException {
         if (file == null ) {
             throw new NullPointerException("file must not be null"); // NOI18N
@@ -70,39 +88,15 @@ public class FileUtils {
         }
     }
     
-    public static void copyDirFiles(File sourceDir, File targetDir) {
-        copyDirFiles(sourceDir, targetDir, false);
-    }      
-    
-    public static void copyDirFiles(File sourceDir, File targetDir, boolean preserveTimestamp) {
-        File[] files = sourceDir.listFiles();
-
-        if(files==null || files.length == 0) {
-            targetDir.mkdirs();
-            if(preserveTimestamp) targetDir.setLastModified(sourceDir.lastModified());
-            return;
-        }
-        if(preserveTimestamp) targetDir.setLastModified(sourceDir.lastModified());
-        for (int i = 0; i < files.length; i++) {
-            try {
-                File target = FileUtil.normalizeFile(new File(targetDir.getAbsolutePath() + "/" + files[i].getName())); // NOI18N
-                if(files[i].isDirectory()) {
-                    copyDirFiles(files[i], target, preserveTimestamp);
-                } else {
-                    FileUtils.copyFile (files[i], target);
-                    if(preserveTimestamp) target.setLastModified(files[i].lastModified());
-                }
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
-            }
-        }
-    }
-    
     /**
-     * Copies the specified sourceFile to the specified targetFile.
+     * Copies the specified inputStream to the specified targetFile.
      * It <b>closes</b> the input stream.
+     * 
+     * @param inputStream
+     * @param targetFile
+     * 
      */
-    public static void copy(InputStream inputStream, File targetFile) throws IOException {
+    private static void copy(InputStream inputStream, File targetFile) throws IOException {
         if (inputStream == null || targetFile == null) {
             throw new NullPointerException("sourcStream and targetFile must not be null"); // NOI18N
         }
@@ -210,14 +204,8 @@ public class FileUtils {
         }
         throw new IOException("Can not delete: " + orig.getAbsolutePath());  // NOI18N
     }
-
-    /**
-     * This utility class needs not to be instantiated anywhere.
-     */
-    private FileUtils() {
-    }
     
-    public static BufferedInputStream createInputStream(File file) throws IOException {
+    private static BufferedInputStream createInputStream(File file) throws IOException {
         int retry = 0;
         while (true) {   
             try {
@@ -236,7 +224,7 @@ public class FileUtils {
         }       
     }
     
-    public static BufferedOutputStream createOutputStream(File file) throws IOException {
+    private static BufferedOutputStream createOutputStream(File file) throws IOException {
         int retry = 0;
         while (true) {            
             try {
@@ -254,28 +242,5 @@ public class FileUtils {
             }
         }       
     }
-
-    /** Creates new tmp dir in java.io.tmpdir */
-    public static File createTmpFolder(String prefix) {
-        String tmpDir = System.getProperty("java.io.tmpdir");  // NOI18N
-        File tmpFolder = new File(tmpDir);
-        File checkoutFolder = null;
-        try {
-            // generate unique name for tmp folder
-            File tmp = File.createTempFile(prefix, "", tmpFolder);  // NOI18N
-            if (tmp.delete() == false) {
-                return checkoutFolder;
-            }
-            if (tmp.mkdirs() == false) {
-                return checkoutFolder;
-            }
-            checkoutFolder = FileUtil.normalizeFile(tmp);
-        } catch (IOException e) {
-            ErrorManager err = ErrorManager.getDefault();
-            err.notify(e);
-        }
-        return checkoutFolder;
-    }
-
     
 }
