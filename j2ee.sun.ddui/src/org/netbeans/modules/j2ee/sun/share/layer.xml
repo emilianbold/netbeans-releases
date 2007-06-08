@@ -4,8 +4,8 @@
 <filesystem>
     
     <folder name="Loaders">
-        <folder name="xml">
-            <folder name="sun-dd">
+        <folder name="text">
+            <folder name="x-sun-dd">
                 <folder name="Actions">
                     <file name="org-openide-actions-OpenAction.instance"/>
                     <attr name="org-openide-actions-OpenAction.instance/org-openide-actions-EditAction.instance" boolvalue="true"/>

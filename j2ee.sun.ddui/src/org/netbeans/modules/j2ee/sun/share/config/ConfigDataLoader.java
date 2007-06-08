@@ -86,7 +86,7 @@ public class ConfigDataLoader extends UniFileLoader {
      *  layer file.
      */
     protected String actionsContext() {
-        return "Loaders/xml/sun-dd/Actions/"; // NOI18N
+        return "Loaders/text/x-sun-dd/Actions/"; // NOI18N
     }
     
     /** Creates multi data object for specified primary file.
