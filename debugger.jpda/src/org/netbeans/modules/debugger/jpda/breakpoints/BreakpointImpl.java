@@ -29,6 +29,7 @@ import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.StepRequest;
+
 import java.awt.Color;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
@@ -44,6 +45,7 @@ import javax.swing.JTextArea;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
@@ -53,12 +55,15 @@ import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.DebuggerManager;
+
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.Expression;
 import org.netbeans.modules.debugger.jpda.expr.ParseException;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.ReturnVariableImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
+import org.netbeans.modules.debugger.jpda.util.ThreadInfoPanel;
+
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -311,7 +316,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                     if (resumeDecision != null) {
                         return resumeDecision.booleanValue();
                     }
-                    String message;
+                    final String message;
                     if (thisThreadHasStep) {
                         message = NbBundle.getMessage(BreakpointImpl.class,
                                 "MSG_StepThreadInterruptedByBR",
@@ -323,6 +328,45 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                                 thread.name(),
                                 activeStepRequests.get(0).thread().name());
                     }
+                    final ThreadInfoPanel[] tiPanelRef = new ThreadInfoPanel[] { null };
+                    try {
+                        javax.swing.SwingUtilities.invokeAndWait(new Runnable() {
+                            public void run() {
+                                tiPanelRef[0] = ThreadInfoPanel.create(message,
+                                        NbBundle.getMessage(BreakpointImpl.class, "StepInterruptedByBR_Btn1"),
+                                        NbBundle.getMessage(BreakpointImpl.class, "StepInterruptedByBR_Btn1_TIP"),
+                                        NbBundle.getMessage(BreakpointImpl.class, "StepInterruptedByBR_Btn2"),
+                                        NbBundle.getMessage(BreakpointImpl.class, "StepInterruptedByBR_Btn2_TIP"));
+                            }
+                        });
+                    } catch (InterruptedException iex) {
+                    } catch (java.lang.reflect.InvocationTargetException itex) {
+                        ErrorManager.getDefault().notify(itex);
+                    }
+                    if (tiPanelRef[0] == null) {
+                        return false;
+                    }
+                    tiPanelRef[0].setButtonListener(new ThreadInfoPanel.ButtonListener() {
+                        public void buttonPressed(int n) {
+                            if (n == 2) {
+                                debugger.setStepInterruptByBptResumeDecision(Boolean.TRUE);
+                            }
+                            debugger.resume();
+                        }
+                    });
+                    debugger.addPropertyChangeListener(new PropertyChangeListener() {
+                        public void propertyChange(PropertyChangeEvent pe) {
+                            if (pe.getPropertyName().equals(debugger.PROP_STATE)) {
+                                if (pe.getNewValue().equals(debugger.STATE_RUNNING)) {
+                                    debugger.removePropertyChangeListener(this);
+                                    tiPanelRef[0].dismiss();
+                                }
+                            }
+                        }
+                    });
+                    return false;
+                    
+                    /*
                     JCheckBox cb = new JCheckBox(NbBundle.getMessage(BreakpointImpl.class, "RememberDecision"));
                     DialogDescriptor dd = new DialogDescriptor(
                             //message,
@@ -354,12 +398,14 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                         }
                     }
                     return yes;
+                     */
                 }
             }
         }
         return false;
     }
 
+    /*
     private static JPanel createDlgPanel(String message, JCheckBox cb) {
         JPanel panel = new JPanel();
         panel.setLayout(new GridBagLayout());
@@ -383,6 +429,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
         panel.add(cb, c);
         return panel;
     }
+     */
     
     private boolean evaluateCondition (
         String condition, 
