@@ -53,6 +53,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -119,9 +121,18 @@ public class JsfForm {
     /** Maps weakly <code>DesignProject</code> to <code>JsfDesignProjectListener</code>. */
     private static final Map<DesignProject, JsfDesignProjectListener> designProject2jsfDesignProjectListener = new WeakHashMap<DesignProject, JsfDesignProjectListener>();
 
+    private static final ReadWriteLock jsfFormsLock = new ReentrantReadWriteLock();
+            
+    private static final ReadWriteLock jsfMultiViewElementsLock = new ReentrantReadWriteLock();
+    
+    private static final ReadWriteLock designersLock = new ReentrantReadWriteLock();
+    
+    private static final ReadWriteLock designProject2jsfDesignProjectListenersLock = new ReentrantReadWriteLock();
+    
 
     /** <code>FacesModel</code> associated with this JSF form. */
     private FacesModel facesModel;
+    
 //    /** <code>Designer</code> associated with this JSF form. */
 //    private final Designer designer;
 
@@ -164,7 +175,9 @@ public class JsfForm {
     private boolean ajaxTransactionsSupportEnabled;
     
     private final DndSupport dndSupport = new DndSupport(this);
-        
+
+    private final ReadWriteLock facesModelLock = new ReentrantReadWriteLock();
+    
 
     /** Creates a new instance of JsfForm */
     private JsfForm(FacesModel facesModel, DataObject dataObject) {
@@ -236,8 +249,12 @@ public class JsfForm {
     
     
     private void setFacesModel(FacesModel facesModel) {
-        synchronized (jsfForms) {
+//        synchronized (jsfForms) {
+        facesModelLock.writeLock().lock();
+        try {
             this.facesModel = facesModel;
+        } finally {
+            facesModelLock.writeLock().unlock();
         }
     }
     
@@ -278,16 +295,19 @@ public class JsfForm {
         
         JsfForm jsfForm;
 //        synchronized (facesModel2jsfForm) {
-        synchronized (jsfForms) {
+//        synchronized (jsfForms) {
 //            jsfForm = facesModel2jsfForm.get(facesModel);
             jsfForm = findJsfFormForFacesModel(facesModel);
-            
             if (jsfForm == null) {
-                jsfForm = new JsfForm(facesModel, dataObject);
-//                facesModel2jsfForm.put(facesModel, jsfForm);
-                jsfForms.add(jsfForm);
+                jsfFormsLock.writeLock().lock();
+                try {
+                    jsfForm = new JsfForm(facesModel, dataObject);
+//                    facesModel2jsfForm.put(facesModel, jsfForm);
+                    jsfForms.add(jsfForm);
+                } finally {
+                    jsfFormsLock.writeLock().unlock();
+                }
             }
-        }
 
         final JsfForm finalJsfForm = jsfForm;
         // XXX FacesModel was not loaded, do it now.
@@ -366,8 +386,12 @@ public class JsfForm {
     
     
     public static JsfMultiViewElement[] getJsfMultiViewElements() {
-        synchronized (jsfMultiViewElements) {
+//        synchronized (jsfMultiViewElements) {
+        jsfMultiViewElementsLock.readLock().lock();
+        try {
             return jsfMultiViewElements.toArray(new JsfMultiViewElement[jsfMultiViewElements.size()]);
+        } finally {
+            jsfMultiViewElementsLock.readLock().unlock();
         }
     }
     
@@ -379,14 +403,18 @@ public class JsfForm {
         
         Set<JsfMultiViewElement> multiViewElements;
 //        synchronized (designer2jsfMultiViewElement) {
-        synchronized (jsfMultiViewElements) {
+//        synchronized (jsfMultiViewElements) {
 //            for (Designer designer : designers) {
 //                JsfMultiViewElement jsfMultiViewElement = designer2jsfMultiViewElement.get(designer);
 //                if (jsfMultiViewElement != null) {
 //                    jsfMultiViewElements.add(jsfMultiViewElement);
 //                }
 //            }
+        jsfMultiViewElementsLock.readLock().lock();
+        try {
             multiViewElements = new HashSet<JsfMultiViewElement>(jsfMultiViewElements);
+        } finally {
+            jsfMultiViewElementsLock.readLock().unlock();
         }
         for (Iterator<JsfMultiViewElement> it = multiViewElements.iterator(); it.hasNext(); ) {
             JsfMultiViewElement multiViewElement = it.next();
@@ -406,8 +434,12 @@ public class JsfForm {
 //        synchronized (designer2jsfMultiViewElement) {
 //            designer2jsfMultiViewElement.put(designer, jsfMultiViewElement);
 //        }
-        synchronized (jsfMultiViewElements) {
+//        synchronized (jsfMultiViewElements) {
+        jsfMultiViewElementsLock.writeLock().lock();
+        try {
             jsfMultiViewElements.add(jsfMultiViewElement);
+        } finally {
+            jsfMultiViewElementsLock.writeLock().unlock();
         }
         return jsfMultiViewElement;
     }
@@ -420,8 +452,12 @@ public class JsfForm {
 //            return designer2jsfMultiViewElement.get(designer);
 //        }
         Set<JsfMultiViewElement> multiViewElements;
-        synchronized (jsfMultiViewElements) {
+//        synchronized (jsfMultiViewElements) {
+        jsfMultiViewElementsLock.readLock().lock();
+        try {
             multiViewElements = new HashSet<JsfMultiViewElement>(jsfMultiViewElements);
+        } finally {
+            jsfMultiViewElementsLock.readLock().unlock();
         }
         
         for (JsfMultiViewElement multiViewElement : multiViewElements) {
@@ -540,8 +576,12 @@ public class JsfForm {
 //            return facesModel2jsfForm.get(facesModel);
 //        }
         Set<JsfForm> forms;
-        synchronized (jsfForms) {
+//        synchronized (jsfForms) {
+        jsfFormsLock.readLock().lock();
+        try {
             forms = new HashSet<JsfForm>(jsfForms);
+        } finally {
+            jsfFormsLock.readLock().unlock();
         }
         for (JsfForm jsfForm : forms) {
             if (jsfForm != null && jsfForm.getFacesModel() == facesModel) {
@@ -624,12 +664,21 @@ public class JsfForm {
             return;
         }
         JsfDesignProjectListener jsfDesignProjectListener;
-        synchronized (designProject2jsfDesignProjectListener) {
+//        synchronized (designProject2jsfDesignProjectListener) {
+        designProject2jsfDesignProjectListenersLock.readLock().lock();
+        try {
             jsfDesignProjectListener = designProject2jsfDesignProjectListener.get(designProject);
-            if (jsfDesignProjectListener == null) {
+        } finally {
+            designProject2jsfDesignProjectListenersLock.readLock().unlock();
+        }
+        if (jsfDesignProjectListener == null) {
+            designProject2jsfDesignProjectListenersLock.writeLock().lock();
+            try {
                 jsfDesignProjectListener = new JsfDesignProjectListener();
                 designProject.addDesignProjectListener(WeakListeners.create(DesignProjectListener.class, jsfDesignProjectListener, designProject));
                 designProject2jsfDesignProjectListener.put(designProject, jsfDesignProjectListener);
+            } finally {
+                designProject2jsfDesignProjectListenersLock.writeLock().lock();
             }
         }
     }
@@ -691,9 +740,12 @@ public class JsfForm {
 //    }
     
     private FacesModel getFacesModel() {
-//        synchronized (facesModel2jsfForm) {
-        synchronized (jsfForms) {
+//        synchronized (jsfForms) {
+        facesModelLock.readLock().lock();
+        try {
             return facesModel;
+        } finally {
+            facesModelLock.readLock().unlock();
         }
     }
     
@@ -1536,8 +1588,12 @@ public class JsfForm {
 //        synchronized (jsfForm2designerSet) {
 //            allJsfForms = jsfForm2designerSet.keySet();
 //        }
-        synchronized (jsfForms) {
+//        synchronized (jsfForms) {
+        jsfFormsLock.readLock().lock();
+        try {
             allJsfForms = new HashSet<JsfForm>(jsfForms);
+        } finally {
+            jsfFormsLock.readLock().unlock();
         }
         for (JsfForm jsfForm : allJsfForms) {
             if (project == jsfForm.getFacesModel().getProject()
@@ -2569,15 +2625,23 @@ public class JsfForm {
 
     private Designer[] getDesigners() {
         Set<Designer> ds;
-        synchronized (designers) {
+//        synchronized (designers) {
+        designersLock.readLock().lock();
+        try {
             ds = new HashSet<Designer>(designers);
+        } finally {
+            designersLock.readLock().unlock();
         }
         return ds.toArray(new Designer[ds.size()]);
     }
 
     private void addDesigner(Designer designer) {
-        synchronized (designers) {
+//        synchronized (designers) {
+        designersLock.writeLock().lock();
+        try {
             designers.add(designer);
+        } finally {
+            designersLock.writeLock().unlock();
         }
     }
     
@@ -2632,7 +2696,7 @@ public class JsfForm {
 
         public void contextClosed(DesignContext designContext) {
             JsfForm jsfForm = JsfForm.findJsfForm(designContext);
-            JsfMultiViewElement[] jsfMultiViewElements = JsfForm.findJsfMultiViewElements(jsfForm);
+            JsfMultiViewElement[] jsfMultiViewElements = findJsfMultiViewElements(jsfForm);
             for (JsfMultiViewElement jsfMultiViewElement : jsfMultiViewElements) {
                 jsfMultiViewElement.closeMultiView();
             }
