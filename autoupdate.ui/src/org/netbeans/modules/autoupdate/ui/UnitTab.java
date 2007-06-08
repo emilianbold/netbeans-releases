@@ -523,7 +523,7 @@ public class UnitTab extends javax.swing.JPanel {
                     public void run () {
                         fireUpdataUnitChange ();
                         UnitCategoryTableModel.restoreState (model.getUnitData (), state, model.isMarkedAsDefault ());
-                        setSelectedRow (row);
+                        restoreSelectedRow (row);
                         refreshState ();
                         setWaitingState (false);
                     }
@@ -643,10 +643,10 @@ public class UnitTab extends javax.swing.JPanel {
         }
     }
     
-    int getSelectedRow () {
+    private int getSelectedRow () {
         return table.getSelectedRow ();
     }
-    void setSelectedRow (int row) {
+    private void restoreSelectedRow (int row) {
         if (row < 0) {
             row = 0;
         }
@@ -724,29 +724,11 @@ public class UnitTab extends javax.swing.JPanel {
         public final void actionPerformed (ActionEvent e) {
             int row = getSelectedRow ();
             try {
-                if (isSynchronous ()) {
-                    before ();
-                }
                 performerImpl ();
             } finally {
-                if (isSynchronous ()) {
-                    after ();
-                    setSelectedRow (row);
-                }
             }
         }
-        public boolean isSynchronous () {
-            return true;
-        }
-        public void before () {
-        }
-        public void postRefresh () {
-            fireUpdataUnitChange ();
-        }
         
-        public void after () {
-            postRefresh ();
-        }
         
         public void tableDataChanged () {
             tableDataChanged (model.getMarkedUnits ());
@@ -820,9 +802,12 @@ public class UnitTab extends javax.swing.JPanel {
         }
         
         public void performerImpl (Unit u) {
+            final int row = getSelectedRow();
             if (u != null && u.canBeMarked ()) {
                 u.setMarked (!u.isMarked ());
             }
+            model.fireTableDataChanged ();
+            restoreSelectedRow(row);
         }
         
         protected boolean isEnabled (Unit u) {
@@ -836,22 +821,12 @@ public class UnitTab extends javax.swing.JPanel {
         @Override
         protected boolean isVisible (Unit u) {
             return false;
-        }
-        
-        @Override
-        public void after () {
-            model.fireTableDataChanged ();
-        }
+        }        
     }
     
     private class PopupAction extends RowTabAction {
         public PopupAction () {
             super ("UnitTab_PopUpAction", KeyStroke.getKeyStroke (KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK), null);
-        }
-        
-        @Override
-        public void after () {
-            model.fireTableDataChanged ();
         }
         
         public void performerImpl (Unit u) {
@@ -883,16 +858,18 @@ public class UnitTab extends javax.swing.JPanel {
         
         public void performerImpl () {
             boolean wizardFinished = false;
+            final int row = getSelectedRow ();
             final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnitData ());
             UninstallUnitWizard wizard = new UninstallUnitWizard ();
             try {
                 wizardFinished = wizard.invokeWizard ();
             } finally {
                 Containers.forUninstall ().removeAll ();
-                after ();
+                fireUpdataUnitChange ();
                 if (!wizardFinished) {
                     UnitCategoryTableModel.restoreState (model.getUnitData (), state, model.isMarkedAsDefault ());
                 }
+                restoreSelectedRow(row);
                 refreshState ();
                 focusTable ();
             }
@@ -906,14 +883,17 @@ public class UnitTab extends javax.swing.JPanel {
         
         public void performerImpl () {
             boolean wizardFinished = false;
+            final int row = getSelectedRow();
             final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnitData ());
             try {
                 wizardFinished = new InstallUnitWizard ().invokeWizard (OperationType.UPDATE);
             } finally {
-                after ();
+                //must be called before restoreState
+                fireUpdataUnitChange ();
                 if (!wizardFinished) {
                     UnitCategoryTableModel.restoreState (model.getUnitData (), state, model.isMarkedAsDefault ());
                 }
+                restoreSelectedRow(row);                
                 refreshState ();
                 focusTable ();
             }
@@ -927,14 +907,16 @@ public class UnitTab extends javax.swing.JPanel {
         
         public void performerImpl () {
             boolean wizardFinished = false;
+            final int row = getSelectedRow();
             final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnitData ());
             try {
                 wizardFinished = new InstallUnitWizard ().invokeWizard (OperationType.INSTALL);
             } finally {
-                after ();
+                fireUpdataUnitChange ();
                 if (!wizardFinished) {
                     UnitCategoryTableModel.restoreState (model.getUnitData (), state, model.isMarkedAsDefault ());
                 }
+                restoreSelectedRow(row);
                 refreshState ();
                 focusTable ();
             }
@@ -947,15 +929,17 @@ public class UnitTab extends javax.swing.JPanel {
         }
         public void performerImpl () {
             boolean wizardFinished = false;
+            final int row = getSelectedRow();
             final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnitData ());
             
             try {
                 wizardFinished = new InstallUnitWizard ().invokeWizard (OperationType.LOCAL_DOWNLOAD);
             } finally {
-                after ();
+                fireUpdataUnitChange ();
                 if (!wizardFinished) {
                     UnitCategoryTableModel.restoreState (model.getUnitData (), state, model.isMarkedAsDefault ());
                 }
+                restoreSelectedRow(row);                
                 refreshState ();
                 focusTable ();
             }
@@ -989,19 +973,17 @@ public class UnitTab extends javax.swing.JPanel {
         public void performerImpl (Unit u) {
             String category = u.getCategoryName ();
             int count = model.getRowCount ();
+            final int row = getSelectedRow();        
             for (int i = 0; i < count; i++) {
                 u = model.getUnitAtRow (i);
                 if (u != null && category.equals (u.getCategoryName ()) && !u.isMarked () && u.canBeMarked ()) {
                     u.setMarked (true);
                 }
             }
-        }
-        
-        @Override
-        public void postRefresh () {
             model.fireTableDataChanged ();
+            restoreSelectedRow(row);
         }
-        
+                
         @Override
         protected boolean isVisible (Unit u) {
             if (Utilities.modulesOnly ()) {
@@ -1034,6 +1016,7 @@ public class UnitTab extends javax.swing.JPanel {
         }
         public void performerImpl (Unit u) {
             Unit.Installed unit = (Unit.Installed)u;
+            final int row = getSelectedRow();
             
             if (!unit.getRelevantElement ().isEnabled ()) {
                 OperationInfo info = Containers.forEnable ().add (unit.updateUnit, unit.getRelevantElement ());
@@ -1042,13 +1025,11 @@ public class UnitTab extends javax.swing.JPanel {
                 wizard.invokeWizard (true);
                 Containers.forEnable ().removeAll ();
             }
+            fireUpdataUnitChange ();
+            restoreSelectedRow(row);
+            focusTable();
         }
         
-        @Override
-        public void after () {
-            super.after ();
-            focusTable ();
-        }
         
         @Override
         protected boolean isVisible (Unit u) {
@@ -1087,6 +1068,7 @@ public class UnitTab extends javax.swing.JPanel {
         }
         public void performerImpl (Unit uu) {
             Unit.Installed unit = (Unit.Installed)uu;
+            final int row = getSelectedRow();
             
             String category = unit.getCategoryName ();
             int count = model.getRowCount ();
@@ -1106,14 +1088,11 @@ public class UnitTab extends javax.swing.JPanel {
                 wizard.invokeWizard (true);
                 Containers.forEnable ().removeAll ();
             }
+            fireUpdataUnitChange ();
+            restoreSelectedRow(row);
+            focusTable();
         }
-        
-        @Override
-        public void after () {
-            super.after ();
-            focusTable ();
-        }
-        
+                
         @Override
         protected boolean isVisible (Unit u) {
             if (Utilities.modulesOnly ()) {
@@ -1147,6 +1126,7 @@ public class UnitTab extends javax.swing.JPanel {
         }
         public void performerImpl (Unit u) {
             Unit.Installed unit = (Unit.Installed)u;
+            final int row = getSelectedRow();
             
             if (unit.getRelevantElement ().isEnabled ()) {
                 OperationInfo info = Containers.forDisable ().add (unit.updateUnit, unit.getRelevantElement ());
@@ -1155,13 +1135,11 @@ public class UnitTab extends javax.swing.JPanel {
                 wizard.invokeWizard (false);
                 Containers.forDisable ().removeAll ();
             }
-        }
-        
-        @Override
-        public void after () {
-            super.after ();
+            fireUpdataUnitChange ();
+            restoreSelectedRow(row);
             focusTable ();
         }
+        
         
         @Override
         protected boolean isVisible (Unit u) {
@@ -1189,14 +1167,7 @@ public class UnitTab extends javax.swing.JPanel {
                     }
                 }
             }
-            
             return  retval;
-        }
-        
-        @Override
-        public void after () {
-            super.after ();
-            focusTable ();
         }
         
         protected String getContextName (Unit u) {
@@ -1207,6 +1178,7 @@ public class UnitTab extends javax.swing.JPanel {
         }
         public void performerImpl (Unit uu) {
             Unit.Installed unit = (Unit.Installed)uu;
+            final int row = getSelectedRow();
             
             String category = unit.getCategoryName ();
             int count = model.getRowCount ();
@@ -1226,6 +1198,9 @@ public class UnitTab extends javax.swing.JPanel {
                 wizard.invokeWizard (false);
                 Containers.forDisable ().removeAll ();
             }
+            fireUpdataUnitChange ();
+            restoreSelectedRow(row);
+            focusTable ();            
         }
         @Override
         protected boolean isVisible (Unit u) {
@@ -1240,11 +1215,6 @@ public class UnitTab extends javax.swing.JPanel {
         public UncheckCategoryAction () {
             super ("UnitTab_UncheckCategoryAction", /*KeyStroke.getKeyStroke (KeyEvent.VK_D, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK),*/ "Uncheck");
         }
-        @Override
-        public void postRefresh () {
-            model.fireTableDataChanged ();
-        }
-        
         @Override
         protected boolean isEnabled (Unit u) {
             boolean retval = false;
@@ -1265,6 +1235,8 @@ public class UnitTab extends javax.swing.JPanel {
         @Override
         public void performerImpl (Unit u) {
             String category = u.getCategoryName ();
+            final int row = getSelectedRow();
+            
             int count = model.getRowCount ();
             for (int i = 0; i < count; i++) {
                 u = model.getUnitAtRow (i);
@@ -1272,6 +1244,9 @@ public class UnitTab extends javax.swing.JPanel {
                     u.setMarked (false);
                 }
             }
+            model.fireTableDataChanged ();
+            restoreSelectedRow(row);
+            focusTable();
         }
         
         @Override
@@ -1293,16 +1268,15 @@ public class UnitTab extends javax.swing.JPanel {
         
         public void performerImpl (Unit uu) {
             int count = model.getRowCount ();
+            final int row = getSelectedRow();
             for (int i = 0; i < count; i++) {
                 Unit u = model.getUnitAtRow (i);
                 if (u != null && !u.isMarked () &&  u.canBeMarked ()) {
                     u.setMarked (true);
                 }
             }
-        }
-        @Override
-        public void postRefresh () {
             model.fireTableDataChanged ();
+            restoreSelectedRow(row);
         }
         
         protected boolean isEnabled (Unit uu) {
@@ -1319,16 +1293,15 @@ public class UnitTab extends javax.swing.JPanel {
         }
         public void performerImpl (Unit uu) {
             int count = model.getRowCount ();
+            final int row = getSelectedRow();            
             for (int i = 0; i < count; i++) {
                 Unit u = model.getUnitAtRow (i);
                 if (u != null && u.isMarked ()  && u.canBeMarked ()) {
                     u.setMarked (false);
                 }
-            }
-        }
-        @Override
-        public void postRefresh () {
-            model.fireTableDataChanged ();
+            }            
+            model.fireTableDataChanged ();            
+            restoreSelectedRow(row);
         }
         
         protected boolean isEnabled (Unit uu) {
@@ -1357,12 +1330,7 @@ public class UnitTab extends javax.swing.JPanel {
         public void performerImpl () {
             setEnabled (false);
             reloadTask = reloadTask (true);
-        }
-        
-        @Override
-        public boolean isSynchronous () {
-            return false;
-        }
+        }        
     }
     
     private class AddLocallyDownloadedAction extends TabAction {
@@ -1379,13 +1347,12 @@ public class UnitTab extends javax.swing.JPanel {
         
         public void performerImpl () {
             if (getLocalDownloadSupport ().selectNbmFiles ()) {
-                before ();
                 final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnitData ());
                 final Runnable addUpdates = new Runnable (){
                     public void run () {
                         SwingUtilities.invokeLater (new Runnable () {
                             public void run () {
-                                after ();
+                                fireUpdataUnitChange();
                                 UnitCategoryTableModel.restoreState (model.getUnitData (), state, model.isMarkedAsDefault ());
                                 LocallyDownloadedTableModel downloadedTableModel = ((LocallyDownloadedTableModel)model);
                                 List<UpdateUnit> installed = downloadedTableModel.getAlreadyInstalled ();
@@ -1428,10 +1395,6 @@ public class UnitTab extends javax.swing.JPanel {
             }
         }
         
-        @Override
-        public boolean isSynchronous () {
-            return false;
-        }
     }
     
     private class RemoveLocallyDownloadedAction extends RowTabAction {
@@ -1466,7 +1429,7 @@ public class UnitTab extends javax.swing.JPanel {
                     } finally {
                         SwingUtilities.invokeLater (new Runnable () {
                             public void run () {
-                                after ();
+                                fireUpdataUnitChange();
                                 refreshState ();
                                 setWaitingState (false);
                             }
@@ -1485,12 +1448,7 @@ public class UnitTab extends javax.swing.JPanel {
         @Override
         protected boolean isVisible (Unit u) {
             return false;
-        }
-        
-        @Override
-        public boolean isSynchronous () {
-            return false;
-        }
+        }        
     }
     class EnableRenderer extends  DefaultTableCellRenderer {
         @Override
