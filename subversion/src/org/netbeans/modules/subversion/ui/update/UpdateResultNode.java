@@ -130,7 +130,6 @@ class UpdateResultNode extends AbstractNode {
     }
 
     public String getHtmlDisplayName() {
-        System.out.println("htmlDisplayName : " + htmlDisplayName);
         return htmlDisplayName;
     }
 
