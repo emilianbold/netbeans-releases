@@ -46,9 +46,9 @@ import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.ui.properties.SvnPropertiesAction;
 import org.netbeans.modules.subversion.ui.status.OpenInEditorAction;
 import org.netbeans.modules.versioning.util.VersioningListener;
-import org.netbeans.spi.project.ui.support.NodeList;
 
 /**
  * Table that displays nodes in the Update Results view. 
@@ -231,7 +231,7 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
     public void mouseReleased(MouseEvent e) {
         if(e.isPopupTrigger()) {
             onPopup(e);
-        }        
+        }     
     }
 
     public void mouseClicked(MouseEvent e) {
@@ -239,7 +239,7 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
             int row = table.rowAtPoint(e.getPoint());
             if (row == -1) return;
             row = sorter.modelIndex(row);
-            performOpenInEditorAction(row);
+            performOpen(row);
         }
     }
 
@@ -254,7 +254,7 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
     };
     private static ActionEvaluator notDeletedEvaluator = new ActionEvaluator() {
         public boolean isAction(FileUpdateInfo info) {
-            return (info.getAction() & ~FileUpdateInfo.ACTION_DELETED & FileUpdateInfo.ACTION_TYPE_FILE) != 0; 
+            return (info.getAction() & ~FileUpdateInfo.ACTION_DELETED) != 0; 
         } 
     };    
     private void onPopup(MouseEvent e) {
@@ -265,7 +265,7 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
                 setEnabled(selection.length == 1 && hasAction(selection, notDeletedEvaluator) );
             }
             public void actionPerformed(ActionEvent e) {
-               performOpenInEditorAction(selection[0]);
+               performOpen(selection[0]);
             }
         }));        
         menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(UpdateResultsTable.class, "CTL_MenuItem_ResolveConflicts")) { // NOI18N
@@ -292,13 +292,29 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
         return true;
     }
     
-    private void performOpenInEditorAction(int idx) {
+    private void performOpen(int idx) {        
+        FileUpdateInfo fui = (FileUpdateInfo) nodes[idx].getLookup().lookup(FileUpdateInfo.class);
+        if(fui == null) {
+            return;        
+        }        
+        if( (fui.getAction() & FileUpdateInfo.ACTION_TYPE_FILE) != 0 ) {
+            performOpenInEditorAction(nodes[idx]);
+        } else {
+            performOpenSvnProperties(fui.getFile());
+        }        
+    }
+
+    private void performOpenInEditorAction(Node node) {
         // XXX how is this supposed to work ???
-        Action action = nodes[idx].getPreferredAction();
+        Action action = node.getPreferredAction();
         if (action == null || !action.isEnabled()) action = new OpenInEditorAction();
         if (action.isEnabled()) {
             action.actionPerformed(new ActionEvent(this, 0, "")); // NOI18N
         }
+    }
+
+    private void performOpenSvnProperties(File file) {        
+        SvnPropertiesAction.openProperties(new File[] {file}, file.getName());        
     }
     
     private File[] getSelectedFiles(int[] selection) {
