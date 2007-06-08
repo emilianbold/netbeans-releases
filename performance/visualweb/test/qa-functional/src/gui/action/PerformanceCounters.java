@@ -50,17 +50,17 @@ public class PerformanceCounters {
     public static void addPerformanceCounter(String counterName) {
         
         countersList.add(counterName);
-        long lastEventTime = tr.getCurrentEvents().getLast().getTimeMillis();
+        //long lastEventTime = tr.getCurrentEvents().getLast().getTimeMillis();
         long ctm = System.currentTimeMillis();
-        testCase.log("add: last event = "+lastEventTime+" system Time = "+ctm);
-        tr.add(COUNTER_START, counterName, ctm);
+        //testCase.log("add: last event = "+lastEventTime+" system Time = "+ctm);
+        tr.add(COUNTER_START, counterName+"[ "+getPass()+" ]");
     }
     
     public static void endPerformanceCounter(String counterName) {
-        long lastEventTime = tr.getCurrentEvents().getLast().getTimeMillis();
+        //long lastEventTime = tr.getCurrentEvents().getLast().getTimeMillis();
         long ctm = System.currentTimeMillis();
-        testCase.log("end: last event = "+lastEventTime+" system Time = "+ctm);        
-        tr.add(COUNTER_STOP, counterName, ctm);  
+        //testCase.log("end: last event = "+lastEventTime+" system Time = "+ctm);        
+        tr.add(COUNTER_STOP, counterName+"[ "+getPass()+" ]");
     }
     private static void clearPerformanceCounters() {
         countersList = new LinkedList<String>();
@@ -68,36 +68,44 @@ public class PerformanceCounters {
     }
     private static void nextPass() {
         testAttempt++;
-    } 
+    }
+    private static int getPass() {
+        return testAttempt;
+    }
     public static void reportPerformanceCounters() {
         for (String counter : countersList) {
            reportPerformanceCounter(counter);           
         }
+        nextPass();
     }    
 
     private static void reportPerformanceCounter(String counterName) {
         long counterResult = measurePerformanceCounter(counterName); 
-        testCase.log("Report for "+counterName+" = "+counterResult);
+        //testCase.log("Report for "+counterName+" = "+counterResult);
         testCase.reportPerformance(testName + " at step: "+counterName, counterResult, "ms", NbPerformanceTest.PerformanceData.NO_ORDER, NbPerformanceTest.PerformanceData.NO_THRESHOLD);
         
     }
     private static long measurePerformanceCounter(String name) {
+        String attemptName = name+"[ "+getPass()+" ]";
+        
         ActionTracker.Tuple start = tr.getCurrentEvents().getFirst();
         ActionTracker.Tuple end = tr.getCurrentEvents().getFirst(); 
-        testCase.log(start.toString());
-        testCase.log(end.toString());
+        
         for (ActionTracker.Tuple tuple : tr.getCurrentEvents()) {
             int code = tuple.getCode();
             String counter = tuple.getName();
             
-            if( code == COUNTER_START && counter.equals(name)) {
+            if( code == COUNTER_START && counter.equals(attemptName)) {
                 start = tuple;
-            } else if(code == COUNTER_STOP && counter.equals(name)) {
+            } else if(code == COUNTER_STOP && counter.equals(attemptName)) {
                 end = tuple;
             }            
         }
-        testCase.log(start.toString());
-        testCase.log(end.toString());
+        testCase.log("Start event code "+start.getCode()+" name "+start.getName()+" time "+start.getTimeMillis()+" diff "+start.getTimeDifference());
+        testCase.log("End   event code "+end.getCode()+" name "+end.getName()+" time "+end.getTimeMillis()+" diff "+end.getTimeDifference());
+        
+        start.setMeasured(true);
+        end.setMeasured(true);
         
         long result = end.getTimeMillis() - start.getTimeMillis();
         if (result < 0 || start.getTimeMillis() == 0) {
