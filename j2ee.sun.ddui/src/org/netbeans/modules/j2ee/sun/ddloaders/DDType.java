@@ -58,12 +58,10 @@ public final class DDType {
     // Internal data
     private final String descriptorName;
     private final Class viewFactoryClass;
-    private final int hashCode;
     
     private DDType(String ddName, Class vfc) {
         descriptorName = ddName;
         viewFactoryClass = vfc;
-        hashCode = generateHashCode();
     }
     
     public String getDescriptorFileName() {
@@ -94,10 +92,6 @@ public final class DDType {
     }
 
     public int hashCode() {
-        return hashCode;
-    }
-    
-    protected int generateHashCode() {
         int hash = 7;
         hash = 37 * hash + (descriptorName != null ? descriptorName.hashCode() : 0);
         hash = 37 * hash + (viewFactoryClass != null ? viewFactoryClass.hashCode() : 0);
