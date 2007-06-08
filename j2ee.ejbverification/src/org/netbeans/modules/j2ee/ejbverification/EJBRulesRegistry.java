@@ -25,6 +25,7 @@ import org.netbeans.modules.j2ee.ejbverification.rules.BMnotPartOfRBIandLBI;
 import org.netbeans.modules.j2ee.ejbverification.rules.BeanHasDifferentLBIandRBI;
 import org.netbeans.modules.j2ee.ejbverification.rules.BeanImplementsBI;
 import org.netbeans.modules.j2ee.ejbverification.rules.HasNoArgContructor;
+import org.netbeans.modules.j2ee.ejbverification.rules.LegalModifiers;
 import org.netbeans.modules.j2ee.ejbverification.rules.SBSuperClassNotSB;
 import org.netbeans.modules.j2ee.ejbverification.rules.WSisSLSB;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -40,7 +41,8 @@ public class EJBRulesRegistry {
             new BeanImplementsBI(),
             new BMnotPartOfRBIandLBI(),
             new WSisSLSB(),
-            new BeanHasDifferentLBIandRBI());
+            new BeanHasDifferentLBIandRBI(),
+            new LegalModifiers());
     
     public static Collection<ErrorDescription> check(EJBProblemContext ctx){
         Collection<ErrorDescription> problemsFound = new ArrayList<ErrorDescription>();
