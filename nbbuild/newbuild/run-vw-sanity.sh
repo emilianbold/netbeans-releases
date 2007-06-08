@@ -73,11 +73,11 @@ export DISPLAY
 if [ ! -d ${J2EE_HOME}/domains/domain1 ]; then
     cd ${J2EE_HOME}
     
-    ant -f setup.xml
+    ant -f setup.xml -Dinstance.port=28080
     cp $TESTROOT/data/DefaultDeploymentTargets.properties.template $TESTROOT/data/tmp.properties
     MODIFIED_J2EE_HOME=`echo ${J2EE_HOME} | sed 's/\//::/g'`
-    sed -e "s/J2EE_HOME/${MODIFIED_J2EE_HOME}/g" -e "s/::/\//g" $TESTROOT/data/tmp.properties > $TESTROOT/data/DefaultDeploymentTargets.properties
-    
+    sed -e "s/J2EE_HOME/${MODIFIED_J2EE_HOME}/g" -e "s/::/\//g" -e "s/8080/28080/g" $TESTROOT/data/tmp.properties > $TESTROOT/data/DefaultDeploymentTargets.properties
+   
     ERROR_CODE=$?
     
     if [ $ERROR_CODE != 0 ]; then
