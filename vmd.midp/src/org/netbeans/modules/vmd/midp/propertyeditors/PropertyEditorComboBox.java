@@ -194,13 +194,15 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
         } else if (enableTypeID != null) {
             if (enableTypeID == FontCD.TYPEID) {
                 final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-                document.getTransactionManager().readAccess( new Runnable() {
-                    public void run() {
-                        DesignComponent component = document.getComponentByUID(componentID);
-                        int kind = MidpTypes.getInteger(component.readProperty(FontCD.PROP_FONT_KIND));
-                        canWrite[0] = kind == FontCD.VALUE_KIND_CUSTOM;
-                    }
-                });
+                if (document != null) {
+                    document.getTransactionManager().readAccess( new Runnable() {
+                        public void run() {
+                            DesignComponent component = document.getComponentByUID(componentID);
+                            int kind = MidpTypes.getInteger(component.readProperty(FontCD.PROP_FONT_KIND));
+                            canWrite[0] = kind == FontCD.VALUE_KIND_CUSTOM;
+                        }
+                    });
+                }
             }
         }
         return canWrite[0];

@@ -78,38 +78,40 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
     
     public Component getCustomEditor() {
         final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-        document.getTransactionManager().readAccess(new Runnable() {
-            public void run() {
-                DesignComponent component = document.getComponentByUID(componentID);
-                PropertyValue value = null;
-                Iterator<DesignComponent> iterator = component.getComponents().iterator();
-                if (iterator.hasNext()) {
-                    DesignComponent eventHandler = iterator.next();
-                    value = PropertyValue.createComponentReference(eventHandler);
+        if (document != null) {
+            document.getTransactionManager().readAccess(new Runnable() {
+                public void run() {
+                    DesignComponent component = document.getComponentByUID(componentID);
+                    PropertyValue value = null;
+                    Iterator<DesignComponent> iterator = component.getComponents().iterator();
+                    if (iterator.hasNext()) {
+                        DesignComponent eventHandler = iterator.next();
+                        value = PropertyValue.createComponentReference(eventHandler);
+                    }
+                    
+                    DesignComponent displayableCategory = MidpDocumentSupport.getCategoryComponent(document, DisplayablesCategoryCD.TYPEID);
+                    DesignComponent pointsCategory = MidpDocumentSupport.getCategoryComponent(document, PointsCategoryCD.TYPEID);
+                    List<DesignComponent> displayables = DocumentSupport.gatherAllComponentsOfTypeID(displayableCategory, DisplayableCD.TYPEID);
+                    customEditor.updateModels(displayables, PropertyEditorEventHandlerElement.MODEL_TYPE_DISPLAYABLES, value);
+                    
+                    List<DesignComponent> alerts = DocumentSupport.gatherAllComponentsOfTypeID(displayableCategory, AlertCD.TYPEID);
+                    List<DesignComponent> displExceptAlerts = new ArrayList<DesignComponent>(displayables.size() - alerts.size());
+                    displExceptAlerts.addAll(displayables);
+                    displExceptAlerts.removeAll(alerts);
+                    customEditor.updateModels(displExceptAlerts, PropertyEditorEventHandlerElement.MODEL_TYPE_DISPLAYABLES_WITHOUT_ALERTS, value);
+                    
+                    List<DesignComponent> points = DocumentSupport.gatherAllComponentsOfTypeID(pointsCategory, CallPointCD.TYPEID);
+                    List<DesignComponent> methods = DocumentSupport.gatherAllComponentsOfTypeID(pointsCategory, MethodPointCD.TYPEID);
+                    List<DesignComponent> pointsAndMethods = new ArrayList<DesignComponent>(points.size() + methods.size());
+                    pointsAndMethods.addAll(points);
+                    pointsAndMethods.addAll(methods);
+                    customEditor.updateModels(pointsAndMethods, PropertyEditorEventHandlerElement.MODEL_TYPE_POINTS, value);
+                    
+                    List<DesignComponent> mobileDevices = DocumentSupport.gatherSubComponentsOfType(pointsCategory, MobileDeviceCD.TYPEID);
+                    customEditor.setExitMidletEnabled(mobileDevices.size() == 1);
                 }
-                
-                DesignComponent displayableCategory = MidpDocumentSupport.getCategoryComponent(document, DisplayablesCategoryCD.TYPEID);
-                DesignComponent pointsCategory = MidpDocumentSupport.getCategoryComponent(document, PointsCategoryCD.TYPEID);
-                List<DesignComponent> displayables = DocumentSupport.gatherAllComponentsOfTypeID(displayableCategory, DisplayableCD.TYPEID);
-                customEditor.updateModels(displayables, PropertyEditorEventHandlerElement.MODEL_TYPE_DISPLAYABLES, value);
-                
-                List<DesignComponent> alerts = DocumentSupport.gatherAllComponentsOfTypeID(displayableCategory, AlertCD.TYPEID);
-                List<DesignComponent> displExceptAlerts = new ArrayList<DesignComponent>(displayables.size() - alerts.size());
-                displExceptAlerts.addAll(displayables);
-                displExceptAlerts.removeAll(alerts);
-                customEditor.updateModels(displExceptAlerts, PropertyEditorEventHandlerElement.MODEL_TYPE_DISPLAYABLES_WITHOUT_ALERTS, value);
-                
-                List<DesignComponent> points = DocumentSupport.gatherAllComponentsOfTypeID(pointsCategory, CallPointCD.TYPEID);
-                List<DesignComponent> methods = DocumentSupport.gatherAllComponentsOfTypeID(pointsCategory, MethodPointCD.TYPEID);
-                List<DesignComponent> pointsAndMethods = new ArrayList<DesignComponent>(points.size() + methods.size());
-                pointsAndMethods.addAll(points);
-                pointsAndMethods.addAll(methods);
-                customEditor.updateModels(pointsAndMethods, PropertyEditorEventHandlerElement.MODEL_TYPE_POINTS, value);
-                
-                List<DesignComponent> mobileDevices = DocumentSupport.gatherSubComponentsOfType(pointsCategory, MobileDeviceCD.TYPEID);
-                customEditor.setExitMidletEnabled(mobileDevices.size() == 1);
-            }
-        });
+            });
+        }
         
         return customEditor;
     }
@@ -121,23 +123,25 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
     public String getAsText() {
         final String[] string = new String[1];
         final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-        document.getTransactionManager().readAccess(new Runnable() {
-            public void run() {
-                DesignComponent component = document.getComponentByUID(componentID);
-                Iterator<DesignComponent> iterator = component.getComponents().iterator();
-                if (!iterator.hasNext()) {
-                    string[0] = DO_NOTHING;
-                } else {
-                    DesignComponent eventHandler = iterator.next();
-                    InfoPresenter presenter = eventHandler.getPresenter(InfoPresenter.class);
-                    if (presenter != null) {
-                        string[0] = presenter.getDisplayName(InfoPresenter.NameType.PRIMARY);
+        if (document != null) {
+            document.getTransactionManager().readAccess(new Runnable() {
+                public void run() {
+                    DesignComponent component = document.getComponentByUID(componentID);
+                    Iterator<DesignComponent> iterator = component.getComponents().iterator();
+                    if (!iterator.hasNext()) {
+                        string[0] = DO_NOTHING;
                     } else {
-                        throw new IllegalStateException("No infoPresenter for " + eventHandler); // NOI18N
+                        DesignComponent eventHandler = iterator.next();
+                        InfoPresenter presenter = eventHandler.getPresenter(InfoPresenter.class);
+                        if (presenter != null) {
+                            string[0] = presenter.getDisplayName(InfoPresenter.NameType.PRIMARY);
+                        } else {
+                            throw new IllegalStateException("No infoPresenter for " + eventHandler); // NOI18N
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
         return string[0];
     }
     
@@ -146,8 +150,11 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
     }
     
     public boolean executeInsideWriteTransaction() {
-        DesignComponent component = ActiveDocumentSupport.getDefault().getActiveDocument().getComponentByUID(componentID);
-        customEditor.createEventHandler(component);
+        DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
+        if (document != null) {
+            DesignComponent component = document.getComponentByUID(componentID);
+            customEditor.createEventHandler(component);
+        }
         return false;
     }
     

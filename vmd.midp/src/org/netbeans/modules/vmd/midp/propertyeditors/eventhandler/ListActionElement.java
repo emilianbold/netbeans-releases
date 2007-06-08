@@ -50,8 +50,7 @@ public class ListActionElement implements PropertyEditorEventHandlerElement {
         if (!radioButton.isSelected()) {
             return;
         }
-        DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-        DesignComponent prevScreenEventHandler = document.createComponent(ListEventHandlerCD.TYPEID);
+        DesignComponent prevScreenEventHandler = eventSource.getDocument().createComponent(ListEventHandlerCD.TYPEID);
         MidpDocumentSupport.updateEventHandlerWithNew(eventSource, prevScreenEventHandler);
     }
     

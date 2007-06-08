@@ -163,38 +163,40 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
         values.put(NONE_ITEM, null);
         
         final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-        document.getTransactionManager().readAccess( new Runnable() {
-            public void run() {
-                DesignComponent item = document.getComponentByUID(componentID);
-                List<PropertyValue> formCmdESValues = item.getParentComponent().readProperty(DisplayableCD.PROP_COMMANDS).getArray();
-                List<DesignComponent> formCommands = new ArrayList<DesignComponent>(formCmdESValues.size());
-                for (PropertyValue esValue : formCmdESValues) {
-                    DesignComponent command = esValue.getComponent().readProperty(CommandEventSourceCD.PROP_COMMAND).getComponent();
-                    if (command != null) {
-                        PropertyValue ordinaryValue = command.readProperty(CommandCD.PROP_ORDINARY);
-                        if (MidpTypes.getBoolean(ordinaryValue)) {
-                            formCommands.add(command);
+        if (document != null) {
+            document.getTransactionManager().readAccess( new Runnable() {
+                public void run() {
+                    DesignComponent item = document.getComponentByUID(componentID);
+                    List<PropertyValue> formCmdESValues = item.getParentComponent().readProperty(DisplayableCD.PROP_COMMANDS).getArray();
+                    List<DesignComponent> formCommands = new ArrayList<DesignComponent>(formCmdESValues.size());
+                    for (PropertyValue esValue : formCmdESValues) {
+                        DesignComponent command = esValue.getComponent().readProperty(CommandEventSourceCD.PROP_COMMAND).getComponent();
+                        if (command != null) {
+                            PropertyValue ordinaryValue = command.readProperty(CommandCD.PROP_ORDINARY);
+                            if (MidpTypes.getBoolean(ordinaryValue)) {
+                                formCommands.add(command);
+                            }
                         }
                     }
-                }
-                
-                Collection<DesignComponent> components = MidpDocumentSupport.getCategoryComponent(document, CommandsCategoryCD.TYPEID).getComponents();
-                Collection<DesignComponent> commands = new ArrayList<DesignComponent>(components.size());
-                for (DesignComponent command : components) {
-                    PropertyValue ordinaryValue = command.readProperty(CommandCD.PROP_ORDINARY);
-                    if (MidpTypes.getBoolean(ordinaryValue)) {
-                        commands.add(command);
+                    
+                    Collection<DesignComponent> components = MidpDocumentSupport.getCategoryComponent(document, CommandsCategoryCD.TYPEID).getComponents();
+                    Collection<DesignComponent> commands = new ArrayList<DesignComponent>(components.size());
+                    for (DesignComponent command : components) {
+                        PropertyValue ordinaryValue = command.readProperty(CommandCD.PROP_ORDINARY);
+                        if (MidpTypes.getBoolean(ordinaryValue)) {
+                            commands.add(command);
+                        }
+                    }
+                    commands.removeAll(formCommands);
+                    
+                    for (DesignComponent command : commands) {
+                        String displayName = getComponentDisplayName(command);
+                        tags.add(displayName);
+                        values.put(displayName, command);
                     }
                 }
-                commands.removeAll(formCommands);
-                
-                for (DesignComponent command : commands) {
-                    String displayName = getComponentDisplayName(command);
-                    tags.add(displayName);
-                    values.put(displayName, command);
-                }
-            }
-        });
+            });
+        }
         
         return tags.toArray(new String[tags.size()]);
     }
@@ -211,12 +213,13 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
     private String getDecodeValue(final PropertyValue value){
         final String[] decodeValue = new String[1];
         final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-        document.getTransactionManager().readAccess(new Runnable() {
-            public void run() {
-                decodeValue[0] = getComponentDisplayName(value.getComponent());
-            }
-        });
-        
+        if (document != null) {
+            document.getTransactionManager().readAccess(new Runnable() {
+                public void run() {
+                    decodeValue[0] = getComponentDisplayName(value.getComponent());
+                }
+            });
+        }
         return decodeValue[0];
     }
     
@@ -224,24 +227,26 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
     private DesignComponent getItemCommandEvenSource(final String name) {
         final DesignComponent[] itemCommandEvenSource = new DesignComponent[1];
         final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-        document.getTransactionManager().writeAccess( new Runnable() {
-            public void run() {
-                DesignComponent command = values.get(name);
-                DesignComponent item = document.getComponentByUID(componentID);
-                List<PropertyValue> itemESValues = item.readProperty(ItemCD.PROP_COMMANDS).getArray();
-                for (PropertyValue esValue : itemESValues) {
-                    DesignComponent existingES = esValue.getComponent();
-                    if (existingES.readProperty(ItemCommandEventSourceCD.PROP_COMMAND).getComponent().equals(command)) {
-                        itemCommandEvenSource[0] = existingES;
-                        break;
+        if (document != null) {
+            document.getTransactionManager().writeAccess( new Runnable() {
+                public void run() {
+                    DesignComponent command = values.get(name);
+                    DesignComponent item = document.getComponentByUID(componentID);
+                    List<PropertyValue> itemESValues = item.readProperty(ItemCD.PROP_COMMANDS).getArray();
+                    for (PropertyValue esValue : itemESValues) {
+                        DesignComponent existingES = esValue.getComponent();
+                        if (existingES.readProperty(ItemCommandEventSourceCD.PROP_COMMAND).getComponent().equals(command)) {
+                            itemCommandEvenSource[0] = existingES;
+                            break;
+                        }
+                    }
+                    
+                    if (itemCommandEvenSource[0] == null) { // create new ItemCommandEvenSource
+                        itemCommandEvenSource[0] = MidpDocumentSupport.attachCommandToItem(item, command);
                     }
                 }
-                
-                if (itemCommandEvenSource[0] == null) { // create new ItemCommandEvenSource
-                    itemCommandEvenSource[0] = MidpDocumentSupport.attachCommandToItem(item, command);
-                }
-            }
-        });
+            });
+        }
         return itemCommandEvenSource[0];
     }
     
@@ -268,11 +273,13 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
             
             final PropertyValue[] cmdValue = new PropertyValue[1];
             final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-            document.getTransactionManager().readAccess(new Runnable() {
-                public void run() {
-                    cmdValue[0] = value.getComponent().readProperty(ItemCommandEventSourceCD.PROP_COMMAND);
-                }
-            });
+            if (document != null) {
+                document.getTransactionManager().readAccess(new Runnable() {
+                    public void run() {
+                        cmdValue[0] = value.getComponent().readProperty(ItemCommandEventSourceCD.PROP_COMMAND);
+                    }
+                });
+            }
             if (cmdValue[0] == null) {
                 return;
             }

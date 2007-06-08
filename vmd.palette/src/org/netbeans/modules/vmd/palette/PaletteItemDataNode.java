@@ -26,6 +26,8 @@ import org.openide.loaders.DataNode;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -45,7 +47,13 @@ public class PaletteItemDataNode extends DataNode {
     }
     
     public PaletteItemDataNode(PaletteItemDataObject obj) {
-        super(obj, Children.LEAF, Lookups.singleton(obj));
+        this( obj, new InstanceContent() );
+    }
+    
+    private PaletteItemDataNode(PaletteItemDataObject obj, InstanceContent ic) {
+        super(obj, Children.LEAF, new AbstractLookup(ic));
+        ic.add(obj);
+        ic.add(this);
         this.obj = obj;
         lookup = Lookups.singleton(this);
     }
@@ -107,27 +115,31 @@ public class PaletteItemDataNode extends DataNode {
     void setValid(boolean isValid) {
         this.isValid = isValid;
     }
-
+    
+    boolean isValid() {
+        return isValid;
+    }
+    
     void setNeedCheck(boolean needCheck) {
         this.needCheck = needCheck;
     }
-
+    
     public boolean canRename() {
         return false;
     }
-
+    
     public boolean canDestroy() {
         return false;
     }
-
+    
     public void destroy() throws IOException {
         super.destroy();
     }
-
+    
     public boolean canCopy() {
         return false;
     }
-
+    
     public boolean canCut() {
         return false;
     }

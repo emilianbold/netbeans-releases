@@ -39,7 +39,7 @@ import org.openide.util.NbBundle;
  */
 public class GoToPreviousDisplayableElement implements PropertyEditorEventHandlerElement {
     private JRadioButton radioButton;
-
+    
     public GoToPreviousDisplayableElement() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(GoToPreviousDisplayableElement.class, "LBL_PREV_DISPL")); // NOI18N
@@ -49,8 +49,7 @@ public class GoToPreviousDisplayableElement implements PropertyEditorEventHandle
         if (!radioButton.isSelected()) {
             return;
         }
-        DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-        DesignComponent prevScreenEventHandler = document.createComponent(PreviousScreenEventHandlerCD.TYPEID);
+        DesignComponent prevScreenEventHandler = eventSource.getDocument().createComponent(PreviousScreenEventHandlerCD.TYPEID);
         MidpDocumentSupport.updateEventHandlerWithNew(eventSource, prevScreenEventHandler);
     }
     
@@ -72,10 +71,10 @@ public class GoToPreviousDisplayableElement implements PropertyEditorEventHandle
     public boolean isVerticallyResizable() {
         return false;
     }
-
+    
     public void updateModel(List<DesignComponent> components, int modelType) {
     }
-
+    
     public String getText() {
         return "";
     }
@@ -88,10 +87,10 @@ public class GoToPreviousDisplayableElement implements PropertyEditorEventHandle
             }
         }
     }
-
+    
     public void setEnabled(boolean enabled) {
     }
-
+    
     public static class GoToPreviousDisplayableElementFactory implements PropertyEditorElementFactory {
         public PropertyEditorEventHandlerElement createElement() {
             return new GoToPreviousDisplayableElement();

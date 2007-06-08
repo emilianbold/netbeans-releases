@@ -142,12 +142,14 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
                 super.setValue(MidpTypes.createIntegerValue(GaugeCD.VALUE_INDEFINITE));
                 
                 final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-                document.getTransactionManager().writeAccess( new Runnable() {
-                    public void run() {
-                        DesignComponent component = document.getComponentByUID(componentID);
-                        component.writeProperty(GaugeCD.PROP_VALUE, MidpTypes.createIntegerValue(GaugeCD.VALUE_CONTINUOUS_IDLE));
-                    }
-                });
+                if (document != null) {
+                    document.getTransactionManager().writeAccess( new Runnable() {
+                        public void run() {
+                            DesignComponent component = document.getComponentByUID(componentID);
+                            component.writeProperty(GaugeCD.PROP_VALUE, MidpTypes.createIntegerValue(GaugeCD.VALUE_CONTINUOUS_IDLE));
+                        }
+                    });
+                }
                 return;
             }
             

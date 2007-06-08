@@ -140,29 +140,31 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         super.setValue(MidpTypes.createStringValue(text));
         
         final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-        switch (dependance) {
-        case DEPENDENCE_TEXT_BOX:
-            document.getTransactionManager().writeAccess( new Runnable() {
-                public void run() {
-                    DesignComponent component = document.getComponentByUID(componentID);
-                    PropertyValue value = component.readProperty(TextBoxCD.PROP_MAX_SIZE);
-                    if (MidpTypes.getInteger(value) < length) {
-                        component.writeProperty(TextBoxCD.PROP_MAX_SIZE, MidpTypes.createIntegerValue(length));
+        if (document != null) {
+            switch (dependance) {
+            case DEPENDENCE_TEXT_BOX:
+                document.getTransactionManager().writeAccess( new Runnable() {
+                    public void run() {
+                        DesignComponent component = document.getComponentByUID(componentID);
+                        PropertyValue value = component.readProperty(TextBoxCD.PROP_MAX_SIZE);
+                        if (MidpTypes.getInteger(value) < length) {
+                            component.writeProperty(TextBoxCD.PROP_MAX_SIZE, MidpTypes.createIntegerValue(length));
+                        }
                     }
-                }
-            });
-            break;
-        case DEPENDENCE_TEXT_FIELD:
-            document.getTransactionManager().writeAccess( new Runnable() {
-                public void run() {
-                    DesignComponent component = document.getComponentByUID(componentID);
-                    PropertyValue value = component.readProperty(TextFieldCD.PROP_MAX_SIZE);
-                    if (MidpTypes.getInteger(value) < length) {
-                        component.writeProperty(TextFieldCD.PROP_MAX_SIZE, MidpTypes.createIntegerValue(length));
+                });
+                break;
+            case DEPENDENCE_TEXT_FIELD:
+                document.getTransactionManager().writeAccess( new Runnable() {
+                    public void run() {
+                        DesignComponent component = document.getComponentByUID(componentID);
+                        PropertyValue value = component.readProperty(TextFieldCD.PROP_MAX_SIZE);
+                        if (MidpTypes.getInteger(value) < length) {
+                            component.writeProperty(TextFieldCD.PROP_MAX_SIZE, MidpTypes.createIntegerValue(length));
+                        }
                     }
-                }
-            });
-            break;
+                });
+                break;
+            }
         }
     }
     

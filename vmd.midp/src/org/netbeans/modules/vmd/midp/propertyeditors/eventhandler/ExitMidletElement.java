@@ -54,8 +54,7 @@ public class ExitMidletElement implements PropertyEditorEventHandlerElement {
         if (!radioButton.isSelected()) {
             return;
         }
-        DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-        DesignComponent pointsCategory = MidpDocumentSupport.getCategoryComponent(document, PointsCategoryCD.TYPEID);
+        DesignComponent pointsCategory = MidpDocumentSupport.getCategoryComponent(eventSource.getDocument(), PointsCategoryCD.TYPEID);
         List<DesignComponent> list = DocumentSupport.gatherSubComponentsOfType(pointsCategory, MobileDeviceCD.TYPEID);
         if (list.size() != 1) {
             Debug.warning("Can not retrieve mobileDevice from document");
@@ -83,7 +82,7 @@ public class ExitMidletElement implements PropertyEditorEventHandlerElement {
     public boolean isVerticallyResizable() {
         return false;
     }
-
+    
     public void updateModel(List<DesignComponent> components, int modelType) {
     }
     
@@ -99,11 +98,11 @@ public class ExitMidletElement implements PropertyEditorEventHandlerElement {
             }
         }
     }
-
+    
     public void setEnabled(boolean enabled) {
         radioButton.setEnabled(enabled);
     }
-
+    
     public static class ExitMidletElementFactory implements PropertyEditorElementFactory {
         public PropertyEditorEventHandlerElement createElement() {
             return new ExitMidletElement();

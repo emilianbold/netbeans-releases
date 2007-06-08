@@ -164,15 +164,17 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
     private int getInputMode() {
         final int[] inputMode = new int[] { DateFieldCD.VALUE_DATE_TIME };
         final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-        document.getTransactionManager().readAccess(new Runnable() {
-            public void run() {
-                DesignComponent component = document.getComponentByUID(componentID);
-                PropertyValue pv = component.readProperty(DateFieldCD.PROP_INPUT_MODE);
-                if (pv.getKind() == PropertyValue.Kind.VALUE)  {
-                    inputMode[0] = MidpTypes.getInteger(pv);
+        if (document != null) {
+            document.getTransactionManager().readAccess(new Runnable() {
+                public void run() {
+                    DesignComponent component = document.getComponentByUID(componentID);
+                    PropertyValue pv = component.readProperty(DateFieldCD.PROP_INPUT_MODE);
+                    if (pv.getKind() == PropertyValue.Kind.VALUE)  {
+                        inputMode[0] = MidpTypes.getInteger(pv);
+                    }
                 }
-            }
-        });
+            });
+        }
         return inputMode[0];
     }
     

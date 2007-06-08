@@ -32,7 +32,6 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
 import org.netbeans.modules.vmd.midp.codegen.InstanceNameResolver;
 import org.netbeans.modules.vmd.midp.components.points.MethodPointCD;
@@ -86,15 +85,16 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
     
     private String saveValue(final String text) {
         final String[] str = new String[1];
-        final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-        document.getTransactionManager().readAccess(new Runnable() {
-            public void run() {
-                DesignComponent component = document.getComponentByUID(componentID);
-                PropertyValue newInstanceName = InstanceNameResolver.createFromSuggested(component, text);
-                PropertyEditorInstanceName.super.setValue(newInstanceName);
-                str[0] = (String) newInstanceName.getPrimitiveValue();
-            }
-        });
+        if (document.get() != null) {
+            document.get().getTransactionManager().readAccess(new Runnable() {
+                public void run() {
+                    DesignComponent component = document.get().getComponentByUID(componentID);
+                    PropertyValue newInstanceName = InstanceNameResolver.createFromSuggested(component, text);
+                    PropertyEditorInstanceName.super.setValue(newInstanceName);
+                    str[0] = (String) newInstanceName.getPrimitiveValue();
+                }
+            });
+        }
         return str[0];
     }
     
@@ -115,14 +115,16 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
     }
     
     public boolean canWrite() {
-        if (document.get() == null)
+        if (document.get() == null) {
             return false;
+        }
         document.get().getTransactionManager().readAccess(new Runnable() {
             public void run() {
-                if (document.get().getSelectedComponents().size() > 1)
+                if (document.get().getSelectedComponents().size() > 1) {
                     canWrite = false;
-                else
+                } else {
                     canWrite = true;
+                }
             }
         });
         
