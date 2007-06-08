@@ -364,6 +364,8 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                     return false;
                 }
                 if (dob instanceof DataFolder) {
+                    if (fo.equals(dob.getPrimaryFile()))
+                        return false;
                     folders.add((DataFolder)dob);
                 } else if (RetoucheUtils.isJavaFile(dob.getPrimaryFile())) {
                     jdoFound = true;
