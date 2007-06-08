@@ -35,7 +35,6 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import java.util.regex.Pattern;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.subversion.ui.wizards.URLPatternWizard;
 import org.openide.DialogDescriptor;
@@ -278,7 +277,7 @@ public class AnnotationSettings implements ActionListener, TableModelListener, L
         
         valid = true;     
         String pattern = (String) getModel().getValueAt(r, c);
-        try {                                    
+        try {                         
             Pattern.compile(pattern);                                                       
         } catch (Exception e) {
             valid = false;

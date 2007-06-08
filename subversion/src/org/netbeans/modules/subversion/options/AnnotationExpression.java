@@ -18,7 +18,9 @@
  */
 package org.netbeans.modules.subversion.options;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -46,8 +48,61 @@ public class AnnotationExpression {
     }
     void setUrlExp(String urlExp) {
         this.urlExp = urlExp;        
-    }
+    }    
     void setAnnotationExp(String annotationExp) {
         this.annotationExp = annotationExp;
     }            
+    
+    public String getCopyName(String url) {
+        Matcher m = getUrlPatern().matcher(url);
+        if (m.matches()) {
+            String ae = getAnnotationExp();
+
+            StringBuffer copyName = new StringBuffer();
+            StringBuffer groupStr = new StringBuffer();                    
+            boolean inGroup = false;
+
+            for (int i = 0; i < ae.length(); i++) {
+                char c = ae.charAt(i);
+                if(c == '\\') {
+                    inGroup = true;                                                                      
+                    continue;
+                } else if(inGroup) {
+                    if(Character.isDigit(c)) {                                
+                        groupStr.append(c);                                                                                                                                            
+                    } else {
+                        if(groupStr.length() > 0) {
+                            try {
+                                int group = Integer.valueOf(groupStr.toString()).intValue();    
+                                copyName.append(m.group(group));
+                            } catch (Exception e) {
+                                copyName.append('\\');
+                                copyName.append(groupStr);
+                            }
+                            groupStr = new StringBuffer();                    
+                        } else {
+                            copyName.append('\\');
+                            copyName.append(c);
+                        }                                
+                        inGroup = false;
+                    }                                                                
+                    continue;                            
+                }
+                copyName.append(c);
+            }
+            if(groupStr.length() > 0) {
+                try {
+                    int group = Integer.valueOf(groupStr.toString()).intValue();
+                    copyName.append(m.group(group));
+                } catch (Exception e) {
+                    copyName.append('\\');
+                    copyName.append(groupStr);
+                }                                            
+            }
+            return copyName.toString();     
+        }
+        return null;
+    }
+    
+    
 }

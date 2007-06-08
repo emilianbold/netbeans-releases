@@ -615,8 +615,7 @@ public class SvnUtils {
             return getComparableStatus(i1.getStatus()) - getComparableStatus(i2.getStatus());
         }
     }
-    
-    
+        
     /**
      * Normalize flat files, Subversion treats folder as normal file
      * so it's necessary explicitly list direct descendants to
@@ -734,114 +733,56 @@ public class SvnUtils {
             throw new IllegalArgumentException("Uncomparable status: " + status); // NOI18N
         }
     }
-    
-    //static final Pattern branchTagPattern = Pattern.compile(".*/(branches|tags)/(.+?)/.*"); // NOI18N
-//    static final Pattern branchPattern = Pattern.compile(".*/(branches)/(.+?)/.*"); // NOI18N
-//    static final Pattern tagPattern = Pattern.compile(".*/(tags)/(.+?)/.*"); // NOI18N
-    
-    public static String getCopy(File file) {
-        return getCopy(file, SvnModuleConfig.getDefault().getAnnotationExpresions());
-    }
-
+        
     /**
-     * Returns copy branch or tag name if lives
-     * in typical location (branches, tags).
+     * Returns a symbolic branch/tag name if the given file lives
+     * in a location specified by an AnnotationExpression
      *
+     * @param file
      * @return name or null
-     */
-    private static String getCopy(File file, List<AnnotationExpression> annotationExpressions) {
+     */    
+    public static String getCopy(File file) {
         SVNUrl url;
         try {
             url = getRepositoryUrl(file);                        
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, false, false);
             return null;
-        }        
-        return getCopy(url, annotationExpressions);    
+        }                
+        return getCopy(url, SvnModuleConfig.getDefault().getAnnotationExpresions());    
     }
-    
+
+    /**
+     * Returns a symbolic branch/tag name if the given url represents
+     * a location specified by an AnnotationExpression
+     *
+     * @param url
+     * @return name or null
+     */        
     public static String getCopy(SVNUrl url) {
         return getCopy(url, SvnModuleConfig.getDefault().getAnnotationExpresions());
     }
-    
-    public static String getCopy(SVNUrl url, List<AnnotationExpression> annotationExpressions) {
+
+    /**
+     * Returns a symbolic branch/tag name if the given url represents
+     * a location specified by an AnnotationExpression
+     *
+     * @param url
+     * @param annotationExpressions
+     * @return name or null
+     */        
+    private static String getCopy(SVNUrl url, List<AnnotationExpression> annotationExpressions) {
         if (url != null) {
+            String urlString = url.toString();                    
             for (Iterator<AnnotationExpression> it = annotationExpressions.iterator(); it.hasNext();) {
-                AnnotationExpression annotationExpression = it.next();
-                
-                Matcher m = annotationExpression.getUrlPatern().matcher(url.toString());
-                if (m.matches()) {
-                    String ae = annotationExpression.getAnnotationExp();
-                    
-                    StringBuffer copyName = new StringBuffer();
-                    StringBuffer groupStr = new StringBuffer();                    
-                    boolean inGroup = false;
-                    
-                    for (int i = 0; i < ae.length(); i++) {
-                        char c = ae.charAt(i);
-                        if(c == '\\') {
-                            inGroup = true;                                                                      
-                            continue;
-                        } else if(inGroup) {
-                            if(Character.isDigit(c)) {                                
-                                groupStr.append(c);                                                                                                                                            
-                            } else {
-                                if(groupStr.length() > 0) {
-                                    int group = Integer.valueOf(groupStr.toString()).intValue();
-                                    copyName.append(m.group(group));
-                                    groupStr = new StringBuffer();                    
-                                } else {
-                                    copyName.append('\\');
-                                    copyName.append(c);
-                                }                                
-                                inGroup = false;
-                            }                                                                
-                            continue;                            
-                        }
-                        copyName.append(c);
-                    }
-                    if(groupStr.length() > 0) {
-                        int group = Integer.valueOf(groupStr.toString()).intValue();
-                        copyName.append(m.group(group));
-                    }
-                    return copyName.toString();
-                }
+                String name = it.next().getCopyName(urlString);
+                if(name != null) {
+                    return name;
+                }                
             }           
         }
         return null;
     }
-    
-//    /**
-//     * Returns branch name if the file is inside 'branches' folder.
-//     *
-//     * @return branch name or null
-//     */
-//    public static String getBranch(File file, List<AnnotationExpression> annotationExpressions) {
-//        SVNUrl url = getRepositoryUrl(file);
-//        if (url != null) {
-//            Matcher m = branchPattern.matcher(url.toString());
-//            if (m.matches()) {
-//                return m.group(2);
-//            }
-//        }
-//        return null;
-//    }
-    
-//    /**
-//     * Returns tag name if the file is inside 'tags' folder.
-//     *
-//     * @return branch name or null
-//     */
-//    public static String getTag(File file) {
-//        SVNUrl url = getRepositoryUrl(file);
-//        if (url != null) {
-//            Matcher m = tagPattern.matcher(url.toString());
-//            if (m.matches()) {
-//                return m.group(2);
-//            }
-//        }
-//        return null;
-//    }
     
     /**
      * Refreshes statuses of this folder and all its parent folders up to filesystem root.
@@ -853,7 +794,13 @@ public class SvnUtils {
         refreshRecursively(folder.getParentFile());
         Subversion.getInstance().getStatusCache().refresh(folder, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
     }
-    
+
+    /**
+     * Rips an eventual username off - e.g. user@svn.host.org
+     * 
+     * @param host - hostname with a userneame
+     * @return host - hostname without the username
+     */ 
     public static String ripUserFromHost(String host) {
         int idx = host.indexOf('@');
         if(idx < 0) {
