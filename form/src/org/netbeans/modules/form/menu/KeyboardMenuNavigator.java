@@ -25,12 +25,13 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import org.netbeans.modules.form.InPlaceEditLayer;
 import org.netbeans.modules.form.RADComponent;
+import org.netbeans.modules.form.RADContainer;
 import org.netbeans.modules.form.RADVisualComponent;
 import org.netbeans.modules.form.RADVisualContainer;
 
 /**
  * Handles navigation of menu items using the keyboard
- * 
+ *
  * @author joshua.marinacci@sun.com
  */
 public class KeyboardMenuNavigator implements KeyListener {
@@ -51,11 +52,11 @@ public class KeyboardMenuNavigator implements KeyListener {
     }
     
     private RADVisualContainer getMenuBarRad(RADComponent comp) {
-       if(JMenuBar.class.isAssignableFrom(comp.getBeanClass())) {
-           return (RADVisualContainer) comp;
-       }
-       if(comp.getParentComponent() == null) return null;
-       return getMenuBarRad(comp.getParentComponent());
+        if(JMenuBar.class.isAssignableFrom(comp.getBeanClass())) {
+            return (RADVisualContainer) comp;
+        }
+        if(comp.getParentComponent() == null) return null;
+        return getMenuBarRad(comp.getParentComponent());
     }
     
     public void configure() {
@@ -83,11 +84,48 @@ public class KeyboardMenuNavigator implements KeyListener {
         if(e.getKeyCode() == KeyEvent.VK_SPACE) {
             startEditing();
         }
+        //we aren't getting tabs for some reason
+        if(e.getKeyCode() == KeyEvent.VK_A) {
+            if(e.isShiftDown()) {
+                selectNextMenuItem(-1);
+            } else {
+                selectNextMenuItem(+1);
+            }
+        }
     }
     public void keyReleased(KeyEvent e) {
     }
     public void keyTyped(KeyEvent e) {
     }
+    
+    private void selectNextMenuItem(int offset) {
+        //josh: do nothing here until i figure out why tab events aren't being called
+        if(currentMenuRAD == null) return;
+        if(selectedRADComponent == null) selectedRADComponent = currentMenuRAD.getSubComponent(0);
+        
+        //if menu, descend into the menu
+        if(isJMenu(selectedRADComponent) && offset == +1) {
+            RADVisualContainer newMenu = (RADVisualContainer) selectedRADComponent;
+            if(newMenu.getSubComponents().length > 0) {
+                currentMenuRAD = newMenu;
+                selectedRADComponent = null;
+                selectOffsetMenuItem(offset);
+                return;
+            }
+        }
+        
+        //if already at the end of this menu
+        if(isLastItem(selectedRADComponent,currentMenuRAD) && offset == +1) {
+            goUpOneLevelAndNext();
+            return;
+        }
+        if(isFirstItem(selectedRADComponent, currentMenuRAD) && offset == -1) {
+            goUpOneLevel();
+            return;
+        }
+        selectOffsetMenuItem(offset);
+    }
+    
     
     // select the next menu item offset from the current one.
     // pass in -1 and +1 to do prev and next menu items
@@ -99,12 +137,14 @@ public class KeyboardMenuNavigator implements KeyListener {
         }
         if(selectedRADComponent == null) {
             selectedRADComponent = currentMenuRAD.getSubComponent(0);
+            menuEditLayer.setSelectedComponent(selectedRADComponent);
+            return;
         }
         int index = currentMenuRAD.getIndexOf(selectedRADComponent);
         if(index+offset >=0 && index+offset < currentMenuRAD.getSubComponents().length) {
             selectedRADComponent = currentMenuRAD.getSubComponent(index+offset);
         } else {
-            if(index >= 0) {
+            if(index >= 0 && index < currentMenuRAD.getSubComponents().length) {
                 selectedRADComponent = currentMenuRAD.getSubComponent(index);
             }
         }
@@ -112,6 +152,11 @@ public class KeyboardMenuNavigator implements KeyListener {
         JComponent item = (JComponent) menuEditLayer.formDesigner.getComponent(selectedRADComponent);
         menuEditLayer.setSelectedComponent(item);
     }
+    
+    private boolean isJMenu(RADComponent comp) {
+        return menuEditLayer.formDesigner.getComponent(comp) instanceof JMenu;
+    }
+    
     
     // select the next menu offset from the current one
     // pass in -1 and + 1 to do prev and next menu items
@@ -124,7 +169,7 @@ public class KeyboardMenuNavigator implements KeyListener {
         if(menuEditLayer.formDesigner.getComponent(selectedRADComponent) instanceof JMenu) {
             RADVisualContainer menuRAD = (RADVisualContainer) selectedRADComponent;
             // make it's first element be highlighted
-            if(menuRAD.getSubComponents() != null && 
+            if(menuRAD.getSubComponents() != null &&
                     menuRAD.getSubComponents().length > 0 &&
                     menuRAD.getSubComponent(0) != null) {
                 RADVisualComponent firstItemRad = menuRAD.getSubComponent(0);
@@ -141,8 +186,7 @@ public class KeyboardMenuNavigator implements KeyListener {
         if(index < 0) {
             // if left then head back up the heirarchy
             if(offset < 0) {
-                menuEditLayer.setSelectedComponent((JComponent) menuEditLayer.formDesigner.getComponent(currentMenuRAD));
-                currentMenuRAD = currentMenuRAD.getParentContainer();
+                goUpOneLevel();
                 return;
             }
             // if right then switch to the next a full toplevel menu
@@ -174,6 +218,38 @@ public class KeyboardMenuNavigator implements KeyListener {
             menuEditLayer.setSelectedComponent((JComponent) menuEditLayer.formDesigner.getComponent(selectedRADComponent));
         }
     }
+    
+    private void goUpOneLevel() {
+        menuEditLayer.setSelectedComponent((JComponent) menuEditLayer.formDesigner.getComponent(currentMenuRAD));
+        currentMenuRAD = currentMenuRAD.getParentContainer();
+    }
+    
+    private void goUpOneLevelAndNext() {
+        selectedRADComponent = currentMenuRAD;
+        currentMenuRAD = currentMenuRAD.getParentContainer();
+        if(isLastItem(selectedRADComponent, currentMenuRAD)) {
+            goUpOneLevelAndNext();
+            return;
+        } else {
+            selectOffsetMenuItem(+1);
+            //menuEditLayer.setSelectedComponent(selectedRADComponent);
+        }
+    }
+    
+    private boolean isFirstItem(RADComponent comp, RADVisualContainer cont) {
+        int index = cont.getIndexOf(comp);
+        if(index == 0) return true;
+        return false;
+    }
+    
+    private boolean isLastItem(RADComponent comp, RADVisualContainer cont) {
+        int index = cont.getIndexOf(comp);
+        if(index == cont.getSubComponents().length-1) {
+            return true;
+        }
+        return false;
+    }
+    
     private RADVisualContainer getTopLevelMenu(RADVisualContainer currentMenuRAD) {
         if(menuBarRAD.getIndexOf(currentMenuRAD) >= 0) {
             return currentMenuRAD;

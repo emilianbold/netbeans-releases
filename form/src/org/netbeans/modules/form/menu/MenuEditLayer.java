@@ -114,6 +114,7 @@ public class MenuEditLayer extends JPanel {
 
     /** Creates a new instance of MenuEditLayer */
     public MenuEditLayer(final FormDesigner formDesigner) {
+        System.out.println("editing");
         this.formDesigner = formDesigner;
         menuitemListenerMap = new HashMap<JComponent,MouseInputAdapter>();
         menuPopupUIMap = new HashMap<JMenu, PopupMenuUI>();
@@ -491,7 +492,7 @@ public class MenuEditLayer extends JPanel {
         return menuParentMap.get(menu);
     }
     
-    private void setSelectedComponent(RADComponent comp) {
+    void setSelectedComponent(RADComponent comp) {
         if(this.isMenuRelatedRADComponent(comp)) {
             JComponent c = (JComponent) formDesigner.getComponent(comp);
 
