@@ -24,7 +24,7 @@ import java.util.Hashtable;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
-import org.netbeans.modules.refactoring.spi.impl.UIUtilities;
+import org.netbeans.modules.refactoring.spi.impl.Util;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
 import org.openide.util.Lookup;
@@ -124,7 +124,7 @@ public class ClipboardConvertor implements Convertor {
                 return null;
             }
             public String getName() {
-                return NbBundle.getMessage(UIUtilities.class,"Actions/Refactoring") + " " + refactor.getValue(Action.NAME);
+                return NbBundle.getMessage(Util.class,"Actions/Refactoring") + " " + refactor.getValue(Action.NAME);
             }
         }
     }
