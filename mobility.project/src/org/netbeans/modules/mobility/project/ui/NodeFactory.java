@@ -368,7 +368,7 @@ class ProjCfgNode extends ActionNode implements AntProjectListener, PropertyChan
                         if (exst != null)
                         {
                             final CloneConfigurationPanel ccp = new CloneConfigurationPanel(allStrNames);
-                            final DialogDescriptor dd = new DialogDescriptor(ccp, oldCfg.getDisplayName() + " : " + NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_DuplConfiguration"), true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, null); //NOI18N
+                            final DialogDescriptor dd = new DialogDescriptor(ccp, NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_DuplConfiguration", oldCfg.getDisplayName()), true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, null); //NOI18N
                             ccp.setDialogDescriptor(dd);
                             final String newName = NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dd)) ? ccp.getName() : null;
                             if (newName != null) {
