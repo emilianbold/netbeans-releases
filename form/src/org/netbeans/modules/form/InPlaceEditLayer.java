@@ -362,7 +362,7 @@ public class InPlaceEditLayer extends JPanel
             vTP = button.getVerticalTextPosition();
 
             icon = button.getIcon();
-            if (icon != null) {
+            if (icon != null || editedComp instanceof JMenuItem) {
                 Integer gap = (Integer)UIManager.get("Button.textIconGap"); // NOI18N
                 itGap = gap != null ? gap.intValue() : 4;
             }
@@ -395,14 +395,6 @@ public class InPlaceEditLayer extends JPanel
                     editedIns.bottom = 0;
                 }
             }
-            //HACK: a hack to account for the extra space on the right edge of the menu item
-            //we should derive this value instead of hard coding it
-            //don't set this value if it's really a toplevel jmenu
-            if (editedComp instanceof JMenuItem && 
-                    editedComp.getParent() != null && !(editedComp.getParent() instanceof JMenuBar)) {
-                //commented out because it's breaking other things when the editing session ends
-                //editedIns.left += 14;
-            }
         } else if (editedComp instanceof JTabbedPane) {
             JTabbedPane tabbedPane = (JTabbedPane)editedComp;
             int index = tabbedPane.getSelectedIndex();
@@ -427,6 +419,17 @@ public class InPlaceEditLayer extends JPanel
         Rectangle iR = new Rectangle(); // icon rectangle
         Rectangle tR = new Rectangle(); // text rectangle
 
+        
+        //HACK: a hack to account for the extra space on the right edge of the menu item
+        //we should derive this value instead of hard coding it
+        //don't set this value if it's really a toplevel jmenu
+        if (editedComp instanceof JMenuItem && 
+                    editedComp.getParent() != null && !(editedComp.getParent() instanceof JMenuBar)) {
+            int menugap = 13;
+            bounds.x += menugap;
+            bounds.width -= menugap;
+        }
+        
         SwingUtilities.layoutCompoundLabel(
             (JComponent)editedComp,
             editedComp.getGraphics().getFontMetrics(),
