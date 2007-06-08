@@ -35,6 +35,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -592,7 +593,9 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         tree.setShowsRootHandles(true);
         tree.setToggleClickCount(0);
         tree.addTreeExpansionListener(new TreeExpansionHandler());
-        tree.addKeyListener(new TreeKeyHandler());
+        TreeKeyHandler keyHandler = new TreeKeyHandler();
+        tree.addKeyListener(keyHandler);
+        tree.addFocusListener(keyHandler);
         tree.addMouseListener(createTreeHandlerListener(fileChooser));
         tree.addTreeSelectionListener(createTreeSelectionListener(fileChooser));
         
@@ -609,13 +612,81 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         
         return scrollBar;
     }
-    
-    class TreeKeyHandler extends KeyAdapter {
+
+    /** 
+     * Handles keyboard quick search in tree and delete action.
+     */
+    class TreeKeyHandler extends KeyAdapter implements FocusListener {
+        
+        StringBuffer searchBuf = new StringBuffer();
+        
+        java.util.List<TreePath> paths;
+                
         public void keyPressed(KeyEvent evt) {
             if(evt.getKeyCode() == KeyEvent.VK_DELETE) {
                 deleteAction();
             }
+            if (!isCharForSearch(evt)) {
+                resetBuffer();
+            }
         }
+
+        @Override
+        public void keyTyped(KeyEvent evt) {
+            char keyChar = evt.getKeyChar();
+            if (isCharForSearch(evt)) {
+                if (paths == null) {
+                    paths = getVisiblePaths();
+                }
+                searchBuf.append(keyChar);
+                String searchedText = searchBuf.toString().toLowerCase();
+                String curFileName = null;
+                for (TreePath path : paths) {
+                    curFileName = fileChooser.getName(((DirectoryNode) path.getLastPathComponent()).getFile());
+                    if (curFileName != null && curFileName.toLowerCase().startsWith(searchedText)) {
+                        tree.makeVisible(path);
+                        tree.scrollPathToVisible(path);
+                        tree.setSelectionPath(path);
+                        break;
+                    }
+                }
+            } else {
+                resetBuffer();
+            }
+        }
+        
+        public void focusGained(FocusEvent e) {
+            resetBuffer();
+        }
+
+        public void focusLost(FocusEvent e) {
+            resetBuffer();
+        }
+        
+        private boolean isCharForSearch (KeyEvent evt) {
+            char ch = evt.getKeyChar();
+            // refuse backspace key
+            if ((int)ch == 8) {
+                return false;
+            }
+            return Character.isJavaIdentifierPart(ch) || Character.isSpaceChar(ch);
+        }
+        
+        private void resetBuffer () {
+            searchBuf.delete(0, searchBuf.length());
+            paths = null;
+        }
+        
+    }
+    
+    private java.util.List<TreePath> getVisiblePaths () {
+        int rowCount = tree.getRowCount();
+        DirectoryNode node = null;
+        java.util.List<TreePath> result = new ArrayList<TreePath>(rowCount);
+        for (int i = 0; i < rowCount; i++) {
+            result.add(tree.getPathForRow(i));
+        }
+        return result;
     }
     
     private void createPopup() {
