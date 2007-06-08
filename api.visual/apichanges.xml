@@ -267,6 +267,22 @@
             <class package="org.netbeans.api.visual.graph.layout" name="GraphLayoutFactory" link="yes"/>
             <issue number="105278"/>
         </change>
+
+        <change>
+            <api name="general"/>
+            <summary>Zoom actions are using Ctrl key modifier of invocation</summary>
+            <version major="2" minor="4"/>
+            <date day="8" month="6" year="2007"/>
+            <author login="dkaspar"/>
+            <compatibility addition="no"/>
+            <description>
+                All built-in zoom actions are using modifiers from Scene.getInputBindings().getZoomActionModifiers() method.
+		Default value has been changed from nothing to Ctrl key which backward-incompatible change affecting all users.
+		A part of the change InputBindings class has been introduces and assigned to a Scene.
+            </description>
+            <class package="org.netbeans.api.visual.action" name="ActionFactory" link="yes"/>
+            <issue number="104976"/>
+        </change>
     </changes>
 
     <htmlcontents>

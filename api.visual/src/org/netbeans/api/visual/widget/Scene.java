@@ -23,6 +23,7 @@ import org.netbeans.api.visual.action.TwoStateHoverProvider;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.animator.SceneAnimator;
 import org.netbeans.api.visual.laf.LookFeel;
+import org.netbeans.api.visual.laf.InputBindings;
 import org.netbeans.modules.visual.util.GeomUtil;
 import org.netbeans.modules.visual.widget.SatelliteComponent;
 
@@ -68,6 +69,7 @@ public class Scene extends Widget {
 
     private Font defaultFont;
     private LookFeel lookFeel = LookFeel.createDefaultLookFeel ();
+    private InputBindings inputBindings = InputBindings.create ();
     private String activeTool = null;
     private Rectangle maximumBounds = new Rectangle (Integer.MIN_VALUE / 2, Integer.MIN_VALUE / 2, Integer.MAX_VALUE, Integer.MAX_VALUE);
 
@@ -487,6 +489,15 @@ public class Scene extends Widget {
     public final void setLookFeel (LookFeel lookFeel) {
         assert lookFeel != null;
         this.lookFeel = lookFeel;
+    }
+
+    /**
+     * Returns input bindings of the scene.
+     * @return the input bindings
+     * @since 2.4
+     */
+    public final InputBindings getInputBindings () {
+        return inputBindings;
     }
 
     /**

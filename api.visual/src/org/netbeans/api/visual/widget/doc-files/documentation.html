@@ -533,6 +533,9 @@ This widget represents a root node of the tree hierarchy of widgets. It controls
 <td>getLookFeel<br>setLookFeel
 <td>Controls the scene look and feel. <code>LookFeel.createDefaultLookFeel</code> by default. See <a href="#LookFeel">Look and Feel</a> section.
 <tr>
+<td>getInputBindinds
+<td>Returns input bindings used by the scene. See <a href="#LookFeel">Look and Feel</a> section.
+<tr>
 <td>getActiveTool<br>setActiveTool
 <td>Controls the active action tool of the scene. See <a href="#ActionTools">Action Tools</a> section.
 <tr>
@@ -1844,6 +1847,9 @@ The partial visibility is done by alpha blending.
 
 <p>
 The library contains a preliminary look&amp;feel support defined by <code>LookFeel</code> abstract class. Almost every method is dependent on <code>ObjectState</code> parameter. Usually the interface should be used in <code>Widget.notifyStateChanged</code> method implementation. The <code>Scene.getLookFeel</code> and <code>Scene.setLookFeel</code> methods allows manipulation with a look&amp;feel assigned to a scene. The default <code>LookFeel</code> implementation can be obtained using <code>LookFeel.createDefaultLookFeel</code> method.
+
+<p>
+There is also an InputBindings class which is assigned to a scene. It allows to manage action-related scene options e.g. <code>InputEvent</code> modifier of zoom actions used in the scene.
 
 <h2><a name="Animator">Animator</a></h2>
 

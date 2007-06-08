@@ -38,6 +38,11 @@ public final class ZoomAction extends WidgetAction.Adapter {
 
     public State mouseWheelMoved (Widget widget, WidgetMouseWheelEvent event) {
         Scene scene = widget.getScene ();
+
+        int modifiers = scene.getInputBindings ().getZoomActionModifiers ();
+        if ((event.getModifiers () & modifiers) != modifiers)
+            return State.REJECTED;
+
         int amount = event.getWheelRotation ();
 
         if (useAnimator) {
