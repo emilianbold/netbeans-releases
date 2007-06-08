@@ -7591,8 +7591,11 @@ public class ADDrawingAreaControl extends ApplicationView
            //kris richards - "AskBeforeLayout" pref expuged. Set to true.
            Preferences prefs = NbPreferences.forModule(ADDrawingAreaControl.class) ;
            
-           if (prefs.getBoolean("UML_Resize_with_Show_Aliases_Mode", true)) {
+           //ResizeOnAliasToggle converted to UML_Resize_with_Show_Aliases_Mode
+           // with default false.
+           if (prefs.getBoolean("UML_Resize_with_Show_Aliases_Mode", false)) {
                // Resize all the elements
+               // WHY ARE WE SETTING THIS TO FALSE IF CONDITION IS TRUE?
                sizeToContents(false);
            }
            bDidChange = true;

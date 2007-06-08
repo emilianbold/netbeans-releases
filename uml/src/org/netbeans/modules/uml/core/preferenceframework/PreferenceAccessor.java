@@ -222,8 +222,7 @@ public class PreferenceAccessor implements IPreferenceAccessor{
 	 *
 	 */
 	public String getExpansionVariable(String name) {
-		String value = getPreferenceValue("", "ExpansionVariables", name);
-		return value;
+		throw new UnsupportedOperationException ("getExpansionVariable pref is no long valid.");
 	}
 
 	/**
@@ -240,24 +239,26 @@ public class PreferenceAccessor implements IPreferenceAccessor{
 	 *
 	 */
 	private String getPreferenceValue(String key, String path, String name) {
-		String value = "";
-		ICoreProduct prod = ProductRetriever.retrieveProduct();
-		if (prod != null)
-		{
-			IPreferenceManager2 prefMan = prod.getPreferenceManager();
-			if (prefMan != null)
-			{
-				if (key.length() > 0)
-				{
-					value = prefMan.getPreferenceValue(key, path, name);
-				}
-				else
-				{
-					value = prefMan.getPreferenceValue(path, name);
-				}
-			}
-		}
-		return value;
+            throw new UnsupportedOperationException ("key="+key+"::path="+path+"::name="+name+":: Using old options.");
+            
+//		String value = "";
+//		ICoreProduct prod = ProductRetriever.retrieveProduct();
+//		if (prod != null)
+//		{
+//			IPreferenceManager2 prefMan = prod.getPreferenceManager();
+//			if (prefMan != null)
+//			{
+//				if (key.length() > 0)
+//				{
+//					value = prefMan.getPreferenceValue(key, path, name);
+//				}
+//				else
+//				{
+//					value = prefMan.getPreferenceValue(path, name);
+//				}
+//			}
+//		}
+//		return value;
 	}
 
 	/**
@@ -415,22 +416,23 @@ public class PreferenceAccessor implements IPreferenceAccessor{
 	 */
 	public void setPreferenceValue(String key, String path, String name, String value)
 	{
-		ICoreProduct prod = ProductRetriever.retrieveProduct();
-		if (prod != null)
-		{
-			IPreferenceManager2 prefMan = prod.getPreferenceManager();
-			if (prefMan != null)
-			{
-				if (key.length() > 0)
-				{
-					prefMan.setPreferenceValue(key, path, name, value);
-				}
-				else
-				{
-					prefMan.setPreferenceValue(path, name, value);
-				}
-			}
-		}
+                throw new UnsupportedOperationException ("key="+key+"::path="+path+"::name="+name+"::value="+value+":: Using old options.");
+//		ICoreProduct prod = ProductRetriever.retrieveProduct();
+//		if (prod != null)
+//		{
+//			IPreferenceManager2 prefMan = prod.getPreferenceManager();
+//			if (prefMan != null)
+//			{
+//				if (key.length() > 0)
+//				{
+//					prefMan.setPreferenceValue(key, path, name, value);
+//				}
+//				else
+//				{
+//					prefMan.setPreferenceValue(path, name, value);
+//				}
+//			}
+//		}
 	}
 
 }
