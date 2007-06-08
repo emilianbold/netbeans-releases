@@ -23,7 +23,7 @@ import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.layout.LayoutFactory;
 
 import java.awt.*;
-import java.util.Collection;
+import java.util.*;
 
 /**
  * @author David Kaspar
@@ -43,7 +43,6 @@ public final class FlowLayout implements Layout {
     public void layout (Widget widget) {
         int max = 0;
         Collection<Widget> children = widget.getChildren ();
-        Insets insets = widget.getBorder ().getInsets ();
         if (verticalOrientation) {
             for (Widget child : children) {
                 if (! child.isVisible ())
@@ -126,20 +125,40 @@ public final class FlowLayout implements Layout {
     }
 
     public void justify (Widget widget) {
-        Rectangle bounds = widget.getClientArea ();
-        int parentX1 = bounds.x;
-        int parentX2 = parentX1 + bounds.width;
-        int parentY1 = bounds.y;
-        int parentY2 = parentY1 + bounds.height;
+        Rectangle parentBounds = widget.getClientArea ();
+        int totalWeight = 0;
+        int totalGap = 0;
+        java.util.List<Widget> children = widget.getChildren ();
+        for (int a = 0; a < children.size (); a ++) {
+            Widget child = children.get (a);
+            if (! child.isVisible ())
+                continue;
+            totalWeight += resolveWeight (widget, child);
+
+            if (a > 0)
+                totalGap -= gap;
+            if (verticalOrientation)
+                totalGap -= child.getBounds ().height;
+            else
+                totalGap -= child.getBounds ().width;
+        }
+        totalGap += verticalOrientation ? parentBounds.height : parentBounds.width;
+        if (totalGap < 0)
+            totalWeight = totalGap = 0;
+
+        int gapAdd = 0;
+        int weightAdd = 0;
+
+        int parentX1 = parentBounds.x;
+        int parentX2 = parentX1 + parentBounds.width;
+        int parentY1 = parentBounds.y;
+        int parentY2 = parentY1 + parentBounds.height;
 
         for (Widget child : widget.getChildren ()) {
             Point childLocation = child.getLocation ();
             Rectangle childBounds = child.getBounds ();
 
             if (verticalOrientation) {
-                int childX1 = childLocation.x + childBounds.x;
-                int childX2 = childX1 + childBounds.width;
-
                 switch (alignment) {
                     case CENTER:
                         childLocation.x = (parentX1 + parentX2 - childBounds.width) / 2;
@@ -155,12 +174,17 @@ public final class FlowLayout implements Layout {
                         childLocation.x = parentX2 - childBounds.width;
                         break;
                 }
+                if (totalWeight > 0  &&  child.isVisible ()) {
+                    childLocation.y += gapAdd;
+                    int weight = resolveWeight (widget, child);
+                    int gap = (weightAdd + weight) * totalGap / totalWeight - gapAdd;
+                    childBounds.height += gap;
+                    gapAdd += gap;
+                    weightAdd += weight;
+                }
                 childLocation.x -= childBounds.x;
                 childLocation.y += parentY1;
             } else {
-                int childY1 = childLocation.y + childBounds.y;
-                int childY2 = childY1 + childBounds.height;
-
                 switch (alignment) {
                     case CENTER:
                         childLocation.y = (parentY1 + parentY2 - childBounds.height) / 2;
@@ -176,6 +200,14 @@ public final class FlowLayout implements Layout {
                         childLocation.y = parentY2 - childBounds.height;
                         break;
                 }
+                if (totalWeight > 0  &&  child.isVisible ()) {
+                    childLocation.x += gapAdd;
+                    int weight = resolveWeight (widget, child);
+                    int gap = (weightAdd + weight) * totalGap / totalWeight;
+                    childBounds.width += gap;
+                    gapAdd += gap;
+                    weightAdd += weight;
+                }
                 childLocation.y -= childBounds.y;
                 childLocation.x += parentX1;
             }
@@ -183,5 +215,15 @@ public final class FlowLayout implements Layout {
             child.resolveBounds (childLocation, childBounds);
         }
     }
+
+     private static int resolveWeight (Widget widget, Widget child) {
+         Object o = widget.getChildConstraint (child);
+         if (o instanceof Number) {
+             int weight = ((Number) o).intValue ();
+             if (weight > 0)
+                 return weight;
+         }
+         return 0;
+     }
 
 }

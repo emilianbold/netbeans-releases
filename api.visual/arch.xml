@@ -540,6 +540,9 @@
    ReconnectAction must be assigned to ConnectionWidget only.
    WidgetCollisionCollector is treats ConnectionWidget specially by their linear path between control points and only for horizontal or vertical segments.
   </p>
+  <p>
+   VerticalFlowLayout and HorizontalFlowLayout recognizes a Number-class constraint assigned to a child widget of a parent widget where the layout is assigned.
+  </p>
  </answer>
 
 

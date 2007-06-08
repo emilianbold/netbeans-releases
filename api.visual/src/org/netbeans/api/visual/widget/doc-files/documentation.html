@@ -646,6 +646,9 @@ Created by: <code>LayoutFactory.createVerticalFlowLayout</code>, <code>LayoutFac
 <p>
 This layout places children serially in vertical or horizontal line - one widget after another. It allows top-left, center, bottom-right and justify alignments and specifying gaps between children. It used <code>childWidget.getPreferredBounds</code> for resolving boundary. The layout will use the widest/highest boundaries for a cell dimension.
 
+<p>
+The layout allows to work with Number-class constraints. The Number constraint has to be a positive number assigned to a child widget. Then it represents a ratio in with the remaining space (height for VerticalFlowLayout and width for HorizontalFlowLayout) is split and assigned to a particular widget. See <code>test.layout.WeightFlowLayoutTest</code> for example.
+
 <h3><a name="CardLayout">CardLayout</a></h3>
 
 <p>

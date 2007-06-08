@@ -66,6 +66,8 @@ public final class LayoutFactory {
     /**
      * Creates a vertical flow layout with default style where widgets are placed vertically one to the bottom from another.
      * The instance can be shared by multiple widgets.
+     * If child widget constraint is an Number value,
+     * then its integer value is takes as a weight in which the remaining height of the parent widget is split.
      * @return the vertical flow layout
      * @deprecated use createVerticalFlowLayout method instead
      */
@@ -77,6 +79,8 @@ public final class LayoutFactory {
     /**
      * Creates a vertical flow layout with a specific style where widgets are placed vertically one to the bottom from another.
      * The instance can be shared by multiple widgets.
+     * If child widget constraint is an Number value,
+     * then its integer value is takes as a weight in which the remaining height of the parent widget is split.
      * @param alignment the alignment
      * @param gap the gap between widgets
      * @return the vertical flow layout
@@ -90,6 +94,8 @@ public final class LayoutFactory {
     /**
      * Creates a vertical flow layout with default style where widgets are placed vertically one to the bottom from another.
      * The instance can be shared by multiple widgets.
+     * If child widget constraint is an Number value,
+     * then its integer value is takes as a weight in which the remaining height of the parent widget is split.
      * @return the vertical flow layout
      */
     public static Layout createVerticalFlowLayout () {
@@ -99,6 +105,8 @@ public final class LayoutFactory {
     /**
      * Creates a vertical flow layout with a specific style where widgets are placed vertically one to the bottom from another.
      * The instance can be shared by multiple widgets.
+     * If child widget constraint is an Number value,
+     * then its integer value is takes as a weight in which the remaining height of the parent widget is split.
      * @param alignment the alignment
      * @param gap the gap between widgets
      * @return the vertical flow layout
@@ -110,6 +118,8 @@ public final class LayoutFactory {
     /**
      * Creates a horizontal flow layout with default style where widgets are placed horizontally one to the right from another.
      * The instance can be shared by multiple widgets.
+     * If child widget constraint is an Number value,
+     * then its integer value is takes as a weight in which the remaining width of the parent widget is split.
      * @return the horizontal flow layout
      * @deprecated use createHorizontalFlowLayout method instead
      */
@@ -121,6 +131,8 @@ public final class LayoutFactory {
     /**
      * Creates a horizontal flow layout with a specific style where widgets are placed horizontally one to the right from another.
      * The instance can be shared by multiple widgets.
+     * If child widget constraint is an Number value,
+     * then its integer value is takes as a weight in which the remaining width of the parent widget is split.
      * @param alignment the alignment
      * @param gap the gap between widgets
      * @return the horizontal flow layout
@@ -134,6 +146,8 @@ public final class LayoutFactory {
     /**
      * Creates a horizontal flow layout with default style where widgets are placed horizontally one to the right from another.
      * The instance can be shared by multiple widgets.
+     * If child widget constraint is an Number value,
+     * then its integer value is takes as a weight in which the remaining width of the parent widget is split.
      * @return the horizontal flow layout
      */
     public static Layout createHorizontalFlowLayout () {
@@ -143,6 +157,8 @@ public final class LayoutFactory {
     /**
      * Creates a horizontal flow layout with a specific style where widgets are placed horizontally one to the right from another.
      * The instance can be shared by multiple widgets.
+     * If child widget constraint is an Number value,
+     * then its integer value is takes as a weight in which the remaining width of the parent widget is split.
      * @param alignment the alignment
      * @param gap the gap between widgets
      * @return the horizontal flow layout

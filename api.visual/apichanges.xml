@@ -283,6 +283,22 @@
             <class package="org.netbeans.api.visual.action" name="ActionFactory" link="yes"/>
             <issue number="104976"/>
         </change>
+
+        <change>
+            <api name="general"/>
+            <summary>VerticalFlowLayout and HorizontalFlowLayout calculates with weights</summary>
+            <version major="2" minor="4"/>
+            <date day="8" month="6" year="2007"/>
+            <author login="dkaspar"/>
+            <compatibility addition="yes"/>
+            <description>
+                When a widget is using VerticalFlowLayout or HorizontalFlowLayout and a child widget has a Number constraint assigned,
+                then the Number value represent a radio in with the remaining gap in the widget is split and added to particular child widget.
+		See test.layout.WeightFlowLayoutTest for example.
+            </description>
+            <class package="org.netbeans.api.visual.layout" name="LayoutFactory" link="yes"/>
+            <issue number="105390"/>
+        </change>
     </changes>
 
     <htmlcontents>
