@@ -23,7 +23,6 @@ import java.util.Collections;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.editor.options.OptionSupport;
-import org.netbeans.modules.languages.dataobject.LanguagesEditorKit;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import java.util.MissingResourceException;
@@ -56,7 +55,7 @@ public class LanguagesOptions extends BaseOptions {
         }
     );
     
-    public static final LanguagesOptions create(FileObject fo) {
+    public static synchronized LanguagesOptions create(FileObject fo) {
         if (defaultInstance == null) {
             String mimeType = fo.getParent().getPath().substring(8); //'Editors/'
     //        System.out.println("@@@ LanguagesOptions.create from " + fo.getPath() + " mimeType = '" + mimeType + "'");
@@ -71,7 +70,7 @@ public class LanguagesOptions extends BaseOptions {
 
     private String mimeType;
     
-    public LanguagesOptions(String mimeType) {
+    private LanguagesOptions(String mimeType) {
         super(LanguagesEditorKit.class, LANGUAGES);
         this.mimeType = mimeType;
 //        S ystem.out.println(this + " : " + getClass ().getClassLoader ());
