@@ -229,24 +229,24 @@ public class KeystorePanel extends JPanel {
         keyPasswordField = new javax.swing.JPasswordField();
         loadkeysButton = new javax.swing.JButton();
 
-        keystoreLocationLabel.setText(org.openide.util.NbBundle.getMessage(KeystorePanel.class, "LBL_KeyStorePanel_LocationLabel")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(keystoreLocationLabel, org.openide.util.NbBundle.getMessage(KeystorePanel.class, "LBL_KeyStorePanel_LocationLabel")); // NOI18N
 
-        keystorePasswordLabel.setText(org.openide.util.NbBundle.getMessage(KeystorePanel.class, "LBL_StorePanel_StorePassword")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(keystorePasswordLabel, org.openide.util.NbBundle.getMessage(KeystorePanel.class, "LBL_StorePanel_StorePassword")); // NOI18N
 
-        keystoreLocationButton.setText("Browse...");
+        org.openide.awt.Mnemonics.setLocalizedText(keystoreLocationButton, org.openide.util.NbBundle.getMessage(KeystorePanel.class, "LBL_KeystorePanel_Browse")); // NOI18N
         keystoreLocationButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 keystoreLocationButtonActionPerformed(evt);
             }
         });
 
-        keyAliasLabel.setText(org.openide.util.NbBundle.getMessage(KeystorePanel.class, "LBL_KeyStorePanel_KeyAliasLabel")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(keyAliasLabel, org.openide.util.NbBundle.getMessage(KeystorePanel.class, "LBL_KeyStorePanel_KeyAliasLabel")); // NOI18N
 
-        keyPasswordLabel.setText(org.openide.util.NbBundle.getMessage(KeystorePanel.class, "LBL_Keystore_KeyPasswordLabel")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(keyPasswordLabel, org.openide.util.NbBundle.getMessage(KeystorePanel.class, "LBL_Keystore_KeyPasswordLabel")); // NOI18N
 
         keyAliasCombo.setEditable(true);
 
-        loadkeysButton.setText(org.openide.util.NbBundle.getMessage(KeystorePanel.class, "LBL_LoadKeys")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(loadkeysButton, org.openide.util.NbBundle.getMessage(KeystorePanel.class, "LBL_LoadKeys")); // NOI18N
         loadkeysButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 loadkeysButtonActionPerformed(evt);
@@ -267,7 +267,7 @@ public class KeystorePanel extends JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(keystoreLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 247, Short.MAX_VALUE)
+                        .add(keystoreLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 256, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(keystoreLocationButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))

@@ -20,7 +20,6 @@
 package org.netbeans.modules.websvc.wsitconf.ui.service.subpanels;
 
 import java.io.IOException;
-import java.util.Enumeration;
 import org.netbeans.modules.websvc.wsitconf.ui.StoreFileFilter;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
@@ -206,22 +205,23 @@ public class TruststorePanel extends JPanel {
         storePasswordField = new javax.swing.JPasswordField();
         loadkeysButton = new javax.swing.JButton();
 
-        storeLocationLabel.setText(org.openide.util.NbBundle.getMessage(TruststorePanel.class, "LBL_KeyStorePanel_LocationLabel")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(storeLocationLabel, org.openide.util.NbBundle.getMessage(TruststorePanel.class, "LBL_KeyStorePanel_LocationLabel")); // NOI18N
 
-        storePasswordLabel.setText(org.openide.util.NbBundle.getMessage(TruststorePanel.class, "LBL_TruststorePanel_TruststorePassword")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(storePasswordLabel, org.openide.util.NbBundle.getMessage(TruststorePanel.class, "LBL_TruststorePanel_TruststorePassword")); // NOI18N
 
-        storeLocationButton.setText("Browse...");
+        org.openide.awt.Mnemonics.setLocalizedText(storeLocationButton, org.openide.util.NbBundle.getMessage(TruststorePanel.class, "LBL_TruststorePanel_Browse")); // NOI18N
         storeLocationButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 storeLocationButtonActionPerformed(evt);
             }
         });
 
-        keyAliasLabel.setText(org.openide.util.NbBundle.getMessage(TruststorePanel.class, "LBL_KeyStorePanel_KeyAliasLabel")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(keyAliasLabel, org.openide.util.NbBundle.getMessage(TruststorePanel.class, "LBL_KeyStorePanel_KeyAliasLabel")); // NOI18N
 
         keyAliasCombo.setEditable(true);
 
-        loadkeysButton.setText(org.openide.util.NbBundle.getMessage(TruststorePanel.class, "LBL_LoadKeys")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(loadkeysButton, org.openide.util.NbBundle.getMessage(TruststorePanel.class, "LBL_LoadKeys")); // NOI18N
+        loadkeysButton.setActionCommand("&Load Aliases");
         loadkeysButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 loadkeysButtonActionPerformed(evt);
@@ -242,11 +242,11 @@ public class TruststorePanel extends JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, keyAliasCombo, 0, 158, Short.MAX_VALUE)
-                            .add(storePasswordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE))
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, keyAliasCombo, 0, 167, Short.MAX_VALUE)
+                            .add(storePasswordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 167, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(loadkeysButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 74, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 85, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(storeLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
