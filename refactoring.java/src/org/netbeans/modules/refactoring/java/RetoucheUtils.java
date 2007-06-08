@@ -732,7 +732,7 @@ public class RetoucheUtils {
                 throw (RuntimeException) new RuntimeException().initCause(ex);
             }
             Element el = handle.resolveElement(cc);
-            files = elementsToFile(getSuperTypes((TypeElement) el, cc), cc.getClasspathInfo());
+            files = elementsToFile(getSuperTypes((TypeElement) el, cc, true), cc.getClasspathInfo());
         }
         
         public Collection<FileObject> getFileObjects() {
