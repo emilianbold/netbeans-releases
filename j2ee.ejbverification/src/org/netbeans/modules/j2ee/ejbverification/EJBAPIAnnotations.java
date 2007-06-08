@@ -46,5 +46,6 @@ public interface EJBAPIAnnotations {
     //value attribute in annotations with single attribute
     String VALUE = "value"; //NOI18N
 
+    String WEB_SERVICE = "javax.jws.WebService"; //NOI18N
     // TODO: Add other ones here including enum types
 }

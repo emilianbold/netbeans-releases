@@ -70,7 +70,7 @@ public abstract class EJBProblemFinder {
             problemsFound.clear();
             EjbJar ejbModule = EjbJar.getEjbJar(file);
             
-            if (ejbModule == null 
+            if (ejbModule == null
                     || !ejbModule.getJ2eePlatformVersion().equals(EjbProjectConstants.JAVA_EE_5_LEVEL)){
                 return; // File doesn't belong to EJB project or the EJB version is not supported
             }
@@ -83,18 +83,16 @@ public abstract class EJBProblemFinder {
                         }
                         
                         if (tree.getKind() == Tree.Kind.CLASS){
-                            long startTime = Calendar.getInstance().getTimeInMillis();                            
+                            long startTime = Calendar.getInstance().getTimeInMillis();
                             TreePath path = info.getTrees().getPath(info.getCompilationUnit(), tree);
                             TypeElement javaClass = (TypeElement) info.getTrees().getElement(path);
-                          
+                            
                             Ejb ejb = metadata.findByEjbClass(javaClass.getQualifiedName().toString());
                             
                             EJBProblemContext ctx = new EJBProblemContext(
                                     info, file, javaClass, ejb, metadata);
                             
-                            if (ejb != null){
-                                problemsFound.addAll(EJBRulesRegistry.check(ctx));
-                            }
+                            problemsFound.addAll(EJBRulesRegistry.check(ctx));
                             
                             if (LOG.isLoggable(Level.FINE)){
                                 long timeElapsed = Calendar.getInstance().getTimeInMillis() - startTime;
@@ -114,7 +112,7 @@ public abstract class EJBProblemFinder {
             runningInstance = null;
         }
     }
-     
+    
     public void cancel(){
         LOG.fine("Cancelling EJBProblemFinder task");
         cancelled = true;

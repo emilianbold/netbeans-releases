@@ -20,46 +20,47 @@ package org.netbeans.modules.j2ee.ejbverification.rules;
 
 import java.util.Collection;
 import java.util.Collections;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.util.ElementFilter;
+import javax.lang.model.element.AnnotationMirror;
+import org.netbeans.modules.j2ee.dd.api.ejb.Session;
+import org.netbeans.modules.j2ee.ejbverification.EJBAPIAnnotations;
 import org.netbeans.modules.j2ee.ejbverification.EJBProblemContext;
 import org.netbeans.modules.j2ee.ejbverification.EJBVerificationRule;
 import org.netbeans.modules.j2ee.ejbverification.HintsUtils;
+import org.netbeans.modules.j2ee.ejbverification.JavaUtils;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
 /**
+ * If a class is part of ejb-jar and is annotated as @WebService,
+ * then it must be designated as a stateless session bean.
+ * A stateful session bean can not be annotated as WebService.
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class HasNoArgContructor extends EJBVerificationRule {
+public class WSisSLSB extends EJBVerificationRule {
     
     public Collection<ErrorDescription> check(EJBProblemContext ctx) {
-        if (ctx.getEjb() == null){
-            return null;
-        }
         
-        boolean hasDefaultContructor = true;
+        AnnotationMirror annWebService = JavaUtils.findAnnotation(ctx.getClazz(),
+                EJBAPIAnnotations.WEB_SERVICE);
         
-        for (ExecutableElement constr : ElementFilter.constructorsIn(ctx.getClazz().getEnclosedElements())){
-            hasDefaultContructor = false;
-            
-            if (constr.getParameters().size() == 0
-                    && (constr.getModifiers().contains(Modifier.PUBLIC)
-                    || constr.getModifiers().contains(Modifier.PROTECTED))){
-                return null; // found appropriate constructor
+        if (annWebService != null){
+            if (ctx.getEjb() instanceof Session){
+                Session session = (Session)ctx.getEjb();
+                
+                if (Session.SESSION_TYPE_STATELESS.equals(session.getSessionType())){
+                    return null; // OK
+                }
             }
+            
+            ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
+                    NbBundle.getMessage(WSisSLSB.class, "MSG_WSisSLSB"));
+            
+            return Collections.singletonList(err);
+            
         }
         
-        if (hasDefaultContructor){
-            return null; // OK
-        }
-        
-        ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
-                NbBundle.getMessage(HasNoArgContructor.class, "MSG_HasNoNoArgConstructor"));
-        
-        return Collections.singletonList(err);
+        return null;
     }
     
 }
