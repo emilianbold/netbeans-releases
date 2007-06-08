@@ -95,11 +95,11 @@ public final class TestKit {
         int pos2 = nodeHtmlDisplayName.indexOf(']');
         if ((pos1 != -1) && (pos2 != -1))
             status = nodeHtmlDisplayName.substring(pos1, pos2 + 1);
-        else 
+        else
             status = "";
         return status;
     }
-
+    
     public static void removeAllData(String projectName) {
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
         rootNode.performPopupActionNoBlock("Delete Project");
@@ -108,23 +108,30 @@ public final class TestKit {
         cb.setSelected(true);
         ndo.yes();
         ndo.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        ndo.waitClosed(); 
+        ndo.waitClosed();
         //TestKit.deleteRecursively(file);
     }
     
     public static void closeProject(String projectName) {
         try {
             Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
-            rootNode.performPopupActionNoBlock("Close Project");
+            rootNode.performPopupActionNoBlock("Close");
             try {
                 Thread.sleep(2000);
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             
-        }    
+        } finally {
+            new ProjectsTabOperator().tree().clearSelection();
+        }
+    }
+    
+    public static void waitForScanFinishedAndQueueEmpty() {
+        ProjectSupport.waitScanFinished();
+        new QueueTool().waitEmpty(1000);
+        ProjectSupport.waitScanFinished();
     }
     
     public static void finalRemove() throws Exception {
@@ -162,10 +169,10 @@ public final class TestKit {
                 } else {
                     return -1;
                 }
-            }    
+            }
             return result;
         }
-        return result; 
+        return result;
     }
     
     public static void createNewElements(String projectName, String packageName, String name) {
@@ -189,9 +196,9 @@ public final class TestKit {
         nfnlso.txtObjectName().typeText(name);
         nfnlso.selectPackage(packageName);
         nfnlso.finish();
-    }  
+    }
     
-    public static void createNewPackage(String projectName, String packageName) { 
+    public static void createNewPackage(String projectName, String packageName) {
         NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(projectName);
         nfwo.selectCategory("Java Classes");
@@ -201,7 +208,7 @@ public final class TestKit {
         nfnlso.txtObjectName().clearText();
         nfnlso.txtObjectName().typeText(packageName);
         nfnlso.finish();
-    }    
+    }
     
     public static void createNewElement(String projectName, String packageName, String name) {
         NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
@@ -214,23 +221,23 @@ public final class TestKit {
         nfnlso.txtObjectName().typeText(name);
         nfnlso.selectPackage(packageName);
         nfnlso.finish();
-    }    
+    }
     
     public static void copyTo(String source, String destination) {
         try {
-            BufferedInputStream bis = new BufferedInputStream(new FileInputStream(source)); 
+            BufferedInputStream bis = new BufferedInputStream(new FileInputStream(source));
             BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(destination));
             boolean available = true;
             byte[] buffer = new byte[1024];
             int size;
-            try {    
+            try {
                 while (available) {
                     size = bis.read(buffer);
                     if (size != -1) {
                         bos.write(buffer, 0, size);
                     } else {
                         available = false;
-                    }                      
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -238,10 +245,10 @@ public final class TestKit {
                 bos.flush();
                 bos.close();
                 bis.close();
-            }   
+            }
         } catch (Exception e) {
             e.printStackTrace();
-        }    
+        }
     }
     
     public static void printLogStream(PrintStream stream, String message) {
