@@ -456,8 +456,8 @@ public class FileBuilder
 			} 
 			else  if (m.type == ModDesc.INSERT_AFTER) 
 			{
-			    es1.append(espace.substring(espace.length() - 1));
-			    bw.write(espace.substring(0, espace.length() - 1));			
+			    es1.append(espace.substring(espace.length()));
+			    bw.write(espace.substring(0, espace.length()));			
 			    espace.setLength(0);
 			    bw.write(m.getPatchContent());
 			} 
@@ -482,7 +482,8 @@ public class FileBuilder
 			    m = null;
 			}			    
 		    } 
-		    while (m != null && m.oldEdPoint == edpoint); 
+		    while (m != null 
+			   && (m.oldEdPoint == edpoint || m.oldEdPoint == pnt)); 
 
 		    bw.write(espace.toString());
 		    bw.write(es1.toString());
@@ -538,7 +539,7 @@ public class FileBuilder
 
 
     public static class ModDesc {
-	public static final int INSERT_AFTER = 1;
+	public static final int INSERT_AFTER = 4;
 	public static final int INSERT_BEFORE = 0;
 	public static final int REPLACE = 2;
 	public static final int REMOVE = 3;
@@ -593,10 +594,14 @@ public class FileBuilder
 		if ( type != INSERT_AFTER){
 		    this.oldEdPoint = oldStart;
 		} else {
-		    this.oldEdPoint = oldEnd + 1;
+		    this.oldEdPoint = oldEnd;
 		}
 	    } else {
-		this.oldEdPoint = oldEdPoint;
+		if ( type != INSERT_AFTER){
+		    this.oldEdPoint = oldEdPoint;
+		} else {
+		    this.oldEdPoint = oldEdPoint;
+		}
 	    }
 	}
 	

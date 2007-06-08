@@ -86,6 +86,8 @@ public class Merger implements IUMLParserEventsSink {
     private ArrayList<IClassifier> classNodes;
     private ArrayList<Import> imports;
     private ArrayList<Node> packageNodes;
+    private ParsedInfo parsedNew;
+    private ParsedInfo parsedOld;    
     private HashSet<IElement> matchedNew = new HashSet<IElement>();
     private HashSet<IElement> matchedOld = new HashSet<IElement>();
     private static WeakHashMap<Node, WeakReference<IElement>> cache 
@@ -112,20 +114,13 @@ public class Merger implements IUMLParserEventsSink {
     public void merge() 
 	throws IOException
     {
-
 	fileBuilder = new FileBuilder(newFile, oldFile, targetFile);
 			    
 	pParser = connectToParser();
-	parse(newFile);
-	ArrayList<Import> newImports = imports;
-	ArrayList<Node> newPack = packageNodes;
-	ArrayList<IClassifier> newClasses = classNodes;
+	parsedNew = parse(newFile);
 
 	pParser = connectToParser();
-	parse(oldFile);
-	ArrayList<Import> oldImports = imports;
-	ArrayList<Node> oldPack = packageNodes;
-	ArrayList<IClassifier> oldClasses = classNodes;
+	parsedOld = parse(oldFile);
 	
 	// TBD using of Java Model, ie. Info* classes.
 	// At this moment the sequence of tranforms  are  
@@ -141,64 +136,61 @@ public class Merger implements IUMLParserEventsSink {
 	matcher = new ElementMatcher();
 
 	Node stImportNode = null;
-	if (oldImports.size() > 0) {
-	    Collections.sort(oldImports, new Comparator<Import>() {
+	if (parsedOld.getImports().size() > 0) {
+	    Collections.sort(parsedOld.getImports(), new Comparator<Import>() {
 		public int compare(Import im1, Import im2) {
 		    return (int)(im1.getStartPos() - im2.getStartPos());
 		}
 	    });
-	    stImportNode = oldImports.get(0).getNode();
+	    stImportNode = parsedOld.getImports().get(0).getNode();
 	}
 
 	Node stClassNode = null;
+	ArrayList<IClassifier> oldClasses = parsedOld.getClasses();
 	if (oldClasses.size() > 0) {
-	    Collections.sort(oldClasses, new Comparator<IClassifier>() {
-		public int compare(IClassifier c1, IClassifier c2) {
-		    return (int) (new ElementDescriptor(c1.getNode()).getStartPos() 
-				  - new ElementDescriptor(c2.getNode()).getStartPos());
-		}
-	    });
+	    sortElementsByPosition(oldClasses);
 	    stClassNode = oldClasses.get(0).getNode();
 	}	
 	
-	mergePackages(newPack, oldPack, 
+	mergePackages(parsedNew.getPack(), parsedOld.getPack(), 
 		      stImportNode == null ? stClassNode : stImportNode);
 
-	mergeImports(newImports, oldImports, oldClasses.get(0));
+	mergeImports(parsedNew.getImports(), parsedOld.getImports(), oldClasses.get(0));
 
 	//mergeTop(newClass, oldClass);
-	merge(null, oldClasses.get(oldClasses.size() - 1), newClasses, oldClasses); 
+	merge(null, null, parsedNew.getClasses(), oldClasses); 
 
 	fileBuilder.completed();
     }
 
 
-    public void parse(String fileName) 
+    public ParsedInfo parse(String fileName) 
     {
 	classNodes = new ArrayList<IClassifier>();
 	imports = new ArrayList<Import>();
 	packageNodes = new ArrayList<Node>();
-	pParser.processStreamFromFile(fileName);	
+	pParser.processStreamFromFile(fileName);
+	return new ParsedInfo(packageNodes, imports, classNodes);
 	//establishIDs(classNodes.get(0));
     }
 
 
     /**
      */
-    private void mergePackages(List<Node> newPacks, 
-			       List<Node> oldPacks, 
+    private void mergePackages(Node newPack, 
+			       Node oldPack, 
 			       Node insPoint) 
     { 
-	if (newPacks == null || newPacks.size() == 0) {
-	    if (oldPacks != null &&  oldPacks.size() > 0) {
-		fileBuilder.remove(new ElementDescriptor(oldPacks.get(0)));
+	if (newPack == null ) {
+	    if (oldPack != null) {
+		fileBuilder.remove(new ElementDescriptor(oldPack));
 	    } 
 	} else {
-	    if (oldPacks != null &&  oldPacks.size() > 0) {
-		fileBuilder.replace(new ElementDescriptor(newPacks.get(0)), 
-				    new ElementDescriptor(oldPacks.get(0)));
+	    if (oldPack != null) {
+		fileBuilder.replace(new ElementDescriptor(newPack), 
+				    new ElementDescriptor(oldPack));
 	    } else {
-		fileBuilder.insert(new ElementDescriptor(newPacks.get(0)), 
+		fileBuilder.insert(new ElementDescriptor(newPack), 
 				   new ElementDescriptor(insPoint),
 				   false, 
 				   -1);		
@@ -388,9 +380,17 @@ public class Merger implements IUMLParserEventsSink {
 		// has been already matched using ID marker
 		continue;
 	    }
-	    Node oldClassNode = (oldClass == null ? null : oldClass.getNode());
-	    fileBuilder.add(new ElementDescriptor(newElem.getNode()),
-			    new ElementDescriptor(oldClassNode));
+	    if (oldClass != null) {
+		fileBuilder.add(new ElementDescriptor(newElem.getNode()),
+				new ElementDescriptor(oldClass.getNode()));
+	    } else {
+		ArrayList<IClassifier> oldClasses = parsedOld.getClasses();
+		sortElementsByPosition(oldClasses);
+		fileBuilder.insert
+		    (new ElementDescriptor(newElem.getNode()),
+		     new ElementDescriptor(oldClasses.get(oldClasses.size() - 1).getNode()),
+		     true);		
+	    }
 	}
 	    
 	// removing all un-matched regenerateable old elements
@@ -789,7 +789,6 @@ public class Merger implements IUMLParserEventsSink {
             if (dataNode != null){		
 		packageNodes.add(dataNode);
 	    }
-            
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }
@@ -803,7 +802,6 @@ public class Merger implements IUMLParserEventsSink {
             if (dataNode != null){		
 		imports.add(new Import(dataNode));		
 	    }
-            
         } catch (Exception e) {
             e.printStackTrace(System.out);
         }
@@ -894,6 +892,47 @@ public class Merger implements IUMLParserEventsSink {
 	    }
 	}
 	return res;
+    }
+
+    public void sortElementsByPosition(List<? extends IElement> list) {
+	Collections.sort(list, new Comparator<IElement>() {
+	    public int compare(IElement c1, IElement c2) {
+		return (int) (new ElementDescriptor(c1.getNode()).getStartPos() 
+			      - new ElementDescriptor(c2.getNode()).getStartPos());
+	    }
+	});
+    }
+  
+    public static class ParsedInfo {
+	ArrayList<Node> pack;
+	ArrayList<Import> imports;
+	ArrayList<IClassifier> classes;
+
+	public ParsedInfo(ArrayList<Node> pack,
+			  ArrayList<Import> imports,
+			  ArrayList<IClassifier> classes) 
+	{
+	    this.pack = pack;
+	    this.imports = imports;
+	    this.classes = classes;	    
+	}
+
+	public Node getPack() {
+	    if (pack != null && pack.size() > 0) {
+		return pack.get(0);
+	    }
+	    return null;
+	}
+
+	public ArrayList<Import> getImports() {
+	    return imports;
+
+	}
+
+	public ArrayList<IClassifier> getClasses() {
+	    return classes;
+	}
+	
     }
 
 }
