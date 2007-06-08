@@ -34,6 +34,7 @@ import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.classpath.GlobalSourcePath;
 import org.netbeans.modules.java.source.usages.ClassIndexFactory;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
@@ -567,9 +568,23 @@ public final class ClassIndex {
                     if (dirtySource || dirtyDeps) {                        
                         ClassIndex.this.reset(dirtySource, dirtyDeps);
                         final RootsEvent e = new RootsEvent(ClassIndex.this, newRoots);
-                        for (ClassIndexListener l : listeners) {
-                            l.rootsRemoved(e);
-                        }                        
+                        //Threading warning:
+                        //The Javadoc promises that events are fired under javac lock,
+                        //reschedule firing to the Java Worker Thread which runs under javac lock,
+                        //trying to access javac lock in this thread may cause deadlock with Java Worker Thread
+                        //because the classpath events are fired under the project mutex and it's legal to
+                        //aquire project mutex in the CancellableTask.run()
+                        JavaSourceAccessor.INSTANCE.runSpecialTask(new CancellableTask<CompilationInfo>() {
+                            public void cancel() {
+                                //Cannot cancel event firing
+                            }
+
+                            public void run(CompilationInfo _null) throws Exception {
+                                for (ClassIndexListener l : listeners) {
+                                    l.rootsRemoved(e);
+                                }                        
+                            }
+                        }, JavaSource.Priority.MAX);                        
                     }                    
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
