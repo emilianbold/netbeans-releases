@@ -28,7 +28,7 @@ public class ImportAction extends ActionNoBlock {
     
     /** Creates a new instance of ImportAction */
     public ImportAction() {
-        super(VERSIONING_ITEM + "|" + SVN_ITEM + "|" + IMPORT_ITEM, SVN_ITEM + "|" + IMPORT_ITEM);
+        super(VERSIONING_ITEM + "|" + SVN_ITEM + "|" + IMPORT_ITEM, VERSIONING_ITEM + "|" + IMPORT_ITEM);
     }
     
 }
