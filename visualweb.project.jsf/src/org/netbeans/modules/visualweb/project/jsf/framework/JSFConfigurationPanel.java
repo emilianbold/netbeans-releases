@@ -22,12 +22,14 @@ package org.netbeans.modules.visualweb.project.jsf.framework;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 
 import java.awt.Component;
+import java.io.File;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.spi.webmodule.FrameworkConfigurationPanel;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -40,6 +42,14 @@ import org.openide.util.HelpCtx;
 public class JSFConfigurationPanel implements FrameworkConfigurationPanel, WizardDescriptor.FinishablePanel, WizardDescriptor.ValidatingPanel {
     private WizardDescriptor wizardDescriptor;
     private JSFConfigurationPanelVisual component;
+
+    private String error_message;
+
+    public enum LibraryType {USED, NEW, NONE};
+    private LibraryType libraryType;
+    private Library jsfCoreLibrary;
+    private String newLibraryVersion;
+    private File installedFolder;
 
     /** Creates a new instance of JSFConfigurationPanel */
     public JSFConfigurationPanel(boolean customizer) {
@@ -112,6 +122,7 @@ public class JSFConfigurationPanel implements FrameworkConfigurationPanel, Wizar
         // </RAVE>
     }
 
+   
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
         component.store(d);
@@ -175,4 +186,45 @@ public class JSFConfigurationPanel implements FrameworkConfigurationPanel, Wizar
         return component.packageJars();
     }
     
+    protected void setErrorMessage(String message){
+        if (error_message != null && (message == null || "".equals(message))){
+            wizardDescriptor.putProperty( "WizardPanel_errorMessage", ""); // NOI18N
+            error_message = null;
+        } else
+            this.error_message = message;
+        fireChangeEvent();
+    }
+
+    public String getNewLibraryVersion(){
+        return newLibraryVersion;
+    }
+    
+    public void setNewLibraryVersion(String version){
+        this.newLibraryVersion = version;
+    }
+
+    public File getInstallFolder(){
+        return installedFolder;
+    }
+    
+    public void setInstallFolder(File folder){
+        installedFolder = folder;
+    }
+
+    public LibraryType getLibraryType(){
+        return libraryType;
+    }
+    
+    public void setLibraryType(LibraryType value){
+        libraryType = value;
+    }
+
+    public Library getLibrary(){
+        return jsfCoreLibrary;
+    }
+    
+    protected void setLibrary(Library library){
+        this.jsfCoreLibrary = library;
+    }
+
 }

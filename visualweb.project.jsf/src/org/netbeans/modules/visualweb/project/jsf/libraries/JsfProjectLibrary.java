@@ -44,35 +44,6 @@ public class JsfProjectLibrary {
     private static final String JAR_HEADER = "nbinst:///";
     private static final String JAR_TAIL = "!/";
 
-    // JSF 1.1 RI (Reference Implementation) libraries for both Compile and Deploy
-    public static final String[] ALLTIME_LIBS_JSF11RI = {
-        "jstl11",
-    };
-
-    // JSF 1.1 RI (Reference Implementation) libraries for Compile only
-    public static final String[] DESIGNTIME_LIBS_JSF11RI = {
-        "jsf-designtime",
-    };
-
-    // JSF 1.1 RI (Reference Implementation) libraries for Deploy only
-    public static final String[] RUNTIME_LIBS_JSF11RI = {
-        "jsf-runtime",
-    };
-
-    // JSF 1.2 RI (Reference Implementation) libraries for both Compile and Deploy
-    public static final String[] ALLTIME_LIBS_JSF12RI = {
-        "jsf12",
-        "jstl11",
-    };
-
-    // JSF 1.2 RI (Reference Implementation) libraries for Compile only
-    public static final String[] DESIGNTIME_LIBS_JSF12RI = {
-    };
-
-    // JSF 1.2 RI (Reference Implementation) libraries for Deploy only
-    public static final String[] RUNTIME_LIBS_JSF12RI = {
-    };
-
     // JSF 1.1 support libraries for both Compile and Deploy
     public static final String[] ALLTIME_LIBS_JSF11 = {
     };
@@ -123,28 +94,7 @@ public class JsfProjectLibrary {
         Library[] runtimeLibs;
         String defaultTheme;
 
-        String[] alltimeRIList = new String[0];
-        String[] designtimeRIList = new String[0];
-        String[] runtimeRIList = new String[0];
-        boolean isJavaEE5Project = JsfProjectUtils.isJavaEE5Project(project);
-        ClassPath cp = ClassPath.getClassPath(JsfProjectUtils.getDocumentRoot(project), ClassPath.COMPILE);
-        if (cp.findResource("javax/faces/FacesException.class") == null && //NOI18N
-            cp.findResource("org/apache/myfaces/webapp/StartupServletContextListener.class") == null) { //NOI18N
-            if (isJavaEE5Project) {
-                Library jsf12Library = LibraryManager.getDefault().getLibrary(ALLTIME_LIBS_JSF12RI[0]);
-                if (jsf12Library != null) {
-                    alltimeRIList = ALLTIME_LIBS_JSF12RI;
-                    designtimeRIList = DESIGNTIME_LIBS_JSF12RI;
-                    runtimeRIList = RUNTIME_LIBS_JSF12RI;
-                }
-            } else {
-                alltimeRIList = ALLTIME_LIBS_JSF11RI;
-                designtimeRIList = DESIGNTIME_LIBS_JSF11RI;
-                runtimeRIList = RUNTIME_LIBS_JSF11RI;
-            }
-        }
-
-        if (isJavaEE5Project) {
+        if (JsfProjectUtils.isJavaEE5Project(project)) {
             defaultTheme = DEFAULT_JSF12_THEME;
             alltimeList = ALLTIME_LIBS_JSF12;
             designtimeList = DESIGNTIME_LIBS_JSF12;
@@ -159,29 +109,20 @@ public class JsfProjectLibrary {
         JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_JSF_PROJECT_LIBRARIES_DIR, JsfProjectConstants.PATH_LIBRARIES);
         JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_CURRENT_THEME, defaultTheme);
 
-        alltimeLibs = new Library[alltimeRIList.length + alltimeList.length + 1];
-        for (int i = 0; i < alltimeRIList.length; i++) {
-            alltimeLibs[i] = libMgr.getLibrary(alltimeRIList[i]);
-        }
+        alltimeLibs = new Library[alltimeList.length + 1];
         for (int i = 0; i < alltimeList.length; i++) {
-            alltimeLibs[i+alltimeRIList.length] = libMgr.getLibrary(alltimeList[i]);
+            alltimeLibs[i] = libMgr.getLibrary(alltimeList[i]);
         }
-        alltimeLibs[alltimeRIList.length+alltimeList.length] = libMgr.getLibrary(defaultTheme);
+        alltimeLibs[alltimeList.length] = libMgr.getLibrary(defaultTheme);
 
-        designtimeLibs = new Library[designtimeRIList.length + designtimeList.length];
-        for (int i = 0; i < designtimeRIList.length; i++) {
-            designtimeLibs[i] = libMgr.getLibrary(designtimeRIList[i]);
-        }
+        designtimeLibs = new Library[designtimeList.length];
         for (int i = 0; i < designtimeList.length; i++) {
-            designtimeLibs[i+designtimeRIList.length] = libMgr.getLibrary(designtimeList[i]);
+            designtimeLibs[i] = libMgr.getLibrary(designtimeList[i]);
         }
 
-        runtimeLibs = new Library[runtimeRIList.length + runtimeList.length];
-        for (int i = 0; i < runtimeRIList.length; i++) {
-            runtimeLibs[i] = libMgr.getLibrary(runtimeRIList[i]);
-        }
+        runtimeLibs = new Library[runtimeList.length];
         for (int i = 0; i < runtimeList.length; i++) {
-            runtimeLibs[i+runtimeRIList.length] = libMgr.getLibrary(runtimeList[i]);
+            runtimeLibs[i] = libMgr.getLibrary(runtimeList[i]);
         }
 
         JsfProjectUtils.addLibraryReferences(project, alltimeLibs);

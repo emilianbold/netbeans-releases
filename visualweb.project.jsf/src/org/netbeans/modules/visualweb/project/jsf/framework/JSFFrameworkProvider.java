@@ -118,12 +118,47 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
 
         // <RAVE> Add the VWP libraries to the project
         try {
+            ClassPath cp = ClassPath.getClassPath(fileObject, ClassPath.COMPILE);
+            boolean isMyFaces = cp.findResource("org/apache/myfaces/webapp/StartupServletContextListener.class") != null; //NOI18N
+            if (!isMyFaces && (cp.findResource("javax/faces/FacesException.class") == null)) { //NOI18N
+                Library jsfLib = null;
+                if (JsfProjectUtils.isJavaEE5Project(project)) {
+                    jsfLib = LibraryManager.getDefault().getLibrary("jsf12");
+                } else {
+                    JSFConfigurationPanel.LibraryType libraryType = panel.getLibraryType();
+                    if (libraryType != null && libraryType != JSFConfigurationPanel.LibraryType.NONE) {
+                        if (libraryType == JSFConfigurationPanel.LibraryType.USED) {
+                            jsfLib = panel.getLibrary();
+                        } else if (libraryType == JSFConfigurationPanel.LibraryType.NEW) {
+                            String libraryVersion = panel.getNewLibraryVersion();
+                            File installFolder = panel.getInstallFolder();
+                            if (installFolder != null && libraryVersion != null) {
+                                try {
+                                    JSFUtils.createJSFUserLibrary(installFolder, libraryVersion);
+                                    jsfLib = JSFUtils.getJSFLibrary(libraryVersion);
+                                } catch (IOException e){
+                                    ErrorManager.getDefault().notify(e);
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                if (jsfLib != null) {
+                    try {
+                        JsfProjectUtils.addLibraryReferences(project, new Library[] {
+                            jsfLib,
+                            LibraryManager.getDefault().getLibrary("jstl11"),
+                        });
+                    } catch (IOException ioe) {
+                        //ErrorManager.getDefault().notify(ioe);
+                    }
+                }
+            }
             template.addLibrary(project);
 
             FileObject dd = webModule.getDeploymentDescriptor();
             WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
-            ClassPath cp = ClassPath.getClassPath(fileObject, ClassPath.COMPILE);
-            boolean isMyFaces = cp.findResource("org/apache/myfaces/webapp/StartupServletContextListener.class") != null; //NOI18N
 
             FileSystem fileSystem = webModule.getWebInf().getFileSystem();
             fileSystem.runAtomicAction(new CreateFacesConfig(webModule, isMyFaces, pageName));
