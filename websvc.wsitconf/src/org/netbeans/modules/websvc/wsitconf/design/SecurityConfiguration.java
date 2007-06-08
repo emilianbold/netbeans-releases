@@ -68,7 +68,7 @@ public class SecurityConfiguration implements WSConfiguration {
     }
 
     public String getDescription() {
-        return NbBundle.getMessage(SecurityConfiguration.class, "DesignConfigPanel.Security=Security");
+        return NbBundle.getMessage(SecurityConfiguration.class, "DesignConfigPanel.Security");
     }
 
     public Image getIcon() {
@@ -76,7 +76,7 @@ public class SecurityConfiguration implements WSConfiguration {
     }
 
     public String getDisplayName() {
-        return NbBundle.getMessage(SecurityConfiguration.class, "DesignConfigPanel.Security=Security");
+        return NbBundle.getMessage(SecurityConfiguration.class, "DesignConfigPanel.Security");
     }
   
     public boolean isSet() {
