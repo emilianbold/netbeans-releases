@@ -154,8 +154,8 @@ public class ExportPatchAndDiffTest extends JellyTestCase {
         JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
         open.push();
         
-        //ProjectSupport.waitScanFinished();
-        //new QueueTool().waitEmpty(1000);
+        ProjectSupport.waitScanFinished();
+        new QueueTool().waitEmpty(1000);
         ProjectSupport.waitScanFinished();
         
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
@@ -179,10 +179,17 @@ public class ExportPatchAndDiffTest extends JellyTestCase {
         eo.insert("// EXPORT PATCH", 5, 1);
         eo.save();
         //nodeClass.performMenuActionNoBlock("Versioning|CVS|Export");
-        Operator.setDefaultStringComparator(comOperator);
+        //Operator.setDefaultStringComparator(comOperator);
         new ProjectsTabOperator().tree().clearSelection();
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            
+        }   
+        nodeClass = new Node(new SourcePackagesNode(projectName), pathToMain);
+        nodeClass.select();
         nodeClass.performMenuActionNoBlock("Versioning|Export \"Main.java\" Diff Patch...");
-        Operator.setDefaultStringComparator(oldOperator);
+        //Operator.setDefaultStringComparator(oldOperator);
         NbDialogOperator dialog = new NbDialogOperator("Export");
         JTextFieldOperator tf = new JTextFieldOperator(dialog, 0);
         String patchFile = "/tmp/patch" + System.currentTimeMillis() + ".patch";
