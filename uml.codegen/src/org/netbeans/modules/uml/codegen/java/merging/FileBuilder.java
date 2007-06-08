@@ -597,11 +597,7 @@ public class FileBuilder
 		    this.oldEdPoint = oldEnd;
 		}
 	    } else {
-		if ( type != INSERT_AFTER){
-		    this.oldEdPoint = oldEdPoint;
-		} else {
-		    this.oldEdPoint = oldEdPoint;
-		}
+		this.oldEdPoint = oldEdPoint;
 	    }
 	}
 	
