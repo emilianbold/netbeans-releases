@@ -401,7 +401,7 @@ public class MemberInfo extends ElementInfo
         // TODO: conover - eventually, use the atribute level property
         // instead of this global preference
         //kris richards - made change to nbpreferences
-        return NbPreferences.forModule(MemberInfo.class).getBoolean("UML_USE_GENERICS_DEFAULT", false); // NOI18N
+        return NbPreferences.forModule(MemberInfo.class).getBoolean("UML_USE_GENERICS_DEFAULT", true); // NOI18N
         
     }
 
