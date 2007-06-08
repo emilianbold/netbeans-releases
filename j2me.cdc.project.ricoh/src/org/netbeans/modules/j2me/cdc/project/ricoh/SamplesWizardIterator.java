@@ -182,11 +182,31 @@ public class SamplesWizardIterator implements WizardDescriptor.InstantiatingIter
                                 final FileObject[] libs = lib.getChildren();
                                 for (int i = 0; i < libs.length; i++) {
                                     String ref = refHelper.createForeignFileReference(FileUtil.normalizeFile(FileUtil.toFile(libs[i])), null);
-                                    entries.add(ref + ((i < libs.length - 1) ? ":" : ""));
+                                    entries.add(ref + ((i < libs.length - 1) ? ";" : ""));
                                 }
 
                                 EditableProperties editableProps = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                                editableProps.setProperty("extra.classpath", entries.toArray(new String[entries.size()]));
                                 editableProps.setProperty("libs.classpath", entries.toArray(new String[entries.size()]));
+                                h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, editableProps); // #47609
+                                return null;
+                            }
+                        });
+                    } catch (MutexException me ) {
+                        ErrorManager.getDefault().notify (me);
+                    }
+                }
+                
+                final FileObject res = dir.getFileObject("resources");
+                if (res != null){
+                    final ReferenceHelper refHelper = (ReferenceHelper) p.getLookup().lookup(ReferenceHelper.class);
+                    try {
+                        ProjectManager.mutex().writeAccess( new Mutex.ExceptionAction () {
+                            public Object run() throws Exception {
+                                String ref = ";"+refHelper.createForeignFileReference(FileUtil.normalizeFile(FileUtil.toFile(res)), null);
+
+                                EditableProperties editableProps = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                                editableProps.setProperty("libs.classpath", editableProps.getProperty("libs.classpath")+ref);
                                 h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, editableProps); // #47609
                                 return null;
                             }

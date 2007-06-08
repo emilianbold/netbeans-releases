@@ -5,6 +5,7 @@
             <fileset dir="${{dist.dir}}">
                 <patternset refid="deployment.patternset"/>
             </fileset>
+            <flattenmapper/>
         </copy>
         <taskIf if="ricoh.application.type" value="xlet">
             <ant antfile="${{platform.home}}/startemulator.xml" target="start_emulator" dir="${{platform.home}}">

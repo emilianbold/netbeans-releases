@@ -197,7 +197,8 @@ public class DalpBuilder extends Task {
             DirectoryScanner ds = fs.getDirectoryScanner(project);
             File basedir = ds.getBasedir();
             String[] files = ds.getIncludedFiles();
-            boolean isRemoteDeploy = !("sdcard".equals(getProject().getProperty("ricoh.install-server.deploy-method")) || "httppost".equals(getProject().getProperty("ricoh.install-server.deploy-method")));
+            String depMethod=getProject().getProperty("ricoh.install-server.deploy-method");
+            boolean isRemoteDeploy = !(depMethod==null || "sdcard".equals(depMethod) || "httppost".equals(getProject().getProperty(depMethod)));
             for (int i = 0; i < files.length; i++)
             {
                 if (isRemoteDeploy)
