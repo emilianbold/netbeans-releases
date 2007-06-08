@@ -277,6 +277,9 @@ public class ElementMatcher {
 		return false;
 	    }
 	}
+	if (elem instanceof IAttribute) {
+	    return true;
+	}
 	return false;
     }
 
@@ -295,8 +298,6 @@ public class ElementMatcher {
 	} 
 	return null;
     }
-
-
  
 
 }
