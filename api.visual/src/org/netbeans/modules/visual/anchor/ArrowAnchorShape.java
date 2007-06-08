@@ -37,8 +37,8 @@ public class ArrowAnchorShape implements AnchorShape {
         this.size = size;
         path = new GeneralPath ();
 
-        double radians = Math.PI * degrees / 360.0;
-        double cos = Math.cos (radians);
+        double radians = Math.PI * degrees / 180.0;
+        double cos = Math.cos (radians / 2.0);
         double sin = -size * Math.sqrt (1 - cos * cos);
         cos *= size;
 
