@@ -65,15 +65,6 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     -->
     
-    <folder name="Services">
-        <folder name="EjbDataSource">
-            <file name="org-netbeans-modules-visualweb-ejb-dataService.instance">
-                <attr name="instanceOf" stringvalue="org.netbeans.modules.visualweb.project.jsf.services.EjbDataSourceService"/>
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.visualweb.ejb.EjbDataSourceServiceImpl"/>          
-            </file>
-        </folder>
-    </folder> <!-- Services -->
-    
     <folder name="UI">
         <folder name="Runtime">
             <file name="org-netbeans-modules-visualweb-ejb-nodes-EjbRootNode.instance" url="org-netbeans-modules-visualweb-ejb-nodes-EjbRootNode.instance"/>
