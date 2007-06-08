@@ -32,6 +32,7 @@ import java.awt.event.FocusListener;
 import java.beans.VetoableChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
+import org.openide.util.Utilities;
 
 /**
  * This class represents a panel of a section that can be expanded / collapsed.
@@ -49,6 +50,11 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
     private SectionInnerPanel innerPanel;
     private Object key;
     private int index;
+    
+    private static final Image IMAGE_UNSELECTED  = Utilities.loadImage
+            ("/org/netbeans/modules/xml/multiview/resources/plus.gif"); // NOI18N
+    private static final Image IMAGE_SELECTED  = Utilities.loadImage
+            ("/org/netbeans/modules/xml/multiview/resources/minus.gif"); // NOI18N 
     
     private FocusListener sectionFocusListener = new FocusAdapter() {
         public void focusGained(FocusEvent e) {
@@ -113,6 +119,8 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         this.key = key;
         
         initComponents();
+        foldButton.setIcon(new javax.swing.ImageIcon(IMAGE_UNSELECTED));
+        foldButton.setSelectedIcon(new javax.swing.ImageIcon(IMAGE_SELECTED));
         headerSeparator.setForeground(SectionVisualTheme.getSectionHeaderLineColor());
         fillerLine.setForeground(SectionVisualTheme.getFoldLineColor());
         fillerEnd.setForeground(SectionVisualTheme.getFoldLineColor());
@@ -286,26 +294,22 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
 
         setLayout(new java.awt.GridBagLayout());
 
-        foldButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/xml/multiview/resources/plus.gif")));
         foldButton.setBorder(null);
         foldButton.setBorderPainted(false);
         foldButton.setContentAreaFilled(false);
         foldButton.setFocusPainted(false);
         foldButton.setFocusable(false);
-        foldButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/xml/multiview/resources/minus.gif")));
         foldButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 foldButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 2);
         add(foldButton, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -316,7 +320,6 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         add(headerSeparator, gridBagConstraints);
 
         actionPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 2, 0));
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
@@ -333,7 +336,6 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         add(fillerLine, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -354,7 +356,6 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
                 titleButtonActionPerformed(evt);
             }
         });
-
         titlePanel.add(titleButton, java.awt.BorderLayout.CENTER);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -364,7 +365,6 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(titlePanel, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
     
     private void titleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_titleButtonActionPerformed
