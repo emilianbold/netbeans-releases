@@ -24,9 +24,12 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule;
 import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
+import org.netbeans.modules.j2ee.jpa.verification.fixes.CreateDefaultConstructor;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 
 /**
@@ -60,7 +63,10 @@ public class HasNoArgConstructor extends JPAClassRule {
             return null; // OK
         }
         
+        Fix fix = new CreateDefaultConstructor(ctx.getFileObject(), 
+                ElementHandle.create(ctx.getJavaClass()));
+        
         return new ErrorDescription[]{createProblem(subject, ctx,
-                NbBundle.getMessage(HasNoArgConstructor.class, "MSG_HasNoNoArgConstructor"))};
+                NbBundle.getMessage(HasNoArgConstructor.class, "MSG_HasNoNoArgConstructor"), fix)};
     }
 }
