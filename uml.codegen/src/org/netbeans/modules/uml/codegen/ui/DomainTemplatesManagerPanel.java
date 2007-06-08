@@ -51,10 +51,11 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import org.netbeans.modules.uml.codegen.dataaccess.TemplateTableModel;
+import org.netbeans.modules.uml.codegen.dataaccess.xmlbeans.DomainObject;
+import org.netbeans.modules.uml.codegen.dataaccess.xmlbeans.Family;
+import org.netbeans.modules.uml.codegen.dataaccess.xmlbeans.TemplateFamilies;
+import org.netbeans.modules.uml.codegen.dataaccess.xmlbeans.TemplateFamiliesHandler;
 import org.netbeans.modules.uml.project.ui.customizer.UMLProjectProperties;
-import org.netbeans.modules.uml.codegen.dataaccess.xmlbinding.TemplateFamilies;
-import org.netbeans.modules.uml.codegen.dataaccess.xmlbinding.TemplateFamilies.Family;
-import org.netbeans.modules.uml.codegen.dataaccess.xmlbinding.TemplateFamiliesHandler;
 
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -174,7 +175,7 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
         rootNode.setUserObject(new DomainTreeNode(
             org.openide.util.NbBundle.getMessage(
-                CodeGenTemplateManagerPanel.class, "LBL_TemplateFamilies")));
+                DomainTemplatesManagerPanel.class, "LBL_TemplateFamilies")));
         
         if (isCustomizer)
         {
@@ -195,10 +196,10 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
             iconRenderer.setOpenIcon(TEMPLATE_FAMILY_NODE_ICON);
         }
         
-        List<Family> familyList = dataHandler.getTemplateFamilies().getFamily();
+        Family[] familyList = dataHandler.getTemplateFamilies().getFamily();
         
         int i = 0;
-        int famTot = familyList.size();
+        int famTot = familyList.length;
         
         DefaultMutableTreeNode[] expandedNodes =
             new DefaultMutableTreeNode[famTot];
@@ -220,9 +221,9 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
             if (Boolean.valueOf(family.isExpanded()))
                 expandedNodes[i] = familyNode;
             
-            List<Family.DomainObject> domainList = family.getDomainObject();
+            DomainObject[] domainList = family.getDomainObject();
             
-            for (Family.DomainObject domain: domainList)
+            for (DomainObject domain: domainList)
             {
                 DefaultMutableTreeNode domainNode = null;
                 String domainName = domain.getName();
@@ -355,7 +356,7 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
         {
             persistTreeExpandState(false);
             TemplateFamilies templateFamilies = dataHandler.getTemplateFamilies();
-            List<Family> familyList = templateFamilies.getFamily();
+            Family[] familyList = templateFamilies.getFamily();
             TreePath treeSelPath = templatesTree.getSelectionPath();
             int parentRow =  templatesTree.getRowForPath(treeSelPath);
             int index = 0;
@@ -390,9 +391,9 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
                         defaultName = baseName + i;
                 }
                 
-                index = familyList.size();
+                index = familyList.length;
                 family.setName(defaultName);
-                familyList.add(family);
+                templateFamilies.addFamily(family);
                 
                 ((DefaultTreeModel)templatesTree.getModel()).insertNodeInto(
                     (new DefaultMutableTreeNode(family.getName(), false)),
@@ -406,11 +407,9 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
                 Family familyParent = templateFamilies.getFamilyByName(
                     treeSelPath.getLastPathComponent().toString());
                 
-                List<Family.DomainObject> domainList =
-                    familyParent.getDomainObject();
-                
+                DomainObject[] domainList = familyParent.getDomainObject();
                 parentNode = (DefaultMutableTreeNode)treeSelPath.getPath()[1];
-                Family.DomainObject domain = new Family.DomainObject();
+                DomainObject domain = new DomainObject();
                 
                 defaultName = NbBundle.getMessage(
                     DomainTemplatesManagerPanel.class,
@@ -427,9 +426,9 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
                         defaultName = baseName + i;
                 }
                 
-                index = domainList.size();
+                index = domainList.length;
                 domain.setName(defaultName);
-                domainList.add(domain);
+                familyParent.addDomainObject(domain);
                 
                 ((DefaultTreeModel)templatesTree.getModel()).insertNodeInto(
                     (new DefaultMutableTreeNode(domain.getName(), false)),
@@ -446,6 +445,7 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
         
         else if (cmd.equals("REMOVE")) // NOI18N
         {
+            TemplateFamilies tfams = null;
             persistTreeExpandState(false);
             TreePath treeSelPath = templatesTree.getSelectionPath();
             DefaultMutableTreeNode treeNode = null;
@@ -461,9 +461,8 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
             case 2: // Template Family Name
                 treeNode = (DefaultMutableTreeNode)treeSelPath.getPath()[1];
                 parentNode = treeNode.getParent();
-                
-                dataHandler.getTemplateFamilies()
-                    .removeFamily(treeNode.toString());
+                tfams = dataHandler.getTemplateFamilies();
+                tfams.removeFamily(tfams.getFamilyByName(treeNode.toString()));
                 
                 ((DefaultTreeModel)templatesTree.getModel())
                     .removeNodeFromParent(treeNode);
@@ -475,10 +474,11 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
             case 3: // Template (Domain) Name
                 treeNode = (DefaultMutableTreeNode)treeSelPath.getPath()[2];
                 parentNode = treeNode.getParent();
-                
-                dataHandler.getTemplateFamilies()
-                    .getFamilyByName(parentNode.toString())
-                    .removeDomainObject(treeNode.toString());
+                tfams = dataHandler.getTemplateFamilies();
+                Family family = tfams.getFamilyByName(parentNode.toString());
+
+                family.removeDomainObject(
+                    family.getDomainByName(treeNode.toString()));
                 
                 ((DefaultTreeModel)templatesTree.getModel())
                     .removeNodeFromParent(treeNode);
@@ -964,7 +964,7 @@ private void templatesTableFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST
     
     private void updateTreeModel(String familyName, String domainName)
     {
-        Family.DomainObject domainObject = dataHandler.getTemplateFamilies()
+        DomainObject domainObject = dataHandler.getTemplateFamilies()
             .getFamilyByName(familyName).getDomainByName(domainName);
         
         if (domainObject != null)
@@ -1056,7 +1056,7 @@ private void templatesTableFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST
             return;
         }
         
-        Family.DomainObject domainObject = dataHandler.getTemplateFamilies()
+        DomainObject domainObject = dataHandler.getTemplateFamilies()
             .getFamilyByName(familyName).getDomainByName(domainName);
         
         if (domainObject != null)
@@ -1196,7 +1196,7 @@ private void templatesTableFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST
         // Family node rename
         else if (event.getPath().length == 1)
         {
-            String oldName = templateFamilies.getFamily().get(index).getName();
+            String oldName = templateFamilies.getFamily()[index].getName();
             
             // if new name is unique and not same as old name, then rename the
             // node in the tree model, as well
@@ -1205,7 +1205,7 @@ private void templatesTableFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST
             {
                 applyButton.setEnabled(true);
                 resetButton.setEnabled(true);
-                templateFamilies.getFamily().get(index).setName(newName);
+                templateFamilies.getFamily()[index].setName(newName);
             }
             
             // name not unique or not new, so revert to old name
@@ -1223,7 +1223,7 @@ private void templatesTableFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST
         {
             String familyName = event.getPath()[1].toString();
             Family parentFamily = templateFamilies.getFamilyByName(familyName);
-            String oldName = parentFamily.getDomainObject().get(index).getName();
+            String oldName = parentFamily.getDomainObject()[index].getName();
             
             // if new name is unique and not same as old name, then rename the
             // node in the tree model, as well
@@ -1234,7 +1234,7 @@ private void templatesTableFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST
                 resetButton.setEnabled(true);
                 
                 templateFamilies.getFamilyByName(familyName)
-                    .getDomainObject().get(index).setName(newName);
+                    .getDomainObject()[index].setName(newName);
             }
             
             // name not unique or not new, so revert to old name

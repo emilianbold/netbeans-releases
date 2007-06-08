@@ -22,12 +22,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.netbeans.modules.uml.codegen.dataaccess.xmlbinding.TemplateFamilies;
-import org.netbeans.modules.uml.codegen.dataaccess.xmlbinding.TemplateFamilies.Family;
-import org.netbeans.modules.uml.codegen.dataaccess.xmlbinding.TemplateFamilies.Family.DomainObject;
-import org.netbeans.modules.uml.codegen.dataaccess.xmlbinding.TemplateFamilies.Family.DomainObject.Template;
+import org.netbeans.modules.uml.codegen.dataaccess.xmlbeans.DomainObject;
+import org.netbeans.modules.uml.codegen.dataaccess.xmlbeans.Family;
+import org.netbeans.modules.uml.codegen.dataaccess.xmlbeans.Template;
+import org.netbeans.modules.uml.codegen.dataaccess.xmlbeans.TemplateFamilies;
+import org.netbeans.modules.uml.codegen.dataaccess.xmlbeans.TemplateFamiliesHandler;
 
-import org.netbeans.modules.uml.codegen.dataaccess.xmlbinding.TemplateFamiliesHandler;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.project.ProjectUtil;
@@ -81,14 +81,17 @@ public class DomainTemplatesRetriever
             String[] tokens = StringTokenizer2.tokenize(projectTemplate, ":");
 
             Family family = templateFamilies.getFamilyByName(tokens[0]);
+            
+            if (family == null)
+                continue;
+            
             DomainObject domainObject = family.getDomainByName(tokens[1]);
             String elementType = domainObject.getModelElement();
             String stereotype = domainObject.getStereotype();
             
-            List<Template> templateList = domainObject.getTemplate();
+            Template[] templateList = domainObject.getTemplate();
             List<DomainTemplate> templates = new ArrayList<DomainTemplate>();
             
-            // for (int i=0; i < domainNodes.getLength(); i++)
             for (Template template: templateList)
             {
                 String format = template.getFilenameFormat();

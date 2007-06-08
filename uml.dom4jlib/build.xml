@@ -28,7 +28,6 @@ Microsystems, Inc. All Rights Reserved.
      <target name="netbeans-extra" depends="release"/>
 
     <target name="release" depends="init">
-        <unzip dest="../external" src="../external/jaxb-2.0.zip"/>
         <unzip dest="../external" src="../external/dom4j-1.2.zip"/>
         <mkdir dir="${cluster}/modules/ext/dom4j"/>
         <copy todir="${cluster}/modules/ext/dom4j">
@@ -41,10 +40,6 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="xsdlib.jar"/>
                 <include name="PullParser2.jar"/>
                 <include name="org-dom4j.jar"/>
-                
-                <include name="jsr173_1.0_api.jar"/>
-                <include name="jaxb-impl.jar"/>
-                <include name="jaxb-api.jar"/>
             </fileset>
         </copy>
     </target>

@@ -69,6 +69,15 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.schema2beans</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.16</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.uml</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -168,18 +177,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.modules.uml.codegen.model</package>
                 <package>org.netbeans.modules.uml.codegen.ui</package>
             </public-packages>
-            <class-path-extension>
-                <runtime-relative-path>ext/dom4j/jsr173_1.0_api.jar</runtime-relative-path>
-                <binary-origin>../external/jsr173_1.0_api.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/dom4j/jaxb-impl.jar</runtime-relative-path>
-                <binary-origin>../external/jaxb-impl.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/dom4j/jaxb-api.jar</runtime-relative-path>
-                <binary-origin>../external/jaxb-api.jar</binary-origin>
-            </class-path-extension>
         </data>
     </configuration>
 </project>
