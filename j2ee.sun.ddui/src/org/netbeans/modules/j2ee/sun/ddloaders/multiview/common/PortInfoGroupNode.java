@@ -44,8 +44,8 @@ public class PortInfoGroupNode extends NamedBeanGroupNode {
         enableAddAction(NbBundle.getMessage(ServiceRefGroupNode.class, "LBL_AddPortInfo")); // NOI18N
     }
 
-    protected SectionNode createNode(CommonDDBean bean) {
-        return new PortInfoNode(getSectionNodeView(), (PortInfo) bean, version);
+    protected SectionNode createNode(DDBinding binding) {
+        return new PortInfoNode(getSectionNodeView(), binding, version);
     }
 
     protected CommonDDBean [] getBeansFromModel() {
@@ -58,9 +58,57 @@ public class PortInfoGroupNode extends NamedBeanGroupNode {
         return portInfo;
     }    
     
+    protected CommonDDBean addBean(CommonDDBean newBean) {
+        serviceRef.addPortInfo((PortInfo) newBean);
+        return newBean;
+    }
+    
     protected void removeBean(CommonDDBean bean) {
         PortInfo portInfo = (PortInfo) bean;
         serviceRef.removePortInfo(portInfo);
     }
     
+    protected org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] getStandardBeansFromModel() {
+        org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] stdBeans = null;
+//        !PW FIXME are we going to bind port-info to anything?  wsdl-port from standard descriptor?
+//        org.netbeans.modules.j2ee.dd.api.common.RootInterface stdRootDD = getStandardRootDD();
+//        if(stdRootDD instanceof org.netbeans.modules.j2ee.dd.api.web.WebApp) {
+//            org.netbeans.modules.j2ee.dd.api.web.WebApp webApp = (org.netbeans.modules.j2ee.dd.api.web.WebApp) stdRootDD;
+//            stdBeans = webApp.getServlet();
+//        }
+        return stdBeans != null ? stdBeans : new org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [0];
+    }
+
+//    protected CommonDDBean addNewBean() {
+//        PortInfo newPortInfo = (PortInfo) createBean();
+//        newPortInfo.setPortInfoName("service" + getNewBeanId()); // NOI18N
+//        return addBean(newPortInfo);
+//    }
+    
+    // ------------------------------------------------------------------------
+    // BeanResolver interface implementation
+    // ------------------------------------------------------------------------
+    public CommonDDBean createBean() {
+        return serviceRef.newPortInfo();
+    }
+    
+    public String getBeanName(CommonDDBean sunBean) {
+        return PortInfoNode.generateTitle((PortInfo) sunBean);
+    }
+
+    public void setBeanName(CommonDDBean sunBean, String newName) {
+        throw new UnsupportedOperationException("Can't set name of port-info this way");
+    }
+
+    public String getSunBeanNameProperty() {
+        throw new UnsupportedOperationException("No name property for port-info");
+    }
+
+    public String getBeanName(org.netbeans.modules.j2ee.dd.api.common.CommonDDBean standardBean) {
+        throw new UnsupportedOperationException("No binding for port-info (yet)");
+    }
+
+    public String getStandardBeanNameProperty() {
+        throw new UnsupportedOperationException("No name property for bound port-info (yet?)");
+    }
 }

@@ -20,22 +20,49 @@ package org.netbeans.modules.j2ee.sun.ddloaders.multiview.web;
 
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.web.Servlet;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.DDBinding;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.NamedBeanNode;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.ServletPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
+
 
 /**
  * @author Peter Williams
  */
 public class ServletNode extends NamedBeanNode {
 
-    public ServletNode(SectionNodeView sectionNodeView, final Servlet servlet, final ASDDVersion version) {
-        super(sectionNodeView, servlet, Servlet.SERVLET_NAME, ICON_BASE_SERVLET_NODE, version);
+//    private final ServletGroupNode.ServletData servletData;
+    
+    public ServletNode(SectionNodeView sectionNodeView, final DDBinding binding, final ASDDVersion version) {
+        super(sectionNodeView, binding, Servlet.SERVLET_NAME, ICON_BASE_SERVLET_NODE, version);
+
+//        this.servletData = data;
         enableRemoveAction();
     }
     
     protected SectionNodeInnerPanel createNodeInnerPanel() {
-        return new ServletPanel(getSectionNodeView(), (Servlet) key, version);
+        return new ServletPanel(getSectionNodeView(), this, version);
     }
+    
+//    public ServletGroupNode.ServletData getServletData() {
+//        return servletData;
+//    }
+//    
+//    public boolean addVirtualBean() {
+//        if(servletData.isVirtual()) {
+//            Node parentNode = getParentNode();
+//            if(parentNode instanceof ServletGroupNode) {
+//                ServletGroupNode groupNode = (ServletGroupNode) parentNode;
+//                servletData.clearVirtual();
+//                groupNode.addBean(servletData.sunServlet);
+//                
+//                SunDescriptorDataObject dataObject = (SunDescriptorDataObject) getSectionNodeView().getDataObject();
+//                XmlMultiViewDataSynchronizer synchronizer = dataObject.getModelSynchronizer();
+//                synchronizer.requestUpdateData();
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 }

@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.j2ee.sun.ddloaders.multiview.common;
 
+import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.client.SunApplicationClient;
@@ -27,6 +28,8 @@ import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
+import org.openide.ErrorManager;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 
@@ -43,8 +46,8 @@ public class ServiceRefGroupNode extends NamedBeanGroupNode {
         enableAddAction(NbBundle.getMessage(ServiceRefGroupNode.class, "LBL_AddServiceRef")); // NOI18N
     }
 
-    protected SectionNode createNode(CommonDDBean bean) {
-        return new ServiceRefNode(getSectionNodeView(), (ServiceRef) bean, version);
+    protected SectionNode createNode(DDBinding binding) {
+        return new ServiceRefNode(getSectionNodeView(), binding, version);
     }
 
     protected CommonDDBean [] getBeansFromModel() {
@@ -61,27 +64,57 @@ public class ServiceRefGroupNode extends NamedBeanGroupNode {
         return serviceRefs;
     }
 
+    protected org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] getStandardBeansFromModel() {
+        org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] stdBeans = null;
+        org.netbeans.modules.j2ee.dd.api.common.CommonDDBean stdParentDD = null;
+        
+        // get binding from parent node if this is ejb...
+        Node parentNode = getParentNode();
+        if(parentNode instanceof NamedBeanNode) {
+            NamedBeanNode namedNode = (NamedBeanNode) parentNode;
+            DDBinding parentBinding = namedNode.getBinding();
+            stdParentDD = parentBinding.getStandardBean();
+        } else {
+            stdParentDD = getStandardRootDD();
+        }
+        
+        try {
+            if(stdParentDD instanceof org.netbeans.modules.j2ee.dd.api.web.WebApp) {
+                org.netbeans.modules.j2ee.dd.api.web.WebApp webApp = (org.netbeans.modules.j2ee.dd.api.web.WebApp) stdParentDD;
+                stdBeans = webApp.getServiceRef();
+            } else if(stdParentDD instanceof org.netbeans.modules.j2ee.dd.api.ejb.Ejb) {
+                org.netbeans.modules.j2ee.dd.api.ejb.Ejb ejb = (org.netbeans.modules.j2ee.dd.api.ejb.Ejb) stdParentDD;
+                stdBeans = ejb.getServiceRef();
+            } else if(stdParentDD instanceof org.netbeans.modules.j2ee.dd.api.client.AppClient) {
+                org.netbeans.modules.j2ee.dd.api.client.AppClient appClient = (org.netbeans.modules.j2ee.dd.api.client.AppClient) stdParentDD;
+                stdBeans = appClient.getServiceRef();
+            }
+        } catch(org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+        
+        return stdBeans != null ? stdBeans : new org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [0];
+    }
+
     protected CommonDDBean addNewBean() {
-        ServiceRef newServiceRef = null;
+        ServiceRef newServiceRef = (ServiceRef) createBean();
+        newServiceRef.setServiceRefName("service" + getNewBeanId()); // NOI18N
+        return addBean(newServiceRef);
+    }
+    
+    protected CommonDDBean addBean(CommonDDBean newBean) {
+        ServiceRef newServiceRef = (ServiceRef) newBean;
         
         // TODO find a better way to do this for common beans.
         if(commonDD instanceof SunWebApp) {
-            SunWebApp sunWebApp = (SunWebApp) commonDD;
-            newServiceRef = sunWebApp.newServiceRef();
-            sunWebApp.addServiceRef(newServiceRef);
+            ((SunWebApp) commonDD).addServiceRef(newServiceRef);
         } else if(commonDD instanceof Ejb) {
-            Ejb ejb = (Ejb) commonDD;
-            newServiceRef = ejb.newServiceRef();
-            ejb.addServiceRef(newServiceRef);
+            ((Ejb) commonDD).addServiceRef(newServiceRef);
         } else if(commonDD instanceof SunApplicationClient) {
-            SunApplicationClient sunAppClient = (SunApplicationClient) commonDD;
-            newServiceRef = sunAppClient.newServiceRef();
-            sunAppClient.addServiceRef(newServiceRef);
+            ((SunApplicationClient) commonDD).addServiceRef(newServiceRef);
         }
         
-        newServiceRef.setServiceRefName("service" + getNewBeanId()); // NOI18N
-        
-        return newServiceRef;
+        return newBean;
     }
     
     protected void removeBean(CommonDDBean bean) {
@@ -89,15 +122,49 @@ public class ServiceRefGroupNode extends NamedBeanGroupNode {
         
         // TODO find a better way to do this for common beans.
         if(commonDD instanceof SunWebApp) {
-            SunWebApp sunWebApp = (SunWebApp) commonDD;
-            sunWebApp.removeServiceRef(serviceRef);
+            ((SunWebApp) commonDD).removeServiceRef(serviceRef);
         } else if(commonDD instanceof Ejb) {
-            Ejb ejb = (Ejb) commonDD;
-            ejb.removeServiceRef(serviceRef);
+            ((Ejb) commonDD).removeServiceRef(serviceRef);
         } else if(commonDD instanceof SunApplicationClient) {
-            SunApplicationClient sunAppClient = (SunApplicationClient) commonDD;
-            sunAppClient.removeServiceRef(serviceRef);
+            ((SunApplicationClient) commonDD).removeServiceRef(serviceRef);
         }
     }
     
+    // ------------------------------------------------------------------------
+    // BeanResolver interface implementation
+    // ------------------------------------------------------------------------
+    public CommonDDBean createBean() {
+        ServiceRef newServiceRef = null;
+        
+        // TODO find a better way to do this for common beans.
+        if(commonDD instanceof SunWebApp) {
+            newServiceRef = ((SunWebApp) commonDD).newServiceRef();
+        } else if(commonDD instanceof Ejb) {
+            newServiceRef = ((Ejb) commonDD).newServiceRef();
+        } else if(commonDD instanceof SunApplicationClient) {
+            newServiceRef = ((SunApplicationClient) commonDD).newServiceRef();
+        }
+        
+        return newServiceRef;
+    }
+    
+    public String getBeanName(CommonDDBean sunBean) {
+        return ((ServiceRef) sunBean).getServiceRefName();
+    }
+
+    public void setBeanName(CommonDDBean sunBean, String newName) {
+        ((ServiceRef) sunBean).setServiceRefName(newName);
+    }
+
+    public String getSunBeanNameProperty() {
+        return ServiceRef.SERVICE_REF_NAME;
+    }
+
+    public String getBeanName(org.netbeans.modules.j2ee.dd.api.common.CommonDDBean standardBean) {
+        return ((org.netbeans.modules.j2ee.dd.api.common.ServiceRef) standardBean).getServiceRefName();
+    }
+
+    public String getStandardBeanNameProperty() {
+        return STANDARD_SERVICE_REF_NAME;
+    }
 }

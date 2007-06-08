@@ -30,8 +30,8 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
  */
 public class ResourceRefNode extends NamedBeanNode {
 
-    public ResourceRefNode(SectionNodeView sectionNodeView, final ResourceRef resourceRef, final ASDDVersion version) {
-        super(sectionNodeView, resourceRef, ResourceRef.RES_REF_NAME, ICON_BASE_RESOURCE_REF_NODE, version);
+    public ResourceRefNode(SectionNodeView sectionNodeView, final DDBinding binding, final ASDDVersion version) {
+        super(sectionNodeView, binding, ResourceRef.RES_REF_NAME, ICON_BASE_RESOURCE_REF_NODE, version);
         
         enableRemoveAction();
     }

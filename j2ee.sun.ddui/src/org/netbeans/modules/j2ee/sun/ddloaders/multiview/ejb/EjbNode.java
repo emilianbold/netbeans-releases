@@ -20,6 +20,7 @@ package org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb;
 
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.DDBinding;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.EjbRefGroupNode;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.NamedBeanNode;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ResourceRefGroupNode;
@@ -35,10 +36,12 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 public class EjbNode extends NamedBeanNode {
 
     // TODO session/entity/mdb specific icons
-    public EjbNode(SectionNodeView sectionNodeView, final Ejb ejb, final ASDDVersion version) {
-        super(sectionNodeView, ejb, Ejb.EJB_NAME, ICON_EJB_SESSION_NODE, version);
+    public EjbNode(SectionNodeView sectionNodeView, DDBinding binding, final ASDDVersion version) {
+        super(sectionNodeView, binding, Ejb.EJB_NAME, ICON_EJB_SESSION_NODE, version);
         
         enableRemoveAction();
+        
+        Ejb ejb = (Ejb) binding.getSunBean();
         addChild(new EjbRefGroupNode(sectionNodeView, ejb, version));
         addChild(new ResourceRefGroupNode(sectionNodeView, ejb, version));                
         addChild(new ResourceEnvRefGroupNode(sectionNodeView, ejb, version));

@@ -27,6 +27,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 
@@ -43,61 +44,121 @@ public class EjbRefGroupNode extends NamedBeanGroupNode {
         enableAddAction(NbBundle.getMessage(EjbRefGroupNode.class, "LBL_AddEjbRef")); // NOI18N
     }
 
-    protected SectionNode createNode(CommonDDBean bean) {
-        return new EjbRefNode(getSectionNodeView(), (EjbRef) bean, version);
+    protected SectionNode createNode(DDBinding binding) {
+        return new EjbRefNode(getSectionNodeView(), binding, version);
     }
-
+    
     protected CommonDDBean [] getBeansFromModel() {
-        EjbRef [] serviceRefs = null;
+        EjbRef [] ejbRefs = null;
         
         // TODO find a better way to do this for common beans.
         if(commonDD instanceof SunWebApp) {
-            serviceRefs = ((SunWebApp) commonDD).getEjbRef();
+            ejbRefs = ((SunWebApp) commonDD).getEjbRef();
         } else if(commonDD instanceof Ejb) {
-            serviceRefs = ((Ejb) commonDD).getEjbRef();
+            ejbRefs = ((Ejb) commonDD).getEjbRef();
         } else if(commonDD instanceof SunApplicationClient) {
-            serviceRefs = ((SunApplicationClient) commonDD).getEjbRef();
+            ejbRefs = ((SunApplicationClient) commonDD).getEjbRef();
         }
-        return serviceRefs;
+        return ejbRefs;
+    }
+    
+    protected org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] getStandardBeansFromModel() {
+        org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] stdBeans = null;
+        org.netbeans.modules.j2ee.dd.api.common.CommonDDBean stdParentDD = null;
+        
+        // get binding from parent node if this is ejb...
+        Node parentNode = getParentNode();
+        if(parentNode instanceof NamedBeanNode) {
+            NamedBeanNode namedNode = (NamedBeanNode) parentNode;
+            DDBinding parentBinding = namedNode.getBinding();
+            stdParentDD = parentBinding.getStandardBean();
+        } else {
+            stdParentDD = getStandardRootDD();
+        }
+        
+        if(stdParentDD instanceof org.netbeans.modules.j2ee.dd.api.web.WebApp) {
+            org.netbeans.modules.j2ee.dd.api.web.WebApp webApp = (org.netbeans.modules.j2ee.dd.api.web.WebApp) stdParentDD;
+            stdBeans = webApp.getEjbRef();
+        } else if(stdParentDD instanceof org.netbeans.modules.j2ee.dd.api.ejb.Ejb) {
+            org.netbeans.modules.j2ee.dd.api.ejb.Ejb ejb = (org.netbeans.modules.j2ee.dd.api.ejb.Ejb) stdParentDD;
+            stdBeans = ejb.getEjbRef();
+        } else if(stdParentDD instanceof org.netbeans.modules.j2ee.dd.api.client.AppClient) {
+            org.netbeans.modules.j2ee.dd.api.client.AppClient appClient = (org.netbeans.modules.j2ee.dd.api.client.AppClient) stdParentDD;
+            stdBeans = appClient.getEjbRef();
+        }
+        
+        return stdBeans != null ? stdBeans : new org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [0];
     }
 
     protected CommonDDBean addNewBean() {
+        EjbRef newEjbRef = (EjbRef) createBean();
+        newEjbRef.setEjbRefName("ejb_ref" + getNewBeanId()); // NOI18N
+        return addBean(newEjbRef);
+    }
+    
+    protected CommonDDBean addBean(CommonDDBean newBean) {
+        EjbRef newEjbRef = (EjbRef) newBean;
+        
+        // TODO find a better way to do this for common beans.
+        if(commonDD instanceof SunWebApp) {
+            ((SunWebApp) commonDD).addEjbRef(newEjbRef);
+        } else if(commonDD instanceof Ejb) {
+            ((Ejb) commonDD).addEjbRef(newEjbRef);
+        } else if(commonDD instanceof SunApplicationClient) {
+            ((SunApplicationClient) commonDD).addEjbRef(newEjbRef);
+        }
+        
+        return newBean;
+    }
+    
+    protected void removeBean(CommonDDBean bean) {
+        EjbRef ejbRef = (EjbRef) bean;
+        
+        // TODO find a better way to do this for common beans.
+        if(commonDD instanceof SunWebApp) {
+            ((SunWebApp) commonDD).removeEjbRef(ejbRef);
+        } else if(commonDD instanceof Ejb) {
+            ((Ejb) commonDD).removeEjbRef(ejbRef);
+        } else if(commonDD instanceof SunApplicationClient) {
+            ((SunApplicationClient) commonDD).removeEjbRef(ejbRef);
+        }
+    }
+    
+    // ------------------------------------------------------------------------
+    // BeanResolver interface implementation
+    // ------------------------------------------------------------------------
+    public CommonDDBean createBean() {
         EjbRef newEjbRef = null;
         
         // TODO find a better way to do this for common beans.
         if(commonDD instanceof SunWebApp) {
-            SunWebApp sunWebApp = (SunWebApp) commonDD;
-            newEjbRef = sunWebApp.newEjbRef();
-            sunWebApp.addEjbRef(newEjbRef);
+            newEjbRef = ((SunWebApp) commonDD).newEjbRef();
         } else if(commonDD instanceof Ejb) {
-            Ejb ejb = (Ejb) commonDD;
-            newEjbRef = ejb.newEjbRef();
-            ejb.addEjbRef(newEjbRef);
+            newEjbRef = ((Ejb) commonDD).newEjbRef();
         } else if(commonDD instanceof SunApplicationClient) {
-            SunApplicationClient sunAppClient = (SunApplicationClient) commonDD;
-            newEjbRef = sunAppClient.newEjbRef();
-            sunAppClient.addEjbRef(newEjbRef);
+            newEjbRef = ((SunApplicationClient) commonDD).newEjbRef();
         }
-        
-        newEjbRef.setEjbRefName("ejb_ref" + getNewBeanId()); // NOI18N
         
         return newEjbRef;
     }
     
-    protected void removeBean(CommonDDBean bean) {
-        EjbRef serviceRef = (EjbRef) bean;
-        
-        // TODO find a better way to do this for common beans.
-        if(commonDD instanceof SunWebApp) {
-            SunWebApp sunWebApp = (SunWebApp) commonDD;
-            sunWebApp.removeEjbRef(serviceRef);
-        } else if(commonDD instanceof Ejb) {
-            Ejb ejb = (Ejb) commonDD;
-            ejb.removeEjbRef(serviceRef);
-        } else if(commonDD instanceof SunApplicationClient) {
-            SunApplicationClient sunAppClient = (SunApplicationClient) commonDD;
-            sunAppClient.removeEjbRef(serviceRef);
-        }
+    public String getBeanName(CommonDDBean sunBean) {
+        return ((EjbRef) sunBean).getEjbRefName();
     }
-    
+
+    public void setBeanName(CommonDDBean sunBean, String newName) {
+        ((EjbRef) sunBean).setEjbRefName(newName);
+    }
+
+    public String getSunBeanNameProperty() {
+        return EjbRef.EJB_REF_NAME;
+    }
+
+    public String getBeanName(org.netbeans.modules.j2ee.dd.api.common.CommonDDBean standardBean) {
+        return ((org.netbeans.modules.j2ee.dd.api.common.EjbRef) standardBean).getEjbRefName();
+    }
+
+    public String getStandardBeanNameProperty() {
+        return STANDARD_EJB_REF_NAME;
+    }
 }

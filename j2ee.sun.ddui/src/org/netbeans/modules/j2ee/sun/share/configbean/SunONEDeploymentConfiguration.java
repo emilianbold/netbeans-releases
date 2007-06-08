@@ -57,6 +57,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.sun.api.ResourceConfiguratorInterface;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentConfigurationInterface;
@@ -289,6 +290,65 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         if(storedCfg != null) {
             removeConfiguration(configFiles[0]);
         }
+    }
+    
+    // !PW This is a total waste of space for something so small.  Fixed array lookup maybe?
+    private static Map<Object, String> standardDDNameMap = new HashMap<Object, String>(11);
+    private static Map<Object, String> webserviceDDNameMap = new HashMap<Object, String>(7);
+    
+    static {
+        standardDDNameMap.put(J2eeModule.WAR, J2eeModule.WEB_XML);
+        standardDDNameMap.put(J2eeModule.EJB, J2eeModule.EJBJAR_XML);
+        standardDDNameMap.put(J2eeModule.EAR, J2eeModule.APP_XML);
+        standardDDNameMap.put(J2eeModule.CLIENT, J2eeModule.CLIENT_XML);
+        webserviceDDNameMap.put(J2eeModule.WAR, J2eeModule.WEBSERVICES_XML);
+        webserviceDDNameMap.put(J2eeModule.EJB, J2eeModule.EJBSERVICES_XML);
+    }
+    
+    public org.netbeans.modules.j2ee.dd.api.common.RootInterface getStandardRootDD() {
+        org.netbeans.modules.j2ee.dd.api.common.RootInterface stdRootDD = null;
+        String ddName = standardDDNameMap.get(module.getModuleType());
+        if(ddName != null) {
+            File ddFile = module.getDeploymentConfigurationFile(ddName);
+            if(ddFile.exists()) {
+                FileObject ddFO = FileUtil.toFileObject(ddFile);
+                try {
+                    if(J2eeModule.WAR == module.getModuleType()) {
+                        stdRootDD = org.netbeans.modules.j2ee.dd.api.web.DDProvider.getDefault().getDDRoot(ddFO);
+                    } else if(J2eeModule.EJB == module.getModuleType()) {
+                        stdRootDD = org.netbeans.modules.j2ee.dd.api.ejb.DDProvider.getDefault().getDDRoot(ddFO);
+                    } else if(J2eeModule.CLIENT == module.getModuleType()) {
+                        stdRootDD = org.netbeans.modules.j2ee.dd.api.client.DDProvider.getDefault().getDDRoot(ddFO);
+                    } else if(J2eeModule.EAR == module.getModuleType()) {
+                        stdRootDD = org.netbeans.modules.j2ee.dd.api.application.DDProvider.getDefault().getDDRoot(ddFO);
+                    } 
+                } catch (IOException ex) {
+                    // just return null if this happens.
+                }
+            }
+        }
+        return stdRootDD;
+    }
+    
+    public org.netbeans.modules.j2ee.dd.api.common.RootInterface getWebServicesRootDD() {
+        org.netbeans.modules.j2ee.dd.api.common.RootInterface wsRootDD = null;
+        String ddName = webserviceDDNameMap.get(module.getModuleType());
+        if(ddName != null) {
+            File ddFile = module.getDeploymentConfigurationFile(ddName);
+            if(ddFile.exists()) {
+                System.out.println("FIXME Add websvcddapi dependency and uncomment this code to access webservices.xml");
+                FileObject ddFO = FileUtil.toFileObject(ddFile);
+//                try {
+//                    wsRootDD = org.netbeans.modules.j2ee.dd.api.webservices.DDProvider.getDefault().getDDRoot(ddFO);
+//                } catch (IOException ex) {
+//                }
+            }
+        }
+        return wsRootDD;
+    }
+
+    public <T> MetadataModel<T> getMetadataModel(Class<T> type) {
+        return module.getDeploymentDescriptor(type);
     }
     
     public void updateResourceDir(File resourceDir) {

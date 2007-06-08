@@ -30,11 +30,11 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
  */
 public class ServiceRefNode extends NamedBeanNode {
 
-    public ServiceRefNode(SectionNodeView sectionNodeView, final ServiceRef serviceRef, final ASDDVersion version) {
-        super(sectionNodeView, serviceRef, ServiceRef.SERVICE_REF_NAME, ICON_BASE_SERVICE_REF_NODE, version);
+    public ServiceRefNode(SectionNodeView sectionNodeView, final DDBinding binding, final ASDDVersion version) {
+        super(sectionNodeView, binding, ServiceRef.SERVICE_REF_NAME, ICON_BASE_SERVICE_REF_NODE, version);
         
         enableRemoveAction();
-        addChild(new PortInfoGroupNode(sectionNodeView, serviceRef, version));
+        addChild(new PortInfoGroupNode(sectionNodeView, (ServiceRef) binding.getSunBean(), version));
     }
 
     protected SectionNodeInnerPanel createNodeInnerPanel() {

@@ -30,8 +30,8 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
  */
 public class EjbRefNode extends NamedBeanNode {
 
-    public EjbRefNode(SectionNodeView sectionNodeView, final EjbRef ejbRef, final ASDDVersion version) {
-        super(sectionNodeView, ejbRef, EjbRef.EJB_REF_NAME, ICON_BASE_EJB_REF_NODE, version);
+    public EjbRefNode(SectionNodeView sectionNodeView, final DDBinding binding, final ASDDVersion version) {
+        super(sectionNodeView, binding, EjbRef.EJB_REF_NAME, ICON_BASE_EJB_REF_NODE, version);
         
         enableRemoveAction();
     }

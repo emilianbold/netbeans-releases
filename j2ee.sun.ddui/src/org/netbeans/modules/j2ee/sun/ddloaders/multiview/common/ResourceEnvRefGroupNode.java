@@ -27,6 +27,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 
@@ -43,10 +44,10 @@ public class ResourceEnvRefGroupNode extends NamedBeanGroupNode {
         enableAddAction(NbBundle.getMessage(ResourceEnvRefGroupNode.class, "LBL_AddResourceEnvRef")); // NOI18N
     }
 
-    protected SectionNode createNode(CommonDDBean bean) {
-        return new ResourceEnvRefNode(getSectionNodeView(), (ResourceEnvRef) bean, version);
+    protected SectionNode createNode(DDBinding binding) {
+        return new ResourceEnvRefNode(getSectionNodeView(), binding, version);
     }
-
+    
     protected CommonDDBean [] getBeansFromModel() {
         ResourceEnvRef [] resourceEnvRefs = null;
         
@@ -61,27 +62,53 @@ public class ResourceEnvRefGroupNode extends NamedBeanGroupNode {
         return resourceEnvRefs;
     }
 
+    protected org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] getStandardBeansFromModel() {
+        org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] stdBeans = null;
+        org.netbeans.modules.j2ee.dd.api.common.CommonDDBean stdParentDD = null;
+        
+        // get binding from parent node if this is ejb...
+        Node parentNode = getParentNode();
+        if(parentNode instanceof NamedBeanNode) {
+            NamedBeanNode namedNode = (NamedBeanNode) parentNode;
+            DDBinding parentBinding = namedNode.getBinding();
+            stdParentDD = parentBinding.getStandardBean();
+        } else {
+            stdParentDD = getStandardRootDD();
+        }
+        
+        if(stdParentDD instanceof org.netbeans.modules.j2ee.dd.api.web.WebApp) {
+            org.netbeans.modules.j2ee.dd.api.web.WebApp webApp = (org.netbeans.modules.j2ee.dd.api.web.WebApp) stdParentDD;
+            stdBeans = webApp.getResourceEnvRef();
+        } else if(stdParentDD instanceof org.netbeans.modules.j2ee.dd.api.ejb.Ejb) {
+            org.netbeans.modules.j2ee.dd.api.ejb.Ejb ejb = (org.netbeans.modules.j2ee.dd.api.ejb.Ejb) stdParentDD;
+            stdBeans = ejb.getResourceEnvRef();
+        } else if(stdParentDD instanceof org.netbeans.modules.j2ee.dd.api.client.AppClient) {
+            org.netbeans.modules.j2ee.dd.api.client.AppClient appClient = (org.netbeans.modules.j2ee.dd.api.client.AppClient) stdParentDD;
+            stdBeans = appClient.getResourceEnvRef();
+        }
+        
+        return stdBeans != null ? stdBeans : new org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [0];
+    }
+
     protected CommonDDBean addNewBean() {
-        ResourceEnvRef newResourceEnvRef = null;
+        ResourceEnvRef newResourceEnvRef = (ResourceEnvRef) createBean();
+        newResourceEnvRef.setResourceEnvRefName("resource_env_ref" + getNewBeanId()); // NOI18N
+        return addBean(newResourceEnvRef);
+    }
+    
+    protected CommonDDBean addBean(CommonDDBean newBean) {
+        ResourceEnvRef newResourceEnvRef = (ResourceEnvRef) newBean;
         
         // TODO find a better way to do this for common beans.
         if(commonDD instanceof SunWebApp) {
-            SunWebApp sunWebApp = (SunWebApp) commonDD;
-            newResourceEnvRef = sunWebApp.newResourceEnvRef();
-            sunWebApp.addResourceEnvRef(newResourceEnvRef);
+            ((SunWebApp) commonDD).addResourceEnvRef(newResourceEnvRef);
         } else if(commonDD instanceof Ejb) {
-            Ejb ejb = (Ejb) commonDD;
-            newResourceEnvRef = ejb.newResourceEnvRef();
-            ejb.addResourceEnvRef(newResourceEnvRef);
+            ((Ejb) commonDD).addResourceEnvRef(newResourceEnvRef);
         } else if(commonDD instanceof SunApplicationClient) {
-            SunApplicationClient sunAppClient = (SunApplicationClient) commonDD;
-            newResourceEnvRef = sunAppClient.newResourceEnvRef();
-            sunAppClient.addResourceEnvRef(newResourceEnvRef);
+            ((SunApplicationClient) commonDD).addResourceEnvRef(newResourceEnvRef);
         }
         
-        newResourceEnvRef.setResourceEnvRefName("resource_env_ref" + getNewBeanId()); // NOI18N
-        
-        return newResourceEnvRef;
+        return newBean;
     }
     
     protected void removeBean(CommonDDBean bean) {
@@ -89,15 +116,49 @@ public class ResourceEnvRefGroupNode extends NamedBeanGroupNode {
         
         // TODO find a better way to do this for common beans.
         if(commonDD instanceof SunWebApp) {
-            SunWebApp sunWebApp = (SunWebApp) commonDD;
-            sunWebApp.removeResourceEnvRef(resourceEnvRef);
+            ((SunWebApp) commonDD).removeResourceEnvRef(resourceEnvRef);
         } else if(commonDD instanceof Ejb) {
-            Ejb ejb = (Ejb) commonDD;
-            ejb.removeResourceEnvRef(resourceEnvRef);
+            ((Ejb) commonDD).removeResourceEnvRef(resourceEnvRef);
         } else if(commonDD instanceof SunApplicationClient) {
-            SunApplicationClient sunAppClient = (SunApplicationClient) commonDD;
-            sunAppClient.removeResourceEnvRef(resourceEnvRef);
+            ((SunApplicationClient) commonDD).removeResourceEnvRef(resourceEnvRef);
         }
     }
     
+    // ------------------------------------------------------------------------
+    // BeanResolver interface implementation
+    // ------------------------------------------------------------------------
+    public CommonDDBean createBean() {
+        ResourceEnvRef newResourceEnvRef = null;
+        
+        // TODO find a better way to do this for common beans.
+        if(commonDD instanceof SunWebApp) {
+            newResourceEnvRef = ((SunWebApp) commonDD).newResourceEnvRef();
+        } else if(commonDD instanceof Ejb) {
+            newResourceEnvRef = ((Ejb) commonDD).newResourceEnvRef();
+        } else if(commonDD instanceof SunApplicationClient) {
+            newResourceEnvRef = ((SunApplicationClient) commonDD).newResourceEnvRef();
+        }
+        
+        return newResourceEnvRef;
+    }
+    
+    public String getBeanName(CommonDDBean sunBean) {
+        return ((ResourceEnvRef) sunBean).getResourceEnvRefName();
+    }
+
+    public void setBeanName(CommonDDBean sunBean, String newName) {
+        ((ResourceEnvRef) sunBean).setResourceEnvRefName(newName);
+    }
+
+    public String getSunBeanNameProperty() {
+        return ResourceEnvRef.RESOURCE_ENV_REF_NAME;
+    }
+
+    public String getBeanName(org.netbeans.modules.j2ee.dd.api.common.CommonDDBean standardBean) {
+        return ((org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef) standardBean).getResourceEnvRefName();
+    }
+
+    public String getStandardBeanNameProperty() {
+        return STANDARD_RESOURCE_ENV_REF_NAME;
+    }
 }

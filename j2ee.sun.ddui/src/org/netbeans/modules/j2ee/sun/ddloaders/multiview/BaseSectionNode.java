@@ -72,6 +72,12 @@ public class BaseSectionNode extends SectionNode {
     }
     
     @Override
+    public void refreshSubtree() {
+//        System.out.println(getClass().getName() + ".refreshSubtree()");
+        super.refreshSubtree();
+    }    
+    
+    @Override
     public SectionNodePanel getSectionNodePanel() {
         SectionNodePanel nodePanel = super.getSectionNodePanel();
         

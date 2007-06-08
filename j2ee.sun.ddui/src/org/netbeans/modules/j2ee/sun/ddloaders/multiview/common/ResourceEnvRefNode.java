@@ -30,8 +30,8 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
  */
 public class ResourceEnvRefNode extends NamedBeanNode {
 
-    public ResourceEnvRefNode(SectionNodeView sectionNodeView, final ResourceEnvRef resourceEnvRef, final ASDDVersion version) {
-        super(sectionNodeView, resourceEnvRef, ResourceEnvRef.RESOURCE_ENV_REF_NAME, ICON_BASE_RESOURCE_ENV_REF_NODE, version);
+    public ResourceEnvRefNode(SectionNodeView sectionNodeView, final DDBinding binding, final ASDDVersion version) {
+        super(sectionNodeView, binding, ResourceEnvRef.RESOURCE_ENV_REF_NAME, ICON_BASE_RESOURCE_ENV_REF_NODE, version);
         
         enableRemoveAction();
     }

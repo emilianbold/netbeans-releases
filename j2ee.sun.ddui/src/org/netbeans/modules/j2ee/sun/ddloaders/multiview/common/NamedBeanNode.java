@@ -29,6 +29,7 @@ import org.netbeans.modules.j2ee.sun.ddloaders.Utils;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.BaseSectionNode;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.DDSectionNodeView;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
+import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodePanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
@@ -41,21 +42,24 @@ import org.openide.util.NbBundle;
  */
 public abstract class NamedBeanNode extends BaseSectionNode {
 
+    private DDBinding binding;
     private String beanNameProperty;
     private RemoveBeanAction removeBeanAction;
-    
-    protected NamedBeanNode(final SectionNodeView sectionNodeView, final CommonDDBean bean, 
+
+    protected NamedBeanNode(final SectionNodeView sectionNodeView, final DDBinding binding, 
             final String beanNameProperty, final String iconBase, final ASDDVersion version) {
-        this(sectionNodeView, bean, beanNameProperty, generateTitle(bean, beanNameProperty), iconBase, version);
+        // !PW FIXME generateTitle is a total hack.  Figure out a better way to this.
+        this(sectionNodeView, binding, beanNameProperty, generateTitle(binding.getSunBean(), beanNameProperty), iconBase, version);
     }
     
-    protected NamedBeanNode(final SectionNodeView sectionNodeView, final CommonDDBean bean, 
+    protected NamedBeanNode(final SectionNodeView sectionNodeView, final DDBinding binding, 
             final String beanNameProperty, final String beanTitle, final String iconBase, final ASDDVersion version) {
-        super(sectionNodeView, bean, version, beanTitle, iconBase);
+        super(sectionNodeView, binding.getSunBean(), version, beanTitle, iconBase);
         
+        this.binding = binding;
         this.beanNameProperty = beanNameProperty;
         
-        bean.addPropertyChangeListener(new PropertyChangeListener() {
+        binding.getSunBean().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 String oldDisplayName = getDisplayName();
                 String newDisplayName = generateTitle();
@@ -68,7 +72,7 @@ public abstract class NamedBeanNode extends BaseSectionNode {
         
         helpProvider = true;
     }
-
+    
     @Override
     protected abstract SectionNodeInnerPanel createNodeInnerPanel();
 
@@ -80,6 +84,27 @@ public abstract class NamedBeanNode extends BaseSectionNode {
         }
         return nodePanel;
     }
+    
+    public DDBinding getBinding() {
+        return binding;
+    }
+    
+    public boolean addVirtualBean() {
+        if(binding.isVirtual()) {
+            Node parentNode = getParentNode();
+            if(parentNode instanceof NamedBeanGroupNode) {
+                NamedBeanGroupNode groupNode = (NamedBeanGroupNode) parentNode;
+                binding.clearVirtual();
+                groupNode.addBean(binding.getSunBean());
+                
+                SunDescriptorDataObject dataObject = (SunDescriptorDataObject) getSectionNodeView().getDataObject();
+                XmlMultiViewDataSynchronizer synchronizer = dataObject.getModelSynchronizer();
+                synchronizer.requestUpdateData();
+                return true;
+            }
+        }
+        return false;
+    }    
     
     /** Expected to be called from derived class constructor, if needed.
      */
@@ -102,21 +127,36 @@ public abstract class NamedBeanNode extends BaseSectionNode {
 //            char mnem = NbBundle.getMessage(NamedBeanNode.class,"MNE_Remove").charAt(0);
 //            putValue(MNEMONIC_KEY, Integer.valueOf(mnem));
         }
+
+        @Override
+        public boolean isEnabled() {
+            return !binding.isVirtual();
+        }
+
+        @Override
+        public void setEnabled(boolean newValue) {
+            newValue = newValue && !binding.isVirtual();
+            super.setEnabled(newValue);
+        }
         
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            SectionNodeView view = getSectionNodeView();
-            if(view instanceof DDSectionNodeView) {
-                XmlMultiViewDataObject dObj = ((DDSectionNodeView) view).getDataObject();
-                if(dObj instanceof SunDescriptorDataObject) {
-                    SunDescriptorDataObject sunDO = (SunDescriptorDataObject) dObj;
-                    sunDO.modelUpdatedFromUI();
-//                    dataObject.setChangedFromUI(true);
-            
-                    Node parentNode = getParentNode();
-                    if(parentNode instanceof NamedBeanGroupNode) {
-                        NamedBeanGroupNode groupNode = (NamedBeanGroupNode) parentNode;
-                        groupNode.removeBean((CommonDDBean) key);
-                        groupNode.checkChildren(null);
+            if(!isEnabled()) {
+                System.out.println("<Remove> action should not be enabled for " + binding.toString());
+            } else {
+                SectionNodeView view = getSectionNodeView();
+                if(view instanceof DDSectionNodeView) {
+                    XmlMultiViewDataObject dObj = ((DDSectionNodeView) view).getDataObject();
+                    if(dObj instanceof SunDescriptorDataObject) {
+                        SunDescriptorDataObject sunDO = (SunDescriptorDataObject) dObj;
+                        sunDO.modelUpdatedFromUI();
+//                        dataObject.setChangedFromUI(true);
+
+                        Node parentNode = getParentNode();
+                        if(parentNode instanceof NamedBeanGroupNode) {
+                            NamedBeanGroupNode groupNode = (NamedBeanGroupNode) parentNode;
+                            groupNode.removeBean((CommonDDBean) key);
+                            groupNode.checkChildren(null);
+                        }
                     }
                 }
             }

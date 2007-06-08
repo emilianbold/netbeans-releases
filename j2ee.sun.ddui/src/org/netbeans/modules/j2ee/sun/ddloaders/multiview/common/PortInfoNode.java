@@ -32,8 +32,8 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
  */
 public class PortInfoNode extends NamedBeanNode {
 
-    public PortInfoNode(SectionNodeView sectionNodeView, final PortInfo portInfo, final ASDDVersion version) {
-        super(sectionNodeView, portInfo, null, generateTitle(portInfo), ICON_BASE_PORT_INFO_NODE, version);
+    public PortInfoNode(SectionNodeView sectionNodeView, final DDBinding binding, final ASDDVersion version) {
+        super(sectionNodeView, binding, null, generateTitle((PortInfo) binding.getSunBean()), ICON_BASE_PORT_INFO_NODE, version);
         enableRemoveAction();
     }
 

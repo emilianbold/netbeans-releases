@@ -30,8 +30,8 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
  */
 public class SecurityRoleMappingNode extends NamedBeanNode {
 
-    public SecurityRoleMappingNode(SectionNodeView sectionNodeView, final SecurityRoleMapping mapping, final ASDDVersion version) {
-        super(sectionNodeView, mapping, SecurityRoleMapping.ROLE_NAME, ICON_BASE_SECURITY_ROLE_MAPPING_NODE, version);
+    public SecurityRoleMappingNode(SectionNodeView sectionNodeView, final DDBinding binding, final ASDDVersion version) {
+        super(sectionNodeView, binding, SecurityRoleMapping.ROLE_NAME, ICON_BASE_SECURITY_ROLE_MAPPING_NODE, version);
         enableRemoveAction();
     }
 
