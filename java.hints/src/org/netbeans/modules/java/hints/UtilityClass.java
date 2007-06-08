@@ -138,16 +138,18 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
 
             int[] span = Utilities.findIdentifierSpan(treePath, compilationInfo.getCompilationUnit(), compilationInfo.getTrees().getSourcePositions(), doc);
 
-            ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
-                getSeverity().toEditorSeverity(),
-                NbBundle.getMessage(UtilityClass.class, clazz ? "MSG_PrivateConstructor" : "MSG_MakePrivate"), // NOI18N
-                fixes,
-                doc,
-                doc.createPosition((int) span[0]),
-                doc.createPosition((int) span[1])
-                );
-
-            return Collections.singletonList(ed);
+            if (span[0] != (-1) && span[1] != (-1)) {
+                ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
+                        getSeverity().toEditorSeverity(),
+                        NbBundle.getMessage(UtilityClass.class, clazz ? "MSG_PrivateConstructor" : "MSG_MakePrivate"), // NOI18N
+                        fixes,
+                        doc,
+                        doc.createPosition(span[0]),
+                        doc.createPosition(span[1])
+                        );
+                
+                return Collections.singletonList(ed);
+            }
         } catch (BadLocationException e) {
             Exceptions.printStackTrace(e);
         } catch (IOException e) {

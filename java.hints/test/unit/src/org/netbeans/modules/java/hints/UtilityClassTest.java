@@ -52,7 +52,7 @@ public class UtilityClassTest extends TreeRuleTestBase {
             "}";
         
         performAnalysisTest("test/Test.java", before + after, before.length(), 
-            "0:27-0:31:verifier:Utility class without constructor"
+            "0:27-0:31:verifier:Create private constructor"
         );
     }
     public void testClassWithOnlyStaticMethodsAndFields() throws Exception {
@@ -65,7 +65,7 @@ public class UtilityClassTest extends TreeRuleTestBase {
         
         String gold = before + after + " private Test() { } }";
         performFixTest("test/Test.java", before + after + "}", before.length(), 
-            "0:27-0:31:verifier:Utility class without constructor",
+            "0:27-0:31:verifier:Create private constructor",
             "FixUtilityClass",
             gold
         );
@@ -88,6 +88,14 @@ public class UtilityClassTest extends TreeRuleTestBase {
         
         performAnalysisTest("test/Test.java", before + after, before.length());
     }
+
+    public void testNoExceptionForVeryBrokenClass() throws Exception {
+        String before = "package test; public class Test { private static final cla";
+        String after = "ss private static final class A{} }";
+        
+        performAnalysisTest("test/Test.java", before + after, before.length());
+    }
+    
     public void testDisabledOnEnums() throws Exception {
         String before = "package test; public enum Te";
         String after = "st {" +

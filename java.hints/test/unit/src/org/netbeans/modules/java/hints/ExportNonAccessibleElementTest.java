@@ -54,7 +54,7 @@ public class ExportNonAccessibleElementTest extends TreeRuleTestBase {
             "}";
         
         performAnalysisTest("test/Test.java", before + after, before.length(), 
-            "0:63-0:66:verifier:Non Accessible Type"
+            "0:63-0:66:verifier:Exporting non-public type through public API"
         );
     }
 
@@ -78,7 +78,7 @@ public class ExportNonAccessibleElementTest extends TreeRuleTestBase {
         
         String res = (before + after).replace("public void", "void");
         performFixTest("test/Test.java", before + after, before.length(), 
-            "0:61-0:64:verifier:Non Accessible Type",
+            "0:61-0:64:verifier:Exporting non-public type through public API",
             "FixExportNonAccessibleElement",
             res);
     }
@@ -101,7 +101,7 @@ public class ExportNonAccessibleElementTest extends TreeRuleTestBase {
         
         String res = (before + after).replace("public ", "");
         performFixTest("test/Test.java", before + after, before.length(), 
-            "0:55-0:57:verifier:Non Accessible Type",
+            "0:55-0:57:verifier:Exporting non-public type through public API",
             "FixExportNonAccessibleElement",
             res);
     }
@@ -114,7 +114,7 @@ public class ExportNonAccessibleElementTest extends TreeRuleTestBase {
             
         String res = (before + after).replace("public ", "");
         performFixTest("test/Test.java", before + after, before.length(), 
-            "0:45-0:49:verifier:Non Accessible Type", 
+            "0:45-0:49:verifier:Exporting non-public type through public API", 
             "FixExportNonAccessibleElement",
             res);
     }
@@ -138,7 +138,7 @@ public class ExportNonAccessibleElementTest extends TreeRuleTestBase {
         "}";
         
         performAnalysisTest("test/Test.java", before + after, before.length(),
-            "0:69-0:77:verifier:Non Accessible Type");       
+            "0:69-0:77:verifier:Exporting non-public type through public API");       
         
     }
     public void testWildCards() throws Exception {
@@ -151,7 +151,7 @@ public class ExportNonAccessibleElementTest extends TreeRuleTestBase {
         "}";
         
         performAnalysisTest("test/Test.java", before + after, before.length(),
-            "0:101-0:109:verifier:Non Accessible Type");       
+            "0:101-0:109:verifier:Exporting non-public type through public API");       
         
     }
     public void testWildCardsSuper() throws Exception {
@@ -164,7 +164,7 @@ public class ExportNonAccessibleElementTest extends TreeRuleTestBase {
         "}";
         
         performAnalysisTest("test/Test.java", before + after, before.length(),
-            "0:99-0:107:verifier:Non Accessible Type");       
+            "0:99-0:107:verifier:Exporting non-public type through public API");       
         
     }
     
@@ -183,6 +183,18 @@ public class ExportNonAccessibleElementTest extends TreeRuleTestBase {
             "\n}" +
             "class C { }";
         performAnalysisTest("test/Test.java", before + after, before.length());       
+    }
+    
+    public void testVeryBroken() throws Exception {
+        String before = "package test; public class Test extends Object {" +
+            " public Inner<String> ";
+        String after = " () {" +
+            "  return null;" +
+            " }\n" +
+            " private class Inner<T> { }" +
+            "}";
+        
+        performAnalysisTest("test/Test.java", before + after, before.length());
     }
     
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {

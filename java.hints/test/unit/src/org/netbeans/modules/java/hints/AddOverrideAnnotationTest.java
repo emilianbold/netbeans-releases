@@ -51,6 +51,10 @@ public class AddOverrideAnnotationTest extends TreeRuleTestBase {
         performAnalysisTest("test/Test.java", "package test; public class Test implements Runnable {public void run() {}}", 115-48, "0:65-0:68:verifier:Add Override Annotation");
     }
     
+    public void testAddOverride4() throws Exception {
+        performAnalysisTest("test/Test.java", "package test; public class UUUU {public void () {} private static class W extends UUUU {public void () {}}}", 150-48);
+    }
+    
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
         SourceUtilsTestUtil.setSourceLevel(info.getFileObject(), sourceLevel);
         return new AddOverrideAnnotation().run(info, path);
