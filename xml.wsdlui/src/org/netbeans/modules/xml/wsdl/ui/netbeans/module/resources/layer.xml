@@ -129,6 +129,7 @@
     </folder>
     
     <folder name="Templates">
+        <!--
     	<folder name="WebServices">
     		<file name="WSDL.wsdl" url="WSDL.template">
     			<attr name="template" boolvalue="true" />
@@ -144,6 +145,7 @@
     		</file>
     		<file name="WSDL_import.wsdl" url="WSDL_import.template" />
     	</folder>
+        -->
     	<folder name="XML">
     		<file name="WSDL.wsdl" url="WSDL.template">
     			<attr name="template" boolvalue="true" />
