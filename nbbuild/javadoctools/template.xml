@@ -362,6 +362,7 @@ cause it to fail.
         <!-- Warn about incorrect question version, but do not make build fail: -->
         <property name="arch.warn" value="true"/>
         <property name="arch.target" value="${javadoc.name}" />
+        <mkdir dir="${export.interfaces}"/>
         <arch xsl="exportInterfaces.xsl" answers="${javadoc.arch}" output="${export.interfaces}/architecture-summary.html" stylesheet="prose.css"/>
         <move file="${export.interfaces}/architecture-summary.html" tofile="${export.interfaces}/${javadoc.name}" />
         <mkdir dir="${export.interfaces}/properties" />
