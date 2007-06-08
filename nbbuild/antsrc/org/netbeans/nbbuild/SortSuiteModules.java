@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.Path;
 import org.w3c.dom.Document;
@@ -103,7 +104,8 @@ public class SortSuiteModules extends Task {
             }
             Element data = ParseProjectXml.findNBMElement(config, "data");
             if (data == null) {
-                throw new BuildException("Malformed project file " + projectXml, getLocation());
+                log("Skipping " + projectXml + " as it does not look like a module project", Project.MSG_WARN);
+                continue;
             }
             Element cnbEl = ParseProjectXml.findNBMElement(data, "code-name-base");
             if (cnbEl == null) {
