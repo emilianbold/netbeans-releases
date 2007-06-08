@@ -114,7 +114,6 @@ public class MenuEditLayer extends JPanel {
 
     /** Creates a new instance of MenuEditLayer */
     public MenuEditLayer(final FormDesigner formDesigner) {
-        System.out.println("editing");
         this.formDesigner = formDesigner;
         menuitemListenerMap = new HashMap<JComponent,MouseInputAdapter>();
         menuPopupUIMap = new HashMap<JMenu, PopupMenuUI>();
