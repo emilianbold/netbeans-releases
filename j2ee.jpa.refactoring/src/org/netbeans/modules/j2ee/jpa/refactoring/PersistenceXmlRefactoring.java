@@ -76,7 +76,10 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
             return folder.getFolder();
         }
         try{
-            result = resolveTreePathHandle().getFileObject();
+            TreePathHandle treePathHandle = resolveTreePathHandle();
+            if (treePathHandle != null) {
+                result = treePathHandle.getFileObject();
+            }
         }catch(IOException ioe){
             Exceptions.printStackTrace(ioe);
         }
@@ -89,7 +92,8 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
      * does not belong to any project.
      */
     protected Project getProject() {
-        return FileOwnerQuery.getOwner(getRefactoringSource());
+        FileObject refactoringSource = getRefactoringSource();
+        return refactoringSource == null ? null : FileOwnerQuery.getOwner(refactoringSource);
     }
     
     /**
@@ -137,28 +141,31 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
      */
     protected boolean shouldHandle(){
         
-        final boolean[] result = new boolean[1];
+        final boolean[] result = new boolean[] { false };
         
-        JavaSource source = JavaSource.forFileObject(getRefactoringSource());
-        try{
-            source.runUserActionTask(new CancellableTask<CompilationController>(){
-                
-                public void cancel() {
-                }
-                
-                public void run(CompilationController info) throws Exception {
-                    info.toPhase(JavaSource.Phase.RESOLVED);
-                    TreePathHandle treePathHandle = resolveTreePathHandle();
-                    if (treePathHandle == null){
-                        result[0] = false;
-                    } else {
-                        Element element = treePathHandle.resolveElement(info);
-                        result[0] = element.getKind() == ElementKind.CLASS;
+        FileObject refactoringSource = getRefactoringSource();
+        if (refactoringSource != null) {
+            JavaSource source = JavaSource.forFileObject(refactoringSource);
+            try{
+                source.runUserActionTask(new CancellableTask<CompilationController>(){
+
+                    public void cancel() {
                     }
-                }
-            }, true);
-        } catch(IOException ex){
-            Exceptions.printStackTrace(ex);
+
+                    public void run(CompilationController info) throws Exception {
+                        info.toPhase(JavaSource.Phase.RESOLVED);
+                        TreePathHandle treePathHandle = resolveTreePathHandle();
+                        if (treePathHandle == null){
+                            result[0] = false;
+                        } else {
+                            Element element = treePathHandle.resolveElement(info);
+                            result[0] = element.getKind() == ElementKind.CLASS;
+                        }
+                    }
+                }, true);
+            } catch(IOException ex){
+                Exceptions.printStackTrace(ex);
+            }
         }
         
         return result[0];
@@ -201,20 +208,22 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
         }
         
         FileObject refactoringSource = getRefactoringSource();
-        String classNameFQN = RefactoringUtil.getQualifiedName(refactoringSource);
-        
-        for (FileObject each : getPersistenceXmls()){
-            try {
-                PUDataObject pUDataObject = ProviderUtil.getPUDataObject(each);
-                List<PersistenceUnit> punits = getAffectedPersistenceUnits(pUDataObject, classNameFQN);
-                for (PersistenceUnit persistenceUnit : punits) {
-                    refactoringElementsBag.add(getRefactoring(), getRefactoringElement(persistenceUnit, classNameFQN, pUDataObject, each));
+        if (refactoringSource != null) {
+            String classNameFQN = RefactoringUtil.getQualifiedName(refactoringSource);
+
+            for (FileObject each : getPersistenceXmls()){
+                try {
+                    PUDataObject pUDataObject = ProviderUtil.getPUDataObject(each);
+                    List<PersistenceUnit> punits = getAffectedPersistenceUnits(pUDataObject, classNameFQN);
+                    for (PersistenceUnit persistenceUnit : punits) {
+                        refactoringElementsBag.add(getRefactoring(), getRefactoringElement(persistenceUnit, classNameFQN, pUDataObject, each));
+                    }
+                } catch (InvalidPersistenceXmlException ex) {
+                    Problem newProblem =
+                            new Problem(false, NbBundle.getMessage(PersistenceXmlRefactoring.class, "TXT_PersistenceXmlInvalidProblem", ex.getPath()));
+
+                    result = RefactoringUtil.addToEnd(newProblem, result);
                 }
-            } catch (InvalidPersistenceXmlException ex) {
-                Problem newProblem =
-                        new Problem(false, NbBundle.getMessage(PersistenceXmlRefactoring.class, "TXT_PersistenceXmlInvalidProblem", ex.getPath()));
-                
-                result = RefactoringUtil.addToEnd(newProblem, result);
             }
         }
         
