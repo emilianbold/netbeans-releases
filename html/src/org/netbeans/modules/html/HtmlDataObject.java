@@ -110,7 +110,9 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
             FileEncodingQueryImplementation feq = owner.getLookup().lookup(FileEncodingQueryImplementation.class);
             if (feq != null) { // don't try retrieving encoding from a project not supporting FileEncodingQuery
                 Charset charset = feq.getEncoding(getPrimaryFile());
-                return charset.name();
+                if (charset != null) {
+                    return charset.name();
+                }
             }
         }
         return DEFAULT_ENCODING;
