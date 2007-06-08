@@ -1578,15 +1578,17 @@ public class WebForm implements Designer {
 
         DesignerPane pane = getPane();
 
-        if (pane != null) {
-            //            PageBox pageBox = pane.getPageBox();
-            //
-            //            if (pageBox != null) {
-            //                pageBox.redoLayout(pane.isShowing());
-            //            }
-            //
-            pane.getPaneUI().resetPageBox();
-        }
+        // #106167 This seems to be redundant here (see designer/jsf/../DomSynchronizer#processRefresh,
+        // and /../JsfTopComponent#modelChanged.
+//        if (pane != null) {
+//            //            PageBox pageBox = pane.getPageBox();
+//            //
+//            //            if (pageBox != null) {
+//            //                pageBox.redoLayout(pane.isShowing());
+//            //            }
+//            //
+//            pane.getPaneUI().resetPageBox();
+//        }
 
 //        getSelection().updateSelection(); // trigger refresh in CSS viewer for example
         getSelection().updateNodes();
