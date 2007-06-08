@@ -59,7 +59,6 @@ public class ShowLocalHistoryAction extends NodeAction {
                 tc.requestActive();                                
                 
                 if(files[0].isFile()) {
-                    // XXX hm 
                     LocalHistoryFileView fileView = new LocalHistoryFileView();                
                     LocalHistoryDiffView diffView = new LocalHistoryDiffView(tc); 
                     fileView.getExplorerManager().addPropertyChangeListener(diffView); 
@@ -83,36 +82,16 @@ public class ShowLocalHistoryAction extends NodeAction {
             return false;
         }
         VCSContext ctx = VCSContext.forNodes(activatedNodes);
-        Set<File> rootSet = ctx.getRootFiles();        
-        if(rootSet == null) { 
+        Set<File> rootSet = ctx.getRootFiles();                
+        if(rootSet == null || rootSet.size() == 0) { 
             return false;
         }                        
         for (File file : rootSet) {            
             if(file != null && !file.isFile()) {
-
                 return false;
             }
-
         }        
-        return true;   
-        
-//        boolean files = false;
-//        boolean folders = false;
-//        for (File file : rootSet) {            
-//            if(file.isFile()) {
-//                if(folders) {
-//                    return false;
-//                }
-//                files = true;
-//            }
-//            if(!file.isFile()) {
-//                if(files) {
-//                    return false;
-//                }
-//                folders = true;
-//            }                        
-//        }        
-//        return files && !folders || !files && folders;                
+        return true;           
     }
     
     public String getName() {
