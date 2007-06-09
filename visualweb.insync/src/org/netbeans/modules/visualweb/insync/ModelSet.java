@@ -395,14 +395,6 @@ public abstract class ModelSet implements FileChangeListener {
         return set;
     }
     
-    public static Model getModelIfAvailable(FileObject fileObject) {
-        ModelSet modelSet = getModelSet(fileObject);   
-        if (modelSet instanceof ModelSet && modelSet.isInitialized()) {
-            return modelSet.getModel(fileObject);
-        }
-        return null;
-    }
-    
     private boolean initialized;
         
     public boolean isInitialized() {

@@ -328,9 +328,9 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
     }
     
     public static FacesModel getFacesModelIfAvailable(FileObject fileObject) {
-        Model model = ModelSet.getModelIfAvailable(fileObject);   
-        if (model instanceof FacesModel) {
-            return (FacesModel) model;
+    	ModelSet modelSet = getModelSet(fileObject);   
+        if (modelSet instanceof FacesModelSet && modelSet.isInitialized()) {
+           return ((FacesModelSet)modelSet).getFacesModel(fileObject);
         }
         return null;
     }
