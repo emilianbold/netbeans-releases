@@ -1194,7 +1194,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         String tns = casaWSDLModel.getDefinitions().getTargetNamespace(); 
 
         return addCasaPortToModel(componentType, componentName, 
-                new QName(""),  // empty interface qname
+                new QName(tns, DUMMY_PORTTYPE_NAME),  
                 new QName(tns, newServiceName), 
                 newPortName, portHref, null, x, y);
     }
