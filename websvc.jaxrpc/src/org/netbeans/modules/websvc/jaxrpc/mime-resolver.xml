@@ -40,6 +40,6 @@ Microsystems, Inc. All Rights Reserved.
 	</file>
 	<file>
 		<ext name="wsdl"/>
-		<resolver mime="text/xml-wsdl"/>
+		<resolver mime="text/x-wsdl+xml"/>
 	</file>
 </MIME-resolver> 
