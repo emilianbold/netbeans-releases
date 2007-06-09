@@ -1737,25 +1737,25 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
             }
         }
         
-        System.out.println("old CASA Endpoints:");
+        debugLog("old CASA Endpoints:");
         for (Endpoint endpoint : oldCasaEndpoints) {
-            System.out.println("    " + endpoint.getFullyQualifiedName());
+            debugLog("    " + endpoint.getFullyQualifiedName());
         }    
-        System.out.println("new WSDL Endpoints:");
+        debugLog("new WSDL Endpoints:");
         for (Endpoint endpoint : newWSDLEndpoints) {
-            System.out.println("    " + endpoint.getFullyQualifiedName());
+            debugLog("    " + endpoint.getFullyQualifiedName());
         }    
-        System.out.println("external Endpoints:");
+        debugLog("external Endpoints:");
         for (Endpoint endpoint : externalEndpoints) {
-            System.out.println("    " + endpoint.getFullyQualifiedName());
+            debugLog("    " + endpoint.getFullyQualifiedName());
         } 
-        System.out.println("new SU Endpoints:");
+        debugLog("new SU Endpoints:");
         for (Endpoint endpoint : newConnectedEndpoints) {
-            System.out.println("    " + endpoint.getFullyQualifiedName());
+            debugLog("    " + endpoint.getFullyQualifiedName());
         }            
-        System.out.println("new CASA Endpoints:");
+        debugLog("new CASA Endpoints:");
         for (Endpoint endpoint : newCasaEndpoints) {
-            System.out.println("    " + endpoint.getFullyQualifiedName());
+            debugLog("    " + endpoint.getFullyQualifiedName());
         }        
         
         return newCasaEndpoints;
@@ -1974,7 +1974,7 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
      * @param bcName  name of a BC SU, e.x., sun-jms-binding
      */
     private Element createPorts(String bcName) {
-        System.out.println("create Ports for binding component " + bcName);
+        debugLog("create Ports for binding component " + bcName);
          
         // Create casa ports element.
         Element ports = newCasaDocument.createElement(CASA_PORTS_ELEM_NAME);
@@ -2000,7 +2000,7 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
             */
             
             String relativePath = MyFileUtil.getRelativePath(new File(confDirLoc), getFile(model));
-            System.out.println("    WSDL: " + relativePath);
+            debugLog("    WSDL: " + relativePath);
             String tns = model.getRootComponent().getPeer().getAttribute("targetNamespace");
                         //wsdlDocument.getDocumentElement().getAttribute("targetNamespace");
                         
@@ -2010,20 +2010,20 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
                 QName serviceQName = new QName(tns, serviceName);                
                 for (Port p : s.getPorts()) {
                     String portName = p.getName();                      
-                    System.out.println("          Endpoint: " + serviceQName + ":" + portName);
+                    debugLog("          Endpoint: " + serviceQName + ":" + portName);
                     
                     boolean isSUEndpoint = isInEndpointList(suEndpoints, serviceQName, portName);
                     boolean isLiveDeletedBCEndpoint = false;
                     boolean isLiveUnconnectedEndpoint = false;
                     
                     if (isSUEndpoint) {
-                        System.out.println("              is a SU endpoint.");
+                        debugLog("              is a SU endpoint.");
                     } else {
                         List<Endpoint> deletedBCEndpoints = deletedBCEndpointsMap.get(bcName);
                         if (isInEndpointList(deletedBCEndpoints, serviceQName, portName) &&
                                 isInEndpointList(newWSDLEndpoints, serviceQName, portName)) {
                             isLiveDeletedBCEndpoint = true;
-                            System.out.println("              is a live deleted endpoint.");
+                            debugLog("              is a live deleted endpoint.");
                         }
                         
                         if (!isLiveDeletedBCEndpoint) {
@@ -2031,7 +2031,7 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
                             if (isInEndpointList(unconnectedBCEndpoints, serviceQName, portName) &&
                                     isInEndpointList(newWSDLEndpoints, serviceQName, portName)) {
                                 isLiveUnconnectedEndpoint = true;
-                                System.out.println("              is a live unconnected endpoint.");
+                                debugLog("              is a live unconnected endpoint.");
                             }
                         }
                     }
@@ -2165,5 +2165,9 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
     
     private void log(String msg) {
         task.log(msg);
+    }
+    
+    private void debugLog(String msg) {
+        task.log(msg, Project.MSG_DEBUG);
     }
 }
