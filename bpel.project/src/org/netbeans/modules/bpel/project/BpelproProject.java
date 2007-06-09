@@ -89,7 +89,7 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
     private final Lookup lookup;
     private final BpelSourcesRegistryHelper sourcesRegistryHelper;
     private BpelProjectHelper mProjectHelper = null;
-    
+    private ProjectCloseSupport projectCloseSupport;
     
     public BpelproProject(final AntProjectHelper helper) throws IOException {
         this.helper = helper;
@@ -103,7 +103,7 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
         helper.addAntProjectListener(this);
         BpelProjectHelper.getInstance().setProject(this);
         sourcesRegistryHelper = new BpelSourcesRegistryHelper(this);
-        
+        projectCloseSupport = new ProjectCloseSupport();
     }
     
     public FileObject getProjectDirectory() {
@@ -277,6 +277,14 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
         });
     }
     
+    public void addProjectCloseListener(ProjectCloseListener listener) {
+        projectCloseSupport.addProjectCloseListener(listener);
+    } 
+    
+    public void removeProjectCloseListener(ProjectCloseListener listener) {
+        projectCloseSupport.removeProjectCloseListener(listener);
+    } 
+
     // Private innerclasses ----------------------------------------------------
     
     private final class Info implements ProjectInformation {
@@ -388,6 +396,7 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
                 ErrorManager.getDefault().notify(e);
             }
             sourcesRegistryHelper.unregister();
+            projectCloseSupport.fireProjectClosed();
 //            super.projectClosed();
         }
         
