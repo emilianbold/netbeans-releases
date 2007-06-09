@@ -136,6 +136,7 @@ public class AxiomUtils {
      * TODO This calculator works wrong because of the
      * axiComponent.getParentElement() method returns null if the component is
      * the reference to a global element. So an incomplete XPath can be constructed.
+     * @deprecated
      */
     public static String calculateSimpleXPath(AXIComponent axiComponent) {
         //
@@ -156,7 +157,7 @@ public class AxiomUtils {
                 "" : axiComponent.getTargetNamespace();
             //
             if (compName != null && compName.length() != 0) {
-                PathItem pathItem = new PathItem(axiComponent, namespace, compName);
+                PathItem pathItem = new PathItem(axiComponent, namespace, compName, null);
                 path.add(pathItem);
             } else {
                 path.clear();
@@ -208,7 +209,7 @@ public class AxiomUtils {
         AxiomNode lastProcessedAxiomNode = null;
         while (currNode != null && currNode instanceof AxiomNode) {
             lastProcessedAxiomNode = (AxiomNode)currNode;
-            processNode(lastProcessedAxiomNode.getReference(), path);
+            processNode(lastProcessedAxiomNode.getReference(), null, path);
             //
             currNode = currNode.getParentNode();
         }
@@ -223,7 +224,7 @@ public class AxiomUtils {
                         break;
                     }
                     //
-                    processNode(parentAxiComponent, path);
+                    processNode(parentAxiComponent, null, path);
                     //
                     parentAxiComponent = parentAxiComponent.getParent();
                 }
@@ -232,8 +233,8 @@ public class AxiomUtils {
         //
         return path;
     }
-    public static void processNode(
-            final AXIComponent axiComponent, final ArrayList<PathItem> path) {
+    public static void processNode(final AXIComponent axiComponent, 
+            String predicate, final ArrayList<PathItem> path) {
         String compName = null;
         //
         if (axiComponent instanceof Element) {
@@ -248,7 +249,8 @@ public class AxiomUtils {
             String namespace = isUnqualified(axiComponent) ?
                 null : axiComponent.getTargetNamespace();
             //
-            PathItem pathItem = new PathItem(axiComponent, namespace, compName);
+            PathItem pathItem = new PathItem(
+                    axiComponent, namespace, compName, predicate);
             path.add(pathItem);
         }
     }
@@ -301,6 +303,10 @@ public class AxiomUtils {
             }
             //
             result.append(pathItem.myLocalName);
+            //
+            if (pathItem.myPredicate != null) {
+                result.append(pathItem.myPredicate);
+            }
         }
         //
         return result.toString();
@@ -376,11 +382,14 @@ public class AxiomUtils {
         public String myNamespacePrefix;
         public String myNamespace;
         public String myLocalName;
+        public String myPredicate;
         
-        public PathItem(AXIComponent axiComp, String namespace, String name) {
+        public PathItem(AXIComponent axiComp, String namespace, 
+                String name, String predicate) {
             myAxiComp = axiComp;
             myNamespace = namespace;
             myLocalName = name;
+            myPredicate = predicate;
         }
         
         public QName constructQName() {

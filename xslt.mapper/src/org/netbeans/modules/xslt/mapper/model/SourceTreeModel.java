@@ -18,20 +18,11 @@
  */
 package org.netbeans.modules.xslt.mapper.model;
 
-import java.net.URL;
 import org.netbeans.modules.xml.axi.AXIComponent;
-import org.netbeans.modules.xml.axi.AXIModel;
-import org.netbeans.modules.xml.axi.AXIModelFactory;
-import org.netbeans.modules.xml.retriever.catalog.Utilities;
-import org.netbeans.modules.xml.schema.model.SchemaModel;
-import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
-import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xslt.mapper.model.nodes.Node;
 import org.netbeans.modules.xslt.mapper.model.nodes.NodeFactory;
 import org.netbeans.modules.xslt.mapper.model.nodes.TreeNode;
 import org.netbeans.modules.xslt.mapper.view.XsltMapper;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
 
 /**
  *

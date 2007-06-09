@@ -49,15 +49,12 @@ import org.netbeans.modules.xslt.mapper.model.nodes.SourceTypeFinder;
  */
 public class NodeCreatorVisitor extends AbstractXPathVisitor {
     
-    
-    
     private XsltMapper mapper;
     
     private Node result;
     
     public NodeCreatorVisitor(XsltMapper mapper) {
         this.mapper = mapper;
-        
     }
     
     public Node getResult(){
@@ -71,18 +68,12 @@ public class NodeCreatorVisitor extends AbstractXPathVisitor {
     public void visit(XPathStringLiteral expr) {
         IMethoidNode node = null;
         try {
-        
             Duration.parse(expr.getExpressionString());
             setResult(createMethoidNode(expr, Constants.DURATION_LITERAL));
         } catch (Exception e) {
             // Not a duration literal
             setResult(createLiteralNode(expr, Constants.STRING_LITERAL));
         }
-        
-
-
-        
-        
     }
     
     public void visit(XPathNumericLiteral expr) {
@@ -104,8 +95,6 @@ public class NodeCreatorVisitor extends AbstractXPathVisitor {
         } else {
             setResult(createLiteralNode(operator, Constants.XPATH_LITERAL));
         }
-        
-        
     }
     
     public void visit(XPathExtensionFunction expr) {
@@ -119,9 +108,7 @@ public class NodeCreatorVisitor extends AbstractXPathVisitor {
         } else {
             setResult(createLiteralNode(expr, Constants.XPATH_LITERAL));
         } 
-        
     }
-    
     
     public void visit(XPathVariableReference vReference) {
         setResult(createLiteralNode(vReference, Constants.XPATH_LITERAL));
@@ -146,7 +133,6 @@ public class NodeCreatorVisitor extends AbstractXPathVisitor {
         
         node.setNodeObject(operatorNode);
         operatorNode.setMapperNode(node);
-        
         
         return operatorNode;
     }

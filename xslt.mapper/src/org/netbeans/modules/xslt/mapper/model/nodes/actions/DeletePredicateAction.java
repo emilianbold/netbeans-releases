@@ -20,36 +20,39 @@
 package org.netbeans.modules.xslt.mapper.model.nodes.actions;
 
 import java.awt.event.ActionEvent;
-import org.netbeans.modules.xslt.mapper.model.BranchConstructor;
+import org.netbeans.modules.xslt.mapper.model.targettree.PredicatedSchemaNode;
 import org.netbeans.modules.xslt.mapper.model.targettree.SchemaNode;
+import org.netbeans.modules.xslt.mapper.view.PredicateManager;
 import org.netbeans.modules.xslt.mapper.view.XsltMapper;
 import org.netbeans.modules.xslt.model.XslModel;
 import org.openide.util.NbBundle;
 
 /**
- * Adds the specified schema component to the XSLT.
+ * Shows the Expression editor dialog in order to create a new predicate.
  *
  * @author nk160297
  */
-public class AddThisAxiComponentAction extends XsltNodeAction {
+public class DeletePredicateAction extends XsltNodeAction {
     
     private static final long serialVersionUID = 1L;
     
-    public AddThisAxiComponentAction(XsltMapper xsltMapper, SchemaNode node) {
+    public DeletePredicateAction(XsltMapper xsltMapper, SchemaNode node) {
         super(xsltMapper, node);
         postInit();
         // putValue(DeleteAction.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, 0));
     }
     
     public String getDisplayName() {
-        return NbBundle.getMessage(ActionConst.class, "ADD_THIS"); // NOI18N
+        return NbBundle.getMessage(ActionConst.class, "DELETE_PREDICATE"); // NOI18N
     }
     
     public void actionPerformed(ActionEvent e) {
-        XslModel model = myXsltMapper.getContext().getXSLModel();
-                Object dataObject = myTreeNode.getDataObject();
- 
-        new BranchConstructor((SchemaNode)myTreeNode, super.getMapper()).construct();
+        assert myTreeNode instanceof PredicatedSchemaNode;
+        //
+        // Delete predicate without verification. 
+        // TODO: It worth to check if the predicate is used
+        PredicateManager pm = myXsltMapper.getPredicateManager();
+        pm.deletePredicate((PredicatedSchemaNode)myTreeNode);
     }
     
 }

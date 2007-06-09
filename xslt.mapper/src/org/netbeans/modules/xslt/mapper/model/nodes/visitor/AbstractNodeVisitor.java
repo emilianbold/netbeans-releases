@@ -40,7 +40,6 @@ public abstract class AbstractNodeVisitor implements NodeVisitor {
     public void visitNode(Node node){
     };
     
-    
     public void visit(SchemaNode node) {
         visitNode(node);
     }

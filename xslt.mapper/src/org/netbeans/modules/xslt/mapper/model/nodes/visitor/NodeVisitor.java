@@ -19,9 +19,6 @@
 
 package org.netbeans.modules.xslt.mapper.model.nodes.visitor;
 
-
-
-import org.netbeans.modules.xslt.mapper.model.nodes.CanvasNode;
 import org.netbeans.modules.xslt.mapper.model.nodes.LiteralCanvasNode;
 import org.netbeans.modules.xslt.mapper.model.nodes.OperationOrFunctionCanvasNode;
 import org.netbeans.modules.xslt.mapper.model.targettree.AttributeDeclarationNode;

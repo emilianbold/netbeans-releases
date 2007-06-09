@@ -18,9 +18,9 @@
  */
 package org.netbeans.modules.xslt.mapper.model.targettree;
 
-import java.awt.ComponentOrientation;
 import java.awt.Image;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.JMenu;
@@ -35,13 +35,16 @@ import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIType;
 import org.netbeans.modules.xml.axi.Attribute;
 import org.netbeans.modules.xml.axi.Element;
+import org.netbeans.modules.xml.axi.datatype.NumberBase;
 import org.netbeans.modules.xml.schema.model.Attribute.Use;
 import org.netbeans.modules.xslt.mapper.model.nodes.NodeFactory;
 import org.netbeans.modules.xslt.mapper.model.nodes.TreeNode;
 import org.netbeans.modules.xslt.mapper.model.nodes.actions.ActionConst;
 import org.netbeans.modules.xslt.mapper.model.nodes.actions.AddNestedRulesGroup;
+import org.netbeans.modules.xslt.mapper.model.nodes.actions.AddPredicateAction;
 import org.netbeans.modules.xslt.mapper.model.nodes.actions.AddThisAxiComponentAction;
 import org.netbeans.modules.xslt.mapper.model.nodes.visitor.NodeVisitor;
+import org.netbeans.modules.xslt.mapper.view.PredicateManager;
 import org.netbeans.modules.xslt.mapper.view.XsltMapper;
 import org.openide.util.NbBundle;
 
@@ -51,7 +54,7 @@ import org.openide.util.NbBundle;
  */
 public class SchemaNode extends TreeNode implements TooltipTextProvider {
     
-//    private transient Boolean isSourceViewNode = null;
+    //    private transient Boolean isSourceViewNode = null;
     
     /** Creates a new instance of PlaceholderNode */
     public SchemaNode(AXIComponent component,  XsltMapper mapper) {
@@ -71,8 +74,9 @@ public class SchemaNode extends TreeNode implements TooltipTextProvider {
     }
     public String toString(){
         String name = ((AXIType) getType()).getName();
-        return ((getDataObject() instanceof Attribute) ? "[@" : "[")+ name +"]";
+        return ((getDataObject() instanceof Attribute) ? "@" : "")+ name;
     }
+    
     protected List<TreeNode> loadChildren() {
         final ArrayList<TreeNode> result = new ArrayList<TreeNode>();
         
@@ -85,6 +89,18 @@ public class SchemaNode extends TreeNode implements TooltipTextProvider {
                     if (newNode != null){
                         newNode.setParent(SchemaNode.this);
                         result.add(newNode);
+                    }
+                    //
+                    // Load predicated nodes for source view
+                    if (isSourceViewNode()) {
+                        XsltMapper mapper = getMapper();
+                        PredicateManager pManager = mapper.getPredicateManager();
+                        Collection<PredicatedSchemaNode> newPNodes =
+                                pManager.createPredicatedNodes(newNode);
+                        for (PredicatedSchemaNode newPNode : newPNodes) {
+                            newPNode.setParent(SchemaNode.this);
+                            result.add(newPNode);
+                        }
                     }
                 }
             }.visitSubelements((Element) axic);
@@ -149,28 +165,57 @@ public class SchemaNode extends TreeNode implements TooltipTextProvider {
         JPopupMenu rootMenu = new JPopupMenu();
         Action newAction;
         //
-        String localizedName = NbBundle.getMessage(
-                ActionConst.class, ActionConst.ADD_MENU);
-        JMenu addMenu = new JMenu(localizedName);
-        //
-        newAction = new AddThisAxiComponentAction(getMapper(), this);
-        addMenu.add(newAction);
-        //
-        AddNestedRulesGroup nestedRules = new AddNestedRulesGroup(getMapper(), this);
-        Action[] addNestedRuleArr = nestedRules.getActions();
-        //
-        if (addNestedRuleArr != null && addNestedRuleArr.length > 0) {
-            addMenu.add(new JSeparator());
-        }
-        //
-        if (addNestedRuleArr != null) {
-            for (Action action : addNestedRuleArr) {
-                addMenu.add(action);
+        if (isSourceViewNode()) {
+            // Construct the popup menu for source tree
+            //
+            AXIComponent sc = getType();
+            if (sc instanceof Element) {
+                String max = ((Element)sc).getMaxOccurs();
+                boolean isRepeating = false;
+                if (NumberBase.UNBOUNDED_STRING.equals(max)) {
+                    isRepeating = true;
+                } else {
+                    try {
+                        int maxInt = Integer.parseInt(max);
+                        if (maxInt > 1) {
+                            isRepeating = true;
+                        }
+                    } catch (NumberFormatException ex) {
+                        // DO NOTHING HERE
+                    }
+                }
+                //
+                if (isRepeating) {
+                    newAction = new AddPredicateAction(getMapper(), this);
+                    rootMenu.add(newAction);
+                }
             }
-        }
-        // Add menu is added only if it's not empty
-        if (addMenu.getMenuComponentCount() != 0) {
-            rootMenu.add(addMenu);
+            //
+        } else {
+            // Construct the popup menu for target tree
+            String localizedName = NbBundle.getMessage(
+                    ActionConst.class, ActionConst.ADD_MENU);
+            JMenu addMenu = new JMenu(localizedName);
+            //
+            newAction = new AddThisAxiComponentAction(getMapper(), this);
+            addMenu.add(newAction);
+            //
+            AddNestedRulesGroup nestedRules = new AddNestedRulesGroup(getMapper(), this);
+            Action[] addNestedRuleArr = nestedRules.getActions();
+            //
+            if (addNestedRuleArr != null && addNestedRuleArr.length > 0) {
+                addMenu.add(new JSeparator());
+            }
+            //
+            if (addNestedRuleArr != null) {
+                for (Action action : addNestedRuleArr) {
+                    addMenu.add(action);
+                }
+            }
+            // Add menu is added only if it's not empty
+            if (addMenu.getMenuComponentCount() != 0) {
+                rootMenu.add(addMenu);
+            }
         }
         //
         return rootMenu;

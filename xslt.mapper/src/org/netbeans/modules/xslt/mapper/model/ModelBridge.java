@@ -92,8 +92,11 @@ public class ModelBridge implements IMapperListener, ComponentListener, Property
         }
         
     }
-    
-    
+
+    /**
+     * This method gets and processes the user input events and makes 
+     * modifications to the model.
+     */  
     public void eventInvoked(IMapperEvent e) {
         
         if (IMapperEvent.LINK_ADDED.equals(e.getEventType()) ||
@@ -361,6 +364,9 @@ public class ModelBridge implements IMapperListener, ComponentListener, Property
         }
     }
     
+    /**
+     * This method is called whenever the model is change. 
+     */  
     private void onModelChanged(){
         
         if (!checkErrors()){

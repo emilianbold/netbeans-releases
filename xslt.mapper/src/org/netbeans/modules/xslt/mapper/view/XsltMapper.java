@@ -23,6 +23,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
 import javax.swing.tree.TreePath;
@@ -73,13 +74,14 @@ public class XsltMapper extends BasicMapper implements HelpCtx.Provider{
     
     private ErrorPanel errorPanel;
     
+    private PredicateManager myPredicateManager;
     
     public XsltMapper(Lookup lookup) {
         super();
         this.lookup = lookup;
         this.context = (MapperContext)lookup.lookup(MapperContext.class);// TODO r new MapperContext(lookup);
         
-        
+        myPredicateManager = new PredicateManager(this);
         errorPanel = new ErrorPanel(this);
         
         initializeTrees();
@@ -145,7 +147,7 @@ public class XsltMapper extends BasicMapper implements HelpCtx.Provider{
         targetTree.setCellRenderer(new XsltNodesTreeRenderer());
         //
         // Add the mouse listener for popup menu
-        targetTree.addMouseListener(new MouseAdapter() {
+        MouseListener pupupMouseListener = new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
                 maybeShowPopup(e);
             }
@@ -156,7 +158,9 @@ public class XsltMapper extends BasicMapper implements HelpCtx.Provider{
             
             private void maybeShowPopup(MouseEvent e) {
                 if (e.isPopupTrigger()) {
-                    TreePath path = targetTree.getPathForLocation(
+                    Object source = e.getSource();
+                    assert source instanceof JTree;
+                    TreePath path = ((JTree)source).getPathForLocation(
                             e.getX(), e.getY());
                     if (path != null) {
                         Object lastComp = path.getLastPathComponent();
@@ -171,7 +175,11 @@ public class XsltMapper extends BasicMapper implements HelpCtx.Provider{
                     }
                 }
             }
-        });
+        };
+        //
+        targetTree.addMouseListener(pupupMouseListener);
+        sourceTree.addMouseListener(pupupMouseListener);
+        //
         targetTree.addKeyListener(new KeyAdapter() {
             public void keyReleased(KeyEvent event) {
                 if (event.getKeyCode() == KeyEvent.VK_DELETE) {
@@ -354,6 +362,10 @@ public class XsltMapper extends BasicMapper implements HelpCtx.Provider{
             errorPanel.install();
             
         }
+    }
+    
+    public PredicateManager getPredicateManager() {
+        return myPredicateManager;
     }
 
     public HelpCtx getHelpCtx() {

@@ -47,16 +47,19 @@ public class DiagramBuilder {
     boolean updating = false;
     private XsltMapper mapper;
     private boolean relayoutRequired;
+    private PredicateFinderVisitor pfv;
     
     public DiagramBuilder(XsltMapper mapper) {
         this.mapper = mapper;
+        pfv = new PredicateFinderVisitor(mapper);
     }
+    
     public void updateDiagram(){
         TreeNode root = (TreeNode) mapper.getMapperViewManager()
-        .getDestView()
-        .getTree()
-        .getModel()
-        .getRoot();
+                .getDestView()
+                .getTree()
+                .getModel()
+                .getRoot();
         
         if (root != null){
             relayoutRequired = false;
@@ -82,22 +85,23 @@ public class DiagramBuilder {
      **/
     public void updateDiagram(TreeNode tree_node){
         
-        
         Object data = tree_node.getDataObject();
-        
         
         if (!(data instanceof XslComponent)){
             return;
         }
         
-        
         XslComponent xslc = (XslComponent) data;
         
-        GetExpressionVisitor visitor_ge =
-                new GetExpressionVisitor();
+        GetExpressionVisitor visitor_ge = new GetExpressionVisitor();
         
         xslc.accept(visitor_ge);
         XPathExpression new_expr = visitor_ge.getExpression();
+        
+        // Look for predicates in the specified XPath expression
+        if (new_expr != null) {
+            new_expr.accept(pfv);
+        }
         
         //first check, if current node is already connected to any grap
         List<Node> upstreams = tree_node.getPreviousNodes();
@@ -130,14 +134,9 @@ public class DiagramBuilder {
                 Node graph_root = buildDiagramRecursive(new_expr);
                 if (graph_root != null){
                     mapper.addLink(graph_root, tree_node);
-                    
                 }
             }
-            
         }
-        
-        
-        
     }
     public void destroyDiagramRecursive(Node node){
         
@@ -159,17 +158,17 @@ public class DiagramBuilder {
         }
         
         
-//        List<Node> upstreams = node.getPreviousNodes();
-//        List links = node.getOutputNode().getLinks();
-//
-//        mapper.removeNode(node.getMapperNode());
-//        for(Object link: links){
-//            mapper.removeLink((IMapperLink) link);
-//        }
-//        for (Node upstream: upstreams){
-//            destroyDiagramRecursive(upstream);
-//        }
-//
+        //        List<Node> upstreams = node.getPreviousNodes();
+        //        List links = node.getOutputNode().getLinks();
+        //
+        //        mapper.removeNode(node.getMapperNode());
+        //        for(Object link: links){
+        //            mapper.removeLink((IMapperLink) link);
+        //        }
+        //        for (Node upstream: upstreams){
+        //            destroyDiagramRecursive(upstream);
+        //        }
+        //
     }
     
     /**

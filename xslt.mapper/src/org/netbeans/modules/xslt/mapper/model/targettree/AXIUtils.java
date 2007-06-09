@@ -176,7 +176,13 @@ public class AXIUtils {
         SchemaNode lastProcessedSchemaNode = null;
         while (currNode != null && currNode instanceof SchemaNode) {
             lastProcessedSchemaNode = (SchemaNode)currNode;
-            AxiomUtils.processNode(lastProcessedSchemaNode.getType(), path);
+            if (currNode instanceof PredicatedSchemaNode) {
+                PredicatedSchemaNode psn = (PredicatedSchemaNode)currNode;
+                String pred = psn.getPredicatedAxiComp().getPredicatesText();
+                AxiomUtils.processNode(lastProcessedSchemaNode.getType(), pred, path);
+            } else {
+                AxiomUtils.processNode(lastProcessedSchemaNode.getType(), null, path);
+            }
             //
             currNode = currNode.getParent();
         }
@@ -191,7 +197,7 @@ public class AXIUtils {
                         break;
                     }
                     //
-                    AxiomUtils.processNode(parentAxiComponent, path);
+                    AxiomUtils.processNode(parentAxiComponent, null, path);
                     //
                     parentAxiComponent = parentAxiComponent.getParent();
                 }

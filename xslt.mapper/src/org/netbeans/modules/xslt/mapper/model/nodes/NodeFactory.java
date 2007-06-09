@@ -23,8 +23,10 @@ package org.netbeans.modules.xslt.mapper.model.nodes;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.xpath.XPathExpression;
 import org.netbeans.modules.xml.xpath.XPathOperationOrFuntion;
+import org.netbeans.modules.xslt.mapper.model.PredicatedAxiComponent;
 import org.netbeans.modules.xslt.mapper.model.targettree.AttributeDeclarationNode;
 import org.netbeans.modules.xslt.mapper.model.targettree.ElementDeclarationNode;
+import org.netbeans.modules.xslt.mapper.model.targettree.PredicatedSchemaNode;
 import org.netbeans.modules.xslt.mapper.model.targettree.RuleNode;
 import org.netbeans.modules.xslt.mapper.model.targettree.SchemaNode;
 import org.netbeans.modules.xslt.mapper.model.targettree.TemplateNode;
@@ -46,6 +48,8 @@ public class NodeFactory {
     public static Node createNode(Object obj, XsltMapper mapper){
         if (obj instanceof AXIComponent){
             return new SchemaNode((AXIComponent)obj, mapper);
+        } else if (obj instanceof PredicatedAxiComponent) {
+            return new PredicatedSchemaNode((PredicatedAxiComponent)obj, mapper);
         } else if (obj instanceof Element || obj instanceof LiteralResultElement) {
             return new ElementDeclarationNode((XslComponent)obj, mapper); 
         } else if (obj instanceof Attribute) {
