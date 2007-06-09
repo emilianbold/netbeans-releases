@@ -19,10 +19,8 @@
 
 package org.netbeans.modules.xml.wsdl.ui.actions;
 
-import java.io.IOException;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLDataObject;
 import org.netbeans.modules.xml.xam.ui.cookies.ViewComponentCookie;
-import org.openide.ErrorManager;
 import org.openide.actions.OpenAction;
 import org.openide.cookies.OpenCookie;
 import org.openide.nodes.Node;
@@ -37,32 +35,30 @@ public class WSDLSourceViewOpenAction extends OpenAction {
     /** silence compiler warnings */
     private static final long serialVersionUID = 1L;
 
-    public String getName() {
+    @Override
+	public String getName() {
         return NbBundle.getMessage(WSDLSourceViewOpenAction.class,
                 "WSDLSourceViewOpenAction_Name");
     }
 
-    protected void performAction(Node[] node) {
+    @Override
+	protected void performAction(Node[] node) {
         if (node == null || node[0] == null) {
             return;
         }
-        WSDLDataObject dobj = (WSDLDataObject) node[0].getLookup().lookup(
+        WSDLDataObject dobj = node[0].getLookup().lookup(
                 WSDLDataObject.class);
         if (dobj != null) {
-            ViewComponentCookie svc = (ViewComponentCookie) dobj.getCookie(
+            ViewComponentCookie svc = dobj.getCookie(
                     ViewComponentCookie.class);
             if (svc != null) {
-                try {
-                    svc.view(ViewComponentCookie.View.SOURCE,
-                            dobj.getWSDLEditorSupport().getModel().getDefinitions());
-                    return;
-                } catch (IOException ioe) {
-                    ErrorManager.getDefault().notify(ioe);
-                }
+            	svc.view(ViewComponentCookie.View.SOURCE,
+            			dobj.getWSDLEditorSupport().getModel().getDefinitions());
+            	return;
             }
         }
         // default to open cookie
-        OpenCookie oc = (OpenCookie) node[0].getCookie(OpenCookie.class);
+        OpenCookie oc = node[0].getCookie(OpenCookie.class);
         if (oc != null) {
             oc.open();
         }

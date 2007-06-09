@@ -79,12 +79,13 @@ public class WSDLDataObject extends MultiDataObject {
         super.handleDelete();
     }
 
-    protected FileObject handleMove(DataFolder df) throws IOException {
+    @Override
+	protected FileObject handleMove(DataFolder df) throws IOException {
         //TODO:make sure we save file before moving This is what jave move does.
         //It also launch move refactoring dialog which we should be doing
         //as well
         if(isModified()) {
-            SaveCookie sCookie = (SaveCookie) this.getCookie(SaveCookie.class);
+            SaveCookie sCookie = this.getCookie(SaveCookie.class);
             if(sCookie != null) {
                 sCookie.save();
             }

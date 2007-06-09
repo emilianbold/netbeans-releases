@@ -41,6 +41,7 @@ public class WSDLDataLoaderBeanInfo extends SimpleBeanInfo {
 	/**
 	 * copied from Ant Module
 	 */
+    @Override
     public PropertyDescriptor[] getPropertyDescriptors() {
         // Make extensions into a r/o property.
         // It will only contain the WSDL MIME type.
@@ -80,6 +81,7 @@ public class WSDLDataLoaderBeanInfo extends SimpleBeanInfo {
     }
     */
 
+    @Override
     public BeanInfo[] getAdditionalBeanInfo () {
         try {
             // I.e. MultiFileLoader.class or UniFileLoader.class.
@@ -90,12 +92,12 @@ public class WSDLDataLoaderBeanInfo extends SimpleBeanInfo {
         }
     }
 
+    @Override
     public Image getIcon (int type) {
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
             return Utilities.loadImage ("org.netbeans.modules.xml.wsdl.ui.netbeans.module/resources/wsdl16.gif");
-        } else {
-            return Utilities.loadImage ("org.netbeans.modules.xml.wsdl.ui.netbeans.module/resources/wsdl32.gif");
         }
+        return Utilities.loadImage ("org.netbeans.modules.xml.wsdl.ui.netbeans.module/resources/wsdl32.gif");
     }
 
 }

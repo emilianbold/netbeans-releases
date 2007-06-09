@@ -46,7 +46,7 @@
 
     <folder name="Loaders">
         <folder name="text">
-            <folder name="xml-wsdl">
+            <folder name="x-wsdl+xml">
                 <folder name="Actions">
 		    <file name="org-openide-actions-EditAction.instance_hidden"/>
 		    <file name="org-openide-actions-FileSystemAction.instance_hidden"/>
@@ -115,12 +115,18 @@
         <folder name="AnnotationTypes">
             <file name="wsdl-validation-annotation.xml" url="../../../validation/resources/validation-annotation.xml"/>
         </folder>
+        <folder name="text">
+    		<folder name="x-wsdl+xml">
+    			<folder name="Popup">
+    				<file name="org-netbeans-modules-xml-xam-ui-actions-GoToAction.instance" />
+    			</folder>
+    		</folder>
+    	</folder>
     </folder>
-
     <folder name="Navigator">
         <folder name="Panels">
             <folder name="text">
-                <folder name="xml-wsdl">
+                <folder name="x-wsdl+xml">
                     <file name="org-netbeans-modules-xml-wsdl-ui-navigator-WSDLNavigatorPanel.instance"/>
                     <attr name="org-netbeans-modules-xml-wsdl-ui-navigator-WSDLNavigatorPanel.instance/org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance" boolvalue="true"/>
                 </folder>

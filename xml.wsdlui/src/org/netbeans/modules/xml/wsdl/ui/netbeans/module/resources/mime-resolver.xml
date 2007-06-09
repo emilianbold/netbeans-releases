@@ -32,8 +32,7 @@
         it still picks mime resolver registered by web servc module
         so work around is to use same mime resolver as websvc
         we need to ask them to disable mime resolver there-->
-        <!-- <resolver mime="text/x-wsdl+xml"> -->
-        <resolver mime="text/xml-wsdl"/>
+        <resolver mime="text/x-wsdl+xml"/>
         
     </file>
     
@@ -41,8 +40,7 @@
     <!-- any .xml file which is wsdl 1.1 -->
     <file>
         <ext name="xml"/>
-        <!-- <resolver mime="text/x-wsdl+xml"> -->
-        <resolver mime="text/xml-wsdl" >
+        <resolver mime="text/x-wsdl+xml" >
             <xml-rule>
                 <element name="definitions" ns="http://schemas.xmlsoap.org/wsdl/"/>
             </xml-rule>

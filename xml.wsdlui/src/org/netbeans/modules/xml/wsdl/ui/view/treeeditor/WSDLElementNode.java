@@ -96,6 +96,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
@@ -103,6 +104,8 @@ import org.openide.util.datatransfer.NewType;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Base class for all Nodes used in the WSDL editor.
@@ -177,7 +180,7 @@ public abstract class WSDLElementNode<T extends WSDLComponent> extends AbstractN
      */
     private WSDLElementNode(Children children, T element,
             InstanceContent contents) {
-        super(children, new AbstractLookup(contents));
+        super(children, createLookup(element.getModel(), contents));
         mElement = element;
         mLookupContents = contents;
 
@@ -186,13 +189,8 @@ public abstract class WSDLElementNode<T extends WSDLComponent> extends AbstractN
         // lookup, as they provide cookies needed elsewhere, and we want
         // this node to provide them, not the currently selected node.
         contents.add(this);
-        // Include the data object in order for the Navigator to
-        // show the structure of the current document.
-        DataObject dobj = ActionHelper.getDataObject(element.getModel());
-        if (dobj != null) {
-            contents.add(dobj);
-        }
-        contents.add(new DataObjectCookieDelegate(dobj));
+
+
         contents.add(element);
         
         wsdlmodel = new WeakReference<WSDLModel>(element.getModel());
@@ -214,6 +212,26 @@ public abstract class WSDLElementNode<T extends WSDLComponent> extends AbstractN
         referenceSet = Collections.singleton((Component) element);
         highlights = new LinkedList<Highlight>();
         HighlightManager.getDefault().addHighlighted(this);
+    }
+    
+    private static Lookup createLookup(WSDLModel model, InstanceContent contents) {
+        // Include the data object in order for the Navigator to
+        // show the structure of the current document.
+        DataObject dobj = ActionHelper.getDataObject(model);
+        if (dobj != null) {
+            contents.add(dobj);
+            contents.add(new DataObjectCookieDelegate(dobj));
+        
+        //We want to pass common cookies like validate, check etc
+    	return new ProxyLookup(new Lookup[] {
+    			Lookups.exclude(dobj.getNodeDelegate().getLookup(), new Class[] {
+    				Node.class,
+    				DataObject.class,
+    			}),
+    			new AbstractLookup(contents),
+    	});
+        }
+        return new ProxyLookup(new AbstractLookup(contents));
     }
     
     public NewTypesFactory getNewTypesFactory() {

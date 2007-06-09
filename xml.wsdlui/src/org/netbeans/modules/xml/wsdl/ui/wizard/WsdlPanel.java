@@ -169,6 +169,7 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
         }
         
         String fileName = Templates.getTargetName(wiz);
+        if (fileName == null) return;
         wiz.putProperty(FILE_NAME, fileName);
         String targetNamespace = getNS();
         wiz.putProperty(WSDL_TARGETNAMESPACE, targetNamespace);

@@ -79,9 +79,7 @@ public class WSDLEditorSupport extends DataEditorSupport
      */
     public WSDLEditorSupport(WSDLDataObject sobj) {
         super(sobj, new WSDLEditorEnv(sobj));
-        setMIMEType("text/xml");
-        //TODO: we need to use below one eventually
-        //setMIMEType(WSDLDataLoader.MIME_TYPE);
+        setMIMEType(WSDLDataLoader.MIME_TYPE);
     }
     
     
@@ -164,14 +162,14 @@ public class WSDLEditorSupport extends DataEditorSupport
                 List<TopComponent> associatedTCs = new ArrayList<TopComponent>();
                 DataObject targetDO = getDataObject();
                 TopComponent activeTC = TopComponent.getRegistry().getActivated();
-                if (activeTC != null && targetDO == (DataObject) activeTC.getLookup().lookup(
+                if (activeTC != null && targetDO == activeTC.getLookup().lookup(
                         DataObject.class)) {
                     associatedTCs.add(activeTC);
                 }
                 Set openTCs = TopComponent.getRegistry().getOpened();
                 for (Object tc : openTCs) {
                     TopComponent tcc = (TopComponent) tc;
-                    if (targetDO == (DataObject) tcc.getLookup().lookup(
+                    if (targetDO == tcc.getLookup().lookup(
                             DataObject.class)) {
                         associatedTCs.add(tcc);
                     }
@@ -238,7 +236,9 @@ public class WSDLEditorSupport extends DataEditorSupport
         }
         return task;
     }
-    public Task reloadDocument() {
+    
+    @Override
+	public Task reloadDocument() {
         Task task = super.reloadDocument();
         task.addTaskListener(new TaskListener() {
             public void taskFinished(Task task) {
@@ -260,6 +260,7 @@ public class WSDLEditorSupport extends DataEditorSupport
         return task;
     }
 
+    @Override
     protected void notifyClosed() {
         // Stop listening to the undoable edit sources when we are closed.
         QuietUndoManager undo = getUndoManager();
@@ -271,22 +272,17 @@ public class WSDLEditorSupport extends DataEditorSupport
                 undo.endCompound();
                 undo.setDocument(null);
             }
-            try {
-                WSDLModel model = getModel();
-                if (model != null) {
-                    model.removeUndoableEditListener(undo);
-                }
-                // Must unset the model when no longer listening to it.
-                undo.setModel(null);
-            } catch (IOException ioe) {
-                // Model is gone, but just removing the listener is not
-                // going to matter anyway.
+            WSDLModel model = getModel();
+            if (model != null) {
+            	model.removeUndoableEditListener(undo);
             }
+            // Must unset the model when no longer listening to it.
+            undo.setModel(null);
         }
         super.notifyClosed();
     }
 
-    public WSDLModel getModel() throws IOException {
+    public WSDLModel getModel() {
 	WSDLDataObject dobj = getEnv().getWSDLDataObject();
 	ModelSource modelSource = Utilities.getModelSource(dobj.getPrimaryFile(), true);
         if(modelSource != null) {
@@ -310,17 +306,12 @@ public class WSDLEditorSupport extends DataEditorSupport
         QuietUndoManager undo = getUndoManager();
         StyledDocument doc = getDocument();
         synchronized (undo) {
-            try {
-                WSDLModel model = getModel();
-                if (model != null) {
-                    model.removeUndoableEditListener(undo);
-                }
-                // Must unset the model when no longer listening to it.
-                undo.setModel(null);
-            } catch (IOException ioe) {
-                // Model is gone, but just removing the listener is not
-                // going to matter anyway.
-            }
+        	WSDLModel model = getModel();
+        	if (model != null) {
+        		model.removeUndoableEditListener(undo);
+        	}
+        	// Must unset the model when no longer listening to it.
+        	undo.setModel(null);
             // Document may be null if the cloned views are not behaving correctly.
             if (doc != null) {
                 // Ensure the listener is not added twice.
@@ -368,20 +359,16 @@ public class WSDLEditorSupport extends DataEditorSupport
      */
     private void addUndoManagerToModel(QuietUndoManager undo) {
         // This method may be called repeatedly.
-        try {
-            WSDLModel model = getModel();
-            if (model != null) {
-                // Ensure the listener is not added twice.
-                model.removeUndoableEditListener(undo);
-                model.addUndoableEditListener(undo);
-                // Ensure the model is sync'd when undo/redo is invoked,
-                // otherwise the edits are added to the queue and eventually
-                // cause exceptions.
-                undo.setModel(model);
-            }
-        } catch (IOException ioe) {
-            // Model is gone, nothing will work, return immediately.
-        }
+    	WSDLModel model = getModel();
+    	if (model != null) {
+    		// Ensure the listener is not added twice.
+    		model.removeUndoableEditListener(undo);
+    		model.addUndoableEditListener(undo);
+    		// Ensure the model is sync'd when undo/redo is invoked,
+    		// otherwise the edits are added to the queue and eventually
+    		// cause exceptions.
+    		undo.setModel(model);
+    	}
     }
 
     /**
@@ -391,7 +378,7 @@ public class WSDLEditorSupport extends DataEditorSupport
      * the swing document. 
      */ 
     public boolean silentClose() {
-	return super.close(false);
+    	return super.close(false);
     }
 
     /**

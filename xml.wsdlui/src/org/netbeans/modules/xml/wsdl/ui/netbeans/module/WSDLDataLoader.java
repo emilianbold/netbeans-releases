@@ -33,8 +33,6 @@ import org.openide.util.NbBundle;
  * @author Jerry Waldorf
  */
 public class WSDLDataLoader extends UniFileLoader {
-    public static final String PROP_EXTENSIONS = "extensions"; // NOI18N
-
 //        if we use text/*xml mime type then data editor support 
 //        automatically recognize this mime type and show xml editor
 //        but there is another mime resolver registered with web svc module
@@ -44,8 +42,8 @@ public class WSDLDataLoader extends UniFileLoader {
 //        so work around is to use same mime resolver as websvc
 //        we need to ask them to disable mime resolver there-->
         
-//    public static final String MIME_TYPE = "text/x-wsdl+xml";                 // NOI18N
-    public static final String MIME_TYPE = "text/xml-wsdl";                 // NOI18N
+    public static final String MIME_TYPE = "text/x-wsdl+xml";                 // NOI18N
+//    public static final String MIME_TYPE = "text/xml-wsdl";                 // NOI18N
     
     private static final long serialVersionUID = -4579746482156152493L;
     
@@ -55,24 +53,27 @@ public class WSDLDataLoader extends UniFileLoader {
     
    /** Does initialization. Initializes display name,
      * extension list and the actions. */
+    @Override
     protected void initialize () {
         super.initialize();
         ExtensionList ext = getExtensions();
         ext.addMimeType (MIME_TYPE);
-        //ext.addExtension("wsdl");
     }
     
     
+    @Override
     protected String defaultDisplayName () {
         return NbBundle.getMessage(WSDLDataLoader.class, "LBL_loaderName");
     }
 
+    @Override
     protected String actionsContext() {
         // Load actions from layer to avoid direct dependencies on
         // modules with non-public API.
-    return "Loaders/text/xml-wsdl/Actions/";
+    return "Loaders/" + MIME_TYPE + "/Actions/";
     }
 
+    @Override
     protected MultiDataObject createMultiObject (FileObject primaryFile)
     throws DataObjectExistsException, IOException {
         return new WSDLDataObject(primaryFile, this);

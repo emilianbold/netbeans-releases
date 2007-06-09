@@ -20,12 +20,13 @@
 package org.netbeans.modules.xml.wsdl.ui.netbeans.module;
 
 import java.io.IOException;
+
 import javax.swing.Action;
 import javax.swing.undo.UndoManager;
+
 import org.netbeans.modules.xml.refactoring.CannotRefactorException;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.refactoring.ui.ModelProvider;
-import org.netbeans.modules.xml.refactoring.spi.AnalysisUtilities;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.actions.WSDLViewOpenAction;
 import org.openide.DialogDisplayer;
@@ -50,11 +51,13 @@ public class WSDLNode extends DataNode implements ModelProvider {
         setIconBaseWithExtension("org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/wsdl16.png");
     }
 
-    public Action getPreferredAction() {
+    @Override
+	public Action getPreferredAction() {
         return SystemAction.get(WSDLViewOpenAction.class);
     }
 
-    public void setName(String name, boolean rename) {
+    @Override
+	public void setName(String name, boolean rename) {
         WSDLDataObject dobj = (WSDLDataObject) getDataObject();
         if (!rename || name != null && name.equals(dobj.getName())) {
             return;
@@ -95,15 +98,15 @@ public class WSDLNode extends DataNode implements ModelProvider {
     }
 
     public WSDLModel getModel() {
-        try {
+//        try {
             WSDLDataObject dobj = (WSDLDataObject) getDataObject();
             return dobj.getWSDLEditorSupport().getModel();
-        } catch(IOException ex) {
+        /*} catch(IOException ex) {
             String msg = NbBundle.getMessage(WSDLDataObject.class, "MSG_UnableToLoadWsdl", ex.getMessage());
             NotifyDescriptor nd = new NotifyDescriptor.Message(
                 msg, NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(nd);
         }
-        return null;
+        return null;*/
     }
 }

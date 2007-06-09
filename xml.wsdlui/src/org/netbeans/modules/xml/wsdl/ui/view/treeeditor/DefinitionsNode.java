@@ -69,7 +69,6 @@ import org.openide.actions.PropertiesAction;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
-import org.openide.nodes.Node.Property;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -87,8 +86,6 @@ public class DefinitionsNode extends WSDLExtensibilityElementNode<Definitions> {
     
     private Image ICON = Utilities.loadImage
     ("org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/wsdl16.png");
-    
-    private static final String TARGETNAMESPACE_PROP = "targetNamespace";//NOI18N 
     
     private DefinitionsPropertyAdapter mPropertyAdapter;
     
@@ -452,12 +449,12 @@ public class DefinitionsNode extends WSDLExtensibilityElementNode<Definitions> {
                 return;
             }
             getWSDLComponent().getModel().startTransaction();
-            ((Definitions) getWSDLComponent()).setName(name);
+            getWSDLComponent().setName(name);
             getWSDLComponent().getModel().endTransaction();
         }
         
         public String getName() {
-            String name = ((Definitions)getWSDLComponent()).getName();
+            String name = getWSDLComponent().getName();
             if(name == null) {
                 return "";
             }
@@ -467,12 +464,12 @@ public class DefinitionsNode extends WSDLExtensibilityElementNode<Definitions> {
         
         public void setTargetNamespace(String targetNamespace) {
             getWSDLComponent().getModel().startTransaction();
-            ((Definitions) getWSDLComponent()).setTargetNamespace(targetNamespace);
+            getWSDLComponent().setTargetNamespace(targetNamespace);
                 getWSDLComponent().getModel().endTransaction();
         }
         
         public String getTargetNamespace() {
-            String tns = ((Definitions)getWSDLComponent()).getTargetNamespace();
+            String tns = getWSDLComponent().getTargetNamespace();
             if(tns == null) {
                 return "";
             }

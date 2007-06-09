@@ -23,8 +23,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
-import java.io.IOException;
 import java.util.Iterator;
+
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -34,6 +34,7 @@ import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.text.DefaultEditorKit;
+
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
@@ -176,7 +177,7 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
         removeAll();
     }
     public ExplorerManager getExplorerManager() {
-    return manager;
+    	return manager;
     }
 
     @Override
@@ -321,45 +322,39 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
         WSDLEditorSupport editor = mObj.getWSDLEditorSupport();
         WSDLModel wsdlModel = null;
         String errorMessage = null;
-        try {
-            wsdlModel = editor.getModel();
-            if (wsdlModel != null &&
-                    wsdlModel.getState() == WSDLModel.State.VALID) {
-                // Construct the standard editor interface.
-                if (categoryPane == null) {
-                    Lookup lookup = getLookup();
-                    categoryPane = new DefaultCategoryPane();
-                    Category tree = new WSDLTreeCategory(wsdlModel, lookup);
-                    categoryPane.addCategory(tree);
-                    Category columns = new WSDLColumnsCategory(wsdlModel, lookup);
-                    categoryPane.addCategory(columns);
-                    // Set the default view according to the persisted setting.
-                    ViewMode mode = WSDLSettings.getDefault().getViewMode();
-                    switch (mode) {
-                        case COLUMN:
-                            categoryPane.setCategory(columns);
-                            break;
-                        case TREE:
-                            categoryPane.setCategory(tree);
-                            break;
-                    }
-                }
-                removeAll();
-                add(categoryPane.getComponent(), BorderLayout.CENTER);
-                return;
-            }
-        } catch (IOException ex) {
-            errorMessage = ex.getMessage();
+        wsdlModel = editor.getModel();
+        if (wsdlModel != null &&
+        		wsdlModel.getState() == WSDLModel.State.VALID) {
+        	// Construct the standard editor interface.
+        	if (categoryPane == null) {
+        		Lookup lookup = getLookup();
+        		categoryPane = new DefaultCategoryPane();
+        		Category tree = new WSDLTreeCategory(wsdlModel, lookup);
+        		categoryPane.addCategory(tree);
+        		Category columns = new WSDLColumnsCategory(wsdlModel, lookup);
+        		categoryPane.addCategory(columns);
+        		// Set the default view according to the persisted setting.
+        		ViewMode mode = WSDLSettings.getDefault().getViewMode();
+        		switch (mode) {
+        		case COLUMN:
+        			categoryPane.setCategory(columns);
+        			break;
+        		case TREE:
+        			categoryPane.setCategory(tree);
+        			break;
+        		}
+        	}
+        	removeAll();
+        	add(categoryPane.getComponent(), BorderLayout.CENTER);
+        	return;
         }
 
         // If it comes here, either the model is not well-formed or invalid.
         if (wsdlModel == null ||
-                wsdlModel.getState() == WSDLModel.State.NOT_WELL_FORMED) {
-            if (errorMessage == null) {
-                errorMessage = NbBundle.getMessage(
-                        WSDLTreeViewMultiViewElement.class,
-                        "MSG_NotWellformedWsdl");
-            }
+        		wsdlModel.getState() == WSDLModel.State.NOT_WELL_FORMED) {
+        	errorMessage = NbBundle.getMessage(
+        			WSDLTreeViewMultiViewElement.class,
+        			"MSG_NotWellformedWsdl");
         }
 
         // Clear the interface and show the error message.
@@ -377,28 +372,24 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
 
     public javax.swing.JComponent getToolbarRepresentation() {
         if (mToolbar == null) {
-            try {
-            WSDLModel model = mObj.getWSDLEditorSupport().getModel();
-            if (model != null && model.getState() == WSDLModel.State.VALID) {
-                mToolbar = new JToolBar();
-                mToolbar.setFloatable(false);
-                if (categoryPane != null) {
-                    mToolbar.addSeparator();
-                    categoryPane.populateToolbar(mToolbar);
-                }
-                // vlv: search
-                mToolbar.addSeparator();
-                SearchManager manager = SearchManagerAccess.getManager();
+        	WSDLModel model = mObj.getWSDLEditorSupport().getModel();
+        	if (model != null && model.getState() == WSDLModel.State.VALID) {
+        		mToolbar = new JToolBar();
+        		mToolbar.setFloatable(false);
+        		if (categoryPane != null) {
+        			mToolbar.addSeparator();
+        			categoryPane.populateToolbar(mToolbar);
+        		}
+        		// vlv: search
+        		mToolbar.addSeparator();
+        		SearchManager searchManager = SearchManagerAccess.getManager();
 
-                if (manager != null) {
-                  mToolbar.add(manager.getSearchAction());
-                }
-                mToolbar.addSeparator();
-                mToolbar.add(new ValidateAction(model));
-            }
-            } catch (IOException e) {
-                //wait until the model is loaded
-            }
+        		if (searchManager != null) {
+        			mToolbar.add(searchManager.getSearchAction());
+        		}
+        		mToolbar.addSeparator();
+        		mToolbar.add(new ValidateAction(model));
+        	}
         }
         return mToolbar;
     }

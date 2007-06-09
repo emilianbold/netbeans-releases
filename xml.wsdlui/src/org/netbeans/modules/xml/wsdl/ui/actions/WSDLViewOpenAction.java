@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.xml.wsdl.ui.actions;
 
-import java.io.IOException;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLDataObject;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLEditorSupport;
 import org.netbeans.modules.xml.xam.ui.cookies.ViewComponentCookie;
@@ -38,52 +37,53 @@ public class WSDLViewOpenAction extends NodeAction{
     /** silence compiler warnings */
     private static final long serialVersionUID = 1L;
 
-    protected void performAction(Node[] node) {
+    @Override
+	protected void performAction(Node[] node) {
         if (node == null || node[0] == null) {
             return;
         }
-        WSDLDataObject sdo = (WSDLDataObject) node[0].getLookup().lookup(
+        WSDLDataObject sdo = node[0].getLookup().lookup(
                 WSDLDataObject.class);
         if (sdo != null) {
             WSDLEditorSupport wes = sdo.getWSDLEditorSupport();
-            ViewComponentCookie svc = (ViewComponentCookie) sdo.getCookie(
+            ViewComponentCookie svc = sdo.getCookie(
                     ViewComponentCookie.class);
             if (svc != null) {
-                try {
-                    if (wes.getOpenedPanes() == null ||
-                            wes.getOpenedPanes().length == 0) {
-                        svc.view(ViewComponentCookie.View.STRUCTURE,
-                                wes.getModel().getDefinitions());
-                    } else {
-                        wes.open();
-                    }
-                    return;
-                } catch (IOException ioe) {
-                    //ErrorManager.getDefault().notify(ex);
-                }
+            	if (wes.getOpenedPanes() == null ||
+            			wes.getOpenedPanes().length == 0) {
+            		svc.view(ViewComponentCookie.View.STRUCTURE,
+            				wes.getModel().getDefinitions());
+            	} else {
+            		wes.open();
+            	}
+            	return;
             }
         }
         // default to open cookie
-        OpenCookie oc = (OpenCookie) node[0].getCookie(OpenCookie.class);
+        OpenCookie oc = node[0].getCookie(OpenCookie.class);
         if (oc != null) {
             oc.open();
         }
     }
 
-    protected boolean enable(Node[] node) {
+    @Override
+	protected boolean enable(Node[] node) {
         return true;
     }
 
-    public String getName() {
+    @Override
+	public String getName() {
         return NbBundle.getMessage(WSDLViewOpenAction.class,
                 "WSDLViewOpenAction_Name");
     }
 
-    public HelpCtx getHelpCtx() {
+    @Override
+	public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
-    protected boolean asynchronous() {
+    @Override
+	protected boolean asynchronous() {
         return false;
     }
 }

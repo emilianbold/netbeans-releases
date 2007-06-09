@@ -19,10 +19,8 @@
 
 package org.netbeans.modules.xml.wsdl.ui.netbeans.module;
 
-import java.io.IOException;
 import org.netbeans.modules.xml.validation.ValidateXMLCookieImpl;
 import org.netbeans.modules.xml.xam.Model;
-import org.openide.ErrorManager;
 
 /**
  * Implements the ValidateXMLCookie cookie for WSDL models.
@@ -39,12 +37,8 @@ public class WSDLValidateXMLCookie extends ValidateXMLCookieImpl {
         dataObject = dobj;
     }
 
-    protected Model getModel() {
-        try {
-            return dataObject.getWSDLEditorSupport().getModel();
-        } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
-        }
-        return null;
+    @Override
+	protected Model getModel() {
+    	return dataObject.getWSDLEditorSupport().getModel();
     }
 }

@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Date;
+
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
@@ -42,10 +43,12 @@ import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.text.DefaultEditorKit;
+
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
+import org.netbeans.modules.print.api.PrintManagerAccess;
 import org.netbeans.modules.print.spi.PrintProvider;
 import org.netbeans.modules.print.spi.PrintProviderCookie;
 import org.netbeans.modules.xml.validation.ShowCookie;
@@ -57,7 +60,6 @@ import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.ui.multiview.ActivatedNodesMediator;
 import org.netbeans.modules.xml.xam.ui.multiview.CookieProxyLookup;
-import org.netbeans.modules.print.api.PrintManagerAccess;
 import org.openide.actions.SaveAction;
 import org.openide.awt.UndoRedo;
 import org.openide.explorer.ExplorerManager;
@@ -114,7 +116,7 @@ public class WSDLDesignMultiViewElement extends TopComponent
         map.put("delete", ExplorerUtils.actionDelete(explorerManager, false));
 
         // For some reason, the Ctrl-s is not in our action map (issue 94698).
-        SaveAction saveAction = (SaveAction) SystemAction.get(SaveAction.class);
+        SaveAction saveAction = SystemAction.get(SaveAction.class);
         map.put("save", saveAction);
         InputMap keys = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         KeyStroke key = (KeyStroke) saveAction.getValue(Action.ACCELERATOR_KEY);
@@ -125,11 +127,6 @@ public class WSDLDesignMultiViewElement extends TopComponent
 
         //show cookie
         ShowCookie showCookie = new ShowCookie() {
-            public void showComponent(Component component,
-                    String errorMessage, String recommmendedCorrection) {
-                assert false:"ShowCookie.showComponent method is deprecated";
-            }
-
             public void show(ResultItem resultItem) {
                 Component component = resultItem.getComponents();
                 graphComponent.showComponent(component);
@@ -245,32 +242,25 @@ public class WSDLDesignMultiViewElement extends TopComponent
      */
     private void initUI() {
         WSDLEditorSupport editor = wsdlDataObject.getWSDLEditorSupport();
-        WSDLModel wsdlModel = null;
-        String errorMessage = null;
-        try {
-            wsdlModel = editor.getModel();
-            if (wsdlModel != null &&
-                    wsdlModel.getState() == WSDLModel.State.VALID) {
-                // Construct the standard editor interface.
-                if (graphComponent == null) {
-                    graphComponent = new GraphView(wsdlModel);
-                }
-                removeAll();
-                add(graphComponent, BorderLayout.CENTER);
-                return;
-            }
-        } catch (IOException ex) {
-            errorMessage = ex.getMessage();
+        WSDLModel wsdlModel = editor.getModel();
+        if (wsdlModel != null &&
+        		wsdlModel.getState() == WSDLModel.State.VALID) {
+        	// Construct the standard editor interface.
+        	if (graphComponent == null) {
+        		graphComponent = new GraphView(wsdlModel);
+        	}
+        	removeAll();
+        	add(graphComponent, BorderLayout.CENTER);
+        	return;
         }
 
+        String errorMessage = null;
         // If it comes here, either the model is not well-formed or invalid.
         if (wsdlModel == null ||
-                wsdlModel.getState() == WSDLModel.State.NOT_WELL_FORMED) {
-            if (errorMessage == null) {
-                errorMessage = NbBundle.getMessage(
-                        WSDLTreeViewMultiViewElement.class,
-                        "MSG_NotWellformedWsdl");
-            }
+        		wsdlModel.getState() == WSDLModel.State.NOT_WELL_FORMED) {
+        	errorMessage = NbBundle.getMessage(
+        			WSDLTreeViewMultiViewElement.class,
+        			"MSG_NotWellformedWsdl");
         }
 
         // Clear the interface and show the error message.
@@ -288,24 +278,20 @@ public class WSDLDesignMultiViewElement extends TopComponent
 
     public javax.swing.JComponent getToolbarRepresentation() {
         if (mToolbar == null) {
-            try {
-                WSDLModel model = wsdlDataObject.getWSDLEditorSupport().getModel();
-                if (model != null && model.getState() == WSDLModel.State.VALID) {
-                    mToolbar = new JToolBar();
-                    mToolbar.setFloatable(false);
-                    mToolbar.addSeparator();
-                    graphComponent.addToolbarActions(mToolbar);
+        	WSDLModel model = wsdlDataObject.getWSDLEditorSupport().getModel();
+        	if (model != null && model.getState() == WSDLModel.State.VALID) {
+        		mToolbar = new JToolBar();
+        		mToolbar.setFloatable(false);
+        		mToolbar.addSeparator();
+        		graphComponent.addToolbarActions(mToolbar);
 
-                    // vlv: print
-                    mToolbar.addSeparator();
-                    mToolbar.add(PrintManagerAccess.getManager().getPreviewAction());
+        		// vlv: print
+        		mToolbar.addSeparator();
+        		mToolbar.add(PrintManagerAccess.getManager().getPreviewAction());
 
-                    mToolbar.addSeparator();
-                    mToolbar.add(new ValidateAction(model));
-                }
-            } catch (IOException e) {
-                //wait until the model is loaded
-            }
+        		mToolbar.addSeparator();
+        		mToolbar.add(new ValidateAction(model));
+        	}
         }
         return mToolbar;
     }
