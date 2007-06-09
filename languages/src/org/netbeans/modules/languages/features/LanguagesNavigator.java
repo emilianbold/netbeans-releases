@@ -319,57 +319,57 @@ public class LanguagesNavigator implements NavigatorPanel {
 
     // highlight selected node in editor ...
     
-    private Document        highlightedDocument = null;
-    private Object          highlighted = null;
-    private JEditorPane     highlightedEditor = null;
-
-    private void selectionChanged () {
-        removeHighlight ();
-        if (!tree.hasFocus ()) return;
-        TreePath selPath = tree.getSelectionPath ();
-        if (selPath == null) return;
-        Object selObj = selPath.getLastPathComponent ();
-        if (selObj == null || !(selObj instanceof NavigatorNode))
-            return;
-        NavigatorNode node = (NavigatorNode)selObj;
-        if (node.line == null) return;
-        node.line.show (Line.SHOW_SHOW, node.column);
-        //S ystem.out.println ("highlight " + lastDocument + " : " + lastEditor);
-        highlighted = node.item;
-        Highlighting.getHighlighting (highlightedDocument = lastDocument).
-            highlight (node.item, getHighlightAS ());
-        DataObject dataObject = (DataObject) node.line.getLookup ().
-            lookup (DataObject.class);
-        EditorCookie ec = (EditorCookie) dataObject.getCookie 
-            (EditorCookie.class);
-        highlightedEditor = ec.getOpenedPanes () [0];
-        highlightedEditor.repaint ();
-    }
-    
-    private void removeHighlight () {
-        if (highlighted == null) return;
-        if (highlighted instanceof ASTToken)
-            Highlighting.getHighlighting (highlightedDocument).removeHighlight 
-                ((ASTToken) highlighted);
-        else
-            Highlighting.getHighlighting (highlightedDocument).removeHighlight 
-                ((ASTNode) highlighted);
-        highlightedEditor.repaint ();
-        highlighted = null;
-        highlightedDocument = null;
-        highlightedEditor = null;
-    }
-    
-    private static AttributeSet highlightAS = null;
-    
-    private static AttributeSet getHighlightAS () {
-        if (highlightAS == null) {
-            SimpleAttributeSet as = new SimpleAttributeSet ();
-            as.addAttribute (StyleConstants.Background, Color.yellow); //new Color (230, 230, 230));
-            highlightAS = as;
-        }
-        return highlightAS;
-    }
+//    private Document        highlightedDocument = null;
+//    private Object          highlighted = null;
+//    private JEditorPane     highlightedEditor = null;
+//
+//    private void selectionChanged () {
+//        removeHighlight ();
+//        if (!tree.hasFocus ()) return;
+//        TreePath selPath = tree.getSelectionPath ();
+//        if (selPath == null) return;
+//        Object selObj = selPath.getLastPathComponent ();
+//        if (selObj == null || !(selObj instanceof NavigatorNode))
+//            return;
+//        NavigatorNode node = (NavigatorNode)selObj;
+//        if (node.line == null) return;
+//        node.line.show (Line.SHOW_SHOW, node.column);
+//        //S ystem.out.println ("highlight " + lastDocument + " : " + lastEditor);
+//        highlighted = node.item;
+//        Highlighting.getHighlighting (highlightedDocument = lastDocument).
+//            highlight (node.item, getHighlightAS ());
+//        DataObject dataObject = (DataObject) node.line.getLookup ().
+//            lookup (DataObject.class);
+//        EditorCookie ec = (EditorCookie) dataObject.getCookie 
+//            (EditorCookie.class);
+//        highlightedEditor = ec.getOpenedPanes () [0];
+//        highlightedEditor.repaint ();
+//    }
+//    
+//    private void removeHighlight () {
+//        if (highlighted == null) return;
+//        if (highlighted instanceof ASTToken)
+//            Highlighting.getHighlighting (highlightedDocument).removeHighlight 
+//                ((ASTToken) highlighted);
+//        else
+//            Highlighting.getHighlighting (highlightedDocument).removeHighlight 
+//                ((ASTNode) highlighted);
+//        highlightedEditor.repaint ();
+//        highlighted = null;
+//        highlightedDocument = null;
+//        highlightedEditor = null;
+//    }
+//    
+//    private static AttributeSet highlightAS = null;
+//    
+//    private static AttributeSet getHighlightAS () {
+//        if (highlightAS == null) {
+//            SimpleAttributeSet as = new SimpleAttributeSet ();
+//            as.addAttribute (StyleConstants.Background, Color.yellow); //new Color (230, 230, 230));
+//            highlightAS = as;
+//        }
+//        return highlightAS;
+//    }
     
     
     // innerclasses ............................................................

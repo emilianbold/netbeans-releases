@@ -14,16 +14,19 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<!DOCTYPE bindings PUBLIC "-//NetBeans//DTD Editor KeyBindings settings 1.1//EN" "http://www.netbeans.org/dtds/EditorKeyBindings-1_1.dtd">
 
-  <!-- IMPORTANT:  To handle Apple-specific keybindings, there is another copy of
-     this file, with minor diffs, in ide/applemenu.  Any changes made here should
-     be made there too -->                            
-<bindings>
-    <bind actionName="comment" key="DS-T"/>
-    <bind actionName="uncomment" key="DS-D"/>
-    <bind actionName="in-place-refactoring" key="D-R"/>
-</bindings>
+<!DOCTYPE type PUBLIC
+         "-//NetBeans//DTD annotation type 1.1//EN"
+         "http://www.netbeans.org/dtds/annotation-type-1_1.dtd">
+<type name="Usage"
+     description_key="CTL_Usage"
+     localizing_bundle="org.netbeans.modules.languages.resources.Bundle"
+     visible="true" 
+     type="linepart"
+     browseable="true"
+     severity="ok"
+     custom_sidebar_color='0xafaf66'
+/>

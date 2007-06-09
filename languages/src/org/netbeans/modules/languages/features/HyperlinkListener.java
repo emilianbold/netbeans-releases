@@ -21,6 +21,7 @@ package org.netbeans.modules.languages.features;
 
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.Highlighting;
+import org.netbeans.api.languages.Highlighting.Highlight;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ASTToken;
@@ -62,167 +63,37 @@ import org.openide.text.NbDocument;
 public class HyperlinkListener  implements MouseMotionListener,
 MouseListener {
 
-    private Context     context = null;
+    private Highlight   highlight;
     private Runnable    runnable = null;
 
     public void mouseMoved (MouseEvent e) {
         JEditorPane c = (JEditorPane) e.getComponent ();
         final NbEditorDocument doc = (NbEditorDocument) c.getDocument ();
-        if (!e.isControlDown ()) {
-            if (context != null)
-                removeHighlihgt (doc);
-            return;
-        }
+        if (highlight != null) highlight.remove ();
+        highlight = null;
+        if (!e.isControlDown ()) return;
 
         int offset = c.viewToModel (e.getPoint ());
-        Object[] r = findEvaluator (
-            doc,
-            offset
-        );
-
-        if (context != null && (r == null || context != r [0])) {
-            removeHighlihgt (doc);
-        }
-        if (r != null) {
-            Feature hyperlink = (Feature) r [1];
-            runnable = (Runnable) hyperlink.getValue ((Context) r [0]);
-            if (runnable != null) {
-                context = (Context) r [0];
-                highlight (doc);
-            }
-        } else {
-            try {
-                ASTNode ast = ParserManagerImpl.get (doc).getAST ();
-                if (ast != null) {
-                    DatabaseContext root = DatabaseManager.getRoot (ast);
-                    if (root != null) {
-                        final DatabaseItem item = root.getDatabaseItem (offset);
-                        if (item != null && item instanceof DatabaseUsage) {
-                            context = SyntaxContext.create (doc, ast.findPath (offset));
-                            highlight (doc);
-                            runnable = new Runnable () {
-                                public void run () {
-                                    DatabaseDefinition definition = ((DatabaseUsage) item).getDefinition ();
-                                    int definitionOffset = definition.getOffset ();
-                                    DataObject dobj = NbEditorUtilities.getDataObject (doc);
-                                    LineCookie lc = (LineCookie) dobj.getCookie (LineCookie.class);
-                                    Line.Set lineSet = lc.getLineSet ();
-                                    Line line = lineSet.getCurrent (NbDocument.findLineNumber (doc, definitionOffset));
-                                    int column = NbDocument.findLineColumn (doc, definitionOffset);
-                                    line.show (Line.SHOW_GOTO, column);
-                                }
-                            };
-                        }
-                    }
-                }
-            } catch (ParseException ex) {
-            }
-        }
+        highlight (doc, offset);
         c.repaint ();
     }
-
-    public void mouseClicked (MouseEvent e) {
-    }
-
+    
     public void mouseReleased (MouseEvent e) {
-        if (context == null) return;
-        if (runnable != null)
+        if (runnable != null) {
             runnable.run ();
-        JEditorPane c = (JEditorPane) e.getComponent ();
-        NbEditorDocument doc = (NbEditorDocument) c.getDocument ();
-        runnable = null;
-        removeHighlihgt (doc);
-        c.repaint ();
+            runnable = null;
+        }
     }
-    
-    public void mousePressed (MouseEvent e) {
-        if (context == null) return;
-        JEditorPane c = (JEditorPane) e.getComponent ();
-        NbEditorDocument doc = (NbEditorDocument) c.getDocument ();
-        highlight (doc);
-        c.repaint ();
-    }
-    
+
+    public void mouseClicked (MouseEvent e) {}
+    public void mousePressed (MouseEvent e) {}
     public void mouseExited (MouseEvent e) {}
     public void mouseEntered (MouseEvent e) {}
     public void mouseDragged (MouseEvent e) {}
-
-    private void highlight (NbEditorDocument doc) {
-        if (context instanceof SyntaxContext) {
-            Object o = null;
-            o = ((SyntaxContext) context).getASTPath ().getLeaf ();
-            if (o instanceof ASTToken)
-                Highlighting.getHighlighting (doc).highlight (
-                    (ASTToken) o,
-                    getHyperlinkAS ()
-                );
-            else
-                Highlighting.getHighlighting (doc).highlight (
-                    (ASTNode) o,
-                    getHyperlinkAS ()
-                );
-        } else {
-            if (doc instanceof NbEditorDocument)
-                ((NbEditorDocument) doc).readLock ();
-            try {
-                TokenSequence ts = context.getTokenSequence ();
-                Token t = ts.token ();
-                ASTToken stoken = ASTToken.create (
-                    ts.language ().mimeType (),
-                    t.id ().name (),
-                    t.text ().toString (),
-                    ts.offset ()
-                );
-                Highlighting.getHighlighting (doc).highlight (
-                    stoken,
-                    getHyperlinkAS ()
-                );
-            } finally {
-                if (doc instanceof NbEditorDocument)
-                    ((NbEditorDocument) doc).readUnlock ();
-            }
-        }
-    }
-
-    private void removeHighlihgt (NbEditorDocument doc) {
-        if (context instanceof SyntaxContext) {
-            Object o = null;
-            o = ((SyntaxContext) context).getASTPath ().getLeaf ();
-            if (o instanceof ASTToken)
-                Highlighting.getHighlighting (doc).removeHighlight (
-                    (ASTToken) o
-                );
-            else
-                Highlighting.getHighlighting (doc).removeHighlight (
-                    (ASTNode) o
-                );
-        } else {
-            if (doc instanceof NbEditorDocument)
-                ((NbEditorDocument) doc).readLock ();
-            try {
-                TokenSequence ts = context.getTokenSequence ();
-                Token t = ts.token ();
-                ASTToken stoken = ASTToken.create (
-                    ts.language ().mimeType (),
-                    t.id ().name (),
-                    t.text ().toString (),
-                    ts.offset ()
-                );
-                Highlighting.getHighlighting (doc).highlight (
-                    stoken,
-                    getHyperlinkAS ()
-                );
-            } finally {
-                if (doc instanceof NbEditorDocument)
-                    ((NbEditorDocument) doc).readUnlock ();
-            }
-        }
-        context = null;
-    }
     
-    private Object[] findEvaluator (
-        NbEditorDocument    doc,
-        int                 offset
+    private void highlight (
+        final NbEditorDocument  doc,
+        int                     offset
     ) {
         try {
             ASTNode ast = null;
@@ -242,28 +113,66 @@ MouseListener {
                     tokenSequence.moveNext ();
                     Language language = LanguagesManager.getDefault ().getLanguage (mimeType);
                     Token token = tokenSequence.token ();
-                    Feature hyperlink = language.getFeature 
+                    Feature hyperlinkFeature = language.getFeature 
                         ("HYPERLINK", token.id ().name ());
-                    if (hyperlink != null) return new Object[] {Context.create (doc, tokenSequence), hyperlink};
+                    if (hyperlinkFeature == null) return;
+                    ASTToken stoken = ASTToken.create (
+                        tokenSequence.language ().mimeType (),
+                        token.id ().name (),
+                        token.text ().toString (),
+                        tokenSequence.offset ()
+                    );
+                    highlight = Highlighting.getHighlighting (doc).highlight (
+                        stoken,
+                        getHyperlinkAS ()
+                    );
+                    runnable = (Runnable) hyperlinkFeature.getValue (Context.create (doc, tokenSequence));
                 } finally {
                     if (doc instanceof NbEditorDocument)
                         ((NbEditorDocument) doc).readUnlock ();
                 }
-                return null;
+                return;
             }
             ASTPath path = ast.findPath (offset);
-            if (path == null) return null;
+            if (path == null) return;
             int i, k = path.size ();
             for (i = 0; i < k; i++) {
                 ASTPath p = path.subPath (i);
                 Language language = LanguagesManager.getDefault ().getLanguage (p.getLeaf ().getMimeType ());
-                Feature hyperlink = language.getFeature ("HYPERLINK", p);
-                if (hyperlink != null) 
-                    return new Object[] {SyntaxContext.create (doc, p), hyperlink};
+                Feature hyperlinkFeature = language.getFeature ("HYPERLINK", p);
+                if (hyperlinkFeature == null) continue;
+                highlight = Highlighting.getHighlighting (doc).highlight (
+                    p.getLeaf (),
+                    getHyperlinkAS ()
+                );
+                runnable = (Runnable) hyperlinkFeature.getValue (SyntaxContext.create (doc, p));
+            }
+            DatabaseContext root = DatabaseManager.getRoot (ast);
+            if (root != null) {
+                final DatabaseItem item = root.getDatabaseItem (offset);
+                if (item != null && item instanceof DatabaseUsage) {
+                    highlight = Highlighting.getHighlighting (doc).highlight (
+                        path.getLeaf (),
+                        getHyperlinkAS ()
+                    );
+                    runnable = new Runnable () {
+                        public void run () {
+                            Thread.dumpStack();
+                            DatabaseDefinition definition = ((DatabaseUsage) item).getDefinition ();
+                            int definitionOffset = definition.getOffset ();
+                            DataObject dobj = NbEditorUtilities.getDataObject (doc);
+                            LineCookie lc = (LineCookie) dobj.getCookie (LineCookie.class);
+                            Line.Set lineSet = lc.getLineSet ();
+                            Line line = lineSet.getCurrent (NbDocument.findLineNumber (doc, definitionOffset));
+                            int column = NbDocument.findLineColumn (doc, definitionOffset);
+                            line.show (Line.SHOW_GOTO, column);
+                        }
+                    };
+                }
             }
         } catch (ParseException ex) {
         }
-        return null;
+        return;
     }
     
     private static AttributeSet hyperlinkAS = null;

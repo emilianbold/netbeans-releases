@@ -133,13 +133,13 @@ public class AnnotationManager extends ASTEvaluator {
     
     // innerclasses ............................................................
     
-    private static class LanguagesAnnotation extends Annotation {
+    static class LanguagesAnnotation extends Annotation {
 
         private String type;
         private String description;
 
         /** Creates a new instance of ToolsAnotation */
-        private LanguagesAnnotation (
+        LanguagesAnnotation (
             String type,
             String description
         ) {

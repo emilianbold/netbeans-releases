@@ -20,14 +20,15 @@
 package org.netbeans.api.languages;
 
 import java.lang.ref.WeakReference;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.WeakHashMap;
-import java.util.HashMap;
 import java.util.Map;
 import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-
-import org.netbeans.api.languages.ASTNode;
-import org.netbeans.api.languages.ASTToken;
+import javax.swing.text.Position;
 
 
 /**
@@ -39,10 +40,7 @@ public class Highlighting {
     
     
     private static Map<Document,WeakReference<Highlighting>> highlightings = new WeakHashMap<Document,WeakReference<Highlighting>> ();
-    
-    {
-        //Utils.startTest("Highlighting.highlightings", highlightings);
-    }
+
     
     /**
      * Returns Highlighting for given document.
@@ -53,18 +51,18 @@ public class Highlighting {
         WeakReference<Highlighting> wr = highlightings.get (document);
         Highlighting highlighting = wr == null ? null : wr.get ();
         if (highlighting == null) {
-            highlighting = new Highlighting ();
+            highlighting = new Highlighting (document);
             highlightings.put (document, new WeakReference<Highlighting> (highlighting));
         }
         return highlighting;
     }
     
     
+    private Document                                document;
     
-    private Map<ASTNode,AttributeSet> highlights = new HashMap<ASTNode,AttributeSet> ();
-    private Map<Integer,Map<String,AttributeSet>> tokens = new HashMap<Integer,Map<String,AttributeSet>> ();
-    
-    private Highlighting () {}
+    private Highlighting (Document document) {
+        this.document = document;
+    }
     
     /**
      * Defines highlighting for given item.
@@ -72,38 +70,8 @@ public class Highlighting {
      * @param item a item
      * @param as set of highlighting attributes
      */
-    public void highlight (ASTItem item, AttributeSet as) {
-        if (item instanceof ASTNode) {
-            highlights.put ((ASTNode) item, as);
-            return;
-        }
-        ASTToken token = (ASTToken) item;
-        Integer id = new Integer (token.getOffset ());
-        Map<String,AttributeSet> m = tokens.get (id);
-        if (m == null) {
-            m = new HashMap<String,AttributeSet> ();
-            tokens.put (id, m);
-        }
-        m.put (token.getIdentifier (), as);
-    }
-    
-    /**
-     * Removes highlightings from given item.
-     * 
-     * @param item a item
-     */
-    public void removeHighlight (ASTItem item) {
-        if (item instanceof ASTNode) {
-            highlights.remove ((ASTNode) item);
-            return;
-        }
-        ASTToken token = (ASTToken) item;
-        Integer id = new Integer (token.getOffset ());
-        Map m = (Map) tokens.get (id);
-        if (m == null) return;
-        m.remove (token.getIdentifier ());
-        if (m.isEmpty ())
-            tokens.remove (id);
+    public Highlight highlight (ASTItem item, AttributeSet as) {
+        return highlight (item.getOffset (), item.getEndOffset (), as);
     }
     
     /**
@@ -112,12 +80,55 @@ public class Highlighting {
      * @param highlighting for given AST item
      */
     public AttributeSet get (ASTItem item) {
-        if (item instanceof ASTNode)
-            return (AttributeSet) highlights.get ((ASTNode) item);
-        ASTToken token = (ASTToken) item;
-        Integer id = new Integer (token.getOffset ());
-        Map m = (Map) tokens.get (id);
-        if (m == null) return null;
-        return (AttributeSet) m.get (token.getIdentifier ());
+        Highlight highlight = get (
+            item.getOffset (), 
+            item.getEndOffset ()
+        );
+        if (highlight == null) return null;
+        return highlight.attributeSet;
+    }
+    
+    private Set<Highlight> items = new HashSet<Highlight> ();
+    
+    private Highlight get (int start, int end) {
+        Iterator<Highlight> it = items.iterator ();
+        while (it.hasNext()) {
+            Highlight item =  it.next();
+            if (item.start.getOffset () == start && item.end.getOffset () == end)
+                return item;
+        }
+        return null;
+    }
+    
+    private Highlight highlight (int start, int end, AttributeSet as) {
+        try {
+            Highlight result = new Highlight (
+                document.createPosition (start),
+                document.createPosition (end),
+                as
+            );
+            items.add (result);
+            return result;
+        } catch (BadLocationException ex) {
+            ex.printStackTrace ();
+            return null;
+        }
+    }
+    
+    public class Highlight {
+        private Position start, end;
+        private AttributeSet attributeSet;
+        
+        private Highlight (Position start, Position end, AttributeSet attributeSet) {
+            this.start = start;
+            this.end = end;
+            this.attributeSet = attributeSet;
+        }
+        
+        public void remove () {
+            items.remove (this);
+        }
     }
 }
+
+

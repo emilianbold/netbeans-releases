@@ -19,11 +19,15 @@
 
 package org.netbeans.modules.languages.dataobject;
 
+import java.awt.event.KeyEvent;
 import java.util.Map;
 import javax.swing.Action;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyListener;
+import java.security.KeyStore;
 import javax.swing.JLabel;
 import javax.swing.text.Document;
 import javax.swing.Action;
@@ -31,6 +35,7 @@ import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
+import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.text.TextAction;
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
@@ -53,6 +58,8 @@ import org.netbeans.modules.languages.features.AnnotationManager;
 import org.netbeans.modules.languages.features.BraceCompletionDeleteAction;
 import org.netbeans.modules.languages.features.BraceCompletionInsertAction;
 import org.netbeans.modules.languages.features.BraceHighlighting;
+import org.netbeans.modules.languages.features.InstantRenameAction;
+import org.netbeans.modules.languages.features.MarkOccurrencesSupport;
 import org.netbeans.modules.languages.features.CollapseFoldTypeAction;
 import org.netbeans.modules.languages.features.CommentCodeAction;
 import org.netbeans.modules.languages.features.ExpandFoldTypeAction;
@@ -177,6 +184,7 @@ public class LanguagesEditorKit extends NbEditorKit {
             new BraceCompletionInsertAction (),
             new BraceCompletionDeleteAction (),
             new IndentAction (),
+            new InstantRenameAction(),
             new LanguagesGenerateFoldPopupAction (),
             new CommentCodeAction(),
             new UncommentCodeAction()
@@ -259,6 +267,12 @@ public class LanguagesEditorKit extends NbEditorKit {
         HyperlinkListener hl = new HyperlinkListener ();
         c.addMouseMotionListener (hl);
         c.addMouseListener (hl);
+        c.addCaretListener (new MarkOccurrencesSupport (c));
+        
+        //HACK:
+        c.getInputMap ().put (KeyStroke.getKeyStroke (KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK), "in-place-refactoring");
+        c.getInputMap ().put (KeyStroke.getKeyStroke (KeyEvent.VK_T, InputEvent.CTRL_DOWN_MASK + InputEvent.SHIFT_DOWN_MASK), "comment");
+        c.getInputMap ().put (KeyStroke.getKeyStroke (KeyEvent.VK_D, InputEvent.CTRL_DOWN_MASK+ InputEvent.SHIFT_DOWN_MASK), "uncomment");
     }
     
     public String getContentType() {
