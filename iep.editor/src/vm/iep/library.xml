@@ -248,7 +248,7 @@ type CDATA #REQUIRED
     <!-- Correlation and Filter -->
     <component_type_group name="Operator" icon="" title="IEP.Operator.title" description="IEP.Operator.description">
         <!-- stream project and filter -->
-        <component_type name="StreamProjectionAndFilter" icon="streamProjectionAndFilterx16.png" title="IEP.Operator.StreamProjectionAndFilter.title" description="IEP.Operator.StreamProjectionAndFilter.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
+        <component_type name="StreamProjectionAndFilter" icon="streamProjectionAndFilterx16.png" title="IEP.Operator.StreamProjectionAndFilter.title" description="IEP.Operator.StreamProjectionAndFilter.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.validators.ValidateSchemaOwner">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
@@ -266,7 +266,7 @@ type CDATA #REQUIRED
             <code type="xml" file="vm/iep/operator/StreamProjectionAndFilter.xml"/>
         </component_type>
         <!-- tuple serial correlation -->
-        <component_type name="TupleSerialCorrelation" icon="tupleSerialCorrelationx16.png" title="IEP.Operator.TupleSerialCorrelation.title" description="IEP.Operator.TupleSerialCorrelation.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
+        <component_type name="TupleSerialCorrelation" icon="tupleSerialCorrelationx16.png" title="IEP.Operator.TupleSerialCorrelation.title" description="IEP.Operator.TupleSerialCorrelation.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.validators.ValidateSchemaOwner">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.TupleSerialCorrelationCustomEditor"/>
@@ -282,7 +282,7 @@ type CDATA #REQUIRED
             <code type="xml" file="vm/iep/operator/TupleSerialCorrelation.xml"/>
         </component_type>
         <!-- relation map-->
-        <component_type name="RelationMap" icon="relationMapx16.png" title="IEP.Operator.RelationMap.title" description="IEP.Operator.RelationMap.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
+        <component_type name="RelationMap" icon="relationMapx16.png" title="IEP.Operator.RelationMap.title" description="IEP.Operator.RelationMap.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.validators.ValidateSchemaOwner">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
@@ -301,7 +301,7 @@ type CDATA #REQUIRED
             <code type="xml" file="vm/iep/operator/relationMap.xml"/>
         </component_type>
         <!-- tuple based aggregator -->
-        <component_type name="TupleBasedAggregator" icon="tupleBasedAggregatorx16.png" title="IEP.Operator.TupleBasedAggregator.title" description="IEP.Operator.TupleBasedAggregator.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
+        <component_type name="TupleBasedAggregator" icon="tupleBasedAggregatorx16.png" title="IEP.Operator.TupleBasedAggregator.title" description="IEP.Operator.TupleBasedAggregator.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.validators.ValidateSchemaOwner">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.TupleBasedAggregatorCustomEditor"/>
@@ -324,7 +324,7 @@ type CDATA #REQUIRED
             <code type="xml" file="vm/iep/operator/tupleBasedAggregator.xml"/>
         </component_type>
         <!-- time based aggregator -->
-        <component_type name="TimeBasedAggregator" icon="timeBasedAggregatorx16.png" title="IEP.Operator.TimeBasedAggregator.title" description="IEP.Operator.TimeBasedAggregator.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
+        <component_type name="TimeBasedAggregator" icon="timeBasedAggregatorx16.png" title="IEP.Operator.TimeBasedAggregator.title" description="IEP.Operator.TimeBasedAggregator.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.validators.ValidateSchemaOwner">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.TimeBasedAggregatorCustomEditor"/>
@@ -348,7 +348,7 @@ type CDATA #REQUIRED
             <code type="xml" file="vm/iep/operator/timeBasedAggregator.xml"/>
         </component_type>
         <!-- relation aggregator-->
-        <component_type name="RelationAggregator" icon="relationAggregatorx16.png" title="IEP.Operator.RelationAggregator.title" description="IEP.Operator.RelationAggregator.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
+        <component_type name="RelationAggregator" icon="relationAggregatorx16.png" title="IEP.Operator.RelationAggregator.title" description="IEP.Operator.RelationAggregator.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.validators.ValidateSchemaOwner">
             <property_group ref="/IEP/View/Node"/>
             <property_group ref="/IEP/Model/Entity">
                 <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>

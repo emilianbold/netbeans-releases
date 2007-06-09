@@ -75,9 +75,7 @@ public class ValidateForSimilarSchema implements TcgComponentValidator, SharedCo
                     addErrorMessage(messageList,null,"ValidateForSimilarSchema.input_schemas_are_not_same");
                     type = VALIDATION_ERROR_KEY;
                 }
-                
             }
-            
         } catch(Exception e) {
             mLogger.log(Level.WARNING, "Error ", e);
             addErrorMessage(messageList,null,"ValidateForSimilarSchema.input_schemas_are_not_same");
@@ -118,7 +116,6 @@ public class ValidateForSimilarSchema implements TcgComponentValidator, SharedCo
             return  false;
         }
         try{
-            
             if (!cola.getProperty(TcgModelConstants.NAME_KEY).getStringValue().equals(colb.getProperty(TcgModelConstants.NAME_KEY).getStringValue())) {
                 return false;
             }

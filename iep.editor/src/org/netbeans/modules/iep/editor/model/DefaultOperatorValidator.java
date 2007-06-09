@@ -44,7 +44,8 @@ public class DefaultOperatorValidator implements TcgComponentValidator, SharedCo
     public TcgComponentValidationReport validate(TcgComponent component) {
         TcgComponentValidationReport report = mDefaultValidator.validate(component);
         List messageList = report.getMessageList();
-        String type = VALIDATION_OK_KEY;
+        
+        String type = report.getType();
         try {
             TcgProperty isGlobal = component.getProperty(IS_GLOBAL_KEY);
             if (!isGlobal.getBoolValue()) {
