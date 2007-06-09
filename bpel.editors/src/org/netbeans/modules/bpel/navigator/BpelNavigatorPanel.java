@@ -20,8 +20,13 @@
 
 package org.netbeans.modules.bpel.navigator;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.bpel.core.BPELDataObject;
 import org.openide.awt.UndoRedo;
 import org.openide.loaders.DataObject;
@@ -30,6 +35,8 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.modules.bpel.project.BpelproProject;
+import org.netbeans.modules.bpel.project.ProjectCloseListener;
 import org.netbeans.spi.navigator.NavigatorPanelWithUndo;
 
 /**
@@ -44,19 +51,44 @@ public class BpelNavigatorPanel implements NavigatorPanelWithUndo {
     /** holds UI of this panel. */
     private JComponent myPanelUI;
     /** current context to work on. */
-    private Lookup.Result myDObjLookupResult;
+    private Lookup.Result<DataObject> myDObjLookupResult;
+    
+    private DataObject myDataObject;
+    private PropertyChangeListener myDObjChangeListener = 
+            new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (DataObject.PROP_VALID.equals(evt.getPropertyName()) 
+                            && !myDataObject.isValid()) 
+                    {
+                        ((BpelNavigatorVisualPanel)getComponent()).emptyPanel();
+                    }
+                }
+    };
+    
+    private Project myProject;
+    private ProjectCloseListener myProjectCloseListener = 
+            new ProjectCloseListener() {
+                public void projectClosed() {
+                    ((BpelNavigatorVisualPanel)getComponent()).emptyPanel();
+                }
+    };
     
     private final LookupListener selectionListener = new LookupListener() {
         public void resultChanged(LookupEvent ev) {
             if (myDObjLookupResult == null) {
                 return;
             }
-            setNewContent(myDObjLookupResult.allInstances());
+            SwingUtilities.invokeLater(
+                    new Runnable() {
+                        public void run() {
+                            setNewContent(myDObjLookupResult.allInstances());
+                        }
+            });
         }
     };
     
     /** listener to bpelModel context changes. */
-    private BpelModel bpelModel;
+    private BpelModel myBpelModel;
     
     //  private final ChangeEventListener myBpelModelChangeEventListener = new BpelModelChangeEventListener();
     
@@ -86,13 +118,13 @@ public class BpelNavigatorPanel implements NavigatorPanelWithUndo {
     
     public void panelActivated(Lookup context) {
         myDObjLookupResult = context.lookup(
-            new Lookup.Template(DataObject.class));
+            new Lookup.Template<DataObject>(DataObject.class));
         assert myDObjLookupResult !=null;
-        Collection datas = myDObjLookupResult.allInstances();
+        Collection<? extends DataObject> datas = myDObjLookupResult.allInstances();
         if (datas == null || datas.size() != 1) {
         }
         DataObject curDataObject = datas == null || datas.size() != 1 ? null :
-                (DataObject)datas.iterator().next();
+                datas.iterator().next();
 //        if (curDataObject != null && getBpelModel(curDataObject) != null) {
             myDObjLookupResult.addLookupListener(selectionListener);
             selectionListener.resultChanged(null);
@@ -117,14 +149,12 @@ public class BpelNavigatorPanel implements NavigatorPanelWithUndo {
         Lookup dobjLookup = getLookup(dobj);
         return dobjLookup == null 
                 ? null 
-                : (BpelModel)dobjLookup.lookup(BpelModel.class);
+                : dobjLookup.lookup(BpelModel.class);
     }
     
     private Lookup getLookup(DataObject dobj) {
         try {
-        return dobj instanceof Lookup.Provider 
-                ? ((Lookup.Provider)dobj).getLookup()
-                : null;
+            return dobj != null ? dobj.getLookup() : null;
         } catch (NullPointerException ex) {
             // temporary for 81507
             // TODO r 
@@ -133,29 +163,57 @@ public class BpelNavigatorPanel implements NavigatorPanelWithUndo {
     }
     
     /************* non - public part. ************/
-    private void setNewContent(Collection newData) {
-        
+    private void setNewContent(Collection<? extends DataObject> newData) {
         if (newData == null || newData.size() != 1) {
             return;
         }
-        
-        final DataObject curDataObject = (DataObject) newData.iterator().next();
+        final DataObject curDataObject = newData.iterator().next();
 
         Lookup dobjLookup = getLookup(curDataObject);
         BpelModel bpelModel = getBpelModel(curDataObject);
-        
-        if (bpelModel != null && this.bpelModel != bpelModel) {
-            this.bpelModel = bpelModel;
+        if (bpelModel != null && myBpelModel != bpelModel) {
+            myBpelModel = bpelModel;
+
+            if (myDataObject != null) {
+                myDataObject.removePropertyChangeListener(myDObjChangeListener);
+            }
+            if (myProject instanceof BpelproProject) {
+                ((BpelproProject)myProject).
+                        removeProjectCloseListener(myProjectCloseListener);
+            }
+
+            myDataObject = curDataObject;
+            myDataObject.addPropertyChangeListener(myDObjChangeListener);
+            myProject = getProject(myDataObject);
+            if (myProject instanceof BpelproProject) {
+                ((BpelproProject)myProject).
+                        addProjectCloseListener(myProjectCloseListener);
+            }
+            
             ((BpelNavigatorVisualPanel)getComponent())
-            .navigate(dobjLookup, bpelModel);
+                .navigate(dobjLookup, myBpelModel);
             
         }
     }
     
+    private Project getProject(DataObject dObj) {
+        if (dObj == null) {
+            return null;
+        }
+    
+        return FileOwnerQuery.getOwner(dObj.getPrimaryFile());
+    }
+    
     private DataObject getDataObject() {
-        return myDObjLookupResult != null 
-                ? (DataObject) myDObjLookupResult.allInstances().iterator().next()
-                : null;
+        DataObject dObj = null;
+        if (myDObjLookupResult != null 
+                && myDObjLookupResult.allInstances() != null 
+                && !myDObjLookupResult.allInstances().isEmpty()) 
+        {
+            dObj = (DataObject)  myDObjLookupResult.allInstances().iterator().next();
+        }
+        
+        return dObj;
     }
 
     public UndoRedo getUndoRedo() {
@@ -164,7 +222,7 @@ public class BpelNavigatorPanel implements NavigatorPanelWithUndo {
             return ((BPELDataObject)dObj).getEditorSupport().getUndoManager();
         }
         
-        return null;
+        return UndoRedo.NONE;
     }
 }
 

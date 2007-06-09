@@ -133,6 +133,15 @@ public class BpelNavigatorVisualPanel extends JPanel
         myLookup = ExplorerUtils.createLookup(myExplorerManager, actionMap);
     }
     
+    public void emptyPanel() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                removeAll();
+                repaint();
+            }
+        });
+    }
+    
     public void navigate(final Lookup context, final BpelModel bpelModel) {
 // get the model and create the new bpel logical tree in background
         if(bpelModel == null) {
@@ -146,14 +155,19 @@ public class BpelNavigatorVisualPanel extends JPanel
         });
         initValidation();
         showWaitMsg();
-        showNavTree();
+        Thread navThread = new Thread(new Runnable() {
+            public void run() {
+                showNavTree();
+            }
+        });
+        
+        navThread.start();
         // switch navigator to the appropriate view
         BpelNavigatorController.switchNavigatorPanel();
     }
     
     private void initValidation() {
-        myVpl = (ValidationProxyListener)myContextLookup
-                .lookup(ValidationProxyListener.class);
+        myVpl = myContextLookup.lookup(ValidationProxyListener.class);
         if (myVpl == null) {
             myVpl = ValidationProxyListener.getInstance(myContextLookup);
             if (myVpl != null) {
@@ -163,27 +177,27 @@ public class BpelNavigatorVisualPanel extends JPanel
     }
     
     private void showNavTree(){
+        myExplorerManager = new ExplorerManager();
+        initActionMap();
+//////                myExplorerManager.setRootContext(getProcessNode());
+        Node rootNode = NavigatorNodeFactory.getInstance()
+            .getProcessNode(myBpelModel,getContextLookup());
+        if (rootNode instanceof BpelProcessNode) {
+            myExplorerManager.setRootContext(rootNode);
+        }
+
+        if (myBpelModelLogicalBeanTree != null) {
+            myBpelModelLogicalBeanTree.removeListeners();
+        }
+
+        myBpelModelLogicalBeanTree = new BpelModelLogicalBeanTree(
+                myExplorerManager,
+                myBpelModel,
+                getContextLookup());
+
+        final BeanTreeView treeView = myBpelModelLogicalBeanTree.getBeanTreeView();
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                myExplorerManager = new ExplorerManager();
-                initActionMap();
-//////                myExplorerManager.setRootContext(getProcessNode());
-                Node rootNode = NavigatorNodeFactory.getInstance()
-                .getProcessNode(myBpelModel,getContextLookup());
-                if (rootNode instanceof BpelProcessNode) {
-                    myExplorerManager.setRootContext(rootNode);
-                }
-                
-                if (myBpelModelLogicalBeanTree != null) {
-                    myBpelModelLogicalBeanTree.removeListeners();
-                }
-                
-                myBpelModelLogicalBeanTree = new BpelModelLogicalBeanTree(
-                        myExplorerManager,
-                        myBpelModel,
-                        getContextLookup());
-                
-                BeanTreeView treeView = myBpelModelLogicalBeanTree.getBeanTreeView();
                 removeAll();
                 add(treeView);
                 revalidate();
