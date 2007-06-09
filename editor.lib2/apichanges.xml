@@ -85,7 +85,7 @@ is the proper place.
         <change id="added-EditorRegistry">
             <summary>EditorRegistry added</summary>
             <version major="1" minor="4"/>
-            <date day="4" month="6" year="2007"/>
+            <date day="7" month="6" year="2007"/>
             <author login="mmetelka"/>
             <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
             <description>
@@ -93,6 +93,7 @@ is the proper place.
                 and list of all registered components and it allows to listen for currently focused
                 component and changes of documents in it.
             </description>
+            <issue number="103235"/>
         </change>
 
         <change id="removed-AttributesUtilities">
