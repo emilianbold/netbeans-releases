@@ -26,12 +26,15 @@ import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.DomainCreator;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties;
 import org.openide.modules.ModuleInstall;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.windows.WindowManager;
 
 public class Installer extends ModuleInstall {
     
     private static DeploymentFactory facadeDF = null;
+    private static DeploymentFactory facadeDFGlassFishV1 = null;
+    private static DeploymentFactory facadeDFGlassFishV2 = null;
     
     private static final String PROP_FIRST_RUN = "first_run";
     
@@ -46,7 +49,27 @@ public class Installer extends ModuleInstall {
         return facadeDF;
     }
     
-    public void restored() {
+    /** Factory method to create DeploymentFactory for V1.
+     */
+    public static synchronized Object createGlassFishV1() {
+        if (facadeDFGlassFishV1 == null){
+            //this is our JSR88 factory lazy init, only when needed via layer.
+            PluginProperties.configureDefaultServerInstance();
+            facadeDFGlassFishV1 =  new org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentFactory(NbBundle.getMessage(Installer.class, "LBL_GlassFishV1"));
+        }
+        return facadeDFGlassFishV1;
+    }
+    
+    /** Factory method to create DeploymentFactory for V2.
+     */
+    public static synchronized Object createGlassFishV2() {
+        if (facadeDFGlassFishV2 == null){
+            //this is our JSR88 factory lazy init, only when needed via layer.
+            PluginProperties.configureDefaultServerInstance();
+            facadeDFGlassFishV2 =  new org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentFactory(NbBundle.getMessage(Installer.class, "LBL_GlassFishV2"));
+        }
+        return facadeDFGlassFishV2;
+    }    public void restored() {
         WindowManager.getDefault().invokeWhenUIReady(new PrepareEnvironment());
     }
         
