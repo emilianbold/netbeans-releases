@@ -19,11 +19,13 @@
 
 package org.netbeans.modules.uml.core.coreapplication;
 
+import java.util.List;
 import java.util.Properties;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.util.ITaskSupervisor;
 
 public interface ICodeGenerator {
 
-    void generate(IClassifier classifier, String targetFolderName, Properties props);
+    void generate(ITaskSupervisor task, List<IElement> elements, String targetFolderName, Properties props);
 
 }
