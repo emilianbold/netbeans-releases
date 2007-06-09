@@ -47,6 +47,7 @@ import org.netbeans.modules.uml.core.support.Debug;
 import java.awt.Dialog;
 import java.text.MessageFormat;
 import java.util.Collection;
+import org.netbeans.modules.uml.ui.controls.newdialog.INewUMLFileTemplates;
 import org.netbeans.modules.uml.ui.controls.newdialog.NewUMLDiagWizardIterator;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -56,7 +57,8 @@ import org.openide.WizardDescriptor;
  * the platform that contains the environment.
  *  * @author Trey Spiva
  */
-public class UMLDiagramManager implements IProductDiagramManager
+public class UMLDiagramManager 
+      implements IProductDiagramManager, INewUMLFileTemplates
 {
     private HashMap <String, DiagramTopComponent> m_OpenDiagrams = new HashMap<String, DiagramTopComponent>();
     private IDiagram m_CurrentDiagram = null;
@@ -550,7 +552,7 @@ public class UMLDiagramManager implements IProductDiagramManager
         // {1} will be replaced by WizardDescriptor.Iterator.name()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0} ({1})"));
         wizardDescriptor.setTitle(org.openide.util.NbBundle.getMessage(UMLDiagramManager.class, "IDS_NEW_DIAGRAM_WIZARD_TITLE"));
-        wizardDescriptor.putProperty(NewUMLDiagWizardIterator.DIAGRAM_DETAILS, details);
+        wizardDescriptor.putProperty(DIAGRAM_DETAILS, details);
         
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
         dialog.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UMLDiagramManager.class, "IDS_NEW_DIAGRAM_WIZARD_TITLE_DESCRIPTION"));
@@ -560,7 +562,7 @@ public class UMLDiagramManager implements IProductDiagramManager
         if (!cancelled)
         {
             // do something
-            Object obj = wizardDescriptor.getProperty(NewUMLDiagWizardIterator.DIAGRAM_DETAILS);
+            Object obj = wizardDescriptor.getProperty(DIAGRAM_DETAILS);
             if ((obj != null) && (obj instanceof INewDialogDiagramDetails))
             {
                 INewDialogDiagramDetails det = (INewDialogDiagramDetails) obj;
