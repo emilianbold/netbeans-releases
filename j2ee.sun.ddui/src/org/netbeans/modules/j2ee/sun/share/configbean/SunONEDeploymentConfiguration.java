@@ -297,12 +297,12 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
     private static Map<Object, String> webserviceDDNameMap = new HashMap<Object, String>(7);
     
     static {
-        standardDDNameMap.put(J2eeModule.WAR, J2eeModule.WEB_XML);
-        standardDDNameMap.put(J2eeModule.EJB, J2eeModule.EJBJAR_XML);
-        standardDDNameMap.put(J2eeModule.EAR, J2eeModule.APP_XML);
-        standardDDNameMap.put(J2eeModule.CLIENT, J2eeModule.CLIENT_XML);
-        webserviceDDNameMap.put(J2eeModule.WAR, J2eeModule.WEBSERVICES_XML);
-        webserviceDDNameMap.put(J2eeModule.EJB, J2eeModule.EJBSERVICES_XML);
+        standardDDNameMap.put(J2eeModule.WAR, "web.xml");
+        standardDDNameMap.put(J2eeModule.EJB, "ejb-jar.xml");
+        standardDDNameMap.put(J2eeModule.EAR, "application.xml");
+        standardDDNameMap.put(J2eeModule.CLIENT, "application-client.xml");
+        webserviceDDNameMap.put(J2eeModule.WAR, "webservices.xml");
+        webserviceDDNameMap.put(J2eeModule.EJB, "webservices.xml");
     }
     
     public org.netbeans.modules.j2ee.dd.api.common.RootInterface getStandardRootDD() {
