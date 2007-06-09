@@ -120,7 +120,7 @@ public class ProjectDataSourceTracker{
     }
 
     public static void removeHardcodedDataSource(Project project, String dataSourceNames) {
-        getDSTracker(project).removeHardcodedDataSource(dataSourceNames) ;
+        getDSTracker(project).removeDataSource(dataSourceNames) ;
     }
 
     public static void addHardcodedDataSource(Project project, String dataSourceNames) {
@@ -414,6 +414,12 @@ public class ProjectDataSourceTracker{
             }
         }
 
+       public void removeDataSource(String dataSourceName) {
+                hardCodedDataSourceSet.remove(dataSourceName);
+                logInfo("removed" + dataSourceName) ; // NOI18N
+                persistHardcodedDataSources() ;            
+        }
+
 
         /***
          * save the hard coded data source list and tell listeners
@@ -705,7 +711,7 @@ public class ProjectDataSourceTracker{
                     for ( Iterator ii = newSet.iterator() ; ii.hasNext() ; ) {
                         String name = (String)ii.next() ;
                         if ( isHardcodedDataSource(name)) {
-                            removeHardcodedDataSource(name) ;
+                            removeDataSource(name) ;
                             logInfo("  removing hard "+name) ; // NOI18N
                         }
                     }
