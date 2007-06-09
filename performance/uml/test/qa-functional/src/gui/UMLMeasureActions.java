@@ -36,6 +36,7 @@ public class UMLMeasureActions  {
         suite.addTest(new ReverseEngineering("measureTime", "Reverse Engineering"));
         suite.addTest(new OpenUMLDiagram("measureTime", "Open UML Diagram"));
         suite.addTest(new CreateEmptyDiagram("measureTime", "Create Empty UML Diagram"));
+        suite.addTest(new SelectingMultipleNodes("measureTime", "Selecting Multiple Nodes"));
         return suite;
     }
     
