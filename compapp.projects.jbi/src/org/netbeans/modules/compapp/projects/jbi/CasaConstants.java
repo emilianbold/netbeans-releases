@@ -63,6 +63,7 @@ public interface CasaConstants {
     public static final String CASA_ENDPOINT_NAME_ATTR_NAME = "endpoint-name";  // NO18N
     public static final String CASA_SERVICE_NAME_ATTR_NAME = "service-name";  // NO18N
     public static final String CASA_INTERFACE_NAME_ATTR_NAME = "interface-name";  // NO18N
+    public static final String CASA_BINDING_TYPE_ATTR_NAME = "bindingType";  // NO18N
     
     public static final String CASA_NEW_ATTR_VALUE = "new";  // NO18N
     public static final String CASA_DELETED_ATTR_VALUE = "deleted";  // NO18N

@@ -21,9 +21,11 @@ package org.netbeans.modules.compapp.projects.jbi.anttasks;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -36,16 +38,13 @@ import org.netbeans.modules.compapp.projects.jbi.descriptor.XmlUtil;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.ConnectionContainer;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.Endpoint;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.Connection;
-import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
 import org.netbeans.modules.compapp.projects.jbi.util.MyFileUtil;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Port;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.Service;
-import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.FindWSDLComponent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -89,20 +88,32 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
     public static final String DEFAULT_JBI_MODULES_REGION_WIDTH = "500";
     public static final String DEFAULT_EXTERNAL_MODULES_REGION_WIDTH = "200";
         
-    // mapping binding component namespace to binding component name
+    // mapping binding component namespace to binding component name,
+    // e.x., 
     private Map<String, String> bcNamespace2NameMap;
         
-    // mapping service unit name to a list of endpoints for that service unit
-    private Map<String, List<Endpoint>> suEndpointsMap = 
-            new HashMap<String, List<Endpoint>>();    
-         
-    // mapping fully qualified port names to casa port elements in casa document
-    // (This is to solve the duplicate WSDL problem.)
-    private Map<String, Element> casaPortMap = new HashMap<String, Element>();
+    // mapping SE/BC SU name to endpoints defined in the SU's jbi.xml
+    private Map<String, List<Endpoint>> su2Endpoints =
+                new HashMap<String, List<Endpoint>>();  
+        
+    // A Map mapping fully qualified endpoint name to endpoint ID for all 
+    // the endpoints in the new casa document.
+    private Map<String, String> newEndpointMap = new HashMap<String, String>();
+        
+    // index used for creating endpoint IDs in the new casa document
+    private int endpointIndex = 1;
     
-    // a list of xlink hrefs of all casa ports that were marked as "deleted"
-    // in the old casa document
-    private List<String> deletedCasaPortLinkHrefs;
+    // a list of endpoints defined in all the WSDL files in the compapp and
+    // its component projects
+    private List<Endpoint> newWSDLEndpoints;
+        
+    // mapping BC name to list of deleted endpoints for that BC type in the 
+    // old casa document
+    private Map<String, List<Endpoint>> deletedBCEndpointsMap =
+            new HashMap<String, List<Endpoint>>();
+      
+    // mapping BC name to a list of unconnected endpoints in the old casa document
+    private Map<String, List<Endpoint>> oldUnconnectedBCEndpointsMap;
     
     private String serviceUnitsDirLoc;
     private String confDirLoc;
@@ -128,8 +139,6 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
             try {
                 DocumentBuilder documentBuilder = factory.newDocumentBuilder();
                 oldCasaDocument = documentBuilder.parse(casaFile);
-                deletedCasaPortLinkHrefs = 
-                    getDeletedCasaPortLinkHrefs(oldCasaDocument); // todo: remove me
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -141,8 +150,11 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
     }
     
     /**
-     * Creates a new casa document based on sa jbi.xml and optionally 
-     * an old casa file.
+     * Creates a new CASA document based on sa jbi.xml and optionally 
+     * an old CASA file.
+     * 
+     * @param jbiDocument   service assembly JBI document
+     * @return              new CASA document
      */
     public Document createCasaDocument(Document jbiDocument)
     throws ParserConfigurationException, SAXException, IOException {      
@@ -162,34 +174,35 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
         // build binding component namespace to ID map
         bcNamespace2NameMap = wsdlRepository.buildBindingComponentMap(project);
             
-        // Prepare various endpoint lists
-        buildServiceUnitEndpointsMap(jbiDocument);
+        // Prepare various endpoint lists    
+        newWSDLEndpoints = getNewWsdlEndpoints(jbiDocument);        
+        oldUnconnectedBCEndpointsMap = getUnconnectedBCEndpointsMap();
         
         // endpoints
-        Element casaEndpoints = createCasaEndpointsElement(jbiDocument);
+        Element casaEndpoints = createEndpoints(jbiDocument);
         casaRoot.appendChild(casaEndpoints);       
         
         // service units
-        Element casaServiceUnits = createCasaServiceUnitsElement(jbiDocument);
+        Element casaServiceUnits = createSUs(jbiDocument);
         casaRoot.appendChild(casaServiceUnits);
         
         // connections
-        Element casaConnections = createCasaConnectionsElement(jbiDocument);
+        Element casaConnections = createConnections(jbiDocument);
         casaRoot.appendChild(casaConnections);
         
         // porttypes, bindings, services
-        List<Element> casaWSDLReferences = createCasaWSDLReferenceElements();
+        List<Element> casaWSDLReferences = createWSDLReferenceElements();
         for (Element casaElement : casaWSDLReferences) {
             casaRoot.appendChild(casaElement);
         }
         
         // regions
-        Element casaRegions = createCasaRegionsElement();
+        Element casaRegions = createRegions();
         casaRoot.appendChild(casaRegions);
                 
-        preserveCasaWSDLEndpointsAndPorts();
+//        preserveCasaWSDLEndpointsAndPorts();
                           
-        mergeCasaChanges(jbiDocument);
+        mergeLocations(jbiDocument);
         
         return newCasaDocument;
     }
@@ -200,70 +213,70 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
     private static Endpoint getEndpoint(Element endpointElement) {
         String endpointName = 
                 endpointElement.getAttribute(CASA_ENDPOINT_NAME_ATTR_NAME);
-        QName endpointServiceQName = XmlUtil.getAttributeNSName(
+        QName serviceQName = XmlUtil.getAttributeNSName(
                 endpointElement, CASA_SERVICE_NAME_ATTR_NAME);
-        QName endpointInterfaceQName = XmlUtil.getAttributeNSName(
+        QName interfaceQName = XmlUtil.getAttributeNSName(
                 endpointElement, CASA_INTERFACE_NAME_ATTR_NAME);
         
-        return new Endpoint(endpointName, endpointServiceQName, endpointInterfaceQName); 
+        return new Endpoint(endpointName, serviceQName, interfaceQName); 
     }
     
     /**
      * Creates the service-units element in the new casa document.
      */
-    private Element createCasaServiceUnitsElement(Document jbiDocument)
+    private Element createSUs(Document jbiDocument)
             throws SAXException, IOException, ParserConfigurationException {
         
-        Element casaSUs =
-                (Element) newCasaDocument.createElement(CASA_SERVICE_UNITS_ELEM_NAME);
+        Element casaSUs = newCasaDocument.createElement(CASA_SERVICE_UNITS_ELEM_NAME);
         
-        // 1. Copy service units from jbi document over
+        // 1. "Copy" SE and BC SUs from jbi document over
+        List<String> componentIDs = new ArrayList<String>();
         NodeList jbiSUs = 
                 jbiDocument.getElementsByTagName(JBI_SERVICE_UNIT_ELEM_NAME);
         for (int i = 0; i < jbiSUs.getLength(); i++) {
             Element jbiSU = (Element) jbiSUs.item(i);
             String componentID = getJBIServiceUnitComponentName(jbiSU);
+            componentIDs.add(componentID);
             
             Element casaSU = bcNamespace2NameMap.values().contains(componentID) ?
-                createCasaBindingServiceUnitElement(jbiSU) :
-                createCasaServiceEngineServiceUnitElement(jbiSU);
+                createBCSUFromJbiElement(jbiSU) :
+                createSESUFromJbiElement(jbiSU);
             
             casaSUs.appendChild(casaSU);
         }
                 
-        if (oldCasaDocument != null) {        
-            // 2. Add ghost binding component service units (BC SUs with all its
-            // ports marked as "deleted") from old casa
-            try {
-                for (Element oldBCSU : getGhostBindingComponentServiceUnitElements()) {
-                    Element newBCSU = deepCloneCasaNodeWithEndpointConversion(
-                            oldBCSU);                    
-                    casaSUs.appendChild(newBCSU);
+        if (oldCasaDocument != null) {
+            // 2. Merge BC SUs from old casa that contains only unconnected
+            // and/or deleted ports.
+            NodeList bcSUs = oldCasaDocument.getElementsByTagName(
+                    CASA_BINDING_COMPONENT_SERVICE_UNIT_ELEM_NAME);
+            for (int i = 0; i < bcSUs.getLength(); i++) {
+                Element bcSU = (Element) bcSUs.item(i);
+                String bcName = bcSU.getAttribute(CASA_COMPONENT_NAME_ATTR_NAME);
+                if (!componentIDs.contains(bcName)) {
+                    Element casaSU = createBCSUFromCasaElement(bcSU);
+                    // Only add this BC SU if it still contains at least one
+                    // unconnected or deleted port.
+                    Element ports = (Element) casaSU.getElementsByTagName(CASA_PORTS_ELEM_NAME).item(0);
+                    if (ports.getChildNodes().getLength() > 0) {
+                        casaSUs.appendChild(casaSU);
+                    }
                 }
-            } catch (Exception e) {
-                log("ERROR: Problem merging \"deleted\" binding component service units from old casa: " + e +
-                        ". This does not affect regular compapp build." );
             }
             
-            // 3. Add external service units from old casa
+            // 3. Merge external SE SUs from old casa
             try {
-                NodeList oldCasaSUs = oldCasaDocument.getElementsByTagName(
-                        CASA_SERVICE_ENGINE_SERVICE_UNIT_ELEM_NAME);
-                for (int i = 0; i < oldCasaSUs.getLength(); i++) {
-                    Element oldCasaSU = (Element) oldCasaSUs.item(i);
-                    String type = oldCasaSU.getAttribute(CASA_INTERNAL_ATTR_NAME);
-                    if (type != null && type.equals("false")) {
-                        Node newCasaSU = deepCloneCasaNodeWithEndpointConversion(
-                                oldCasaSU);                        
-                        casaSUs.appendChild(newCasaSU);
-                    }
+                List<Element> externalSESUs = getExternalSESUs();
+                for (Element oldSESU : externalSESUs) {
+                    Node newSESU = deepCloneCasaNodeWithEndpointConversion(oldSESU);
+                    casaSUs.appendChild(newSESU);
                 }
             } catch (Exception e) {
                 log("ERROR: Problem merging external service units from old casa: " + e +
                         ". This does not affect regular compapp build." );
             }
-          }
-
+        }
+        
         return casaSUs;
     }
     
@@ -309,7 +322,7 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
     /**
      * Gets a list of binding component service units in the old casa document
      * whose ports are all marked as "deleted".
-     */
+     */ /*
     private List<Element> getGhostBindingComponentServiceUnitElements() {
         List<Element> ret = new ArrayList<Element>();
         
@@ -335,12 +348,29 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
         
         return ret;
     }
+    */
+    
+    /*
+    private List<String> getOldBindingComponentNames() {
+        List<String> ret = new ArrayList<String>();
+        
+        NodeList bcSUs = oldCasaDocument.getElementsByTagName(
+                        CASA_BINDING_COMPONENT_SERVICE_UNIT_ELEM_NAME);
+        for (int i = 0; i < bcSUs.getLength(); i++) {
+            Element bcSU = (Element) bcSUs.item(i);
+            String bcName = bcSU.getAttribute(CASA_COMPONENT_NAME_ATTR_NAME);
+            ret.add(bcName);
+        }
+        
+        return ret;
+    }
+    */
 
     /**
-     * Creates a new binding-component-service-unit element in the 
-     * new casa document.
+     * Creates a BC SU element in the new casa document from a BC SU element 
+     * in the jbi document.
      */
-    private Element createCasaBindingServiceUnitElement(Element jbiSU)
+    private Element createBCSUFromJbiElement(Element jbiSU)
             throws SAXException, IOException, ParserConfigurationException {
 
         Element bcSU = newCasaDocument.createElement(CASA_BINDING_COMPONENT_SERVICE_UNIT_ELEM_NAME);
@@ -364,17 +394,41 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
         bcSU.setAttribute(CASA_DESCRIPTION_ATTR_NAME, description);
         bcSU.setAttribute(CASA_ARTIFACTS_ZIP_ATTR_NAME, artifactsZip);
 
-        Element casaPorts = createCasaPortsElement(suName);
+        Element casaPorts = createPorts(suName);
         bcSU.appendChild(casaPorts);
 
         return bcSU;
     }
 
     /**
-     * Creates a new service-engine-service-unit element in the 
-     * new casa document.
+     * Creates a BC SU element in the new casa document from a BC SU element 
+     * in the old casa document.
      */
-    private Element createCasaServiceEngineServiceUnitElement(Element jbiSU)
+    private Element createBCSUFromCasaElement(Element casaBCSU)
+            throws SAXException, IOException, ParserConfigurationException {
+
+        Element ret = newCasaDocument.createElement(CASA_BINDING_COMPONENT_SERVICE_UNIT_ELEM_NAME);
+        
+        NamedNodeMap attrs = casaBCSU.getAttributes();
+        for (int i = 0; i < attrs.getLength(); i++) {
+            Node attrNode = attrs.item(i);
+            String name = attrNode.getNodeName();
+            String value = attrNode.getNodeValue();            
+            ret.setAttribute(name, value);  // no namespace requirement here
+        }
+
+        String suName = ret.getAttribute(CASA_COMPONENT_NAME_ATTR_NAME);
+        Element casaPorts = createPorts(suName);
+        ret.appendChild(casaPorts);
+
+        return ret;
+    }
+
+    /**
+     * Creates a SE SU element in the new casa document from a SE SU element
+     * in the jbi document.
+     */
+    private Element createSESUFromJbiElement(Element jbiSU)
             throws SAXException, IOException, ParserConfigurationException {
 
         Element seSU = newCasaDocument.createElement(CASA_SERVICE_ENGINE_SERVICE_UNIT_ELEM_NAME);
@@ -404,7 +458,7 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
         seSU.setAttribute(CASA_DESCRIPTION_ATTR_NAME, description);
         seSU.setAttribute(CASA_ARTIFACTS_ZIP_ATTR_NAME, artifactsZip);
 
-        List<Endpoint> suEndpointList = suEndpointsMap.get(suName); //loadSUEndpoints(suName);
+        List<Endpoint> suEndpointList = su2Endpoints.get(suName); 
         if (suEndpointList == null) {
             log("ERROR: Invalid service unit name: " + suName);
         } else {
@@ -412,7 +466,7 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
                 Element endpointRef = endpoint.isConsumes() ?
                     (Element) newCasaDocument.createElement(CASA_CONSUMES_ELEM_NAME) :
                     (Element) newCasaDocument.createElement(CASA_PROVIDES_ELEM_NAME);
-                String endpointID = getEndpointID(endpoint);
+                String endpointID = getNewEndpointID(endpoint);
                 endpointRef.setAttribute(CASA_ENDPOINT_ATTR_NAME, endpointID);
                 seSU.appendChild(endpointRef);
             }
@@ -422,12 +476,11 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
     }
 
     /**
-     * Creates the connections element in the new casa document.
+     * Creates the Connections element in the new casa document.
      */
-    private Element createCasaConnectionsElement(Document jbiDocument) {
+    private Element createConnections(Document jbiDocument) {
 
-        Element casaConnections =
-                (Element) newCasaDocument.createElement(CASA_CONNECTIONS_ELEM_NAME);
+        Element casaConnections = newCasaDocument.createElement(CASA_CONNECTIONS_ELEM_NAME);
 
         // 1. Copy connections from jbi document over.
         NodeList jbiConnections =
@@ -436,28 +489,37 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
         for (int i = 0; i < jbiConnections.getLength(); i++) {
             Element jbiConnection = (Element) jbiConnections.item(i);
 
-            Element casaConnection =
-                    (Element) newCasaDocument.createElement(CASA_CONNECTION_ELEM_NAME);
-            casaConnection.setAttribute(CASA_STATE_ATTR_NAME, CASA_UNCHANGED_ATTR_VALUE);
-
             Element consumer =
                     (Element) jbiConnection.getElementsByTagName(JBI_CONSUMER_ELEM_NAME).item(0);
             String consumerEndpointName =
                     consumer.getAttribute(JBI_ENDPOINT_NAME_ATTR_NAME);
             QName consumerServiceQName = XmlUtil.getAttributeNSName(
                     consumer, JBI_SERVICE_NAME_ATTR_NAME);
-            String consumerID = getEndpointID(consumerServiceQName, consumerEndpointName);
-            casaConnection.setAttribute(CASA_CONSUMER_ATTR_NAME, consumerID);
-
+            String consumerID = getNewEndpointID(consumerServiceQName, consumerEndpointName);
+            if (consumerID == null || consumerID.trim().length() == 0) {
+                continue;   // the consumes endpoint no longer exists in compapp
+                // This could happen when a JBI module is deleted outside of 
+                // CASA, in which case, the SE SU is removed from CASA model
+                // but all the connections are left untouched. A second build
+                // of compapp still sees the connections which are no longer
+                // valid. A clean and build should have no problem though.
+            }
+            
             Element provider =
                     (Element) jbiConnection.getElementsByTagName(JBI_PROVIDER_ELEM_NAME).item(0);
             String providerEndpointName =
                     provider.getAttribute(JBI_ENDPOINT_NAME_ATTR_NAME);
             QName providerServiceQName = XmlUtil.getAttributeNSName(
                     provider, JBI_SERVICE_NAME_ATTR_NAME);
-            String providerID = getEndpointID(providerServiceQName, providerEndpointName);
+            String providerID = getNewEndpointID(providerServiceQName, providerEndpointName);
+            if (providerID == null || providerID.trim().length() == 0) {
+                continue;   // the provides endpoint no longer exists in compapp
+            }
+            
+            Element casaConnection = newCasaDocument.createElement(CASA_CONNECTION_ELEM_NAME);
+            casaConnection.setAttribute(CASA_STATE_ATTR_NAME, CASA_UNCHANGED_ATTR_VALUE);
+            casaConnection.setAttribute(CASA_CONSUMER_ATTR_NAME, consumerID);
             casaConnection.setAttribute(CASA_PROVIDER_ATTR_NAME, providerID);
-
             casaConnections.appendChild(casaConnection);
         }
         
@@ -475,11 +537,19 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
                             oldConnectionState.equals(CASA_NEW_ATTR_VALUE)) {
                         String newConsumerID =
                                 findNewEndpointID(oldCasaDocument, newCasaDocument, oldConnection, true);
+                        if (newConsumerID == null || newConsumerID.trim().length() == 0) {
+                            continue;   // the consumes endpoint no longer exists in compapp
+                        }
+                        
                         String newProviderID =
                                 findNewEndpointID(oldCasaDocument, newCasaDocument, oldConnection, false);
-                        Element newConnection =
-                                findNewConnection(casaConnections, newConsumerID, newProviderID);
+                        if (newProviderID == null || newProviderID.trim().length() == 0) {
+                            continue;   // the provides endpoint no longer exists in compapp
+                        }
                         
+                        Element newConnection =
+                                findConnection(casaConnections, newConsumerID, newProviderID);
+
                         if (oldConnectionState.equals(CASA_DELETED_ATTR_VALUE)) {
                             // Merge deleted connections from the old casa document
                             assert newConnection == null;
@@ -504,24 +574,13 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
         return casaConnections;
     }
 
-    private List<Element> createCasaWSDLReferenceElements()
-    throws SAXException, DOMException, IOException, ParserConfigurationException {
+    private List<Element> createWSDLReferenceElements() {
 
         List<Element> ret = new ArrayList<Element>();
-
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setValidating(false);
-        factory.setNamespaceAware(true);
-        DocumentBuilder documentBuilder = factory.newDocumentBuilder();
-
-        Element casaPortTypes =
-                (Element) newCasaDocument.createElement(CASA_PORTTYPES_ELEM_NAME);
-
-        Element casaBindings =
-                (Element) newCasaDocument.createElement(CASA_BINDINGS_ELEM_NAME);
-
-        Element casaServices =
-                (Element) newCasaDocument.createElement(CASA_SERVICES_ELEM_NAME);
+        
+        Element casaPortTypes = newCasaDocument.createElement(CASA_PORTTYPES_ELEM_NAME);
+        Element casaBindings = newCasaDocument.createElement(CASA_BINDINGS_ELEM_NAME);
+        Element casaServices = newCasaDocument.createElement(CASA_SERVICES_ELEM_NAME);
 
         for (WSDLModel model : wsdlRepository.getWsdlCollection()) {
             String relativePath =
@@ -532,7 +591,7 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
             // Add casa:porttypes
             for (PortType pt : defs.getPortTypes()) {
                 String ptName = pt.getName();
-                Element linkElement = createCasaLinkElement(relativePath, 
+                Element linkElement = createLink(relativePath, 
                         "/definitions/portType" + "[@name='" + ptName + "']");
                 casaPortTypes.appendChild(linkElement);
             }
@@ -540,7 +599,7 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
             // Add casa:bindings
             for (Binding b : defs.getBindings()) {
                 String bName = b.getName();
-                Element linkElement = createCasaLinkElement(relativePath,
+                Element linkElement = createLink(relativePath,
                         "/definitions/binding" + "[@name='" + bName + "']");
                 casaBindings.appendChild(linkElement);
             }
@@ -548,7 +607,7 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
             // Add casa:services
             for (Service s : defs.getServices()) {
                 String sName = s.getName();
-                Element linkElement = createCasaLinkElement(relativePath,
+                Element linkElement = createLink(relativePath,
                         "/definitions/service" + "[@name='" + sName + "']");
                 casaServices.appendChild(linkElement);
             }
@@ -562,9 +621,9 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
     }
 
     /**
-     * Creates the regions element in the new casa document.
+     * Creates the Regions element in the new casa document.
      */
-    private Element createCasaRegionsElement() {
+    private Element createRegions() {
 
         if (oldCasaDocument != null) {
             try {
@@ -577,20 +636,19 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
             }
         }
 
-        Element regions =
-                (Element) newCasaDocument.createElement(CASA_REGIONS_ELEM_NAME);
+        Element regions = newCasaDocument.createElement(CASA_REGIONS_ELEM_NAME);
 
-        Element region = (Element) newCasaDocument.createElement(CASA_REGION_ELEM_NAME);
+        Element region = newCasaDocument.createElement(CASA_REGION_ELEM_NAME);
         region.setAttribute(CASA_NAME_ATTR_NAME, WSDL_ENDPOINTS_REGION_NAME);
         region.setAttribute(CASA_WIDTH_ATTR_NAME, DEFAULT_WSDL_ENDPOINTS_REGION_WIDTH);
         regions.appendChild(region);
 
-        region = (Element) newCasaDocument.createElement(CASA_REGION_ELEM_NAME);
+        region = newCasaDocument.createElement(CASA_REGION_ELEM_NAME);
         region.setAttribute(CASA_NAME_ATTR_NAME, JBI_MODULES_REGION_NAME);
         region.setAttribute(CASA_WIDTH_ATTR_NAME, DEFAULT_JBI_MODULES_REGION_WIDTH);
         regions.appendChild(region);
 
-        region = (Element) newCasaDocument.createElement(CASA_REGION_ELEM_NAME);
+        region = newCasaDocument.createElement(CASA_REGION_ELEM_NAME);
         region.setAttribute(CASA_NAME_ATTR_NAME, EXTERNAL_MODULES_REGION_NAME);
         region.setAttribute(CASA_WIDTH_ATTR_NAME, DEFAULT_EXTERNAL_MODULES_REGION_WIDTH);
 
@@ -605,7 +663,6 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
         return compName.getFirstChild().getNodeValue();
     }
 
-
     private String getJBIServiceUnitName(Element jbiSU) {
         Element target = (Element) jbiSU.getElementsByTagName(JBI_TARGET_ELEM_NAME).item(0);
         Element artifactsZip = (Element) target.getElementsByTagName(JBI_ARTIFACTS_ZIP_ELEM_NAME).item(0);
@@ -614,6 +671,7 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
         return zipFileName.substring(0, zipFileName.length() - 4);
     }
 
+    /*
     private Endpoint getEndpoint(List<Element> oldEndpointList, String name) {
         if (name == null) {
             return null;
@@ -634,6 +692,7 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
         }
         return null;
     }
+    */
 
     /**
      * Maps endpoint name to binding component name.
@@ -811,6 +870,7 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
         }
     }
 
+    /*
     private WSDLComponent getWSDLComponentFromXLinkHref(String linkHref) {
 
         WSDLComponent wsdlComponent = null;
@@ -865,8 +925,9 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
 
         return wsdlComponent;
     }
-
-    private File getFile(WSDLModel model) {
+    */
+    
+    private static File getFile(WSDLModel model) {
         Lookup lookup = model.getModelSource().getLookup();
         File f = (File) lookup.lookup(File.class);
         if (f == null) {
@@ -876,11 +937,14 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
         return f;
     }
 
+    /*
     private String getFilePath(WSDLModel model) {
         File f = getFile(model);
         return f.getPath().replaceAll("\\\\", "/");
     }
-
+    */
+    
+    /*
     private WSDLModel getWSDLModel(String uriString) {
          List<WSDLModel> models = wsdlRepository.getWsdlCollection();
          for (WSDLModel model : models) {
@@ -892,11 +956,38 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
          }
          return null;
     }
-        
-    private List<Endpoint> getDeletedBCEndpoints()
+    */
+    
+    /**
+     * Gets a list of endpoints that are marked as "deleted" in the old CASA
+     * document whose owning WSDL files are still in the compapp.
+     */ /*
+    private List<Endpoint> getLiveDeletedBCEndpoints() // RENAME ME
             throws DOMException {
+        List<Endpoint> ret = new ArrayList<Endpoint>();
+        
+        List<Endpoint> deletedBCEndpoints = getDeletedBCEndpoints();
+        
+        for (Endpoint deletedEndpoint : deletedBCEndpoints) {
+            for (Endpoint wsdlEndpoint : newWSDLEndpoints) {
+                if (deletedEndpoint.equals(wsdlEndpoint)) {
+                    ret.add(deletedEndpoint);
+                    break;
+                }
+            }
+        }
+        
+        return ret;
+    }
+    */
+        
+    /**
+     * Gets a non-null list of deleted BC endpoints in the old casa document.
+     */
+    // Side Effect: also build deltedBCEndpointsMap
+    private List<Endpoint> getDeletedBCEndpoints() {
          
-         List<Endpoint> endpointList = new ArrayList<Endpoint>();
+         List<Endpoint> ret = new ArrayList<Endpoint>();
          
          if (oldCasaDocument != null) {
              NodeList portNodeList =
@@ -914,12 +1005,139 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
                          Element consumes = (Element) consumesNodeList.item(0);
                          String endpointID = consumes.getAttribute(CASA_ENDPOINT_ATTR_NAME);
                          Endpoint endpoint = getEndpoint(oldCasaDocument, endpointID);
-                         endpointList.add(endpoint);
+                         ret.add(endpoint);
+                         
+                         // build deltedBCEndpointsMap
+                         Element bcsuElement = (Element) port.getParentNode().getParentNode();
+                         String bcName = bcsuElement.getAttribute(CASA_COMPONENT_NAME_ATTR_NAME);
+                         List<Endpoint> deletedBCEndpoints = deletedBCEndpointsMap.get(bcName);
+                         if (deletedBCEndpoints == null) {
+                             deletedBCEndpoints = new ArrayList<Endpoint>();
+                             deletedBCEndpointsMap.put(bcName, deletedBCEndpoints);
+                         }
+                         deletedBCEndpoints.add(endpoint);
                      }
                  }
              }
          }
          
+         return ret;
+    }
+    
+    private Map<String, List<Endpoint>> getUnconnectedBCEndpointsMap() {
+         
+         Map<String, List<Endpoint>> endpointMap = new HashMap<String, List<Endpoint>>();
+         
+         if (oldCasaDocument != null) {
+             // compute the list of connected endpoint IDs in the old casa
+             List<String> connectedEndpointIDs = new ArrayList<String>();         
+             NodeList connectionNodeList =
+                     oldCasaDocument.getElementsByTagName(CASA_CONNECTION_ELEM_NAME);             
+             for (int i = 0; i < connectionNodeList.getLength(); i++) {
+                 Element connection = (Element) connectionNodeList.item(i);                 
+                 String state = connection.getAttribute(CASA_STATE_ATTR_NAME);
+                 if (!state.equals(CASA_DELETED_ATTR_VALUE)) {
+                     connectedEndpointIDs.add(connection.getAttribute(CASA_CONSUMER_ATTR_NAME));
+                     connectedEndpointIDs.add(connection.getAttribute(CASA_PROVIDER_ATTR_NAME));
+                 }
+             }
+             
+             NodeList portNodeList =
+                     oldCasaDocument.getElementsByTagName(CASA_PORT_ELEM_NAME); 
+                 
+             List<Endpoint> endpointList = new ArrayList<Endpoint>();
+             NodeList endpointNodeList =
+                     oldCasaDocument.getElementsByTagName(CASA_ENDPOINT_ELEM_NAME);             
+             for (int i = 0; i < endpointNodeList.getLength(); i++) {
+                 Element endpointElement = (Element) endpointNodeList.item(i);
+                 String endpointID = endpointElement.getAttribute(CASA_NAME_ATTR_NAME);
+                 if (!connectedEndpointIDs.contains(endpointID)) {
+                     // this is an unconnected SE/BC endpoint
+                     for (int j = 0; j < portNodeList.getLength(); j++) {
+                         Element portElement = (Element) portNodeList.item(j);
+                         String id = getCasaPortEndpointID(portElement);
+                         if (id.equals(endpointID)) {
+                             // this is an unconnected BC endpoint
+                             Element bcsuElement = (Element) portElement.getParentNode().getParentNode();
+                             String componentName = bcsuElement.getAttribute(CASA_COMPONENT_NAME_ATTR_NAME);
+                             List<Endpoint> list = endpointMap.get(componentName);
+                             if (list == null) {
+                                 list = new ArrayList<Endpoint>();
+                                 endpointMap.put(componentName, list);
+                             }
+                             
+                             Endpoint endpoint = getEndpoint(endpointElement);
+                             list.add(endpoint);
+                             break;
+                         }
+                     }                     
+                 }
+             }
+         }
+         
+         return endpointMap;
+    }
+    
+    private String getCasaPortEndpointID(Element portElement) {
+        NodeList consumesNodeList =
+                portElement.getElementsByTagName(CASA_CONSUMES_ELEM_NAME);
+        if (consumesNodeList != null && consumesNodeList.getLength() == 1) {
+            Element consumes = (Element) consumesNodeList.item(0);
+            return consumes.getAttribute(CASA_ENDPOINT_ATTR_NAME);
+        } else {
+            return null;
+        }
+    }
+    
+    /**
+     * Gets a non-null list of external SE SU elements in the old casa document.
+     */
+    private List<Element> getExternalSESUs() {
+        List<Element> ret = new ArrayList<Element>();
+        
+        if (oldCasaDocument != null) {
+            NodeList oldCasaSUs = oldCasaDocument.getElementsByTagName(
+                    CASA_SERVICE_ENGINE_SERVICE_UNIT_ELEM_NAME);
+            for (int i = 0; i < oldCasaSUs.getLength(); i++) {
+                Element oldCasaSU = (Element) oldCasaSUs.item(i);
+                String type = oldCasaSU.getAttribute(CASA_INTERNAL_ATTR_NAME);
+                if (type != null && type.equals("false")) {
+                    ret.add(oldCasaSU);
+                }
+            }
+        }
+        
+        return ret;
+    }
+    
+    /**
+     * Gets a non-null list of endpoints from the old casa document. 
+     * (The external endpoints in the new casa document will be the same.)
+     */
+    private List<Endpoint> getExternalEndpoints() {
+         
+         List<Endpoint> endpointList = new ArrayList<Endpoint>();
+         
+         List<Element> sesus = getExternalSESUs();
+         for (Element sesu : sesus) {
+             NodeList consumesNodeList =
+                     sesu.getElementsByTagName(CASA_CONSUMES_ELEM_NAME);
+             for (int j = 0; j < consumesNodeList.getLength(); j++) {
+                 Element consumes = (Element) consumesNodeList.item(j);
+                 String endpointID = consumes.getAttribute(CASA_ENDPOINT_ATTR_NAME);
+                 Endpoint endpoint = getEndpoint(oldCasaDocument, endpointID);
+                 endpointList.add(endpoint);
+             }
+             NodeList providesNodeList =
+                     sesu.getElementsByTagName(CASA_PROVIDES_ELEM_NAME);
+             for (int j = 0; j < providesNodeList.getLength(); j++) {
+                 Element provides = (Element) providesNodeList.item(j);
+                 String endpointID = provides.getAttribute(CASA_ENDPOINT_ATTR_NAME);
+                 Endpoint endpoint = getEndpoint(oldCasaDocument, endpointID);
+                 endpointList.add(endpoint);
+             }
+         }
+
          return endpointList;
     }
     
@@ -974,66 +1192,63 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
     }
     */
     
-    public void mergeCasaChanges(Document jbiDocument)
-            throws SAXException, ParserConfigurationException, IOException {
+    private void mergeLocations(Document jbiDocument) {
         
         if (oldCasaDocument == null) {
             return;
         }
         
-        try {
-            // 3. Merge SE SU locations (only if there is no SE SU change)
-            NodeList oldSESUs = oldCasaDocument.getElementsByTagName(
-                    CASA_SERVICE_ENGINE_SERVICE_UNIT_ELEM_NAME);
-            NodeList newSESUs = newCasaDocument.getElementsByTagName(
-                    CASA_SERVICE_ENGINE_SERVICE_UNIT_ELEM_NAME);
-            
-            for (int i = 0; i < oldSESUs.getLength(); i++) {
-                Element oldSESU = (Element) oldSESUs.item(i);
-                String oldSESUName = oldSESU.getAttribute(CASA_UNIT_NAME_ATTR_NAME);
-                for (int j = 0; j < newSESUs.getLength(); j++) {
-                    Element newSESU = (Element) newSESUs.item(j);
-                    String newSESUName = newSESU.getAttribute(CASA_UNIT_NAME_ATTR_NAME);
-                    if (newSESUName.equals(oldSESUName)) {
-                        newSESU.setAttribute(CASA_X_ATTR_NAME,
-                                oldSESU.getAttribute(CASA_X_ATTR_NAME));
-                        newSESU.setAttribute(CASA_Y_ATTR_NAME,
-                                oldSESU.getAttribute(CASA_Y_ATTR_NAME));
-                        break;
-                    }
+        // 1. Merge SE SU locations
+        NodeList oldSESUs = oldCasaDocument.getElementsByTagName(
+                CASA_SERVICE_ENGINE_SERVICE_UNIT_ELEM_NAME);
+        NodeList newSESUs = newCasaDocument.getElementsByTagName(
+                CASA_SERVICE_ENGINE_SERVICE_UNIT_ELEM_NAME);
+        
+        for (int i = 0; i < oldSESUs.getLength(); i++) {
+            Element oldSESU = (Element) oldSESUs.item(i);
+            // CASA_UNIT_NAME_ATTR_NAME uniquely identifies a SE/BC SU.
+            String oldSESUName = oldSESU.getAttribute(CASA_UNIT_NAME_ATTR_NAME);
+            for (int j = 0; j < newSESUs.getLength(); j++) {
+                Element newSESU = (Element) newSESUs.item(j);
+                String newSESUName = newSESU.getAttribute(CASA_UNIT_NAME_ATTR_NAME);
+                if (newSESUName.equals(oldSESUName)) {
+                    newSESU.setAttribute(CASA_X_ATTR_NAME,
+                            oldSESU.getAttribute(CASA_X_ATTR_NAME));
+                    newSESU.setAttribute(CASA_Y_ATTR_NAME,
+                            oldSESU.getAttribute(CASA_Y_ATTR_NAME));
+                    break;
                 }
             }
-            
-            // 4. Merge BC SU port locations (only if there is no port change)
-            NodeList oldPorts = oldCasaDocument.getElementsByTagName(CASA_PORT_ELEM_NAME);
-            NodeList newPorts = newCasaDocument.getElementsByTagName(CASA_PORT_ELEM_NAME);
-            
-            for (int i = 0; i < oldPorts.getLength(); i++) {
-                Element oldPort = (Element) oldPorts.item(i);
-                Element newPort = findLinkContainerElement(newPorts, oldPort);
-                if (newPort != null) {
-                    newPort.setAttribute(CASA_X_ATTR_NAME,
-                            oldPort.getAttribute(CASA_X_ATTR_NAME));
-                    newPort.setAttribute(CASA_Y_ATTR_NAME,
-                            oldPort.getAttribute(CASA_Y_ATTR_NAME));
+        }
+        
+        // 2. Merge BC SU port locations and other attributes
+        NodeList oldPorts = oldCasaDocument.getElementsByTagName(CASA_PORT_ELEM_NAME);
+        NodeList newPorts = newCasaDocument.getElementsByTagName(CASA_PORT_ELEM_NAME);
+        
+        for (int i = 0; i < oldPorts.getLength(); i++) {
+            Element oldPort = (Element) oldPorts.item(i);
+            Element newPort = findLinkContainerElement(newPorts, oldPort);
+            if (newPort != null) {
+                newPort.setAttribute(CASA_X_ATTR_NAME,
+                        oldPort.getAttribute(CASA_X_ATTR_NAME));
+                newPort.setAttribute(CASA_Y_ATTR_NAME,
+                        oldPort.getAttribute(CASA_Y_ATTR_NAME));
+                String bindingType = oldPort.getAttribute(CASA_BINDING_TYPE_ATTR_NAME);
+                if (bindingType != null && bindingType.trim().length() > 0) {
+                    newPort.setAttribute(CASA_BINDING_TYPE_ATTR_NAME, bindingType);
                 }
-            }          
-        } catch (Exception e) {
-            log("ERROR: Problem merging old casa document: " + e +
-                    " The CASA file will be regenerated. This should not affect regular compapp build." );
+            }
         }
     }
     
-    private static Element getCasaEndpoint(Document casaDocument, String endpointID) {
+    private static Element getCasaEndpointElement(Document casaDocument, String endpointID) {
         NodeList endpoints = casaDocument.getElementsByTagName(CASA_ENDPOINT_ELEM_NAME);
-
         for (int i = 0; i < endpoints.getLength(); i++) {
             Element endpoint = (Element) endpoints.item(i);
             if (endpoint.getAttribute(CASA_NAME_ATTR_NAME).equals(endpointID)) {
                 return endpoint;
             }
         }
-
         return null;
     }
 
@@ -1043,46 +1258,46 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
             oldConnection.getAttribute(CASA_CONSUMER_ATTR_NAME) :
             oldConnection.getAttribute(CASA_PROVIDER_ATTR_NAME);
 
-        Element oldEndpoint = getCasaEndpoint(oldCasaDocument, oldEndpointID);
+        Element oldEndpoint = getCasaEndpointElement(oldCasaDocument, oldEndpointID);
         if (oldEndpoint != null) {
             String oldEndpointName =
                     oldEndpoint.getAttribute(CASA_ENDPOINT_NAME_ATTR_NAME);
             QName oldServiceQName =
                     XmlUtil.getAttributeNSName(oldEndpoint, CASA_SERVICE_NAME_ATTR_NAME);
-            return getEndpointID(oldServiceQName, oldEndpointName);
+            return getNewEndpointID(oldServiceQName, oldEndpointName);
         }
 
         return null;
     }
 
-    private Element findNewConnection(Element newCasaConnections,
-            String newConsumerID, String newProviderID) {
+    private Element findConnection(Element connections,
+            String consumerID, String providerID) {
 
-        NodeList newConnections =
-                newCasaConnections.getElementsByTagName(CASA_CONNECTION_ELEM_NAME);
-
-        for (int j = 0; j < newConnections.getLength(); j++) {
-            Element newConnection = (Element) newConnections.item(j);
-            if (newConnection.getAttribute(CASA_CONSUMER_ATTR_NAME).equals(newConsumerID) &&
-                    newConnection.getAttribute(CASA_PROVIDER_ATTR_NAME).equals(newProviderID)) {
-                return newConnection;
+        NodeList connectionsNodeList =
+                connections.getElementsByTagName(CASA_CONNECTION_ELEM_NAME);
+        for (int i = 0; i < connectionsNodeList.getLength(); i++) {
+            Element connection = (Element) connectionsNodeList.item(i);
+            if (connection.getAttribute(CASA_CONSUMER_ATTR_NAME).equals(consumerID) &&
+                    connection.getAttribute(CASA_PROVIDER_ATTR_NAME).equals(providerID)) {
+                return connection;
             }
         }
 
         return null;
     }
 
+    /*
     private Element getConnectionEndpoint(Element connection, boolean consumer) {
         String elementName = consumer? JBI_CONSUMER_ELEM_NAME : JBI_PROVIDER_ELEM_NAME;
         NodeList endpoints = connection.getElementsByTagName(elementName);
         assert endpoints != null && endpoints.getLength() == 1;
         return (Element) endpoints.item(0);
     }
-
+    */
+    
     /**
      * Deep clones a node.
-     */
-    /*
+     */ /*
     private static Node deepCloneJBINode(final Node node, final Document targetDocument, boolean jbiOnly)
     throws DOMException {
         String nodeName = node.getNodeName();
@@ -1195,7 +1410,7 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
 
     /**
      * Finds a service engine service unit element from a list of service unit elements.
-     *
+     */ /*
     private Element findServiceEngineServiceUnit(NodeList serviceUnitList, Element serviceUnit) {
 
         if (serviceUnit.hasAttribute(CASA_NAME_ATTR_NAME)) {
@@ -1218,41 +1433,62 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
     }*/
 
 
+    // TODO
     /**
      * Finds a link container element from a list of link container elements.
      */
-    private Element findLinkContainerElement(NodeList nodeList, Element connection) {
+    private Element findLinkContainerElement(NodeList newPortNodeList, Element oldPort) {
 
-        Element link = ((Element)connection.getElementsByTagName(CASA_LINK_ELEM_NAME).item(0));
-        String linkHref = link.getAttributeNS(XLINK_NAMESPACE_URI, XLINK_HREF_ATTR_NAME);
-
-        for (int i = 0; i < nodeList.getLength(); i++) {
-            Element myElement = (Element) nodeList.item(i);
-            Element myLink = (Element) myElement.getElementsByTagName(CASA_LINK_ELEM_NAME).item(0);
-            // String myLinkHref = myLink.getAttributeNS(XLINK_NAMESPACE_URI, XLINK_HREF_ATTR_NAME); // FIXME ?????
-            String myLinkHref = myLink.getAttribute(XLINK_NAMESPACE_PREFIX + ":" + XLINK_HREF_ATTR_NAME);
-            //log("    " + myLinkHref);
-            if (myLinkHref.equals(linkHref)) {
-                return myElement;
+        // Note that a casa port might contain multiple links.
+        NodeList oldLinkNodeList = oldPort.getElementsByTagName(CASA_LINK_ELEM_NAME);
+        for (int i = 0; i < oldLinkNodeList.getLength(); i++) {
+            Element oldLink = (Element) oldLinkNodeList.item(i);
+            String oldLinkHref = oldLink.getAttributeNS(XLINK_NAMESPACE_URI, XLINK_HREF_ATTR_NAME);            
+            for (int j = 0; j < newPortNodeList.getLength(); j++) {
+                Element newPort = (Element) newPortNodeList.item(j);
+                NodeList newLinkNodeList = newPort.getElementsByTagName(CASA_LINK_ELEM_NAME);
+                for (int k = 0; k < newLinkNodeList.getLength(); k++) {
+                    Element newLink = (Element) newLinkNodeList.item(k);
+                    // String myLinkHref = myLink.getAttributeNS(XLINK_NAMESPACE_URI, XLINK_HREF_ATTR_NAME); // FIXME ?????
+                    String newLinkHref = newLink.getAttribute(XLINK_NAMESPACE_PREFIX + ":" + XLINK_HREF_ATTR_NAME);
+                    if (newLinkHref.equals(oldLinkHref)) {
+                        return newPort;
+                    }
+                }
             }
         }
 
         return null;
     }
+//    /** 
+//     * Builds a mapping from SE/BC SU name to the endpoint list found 
+//     * in SU's jbi.xml under jbiServiceUnits/${suName}/.
+//     * All the endpoints in this map will definitely go into the new CASA file.
+//     * Other endpoints that should go into the new CASA file include: 
+//     * (1) User-deleted endpoints coming from component projects (so that we
+//     * can persist the deletion)
+//     * 
+//     * There are three types of the endpoints in the new CASA document:
+//     * (1) the newly generated endpoints in jbiServiceUnits/${suName}/jbi.xml;
+//     * (2) the (unconnected) endpoints in the old CASA document if the owning
+//     *     WSDL file is still part of compapp;
+//     * (3) the "deleted" endpoints from old CASA document if the owning WSDL
+//     *     file is still part of compapp.
+//     */
+//    private void buildServiceUnitEndpointsMap(Document jbiDocument)
+//    throws SAXException, IOException, ParserConfigurationException {
+//
+//        NodeList jbiSUs =
+//                jbiDocument.getElementsByTagName(JBI_SERVICE_UNIT_ELEM_NAME);
+//        for (int i = 0; i < jbiSUs.getLength(); i++) {
+//            Element jbiSU = (Element) jbiSUs.item(i);
+//            String suName = getJBIServiceUnitName(jbiSU);
+//            List<Endpoint> suEndpoints = loadSUEndpoints(suName);
+//            suEndpointsMap.put(suName, suEndpoints);
+//        }
+//    }
 
-    private void buildServiceUnitEndpointsMap(Document jbiDocument)
-    throws SAXException, IOException, ParserConfigurationException {
-
-        NodeList jbiSUs =
-                jbiDocument.getElementsByTagName(JBI_SERVICE_UNIT_ELEM_NAME);
-        for (int i = 0; i < jbiSUs.getLength(); i++) {
-            Element jbiSU = (Element) jbiSUs.item(i);
-            String suName = getJBIServiceUnitName(jbiSU);
-            List<Endpoint> suEndpoints = loadSUEndpoints(suName);
-            suEndpointsMap.put(suName, suEndpoints);
-        }
-    }
-
+    /*
     // We need to preserve unconnected (typed or untyped) WSDL ports defined
     // in casa wsdl with compapp rebuild.
     private void preserveCasaWSDLEndpointsAndPorts() {
@@ -1300,7 +1536,9 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
             }
         }
     }
+    */
 
+    /*
     private boolean isPortLinkInBindingComponentServiceUnit(Element bcSU,
             String portLinkHref) {
         Element ports = (Element) bcSU.getElementsByTagName(CASA_PORTS_ELEM_NAME).item(0);
@@ -1320,7 +1558,9 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
         }
         return false;
     }
-
+    */
+    
+    /*
     private static Element getBindingComponentServiceUnit(Document casaDocument,
             String bcName) {
         NodeList bcSUs = casaDocument.getElementsByTagName(
@@ -1333,7 +1573,8 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
         }
         return null;
     }
-
+    */
+    
     /**
      * Gets the endpoint object in a casa document with the given endpoint ID.
      */
@@ -1351,63 +1592,191 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
     }
     
     /**
-     * Gets all the endpoints defined in a casa document.
+     * Gets a non-null list of all the endpoints defined in a casa document.
      */
     private static List<Endpoint> getEndpoints(Document casaDocument) {
         List<Endpoint> ret = new ArrayList<Endpoint>();
         
-        NodeList endpointList = 
-                casaDocument.getElementsByTagName(CASA_ENDPOINT_ELEM_NAME);
-        for (int i = 0; i < endpointList.getLength(); i++) {
-            Element endpointElement = (Element) endpointList.item(i);
-            Endpoint endpoint = getEndpoint(endpointElement);
-            ret.add(endpoint);
+        if (casaDocument != null) {
+            NodeList endpointList =
+                    casaDocument.getElementsByTagName(CASA_ENDPOINT_ELEM_NAME);
+            for (int i = 0; i < endpointList.getLength(); i++) {
+                Element endpointElement = (Element) endpointList.item(i);
+                Endpoint endpoint = getEndpoint(endpointElement);
+                ret.add(endpoint);
+            }
+        }
+        
+        return ret;
+    }    
+    
+    /**
+     * Computes a non-null list of endpoints that are defined in the WSDL files 
+     * in the compapp project and the component projects.
+     */  
+    private List<Endpoint> getNewWsdlEndpoints(Document jbiDocument) {
+        List<Endpoint> ret = new ArrayList<Endpoint>();
+        
+        for (WSDLModel model : wsdlRepository.getWsdlCollection()) {            
+            String relativePath = MyFileUtil.getRelativePath(new File(confDirLoc), getFile(model));
+            String tns = model.getRootComponent().getPeer().getAttribute("targetNamespace");
+                        //wsdlDocument.getDocumentElement().getAttribute("targetNamespace");
+            for (Service service : model.getDefinitions().getServices()) {
+                QName serviceQName = new QName(tns, service.getName()); // ?                
+                for (Port port : service.getPorts()) {
+                    String portName = port.getName();
+                    Binding binding = port.getBinding().get();
+                    PortType portType = binding.getType().get();
+                    QName interfaceQName = //XmlUtil.getAttributeNSName(portType.getPeer(), CASA_INTERFACE_NAME_ATTR_NAME);
+                            new QName(tns, portType.getName()); //?
+                    Endpoint endpoint = new Endpoint(portName, serviceQName, interfaceQName);
+                    if (!ret.contains(endpoint)) {
+                        ret.add(endpoint);
+                    }
+                }
+            }
         }
         
         return ret;
     }
-
+         
     /**
-     * Creates the endpoints element in the new casa document.
-     */
-    private Element createCasaEndpointsElement(Document jbiDocument)
-            throws SAXException, IOException, ParserConfigurationException{
-
-        Element casaEndpoints =
-                (Element) newCasaDocument.createElement(CASA_ENDPOINTS_ELEM_NAME);
-        Element casaRoot = (Element) newCasaDocument.getElementsByTagName("casa").item(0);
-        casaRoot.appendChild(casaEndpoints);        
+     * Computes a non-null list of endpoints that need to go into the new 
+     * CASA document.
+     */ 
+    // Those endpoints come from either the old CASA document, or the new WSDL 
+    // files added into compapp. The following rules apply:
+    // (1) All the old endpoints with owning WSDL no longer in compapp need to 
+    //     be removed, whether the endpoint was connected, unconnected, or 
+    //     marked as "deleted";
+    // (2) All the old endpoints with owning WSDL still in compapp need to 
+    //     be preserved; whether the endpoint was connected, unconnected, or 
+    //     marked as "deleted";
+    // (3) All the old endpoints without owning WSDL (external endpoints) 
+    //     need to be preserved;
+    // (4) Only the connected endpoints in the newly added WSDLs need to be added;     
+    private List<Endpoint> getNewCasaEndpoints(Document jbiDocument) {
         
-        // 1. Add all the endpoints from the old casa document. 
-        // (Do this first to preserve the old endpoint IDs. Not that this is 
-        // necessary, but it is nice to have fewer changes after rebuild.)
-        if (oldCasaDocument != null) {            
-            try {
-                for (Endpoint endpoint : getEndpoints(oldCasaDocument)) {
-                    addEndpoint(endpoint);
+        // 1. Get the oldCasaEndpoints list
+        List<Endpoint> oldCasaEndpoints = getEndpoints(oldCasaDocument);        
+       
+        // 2. Loop through all WSDL files, create an allWSDLEndpoints list which
+        // contains all the ports defined in the WSDL files in the compapp 
+        // project and the component projects.
+        newWSDLEndpoints = new ArrayList<Endpoint>();
+        for (WSDLModel model : wsdlRepository.getWsdlCollection()) {            
+            String relativePath = MyFileUtil.getRelativePath(new File(confDirLoc), getFile(model));
+            String tns = model.getRootComponent().getPeer().getAttribute("targetNamespace");
+                        //wsdlDocument.getDocumentElement().getAttribute("targetNamespace");
+            for (Service service : model.getDefinitions().getServices()) {
+                QName serviceQName = new QName(tns, service.getName()); // ?                
+                for (Port port : service.getPorts()) {
+                    String portName = port.getName();
+                    Binding binding = port.getBinding().get();
+                    PortType portType = binding.getType().get();
+                    QName interfaceQName = //XmlUtil.getAttributeNSName(portType.getPeer(), CASA_INTERFACE_NAME_ATTR_NAME);
+                            new QName(tns, portType.getName()); //?
+                    Endpoint endpoint = new Endpoint(portName, serviceQName, interfaceQName);
+                    if (!newWSDLEndpoints.contains(endpoint)) {
+                        newWSDLEndpoints.add(endpoint);
+                    }
                 }
-            } catch (Exception e) {
-                log("ERROR: Problem merging endpoints from old casa: " + e +
-                        ". This does not affect regular compapp build." );
             }
         }
-
-        // 2. Add endpoints from (internal) SESUs and visible endpoints from BCSUs
-        List<Endpoint> endpointList = new ArrayList<Endpoint>();
-        for (String key : suEndpointsMap.keySet()) {
-            List<Endpoint> list = suEndpointsMap.get(key);
-            if (list != null) {
-                for (Endpoint endpoint : list) {                    
-                    addEndpoint(endpoint);                    
+        
+        // 3. Compute externalEndpoints list
+        List<Endpoint> externalEndpoints = getExternalEndpoints();
+        
+        // 4. = newWSDLEndpoints + externalEndpoints
+        List<Endpoint> allEndpoints = new ArrayList<Endpoint>();
+        allEndpoints.addAll(newWSDLEndpoints);
+        for (Endpoint externalEndpoint : externalEndpoints) {
+            if (!allEndpoints.contains(externalEndpoint)) {
+                allEndpoints.add(externalEndpoint);
+            }
+        }
+                    
+        // 5. Loop through all jbiServiceUnits/$suName/jbi.xml, create a 
+        // newConnectedEndpoints list
+        List<Endpoint> newConnectedEndpoints = new ArrayList<Endpoint>();
+                 
+        NodeList jbiSUs =
+                jbiDocument.getElementsByTagName(JBI_SERVICE_UNIT_ELEM_NAME);
+        for (int i = 0; i < jbiSUs.getLength(); i++) {
+            Element jbiSU = (Element) jbiSUs.item(i);
+            String suName = getJBIServiceUnitName(jbiSU);
+            List<Endpoint> suEndpoints = loadSUEndpoints(suName);
+            su2Endpoints.put(suName, suEndpoints);
+            for (Endpoint suEndpoint : suEndpoints) {
+                if (!newConnectedEndpoints.contains(suEndpoint)) {
+                    newConnectedEndpoints.add(suEndpoint);
                 }
             }
         }
-
-        return casaEndpoints;
+        
+        // 6. Compute newCasaEndpoints: 
+        //       newCasaEndpoints = 
+        //              Intersection(oldCasaEndpoints, allEndpoints)  
+        //              + newConnectedEndpoints 
+        // When computing the list of newCasaEndpoints, we want to preserve the 
+        // order (and therefore the ID) of endpoints in the oldCasaEndpoints
+        // list as much as possible to avoid unnecessary (endpoint ID) changes 
+        // across compapp builds.
+        List<Endpoint> newCasaEndpoints = new ArrayList<Endpoint>();
+        for (Endpoint oldCasaEndpoint : oldCasaEndpoints) {
+            for (Endpoint endpoint : allEndpoints) {
+                if (oldCasaEndpoint.equals(endpoint)) {
+                    newCasaEndpoints.add(oldCasaEndpoint);
+                    break;
+                }
+            }
+        }
+        for (Endpoint suEndpoint : newConnectedEndpoints) {
+            if (!newCasaEndpoints.contains(suEndpoint)) {
+                newCasaEndpoints.add(suEndpoint);
+            }
+        }
+        
+        System.out.println("old CASA Endpoints:");
+        for (Endpoint endpoint : oldCasaEndpoints) {
+            System.out.println("    " + endpoint.getFullyQualifiedName());
+        }    
+        System.out.println("new WSDL Endpoints:");
+        for (Endpoint endpoint : newWSDLEndpoints) {
+            System.out.println("    " + endpoint.getFullyQualifiedName());
+        }    
+        System.out.println("external Endpoints:");
+        for (Endpoint endpoint : externalEndpoints) {
+            System.out.println("    " + endpoint.getFullyQualifiedName());
+        } 
+        System.out.println("new SU Endpoints:");
+        for (Endpoint endpoint : newConnectedEndpoints) {
+            System.out.println("    " + endpoint.getFullyQualifiedName());
+        }            
+        System.out.println("new CASA Endpoints:");
+        for (Endpoint endpoint : newCasaEndpoints) {
+            System.out.println("    " + endpoint.getFullyQualifiedName());
+        }        
+        
+        return newCasaEndpoints;
     }
+    
+    /**
+     * Creates the Endpoints element in the new casa document.
+     */
+    private Element createEndpoints(Document jbiDocument) {
 
-    // index used for creating endpoint IDs in the new casa document
-    private int endpointIndex = 1;
+        Element endpoints = newCasaDocument.createElement(CASA_ENDPOINTS_ELEM_NAME);
+        Element casaRoot = (Element) newCasaDocument.getElementsByTagName("casa").item(0);
+        casaRoot.appendChild(endpoints); 
+        
+        List<Endpoint> newCasaEndpoints = getNewCasaEndpoints(jbiDocument);
+        for (Endpoint endpoint : newCasaEndpoints) {
+            addEndpoint(endpoint);
+        }
+
+        return endpoints;
+    }
 
     /**
      * Adds an endpoint to the new casa document. Do nothing if the given 
@@ -1418,52 +1787,48 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
     private String addEndpoint(Endpoint endpoint) {
 
         String key = endpoint.getFullyQualifiedName();
-        String endpointID = endpointMap.get(key);
+        String endpointID = newEndpointMap.get(key);
 
         if (endpointID == null) {
             endpointID = "endpoint" + endpointIndex;
             endpointIndex++;
-            endpointMap.put(key, endpointID);
+            newEndpointMap.put(key, endpointID);
 
-            Element casaEndpoints =
+            Element endpoints =
                     (Element) newCasaDocument.getElementsByTagName("endpoints").item(0);
 
-            Element casaEndpoint =
-                    (Element) newCasaDocument.createElement(CASA_ENDPOINT_ELEM_NAME);
+            Element casaEndpoint = newCasaDocument.createElement(CASA_ENDPOINT_ELEM_NAME);
             casaEndpoint.setAttribute(CASA_NAME_ATTR_NAME, endpointID);
             casaEndpoint.setAttribute(CASA_ENDPOINT_NAME_ATTR_NAME,
                     endpoint.getEndpointName());
-
             setAttributeQName(casaEndpoint, CASA_SERVICE_NAME_ATTR_NAME,
                     endpoint.getServiceQName());
             setAttributeQName(casaEndpoint, CASA_INTERFACE_NAME_ATTR_NAME,
                     endpoint.getInterfaceQName());
 
-            casaEndpoints.appendChild(casaEndpoint);
+            endpoints.appendChild(casaEndpoint);
         }
 
         return endpointID;
     }
 
     /** 
-     * Gets the endpoint ID of an endpoint in the new casa document.
-     * @deprecated
+     * Gets the ID of an endpoint in the new casa document.
      */
-    private String getEndpointID(QName serviceQName, String endpointName) {
+    private String getNewEndpointID(QName serviceQName, String endpointName) {
         String key = serviceQName.toString() + "." + endpointName;
-        return endpointMap.get(key);
+        return newEndpointMap.get(key);
     }
-    private String getEndpointID(Endpoint endpoint) {
-        String key = endpoint.getFullyQualifiedName();
-        return endpointMap.get(key);
-    }
-
-    /**
-     * A Map mapping fully qualified endpoint name to endpoint ID for all 
-     * the endpoints in the new casa document.
+    
+    /** 
+     * Gets the ID of an endpoint in the new casa document.
      */
-    private Map<String, String> endpointMap = new HashMap<String, String>();
+    private String getNewEndpointID(Endpoint endpoint) {
+        String key = endpoint.getFullyQualifiedName();
+        return newEndpointMap.get(key);
+    }
 
+    // TODO
     // Mapping namespace URI to namespace prefix
     private Map<String, String> nsMap = new HashMap<String, String>();
     private int prefixID = 1;
@@ -1493,52 +1858,6 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
     }
 
     /*
-    // Mapping namespace URI to namespace prefix
-     private Map<String, String> jbiNSMap = null;
-     
-     private void setJBIAttributeQName(Document jbiDocument, Element element,
-             String attrName, String attrQValue) {
-        String attrValueNamespace;
-        String attrValue;
-
-        if (attrQValue == null || attrQValue.trim().equals("")) {
-            attrValueNamespace = "";
-            attrValue = "";
-        } else {
-            attrValueNamespace = attrQValue.substring(1, attrQValue.indexOf("}"));
-            attrValue = attrQValue.substring(attrQValue.indexOf("}") + 1);
-        }
-
-        setJBIAttributeQName(jbiDocument, element, attrName, attrValueNamespace, attrValue);
-    }
-
-    private void setJBIAttributeQName(Document jbiDocument,
-            Element element, String attrName,
-            String attrValueNamespace, String attrValue) {
-
-        String attrQValue;
-        if (jbiNSMap == null) {
-            jbiNSMap = XmlUtil.getNamespaceMap(jbiDocument);
-        }
-
-        if (attrValueNamespace.equals("") && attrValue.equals("")) {
-            attrQValue = "";
-        } else {
-            String prefix = jbiNSMap.get(attrValueNamespace);
-            if (prefix == null) {
-                prefix = "ns" + prefixID;
-                prefixID++;
-                element.getOwnerDocument().getDocumentElement().setAttribute(
-                        "xmlns:" + prefix, attrValueNamespace);
-                jbiNSMap.put(attrValueNamespace, prefix);
-            }
-            attrQValue = prefix + ":" + attrValue;
-        }
-
-        element.setAttribute(attrName, attrQValue);
-    }
-    */
-    
     private static List<String> getDeletedCasaPortLinkHrefs(Document casaDocument) {
         List<String> ret = new ArrayList<String>();
         
@@ -1559,118 +1878,120 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
         
         return ret;
     }
-
-    private List<Element> createCasaPortEndpointsElement(String suName,
-            QName serviceQName, String portName)
-            throws SAXException, IOException, ParserConfigurationException {
-
-        List<Element> ret = new ArrayList<Element>();
-
-        List<Endpoint> suEndpointList = suEndpointsMap.get(suName); 
-        for (Endpoint endpoint : suEndpointList) {
-            if (portName.equals(endpoint.getEndpointName()) &&
-                    serviceQName.equals(endpoint.getServiceQName())) {
-                String endpointID = getEndpointID(serviceQName, portName);
-
-                Element cEndpointRef =
-                    (Element) newCasaDocument.createElement(CASA_CONSUMES_ELEM_NAME);
-                cEndpointRef.setAttribute(CASA_ENDPOINT_ATTR_NAME, endpointID);
-                ret.add(cEndpointRef);
-
-                Element pEndpointRef =
-                    (Element) newCasaDocument.createElement(CASA_PROVIDES_ELEM_NAME);
-                pEndpointRef.setAttribute(CASA_ENDPOINT_ATTR_NAME, endpointID);
-                ret.add(pEndpointRef);
-            }
-        }
-        return ret;
-    }
-
-    private List<Endpoint> loadSUEndpoints(String suName)
-    throws SAXException, IOException, ParserConfigurationException {
+    */
+    
+    private List<Endpoint> loadSUEndpoints(String suName) {
+        
         List<Endpoint> suEndpointList = new ArrayList<Endpoint>();
 
-        File suJbiFile = new File(confDirLoc + "/../jbiServiceUnits/" + suName + "/jbi.xml"); // NOI18N
+        File suJbiFile = new File(serviceUnitsDirLoc + File.separator + suName + File.separator + "jbi.xml"); // NOI18N
         if (suJbiFile.exists()) {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setValidating(false);
             factory.setNamespaceAware(true);
-            DocumentBuilder documentBuilder = factory.newDocumentBuilder();
-            Document suJbiDocument = documentBuilder.parse(suJbiFile);
-            NodeList servicesElements = suJbiDocument.getElementsByTagNameNS(JBI_NAMESPACE_URI, JBI_SERVICES_ELEM_NAME);
-            for (int i = 0; i < servicesElements.getLength(); i++) {
-                Element servicesElement = (Element) servicesElements.item(i);
-                NodeList children = servicesElement.getChildNodes();
-                for (int k = 0; k < children.getLength(); k++) {
-                    Node child = children.item(k);
-                    if (child instanceof Element) {
-                        Element e = (Element) child;
-                        String endpointName = e.getAttribute(JBI_ENDPOINT_NAME_ATTR_NAME);
-
-                        String serviceName = e.getAttribute(JBI_SERVICE_NAME_ATTR_NAME);
-                        String serviceNS = null;
-                        int idx = serviceName.indexOf(':');
-                        if (idx > 0) {
-                            String prefix = serviceName.substring(0, idx);
-                            serviceNS = suJbiDocument.getDocumentElement().getAttribute("xmlns:"+prefix);
-                            serviceName = serviceName.substring(idx+1);
+            try {
+                DocumentBuilder documentBuilder = factory.newDocumentBuilder();
+                Document suJbiDocument = documentBuilder.parse(suJbiFile);
+                NodeList servicesElements = suJbiDocument.getElementsByTagNameNS(
+                        JBI_NAMESPACE_URI, JBI_SERVICES_ELEM_NAME);
+                for (int i = 0; i < servicesElements.getLength(); i++) {
+                    Element servicesElement = (Element) servicesElements.item(i);
+                    NodeList children = servicesElement.getChildNodes();
+                    for (int k = 0; k < children.getLength(); k++) {
+                        Node child = children.item(k);
+                        if (child instanceof Element) {
+                            Element e = (Element) child;
+                            String endpointName = e.getAttribute(JBI_ENDPOINT_NAME_ATTR_NAME);
+                            
+                            String serviceName = e.getAttribute(JBI_SERVICE_NAME_ATTR_NAME);
+                            String serviceNS = null;
+                            int idx = serviceName.indexOf(':');
+                            if (idx > 0) {
+                                String prefix = serviceName.substring(0, idx);
+                                serviceNS = suJbiDocument.getDocumentElement().getAttribute("xmlns:"+prefix);
+                                serviceName = serviceName.substring(idx+1);
+                            }
+                            
+                            String interfaceName = e.getAttribute(JBI_INTERFACE_NAME_ATTR_NAME);
+                            String interfaceNS = "";
+                            idx = interfaceName.indexOf(':');
+                            if (idx > 0) {
+                                String prefix = interfaceName.substring(0, idx);
+                                interfaceNS = suJbiDocument.getDocumentElement().getAttribute("xmlns:"+prefix);
+                                interfaceName = interfaceName.substring(idx+1);
+                            }
+                            
+                            Endpoint endpoint = new Endpoint(endpointName,
+                                    new QName(serviceNS, serviceName),
+                                    new QName(interfaceNS, interfaceName),
+                                    e.getLocalName().equals("consumes"));
+                            suEndpointList.add(endpoint);
                         }
-
-                        String interfaceName = e.getAttribute(JBI_INTERFACE_NAME_ATTR_NAME);
-                        String interfaceNS = "";
-                        idx = interfaceName.indexOf(':');
-                        if (idx > 0) {
-                            String prefix = interfaceName.substring(0, idx);
-                            interfaceNS = suJbiDocument.getDocumentElement().getAttribute("xmlns:"+prefix);
-                            interfaceName = interfaceName.substring(idx+1);
-                        }
-
-                        Endpoint endpoint = new Endpoint(endpointName,
-                                new QName(serviceNS, serviceName),
-                                new QName(interfaceNS, interfaceName),
-                                e.getLocalName().equals("consumes"));
-                        suEndpointList.add(endpoint);
                     }
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
             return suEndpointList;
-
+            
         }
         return null;
     }
-
-    private boolean isSUPort(List<Endpoint> suEndpointList,
-            String portName, String serviceName, String tns) { // FIXME
-        //System.out.println("Check: "+portName+", "+serviceName+", "+tns);
-        for (Endpoint endpoint : suEndpointList) {
+    
+    /*
+    private boolean isSUPort(List<Endpoint> endpointList, 
+            QName serviceQName, String portName) { 
+        for (Endpoint endpoint : endpointList) {
             if (endpoint.getEndpointName().equals(portName) &&
-                    endpoint.getServiceQName().getLocalPart().equals(serviceName)) {
-                String ns = endpoint.getServiceQName().getNamespaceURI();
-                if ((ns != null) && (ns.length() > 0) && (ns.equals(tns))) {
+                    endpoint.getServiceQName().equals(serviceQName)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    */
+    
+    private boolean isInEndpointList(List<Endpoint> endpointList, 
+            QName serviceQName, String portName) { 
+        if (endpointList != null) {
+            // TODO?: change Endpoint.equals() to ignore interface checking 
+            // and use List.contains() here
+            for (Endpoint endpoint : endpointList) { 
+                if (endpoint.getEndpointName().equals(portName) &&
+                        endpoint.getServiceQName().equals(serviceQName)) {
                     return true;
                 }
             }
         }
-
+        
         return false;
     }
-
+    
     /**
-     * Creates a ports element for a binding component service unit in the 
-     * new casa document.
+     * Creates a complete Ports element for a BC SU in the new casa document.
+     * 
+     * @param bcName  name of a BC SU, e.x., sun-jms-binding
      */
-    private Element createCasaPortsElement(String bcsuName)
-            throws SAXException, IOException, ParserConfigurationException {
-
-        List<Endpoint> endpointList; 
-
+    private Element createPorts(String bcName) {
+        System.out.println("create Ports for binding component " + bcName);
+         
         // Create casa ports element.
-        Element casaPortsElement = (Element) newCasaDocument.createElement(
-                CASA_PORTS_ELEM_NAME);
+        Element ports = newCasaDocument.createElement(CASA_PORTS_ELEM_NAME);
         
-        String casaWSDLFileName = getCompAppWSDLFileName();
-
-        // Loop through all WSDLs and add casa port elements of the given binding component type.
+        // Mapping fully qualified port names to casa port elements in the 
+        // new casa document. (This is to solve the duplicate WSDL problem.)
+        // Note that this map is scoped by each BC SU and should not be used
+        // across different BC SUs!
+        Map<String, Element> casaPortMap = new HashMap<String, Element>();           
+        
+        List<Endpoint> suEndpoints = su2Endpoints.get(bcName);
+                
+        // Loop through all WSDLs and add casa port elements of the given 
+        // BC type. This includes:
+        // (1) BC endpoints in the corresponding SU's jbi.xml, 
+        // (2) unconnected BC endpoints from old casa that are still live, and 
+        // (3) "deleted" BC endpoints from old casa that are still live.
         for (WSDLModel model : wsdlRepository.getWsdlCollection()) {
             /*
             if (wsdlRepository.isJavaEEWsdl(model)) {
@@ -1679,73 +2000,77 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
             */
             
             String relativePath = MyFileUtil.getRelativePath(new File(confDirLoc), getFile(model));
+            System.out.println("    WSDL: " + relativePath);
             String tns = model.getRootComponent().getPeer().getAttribute("targetNamespace");
                         //wsdlDocument.getDocumentElement().getAttribute("targetNamespace");
-
-            if (relativePath.endsWith(casaWSDLFileName)) {
-                endpointList = new ArrayList<Endpoint>();
-                List<Endpoint> suEndpoints = suEndpointsMap.get(bcsuName);
-                if (suEndpoints != null) {
-                    endpointList.addAll(suEndpoints);
-                }
-            } else {
-                endpointList = suEndpointsMap.get(bcsuName);
-            }
-
+                        
             // Add casa port
             for (Service s : model.getDefinitions().getServices()) {
                 String serviceName = s.getName();
-                QName serviceQName = new QName(tns, serviceName);
-                
+                QName serviceQName = new QName(tns, serviceName);                
                 for (Port p : s.getPorts()) {
-                    String portName = p.getName();
+                    String portName = p.getName();                      
+                    System.out.println("          Endpoint: " + serviceQName + ":" + portName);
                     
-                    if (isSUPort(endpointList, portName, serviceName, tns)) { // FIXME
-                        String fullyQualifiedPortName =
-                                serviceQName.toString() + "." + portName;
+                    boolean isSUEndpoint = isInEndpointList(suEndpoints, serviceQName, portName);
+                    boolean isLiveDeletedBCEndpoint = false;
+                    boolean isLiveUnconnectedEndpoint = false;
+                    
+                    if (isSUEndpoint) {
+                        System.out.println("              is a SU endpoint.");
+                    } else {
+                        List<Endpoint> deletedBCEndpoints = deletedBCEndpointsMap.get(bcName);
+                        if (isInEndpointList(deletedBCEndpoints, serviceQName, portName) &&
+                                isInEndpointList(newWSDLEndpoints, serviceQName, portName)) {
+                            isLiveDeletedBCEndpoint = true;
+                            System.out.println("              is a live deleted endpoint.");
+                        }
                         
-                        // Instead of always creating a new casa port, we check
-                        // if a casa port has already been created.
-                        Element casaPortElement =
-                                casaPortMap.get(fullyQualifiedPortName);
-                        if (casaPortElement == null) {
+                        if (!isLiveDeletedBCEndpoint) {
+                            List<Endpoint> unconnectedBCEndpoints = oldUnconnectedBCEndpointsMap.get(bcName);
+                            if (isInEndpointList(unconnectedBCEndpoints, serviceQName, portName) &&
+                                    isInEndpointList(newWSDLEndpoints, serviceQName, portName)) {
+                                isLiveUnconnectedEndpoint = true;
+                                System.out.println("              is a live unconnected endpoint.");
+                            }
+                        }
+                    }
+                                       
+                    if (isSUEndpoint || isLiveDeletedBCEndpoint || isLiveUnconnectedEndpoint) {     
+                        // Instead of creating a new casa port every time, check
+                        // if a casa port has already been created. This allows
+                        // multiple (duplicate) WSDL Ports to share the same
+                        // CASA Port element.
+                        String fullyQualifiedPortName = serviceQName.toString() + "." + portName;
+                        Element port = casaPortMap.get(fullyQualifiedPortName);
+                        if (port == null) {
                             // Create new casa port
-                            casaPortElement =
-                                    createCasaPortElement(relativePath, portName,
-                                    serviceQName, bcsuName);
+                            port = createPort(relativePath, serviceQName, portName);
+                            ports.appendChild(port);
+                            casaPortMap.put(fullyQualifiedPortName, port);
                             
-                            // Add casa port to casa ports
-                            casaPortsElement.appendChild(casaPortElement);
-                            casaPortMap.put(fullyQualifiedPortName, casaPortElement);
+                            // Mark casa port as "deleted" if the old casa says so.
+                            if (isLiveDeletedBCEndpoint) {
+                                port.setAttribute(CASA_STATE_ATTR_NAME, CASA_DELETED_ATTR_VALUE); 
+                            }
                         } else {
-                            // Reuse old casa port
-                            Element casaLinkElement = createCasaLinkElement(
-                                    relativePath,
-                                    "/definitions/service[@name='" + serviceName +
-                                    "']/port[@name='" + portName + "']");
-                            casaPortElement.appendChild(casaLinkElement);
+                            // Reuse old casa port by adding a new link
+                            Element casaLinkElement = createLinkForWsdlPort(
+                                    relativePath, serviceName, portName);
+                            port.appendChild(casaLinkElement);
                         }
                     }
                 }
             }
         }
         
-        // Merge deleted port elements from the old casa document under the given
-        // binding component service unit back into the new casa document.
-        List<Element> deletedPortElements = 
-                getDeletedPortElements(oldCasaDocument, bcsuName);        
-        for (Element oldPort : deletedPortElements) {
-            Node newPort = deepCloneCasaNodeWithEndpointConversion(oldPort);            
-            casaPortsElement.appendChild(newPort);
-        }
-
-        return casaPortsElement;
+        return ports;
     }
               
     /**
      * Gets all the deleted Port elements in a casa document under the given
      * binding component service unit.
-     */
+     */ /*
     private static List<Element> getDeletedPortElements(Document casaDocument, String bcsuName) {
         List<Element> ret = new ArrayList<Element>();
         
@@ -1770,57 +2095,56 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
         
         return ret;
     }
+    */
     
     /**
-     * Creates a port element for a binding component service unit in the 
-     * new casa document.
+     * Creates a Port element for a BC SU in the new casa document.
      */
-    private Element createCasaPortElement(String relativePath,
-            String portName, QName serviceQName,
-            String suName)
-            throws DOMException, SAXException, IOException, ParserConfigurationException {
-        // Create casa port
-        Element casaPortElement =
-                (Element) newCasaDocument.createElement(CASA_PORT_ELEM_NAME);
-        casaPortElement.setAttribute(CASA_X_ATTR_NAME, "0");
-        casaPortElement.setAttribute(CASA_Y_ATTR_NAME, "-1");
+    private Element createPort(String relativePath, QName serviceQName, String portName) {
+        // 1. Create casa port
+        Element ret = newCasaDocument.createElement(CASA_PORT_ELEM_NAME);
+        ret.setAttribute(CASA_X_ATTR_NAME, "0");
+        ret.setAttribute(CASA_Y_ATTR_NAME, "-1");
 
-        Element linkElement = createCasaLinkElement(relativePath,
-                "/definitions/service[@name='" + serviceQName.getLocalPart() +
-                "']/port[@name='" + portName + "']");
-        casaPortElement.appendChild(linkElement);
+        // 2. Add link. (Note that additional links might be added later.)
+        Element linkElement = createLinkForWsdlPort(
+                relativePath, serviceQName.getLocalPart(), portName);
+        ret.appendChild(linkElement);
+
+        // 3. Add one consumes and one provides to the casa port
+        String endpointID = getNewEndpointID(serviceQName, portName);
         
-        // Mark the casa port as "deleted" if the old casa document says so.
-        // (Since the casa port element has not been added to the casa document,
-        // can't use getAttributeNS() yet.)
-        String linkHref = 
-                linkElement.getAttribute(XLINK_NAMESPACE_PREFIX + ":" + XLINK_HREF_ATTR_NAME);
-        if (deletedCasaPortLinkHrefs != null &&     
-                deletedCasaPortLinkHrefs.contains(linkHref)) {
-            casaPortElement.setAttribute(CASA_STATE_ATTR_NAME, CASA_DELETED_ATTR_VALUE);
-        }
-
-        // Add casa endpoints to casa port
-        List<Element> endpointElements = createCasaPortEndpointsElement(
-                suName, serviceQName, portName);
-        for (Element element : endpointElements) {
-            casaPortElement.appendChild(element);
-        }
-        return casaPortElement;
+        Element cEndpointRef = newCasaDocument.createElement(CASA_CONSUMES_ELEM_NAME);
+        cEndpointRef.setAttribute(CASA_ENDPOINT_ATTR_NAME, endpointID);
+        ret.appendChild(cEndpointRef);
+        
+        Element pEndpointRef = newCasaDocument.createElement(CASA_PROVIDES_ELEM_NAME);
+        pEndpointRef.setAttribute(CASA_ENDPOINT_ATTR_NAME, endpointID);
+        ret.appendChild(pEndpointRef);
+        
+        return ret;
     }
     
     /**
-     * Creates a link element in the new casa document.
+     * Creates a Link element in the new casa document for a WSDL port.
      */
-    private Element createCasaLinkElement(String relativePath, String uri) {
-        Element linkElement = (Element) newCasaDocument.createElement(
-                CASA_LINK_ELEM_NAME);
-        linkElement.setAttribute(
-                XLINK_NAMESPACE_PREFIX + ":type", "simple");
-        linkElement.setAttribute(
+    private Element createLinkForWsdlPort(String relativePath,
+            String serviceName, String portName) {
+        String uri = "/definitions/service[@name='" + serviceName +
+                "']/port[@name='" + portName + "']";
+        return createLink(relativePath, uri);
+    }
+    
+    /**
+     * Creates a Link element in the new casa document.
+     */
+    private Element createLink(String relativePath, String uri) {
+        Element ret = newCasaDocument.createElement(CASA_LINK_ELEM_NAME);
+        ret.setAttribute(XLINK_NAMESPACE_PREFIX + ":type", "simple");
+        ret.setAttribute(
                 XLINK_NAMESPACE_PREFIX + ":href",
                 relativePath + "#xpointer(" + uri + ")");
-        return linkElement;
+        return ret;
     }
       
     /*
@@ -1829,12 +2153,15 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
             return name;
         }
         return "{" + namespace + "}" + name;
-    }*/    
+    }     
+    */    
     
+    /*
     private String getCompAppWSDLFileName() {        
         String projName = project.getProperty(JbiProjectProperties.ASSEMBLY_UNIT_UUID);
         return projName + ".wsdl";
     }
+    */
     
     private void log(String msg) {
         task.log(msg);

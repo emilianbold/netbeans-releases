@@ -70,10 +70,15 @@ public class Endpoint implements Serializable {
         return getServiceQName().toString() + "." + getEndpointName();
     }
 
-    public boolean equals(Endpoint p) {
-        if (this.endpointName.equals(p.getEndpointName()) &&
-            this.serviceQName.equals(p.getServiceQName()) &&
-            this.interfaceQName.equals(p.getInterfaceQName())) {
+    public boolean equals(Object p) {
+        if (!(p instanceof Endpoint)) {
+            return false;
+        }
+        
+        Endpoint endpoint = (Endpoint) p;
+        if (endpointName.equals(endpoint.getEndpointName()) &&
+                serviceQName.equals(endpoint.getServiceQName()) &&
+                interfaceQName.equals(endpoint.getInterfaceQName())) {
             // don't check direction yet..
             return true;
         }
