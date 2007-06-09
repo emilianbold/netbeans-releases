@@ -259,7 +259,11 @@ public class JsfForm {
     }
     
     private static FacesModel getFacesModel(FileObject fileObject) {
-        return FacesModel.getInstance(fileObject);
+    	FacesModelSet facesModelSet = FacesModelSet.getInstance(fileObject);
+    	if (facesModelSet != null) {    		
+    		return facesModelSet.getFacesModel(fileObject);
+    	}
+    	return null;
     }
     
     private static FacesModel getFacesModel(DataObject dataObject) {
