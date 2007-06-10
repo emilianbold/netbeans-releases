@@ -1,0 +1,66 @@
+<html>
+    <head>
+        <title>Web Service Attributes Editor: Input Message</title>
+        <link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+    <body>
+        <h2>Web Service Attributes Editor: Input Message</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+       
+        <p>In the WSIT tab's Operation section, on the service side, 
+        you can add WSIT security to a specific web service operation. Security mechanism 
+        at this level is used to specify what is
+        being protected and the level of protection required.
+        
+        <p>In this section, you can specify parts of a message that require integrity protection
+        (digital signature) and/or confidentiality (encryption). When you do this, the
+        specified part of the message, outside of security headers, requires signature and/
+        or encryption. For example, a message producer might submit an order that contains
+        an orderID header. The producer signs and/or encrypts the orderID header (the
+        SOAP message header) and the body of the request (the SOAP message body).
+        Parts that can be signed and/or encrypted include the body, the header, the local
+        name of the SOAP header, and the namespace of the SOAP header.
+        
+        <p>You can also specify arbitrary elements in the message that require integrity protection
+        and/or confidentiality. Because of the mutability of some SOAP headers,
+        a message producer may decide not to sign and/or encrypt the SOAP message
+        header or body as a whole, but instead sign and/or encrypt elements within the
+        header and body. Elements that can be signed and/or encrypted include an XPath
+        expression or a URI which indicates the version of XPath to use.
+        
+        <p>In the Input Messgae section of the WSIT configuration editor, you can select the following
+        options for securing an input message:
+        <ul>
+            <li><b>Authentication Token.</b> Select a supporting token that will be used to
+            sign and/or encrypt the specified message parts. Options include Username,
+            X509, SAML, Issued, or None.
+            <li><b>Signed.</b> Specifies that the authentication token must be a signed, supporting
+            token. A signed supporting token is also signed by the primary
+            message signature.
+            <li><b>Endorsing.</b> Specifies that the authentication token must be endorsed.
+            With an endorsing supporting token, the key represented by the token is
+            used to endorse/sign the primary message signature.            
+        </ul>
+
+        <p>Click Message Parts to specify which parts of the message
+        need to be encrypted, signed, and/or required. 
+        
+        <table>
+            <tr>
+                <th colspan=2 align=left><a name="seealso">See Also</a></th>
+            </tr>
+            <tr>
+                <td width="23"></td>
+                <td> 
+                    <a href="../concepts/wsitconf-about.html">About Advanced Web Service Interoperability</a><br>
+                </td>
+            </tr>
+        </table>   
+
+
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small>
+    </body>
+</html>
+

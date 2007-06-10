@@ -1,0 +1,48 @@
+<html>
+    <head>
+        <title>Web Service Attributes Editor: Transport</title>
+        <link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+    <body>
+        <h2>Web Service Attributes Editor: Transport</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+        <p>In the WSIT tab's Transport section, on the client side, you can select
+            optimal encoding or optimal transport for web service clients
+            interoperating with web services.
+        </p>      
+        <p>You can set the following options:</p>
+        <ul>
+            <li><b>Automatically Select Optimal Encoding (XML/Fast Infoset).</b> Fast
+            Infoset is a more efficient alternative to XML. If the service is configured
+            to allow Fast Infoset, select this option to use Fast Infoset for faster
+            parsing, faster serializing, and smaller document sizes when compared
+            with equivalent XML documents.
+            <li><b>Automatically Select Optimal Transport (HTTP/TCP).</b> If selected, the
+            client runtime checks to see if the service supports TCP (see Configuring
+            Security for Web Services Using NetBeans IDE, page 38), and, if
+            so, the client uses TCP transport automatically for service-client communication.
+            TCP provides better performance when sending smaller
+            messages. The performance enhancement is visible mostly in smaller
+            messages because the overhead of sending messages over the HTTP
+            protocol is eliminated. If the service does not support TCP, or if this
+            option is not selected for the client, HTTP is used for transport.
+        </ul>
+        <table>
+            <tr>
+                <th colspan=2 align=left><a name="seealso">See Also</a></th>
+            </tr>
+            <tr>
+                <td width="23"></td>
+                <td> 
+                    <a href="../concepts/wsitconf-about.html">About Advanced Web Service Interoperability</a><br>
+                </td>
+            </tr>
+        </table>   
+        
+        
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small>
+    </body>
+</html>
+

@@ -1,0 +1,91 @@
+<html>
+    <head>
+        <title>Web Service Attributes Editor: Port Binding</title>
+        <link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+    <body>
+        <h2>Web Service Attributes Editor: Port Binding</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+        <p>In the WSIT tab's Port Binding section, on the service side, 
+        you can configure <a href="../concepts/wsitconf-mtom.html">MTMOM</a>, 
+        <a href="../concepts/wsitconf-reliability.html">reliable messaging</a>, and interoperable
+        <a href="../concepts/wsitconf-security_policy.html">security policy</a>.</p>
+        <p>You can set the following options:</p>        
+        <ul>
+            <li><b>Optimize Transport of Binary Data (MTOM).</b> When you expand the MTOM section, 
+            you can select the MTOM checkbox.
+            The MTOM feature is disabled in JAX-WS by default. It can be enabled on the
+            client and server. Once enabled all the XML binary data, XML elements of type
+            xs:base64Binary and xs:hexBianry is optimally transmitted. Currently MTOM
+            works only with proxy port.
+            <li><b>Reliable Message Delivery.</b> Specifies whether reliable messaging is enabled.
+            <ul>
+                <li><b>Deliver Messages In Exact Order.</b> Specifies whether the Reliable Messaging protocol ensures that the
+                application messages for a given message sequence are delivered
+                to the endpoint application in the order indicated by the message
+                numbers. This option increases the time to process
+                application message sequences and may result in
+                the degradation of Web service performance.
+                <li><b>Advanced.</b> Click the Advanced button
+                to set the following options:
+                <ul>
+                    <li><b>Flow Control.</b> Specifies whether the Flow Control feature is enabled.
+                    <li><b>Maximum Flow Control Buffer Size.</b> If Flow control is enabled, 
+                    specifies the number of messages for a
+                    sequence that will be buffered. The default setting is 32.
+                    <li><b>Inactivity Timeout (ms).</b> Specifies the time interval beyond which either source or destination
+                    may terminate any message sequence due to inactivity. The
+                    default setting is 600,000 milliseconds (10 minutes). A Web service
+                    endpoint will always terminate a sequence whose inactivity
+                    timeout has expired. To keep the sequence active, an inactive client
+                    will always send a stand- alone message with an AckRequested
+                    header to act as a heartbeat as the end Inactivity timeout interval
+                    approaches.
+                </ul>
+            </ul>
+            <li><b>Secure All Service Operations.</b> Specifies WSIT security
+            for all of the operations of a web service.
+            <ul>
+                <li><b>Secure All Service Operations.</b> Select one of the options from the list. Most of
+                the mechanisms are fully functional without further configuration,
+                however, if you’d like to customize the mechanism, click Configure
+                to specify the configuration for that mechanism. For details on each
+                security mechanism, see <a href="../concepts/wsitconf-about_security_mechanism_options.html">About Security Mechanism Options for Web Services</a>.
+                <p>The mechanisms
+                that use STS require that an STS be specified in the Configuration
+                dialog. If a security mechanism is
+                selected that requires this, select the buttons to configure keystore,
+                truststore, and validator options.
+                <li><b>Act As Secure Token Service (STS).</b>If you want to enable this web service to
+                act as an STS, select this option. An STS contains a set of interfaces
+                to be used for the issuance, exchange, and validation of security
+                tokens.
+            </ul>
+            <li><b>Allow TCP Transport.</b> Specifies that the service supports
+            TCP and works with both TCP and HTTP transport. TCP provides better
+            performance when sending smaller messages. The performance
+            enhancement is visible mostly in smaller messages because the overhead
+            of sending messages over the HTTP protocol is eliminated.
+            <li><b>Allow Fast Infoset.</b> Specifies that Fast Infoset is used for faster parsing,
+            faster serializing, and smaller document sizes when compared with
+            equivalent XML documents.
+        </ul>
+        <table>
+            <tr>
+                <th colspan=2 align=left><a name="seealso">See Also</a></th>
+            </tr>
+            <tr>
+                <td width="23"></td>
+                <td> 
+                    <a href="../concepts/wsitconf-about.html">About Advanced Web Service Interoperability</a><br>
+                </td>
+            </tr>
+        </table>   
+
+
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small>
+    </body>
+</html>
+
