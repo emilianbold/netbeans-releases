@@ -33,7 +33,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="EmptyJSON.json" url="EmptyJSON.json">
                 <attr name="template" boolvalue="true" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/EmptyJavaScriptFileDescription.html"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/EmptyJSONFileDescription.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/JavaScript.png"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
             </file>            
@@ -66,7 +66,14 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/EmptyJavaScriptFileDescription.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/JavaScript.png"/>
                 <attr name="templateCategory" stringvalue="simple-files"/>
-            </file>            
+            </file>
+            <file name="EmptyJSON.json" url="EmptyJSON.json">
+                <attr name="template" boolvalue="true" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/EmptyJSONFileDescription.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/JavaScript.png"/>
+                <attr name="templateCategory" stringvalue="simple-files"/>
+            </file>              
         </folder>
     </folder>
     <folder name="Services">
