@@ -37,7 +37,7 @@ import org.netbeans.modules.j2ee.sun.share.CharsetMapping;
 
 /**
  *
- * @author  peterw99
+ * @author  Peter Williams
  */
 public class ParameterEncodingPanel extends javax.swing.JPanel {
 

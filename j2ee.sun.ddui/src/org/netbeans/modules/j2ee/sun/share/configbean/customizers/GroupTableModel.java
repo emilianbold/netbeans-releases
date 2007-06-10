@@ -20,7 +20,7 @@ import javax.swing.table.TableModel;
 
 /**
  *
- * @author peterw99
+ * @author Peter Williams
  */
 public interface GroupTableModel extends TableModel {
 

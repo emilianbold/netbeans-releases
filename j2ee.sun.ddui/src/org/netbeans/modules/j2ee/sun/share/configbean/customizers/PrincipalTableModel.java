@@ -21,7 +21,7 @@ import org.netbeans.modules.j2ee.sun.share.PrincipalNameMapping;
 
 /**
  *
- * @author peterw99
+ * @author Peter Williams
  */
 public interface PrincipalTableModel extends TableModel {
 

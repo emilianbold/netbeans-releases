@@ -22,7 +22,7 @@ import org.openide.ErrorManager;
 
 /**
  *
- * @author peterw99
+ * @author Peter Williams
  */
 public final class DDType {
 

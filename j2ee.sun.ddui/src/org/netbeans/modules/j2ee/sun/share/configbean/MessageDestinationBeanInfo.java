@@ -22,7 +22,7 @@ package org.netbeans.modules.j2ee.sun.share.configbean;
 import java.beans.*;
 import org.openide.util.Exceptions;
 /**
- * @author peterw99
+ * @author Peter Williams
  */
 public class MessageDestinationBeanInfo extends SimpleBeanInfo {
     

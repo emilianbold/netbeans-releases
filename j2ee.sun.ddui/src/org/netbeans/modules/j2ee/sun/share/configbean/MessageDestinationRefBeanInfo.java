@@ -23,7 +23,7 @@ import java.beans.*;
 import org.openide.util.Exceptions;
 
 /**
- * @author peterw99
+ * @author Peter Williams
  */
 public class MessageDestinationRefBeanInfo extends SimpleBeanInfo {
     

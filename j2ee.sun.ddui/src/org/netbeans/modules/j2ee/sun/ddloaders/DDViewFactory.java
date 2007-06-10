@@ -39,7 +39,7 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author peterw99
+ * @author Peter Williams
  */
 public abstract class DDViewFactory implements Serializable {
     

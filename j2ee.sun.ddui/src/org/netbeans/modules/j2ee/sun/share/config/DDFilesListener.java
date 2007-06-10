@@ -43,7 +43,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfigurat
  * Also used to be used to know when to save the configuration, but not anymore.
  * 
  * @author nn136682
- * @author peterw99
+ * @author Peter Williams
  */
 public class DDFilesListener extends AbstractFilesListener {
     
