@@ -23,6 +23,9 @@ import java.awt.Toolkit;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
 //import java.util.Arrays;
 //import java.util.HashSet;
 //import java.util.Set;
@@ -33,7 +36,9 @@ import java.net.URL;
 //import org.openide.DialogDisplayer;
 //import org.openide.DialogDisplayer;
 //import org.openide.NotifyDescriptor;
-import org.openide.cookies.EditCookie;
+import org.netbeans.editor.FindSupport;
+import org.netbeans.editor.SettingsNames;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -96,10 +101,7 @@ public class OpenLayerFilesAction extends CookieAction {
                                 if (layerFileObject != null) {
                                     try {
                                         DataObject layerDataObject = DataObject.find(layerFileObject);
-                                        EditCookie editCookie = layerDataObject.getCookie(EditCookie.class);
-                                        if (editCookie != null) {
-                                            editCookie.edit();
-                                        }
+                                        openLayerFileAndFind(layerDataObject, originalF);
 //                                        Project project = FileOwnerQuery.getOwner(layerFileObject);
 //                                        if (project != null) {
 //                                            projectsSet.add(project);
@@ -130,10 +132,7 @@ public class OpenLayerFilesAction extends CookieAction {
                                             if (layerFileObject != null) {
                                                 try {
                                                     DataObject layerDataObject = DataObject.find(layerFileObject);
-                                                    EditCookie editCookie = layerDataObject.getCookie(EditCookie.class);
-                                                    if (editCookie != null) {
-                                                        editCookie.edit();
-                                                    }
+                                                    openLayerFileAndFind(layerDataObject, originalF);
                                                     
 //                                                    Project project = FileOwnerQuery.getOwner(layerFileObject);
 //                                                    if (project != null) {
@@ -177,6 +176,32 @@ public class OpenLayerFilesAction extends CookieAction {
             }
         } catch (FileStateInvalidException ex) {
             Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    private static void openLayerFileAndFind(DataObject layerDataObject, FileObject originalF) {
+        EditorCookie editorCookie = layerDataObject.getCookie(EditorCookie.class);
+        if (editorCookie != null) {
+            editorCookie.open();
+            FindSupport findSupport = FindSupport.getFindSupport();
+            Map findProps = new HashMap();
+            findProps.put(SettingsNames.FIND_HIGHLIGHT_SEARCH, Boolean.FALSE);
+            findProps.put(SettingsNames.FIND_REG_EXP, Boolean.TRUE);
+            findProps.put(SettingsNames.FIND_WHOLE_WORDS, Boolean.FALSE);
+            findProps.put(SettingsNames.FIND_MATCH_CASE, Boolean.FALSE);
+            findProps.put(SettingsNames.FIND_WRAP_SEARCH, Boolean.TRUE);
+            findProps.put(SettingsNames.FIND_INC_SEARCH, Boolean.FALSE);
+            findProps.put(SettingsNames.FIND_BACKWARD_SEARCH, Boolean.FALSE);
+            findProps.put(SettingsNames.FIND_WHAT,
+                "<" + ".*" + (originalF.isFolder() ? "folder" : "file") + ".*" + "name=\"" +  // NOI18N
+                Pattern.quote(originalF.getNameExt()) // quote the pattern
+                + "\""); // NOI18N
+            if (findSupport.find(findProps, false)) {
+                findProps.put(SettingsNames.FIND_REG_EXP, Boolean.FALSE);
+                findProps.put(SettingsNames.FIND_WRAP_SEARCH, Boolean.FALSE);
+                findProps.put(SettingsNames.FIND_WHAT, originalF.getNameExt());
+                findSupport.find(findProps, true);
+            }
         }
     }
 
