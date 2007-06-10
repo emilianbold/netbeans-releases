@@ -37,15 +37,21 @@ extern "C" {
     
 jbyteArray getStringBytes(JNIEnv* jEnv, jstring jString);
 
-jstring newStringFromBytes(JNIEnv* jEnv, jbyteArray jByteArray, int length);
+jstring newStringFromJByteArray(JNIEnv* jEnv, jbyteArray jByteArray, int length);
+jstring newStringFromJCharArray(JNIEnv* jEnv, jcharArray jCharArray, int length);
 
-jstring getString(JNIEnv* jEnv, const char* chars);
+jstring getString (JNIEnv* jEnv, const char* chars);
+jstring getStringW(JNIEnv* jEnv, const unsigned short * chars);
+
 
 jstring getStringWithLength(JNIEnv* jEnv, const char* chars, int length);
+jstring getStringWithLengthW(JNIEnv* jEnv, const unsigned short * chars, int length);
 
 char* getChars(JNIEnv* jEnv, jstring jString);
+unsigned short * getWideChars(JNIEnv *jEnv, jstring str);
 
 char* getStringFromMethod(JNIEnv* jEnv, jobject object, const char* methodName);
+unsigned short* getWideStringFromMethod(JNIEnv* jEnv, jobject object, const char* methodName) ;
 
 jint getIntFromMethod(JNIEnv* jEnv, jobject object, const char* methodName);
 
@@ -55,7 +61,8 @@ void throwException(JNIEnv* jEnv, const char* message);
 
 void writeLog(JNIEnv* jEnv, int level, const char* message);
 
-int mkdirs(JNIEnv* jEnv, const char *path);
+int mkdirs (JNIEnv* jEnv, const char *path);
+int mkdirsW(JNIEnv* jEnv, const unsigned short *path);
 
 unsigned char* getByteFromMultiString(JNIEnv *jEnv, jobjectArray jObjectArray, unsigned long* size);
 

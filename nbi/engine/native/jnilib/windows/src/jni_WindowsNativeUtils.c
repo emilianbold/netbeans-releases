@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -36,7 +36,7 @@ const double E32 = 4294967296.;
 
 // defines a functional pointer. will be used to get a handle of the available
 // disk space calculation function
-typedef BOOL(WINAPI *P_GDFSE) (LPCTSTR, PULARGE_INTEGER, PULARGE_INTEGER, PULARGE_INTEGER);
+typedef BOOL(WINAPI *P_GDFSE) (LPCWSTR, PULARGE_INTEGER, PULARGE_INTEGER, PULARGE_INTEGER);
 
 // emulates a 64 bits integer. computations will actually be made on doubles.
 typedef struct int64s {
@@ -159,13 +159,13 @@ JNIEXPORT jboolean JNICALL Java_org_netbeans_installer_utils_system_WindowsNativ
 }
 
 JNIEXPORT jlong JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUtils_getFreeSpace0(JNIEnv* jEnv, jobject jObject, jstring jPath) {
-    char*  path = getChars(jEnv, jPath);
+    WCHAR*  path = getWideChars(jEnv, jPath);
     jlong  size = 0;
     
     P_GDFSE pGetDiskFreeSpaceEx = NULL;
     
     // get the handle of the disk space calculation function
-    pGetDiskFreeSpaceEx = (P_GDFSE) GetProcAddress(GetModuleHandle("kernel32.dll"), "GetDiskFreeSpaceExA");
+    pGetDiskFreeSpaceEx = (P_GDFSE) GetProcAddress(GetModuleHandle("kernel32.dll"), "GetDiskFreeSpaceExW");
     
     // if the handle was obtained successfully, get the disk space
     if (pGetDiskFreeSpaceEx) {
@@ -190,19 +190,19 @@ JNIEXPORT jlong JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUt
 }
 
 JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUtils_createShortcut0(JNIEnv* jEnv, jobject jObject, jobject jShortcut) {
-    char *shortcutPath     = getStringFromMethod(jEnv, jShortcut, "getPath");
-    char *targetPath       = getStringFromMethod(jEnv, jShortcut, "getTargetPath");
-    char *description      = getStringFromMethod(jEnv, jShortcut, "getDescription");
-    char *iconPath         = getStringFromMethod(jEnv, jShortcut, "getIconPath");
-    jint iconIndex         = getIntFromMethod(jEnv, jShortcut,    "getIconIndex");
-    char *workingDirectory = getStringFromMethod(jEnv, jShortcut, "getWorkingDirectoryPath");
-    char *arguments        = getStringFromMethod(jEnv, jShortcut, "getArgumentsString");        
+    unsigned short *shortcutPath     = getWideStringFromMethod(jEnv, jShortcut, "getPath");
+    unsigned short *targetPath       = getWideStringFromMethod(jEnv, jShortcut, "getTargetPath");
+    unsigned short *description      = getWideStringFromMethod(jEnv, jShortcut, "getDescription");
+    unsigned short *iconPath         = getWideStringFromMethod(jEnv, jShortcut, "getIconPath");
+    jint            iconIndex        = getIntFromMethod       (jEnv, jShortcut, "getIconIndex");
+    unsigned short *workingDirectory = getWideStringFromMethod(jEnv, jShortcut, "getWorkingDirectoryPath");
+    unsigned short *arguments        = getWideStringFromMethod(jEnv, jShortcut, "getArgumentsString");
     
     HRESULT     tempResult;
-    IShellLink* shell;
+    IShellLinkW* shell;
     
     HRESULT comStart = CoInitialize(NULL);
-    tempResult = CoCreateInstance(&CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, &IID_IShellLink, (void **) &shell);
+    tempResult = CoCreateInstance(&CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, &IID_IShellLinkW, (void **) &shell);
     
     int errorCode = 0;
     if (SUCCEEDED(tempResult)) {
@@ -213,72 +213,59 @@ JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUti
         if (SUCCEEDED(tempResult)) {
             tempResult = shell->lpVtbl->SetPath(shell, targetPath);
             if (!SUCCEEDED(tempResult)) {
-                throwException(jEnv, "Native error");
+                throwException(jEnv, "Native error (-2)");
                 errorCode = -2;
             }
-            
             // make sure description length is less than MAX_PATH
             if ((errorCode == 0) && (description != NULL)) {
-                if (strlen(description) < MAX_PATH) {
+                if (wcslen(description) < MAX_PATH) {
                     if (!SUCCEEDED(shell->lpVtbl->SetDescription(shell, description))) {
-                        throwException(jEnv, "Native error");
+                        throwException(jEnv, "Native error (-3)");
                         errorCode = -3;
                     }
                 } else {
-                    char *desc = (char *) malloc(sizeof(char) * MAX_PATH);
-                    desc = strncpy(desc, description, MAX_PATH - 1);
+                    unsigned short *desc = (unsigned short *) malloc(sizeof(unsigned short) * MAX_PATH);
+                    desc = wcsncpy(desc, description, MAX_PATH - 1);
                     if (!SUCCEEDED(shell->lpVtbl->SetDescription(shell, desc))) {
-                        throwException(jEnv, "Native error");
-                        errorCode = -3;
+                        throwException(jEnv, "Native error (-4)");
+                        errorCode = -4;
                     }
                     free(desc);
                 }
             }
-            
             if ((errorCode == 0) && (arguments != NULL)) {
                 if (!SUCCEEDED(shell->lpVtbl->SetArguments(shell, arguments))) {
-                    throwException(jEnv, "Native error");
-                    errorCode = -4;
-                }
-            }
-            
-            if ((errorCode == 0) && (workingDirectory != NULL)) {
-                if (!SUCCEEDED(shell->lpVtbl->SetWorkingDirectory(shell, workingDirectory))) {
-                    throwException(jEnv, "Native error");
+                    throwException(jEnv, "Native error (-5)");
                     errorCode = -5;
                 }
             }
-            
-            if ((errorCode == 0) && (iconPath != NULL)) {
-                if (!SUCCEEDED(shell->lpVtbl->SetIconLocation(shell, iconPath, iconIndex))) {
-                    throwException(jEnv, "Native error");
+            if ((errorCode == 0) && (workingDirectory != NULL)) {
+                if (!SUCCEEDED(shell->lpVtbl->SetWorkingDirectory(shell, workingDirectory))) {
+                    throwException(jEnv, "Native error (-6)");
                     errorCode = -6;
                 }
             }
-            
-            // use normal window.
-            if (errorCode == 0) {
-                if (!SUCCEEDED(shell->lpVtbl->SetShowCmd(shell, SW_NORMAL))) {
-                    throwException(jEnv, "Native error");
+            if ((errorCode == 0) && (iconPath != NULL)) {
+                if (!SUCCEEDED(shell->lpVtbl->SetIconLocation(shell, iconPath, iconIndex))) {
+                    throwException(jEnv, "Native error (-7)");
                     errorCode = -7;
                 }
             }
-            
+            // use normal window.
             if (errorCode == 0) {
-                WCHAR wideChars[MAX_PATH];
-                
-                if (MultiByteToWideChar(CP_ACP, 0, shortcutPath, -1, wideChars, MAX_PATH) != 0) {
-                    if (mkdirs(jEnv, shortcutPath)) {
-                        if (!SUCCEEDED(persistFile->lpVtbl->Save(persistFile, wideChars, TRUE))) {
-                            throwException(jEnv, "Native error");
-                            errorCode = -9;
-                        }
-                    } else {
-                        throwException(jEnv, "Native error");
-                        errorCode = -8;
+                if (!SUCCEEDED(shell->lpVtbl->SetShowCmd(shell, SW_NORMAL))) {
+                    throwException(jEnv, "Native error (-8)");
+                    errorCode = -8;
+                }
+            }
+            if (errorCode == 0) {
+                if (mkdirsW(jEnv, shortcutPath)) {
+                    if (!SUCCEEDED(persistFile->lpVtbl->Save(persistFile, shortcutPath, TRUE))) {
+                        throwException(jEnv, "Native error (-9)");
+                        errorCode = -9;
                     }
                 } else {
-                    throwException(jEnv, "Native error");
+                    throwException(jEnv, "Native error (-10)");
                     errorCode = -10;
                 }
             }
@@ -287,12 +274,12 @@ JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUti
                 persistFile->lpVtbl->Release(persistFile);
             }
         } else {
-            throwException(jEnv, "Native error");
+            throwException(jEnv, "Native error (-11)");
             errorCode = -11;
         }
         shell->lpVtbl->Release(shell);
     } else {
-        throwException(jEnv, "Native error");
+        throwException(jEnv, "Native error (-12)");
         errorCode = -12;
     }
     
@@ -321,9 +308,9 @@ JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUti
 }
 
 JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUtils_deleteFileOnReboot0(JNIEnv* jEnv, jobject jObject, jstring jPath) {
-    char* path = getChars(jEnv, jPath);
+    unsigned short * path = getWideChars(jEnv, jPath);
     
-    if (!MoveFileEx(path, NULL, MOVEFILE_DELAY_UNTIL_REBOOT)) {
+    if (!MoveFileExW(path, NULL, MOVEFILE_DELAY_UNTIL_REBOOT)) {
         throwException(jEnv, "Native error");
     }
     
@@ -343,7 +330,7 @@ JNIEXPORT jboolean JNICALL Java_org_netbeans_installer_utils_system_WindowsNativ
 
 
 JNIEXPORT jint JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUtils_checkAccessTokenAccessLevel0(JNIEnv *jEnv, jobject jObj, jstring jPath, jint jLevel) {
-    char* path = getChars(jEnv, jPath);
+    unsigned short * path = getWideChars(jEnv, jPath);
     PSECURITY_DESCRIPTOR    pSD;
     DWORD nLength;
     
@@ -351,7 +338,7 @@ JNIEXPORT jint JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUti
     DWORD PrivSetSize = sizeof (PRIVILEGE_SET);
     
     // create memory for storing user's security descriptor
-    GetFileSecurity(path, OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION, NULL, 0, &nLength);
+    GetFileSecurityW(path, OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION, NULL, 0, &nLength);
     
     pSD = (PSECURITY_DESCRIPTOR) HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, nLength);
     
@@ -360,7 +347,7 @@ JNIEXPORT jint JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUti
         return -1;
     }
     // Get the security descriptor
-    if (!GetFileSecurity(path, OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION,  pSD, nLength, &nLength)) {
+    if (!GetFileSecurityW(path, OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION,  pSD, nLength, &nLength)) {
         throwException(jEnv, "Unable to obtain security descriptor.\n");
         free(path);
         return (-3);

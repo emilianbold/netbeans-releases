@@ -42,11 +42,11 @@ const DWORD MAX_LEN_VALUE_NAME = 16383;
 
 JNIEXPORT jboolean JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_checkKeyAccess0(JNIEnv *jEnv, jobject jObject, jint jSection, jstring jKey, jint jLevel) {
     HKEY  hkey = 0;
-    char* key = getChars(jEnv, jKey);
+    unsigned short * key = getWideChars(jEnv, jKey);
     
     jboolean result = FALSE;
     REGSAM access = (jLevel==0) ? KEY_READ : KEY_ALL_ACCESS;
-    result = (RegOpenKeyEx(getHKEY(jSection), key, 0, access, &hkey) == ERROR_SUCCESS);
+    result = (RegOpenKeyExW(getHKEY(jSection), key, 0, access, &hkey) == ERROR_SUCCESS);
     
     if (hkey != 0) {
         RegCloseKey(hkey);
@@ -59,11 +59,11 @@ JNIEXPORT jboolean JNICALL Java_org_netbeans_installer_utils_system_windows_Wind
 
 JNIEXPORT jboolean JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_valueExists0(JNIEnv *jEnv, jobject jObject, jint jSection, jstring jKey, jstring jName) {
     HKEY  hkey  = 0;
-    char* key   = getChars(jEnv, jKey);
-    char* value = getChars(jEnv, jName);
+    unsigned short * key   = getWideChars(jEnv, jKey);
+    unsigned short * value = getWideChars(jEnv, jName);
     jboolean result = FALSE;
-    if (RegOpenKeyEx(getHKEY(jSection), key, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS) {
-        result = (RegQueryValueEx(hkey, value, NULL, NULL, NULL, NULL) == ERROR_SUCCESS);
+    if (RegOpenKeyExW(getHKEY(jSection), key, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS) {
+        result = (RegQueryValueExW(hkey, value, NULL, NULL, NULL, NULL) == ERROR_SUCCESS);
     } else {
         throwException(jEnv, "Cannot open key");
     }
@@ -79,12 +79,12 @@ JNIEXPORT jboolean JNICALL Java_org_netbeans_installer_utils_system_windows_Wind
 
 JNIEXPORT jboolean JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_keyEmpty0(JNIEnv *jEnv, jobject jObject, jint jSection, jstring jKey) {
     HKEY  hkey = 0;
-    char* key = getChars(jEnv, jKey);
+    unsigned short* key = getWideChars(jEnv, jKey);
     
     DWORD subkeys = 1;
     DWORD values  = 1;
-    if (RegOpenKeyEx(getHKEY(jSection), key, 0, KEY_READ, &hkey) == ERROR_SUCCESS) {
-        if (RegQueryInfoKey(hkey, NULL, NULL, NULL, &subkeys, NULL, NULL, &values, NULL, NULL, NULL, NULL) != ERROR_SUCCESS) {
+    if (RegOpenKeyExW(getHKEY(jSection), key, 0, KEY_READ, &hkey) == ERROR_SUCCESS) {
+        if (RegQueryInfoKeyW(hkey, NULL, NULL, NULL, &subkeys, NULL, NULL, &values, NULL, NULL, NULL, NULL) != ERROR_SUCCESS) {
             throwException(jEnv, "Cannot read key data");
         }
     } else {
@@ -102,11 +102,11 @@ JNIEXPORT jboolean JNICALL Java_org_netbeans_installer_utils_system_windows_Wind
 
 JNIEXPORT jint JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_countSubKeys0(JNIEnv *jEnv, jobject jObject, jint jSection, jstring jKey) {
     HKEY  hkey = 0;
-    char* key = getChars(jEnv, jKey);
+    unsigned short* key = getWideChars(jEnv, jKey);
     
     DWORD count = 0;
-    if (RegOpenKeyEx(getHKEY(jSection), key, 0, KEY_READ, &hkey) == ERROR_SUCCESS) {
-        if(RegQueryInfoKey(hkey, NULL, NULL, NULL, &count, NULL, NULL, NULL, NULL, NULL, NULL, NULL) != ERROR_SUCCESS) {
+    if (RegOpenKeyExW(getHKEY(jSection), key, 0, KEY_READ, &hkey) == ERROR_SUCCESS) {
+        if(RegQueryInfoKeyW(hkey, NULL, NULL, NULL, &count, NULL, NULL, NULL, NULL, NULL, NULL, NULL) != ERROR_SUCCESS) {
             throwException(jEnv, "Cannot read key data");
         }
     } else {
@@ -124,11 +124,11 @@ JNIEXPORT jint JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsR
 
 JNIEXPORT jint JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_countValues0(JNIEnv *jEnv, jobject jObject, jint jSection, jstring jKey) {
     HKEY  hkey = 0;
-    char* key = getChars(jEnv, jKey);
+    unsigned short* key = getWideChars(jEnv, jKey);
     
     DWORD count = 0;
-    if (RegOpenKeyEx(getHKEY(jSection), key, 0, KEY_READ, &hkey) == ERROR_SUCCESS) {
-        if (RegQueryInfoKey(hkey, NULL, NULL, NULL, NULL, NULL, NULL, &count, NULL, NULL, NULL, NULL) != ERROR_SUCCESS) {
+    if (RegOpenKeyExW(getHKEY(jSection), key, 0, KEY_READ, &hkey) == ERROR_SUCCESS) {
+        if (RegQueryInfoKeyW(hkey, NULL, NULL, NULL, NULL, NULL, NULL, &count, NULL, NULL, NULL, NULL) != ERROR_SUCCESS) {
             throwException(jEnv, "Cannot read key data");
         }
     } else {
@@ -146,16 +146,16 @@ JNIEXPORT jint JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsR
 
 JNIEXPORT jobjectArray JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_getSubkeyNames0(JNIEnv *jEnv, jobject jObject, jint jSection, jstring jKey) {
     HKEY  hkey   = 0;
-    char* key    = getChars(jEnv, jKey);
+    unsigned short* key    = getWideChars(jEnv, jKey);
     DWORD number = 0;
     int   err    = 0;
     int   index  = 0 ;
     
-    char* buffer = (char*) malloc(sizeof(char) * MAX_LEN_VALUE_NAME);
+    unsigned short* buffer = (unsigned short*) malloc(sizeof(char) * MAX_LEN_VALUE_NAME);
     
     jobjectArray result = NULL;
-    if (RegOpenKeyEx(getHKEY(jSection), key, 0, KEY_READ, &hkey) == ERROR_SUCCESS) {
-        if (RegQueryInfoKey(hkey, NULL, NULL, NULL, &number, NULL, NULL, NULL, NULL, NULL, NULL, NULL) == ERROR_SUCCESS) {
+    if (RegOpenKeyExW(getHKEY(jSection), key, 0, KEY_READ, &hkey) == ERROR_SUCCESS) {
+        if (RegQueryInfoKeyW(hkey, NULL, NULL, NULL, &number, NULL, NULL, NULL, NULL, NULL, NULL, NULL) == ERROR_SUCCESS) {
             jclass stringClazz = (*jEnv)->FindClass(jEnv, "java/lang/String");
             result = (*jEnv)->NewObjectArray(jEnv, number, stringClazz, NULL);
             
@@ -163,9 +163,9 @@ JNIEXPORT jobjectArray JNICALL Java_org_netbeans_installer_utils_system_windows_
                 DWORD size = MAX_LEN_VALUE_NAME;
                 buffer[0]  = 0;
                 
-                err = RegEnumKeyEx(hkey, index, buffer, &size, NULL, NULL, NULL, NULL);
+                err = RegEnumKeyExW(hkey, index, buffer, &size, NULL, NULL, NULL, NULL);
                 if (err == ERROR_SUCCESS) {
-                    (*jEnv)->SetObjectArrayElement(jEnv, result, index, getString(jEnv, buffer));
+                    (*jEnv)->SetObjectArrayElement(jEnv, result, index, getStringW(jEnv, buffer));
                 } else {
                     if (err != ERROR_NO_MORE_ITEMS) {
                         throwException(jEnv, "Cannot get key names");
@@ -193,16 +193,16 @@ JNIEXPORT jobjectArray JNICALL Java_org_netbeans_installer_utils_system_windows_
 
 JNIEXPORT jobjectArray JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_getValueNames0(JNIEnv *jEnv, jobject jObject, jint jSection, jstring jKey) {
     HKEY  hkey         = 0;
-    char* key          = getChars(jEnv, jKey);
+    unsigned short* key          = getWideChars(jEnv, jKey);
     DWORD valuesCount  = 0;
     int   err          = 0;
     int   index        = 0;
     
-    char* buffer = (char*) malloc(sizeof(char) * MAX_LEN_VALUE_NAME);
+    unsigned short* buffer = (unsigned short*) malloc(sizeof(char) * MAX_LEN_VALUE_NAME);
     
     jobjectArray result = NULL;
-    if (RegOpenKeyEx(getHKEY(jSection), key, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS) {
-        if (RegQueryInfoKey(hkey, NULL, NULL, NULL, NULL, NULL, NULL, &valuesCount, NULL, NULL, NULL, NULL) == ERROR_SUCCESS) {
+    if (RegOpenKeyExW(getHKEY(jSection), key, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS) {
+        if (RegQueryInfoKeyW(hkey, NULL, NULL, NULL, NULL, NULL, NULL, &valuesCount, NULL, NULL, NULL, NULL) == ERROR_SUCCESS) {
             jclass stringClazz = (*jEnv)->FindClass(jEnv, "java/lang/String");
             result = (*jEnv)->NewObjectArray(jEnv, valuesCount, stringClazz, NULL);
             
@@ -210,9 +210,9 @@ JNIEXPORT jobjectArray JNICALL Java_org_netbeans_installer_utils_system_windows_
                 DWORD size = MAX_LEN_VALUE_NAME;
                 buffer[0]  = 0;
                 
-                err = RegEnumValue(hkey, index, buffer, &size, NULL, NULL, NULL, NULL);
+                err = RegEnumValueW(hkey, index, buffer, &size, NULL, NULL, NULL, NULL);
                 if (err == ERROR_SUCCESS) {
-                    (*jEnv)->SetObjectArrayElement(jEnv, result, index, getString(jEnv, buffer));
+                    (*jEnv)->SetObjectArrayElement(jEnv, result, index, getStringW(jEnv, buffer));
                 } else {
                     if (err != ERROR_NO_MORE_ITEMS) {
                         throwException(jEnv, "Cannot get value names");
@@ -240,12 +240,12 @@ JNIEXPORT jobjectArray JNICALL Java_org_netbeans_installer_utils_system_windows_
 
 JNIEXPORT jint JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_getValueType0(JNIEnv *jEnv, jobject jObject, jint jSection, jstring jKey, jstring jName) {
     HKEY  hkey   =0;
-    char* key   = getChars(jEnv, jKey);
-    char* value = getChars(jEnv, jName);
+    unsigned short* key   = getWideChars(jEnv, jKey);
+    unsigned short* value = getWideChars(jEnv, jName);
     
     DWORD type = REG_NONE;
-    if (RegOpenKeyEx(getHKEY(jSection), key, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS) {
-        if (RegQueryValueEx(hkey, value, NULL, &type, NULL, NULL) != ERROR_SUCCESS) {
+    if (RegOpenKeyExW(getHKEY(jSection), key, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS) {
+        if (RegQueryValueExW(hkey, value, NULL, &type, NULL, NULL) != ERROR_SUCCESS) {
             throwException(jEnv, "Cannot read value");
         }
     } else {
@@ -265,11 +265,11 @@ JNIEXPORT jint JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsR
 JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_createKey0(JNIEnv *jEnv, jobject jObject, jint jSection, jstring jParent, jstring jChild) {
     HKEY  hkey   = 0;
     HKEY  newKey = 0;
-    char* parent = getChars(jEnv, jParent);
-    char* child  = getChars(jEnv, jChild);
+    unsigned short* parent = getWideChars(jEnv, jParent);
+    unsigned short* child  = getWideChars(jEnv, jChild);
     
-    if (RegOpenKeyEx(getHKEY(jSection), parent, 0, KEY_CREATE_SUB_KEY, &hkey) == ERROR_SUCCESS) {
-        LONG result = RegCreateKeyEx(hkey, child, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_READ | KEY_WRITE, NULL, &newKey, NULL);
+    if (RegOpenKeyExW(getHKEY(jSection), parent, 0, KEY_CREATE_SUB_KEY, &hkey) == ERROR_SUCCESS) {
+        LONG result = RegCreateKeyExW(hkey, child, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_READ | KEY_WRITE, NULL, &newKey, NULL);
         if (result == ERROR_SUCCESS) {
             if (newKey != 0) {
                 RegCloseKey(newKey);
@@ -293,12 +293,12 @@ JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsR
 
 JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_deleteKey0(JNIEnv *jEnv, jobject jObject, jint jSection, jstring jParent, jstring jChild) {
     HKEY  hkey       = 0;
-    char* jParentS = getChars(jEnv, jParent);
-    char* jChildS  = getChars(jEnv, jChild);
+    unsigned short* jParentS = getWideChars(jEnv, jParent);
+    unsigned short* jChildS  = getWideChars(jEnv, jChild);
     
     
-    if (RegOpenKeyEx(getHKEY(jSection), jParentS, 0, KEY_READ | KEY_WRITE, &hkey) == ERROR_SUCCESS) {
-        if (RegDeleteKey(hkey, jChildS) != ERROR_SUCCESS) {
+    if (RegOpenKeyExW(getHKEY(jSection), jParentS, 0, KEY_READ | KEY_WRITE, &hkey) == ERROR_SUCCESS) {
+        if (RegDeleteKeyW(hkey, jChildS) != ERROR_SUCCESS) {
             throwException(jEnv, "Could not delete key");
         }
     } else {
@@ -315,11 +315,11 @@ JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsR
 
 JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_deleteValue0(JNIEnv *jEnv, jobject jObject, jint jSection, jstring jKey, jstring jName) {
     HKEY  hkey   = 0;
-    char* key   = getChars(jEnv, jKey);
-    char* value = getChars(jEnv, jName);
+    unsigned short* key   = getWideChars(jEnv, jKey);
+    unsigned short* value = getWideChars(jEnv, jName);
     
-    if (RegOpenKeyEx(getHKEY(jSection), key, 0, KEY_SET_VALUE , &hkey) == ERROR_SUCCESS) {
-        if (RegDeleteValue(hkey, value) != ERROR_SUCCESS) {
+    if (RegOpenKeyExW(getHKEY(jSection), key, 0, KEY_SET_VALUE , &hkey) == ERROR_SUCCESS) {
+        if (RegDeleteValueW(hkey, value) != ERROR_SUCCESS) {
             throwException(jEnv, "Cannot delete value");
         }
     } else {
@@ -335,8 +335,8 @@ JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsR
 }
 
 JNIEXPORT jstring JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_getStringValue0(JNIEnv *jEnv, jobject jObject, jint jSection, jstring jKey, jstring jName, jboolean jExpand) {
-    char*   key    = getChars(jEnv, jKey);
-    char*   name   = getChars(jEnv, jName);
+    unsigned short*   key    = getWideChars(jEnv, jKey);
+    unsigned short*   name   = getWideChars(jEnv, jName);
     DWORD   type   = REG_NONE;
     byte*   value  = NULL;
     
@@ -344,7 +344,7 @@ JNIEXPORT jstring JNICALL Java_org_netbeans_installer_utils_system_windows_Windo
     
     if (queryValue(getHKEY(jSection), key, name, &type, NULL, &value, jExpand)) {
         if (type == REG_SZ || type == REG_EXPAND_SZ) {
-            result = getString(jEnv, (char*) value);
+            result = getStringW(jEnv, (unsigned short*) value);
         } else {
             throwException(jEnv, "Value has wrong type");
         }
@@ -360,11 +360,11 @@ JNIEXPORT jstring JNICALL Java_org_netbeans_installer_utils_system_windows_Windo
 }
 
 JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_setStringValue0(JNIEnv *jEnv, jobject jObject, jint jSection, jstring jKey, jstring jName, jstring jValue, jboolean jExpand) {
-    char* key   = getChars(jEnv, jKey);
-    char* name  = getChars(jEnv, jName);
-    char* value = getChars(jEnv, jValue);
+    unsigned short* key   = getWideChars(jEnv, jKey);
+    unsigned short* name  = getWideChars(jEnv, jName);
+    unsigned short* value = getWideChars(jEnv, jValue);
     
-    if (!setValue(getHKEY(jSection), key, name, jExpand ? REG_EXPAND_SZ : REG_SZ, (byte*) value, strlen(value), 0)) {
+    if (!setValue(getHKEY(jSection), key, name, jExpand ? REG_EXPAND_SZ : REG_SZ, (byte*) value, wcslen(value) * sizeof(unsigned short), 0)) {
         throwException(jEnv, "Could not set value");
     }
     
@@ -375,16 +375,16 @@ JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsR
 
 JNIEXPORT jint JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_get32BitValue0(JNIEnv *jEnv, jobject jObject, jint jSection, jstring jKey, jstring jName) {
     HKEY  hkey   = 0;
-    char* key   = getChars(jEnv, jKey);
-    char* value = getChars(jEnv, jName);
+    unsigned short* key   = getWideChars(jEnv, jKey);
+    unsigned short* value = getWideChars(jEnv, jName);
     
     jint result = -1;
-    if(RegOpenKeyEx(getHKEY(jSection), key, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS) {
+    if(RegOpenKeyExW(getHKEY(jSection), key, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS) {
         DWORD dwType    = 0;
         DWORD dwValue   = 0;
         DWORD dwBufSize = sizeof(dwValue);
         
-        if (RegQueryValueEx(hkey, value, NULL, &dwType, (LPBYTE) &dwValue, &dwBufSize) == ERROR_SUCCESS) {
+        if (RegQueryValueExW(hkey, value, NULL, &dwType, (LPBYTE) &dwValue, &dwBufSize) == ERROR_SUCCESS) {
             if ((dwType == REG_DWORD) || (dwType == REG_DWORD_BIG_ENDIAN)) {
                 result = dwValue;
             } else {
@@ -408,8 +408,8 @@ JNIEXPORT jint JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsR
 }
 
 JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_set32BitValue0(JNIEnv *jEnv, jobject jObject, jint jSection, jstring jKey, jstring jName, jint jValue) {
-    char*  key       = getChars(jEnv, jKey);
-    char*  name      = getChars(jEnv, jName);
+    unsigned short*  key       = getWideChars(jEnv, jKey);
+    unsigned short*  name      = getWideChars(jEnv, jName);
     DWORD  dword     = (DWORD) jValue;
     LPBYTE byteValue = (LPBYTE) &dword;
     
@@ -423,25 +423,25 @@ JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsR
 
 JNIEXPORT jobjectArray JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_getMultiStringValue0(JNIEnv *jEnv, jobject jObject, jint jSection, jstring jKey, jstring jName) {
     HKEY  hkey   = 0;
-    char* key   = getChars(jEnv, jKey);
-    char* value = getChars(jEnv, jName);
+    unsigned short* key   = getWideChars(jEnv, jKey);
+    unsigned short* value = getWideChars(jEnv, jName);
     
     int	i, start, sLen, count, cnt;
     LONG regErr = 0;
-    char* data = 0;
+    unsigned short* data = 0;
     jstring string;
     jclass strClass;
     DWORD dwType;
     DWORD size = 0;
     
     jarray result = 0;
-    if(RegOpenKeyEx(getHKEY(jSection), key, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS) {
-        if (RegQueryValueEx(hkey, value, NULL, &dwType, NULL, &size) == ERROR_SUCCESS) {
+    if(RegOpenKeyExW(getHKEY(jSection), key, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS) {
+        if (RegQueryValueExW(hkey, value, NULL, &dwType, NULL, &size) == ERROR_SUCCESS) {
             if (dwType == REG_MULTI_SZ) {
-                data = (char*) malloc(size + 8);
+                data = (unsigned short*) malloc(size + 8);
                 
                 if (data != NULL) {
-                    if (RegQueryValueEx(hkey, value, NULL, &dwType, (byte*) data, &size) == ERROR_SUCCESS) {
+                    if (RegQueryValueExW(hkey, value, NULL, &dwType, (byte*) data, &size) == ERROR_SUCCESS) {
                         for (count = 0, i = 0; i < (int) size; i++) {
                             if (data[i] == '\0') { // \0 - end of a single string
                                 count++;
@@ -457,7 +457,7 @@ JNIEXPORT jobjectArray JNICALL Java_org_netbeans_installer_utils_system_windows_
                             if (result != NULL) {
                                 for (cnt = 0, start = 0, i = 0; (i < (int) size) && (cnt < count); i++) {
                                     if (data[i] == '\0') {
-                                        string = getStringWithLength(jEnv, &data[start], i - start);
+                                        string = getStringWithLengthW(jEnv, &data[start], i - start);
                                         
                                         if (string != NULL) {
                                             (*jEnv)->SetObjectArrayElement(jEnv, (jobjectArray) result, (jsize) cnt++, string);
@@ -506,8 +506,8 @@ JNIEXPORT jobjectArray JNICALL Java_org_netbeans_installer_utils_system_windows_
 }
 
 JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_setMultiStringValue0(JNIEnv *jEnv, jobject jObject, jint jSection, jstring jKey, jstring jName, jobjectArray jValue) {
-    char* key    = getChars(jEnv, jKey);
-    char* name   = getChars(jEnv, jName);
+    unsigned short* key    = getWideChars(jEnv, jKey);
+    unsigned short* name   = getWideChars(jEnv, jName);
     DWORD size   = 0;
     BYTE* data   = getByteFromMultiString(jEnv, jValue, &size);
     
@@ -522,20 +522,20 @@ JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsR
 
 JNIEXPORT jbyteArray JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_getBinaryValue0(JNIEnv *jEnv, jobject jObject, jint jSection, jstring jKey, jstring jName) {
     HKEY  hkey   = 0;
-    char* key   = getChars(jEnv, jKey);
-    char* value = getChars(jEnv, jName);
+    unsigned short* key   = getWideChars(jEnv, jKey);
+    unsigned short* value = getWideChars(jEnv, jName);
     
     jbyteArray result = NULL;
-    if (RegOpenKeyEx(getHKEY(jSection), key, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS) {
+    if (RegOpenKeyExW(getHKEY(jSection), key, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS) {
         DWORD dwType  = 0;
         DWORD dwValue = 0;
         DWORD size    = 0;
         BYTE* data    = NULL;
         
-        if (RegQueryValueEx(hkey, value, NULL, &dwType, NULL, &size) == ERROR_SUCCESS) {
+        if (RegQueryValueExW(hkey, value, NULL, &dwType, NULL, &size) == ERROR_SUCCESS) {
             if (dwType == REG_BINARY || dwType == REG_NONE) {
                 data = (BYTE*) malloc(size + 8);
-                if (RegQueryValueEx(hkey, value, NULL, &dwType, (BYTE*) data, &size) == ERROR_SUCCESS) {
+                if (RegQueryValueExW(hkey, value, NULL, &dwType, (BYTE*) data, &size) == ERROR_SUCCESS) {
                     if (data != NULL) {
                         result = (*jEnv)->NewByteArray(jEnv, (jsize) size);
                         (*jEnv)->SetByteArrayRegion(jEnv, result, 0, (jsize) size, (jbyte*) data);
@@ -565,8 +565,8 @@ JNIEXPORT jbyteArray JNICALL Java_org_netbeans_installer_utils_system_windows_Wi
 }
 
 JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_setBinaryValue0(JNIEnv *jEnv, jobject jObject, jint jSection, jstring jKey, jstring jName, jbyteArray jValue) {
-    char*  key     = getChars(jEnv, jKey);
-    char*  name    = getChars(jEnv, jName);
+    unsigned short*  key     = getWideChars(jEnv, jKey);
+    unsigned short*  name    = getWideChars(jEnv, jName);
     BYTE*  data    = (BYTE*) (*jEnv)->GetByteArrayElements(jEnv, jValue, 0);
     DWORD  length  = (*jEnv)->GetArrayLength(jEnv, jValue);
     
@@ -582,8 +582,8 @@ JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsR
 }
 
 JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsRegistry_setNoneValue0(JNIEnv *jEnv, jobject jobj, jint jSection, jstring jKey, jstring jName, jbyteArray jValue) {
-    char*  key     = getChars(jEnv, jKey);
-    char*  name    = getChars(jEnv, jName);
+    unsigned short*  key     = getWideChars(jEnv, jKey);
+    unsigned short*  name    = getWideChars(jEnv, jName);
     BYTE*  data    = (BYTE*) (*jEnv)->GetByteArrayElements(jEnv, jValue, 0);
     DWORD  length  = (*jEnv)->GetArrayLength(jEnv, jValue);
     
