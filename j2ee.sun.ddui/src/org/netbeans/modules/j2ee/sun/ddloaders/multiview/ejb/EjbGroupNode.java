@@ -20,21 +20,15 @@
 package org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.SunEjbJar;
-import org.netbeans.modules.j2ee.sun.ddloaders.Utils;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.DDBinding;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.NamedBeanGroupNode;
 import org.netbeans.modules.xml.multiview.SectionNode;
@@ -71,32 +65,6 @@ public class EjbGroupNode extends NamedBeanGroupNode {
         return null;
     }
 
-    protected org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] getStandardBeansFromModel() {
-        org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] emptyList = new org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [0];
-        org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] stdBeans = emptyList;
-        org.netbeans.modules.j2ee.dd.api.common.RootInterface stdRootDD = getStandardRootDD();
-        
-        if(stdRootDD instanceof org.netbeans.modules.j2ee.dd.api.ejb.EjbJar) {
-            org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = (org.netbeans.modules.j2ee.dd.api.ejb.EjbJar) stdRootDD;
-            org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans eb = ejbJar.getEnterpriseBeans();
-            if(eb != null) {
-                // !PW FIXME how to differentiate between session, mdb, and entity beans?
-                org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] session = eb.getSession();
-                session = (session != null) ? session : emptyList;
-                org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] mdb = eb.getMessageDriven();
-                mdb = (mdb != null) ? mdb : emptyList;
-                org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] entity = eb.getEntity();
-                entity = (entity != null) ? entity : emptyList;
-                
-                stdBeans = new org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [session.length + mdb.length + entity.length];
-                System.arraycopy(session, 0, stdBeans, 0, session.length);
-                System.arraycopy(mdb, 0, stdBeans, session.length, mdb.length);
-                System.arraycopy(entity, 0, stdBeans, session.length + mdb.length, entity.length);
-            }
-        }
-        return stdBeans;
-    }
-    
     protected CommonDDBean addNewBean() {
         Ejb newEjb = (Ejb) createBean();
         newEjb.setEjbName("ejb" + getNewBeanId()); // NOI18N
@@ -122,6 +90,38 @@ public class EjbGroupNode extends NamedBeanGroupNode {
         }
     }
 
+    // ------------------------------------------------------------------------
+    // DescriptorReader implementation
+    // ------------------------------------------------------------------------
+    @Override
+    public Map<String, Object> readDescriptor() {
+        Map<String, Object> resultMap = null;
+        
+        org.netbeans.modules.j2ee.dd.api.common.RootInterface stdRootDD = getStandardRootDD();
+        if(stdRootDD instanceof org.netbeans.modules.j2ee.dd.api.ejb.EjbJar) {
+            org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = (org.netbeans.modules.j2ee.dd.api.ejb.EjbJar) stdRootDD;
+            resultMap = EjbMetadataReader.readDescriptor(ejbJar);
+        }
+        
+        return resultMap;
+    }
+
+    @Override
+    public Map<String, Object> readAnnotations() {
+        Map<String, Object> resultMap = null;
+        
+        try {
+            MetadataModel<EjbJarMetadata> ejbJarModel = getMetadataModel(EjbJarMetadata.class);
+            resultMap = ejbJarModel.runReadAction(new EjbMetadataReader());
+        } catch (MetadataModelException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+        
+        return resultMap;
+    }
+    
     // ------------------------------------------------------------------------
     // BeanResolver interface implementation
     // ------------------------------------------------------------------------
@@ -153,76 +153,4 @@ public class EjbGroupNode extends NamedBeanGroupNode {
     public String getStandardBeanNameProperty() {
         return STANDARD_EJB_NAME;
     }
-    
-//    // ------------------------------------------------------------------------
-//    // Metadata access    
-//    // ------------------------------------------------------------------------
-//    private volatile List<String> xpathMap;
-//    
-//    @Override
-//    public List<XPathNode> getAnnotationModel() {
-//        List<XPathNode> result = null;
-//        
-//        try {
-//            MetadataModel<EjbJarMetadata> ejbJarModel = getMetadataModel(EjbJarMetadata.class);
-//            if(ejbJarModel != null) {
-//                result = ejbJarModel.runReadAction(new EjbMetadataMgr());
-//            }
-//        } catch (MetadataModelException ex) {
-//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-//        } catch (IOException ex) {
-//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-//        }
-//
-//        return result;
-//    }
-    
-//    public List<org.netbeans.modules.j2ee.dd.api.ejb.Ejb> getEjbMetadataModel() {
-//        List<org.netbeans.modules.j2ee.dd.api.ejb.Ejb> result = Collections.EMPTY_LIST;
-//
-//        try {
-//            MetadataModel<EjbJarMetadata> ejbJarModel = getMetadataModel(EjbJarMetadata.class);
-//            if(ejbJarModel != null) {
-//                result = ejbJarModel.runReadAction(new MetadataModelAction<EjbJarMetadata, List<org.netbeans.modules.j2ee.dd.api.ejb.Ejb>>() {
-//                    public List<org.netbeans.modules.j2ee.dd.api.ejb.Ejb> run(EjbJarMetadata metadata) throws Exception {
-//                        List<org.netbeans.modules.j2ee.dd.api.ejb.Ejb> ejbList = new ArrayList<org.netbeans.modules.j2ee.dd.api.ejb.Ejb>();
-//                        org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = metadata.getRoot();
-//                        org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans eb = ejbJar.getEnterpriseBeans();
-//                        if(eb != null) {
-//                            org.netbeans.modules.j2ee.dd.api.ejb.Session [] sessionBeans = eb.getSession();
-//                            if(sessionBeans != null) {
-//                                for(org.netbeans.modules.j2ee.dd.api.ejb.Session ejb : sessionBeans) {
-//                                    if(Utils.notEmpty(ejb.getEjbName())) {
-//                                        org.netbeans.modules.j2ee.dd.api.ejb.Session ejbCopy = 
-//                                                (org.netbeans.modules.j2ee.dd.api.ejb.Session) ejbJar.createBean("Session");
-//                                        ejbCopy.setEjbName(ejb.getEjbName());
-//                                        ejbList.add(ejbCopy);
-//                                    }
-//                                }
-//                            }
-//                            org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven [] messageBeans = eb.getMessageDriven();
-//                            if(messageBeans != null) {
-//                                for(org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven ejb : messageBeans) {
-//                                    if(Utils.notEmpty(ejb.getEjbName())) {
-//                                        org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven ejbCopy = 
-//                                                (org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven) ejbJar.createBean("MessageDriven");
-//                                        ejbCopy.setEjbName(ejb.getEjbName());
-//                                        ejbList.add(ejbCopy);
-//                                    }
-//                                }
-//                            }
-//                        }
-//                        return ejbList;
-//                    }
-//                }); 
-//            }
-//        } catch (MetadataModelException ex) {
-//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-//        } catch (IOException ex) {
-//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-//        }
-//
-//        return result;
-//    }
-    
 }

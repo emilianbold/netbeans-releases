@@ -36,7 +36,7 @@ public class SecurityRoleMappingNode extends NamedBeanNode {
     }
 
     protected SectionNodeInnerPanel createNodeInnerPanel() {
-        return new SecurityRoleMappingPanel(getSectionNodeView(), (SecurityRoleMapping) key, version);
+        return new SecurityRoleMappingPanel(getSectionNodeView(), this, version);
     }
     
 }

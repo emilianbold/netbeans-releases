@@ -20,11 +20,11 @@
 package org.netbeans.modules.j2ee.sun.ddloaders.multiview.common;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -41,7 +41,6 @@ import org.netbeans.modules.j2ee.sun.dd.api.common.ServiceRef;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.sun.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
-import org.netbeans.modules.j2ee.sun.ddloaders.Utils;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.BaseSectionNode;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.DDSectionNodeView;
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
@@ -60,7 +59,7 @@ import org.openide.util.Mutex;
 /**
  * @author Peter Williams
  */
-public abstract class NamedBeanGroupNode extends BaseSectionNode implements BeanResolver {
+public abstract class NamedBeanGroupNode extends BaseSectionNode implements BeanResolver, DescriptorReader {
 
     public static final String STANDARD_SERVLET_NAME = Servlet.SERVLET_NAME; // e.g. "ServletName"
     public static final String STANDARD_EJB_NAME = Ejb.EJB_NAME; // e.g. "EjbName"
@@ -111,8 +110,6 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
     
     protected abstract CommonDDBean [] getBeansFromModel();
     
-    protected abstract org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] getStandardBeansFromModel();
-
     protected abstract CommonDDBean addNewBean();
 
     protected abstract CommonDDBean addBean(CommonDDBean newBean);
@@ -190,6 +187,7 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
         }
     }
     
+    @SuppressWarnings("unchecked")
     protected void check(final CommonDDBean focusBean) {
         Map<Object, Node> nodeMap = new HashMap<Object, Node>();
         Children children = getChildren();
@@ -201,59 +199,124 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
        
         // Get the raw data
         CommonDDBean [] sunBeans = getBeansFromModel();
-        Map<String, org.netbeans.modules.j2ee.dd.api.common.CommonDDBean> stdBeanMap = getBeanMap(getStandardBeansFromModel());
-//        List<XPathNode> data = getAnnotationModel();
-//        for(XPathNode node: data) {
-//            System.out.println("Annotation: " + node.getXPath() + " = " + node.getValue());
-//        }
-
+        Map<String, Object> stdBeanPropertyMap = readDescriptor();
+        Map<String, Object> annotationPropertyMap = readAnnotations();
+        
         SortedSet<DDBinding> bindingDataSet = new TreeSet<DDBinding>();
 
         // Match up like names
         for(CommonDDBean sunBean: sunBeans) {
-            String name = getBeanName(sunBean);
-            name = (name != null) ? name.trim() : name;
-            org.netbeans.modules.j2ee.dd.api.common.CommonDDBean stdBean = stdBeanMap.get(name);
-            if(stdBean != null) {
-                stdBeanMap.remove(name);
+            String beanName = getBeanName(sunBean);
+            beanName = (beanName != null) ? beanName.trim() : beanName;
+            
+            Map<String, Object> stdBeanProperties = null;
+            if(stdBeanPropertyMap != null) {
+                Object value = stdBeanPropertyMap.get(beanName);
+                if(value != null) {
+                    if(value instanceof Map<?, ?>) {
+                        stdBeanProperties = (Map<String, Object>) value;
+                        stdBeanPropertyMap.remove(beanName);
+                    } else {
+                        System.out.println("Property for standard bean " + beanName + " is wrong type: " + value.getClass().getSimpleName());
+                    }
+                }
             }
-            DDBinding binding = new DDBinding(this, sunBean, stdBean, null);
+
+            Map<String, Object> annotationProperties = null;
+            if(annotationPropertyMap != null) {
+                Object value = annotationPropertyMap.get(beanName);
+                if(value != null) {
+                    if(value instanceof Map<?, ?>) {
+                        annotationProperties = (Map<String, Object>) value;
+                        annotationPropertyMap.remove(beanName);
+                    } else {
+                        System.out.println("Property for annotation " + beanName + " is wrong type: " + value.getClass().getSimpleName());
+                    }
+                }
+            }
+
+            DDBinding binding = new DDBinding(this, sunBean, stdBeanProperties, annotationProperties, false);
             bindingDataSet.add(binding);
-            System.out.println(binding.toString());
+            System.out.println("Loaded from sun-???.xml... " + binding.toString());
         }
         
         // Add dummy entries for all unmatched standard servlets (unmatched sun servlets were added previous step)
-        Iterator<Map.Entry<String, org.netbeans.modules.j2ee.dd.api.common.CommonDDBean>> entryIter = stdBeanMap.entrySet().iterator();
-        while(entryIter.hasNext()) {
-            Map.Entry<String, org.netbeans.modules.j2ee.dd.api.common.CommonDDBean> entry = entryIter.next();
-            org.netbeans.modules.j2ee.dd.api.common.CommonDDBean stdBean = entry.getValue();
-            CommonDDBean newSunBean = createBean();
-            setBeanName(newSunBean, getBeanName(stdBean));
+        if(stdBeanPropertyMap != null) {
+            Set<Map.Entry<String, Object>> entrySet = stdBeanPropertyMap.entrySet();
+            for(Map.Entry<String, Object> entry: entrySet) {
+                String beanName = entry.getKey();
+                Object value = entry.getValue();
+                if(value != null) {
+                    if(value instanceof Map<?, ?>) {
+                        Map<String, Object> stdBeanProperties = (Map<String, Object>) value;
+                        CommonDDBean newSunBean = createBean();
+                        setBeanName(newSunBean, beanName);
 
-            // !PW FIXME Look up prior virtual key in nodeMap here?  See below.
+                        Map<String, Object> annotationProperties = null;
+                        if(annotationPropertyMap != null) {
+                            value = annotationPropertyMap.get(beanName);
+                            if(value != null) {
+                                if(value instanceof Map<?, ?>) {
+                                    annotationProperties = (Map<String, Object>) value;
+                                    annotationPropertyMap.remove(beanName);
+                                } else {
+                                    System.out.println("Property for annotation " + beanName + " is wrong type: " + value.getClass().getSimpleName());
+                                }
+                            }
+                        }
 
-            DDBinding binding = new DDBinding(this, newSunBean, stdBean, null, true);
-            bindingDataSet.add(binding);
-            System.out.println(binding.toString());
+                        DDBinding binding = new DDBinding(this, newSunBean, stdBeanProperties, annotationProperties, true);
+                        bindingDataSet.add(binding);
+                        System.out.println("Implied by standard descriptor... " + binding.toString());
+                    } else {
+                        System.out.println("Property for " + beanName + " is wrong type: " + value.getClass().getSimpleName());
+                    }
+                }
+            }
         }
 
+        // Add dummy entries for all unmatched standard servlets (unmatched sun servlets were added previous step)
+        if(annotationPropertyMap != null) {
+            Set<Map.Entry<String, Object>> entrySet = annotationPropertyMap.entrySet();
+            for(Map.Entry<String, Object> entry: entrySet) {
+                String beanName = entry.getKey();
+                Object value = entry.getValue();
+                if(value != null) {
+                    if(value instanceof Map<?, ?>) {
+                        Map<String, Object> annotationProperties = (Map<String, Object>) value;
+                        CommonDDBean newSunBean = createBean();
+                        setBeanName(newSunBean, beanName);
+
+                        DDBinding binding = new DDBinding(this, newSunBean, null, annotationProperties, true);
+                        bindingDataSet.add(binding);
+                        System.out.println("Implied by annotation... " + binding.toString());
+                    } else {
+                        System.out.println("Property for " + beanName + " is wrong type: " + value.getClass().getSimpleName());
+                    }
+                }
+            }
+        }
+        
         // !PW FIXME Mix annotations into previous calculations if we had them (none for servlet, but what about @RunAs?)
         // Possibly only consider annotations on bound servlets?  Then we can look at specific servlet class for annotations
         // using <servlet-class> field in standard descriptor.
         
-        // How to match virtual servlets from prior pass with virtual servlets from this pass?
+        // !PW Optimization - How to match virtual servlets from prior pass with virtual servlets from this pass?
         // Currently their keys will always be created new.  Can we look them up?
         
         SectionNode focusNode = null;
         boolean dirty = nodes.length != bindingDataSet.size();
-        List<Node> newNodeList = new ArrayList(bindingDataSet.size());
+        List<Node> newNodeList = new ArrayList<Node>(bindingDataSet.size());
         
         int index = 0;
         Iterator<DDBinding> setIter = bindingDataSet.iterator();
         while(setIter.hasNext()) {
             DDBinding binding = setIter.next();
             SectionNode node = (SectionNode) nodeMap.get(binding.getSunBean());
-            if(node == null) {
+            if(node instanceof NamedBeanNode && !binding.equals(((NamedBeanNode) node).getBinding())) {
+                node = createNode(binding);
+                dirty = true;
+            } else if(node == null) {
                 node = createNode(binding);
                 dirty = true;
             }
@@ -282,32 +345,12 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
         }
     }
     
-    protected Map<String, org.netbeans.modules.j2ee.dd.api.common.CommonDDBean> 
-            getBeanMap(org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] stdBeans) {
-        Map<String, org.netbeans.modules.j2ee.dd.api.common.CommonDDBean> stdBeanMap =
-                new HashMap<String, org.netbeans.modules.j2ee.dd.api.common.CommonDDBean>(stdBeans.length*2+3);
-        
-        for(org.netbeans.modules.j2ee.dd.api.common.CommonDDBean stdBean: stdBeans) {
-            String name = getBeanName(stdBean);
-            // Ignore unnamed standard beans -- we don't know what to match them with
-            // and they are illegal anyway.
-            name = (name != null) ? name.trim() : name;
-            if(Utils.notEmpty(name)) {
-                org.netbeans.modules.j2ee.dd.api.common.CommonDDBean oldBean = stdBeanMap.put(name, stdBean);
-                if(oldBean != null) {
-                    System.out.println("Ack! duplicate standard names!!!");
-                }
-            }
-        }
-        
-        return stdBeanMap;
-    }
-    
     protected <T> MetadataModel<T> getMetadataModel(Class<T> type) {
         MetadataModel<T> metadataModel = null;
         SectionNodeView view = getSectionNodeView();
         XmlMultiViewDataObject dObj = view.getDataObject();
-        SunONEDeploymentConfiguration dc = SunONEDeploymentConfiguration.getConfiguration(FileUtil.toFile(dObj.getPrimaryFile()));
+        SunONEDeploymentConfiguration dc = SunONEDeploymentConfiguration.getConfiguration(
+                FileUtil.toFile(dObj.getPrimaryFile()));
         if(dc != null) {
             metadataModel = dc.getMetadataModel(type);
         }
@@ -318,7 +361,8 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
         org.netbeans.modules.j2ee.dd.api.common.RootInterface stdRootDD = null;
         SectionNodeView view = getSectionNodeView();
         XmlMultiViewDataObject dObj = view.getDataObject();
-        SunONEDeploymentConfiguration dc = SunONEDeploymentConfiguration.getConfiguration(FileUtil.toFile(dObj.getPrimaryFile()));
+        SunONEDeploymentConfiguration dc = SunONEDeploymentConfiguration.getConfiguration(
+                FileUtil.toFile(dObj.getPrimaryFile()));
         if(dc != null) {
             stdRootDD = dc.getStandardRootDD();
         }
@@ -329,7 +373,8 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
         org.netbeans.modules.j2ee.dd.api.common.RootInterface wsRootDD = null;
         SectionNodeView view = getSectionNodeView();
         XmlMultiViewDataObject dObj = view.getDataObject();
-        SunONEDeploymentConfiguration dc = SunONEDeploymentConfiguration.getConfiguration(FileUtil.toFile(dObj.getPrimaryFile()));
+        SunONEDeploymentConfiguration dc = SunONEDeploymentConfiguration.getConfiguration(
+                FileUtil.toFile(dObj.getPrimaryFile()));
         if(dc != null) {
             wsRootDD = dc.getWebServicesRootDD();
         }
@@ -340,6 +385,32 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
         return newBeanId.getAndIncrement();
     }
     
+    // ------------------------------------------------------------------------
+    // DescriptorReader implementation
+    // ------------------------------------------------------------------------
+    public Map<String, Object> readDescriptor() {
+        CommonBeanReader reader = getAnnotationReader();
+        return reader != null ? reader.readDescriptor(getStandardRootDD()) : null;
+    }
+
+    public Map<String, Object> readAnnotations() {
+        Map<String, Object> result = null;
+        CommonBeanReader reader = getAnnotationReader();
+        if(reader != null) {
+            SectionNodeView view = getSectionNodeView();
+            XmlMultiViewDataObject dObj = view.getDataObject();
+            result = reader.readAnnotations(dObj);
+        }
+        return result;
+    }
+    
+    protected CommonBeanReader getAnnotationReader() {
+        return null;
+    }
+    
+    /** -----------------------------------------------------------------------
+     * AddBeanAction implementation
+     */
     public final class AddBeanAction extends AbstractAction {
         
         public AddBeanAction(String actionText) {
@@ -363,28 +434,4 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
             }
         }
     }
-    
-//    public List<XPathNode> getAnnotationModel() {
-//        return Collections.EMPTY_LIST;
-//    }
-//    
-//    public static class XPathNode {
-//        
-//        private final String path;
-//        private final String value;
-//        
-//        public XPathNode(String path, String value) {
-//            this.path = path;
-//            this.value = value;
-//        }
-//        
-//        public String getXPath() {
-//            return path;
-//        }
-//        
-//        public String getValue() {
-//            return value;
-//        }
-//    }
-    
 }

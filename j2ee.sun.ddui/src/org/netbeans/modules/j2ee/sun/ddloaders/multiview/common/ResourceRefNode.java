@@ -37,7 +37,7 @@ public class ResourceRefNode extends NamedBeanNode {
     }
 
     protected SectionNodeInnerPanel createNodeInnerPanel() {
-        return new ResourceRefPanel(getSectionNodeView(), (ResourceRef) key, version);
+        return new ResourceRefPanel(getSectionNodeView(), this, version);
     }
     
 }

@@ -37,7 +37,7 @@ public class ResourceEnvRefNode extends NamedBeanNode {
     }
 
     protected SectionNodeInnerPanel createNodeInnerPanel() {
-        return new ResourceEnvRefPanel(getSectionNodeView(), (ResourceEnvRef) key, version);
+        return new ResourceEnvRefPanel(getSectionNodeView(), this, version);
     }
     
 }

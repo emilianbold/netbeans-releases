@@ -50,6 +50,9 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.j2ee.dd.api.client.AppClientMetadata;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
+import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.schema2beans.Schema2BeansRuntimeException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
@@ -297,11 +300,11 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
     private static Map<Object, String> webserviceDDNameMap = new HashMap<Object, String>(7);
     
     static {
-        standardDDNameMap.put(J2eeModule.WAR, "web.xml");
+        standardDDNameMap.put(J2eeModule.WAR, J2eeModule.WEB_XML);
         standardDDNameMap.put(J2eeModule.EJB, "ejb-jar.xml");
         standardDDNameMap.put(J2eeModule.EAR, "application.xml");
         standardDDNameMap.put(J2eeModule.CLIENT, "application-client.xml");
-        webserviceDDNameMap.put(J2eeModule.WAR, "webservices.xml");
+        webserviceDDNameMap.put(J2eeModule.WAR, J2eeModule.WEBSERVICES_XML);
         webserviceDDNameMap.put(J2eeModule.EJB, "webservices.xml");
     }
     
@@ -350,7 +353,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
     public <T> MetadataModel<T> getMetadataModel(Class<T> type) {
         return module.getDeploymentDescriptor(type);
     }
-    
+
     public void updateResourceDir(File resourceDir) {
         this.resourceDir = resourceDir;
     }

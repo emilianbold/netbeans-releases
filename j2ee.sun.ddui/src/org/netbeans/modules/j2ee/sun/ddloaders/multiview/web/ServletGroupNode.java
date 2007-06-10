@@ -20,20 +20,14 @@
 package org.netbeans.modules.j2ee.sun.ddloaders.multiview.web;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
-import org.netbeans.modules.j2ee.sun.ddloaders.Utils;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.DDBinding;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.NamedBeanGroupNode;
 import org.netbeans.modules.xml.multiview.SectionNode;
@@ -66,15 +60,15 @@ public class ServletGroupNode extends NamedBeanGroupNode {
         return sunWebApp.getServlet();
     }
     
-    protected org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] getStandardBeansFromModel() {
-        org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] stdBeans = null;
-        org.netbeans.modules.j2ee.dd.api.common.RootInterface stdRootDD = getStandardRootDD();
-        if(stdRootDD instanceof org.netbeans.modules.j2ee.dd.api.web.WebApp) {
-            org.netbeans.modules.j2ee.dd.api.web.WebApp webApp = (org.netbeans.modules.j2ee.dd.api.web.WebApp) stdRootDD;
-            stdBeans = webApp.getServlet();
-        }
-        return stdBeans != null ? stdBeans : new org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [0];
-    }
+//    protected org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] getStandardBeansFromModel() {
+//        org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] stdBeans = null;
+//        org.netbeans.modules.j2ee.dd.api.common.RootInterface stdRootDD = getStandardRootDD();
+//        if(stdRootDD instanceof org.netbeans.modules.j2ee.dd.api.web.WebApp) {
+//            org.netbeans.modules.j2ee.dd.api.web.WebApp webApp = (org.netbeans.modules.j2ee.dd.api.web.WebApp) stdRootDD;
+//            stdBeans = webApp.getServlet();
+//        }
+//        return stdBeans != null ? stdBeans : new org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [0];
+//    }
 
     protected CommonDDBean addNewBean() {
         Servlet newServlet = sunWebApp.newServlet();
@@ -119,6 +113,38 @@ public class ServletGroupNode extends NamedBeanGroupNode {
 //    }
     
     // ------------------------------------------------------------------------
+    // DescriptorReader implementation
+    // ------------------------------------------------------------------------
+    @Override
+    public Map<String, Object> readDescriptor() {
+        Map<String, Object> resultMap = null;
+        
+        org.netbeans.modules.j2ee.dd.api.common.RootInterface stdRootDD = getStandardRootDD();
+        if(stdRootDD instanceof org.netbeans.modules.j2ee.dd.api.web.WebApp) {
+            org.netbeans.modules.j2ee.dd.api.web.WebApp webApp = (org.netbeans.modules.j2ee.dd.api.web.WebApp) stdRootDD;
+            resultMap = ServletMetadataReader.readDescriptor(webApp);
+        }
+        
+        return resultMap;
+    }
+
+    @Override
+    public Map<String, Object> readAnnotations() {
+        Map<String, Object> resultMap = null;
+        
+        try {
+            MetadataModel<WebAppMetadata> webAppModel = getMetadataModel(WebAppMetadata.class);
+            resultMap = webAppModel.runReadAction(new ServletMetadataReader());
+        } catch (MetadataModelException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+        
+        return resultMap;
+    }
+    
+    // ------------------------------------------------------------------------
     // BeanResolver interface implementation
     // ------------------------------------------------------------------------
     public CommonDDBean createBean() {
@@ -148,45 +174,45 @@ public class ServletGroupNode extends NamedBeanGroupNode {
     // ------------------------------------------------------------------------
     // Metadata access    
     // ------------------------------------------------------------------------
-    public List<org.netbeans.modules.j2ee.dd.api.web.Servlet> getServletMetadataModel() {
-        List<org.netbeans.modules.j2ee.dd.api.web.Servlet> result = Collections.EMPTY_LIST;
-
-        try {
-            MetadataModel<WebAppMetadata> webModel = getMetadataModel(WebAppMetadata.class);
-            if(webModel != null) {
-                result = webModel.runReadAction(new MetadataModelAction<WebAppMetadata, List<org.netbeans.modules.j2ee.dd.api.web.Servlet>>() {
-                    public List<org.netbeans.modules.j2ee.dd.api.web.Servlet> run(WebAppMetadata metadata) throws Exception {
-                        List<org.netbeans.modules.j2ee.dd.api.web.Servlet> servletList = new ArrayList<org.netbeans.modules.j2ee.dd.api.web.Servlet>();
-                        org.netbeans.modules.j2ee.dd.api.web.WebApp webApp = metadata.getRoot();
-                        org.netbeans.modules.j2ee.dd.api.web.Servlet [] servlets = webApp.getServlet();
-                        if(servlets != null) {
-                            for(org.netbeans.modules.j2ee.dd.api.web.Servlet servlet : servlets) {
-                                if(Utils.notEmpty(servlet.getServletName())) {
-                                    org.netbeans.modules.j2ee.dd.api.web.Servlet servletCopy = 
-                                            (org.netbeans.modules.j2ee.dd.api.web.Servlet) webApp.createBean("Servlet");
-                                    servletCopy.setServletName(servlet.getServletName());
-                                    org.netbeans.modules.j2ee.dd.api.common.RunAs runAs = servlet.getRunAs();
-                                    if(runAs != null && Utils.notEmpty(runAs.getRoleName())) {
-                                        org.netbeans.modules.j2ee.dd.api.common.RunAs runAsCopy = 
-                                                (org.netbeans.modules.j2ee.dd.api.common.RunAs) servlet.createBean("RunAs");
-                                        runAsCopy.setRoleName(runAs.getRoleName());
-                                        servletCopy.setRunAs(runAsCopy);
-                                    }
-                                    servletList.add(servletCopy);
-                                }
-                            }
-                        }
-                        return servletList;
-                    }
-                }); 
-            }
-        } catch (MetadataModelException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        }
-
-        return result;
-    }
+//    public List<org.netbeans.modules.j2ee.dd.api.web.Servlet> getServletMetadataModel() {
+//        List<org.netbeans.modules.j2ee.dd.api.web.Servlet> result = Collections.EMPTY_LIST;
+//
+//        try {
+//            MetadataModel<WebAppMetadata> webModel = getMetadataModel(WebAppMetadata.class);
+//            if(webModel != null) {
+//                result = webModel.runReadAction(new MetadataModelAction<WebAppMetadata, List<org.netbeans.modules.j2ee.dd.api.web.Servlet>>() {
+//                    public List<org.netbeans.modules.j2ee.dd.api.web.Servlet> run(WebAppMetadata metadata) throws Exception {
+//                        List<org.netbeans.modules.j2ee.dd.api.web.Servlet> servletList = new ArrayList<org.netbeans.modules.j2ee.dd.api.web.Servlet>();
+//                        org.netbeans.modules.j2ee.dd.api.web.WebApp webApp = metadata.getRoot();
+//                        org.netbeans.modules.j2ee.dd.api.web.Servlet [] servlets = webApp.getServlet();
+//                        if(servlets != null) {
+//                            for(org.netbeans.modules.j2ee.dd.api.web.Servlet servlet : servlets) {
+//                                if(Utils.notEmpty(servlet.getServletName())) {
+//                                    org.netbeans.modules.j2ee.dd.api.web.Servlet servletCopy = 
+//                                            (org.netbeans.modules.j2ee.dd.api.web.Servlet) webApp.createBean("Servlet");
+//                                    servletCopy.setServletName(servlet.getServletName());
+//                                    org.netbeans.modules.j2ee.dd.api.common.RunAs runAs = servlet.getRunAs();
+//                                    if(runAs != null && Utils.notEmpty(runAs.getRoleName())) {
+//                                        org.netbeans.modules.j2ee.dd.api.common.RunAs runAsCopy = 
+//                                                (org.netbeans.modules.j2ee.dd.api.common.RunAs) servlet.createBean("RunAs");
+//                                        runAsCopy.setRoleName(runAs.getRoleName());
+//                                        servletCopy.setRunAs(runAsCopy);
+//                                    }
+//                                    servletList.add(servletCopy);
+//                                }
+//                            }
+//                        }
+//                        return servletList;
+//                    }
+//                }); 
+//            }
+//        } catch (MetadataModelException ex) {
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//        } catch (IOException ex) {
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//        }
+//
+//        return result;
+//    }
     
 }

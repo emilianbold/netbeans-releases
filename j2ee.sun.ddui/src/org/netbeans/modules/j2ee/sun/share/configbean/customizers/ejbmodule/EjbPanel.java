@@ -21,6 +21,8 @@ package org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.*;
 import java.awt.Dimension;
+import java.awt.Image;
+import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
@@ -28,11 +30,14 @@ import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
 import org.netbeans.modules.j2ee.sun.ddloaders.Utils;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.DDTextFieldEditorModel;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.DDBinding;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.EjbNode;
 import org.netbeans.modules.xml.multiview.ItemCheckBoxHelper;
 import org.netbeans.modules.xml.multiview.ItemEditorHelper;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
+import org.openide.util.Utilities;
 
 
 /**
@@ -41,27 +46,53 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
  */
 public class EjbPanel extends SectionNodeInnerPanel {
 
-    private SunDescriptorDataObject dataObject;
-    private Ejb ejb;
+    // data model & version
+    private EjbNode ejbNode;
     private ASDDVersion version;
 
-    public EjbPanel(SectionNodeView sectionNodeView, final Ejb ejb, final ASDDVersion version) {
+    public EjbPanel(SectionNodeView sectionNodeView, final EjbNode ejbNode, final ASDDVersion version) {
         super(sectionNodeView);
-        this.dataObject = (SunDescriptorDataObject) sectionNodeView.getDataObject();
-        this.ejb = ejb;
+        this.ejbNode = ejbNode;
         this.version = version;
 
         initComponents();
-        initUserComponents();
+        initUserComponents(sectionNodeView);
     }
 
-    private void initUserComponents() {
+    private void initUserComponents(SectionNodeView sectionNodeView) {
+        SunDescriptorDataObject dataObject = (SunDescriptorDataObject) sectionNodeView.getDataObject();
         XmlMultiViewDataSynchronizer synchronizer = dataObject.getModelSynchronizer();
         addRefreshable(new ItemEditorHelper(nameTextField, new EjbTextFieldEditorModel(synchronizer, Ejb.EJB_NAME)));
         addRefreshable(new ItemEditorHelper(jndiNameTextField, new EjbTextFieldEditorModel(synchronizer, Ejb.JNDI_NAME)));
         addRefreshable(new PassByRefCheckboxHelper(synchronizer, passByRefCheckBox));
+        
+        nameTextField.setEditable(!ejbNode.getBinding().isBound());
+        
+        updateOrigin();
     }
 
+    private void updateOrigin() {
+        DDBinding binding = ejbNode.getBinding();
+        String origin = binding.hasStandardDDBinding() ? "Standard DD" : 
+                binding.hasAnnotationBinding() ? "Annotation" : "Unbound";
+        if(binding.isVirtual()) {
+            origin += " (virtual)";
+        }
+        jTxtOrigin.setText(origin);
+        
+        Image originImage = getOriginImage(binding);
+        jLblOriginImage.setIcon(new ImageIcon(originImage));
+    }
+    
+    public static final String UNBOUND_ICON = "org/netbeans/modules/j2ee/sun/ddloaders/resources/UnBoundDD.gif";
+    public static final String BOUND_STANDARD_DD_ICON = "org/netbeans/modules/j2ee/sun/ddloaders/resources/BoundStandardDD.gif";
+    public static final String BOUND_ANNOTATION_ICON = "org/netbeans/modules/j2ee/sun/ddloaders/resources/BoundAnnotation.gif";
+    
+    public Image getOriginImage(DDBinding binding) {
+        String iconRef = binding.isBound() ? (binding.isAnnotated() ? BOUND_ANNOTATION_ICON : BOUND_STANDARD_DD_ICON) : UNBOUND_ICON;
+        return Utilities.loadImage(iconRef);
+    }
+    
      /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -72,8 +103,11 @@ public class EjbPanel extends SectionNodeInnerPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         generalPanel = new javax.swing.JPanel();
+        jLblOriginImage = new javax.swing.JLabel();
         nameLabel = new javax.swing.JLabel();
         nameTextField = new javax.swing.JTextField();
+        jLblOrigin = new javax.swing.JLabel();
+        jTxtOrigin = new javax.swing.JLabel();
         jndiNameLabel = new javax.swing.JLabel();
         jndiNameTextField = new javax.swing.JTextField();
         passByRefLabel = new javax.swing.JLabel();
@@ -84,6 +118,12 @@ public class EjbPanel extends SectionNodeInnerPanel {
 
         generalPanel.setOpaque(false);
         generalPanel.setLayout(new java.awt.GridBagLayout());
+
+        jLblOriginImage.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
+        generalPanel.add(jLblOriginImage, gridBagConstraints);
 
         nameLabel.setLabelFor(nameTextField);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle"); // NOI18N
@@ -105,10 +145,26 @@ public class EjbPanel extends SectionNodeInnerPanel {
         nameTextField.getAccessibleContext().setAccessibleName(bundle.getString("Name_Acsbl_Name")); // NOI18N
         nameTextField.getAccessibleContext().setAccessibleDescription(bundle.getString("Ejb_Name_Acsbl_Desc")); // NOI18N
 
+        jLblOrigin.setText("Origin:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
+        generalPanel.add(jLblOrigin, gridBagConstraints);
+
+        jTxtOrigin.setText("(unknown)");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
+        generalPanel.add(jTxtOrigin, gridBagConstraints);
+
         jndiNameLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("MNC_Jndi_Name").charAt(0));
         jndiNameLabel.setLabelFor(jndiNameTextField);
         jndiNameLabel.setText(bundle.getString("LBL_Jndi_Name_1")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         generalPanel.add(jndiNameLabel, gridBagConstraints);
@@ -129,6 +185,7 @@ public class EjbPanel extends SectionNodeInnerPanel {
         passByRefLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("MNC_Pass_By_Reference").charAt(0));
         passByRefLabel.setText(bundle.getString("LBL_Pass_By_Reference_1")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         generalPanel.add(passByRefLabel, gridBagConstraints);
@@ -155,6 +212,9 @@ public class EjbPanel extends SectionNodeInnerPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel generalPanel;
+    private javax.swing.JLabel jLblOrigin;
+    private javax.swing.JLabel jLblOriginImage;
+    private javax.swing.JLabel jTxtOrigin;
     private javax.swing.JLabel jndiNameLabel;
     private javax.swing.JTextField jndiNameTextField;
     private javax.swing.JLabel nameLabel;
@@ -193,7 +253,17 @@ public class EjbPanel extends SectionNodeInnerPanel {
         }
         
         protected CommonDDBean getBean() {
-            return ejb;
+            return ejbNode.getBinding().getSunBean();
+        }
+        
+        @Override
+        protected void setValue(String value) {
+            super.setValue(value);
+
+            // If this was a virtual bean, commit it to the graph.
+            if(ejbNode.addVirtualBean()) {
+                updateOrigin();
+            }
         }
         
     }
@@ -205,11 +275,18 @@ public class EjbPanel extends SectionNodeInnerPanel {
         }
 
         public boolean getItemValue() {
+            Ejb ejb = (Ejb) ejbNode.getBinding().getSunBean();
             return Utils.booleanValueOf(ejb.getPassByReference());
         }
 
         public void setItemValue(boolean value) {
+            Ejb ejb = (Ejb) ejbNode.getBinding().getSunBean();
             ejb.setPassByReference(value ? Boolean.toString(value) : null);
+            
+            // If this was a virtual bean, commit it to the graph.
+            if(ejbNode.addVirtualBean()) {
+                updateOrigin();
+            }
         }
     }
 }

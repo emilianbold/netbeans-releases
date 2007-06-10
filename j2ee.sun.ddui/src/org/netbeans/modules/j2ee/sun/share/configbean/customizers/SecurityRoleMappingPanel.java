@@ -31,6 +31,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping;
 import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.TextItemEditorModel;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.SecurityRoleMappingNode;
 import org.netbeans.modules.j2ee.sun.share.PrincipalNameMapping;
 import org.netbeans.modules.xml.multiview.ItemEditorHelper;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
@@ -44,12 +45,12 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
  */
 public class SecurityRoleMappingPanel extends SectionNodeInnerPanel
         implements ListSelectionListener, TableModelListener {
-	
+
     public static final ResourceBundle customizerBundle = ResourceBundle.getBundle(
         "org.netbeans.modules.j2ee.sun.share.configbean.customizers.Bundle");	// NOI18N
 
-    private SunDescriptorDataObject dataObject;
-    private SecurityRoleMapping mapping;
+    // data model & version
+    private SecurityRoleMappingNode mappingNode;
     private ASDDVersion version;
 
     private SRMPrincipalTableModel principalTableModel;
@@ -58,40 +59,47 @@ public class SecurityRoleMappingPanel extends SectionNodeInnerPanel
     // true if AS 9.0+ fields are visible.
     private boolean as90FeaturesVisible;
 
-	public SecurityRoleMappingPanel(SectionNodeView sectionNodeView, final SecurityRoleMapping mapping, final ASDDVersion version) {
+    public SecurityRoleMappingPanel(SectionNodeView sectionNodeView, final SecurityRoleMappingNode mappingNode, final ASDDVersion version) {
         super(sectionNodeView);
-        
-        this.dataObject = (SunDescriptorDataObject) sectionNodeView.getDataObject();
-        this.mapping = mapping;
+
+        this.mappingNode = mappingNode;
         this.version = version;
         this.as90FeaturesVisible = true;
 
-		initComponents();
-		initUserComponents();
-	}
+        initComponents();
+        initUserComponents(sectionNodeView);
+    }
 
-	private void initUserComponents() {
+    private void initUserComponents(SectionNodeView sectionNodeView) {
         if(ASDDVersion.SUN_APPSERVER_9_0.compareTo(version) <= 0) {
             as90FeaturesVisible = true;
         } else {
             as90FeaturesVisible = false;
         }
 
+        SunDescriptorDataObject dataObject = (SunDescriptorDataObject) sectionNodeView.getDataObject();
         XmlMultiViewDataSynchronizer synchronizer = dataObject.getModelSynchronizer();
-        
+        SecurityRoleMapping mapping = getMappingBean();
+
         principalTableModel = new SRMPrincipalTableModel(synchronizer, mapping, as90FeaturesVisible ? 2 : 1);
         jTblPrincipals.setModel(principalTableModel);
-        
+
         groupTableModel = new SRMGroupTableModel(synchronizer, mapping);
         jTblGroups.setModel(groupTableModel);
-        
+
         enablePrincipalButtons();
         enableGroupButtons();
 
         addRefreshable(new ItemEditorHelper(jTxtSecurityRoleName, new SecurityRoleMappingNameEditorModel(synchronizer)));
+
+        jTxtSecurityRoleName.setEditable(!mappingNode.getBinding().isBound());
         
         addListeners();
-	}
+    }
+    
+    private SecurityRoleMapping getMappingBean() {
+        return (SecurityRoleMapping) mappingNode.getBinding().getSunBean();
+    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -311,7 +319,7 @@ public class SecurityRoleMappingPanel extends SectionNodeInnerPanel
     }//GEN-LAST:event_jBtnEditPrincipalActionPerformed
 
     private void jBtnAddPrincipalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnAddPrincipalActionPerformed
-		handleAddPrincipalAction();
+        handleAddPrincipalAction();
     }//GEN-LAST:event_jBtnAddPrincipalActionPerformed
 
 
@@ -352,32 +360,32 @@ public class SecurityRoleMappingPanel extends SectionNodeInnerPanel
             selectionModel.setValueIsAdjusting(false);
         }
     }
-    
-	/** Popup a dialog that lets the user edit the selected entry.  The changed
-	 *  name will not be allowed to match any existing name.  The item will
-	 *  remain selected once the action is completed.
-	 */
-	private void handleEditPrincipalAction() {
-		int [] selectedIndices = jTblPrincipals.getSelectedRows();
-		if(selectedIndices.length > 0) {
-			ListSelectionModel selectionModel = jTblPrincipals.getSelectionModel();
-			try {
+
+    /** Popup a dialog that lets the user edit the selected entry.  The changed
+     *  name will not be allowed to match any existing name.  The item will
+     *  remain selected once the action is completed.
+     */
+    private void handleEditPrincipalAction() {
+        int [] selectedIndices = jTblPrincipals.getSelectedRows();
+        if(selectedIndices.length > 0) {
+            ListSelectionModel selectionModel = jTblPrincipals.getSelectionModel();
+            try {
                 PrincipalNameMapping entry = principalTableModel.getElementAt(selectedIndices[0]);
-				SecurityEditPrincipalPanel.editPrincipalName(this, entry, principalTableModel, version);
-				selectionModel.setSelectionInterval(selectedIndices[0], selectedIndices[0]);
-			} finally {
-				selectionModel.setValueIsAdjusting(false);
-			}
-		}
-	}
-    
-	/** Popup a dialog that lets the user add a new entry to the specifed master
-	 *  list.  The new name will not be allowed to match any existing name.  The
-	 *  new item will be preselected afterwards.  The new name will either come
+                SecurityEditPrincipalPanel.editPrincipalName(this, entry, principalTableModel, version);
+                selectionModel.setSelectionInterval(selectedIndices[0], selectedIndices[0]);
+            } finally {
+                selectionModel.setValueIsAdjusting(false);
+            }
+        }
+    }
+
+    /** Popup a dialog that lets the user add a new entry to the specifed master
+     *  list.  The new name will not be allowed to match any existing name.  The
+     *  new item will be preselected afterwards.  The new name will either come
      *  from the existing master list or will be a new name and automatically added
      *  to the master list.
-	 */
-	private void handleAddGroupAction() {
+     */
+    private void handleAddGroupAction() {
         ListSelectionModel selectionModel = jTblGroups.getSelectionModel();
         try {
             selectionModel.setValueIsAdjusting(true);
@@ -388,51 +396,50 @@ public class SecurityRoleMappingPanel extends SectionNodeInnerPanel
         } finally {
             selectionModel.setValueIsAdjusting(false);
         }
-        
-	}
+    }
 
-	/** Popup a dialog that lets the user edit the selected entry.  The changed
-	 *  name will not be allowed to match any existing name.  The item will
-	 *  remain selected once the action is completed.
-	 */
-	private void handleEditGroupAction() {
-		int [] selectedIndices = jTblGroups.getSelectedRows();
-		if(selectedIndices.length > 0) {
-			ListSelectionModel selectionModel = jTblGroups.getSelectionModel();
-			try {
+    /** Popup a dialog that lets the user edit the selected entry.  The changed
+     *  name will not be allowed to match any existing name.  The item will
+     *  remain selected once the action is completed.
+     */
+    private void handleEditGroupAction() {
+        int [] selectedIndices = jTblGroups.getSelectedRows();
+        if(selectedIndices.length > 0) {
+            ListSelectionModel selectionModel = jTblGroups.getSelectionModel();
+            try {
                 String entry = groupTableModel.getElementAt(selectedIndices[0]);
-				SecurityEditGroupPanel.editGroupName(this, entry, groupTableModel);
-				selectionModel.setSelectionInterval(selectedIndices[0], selectedIndices[0]);
-			} finally {
-				selectionModel.setValueIsAdjusting(false);
-			}
-		}
-	}
-    
+                SecurityEditGroupPanel.editGroupName(this, entry, groupTableModel);
+                selectionModel.setSelectionInterval(selectedIndices[0], selectedIndices[0]);
+            } finally {
+                selectionModel.setValueIsAdjusting(false);
+            }
+        }
+    }
+
     /** Remove all selected items from the specified table.
      */
     private void handleRemoveAction(JTable theTable) {
-		int [] selectedIndices = theTable.getSelectedRows();
-		if(selectedIndices.length > 0) {
-			ListSelectionModel selectionModel = theTable.getSelectionModel();
-			try {
-				SRMBaseTableModel theModel = (SRMBaseTableModel) theTable.getModel();
-				selectionModel.setValueIsAdjusting(true);
-				theModel.removeElements(selectedIndices);
-				int numElements = theTable.getModel().getRowCount();
-				if(numElements > 0) {
-					int newSelectedIndex = selectedIndices[0];
-					if(newSelectedIndex >= numElements) {
-						newSelectedIndex = numElements-1;
-					}
-					selectionModel.setSelectionInterval(newSelectedIndex, newSelectedIndex);
-				} else {
-					selectionModel.clearSelection();
-				}
-			} finally {
-				selectionModel.setValueIsAdjusting(false);
-			}
-		}
+        int [] selectedIndices = theTable.getSelectedRows();
+        if(selectedIndices.length > 0) {
+            ListSelectionModel selectionModel = theTable.getSelectionModel();
+            try {
+                SRMBaseTableModel theModel = (SRMBaseTableModel) theTable.getModel();
+                selectionModel.setValueIsAdjusting(true);
+                theModel.removeElements(selectedIndices);
+                int numElements = theTable.getModel().getRowCount();
+                if(numElements > 0) {
+                    int newSelectedIndex = selectedIndices[0];
+                    if(newSelectedIndex >= numElements) {
+                        newSelectedIndex = numElements-1;
+                    }
+                    selectionModel.setSelectionInterval(newSelectedIndex, newSelectedIndex);
+                } else {
+                    selectionModel.clearSelection();
+                }
+            } finally {
+                selectionModel.setValueIsAdjusting(false);
+            }
+        }
     }
 
     /** Enable the edit and remove buttons for the principal table based on how 
@@ -503,7 +510,7 @@ public class SecurityRoleMappingPanel extends SectionNodeInnerPanel
 //        Object source = tableModelEvent.getSource();
 //        theBean.setDirty();
     }
-    
+
 //    public void partitionStateChanged(ErrorMessageDB.PartitionState oldState, ErrorMessageDB.PartitionState newState) {
 //        if(newState.getPartition() == getPartition()) {
 //            showErrors();
@@ -527,11 +534,11 @@ public class SecurityRoleMappingPanel extends SectionNodeInnerPanel
 //                return ValidationError.PARTITION_SECURITY_ASSIGN;
 //        }
 //    }
-    
-	public String getHelpId() {
-		return "AS_CFG_SecurityRoleMapping";	// NOI18N
-	}
-    
+
+        public String getHelpId() {
+                return "AS_CFG_SecurityRoleMapping";	// NOI18N
+        }
+
     public void setValue(JComponent source, Object value) {
     }
 
@@ -541,22 +548,7 @@ public class SecurityRoleMappingPanel extends SectionNodeInnerPanel
     public JComponent getErrorComponent(String errorId) {
         return null;
     }
-    
-    private class SecurityRoleMappingNameEditorModel extends TextItemEditorModel {
 
-        public SecurityRoleMappingNameEditorModel(XmlMultiViewDataSynchronizer synchronizer) {
-            super(synchronizer, true, true);
-        }
-
-        protected String getValue() {
-            return mapping.getRoleName();
-        }
-
-        protected void setValue(String value) {
-            mapping.setRoleName(value);
-        }
-    }
-    
     /** Return correct preferred size.  The tables in this are a bit territorial.
      */
     @Override
@@ -567,5 +559,23 @@ public class SecurityRoleMappingPanel extends SectionNodeInnerPanel
         System.out.println("preferredWidth = " + preferredWidth);
         return new Dimension(preferredWidth, minSize.height);
     }
-    
+
+    private class SecurityRoleMappingNameEditorModel extends TextItemEditorModel {
+
+        public SecurityRoleMappingNameEditorModel(XmlMultiViewDataSynchronizer synchronizer) {
+            super(synchronizer, true, true);
+        }
+
+        protected String getValue() {
+            return getMappingBean().getRoleName();
+        }
+
+        protected void setValue(String value) {
+            getMappingBean().setRoleName(value);
+            
+            if(mappingNode.addVirtualBean()) {
+                // update if necessary
+            }
+        }
+    }
 }

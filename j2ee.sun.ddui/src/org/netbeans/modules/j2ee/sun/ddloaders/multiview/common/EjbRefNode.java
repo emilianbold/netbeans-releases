@@ -37,7 +37,7 @@ public class EjbRefNode extends NamedBeanNode {
     }
 
     protected SectionNodeInnerPanel createNodeInnerPanel() {
-        return new EjbRefPanel(getSectionNodeView(), (EjbRef) key, version);
+        return new EjbRefPanel(getSectionNodeView(), this, version);
     }
     
 }

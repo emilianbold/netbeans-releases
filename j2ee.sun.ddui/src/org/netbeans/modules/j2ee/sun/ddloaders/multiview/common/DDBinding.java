@@ -16,7 +16,6 @@
  */
 package org.netbeans.modules.j2ee.sun.ddloaders.multiview.common;
 
-import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 
@@ -27,65 +26,67 @@ import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
  */
 public class DDBinding implements Comparable<DDBinding> {
 
+    // !PW Consider converting these to enums.
+    public static final String PROP_NAME = "Name"; // varies...
+    public static final String PROP_SESSION_TYPE = "SessionType"; // session
+    public static final String PROP_DESTINATION_TYPE = "DestinationType"; // message-driven
+    public static final String PROP_ROLE_NAME = "RoleName"; // security-role/role-name
+    public static final String PROP_RUNAS_ROLE = "RunAsRole"; // run-as/role-name
+
+    public static final String PROP_SERVICE_REF = "ServiceRef"; // service-ref
+    public static final String PROP_SECURITY_ROLE = "SecurityRole"; // security-role
+    public static final String PROP_EJB_REF = "EjbRef"; // ejb-ref
+    public static final String PROP_RESOURCE_REF = "ResourceRef"; // resource-ref
+    public static final String PROP_RESOURCE_ENV_REF = "ResourceEnvRef"; // resource-env-ref
+    
     protected final BeanResolver resolver;
     protected final CommonDDBean sunBean;
-    protected final org.netbeans.modules.j2ee.dd.api.common.CommonDDBean ddBean;
-    protected final org.netbeans.modules.j2ee.dd.api.common.CommonDDBean annotatedBean;
+    protected Map<String, Object> standardMap;
+    protected Map<String, Object> annotationMap;
     protected boolean virtual;
-    protected Map<String, String> propertyMap;
 
     public DDBinding(BeanResolver resolver, CommonDDBean sunBean,
-            org.netbeans.modules.j2ee.dd.api.common.CommonDDBean ddBean,
-            org.netbeans.modules.j2ee.dd.api.common.CommonDDBean annotatedBean) {
-        this(resolver, sunBean, ddBean, annotatedBean, false);
+            Map<String, Object> standardMap, Map<String, Object> annotationMap) {
+        this(resolver, sunBean, standardMap, annotationMap, false);
     }
 
     public DDBinding(BeanResolver resolver, CommonDDBean sunBean,
-            org.netbeans.modules.j2ee.dd.api.common.CommonDDBean ddBean,
-            org.netbeans.modules.j2ee.dd.api.common.CommonDDBean annotatedBean,
+            Map<String, Object> standardMap, Map<String, Object> annotationMap,
             boolean virtual) {
         this.resolver = resolver;
         this.sunBean = sunBean;
-        this.ddBean = ddBean;
-        this.annotatedBean = annotatedBean;
+        this.standardMap = standardMap;
+        this.annotationMap = annotationMap;
         this.virtual = virtual;
-        this.propertyMap = new HashMap<String, String>();
     }
 
     public String getBeanName() {
         return resolver.getBeanName(sunBean);
     }
     
-    public String getBindingName(org.netbeans.modules.j2ee.dd.api.common.CommonDDBean ddBean) {
-        return resolver.getBeanName(ddBean);
-    }
-    
     public String getBindingName() {
-        return ddBean != null ? getBindingName(ddBean) : (annotatedBean != null ? getBindingName(annotatedBean) : "");
+        Object value = getProperty(PROP_NAME);
+        return (value instanceof String) ? (String) value : "";
     }
     
     public CommonDDBean getSunBean() {
         return sunBean;
     }
     
-    public org.netbeans.modules.j2ee.dd.api.common.CommonDDBean getStandardBean() {
-        return ddBean;
+    public boolean hasStandardDDBinding() {
+        return standardMap != null;
     }
     
-    public org.netbeans.modules.j2ee.dd.api.common.CommonDDBean getAnnotatedBean() {
-        return annotatedBean;
-    }
-    
-    public String getProperty(String propertyName) {
-        return propertyMap.get(propertyName);
+    public boolean hasAnnotationBinding() {
+        return annotationMap != null;
     }
     
     public boolean isBound() {
-        return ddBean != null || annotatedBean != null;
+        return standardMap != null || annotationMap != null;
     }
 
     public boolean isAnnotated() {
-        return annotatedBean != null;
+        return annotationMap != null;
     }
 
     public boolean isVirtual() {
@@ -96,6 +97,10 @@ public class DDBinding implements Comparable<DDBinding> {
         virtual = false;
     }
 
+    public Object getProperty(String property) {
+        return standardMap != null ? standardMap.get(property) : annotationMap != null ? annotationMap.get(property) : null;
+    }
+    
     public int compareTo(DDBinding other) {
         return getBeanName().compareTo(other.getBeanName());
     }
@@ -111,16 +116,22 @@ public class DDBinding implements Comparable<DDBinding> {
         if (getClass() != obj.getClass()) {
             return false;
         }
+        
         final DDBinding other = (DDBinding) obj;
         if (this.sunBean != other.sunBean && (this.sunBean == null || !this.sunBean.equals(other.sunBean))) {
             return false;
         }
-        if (this.ddBean != other.ddBean && (this.ddBean == null || !this.ddBean.equals(other.ddBean))) {
+        
+        if(standardMap != other.standardMap) {
+            // TODO compare contents?
             return false;
         }
-        if (this.annotatedBean != other.annotatedBean && (this.annotatedBean == null || !this.annotatedBean.equals(other.annotatedBean))) {
+    
+        if(annotationMap != other.annotationMap) {
+            // TODO compare contents?
             return false;
         }
+        
         return true;
     }
 
@@ -128,8 +139,9 @@ public class DDBinding implements Comparable<DDBinding> {
     public int hashCode() {
         int hash = 7;
         hash = 31 * hash + (this.sunBean != null ? this.sunBean.hashCode() : 0);
-        hash = 31 * hash + (this.ddBean != null ? this.ddBean.hashCode() : 0);
-        hash = 31 * hash + (this.annotatedBean != null ? this.annotatedBean.hashCode() : 0);
+        
+        // !PW FIXME do we need to check the binding maps?  See equals().
+        
         return hash;
     }
 
@@ -139,9 +151,9 @@ public class DDBinding implements Comparable<DDBinding> {
         builder.append("Sun DD: ");
         builder.append(sunBean != null ? getBeanName() : "(null)");
         builder.append(", Standard DD: ");
-        builder.append(ddBean != null ? getBindingName(ddBean) : "(null)");
+        builder.append(standardMap != null ? standardMap.get(PROP_NAME) : "(null)");
         builder.append(", Annotation: ");
-        builder.append(annotatedBean != null ? getBindingName(annotatedBean) : "(null)");
+        builder.append(annotationMap != null ? annotationMap.get(PROP_NAME) : "(null)");
         return builder.toString();
     }
     

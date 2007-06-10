@@ -62,24 +62,24 @@ public class SecurityRoleMappingGroupNode extends NamedBeanGroupNode {
         return mappings;
     }
 
-    protected org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] getStandardBeansFromModel() {
-        org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] stdBeans = null;
-        org.netbeans.modules.j2ee.dd.api.common.RootInterface stdRootDD = getStandardRootDD();
-        if(stdRootDD instanceof org.netbeans.modules.j2ee.dd.api.web.WebApp) {
-            org.netbeans.modules.j2ee.dd.api.web.WebApp webApp = (org.netbeans.modules.j2ee.dd.api.web.WebApp) stdRootDD;
-            stdBeans = webApp.getSecurityRole();
-        } else if(stdRootDD instanceof org.netbeans.modules.j2ee.dd.api.ejb.EjbJar) {
-            org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = (org.netbeans.modules.j2ee.dd.api.ejb.EjbJar) stdRootDD;
-            org.netbeans.modules.j2ee.dd.api.ejb.AssemblyDescriptor assembly = ejbJar.getSingleAssemblyDescriptor();
-            if(assembly != null) {
-                stdBeans = assembly.getSecurityRole();
-            }
-        } else if(stdRootDD instanceof org.netbeans.modules.j2ee.dd.api.application.Application) {
-            org.netbeans.modules.j2ee.dd.api.application.Application application = (org.netbeans.modules.j2ee.dd.api.application.Application) stdRootDD;
-            stdBeans = application.getSecurityRole();
-        }
-        return stdBeans != null ? stdBeans : new org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [0];
-    }
+//    protected org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] getStandardBeansFromModel() {
+//        org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] stdBeans = null;
+//        org.netbeans.modules.j2ee.dd.api.common.RootInterface stdRootDD = getStandardRootDD();
+//        if(stdRootDD instanceof org.netbeans.modules.j2ee.dd.api.web.WebApp) {
+//            org.netbeans.modules.j2ee.dd.api.web.WebApp webApp = (org.netbeans.modules.j2ee.dd.api.web.WebApp) stdRootDD;
+//            stdBeans = webApp.getSecurityRole();
+//        } else if(stdRootDD instanceof org.netbeans.modules.j2ee.dd.api.ejb.EjbJar) {
+//            org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = (org.netbeans.modules.j2ee.dd.api.ejb.EjbJar) stdRootDD;
+//            org.netbeans.modules.j2ee.dd.api.ejb.AssemblyDescriptor assembly = ejbJar.getSingleAssemblyDescriptor();
+//            if(assembly != null) {
+//                stdBeans = assembly.getSecurityRole();
+//            }
+//        } else if(stdRootDD instanceof org.netbeans.modules.j2ee.dd.api.application.Application) {
+//            org.netbeans.modules.j2ee.dd.api.application.Application application = (org.netbeans.modules.j2ee.dd.api.application.Application) stdRootDD;
+//            stdBeans = application.getSecurityRole();
+//        }
+//        return stdBeans != null ? stdBeans : new org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [0];
+//    }
 
     protected CommonDDBean addNewBean() {
         SecurityRoleMapping newSecurityRoleMapping = (SecurityRoleMapping) createBean();
@@ -113,6 +113,14 @@ public class SecurityRoleMappingGroupNode extends NamedBeanGroupNode {
         } else if(commonDD instanceof SunApplication) {
             ((SunApplication) commonDD).removeSecurityRoleMapping(mapping);
         }
+    }
+    
+    // ------------------------------------------------------------------------
+    // Support for DescriptorReader interface implementation
+    // ------------------------------------------------------------------------
+    @Override 
+    protected CommonBeanReader getAnnotationReader() {
+        return new SecurityRoleMetadataReader();
     }
     
     // ------------------------------------------------------------------------

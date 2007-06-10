@@ -38,7 +38,7 @@ public class ServiceRefNode extends NamedBeanNode {
     }
 
     protected SectionNodeInnerPanel createNodeInnerPanel() {
-        return new ServiceRefPanel(getSectionNodeView(), (ServiceRef) key, version);
+        return new ServiceRefPanel(getSectionNodeView(), this, version);
     }
     
 }

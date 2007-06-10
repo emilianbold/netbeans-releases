@@ -27,7 +27,6 @@ import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
-import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 
@@ -62,33 +61,33 @@ public class ResourceEnvRefGroupNode extends NamedBeanGroupNode {
         return resourceEnvRefs;
     }
 
-    protected org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] getStandardBeansFromModel() {
-        org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] stdBeans = null;
-        org.netbeans.modules.j2ee.dd.api.common.CommonDDBean stdParentDD = null;
-        
-        // get binding from parent node if this is ejb...
-        Node parentNode = getParentNode();
-        if(parentNode instanceof NamedBeanNode) {
-            NamedBeanNode namedNode = (NamedBeanNode) parentNode;
-            DDBinding parentBinding = namedNode.getBinding();
-            stdParentDD = parentBinding.getStandardBean();
-        } else {
-            stdParentDD = getStandardRootDD();
-        }
-        
-        if(stdParentDD instanceof org.netbeans.modules.j2ee.dd.api.web.WebApp) {
-            org.netbeans.modules.j2ee.dd.api.web.WebApp webApp = (org.netbeans.modules.j2ee.dd.api.web.WebApp) stdParentDD;
-            stdBeans = webApp.getResourceEnvRef();
-        } else if(stdParentDD instanceof org.netbeans.modules.j2ee.dd.api.ejb.Ejb) {
-            org.netbeans.modules.j2ee.dd.api.ejb.Ejb ejb = (org.netbeans.modules.j2ee.dd.api.ejb.Ejb) stdParentDD;
-            stdBeans = ejb.getResourceEnvRef();
-        } else if(stdParentDD instanceof org.netbeans.modules.j2ee.dd.api.client.AppClient) {
-            org.netbeans.modules.j2ee.dd.api.client.AppClient appClient = (org.netbeans.modules.j2ee.dd.api.client.AppClient) stdParentDD;
-            stdBeans = appClient.getResourceEnvRef();
-        }
-        
-        return stdBeans != null ? stdBeans : new org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [0];
-    }
+//    protected org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] getStandardBeansFromModel() {
+//        org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] stdBeans = null;
+//        org.netbeans.modules.j2ee.dd.api.common.CommonDDBean stdParentDD = null;
+//        
+//        // get binding from parent node if this is ejb...
+//        Node parentNode = getParentNode();
+//        if(parentNode instanceof NamedBeanNode) {
+//            NamedBeanNode namedNode = (NamedBeanNode) parentNode;
+//            DDBinding parentBinding = namedNode.getBinding();
+//            stdParentDD = parentBinding.getStandardBean();
+//        } else {
+//            stdParentDD = getStandardRootDD();
+//        }
+//        
+//        if(stdParentDD instanceof org.netbeans.modules.j2ee.dd.api.web.WebApp) {
+//            org.netbeans.modules.j2ee.dd.api.web.WebApp webApp = (org.netbeans.modules.j2ee.dd.api.web.WebApp) stdParentDD;
+//            stdBeans = webApp.getResourceEnvRef();
+//        } else if(stdParentDD instanceof org.netbeans.modules.j2ee.dd.api.ejb.Ejb) {
+//            org.netbeans.modules.j2ee.dd.api.ejb.Ejb ejb = (org.netbeans.modules.j2ee.dd.api.ejb.Ejb) stdParentDD;
+//            stdBeans = ejb.getResourceEnvRef();
+//        } else if(stdParentDD instanceof org.netbeans.modules.j2ee.dd.api.client.AppClient) {
+//            org.netbeans.modules.j2ee.dd.api.client.AppClient appClient = (org.netbeans.modules.j2ee.dd.api.client.AppClient) stdParentDD;
+//            stdBeans = appClient.getResourceEnvRef();
+//        }
+//        
+//        return stdBeans != null ? stdBeans : new org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [0];
+//    }
 
     protected CommonDDBean addNewBean() {
         ResourceEnvRef newResourceEnvRef = (ResourceEnvRef) createBean();
@@ -122,6 +121,14 @@ public class ResourceEnvRefGroupNode extends NamedBeanGroupNode {
         } else if(commonDD instanceof SunApplicationClient) {
             ((SunApplicationClient) commonDD).removeResourceEnvRef(resourceEnvRef);
         }
+    }
+    
+    // ------------------------------------------------------------------------
+    // Support for DescriptorReader interface implementation
+    // ------------------------------------------------------------------------
+    @Override 
+    protected CommonBeanReader getAnnotationReader() {
+        return new ResourceEnvRefMetadataReader();
     }
     
     // ------------------------------------------------------------------------

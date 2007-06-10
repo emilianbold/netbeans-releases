@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.j2ee.sun.ddloaders.multiview.common;
 
-import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.client.SunApplicationClient;
@@ -28,8 +27,6 @@ import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
-import org.openide.ErrorManager;
-import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 
@@ -64,37 +61,37 @@ public class ServiceRefGroupNode extends NamedBeanGroupNode {
         return serviceRefs;
     }
 
-    protected org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] getStandardBeansFromModel() {
-        org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] stdBeans = null;
-        org.netbeans.modules.j2ee.dd.api.common.CommonDDBean stdParentDD = null;
-        
-        // get binding from parent node if this is ejb...
-        Node parentNode = getParentNode();
-        if(parentNode instanceof NamedBeanNode) {
-            NamedBeanNode namedNode = (NamedBeanNode) parentNode;
-            DDBinding parentBinding = namedNode.getBinding();
-            stdParentDD = parentBinding.getStandardBean();
-        } else {
-            stdParentDD = getStandardRootDD();
-        }
-        
-        try {
-            if(stdParentDD instanceof org.netbeans.modules.j2ee.dd.api.web.WebApp) {
-                org.netbeans.modules.j2ee.dd.api.web.WebApp webApp = (org.netbeans.modules.j2ee.dd.api.web.WebApp) stdParentDD;
-                stdBeans = webApp.getServiceRef();
-            } else if(stdParentDD instanceof org.netbeans.modules.j2ee.dd.api.ejb.Ejb) {
-                org.netbeans.modules.j2ee.dd.api.ejb.Ejb ejb = (org.netbeans.modules.j2ee.dd.api.ejb.Ejb) stdParentDD;
-                stdBeans = ejb.getServiceRef();
-            } else if(stdParentDD instanceof org.netbeans.modules.j2ee.dd.api.client.AppClient) {
-                org.netbeans.modules.j2ee.dd.api.client.AppClient appClient = (org.netbeans.modules.j2ee.dd.api.client.AppClient) stdParentDD;
-                stdBeans = appClient.getServiceRef();
-            }
-        } catch(org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        }
-        
-        return stdBeans != null ? stdBeans : new org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [0];
-    }
+//    protected org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] getStandardBeansFromModel() {
+//        org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [] stdBeans = null;
+//        org.netbeans.modules.j2ee.dd.api.common.CommonDDBean stdParentDD = null;
+//        
+//        // get binding from parent node if this is ejb...
+//        Node parentNode = getParentNode();
+//        if(parentNode instanceof NamedBeanNode) {
+//            NamedBeanNode namedNode = (NamedBeanNode) parentNode;
+//            DDBinding parentBinding = namedNode.getBinding();
+//            stdParentDD = parentBinding.getStandardBean();
+//        } else {
+//            stdParentDD = getStandardRootDD();
+//        }
+//        
+//        try {
+//            if(stdParentDD instanceof org.netbeans.modules.j2ee.dd.api.web.WebApp) {
+//                org.netbeans.modules.j2ee.dd.api.web.WebApp webApp = (org.netbeans.modules.j2ee.dd.api.web.WebApp) stdParentDD;
+//                stdBeans = webApp.getServiceRef();
+//            } else if(stdParentDD instanceof org.netbeans.modules.j2ee.dd.api.ejb.Ejb) {
+//                org.netbeans.modules.j2ee.dd.api.ejb.Ejb ejb = (org.netbeans.modules.j2ee.dd.api.ejb.Ejb) stdParentDD;
+//                stdBeans = ejb.getServiceRef();
+//            } else if(stdParentDD instanceof org.netbeans.modules.j2ee.dd.api.client.AppClient) {
+//                org.netbeans.modules.j2ee.dd.api.client.AppClient appClient = (org.netbeans.modules.j2ee.dd.api.client.AppClient) stdParentDD;
+//                stdBeans = appClient.getServiceRef();
+//            }
+//        } catch(org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException ex) {
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//        }
+//        
+//        return stdBeans != null ? stdBeans : new org.netbeans.modules.j2ee.dd.api.common.CommonDDBean [0];
+//    }
 
     protected CommonDDBean addNewBean() {
         ServiceRef newServiceRef = (ServiceRef) createBean();
@@ -128,6 +125,14 @@ public class ServiceRefGroupNode extends NamedBeanGroupNode {
         } else if(commonDD instanceof SunApplicationClient) {
             ((SunApplicationClient) commonDD).removeServiceRef(serviceRef);
         }
+    }
+    
+    // ------------------------------------------------------------------------
+    // Support for DescriptorReader interface implementation
+    // ------------------------------------------------------------------------
+    @Override 
+    protected CommonBeanReader getAnnotationReader() {
+        return new ServiceRefMetadataReader();
     }
     
     // ------------------------------------------------------------------------
