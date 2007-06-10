@@ -18,13 +18,22 @@
  */
 package org.netbeans.modules.j2ee.sun.ddloaders.multiview.webservice;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebserviceDescription;
+import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.j2ee.sun.ddloaders.Utils;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.CommonBeanReader;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.DDBinding;
+import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 
 
 /**
@@ -34,7 +43,29 @@ import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.DDBinding;
 public class WebServiceMetadataReader extends CommonBeanReader {
 
     public WebServiceMetadataReader() {
-        super(DDBinding.PROP_SERVICE_REF);
+        super(DDBinding.PROP_WEBSERVICE_DESC);
+    }
+    
+    @Override
+    public Map<String, Object> readAnnotations(DataObject dObj) {
+        Map<String, Object> result = null;
+        try {
+            File key = FileUtil.toFile(dObj.getPrimaryFile());
+            SunONEDeploymentConfiguration dc = SunONEDeploymentConfiguration.getConfiguration(key);
+            if(dc != null) {
+                J2eeModule module = dc.getJ2eeModule();
+                if(module != null) {
+                    if(J2eeModule.WAR.equals(module.getModuleType()) || J2eeModule.EJB.equals(module.getModuleType())) {
+                        result = readWebservicesMetadata(module.getDeploymentDescriptor(WebservicesMetadata.class));
+                    }
+                }
+            }
+        } catch(MetadataModelException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        } catch(IOException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+        return result;
     }
     
     /** Maps interesting fields from service-ref descriptor to a multi-level property map.

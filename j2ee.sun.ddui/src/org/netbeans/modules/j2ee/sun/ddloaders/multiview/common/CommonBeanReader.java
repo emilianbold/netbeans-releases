@@ -27,6 +27,7 @@ import org.netbeans.modules.j2ee.dd.api.client.AppClientMetadata;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
+import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
@@ -116,6 +117,10 @@ public abstract class CommonBeanReader
         return model.runReadAction(new EjbJarCommonReader());
     }
     
+    public Map<String, Object> readWebservicesMetadata(MetadataModel<WebservicesMetadata> model) 
+            throws MetadataModelException, IOException {
+        return model.runReadAction(new WebservicesCommonReader());
+    }
     
     // Metadata model run methods
     public class WebAppCommonReader extends CommonReader 
@@ -142,6 +147,15 @@ public abstract class CommonBeanReader
         public Map<String, Object> run(EjbJarMetadata metadata) throws Exception {
             // TODO how to read named beans from named ejbs... 
             return null; // genCommonProperties(metadata.getRoot());
+        }
+        
+    }
+    
+    public class WebservicesCommonReader extends CommonReader 
+            implements MetadataModelAction<WebservicesMetadata, Map<String, Object>> {
+
+        public Map<String, Object> run(WebservicesMetadata metadata) throws Exception {
+            return genCommonProperties(metadata.getRoot());
         }
         
     }

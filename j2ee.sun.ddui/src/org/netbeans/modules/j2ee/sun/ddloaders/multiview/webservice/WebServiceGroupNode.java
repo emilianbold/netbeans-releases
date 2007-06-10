@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.j2ee.sun.ddloaders.multiview.webservice;
 
+import java.util.Map;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceDescription;
@@ -109,6 +110,12 @@ public class WebServiceGroupNode extends NamedBeanGroupNode {
     // ------------------------------------------------------------------------
     // Support for DescriptorReader interface implementation
     // ------------------------------------------------------------------------
+    @Override
+    public Map<String, Object> readDescriptor() {
+        CommonBeanReader reader = getAnnotationReader();
+        return reader != null ? reader.readDescriptor(getWebServicesRootDD()) : null;
+    }
+    
     @Override 
     protected CommonBeanReader getAnnotationReader() {
         return new WebServiceMetadataReader();

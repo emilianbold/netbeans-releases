@@ -38,6 +38,7 @@ public class DDBinding implements Comparable<DDBinding> {
     public static final String PROP_EJB_REF = "EjbRef"; // ejb-ref
     public static final String PROP_RESOURCE_REF = "ResourceRef"; // resource-ref
     public static final String PROP_RESOURCE_ENV_REF = "ResourceEnvRef"; // resource-env-ref
+    public static final String PROP_WEBSERVICE_DESC = "WebserviceDescription"; // webservice-description
     
     protected final BeanResolver resolver;
     protected final CommonDDBean sunBean;
