@@ -49,7 +49,8 @@ public class ServiceRefPanel extends SectionNodeInnerPanel {
 //    private ServiceRefGeneralPanel generalPanel;
 //    private ServiceRefPortInfoPanel portInfoPanel;
 
-    public ServiceRefPanel(SectionNodeView sectionNodeView, final ServiceRefNode serviceRefNode, final ASDDVersion version) {
+    public ServiceRefPanel(SectionNodeView sectionNodeView, final ServiceRefNode serviceRefNode, 
+            final ASDDVersion version) {
         super(sectionNodeView);
         this.serviceRefNode = serviceRefNode;
         this.version = version;

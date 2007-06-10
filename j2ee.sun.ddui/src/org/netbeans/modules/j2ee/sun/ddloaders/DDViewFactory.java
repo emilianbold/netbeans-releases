@@ -32,6 +32,7 @@ import org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.EjbMultiViewElement
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.ServletMultiViewElement;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebOverviewMultiViewElement;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.SunEjbOverviewMultiViewElement;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.webservice.WebServiceMultiViewElement;
 import org.netbeans.modules.xml.multiview.DesignMultiViewDesc;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -51,6 +52,7 @@ public abstract class DDViewFactory implements Serializable {
     public static final String EJB = "EJB"; // NOI18N
     public static final String SECURITY = "Security"; // NOI18N
     public static final String WSCLIENT = "WSClient"; // NOI18N
+    public static final String WSSERVICE = "WSService"; // NOI18N
     public static final String ENVIRONMENT = "Environment"; // NOI18N
     
     private static transient Map<DDType, DDViewFactory> factoryMap = new HashMap<DDType, DDViewFactory>();
@@ -81,6 +83,8 @@ public abstract class DDViewFactory implements Serializable {
             return new EnvironmentMultiViewElement(dataObject);
         } else if(name.equals(WSCLIENT)) {
             return new ServiceRefMultiViewElement(dataObject);
+        } else if(name.equals(WSSERVICE)) {
+            return new WebServiceMultiViewElement(dataObject);
         }
         return null;
     }
@@ -105,8 +109,9 @@ public abstract class DDViewFactory implements Serializable {
             return new DDView[] {
                 new DDView(dataObject, OVERVIEW),
                 new DDView(dataObject, SERVLET),
-                new DDView(dataObject, ENVIRONMENT),
+                new DDView(dataObject, WSSERVICE),
                 new DDView(dataObject, WSCLIENT),
+                new DDView(dataObject, ENVIRONMENT),
                 new DDView(dataObject, SECURITY)
             };
         }
@@ -136,6 +141,7 @@ public abstract class DDViewFactory implements Serializable {
             return new DDView[] {
                 new DDView(dataObject, OVERVIEW),
                 new DDView(dataObject, EJB),
+                new DDView(dataObject, WSSERVICE),
                 new DDView(dataObject, SECURITY)
             };
         }

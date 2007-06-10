@@ -38,6 +38,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.common.ResourceEnvRef;
 import org.netbeans.modules.j2ee.sun.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping;
 import org.netbeans.modules.j2ee.sun.dd.api.common.ServiceRef;
+import org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceDescription;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.sun.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
@@ -68,6 +69,7 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
     public static final String STANDARD_RESOURCE_ENV_REF_NAME = ResourceEnvRef.RESOURCE_ENV_REF_NAME; // e.g. "ResourceEnvRefName"
     public static final String STANDARD_SERVICE_REF_NAME = ServiceRef.SERVICE_REF_NAME; // e.g. "ServiceRefName"
     public static final String STANDARD_ROLE_NAME = SecurityRoleMapping.ROLE_NAME; // e.g. "RoleName"
+    public static final String STANDARD_WEBSERVICE_DESC_NAME = WebserviceDescription.WEBSERVICE_DESCRIPTION_NAME; // e.g. "WebserviceDescriptionName"
     
     protected CommonDDBean commonDD;
     private String beanNameProperty;
