@@ -279,8 +279,9 @@ public final class SearchInfoFactory {
      * @return  created compound <code>SearchInfo</code>
      * @exception  java.lang.IllegalArgumentException
      *             if the argument is <code>null</code>
+     * @since  3.13
      */
-    static SearchInfo createCompoundSearchInfo(SearchInfo... delegates) {
+    public static SearchInfo createCompoundSearchInfo(SearchInfo... delegates) {
         if (delegates == null) {
             throw new IllegalArgumentException("null");                 //NOI18N
         }
