@@ -838,7 +838,7 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
         
         public boolean isDependingOn (ModuleInfo info) {
             if (info.codebasename.equals (token)) {
-                return majorVersionTo <= info.majorVersion && majorVersionFrom <= info.majorVersion;
+                return majorVersionFrom <= info.majorVersion && info.majorVersion <= majorVersionTo;
             } 
             
             Iterator it = info.provides.iterator ();
