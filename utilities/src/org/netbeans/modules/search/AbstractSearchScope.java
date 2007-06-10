@@ -19,14 +19,12 @@
 
 package org.netbeans.modules.search;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.search.SearchScope;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openidex.search.SearchInfo;
 import org.openidex.search.SearchInfoFactory;
 
@@ -147,35 +145,4 @@ public abstract class AbstractSearchScope extends SearchScope {
                 new FileObject[0], false, null);
     }
 
-    private static java.lang.reflect.Method compoundSICreator;
-
-    protected SearchInfo createCompoundSearchInfo(SearchInfo[] delegates) {
-        if (compoundSICreator == null) {
-            try {
-                compoundSICreator = SearchInfoFactory.class.getDeclaredMethod(
-                        "createCompoundSearchInfo", SearchInfo[].class);//NOI18N
-                compoundSICreator.setAccessible(true);
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        if (compoundSICreator != null) {
-            try {
-                return (SearchInfo) compoundSICreator.invoke(
-                                                        null,
-                                                        (Object) delegates);
-            } catch (InvocationTargetException ex) {
-                Throwable t = ex.getTargetException();
-                if (t instanceof RuntimeException) {
-                    throw (RuntimeException) t;
-                }
-            } catch (RuntimeException ex) {
-                throw ex;
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        return null;
-    }
-    
 }

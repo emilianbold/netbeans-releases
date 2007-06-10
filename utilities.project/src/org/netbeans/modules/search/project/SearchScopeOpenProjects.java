@@ -68,7 +68,7 @@ final class SearchScopeOpenProjects extends AbstractProjectSearchScope {
         for (int i = 0; i < prjSearchInfos.length; i++) {
             prjSearchInfos[i] = createSingleProjectSearchInfo(openProjects[i]);
         }
-        return createCompoundSearchInfo(prjSearchInfos);
+        return SearchInfoFactory.createCompoundSearchInfo(prjSearchInfos);
     }
 
 }

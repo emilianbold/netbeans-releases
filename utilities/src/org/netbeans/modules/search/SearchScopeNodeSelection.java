@@ -159,7 +159,7 @@ final class SearchScopeNodeSelection extends AbstractSearchScope
         if (searchInfoCount == 1) {
             return searchInfos.get(0);
         } else {
-            return createCompoundSearchInfo(
+            return SearchInfoFactory.createCompoundSearchInfo(
                         searchInfos.toArray(new SearchInfo[searchInfoCount]));
         }
     }
