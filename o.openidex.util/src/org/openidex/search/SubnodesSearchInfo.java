@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2004 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2004-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 
 /**
@@ -56,13 +57,13 @@ final class SubnodesSearchInfo implements SearchInfo {
 
     /**
      */
-    public Iterator objectsToSearch() {
+    public Iterator<DataObject> objectsToSearch() {
         final Node[] nodes = node.getChildren().getNodes(true);
         if (nodes.length == 0) {
             return SimpleSearchInfo.EMPTY_SEARCH_INFO.objectsToSearch();
         }
         
-        List searchInfoElements = new ArrayList(nodes.length);
+        List<SearchInfo> searchInfoElements = new ArrayList<SearchInfo>(nodes.length);
         for (int i = 0; i < nodes.length; i++) {
             SearchInfo subInfo = Utils.getSearchInfo(nodes[i]);
             if (subInfo != null && subInfo.canSearch()) {
@@ -73,13 +74,11 @@ final class SubnodesSearchInfo implements SearchInfo {
         final int size = searchInfoElements.size();
         switch (size) {
             case 0:
-                return Collections.EMPTY_LIST.iterator();
+                return Collections.<DataObject>emptyList().iterator();
             case 1:
-                return ((SearchInfo) searchInfoElements.get(0))
-                       .objectsToSearch();
+                return searchInfoElements.get(0).objectsToSearch();
             default:
                 return new CompoundSearchIterator(
-                        (SearchInfo[])
                         searchInfoElements.toArray(new SearchInfo[size]));
         }
     }

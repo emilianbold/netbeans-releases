@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 
 /**
  *
@@ -43,8 +44,8 @@ class SimpleSearchInfo implements SearchInfo {
             public boolean canSearch() {
                 return true;
             }
-            public java.util.Iterator objectsToSearch() {
-                return Collections.EMPTY_LIST.iterator();
+            public Iterator<DataObject> objectsToSearch() {
+                return Collections.<DataObject>emptyList().iterator();
             }
         };
         
@@ -88,7 +89,7 @@ class SimpleSearchInfo implements SearchInfo {
 
     /**
      */
-    public Iterator objectsToSearch() {
+    public Iterator<DataObject> objectsToSearch() {
         return new SimpleSearchIterator(rootFolder,
                                         recursive,
                                         filters != null ? Arrays.asList(filters)

@@ -158,7 +158,7 @@ public abstract class SearchType extends ServiceType implements Cloneable {
     public final void setValid(boolean state) {
         boolean old = valid;
         valid = state;
-        firePropertyChange(PROP_VALID, old ? Boolean.TRUE : Boolean.FALSE, state ? Boolean.TRUE : Boolean.FALSE);
+        firePropertyChange(PROP_VALID, Boolean.valueOf(old), Boolean.valueOf(state));
     }
 
     /** @return true if the criterion is currently valid. */
@@ -167,6 +167,7 @@ public abstract class SearchType extends ServiceType implements Cloneable {
     }
     
     /** Clones seach type. */
+    @Override
     public Object clone() {
         try {
             return super.clone();
@@ -182,8 +183,10 @@ public abstract class SearchType extends ServiceType implements Cloneable {
      * @return enumeration of SearchType instances
      * @deprecated Please use {@link Lookup} instead.
      */
-    public static Enumeration enumerateSearchTypes () {
-        return Collections.enumeration(Lookup.getDefault().lookup(new Lookup.Template(SearchType.class)).allInstances());
+    @Deprecated
+    public static Enumeration<? extends SearchType> enumerateSearchTypes () {
+        return Collections.enumeration(Lookup.getDefault().lookup(
+                new Lookup.Template<SearchType>(SearchType.class)).allInstances());
     }
     
 }

@@ -20,6 +20,7 @@
 package org.openidex.search;
 
 import java.util.Iterator;
+import org.openide.loaders.DataObject;
 
 /**
  * Defines which <code>DataObject</code>s should be searched.
@@ -73,6 +74,6 @@ public interface SearchInfo {
      * @return  iterator which iterates over <code>DataObject</code>s
      *          to be searched
      */
-    public Iterator objectsToSearch();
+    public Iterator<DataObject> objectsToSearch();
     
 }

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2005 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2005-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -54,7 +54,8 @@ public final class SearchHistory {
     private static final int MAX_SEARCH_PATTERNS_ITEMS = 50;
 
     /** Shareable SearchPattern history. It is a List of SearchPatterns */
-    private List searchPatternsList = new ArrayList(MAX_SEARCH_PATTERNS_ITEMS);
+    private List<SearchPattern> searchPatternsList
+            = new ArrayList<SearchPattern>(MAX_SEARCH_PATTERNS_ITEMS);
 
     /** Singleton instance */
     private static SearchHistory INSTANCE = null;
@@ -125,7 +126,7 @@ public final class SearchHistory {
     }
 
     /** @return unmodifiable List of SearchPatterns */
-    public synchronized List/*<SearchPattern>*/ getSearchPatterns(){
+    public synchronized List<SearchPattern> getSearchPatterns(){
         return Collections.unmodifiableList(searchPatternsList);
     }
     

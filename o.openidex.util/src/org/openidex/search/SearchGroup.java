@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,7 +21,6 @@
 package org.openidex.search;
 
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.*;
@@ -29,7 +28,6 @@ import java.util.*;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.util.WeakListeners;
 
 
 /**
@@ -40,7 +38,7 @@ import org.openide.util.WeakListeners;
  * @author  Peter Zavadsky
  * @author  Marian Petras
  */
-public abstract class SearchGroup extends Object {
+public abstract class SearchGroup {
 
     /**
      * Property name which is fired when performing search and searched object 
@@ -73,10 +71,10 @@ public abstract class SearchGroup extends Object {
     protected SearchType[] searchTypes = new SearchType[0];
 
     /** Set of nodes on which sub-system to search. */
-    protected final Set searchRoots = new HashSet(5);
+    protected final Set<Node> searchRoots = new HashSet<Node>(5);
     
     /** Set of objects which passed the search criteria (searchtypes).*/
-    protected final Set resultObjects = new LinkedHashSet(50);
+    protected final Set<Object> resultObjects = new LinkedHashSet<Object>(50);
 
     /** Flag indicating the search should be stopped. */
     protected volatile boolean stopped = false;
@@ -129,8 +127,8 @@ public abstract class SearchGroup extends Object {
          * node systems. E.g. CVS search type is not interested
          * in non CVS node systems.
          */
-        for (int i = 0; i < searchTypes.length; i++) {
-            roots = searchTypes[i].acceptSearchRootNodes(roots);
+        for (SearchType searchType : searchTypes) {
+            roots = searchType.acceptSearchRootNodes(roots);
         }
         searchRoots.clear();
         searchRoots.addAll(Arrays.asList(roots));
@@ -138,7 +136,7 @@ public abstract class SearchGroup extends Object {
 
     /** Gets search root nodes.  */
     public Node[] getSearchRoots() {
-        return (Node[]) searchRoots.toArray(new Node[searchRoots.size()]);
+        return searchRoots.toArray(new Node[searchRoots.size()]);
     }
     
     /** Stops searching. */
@@ -187,7 +185,7 @@ public abstract class SearchGroup extends Object {
      * returned by <code>SearchType</code> of this <code>SearchGroup</code>
      */
     protected void processSearchObject(Object searchObject) {
-        
+
         /*
          * Give chance to individual search types to exclude some
          * non interesting search objects from search. E.g. Java data
@@ -226,8 +224,8 @@ public abstract class SearchGroup extends Object {
     public abstract Node getNodeForFoundObject(Object object);
 
     /** Getter for result object property. */
-    public Set getResultObjects() {
-        return new LinkedHashSet(resultObjects);
+    public Set<Object> getResultObjects() {
+        return new LinkedHashSet<Object>(resultObjects);
     }
 
     /** Adds property change listener. */
@@ -273,9 +271,9 @@ public abstract class SearchGroup extends Object {
          * from the specified list of search types.
          * In other words: Build a list of Class'es common to all search types.
          */
-        Set classSet = new HashSet(items.length);
+        Set<Class> classSet = new HashSet<Class>(items.length);
         for (int i = 0; i < items.length; i++) {
-            List classes = Arrays.asList(items[i].getSearchTypeClasses());
+            List<Class> classes = Arrays.asList(items[i].getSearchTypeClasses());
             if (i == 0) {
                 classSet.addAll(classes);
             } else {
@@ -287,17 +285,17 @@ public abstract class SearchGroup extends Object {
         if (classSet.isEmpty()) {
             return new SearchGroup[0];
         }
-        Set groupSet = new HashSet(classSet.size());
-        for (Iterator it = classSet.iterator(); it.hasNext(); ) {
-            SearchGroup group = Registry.createSearchGroup((Class) it.next());
+        Set<SearchGroup> groupSet = new HashSet<SearchGroup>(classSet.size());
+        for (Class clazz : classSet) {
+            SearchGroup group = Registry.createSearchGroup(clazz);
             if (group != null) {
-                for (int i = 0; i < items.length; i++) {
-                    group.add(items[i]);
+                for (SearchType item : items) {
+                    group.add(item);
                 }
                 groupSet.add(group);
             }
         }
-        return (SearchGroup[]) groupSet.toArray(new SearchGroup[groupSet.size()]);
+        return groupSet.toArray(new SearchGroup[groupSet.size()]);
     }
 
 
@@ -332,7 +330,8 @@ public abstract class SearchGroup extends Object {
         
         
         /** Maps search object types to registered factories. */
-        private static final Map registry = new HashMap(2);
+        private static final Map<Class, Factory> registry
+                = new HashMap<Class, Factory>(2);
 
         static {
             registry.put(DataObject.class, new Factory() {
@@ -366,7 +365,7 @@ public abstract class SearchGroup extends Object {
         public static synchronized boolean registerSearchGroupFactory(
                 Class searchObjectClass,
                 Factory factory) {
-            Object oldFactory = registry.put(searchObjectClass, factory);
+            Factory oldFactory = registry.put(searchObjectClass, factory);
             if (oldFactory != null) {
                 
                 /* 
@@ -394,7 +393,7 @@ public abstract class SearchGroup extends Object {
          * @see  #registerSearchGroupFactory registerSearchGroupFactory
          */
         public static SearchGroup createSearchGroup(Class searchObjectType) {
-            Factory factory = (Factory) registry.get(searchObjectType);
+            Factory factory = registry.get(searchObjectType);
             
             if (factory == null) {
                 return null;

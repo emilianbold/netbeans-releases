@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -46,11 +46,11 @@ public class FileObjectSearchGroup extends SearchGroup {
      *
      * @see  SearchType#getSearchTypeClasses()
      */
+    @Override
     protected void add(SearchType searchType) {
         boolean ok = false;
-        Class[] classes = searchType.getSearchTypeClasses();
-        for (int i = 0; i < classes.length; i++) {
-            if (classes[i] == FileObject.class) {
+        for (Class clazz : searchType.getSearchTypeClasses()) {
+            if (clazz == FileObject.class) {
                 ok = true;
                 break;
             }
@@ -69,8 +69,8 @@ public class FileObjectSearchGroup extends SearchGroup {
         if (rootFolders == null) {
             return;
         }
-        for(int i = 0; i < rootFolders.length; i++) {
-            if (!scanFolder(rootFolders[i])) {
+        for (FileObject rootFolder : rootFolders) {
+            if (!scanFolder(rootFolder)) {
                 return;
             }
         }
@@ -78,39 +78,37 @@ public class FileObjectSearchGroup extends SearchGroup {
     
     /** Gets data folder roots on which to search. */
     private FileObject[] getFileFolders() {
-        Node[] nodes = normalizeNodes((Node[])searchRoots.toArray(new Node[searchRoots.size()]));
+        Node[] nodes = normalizeNodes(searchRoots.toArray(new Node[searchRoots.size()]));
 
-        List children = new ArrayList(nodes.length);
+        List<FileObject> children = new ArrayList<FileObject>(nodes.length);
 
-        for (int i = 0; i < nodes.length; i++) {
-            DataFolder dataFolder = (DataFolder) nodes[i].getCookie(DataFolder.class);
+        for (Node node : nodes) {
+            DataFolder dataFolder = node.getCookie(DataFolder.class);
             if (dataFolder != null) {
                 children.add(dataFolder.getPrimaryFile());
             }
         }
 
-        return (FileObject[])children.toArray(new FileObject[children.size()]);
+        return children.toArray(new FileObject[children.size()]);
     }
     
     /** Scans data folder recursivelly. 
      * @return <code>true</code> if scanned entire folder successfully
      * or <code>false</code> if scanning was stopped. */
     private boolean scanFolder(FileObject folder) {
-        FileObject[] children = folder.getChildren();
-
-        for (int i = 0; i < children.length; i++) {
+        for (FileObject child : folder.getChildren()) {
             // Test if the search was stopped.
             if (stopped) {
                 stopped = true;
                 return false;
             }
             
-            if (children[i].isFolder()) {
-                if (!scanFolder(children[i])) {
+            if (child.isFolder()) {
+                if (!scanFolder(child)) {
                     return false;
                 }
             } else {
-                processSearchObject(children[i]);
+                processSearchObject(child);
             }
         }
 
@@ -129,6 +127,7 @@ public class FileObjectSearchGroup extends SearchGroup {
             return DataObject.find((FileObject) object).getNodeDelegate();
         } catch (DataObjectNotFoundException dnfe) {
             return new AbstractNode(Children.LEAF) {
+                @Override
                 public String getName() {
                     return ((FileObject) object).getName();
                 }
@@ -141,22 +140,22 @@ public class FileObjectSearchGroup extends SearchGroup {
     /** Removes kids from node array. Helper method. */
     private static Node[] normalizeNodes(Node[] nodes) {
 
-        List ret = new ArrayList();
+        List<Node> ret = new ArrayList<Node>();
 
-        for (int i = 0; i<nodes.length; i++) {
-            if (!hasParent(nodes[i], nodes)) {
-                ret.add(nodes[i]);
+        for (Node node : nodes) {
+            if (!hasParent(node, nodes)) {
+                ret.add(node);
             }
         }
 
-        return (Node[]) ret.toArray(new Node[ret.size()]);
+        return ret.toArray(new Node[ret.size()]);
     }
 
     /** Tests if the node has parent. Helper method. */
     private static boolean hasParent(Node node, Node[] nodes) {
         for (Node parent = node.getParentNode(); parent != null; parent = parent.getParentNode()) {
-            for (int i = 0; i<nodes.length; i++) {
-                if (nodes[i].equals(parent)) {
+            for (Node n : nodes) {
+                if (n.equals(parent)) {
                     return true;
                 }
             }

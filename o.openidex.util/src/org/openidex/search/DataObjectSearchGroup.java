@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,22 +21,14 @@
 package org.openidex.search;
 
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import org.openide.ErrorManager;
 
-import org.openide.cookies.InstanceCookie;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
 
@@ -61,11 +53,11 @@ public class DataObjectSearchGroup extends SearchGroup {
      *
      * @see  SearchType#getSearchTypeClasses()
      */
+    @Override
     protected void add(SearchType searchType) {
         boolean ok = false;
-        Class[] classes = searchType.getSearchTypeClasses();
-        for (int i = 0; i < classes.length; i++) {
-            if (classes[i] == DataObject.class) {
+        for (Class clazz : searchType.getSearchTypeClasses()) {
+            if (clazz == DataObject.class) {
                 ok = true;
                 break;
             }
@@ -83,20 +75,19 @@ public class DataObjectSearchGroup extends SearchGroup {
      */
     public void doSearch() {
         Node[] nodes = normalizeNodes(
-                (Node[]) searchRoots.toArray(new Node[searchRoots.size()]));
+                searchRoots.toArray(new Node[searchRoots.size()]));
 
         lowMemoryWarning = false;
         lowMemoryWarningCount = 0;
         assureMemory(REQUIRED_PER_ITERATION, true);
 
-        for (int i = 0; i < nodes.length; i++) {
-            Node node = nodes[i];
+        for (Node node : nodes) {
             SearchInfo info = Utils.getSearchInfo(node);
             if (info != null) {
-                for (Iterator j = info.objectsToSearch(); j.hasNext(); ) {
+                for (Iterator<DataObject> j = info.objectsToSearch(); j.hasNext(); ) {
                     if (stopped) return;
                     assureMemory(REQUIRED_PER_ITERATION, false);
-                    processSearchObject(/*DataObject*/ j.next());
+                    processSearchObject(j.next());
                 }
             }
         }
@@ -246,7 +237,7 @@ public class DataObjectSearchGroup extends SearchGroup {
     public Node getNodeForFoundObject(Object object) {
         if (!(object instanceof DataObject)) {
             return null;
-        }
+    }
         return ((DataObject) object).getNodeDelegate();
     }
     
@@ -317,21 +308,23 @@ public class DataObjectSearchGroup extends SearchGroup {
          *       will be remapped to value TRUE
          */
         
-        HashMap badNodes = new HashMap(2 * nodes.length, 0.75f);
-        HashMap goodNodes = new HashMap(2 * nodes.length, 0.75f);
-        ArrayList path = new ArrayList(10);
-        ArrayList result = new ArrayList(nodes.length);
+        Map<Node, Boolean> badNodes
+                = new HashMap<Node, Boolean>(2 * nodes.length, 0.75f);
+        Map<Node, Boolean> goodNodes
+                = new HashMap<Node, Boolean>(2 * nodes.length, 0.75f);
+        List<Node> path = new ArrayList<Node>(10);
+        List<Node> result = new ArrayList<Node>(nodes.length);
         
         /* Put all search roots into "bad nodes": */
-        for (int i = 0; i < nodes.length; i++) {
-            badNodes.put(nodes[i], Boolean.FALSE);
+        for (Node node : nodes) {
+            badNodes.put(node, Boolean.FALSE);
         }
         
         main_cycle:
-        for (int i = 0; i < nodes.length; i++) {
+        for (Node node : nodes) {
             path.clear();
             boolean isBad = false;
-            for (Node n = nodes[i].getParentNode(); n != null;
+            for (Node n = node.getParentNode(); n != null;
                                                     n = n.getParentNode()) {
                 if (badNodes.containsKey(n)) {
                     isBad = true;
@@ -343,18 +336,18 @@ public class DataObjectSearchGroup extends SearchGroup {
                 path.add(n);
             }
             if (isBad) {
-                badNodes.put(nodes[i], Boolean.TRUE);
-                for (Iterator j = path.iterator(); j.hasNext(); ) {
-                    badNodes.put(j.next(), Boolean.TRUE);
+                badNodes.put(node, Boolean.TRUE);
+                for (Node pathNode : path) {
+                    badNodes.put(pathNode, Boolean.TRUE);
                 }
             } else {
-                for (Iterator j = path.iterator(); j.hasNext(); ) {
-                    goodNodes.put(j.next(), Boolean.TRUE);
+                for (Node pathNode : path) {
+                    goodNodes.put(pathNode, Boolean.TRUE);
                 }
-                result.add(nodes[i]);
+                result.add(node);
             }
         }
-        return (Node[]) result.toArray(new Node[result.size()]);
+        return result.toArray(new Node[result.size()]);
     }
 
 }

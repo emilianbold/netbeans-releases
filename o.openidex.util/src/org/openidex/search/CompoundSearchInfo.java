@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import org.openide.loaders.DataObject;
 
 /**
  *
@@ -40,7 +41,7 @@ class CompoundSearchInfo implements SearchInfo {
      * @exception  java.lang.IllegalArgumentException
      *             if the argument was <code>null</code>
      */
-    CompoundSearchInfo(SearchInfo[] elements) {
+    CompoundSearchInfo(SearchInfo... elements) {
         if (elements == null) {
             throw new IllegalArgumentException();
         }
@@ -53,8 +54,8 @@ class CompoundSearchInfo implements SearchInfo {
      */
     public boolean canSearch() {
         if (elements != null) {
-            for (int i = 0; i < elements.length; i++) {
-                if (elements[i].canSearch()) {
+            for (SearchInfo element : elements) {
+                if (element.canSearch()) {
                     return true;
                 }
             }
@@ -64,19 +65,18 @@ class CompoundSearchInfo implements SearchInfo {
 
     /**
      */
-    public Iterator objectsToSearch() {
+    public Iterator<DataObject> objectsToSearch() {
         if (elements == null) {
-            return Collections.EMPTY_LIST.iterator();
+            return Collections.<DataObject>emptyList().iterator();
         }
         
-        List searchableElements = new ArrayList(elements.length);
-        for (int i = 0; i < elements.length; i++) {
-            if (elements[i].canSearch()) {
-                searchableElements.add(elements[i]);
+        List<SearchInfo> searchableElements = new ArrayList<SearchInfo>(elements.length);
+        for (SearchInfo element : elements) {
+            if (element.canSearch()) {
+                searchableElements.add(element);
             }
         }
         return new CompoundSearchIterator(
-            (SearchInfo[])
             searchableElements.toArray(
                     new SearchInfo[searchableElements.size()]));
     }

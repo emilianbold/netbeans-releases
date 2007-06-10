@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2004 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2004-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -32,28 +32,30 @@ import org.openide.loaders.DataObject;
  *
  * @author  Marian Petras
  */
-class SimpleSearchIterator implements Iterator {
+class SimpleSearchIterator implements Iterator<DataObject> {
 
     /** current enumeration of children */
-    private Enumeration childrenEnum;
+    private Enumeration<DataObject> childrenEnum;
     /**
      * filters to be applied on the current enumeration of children
      * ({@link #childrenEnum})
      */
-    private List filters;
+    private List<FileObjectFilter> filters;
     /**
      * contains either an equal copy of {@link #filters} or <code>null</code>
      */
-    private List filtersCopy;
+    private List<FileObjectFilter> filtersCopy;
     /** */
     private final boolean recursive;
     /** stack of the ancestor folders' children enumerations */
-    private final ArrayList enums = new ArrayList();            //unsynced stack
+    private final List<Enumeration<DataObject>> enums
+            = new ArrayList<Enumeration<DataObject>>();            //unsynced stack
     /**
      * stack of filter lists to be applied on children of the ancestor folders
      * ({@link #enums})
      */
-    private final ArrayList filterLists = new ArrayList();      //unsynced stack
+    private final List<List<FileObjectFilter>> filterLists
+            = new ArrayList<List<FileObjectFilter>>();      //unsynced stack
     /** whether value of {@link #nextObject} is up-to-date */
     private boolean upToDate = false;
     /**
@@ -66,10 +68,10 @@ class SimpleSearchIterator implements Iterator {
      */
     SimpleSearchIterator(DataFolder folder,
                          boolean recursive,
-                         List filters) {
+                         List<FileObjectFilter> filters) {
         this.childrenEnum = folder.children(false);
         this.recursive = recursive;
-        this.filters = (filters != null) ? new ArrayList(filters)
+        this.filters = (filters != null) ? new ArrayList<FileObjectFilter>(filters)
                                          : null;
     }
 
@@ -84,7 +86,7 @@ class SimpleSearchIterator implements Iterator {
 
     /** 
      */
-    public Object next() {
+    public DataObject next() {
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
@@ -100,8 +102,7 @@ class SimpleSearchIterator implements Iterator {
         assert childrenEnum != null;
         do {
             if (childrenEnum.hasMoreElements()) {
-                Object next = childrenEnum.nextElement();
-                DataObject dataObject = (DataObject) next;
+                DataObject dataObject = childrenEnum.nextElement();
                 FileObject file = dataObject.getPrimaryFile();
                 if (file.isFolder()) {
                     if (!recursive) {
@@ -109,7 +110,7 @@ class SimpleSearchIterator implements Iterator {
                     }
                     
                     if (filters != null) {
-                        final List subfolderFilters = checkFolderFilters(file);
+                        final List<FileObjectFilter> subfolderFilters = checkFolderFilters(file);
                         if (subfolderFilters == null) {
                             continue;
                         }
@@ -130,7 +131,7 @@ class SimpleSearchIterator implements Iterator {
                         continue;
                     }
                     
-                    nextObject = (DataObject) dataObject;
+                    nextObject = dataObject;
                     break;
                 }
             } else {
@@ -144,10 +145,10 @@ class SimpleSearchIterator implements Iterator {
                 }
                 
                 /* pop an element from the stack of children enumerations: */
-                childrenEnum = (Enumeration) enums.remove(enums.size() - 1);
+                childrenEnum = enums.remove(enums.size() - 1);
                 
                 /* pop an element from the stack of FileObjectFilters: */
-                filters = (List) filterLists.remove(filterLists.size() - 1);
+                filters = filterLists.remove(filterLists.size() - 1);
                 if ((filtersCopy != null)
                         && (filtersCopy.size() != filters.size())) {
                     filtersCopy = null;
@@ -175,18 +176,18 @@ class SimpleSearchIterator implements Iterator {
      * @return  list of filters to be applied on the folder's children;
      *          or <code>null</code> if the folder should not be traversed
      */
-    private List checkFolderFilters(final FileObject folder) {
+    private List<FileObjectFilter> checkFolderFilters(final FileObject folder) {
         assert folder.isFolder();
         assert filters != null;
         
         if (filtersCopy == null) {
-            filtersCopy = new ArrayList(filters);
+            filtersCopy = new ArrayList<FileObjectFilter>(filters);
         }
         
-        List result = filtersCopy;
+        List<FileObjectFilter> result = filtersCopy;
         cycle:
-        for (Iterator i = result.iterator(); i.hasNext(); ) {
-            FileObjectFilter filter = (FileObjectFilter) i.next();
+        for (Iterator<FileObjectFilter> i = result.iterator(); i.hasNext(); ) {
+            FileObjectFilter filter = i.next();
             final int traverseCommand = filter.traverseFolder(folder);
             switch (traverseCommand) {
                 case FileObjectFilter.TRAVERSE:
@@ -219,8 +220,7 @@ class SimpleSearchIterator implements Iterator {
         assert file.isFolder() == false;
         assert filters != null;
         
-        for (Iterator i = filters.iterator(); i.hasNext(); ) {
-            FileObjectFilter filter = (FileObjectFilter) i.next();
+        for (FileObjectFilter filter : filters) {
             if (!filter.searchFile(file)) {
                 return false;
             }

@@ -21,21 +21,22 @@ package org.openidex.search;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import org.openide.loaders.DataObject;
 
 /**
  *
  * @author  Marian Petras
  */
-class CompoundSearchIterator implements Iterator {
+class CompoundSearchIterator implements Iterator<DataObject> {
 
     /** */
     private final SearchInfo[] elements;
     /** */
     private int elementIndex;
     /** */
-    private Iterator elementIterator;
+    private Iterator<DataObject> elementIterator;
     /** */
-    private Object nextObject;
+    private DataObject nextObject;
     /** */
     private boolean upToDate;
 
@@ -73,7 +74,7 @@ class CompoundSearchIterator implements Iterator {
 
     /**
      */
-    public Object next() {
+    public DataObject next() {
         if (!hasNext()) {
             throw new NoSuchElementException();
         }

@@ -280,7 +280,7 @@ public final class SearchInfoFactory {
      * @exception  java.lang.IllegalArgumentException
      *             if the argument is <code>null</code>
      */
-    static SearchInfo createCompoundSearchInfo(SearchInfo[] delegates) {
+    static SearchInfo createCompoundSearchInfo(SearchInfo... delegates) {
         if (delegates == null) {
             throw new IllegalArgumentException("null");                 //NOI18N
         }
