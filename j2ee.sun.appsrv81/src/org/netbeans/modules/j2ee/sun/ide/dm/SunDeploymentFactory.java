@@ -59,11 +59,17 @@ public class SunDeploymentFactory implements Constants, DeploymentFactory, Insta
             "org.netbeans.modules.j2ee.sun.ide.dm.Bundle");    // NOI18N
     
     private boolean instanceListenerAdded;
+    private String displayName=null;
     
     public SunDeploymentFactory() {
         instanceListenerAdded = false;
+        displayName= bundle.getString("FACTORY_DISPLAYNAME");//NOI18N
     }
     
+    public SunDeploymentFactory(String displayName) {
+        instanceListenerAdded = false;
+        this.displayName= displayName;
+    }
     static final private Map<String,DeploymentManager> dms = new HashMap<String,DeploymentManager>();
     
     /** This method returns a connected deployment manager.
@@ -158,7 +164,7 @@ public class SunDeploymentFactory implements Constants, DeploymentFactory, Insta
     }
     
     public String getDisplayName() {
-        return bundle.getString("FACTORY_DISPLAYNAME");//NOI18N
+        return displayName;
     }
     
     public String getProductVersion() {
