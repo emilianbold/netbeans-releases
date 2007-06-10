@@ -486,10 +486,15 @@ public class FindInFilesAction extends CallableSystemAction
 
             synchronized (getLock()) {
                 if (support != null) {
-                    boolean wasEnabled = enabled;
-                    enabled = searchScopeRegistry.hasApplicableSearchScope();
-                    support.firePropertyChange(SystemAction.PROP_ENABLED,
-                                               wasEnabled, enabled);//auto-boxing
+                    final boolean wasEnabled = enabled;
+                    final boolean newEnabled = searchScopeRegistry.hasApplicableSearchScope();
+                    enabled = newEnabled;
+                    Mutex.EVENT.writeAccess(new Runnable() {
+                        public void run() {
+                            support.firePropertyChange(SystemAction.PROP_ENABLED,
+                                                       wasEnabled, newEnabled);
+                        }
+                    });
                 }
             }
         }
