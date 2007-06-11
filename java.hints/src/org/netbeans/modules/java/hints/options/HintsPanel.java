@@ -93,7 +93,6 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         severityComboBox = new javax.swing.JComboBox();
         toProblemCheckBox = new javax.swing.JCheckBox();
         customizerPanel = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
         descriptionPanel = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         descriptionTextArea = new javax.swing.JEditorPane();
@@ -156,15 +155,12 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
-        optionsPanel.add(customizerPanel, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 10;
-        gridBagConstraints.gridy = 10;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        optionsPanel.add(jLabel1, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
+        optionsPanel.add(customizerPanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -296,7 +292,6 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
     private javax.swing.JEditorPane descriptionTextArea;
     private javax.swing.JPanel detailsPanel;
     private javax.swing.JTree errorTree;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSplitPane jSplitPane1;

@@ -69,6 +69,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.text.BadLocationException;
@@ -1531,6 +1532,9 @@ public final class JavadocHintProvider extends AbstractHint {
     
     @Override
     public JComponent getCustomizer(final Preferences node) {
+        JPanel outerPanel = new JPanel( new GridBagLayout() );
+        outerPanel.setOpaque( false );
+        
         JPanel res = new JPanel( new GridBagLayout() );
         res.setOpaque( false );
         res.setBorder( BorderFactory.createTitledBorder(NbBundle.getMessage(JavadocHintProvider.class, "LBL_SCOPE") ) ); //NOI18N
@@ -1571,7 +1575,9 @@ public final class JavadocHintProvider extends AbstractHint {
         radio.setOpaque(false);
         res.add( radio, new GridBagConstraints(0,row++,1,1,0.0,0.0,GridBagConstraints.WEST,GridBagConstraints.HORIZONTAL, new Insets(8,8,0,8),0,0 ) );
         
-        return res;
+        outerPanel.add( res, new GridBagConstraints(0,0,1,1,0.0,0.0,GridBagConstraints.NORTHWEST,GridBagConstraints.BOTH, new Insets(0,0,0,0),0,0 ) );
+        outerPanel.add( new JLabel(), new GridBagConstraints(1,1,1,1,1.0,1.0,GridBagConstraints.NORTHWEST,GridBagConstraints.NONE, new Insets(0,0,0,0),0,0 ) );
+        return outerPanel;
     }
     
     private static final String INITIALIZED = "javadoc-hint-initialized"; // NOI18N
