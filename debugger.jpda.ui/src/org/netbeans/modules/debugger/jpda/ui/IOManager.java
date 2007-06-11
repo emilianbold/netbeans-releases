@@ -100,9 +100,8 @@ public class IOManager {
             throw new NullPointerException ();
         synchronized (buffer) {
             buffer.addLast (new Text (text, line, important));
-        }
         if (task == null)
-            task = RequestProcessor.getDefault ().post (new Runnable () {
+            task = new RequestProcessor("Debugger Output", 1).post (new Runnable () {
                 public void run () {
                     synchronized (buffer) {
                         int i, k = buffer.size ();
@@ -133,10 +132,6 @@ public class IOManager {
                                         }
                                         debuggerOut.flush();
                                     }
-                                    if (closed) {
-                                        debuggerOut.close ();
-                                        debuggerErr.close();
-                                    }
                                 //}
                                // if ((t.where & STATUS_OUT) != 0) 
                                     StatusDisplayer.getDefault ().setStatusText (t.text);
@@ -144,16 +139,25 @@ public class IOManager {
                                 ex.printStackTrace ();
                             }
                         }
+                        if (closed) {
+                            debuggerOut.close ();
+                            debuggerErr.close();
+                        }
                     }
                 }
             }, 500, Thread.MIN_PRIORITY);
         else 
             task.schedule (500);
+        }
     }
 
     void closeStream () {
-        debuggerOut.close ();
-        closed = true;
+        synchronized (buffer) {
+            closed = true;
+            if (task != null) {
+                task.schedule(500);
+            }
+        }
     }
 
     void close () {
