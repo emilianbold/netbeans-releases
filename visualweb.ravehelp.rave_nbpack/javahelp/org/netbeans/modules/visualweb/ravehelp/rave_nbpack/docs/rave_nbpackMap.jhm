@@ -574,10 +574,6 @@
 	<mapID target="jsp_encoding_page" url="web/create/jsp/jsp_encoding_page.html"/>
 	<mapID target="jsp_encoding_request" url="web/create/jsp/jsp_encoding_request.html"/>
 	<mapID target="jsp_encoding_response" url="web/create/jsp/jsp_encoding_response.html"/>
-	<mapID target="jsp_connectionpool_tomcat" url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_use_tdcp.html"/>
-	<mapID target="jsp_compilation_tomcat" url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_enable_1_5.html"/>
-	<mapID target="tomcat_jwsdp" url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_websvc_jwsdp.html"/>
-	<mapID target="tomcat_non_jwsdp" url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_websvc.html"/>
 	<mapID target="about_listener" url="web/create/listener/about_listener.html"/>
 	<mapID target="listener_addtodd" url="web/create/listener/listener_addtodd.html"/>
 	<mapID target="listener_create" url="web/create/listener/listener_create.html"/>
@@ -615,12 +611,9 @@
 	<mapID target="about_deploy" url="web/deploy/about_deploy.html"/>
 	<mapID target="deploy_quickref" url="web/deploy/deploy_quickref.html"/>
 	<mapID target="deploy_webapp" url="web/deploy/deploy_webapp.html"/>
-	<mapID target="deploy_changebrowser" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/webbrowser/default.html"/>
 	<mapID target="deploy_changeserver" url="web/deploy/deploy_changeserver.html"/>
-	<mapID target="deploy_tomcat_manager" url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_edit_tomcatuser.html"/>
 	<mapID target="about_debug" url="web/debug/about_debug.html"/>
 	<mapID target="debug_webapp" url="web/debug/debug_webapp.html"/>
-	<mapID target="debug_freeform" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/project/proj_webfree_debug.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.WebCustomizer" url="web/csh/dbox_projprops/WebCustomizerSources.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerSources" url="web/csh/dbox_projprops/WebCustomizerSources.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerLibraries" url="web/csh/dbox_projprops/WebCustomizerLibraries.html"/>
@@ -662,7 +655,6 @@
 	<mapID target="dd_multiview_security_securityrolesNode" url="web/csh/graphic_editor/dd_multiview_security_securityrolesNode.html"/>
 	<mapID target="dd_multiview_security_securityconstraintsNode" url="web/csh/graphic_editor/dd_multiview_security_securityconstraintsNode.html"/>
 	<mapID target="org.netbeans.modules.project.libraries.ui.LibrariesCustomizer" url="web/create/tag/taglib/csh_library_manager.html"/>
-	<mapID target="org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager" url="server/csh_server_manager.html"/>
 	<mapID target="org.netbeans.modules.web.project.ui.wizards.PanelSupportedFrameworks" url="web/csh/projwiz_standard/PanelSupportedFrameworks.html"/>
 	<mapID target="org.netbeans.modules.web.struts.ui.StrutsConfigurationPanelVisual" url="web/csh/projwiz_standard/PanelSupportedFrameworks.html"/>
 	<mapID target="org.netbeans.modules.web.jsf.wizards.JSFConfigurationPanelVisual" url="web/csh/projwiz_standard/PanelSupportedFrameworks.html"/>

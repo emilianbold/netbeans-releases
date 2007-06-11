@@ -488,9 +488,7 @@
 				</tocitem>
 				<tocitem text="Accessing a Custom Tag from a JSP Page" target="jsp_usetaglib" />
 				<tocitem text="Accessing an Applet from a JSP Page" target="jsp_useapplet" />
-				<tocitem text="Accessing a Connection Pool from a JSP Page" target="jsp_connectionpool_tomcat" />
 				<tocitem text="Compiling a JSP File" target="jsp_compile" />
-				<tocitem text="Enabling JDK 1.5 Compilation Support for Tomcat" target="jsp_compilation_tomcat" />
 				<tocitem text="Viewing a JSP File's Servlet" target="jsp_servletview" />
 				<tocitem text="Passing Request Parameters" target="jsp_queryparams" />
 				<tocitem text="Running a JSP File" target="jsp_run" />
@@ -557,17 +555,14 @@
 			<tocitem text="About Deploying Web Applications" target="about_deploy" />
 			<tocitem text="Web Application Deployment Tasks: Quick Reference" target="deploy_quickref" />
 			<tocitem text="Passing Request Parameters" target="jsp_queryparams" />
-			<tocitem text="Authenticating the Tomcat Web Server" target="deploy_tomcat_manager" />
 			<tocitem text="Deploying a Web Application" target="deploy_webapp" />
 			<tocitem text="Changing the Target Server" target="deploy_changeserver" />
-			<tocitem text="Changing the Default Web Browser" target="deploy_changebrowser" />
 		</tocitem>
 		<tocitem text="Debugging and Testing Web Applications">
 			<tocitem text="About Debugging and Testing Web Applications" target="about_debug" />
 			<tocitem text="Compiling a JSP File" target="jsp_compile" />
 			<tocitem text="Viewing a JSP File's Servlet" target="jsp_servletview" />
 			<tocitem text="Debugging a Web Application" target="debug_webapp" />
-			<tocitem text="Creating A Debug Target for a Free-Form Web Project" target="debug_freeform" />
 		</tocitem>
 	</tocitem>
 </toc>
