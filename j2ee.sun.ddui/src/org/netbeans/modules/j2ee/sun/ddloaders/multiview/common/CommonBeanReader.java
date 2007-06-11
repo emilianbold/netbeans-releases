@@ -187,8 +187,8 @@ public abstract class CommonBeanReader
             if(getter == null) {
                 getter = beanClass.getMethod(getterName);
                 methodMap.put(key, getter);
-            } else {
-                System.out.println("Using cached method " + getter.getName() + " on " + beanClass.getName());
+//            } else {
+//                System.out.println("Using cached method " + getter.getName() + " on " + beanClass.getName());
             }
             result = getter.invoke(bean);
         } catch(Exception ex) {

@@ -219,8 +219,8 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
                         if(value instanceof Map<?, ?>) {
                             stdBeanProperties = (Map<String, Object>) value;
                             stdBeanPropertyMap.remove(beanName);
-                        } else {
-                            System.out.println("Property for standard bean " + beanName + " is wrong type: " + value.getClass().getSimpleName());
+//                        } else {
+//                            System.out.println("Property for standard bean " + beanName + " is wrong type: " + value.getClass().getSimpleName());
                         }
                     }
                 }
@@ -232,15 +232,15 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
                         if(value instanceof Map<?, ?>) {
                             annotationProperties = (Map<String, Object>) value;
                             annotationPropertyMap.remove(beanName);
-                        } else {
-                            System.out.println("Property for annotation " + beanName + " is wrong type: " + value.getClass().getSimpleName());
+//                        } else {
+//                            System.out.println("Property for annotation " + beanName + " is wrong type: " + value.getClass().getSimpleName());
                         }
                     }
                 }
 
                 DDBinding binding = new DDBinding(this, sunBean, stdBeanProperties, annotationProperties, false);
                 bindingDataSet.add(binding);
-                System.out.println("Loaded from sun-???.xml... " + binding.toString());
+//                System.out.println("Loaded from sun-???.xml... " + binding.toString());
             }
         }
         
@@ -263,17 +263,17 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
                                 if(value instanceof Map<?, ?>) {
                                     annotationProperties = (Map<String, Object>) value;
                                     annotationPropertyMap.remove(beanName);
-                                } else {
-                                    System.out.println("Property for annotation " + beanName + " is wrong type: " + value.getClass().getSimpleName());
+//                                } else {
+//                                    System.out.println("Property for annotation " + beanName + " is wrong type: " + value.getClass().getSimpleName());
                                 }
                             }
                         }
 
                         DDBinding binding = new DDBinding(this, newSunBean, stdBeanProperties, annotationProperties, true);
                         bindingDataSet.add(binding);
-                        System.out.println("Implied by standard descriptor... " + binding.toString());
-                    } else {
-                        System.out.println("Property for " + beanName + " is wrong type: " + value.getClass().getSimpleName());
+//                        System.out.println("Implied by standard descriptor... " + binding.toString());
+//                    } else {
+//                        System.out.println("Property for " + beanName + " is wrong type: " + value.getClass().getSimpleName());
                     }
                 }
             }
@@ -293,9 +293,9 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
 
                         DDBinding binding = new DDBinding(this, newSunBean, null, annotationProperties, true);
                         bindingDataSet.add(binding);
-                        System.out.println("Implied by annotation... " + binding.toString());
+//                        System.out.println("Implied by annotation... " + binding.toString());
                     } else {
-                        System.out.println("Property for " + beanName + " is wrong type: " + value.getClass().getSimpleName());
+//                        System.out.println("Property for " + beanName + " is wrong type: " + value.getClass().getSimpleName());
                     }
                 }
             }
