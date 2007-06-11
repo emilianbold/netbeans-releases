@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -49,7 +49,6 @@ public class HelpOperatorTest extends JellyTestCase {
         TestSuite suite = new NbTestSuite();
         suite.addTest(new HelpOperatorTest("testInvoke"));
         suite.addTest(new HelpOperatorTest("testContentsSelection"));
-        suite.addTest(new HelpOperatorTest("testIndexFind"));
         suite.addTest(new HelpOperatorTest("testSearchFind"));
         suite.addTest(new HelpOperatorTest("testPreviousAndNext"));
         suite.addTest(new HelpOperatorTest("testPrint"));
@@ -101,21 +100,6 @@ public class HelpOperatorTest extends JellyTestCase {
     public void testContentsSelection() {
         String text = help.getContentText();
         help.treeContents().selectRow(0);
-        new EventTool().waitNoEvent(500);
-        assertTrue(!text.equals(help.getContentText()));
-    }
-    
-    /** simple test case
-     */
-    public void testIndexFind() {
-        // first enter selects category in the tree
-        help.indexFind("help");
-        // second enter shows content
-        help.indexFind("help");
-        new EventTool().waitNoEvent(500);
-        String text=help.getContentText();
-        help.indexFind("menu");
-        help.indexFind("menu");
         new EventTool().waitNoEvent(500);
         assertTrue(!text.equals(help.getContentText()));
     }
