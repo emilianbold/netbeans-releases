@@ -58,6 +58,11 @@ public class GenericResourceBean {
     private Set<HttpMethodType> methodTypes;
 
     public GenericResourceBean(String name, String packageName, String uriTemplate, 
+            String[] mediaTypes, HttpMethodType[] methodTypes) {
+        this(name, packageName, uriTemplate, mediaTypes, null, methodTypes);
+    }
+    
+    public GenericResourceBean(String name, String packageName, String uriTemplate, 
             String[] mediaTypes, String[] representationTypes,
             HttpMethodType[] methodTypes) {
         this.name = name;
@@ -69,7 +74,7 @@ public class GenericResourceBean {
             throw new IllegalArgumentException("Unmatched media types and representation types");
         }
         this.mimeTypes = mediaTypes;
-        this.representationTypes = representationTypes;
+        this.representationTypes = representationTypes == null ? new String[0] : representationTypes;
     }
 
     public static String[] getSupportedMimeTypes() {
@@ -80,6 +85,10 @@ public class GenericResourceBean {
         return name;
     }
 
+    public void setPackageName(String name) {
+        packageName = name;
+    }
+    
     public String getPackageName() { 
         return packageName;
     }

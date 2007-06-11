@@ -197,6 +197,12 @@ public class Util {
         return sb.toString();
     }
     
+    public static String upperFirstChar(String name) {
+        StringBuilder sb = new StringBuilder(name);
+        sb.setCharAt(0, Character.toUpperCase(name.charAt(0)));
+        return sb.toString();
+    }
+    
     public static String deriveResourceClassName(String resourceName) {
         return resourceName + EntityRESTServicesCodeGenerator.RESOURCE_SUFFIX;
     }

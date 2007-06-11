@@ -34,18 +34,24 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
+import javax.rmi.CORBA.Util;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 //import org.netbeans.api.java.source.query.Query;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.openide.ErrorManager;
@@ -54,6 +60,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -590,4 +597,80 @@ public class JavaSourceHelper {
         
         return Comment.create(Style.JAVADOC, -2, -2, -2, text);
     }
+
+    /**
+     * Finds the first public top-level type in the compilation unit given by the
+     * given <code>CompilationController</code>.
+     *
+     * This method assumes the restriction that there is at most a public
+     * top-level type declaration in a compilation unit, as described in the
+     * section 7.6 of the JLS.
+     */
+    public static ClassTree findPublicTopLevelClass(CompilationController controller) throws IOException {
+        controller.toPhase(Phase.ELEMENTS_RESOLVED);
+
+        final String mainElementName = controller.getFileObject().getName();
+        for (Tree tree : controller.getCompilationUnit().getTypeDecls()) {
+            if (tree.getKind() != Tree.Kind.CLASS) {
+                continue;
+            }
+            ClassTree classTree = (ClassTree)tree;
+            if (!classTree.getSimpleName().contentEquals(mainElementName)) {
+                continue;
+            }
+            if (!classTree.getModifiers().getFlags().contains(Modifier.PUBLIC)) {
+                continue;
+            }
+            return classTree;
+        }
+        return null;
+    }
+
+    public static boolean isInjectionTarget(CompilationController controller) throws IOException {
+        Parameters.notNull("controller", controller); // NOI18N
+
+        ClassTree classTree = findPublicTopLevelClass(controller);
+        if (classTree == null) {
+            throw new IllegalArgumentException();
+        }
+
+        return isInjectionTarget(controller, getTypeElement(controller, classTree));
+    }
+
+    public static boolean isInjectionTarget(CompilationController controller, TypeElement typeElement) {
+        FileObject fo = controller.getFileObject();
+        Project project = FileOwnerQuery.getOwner(fo);
+        if (ElementKind.INTERFACE != typeElement.getKind()) {
+            List<? extends AnnotationMirror> annotations = typeElement.getAnnotationMirrors();
+            boolean found = false;
+
+            for (AnnotationMirror m : annotations) {
+                Name qualifiedName = ((TypeElement)m.getAnnotationType().asElement()).getQualifiedName();
+                if (qualifiedName.contentEquals("javax.jws.WebService")) { //NOI18N
+                    found = true;
+                    break;
+                }
+                if (qualifiedName.contentEquals("javax.jws.WebServiceProvider")) { //NOI18N
+                    found = true;
+                    break;
+                }
+            }
+            if (found) return true;
+        }
+        return false;
+    }
+    
+    public static TypeElement getTypeElement(CompilationController controller, ClassTree classTree) {
+        TreePath classTreePath = controller.getTrees().getPath(controller.getCompilationUnit(), classTree);
+        return (TypeElement) controller.getTrees().getElement(classTreePath);
+    }
+
+    public static TypeElement getTypeElement(CompilationController controller, TreePath treePath) {
+        return (TypeElement) controller.getTrees().getElement(treePath);
+    }
+    
+    public static ClassTree getClassTree(CompilationController controller, TypeElement typeElement) {
+        return controller.getTrees().getTree(typeElement);
+    }
+
 }
