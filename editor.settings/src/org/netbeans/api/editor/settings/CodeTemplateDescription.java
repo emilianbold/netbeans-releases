@@ -19,84 +19,131 @@
 
 package org.netbeans.api.editor.settings;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
- * Description of the code template includes abbreviation name,
- * description and parametrized text.
- * <br/>
- * The descriptions are provided from
- * {@link CodeTemplateSettings#getCodeTemplateDescriptions()}.
- *
+ * The definition of a code template. A code template is basically a piece of
+ * code with an abbreviation associated to it. When a user types the abbreviation
+ * to the editor and presses the expansion key the code associated with the
+ * abbreviation gets expanded. The code can contain various parameter that the user
+ * can enter during the expansion.
+ * 
+ * <p>The <code>CodeTemplateDescription</code>s can be obtained from
+ * <code>CodeTemplateSettings</code> class that can be loaded from <code>MimeLookup</code>
+ * for a particular mime type. See the example below.
+ * 
+ * <pre>
+ * Lookup l = MimeLookup.getLookup(MimePath.parse(mimePath));
+ * CodeTemplateSettings cds = l.lookup(CodeTemplateSettings.class);
+ * List<CodeTemplateDescription> codeTemplates = cds.getCodeTemplateDescriptions();
+ * </pre>
+ * 
+ * @see CodeTemplateSettings
  * @author Miloslav Metelka
  */
 public final class CodeTemplateDescription {
 
     private final String abbreviation;
-
     private final String description;
-
     private final String parametrizedText;
+    private final List<String> contexts;    
 
     /**
-     * Construct code template description.
-     * It can be constructed e.g. from the templates stored in an xml format.
-     *
-     * @param abbreviation non-null abbreviation.
-     * @param description non-null description.
-     * @param parametrizedText non-null parametrized text.
+     * Creates a new code template description. It call the other constructor
+     * passing <code>null</code> for the <code>contexts</code> parameter.
+     * 
+     * @param abbreviation The abbreviation text that expands this code template.
+     * @param description The code template's display text.
+     * @param parametrizedText The actual code template that will get expanded when
+     *   a user writes the abbreviation in the editor.
      */
     public CodeTemplateDescription(String abbreviation, String description, String parametrizedText) {
         this(abbreviation, description, parametrizedText, null);
     }
     
-    public CodeTemplateDescription(String abbreviation, String description, String parametrizedText, List<String> contexts) {
-        assert (abbreviation != null);
-        assert (description != null);
-        assert (parametrizedText != null);
+    /**
+     * Creates a new code template description.
+     * 
+     * <p>Usually clients do not need to create <code>CodeTemplateDescription</code>s
+     * by themselvs. Instead they use <code>MimeLookup</code> and <code>CodeTemplateSettings</code>
+     * to access code templates registered in the system.
+     *
+     * @param abbreviation The abbreviation text that expands this code template.
+     * @param description The code template's display text.
+     * @param parametrizedText The actual code template that will get expanded when
+     *   a user writes the abbreviation in the editor.
+     * @param contexts The list of context ids that apply for this code template.
+     */
+    public CodeTemplateDescription(
+        String abbreviation, 
+        String description, 
+        String parametrizedText, 
+        List<String> contexts
+    ) {
+        assert abbreviation != null : "The abbreviation parameter can't be null"; //NOI18N
+        assert parametrizedText != null : "The parametrizedText parameter can't be null"; //NOI18N
+        
         this.abbreviation = abbreviation;
         this.description = description;
         this.parametrizedText = parametrizedText;
-	    this.contexts = contexts;
+        this.contexts = contexts == null ? 
+            Collections.<String>emptyList() : 
+            Collections.unmodifiableList(new ArrayList<String>(contexts));
     }
     
-    private final List<String> contexts;    
-    
     /**
-     * Get abbreviation that triggers expansion of this code template.
-     * <br>
-     * It should be unique among code templates for a single mime-type
-     * so that each code template can be expanded individually.
+     * Gets the abbreviation text that triggers expansion of this code template.
+     * 
+     * <p>The abbreviation text should be unique among all code templates defined
+     * for a one mime type so that each code template can be expanded individually.
      *
-     * @return non-null abbreviation that expands to this template.
+     * @return The abbreviation text that expands this code template.
      */
     public String getAbbreviation() {
         return abbreviation;
     }
 
     /**
-     * Get textual description of this code template.
-     * <br>
-     * It's being displayed e.g. in the code completion window.
+     * Gets textual description of this code template. It's a display text
+     * that can be shown in UI such as the code completion window or Tools-Options
+     * dialog.
      *
-     * @return non-null description text.
+     * @return The display text for this code template or <code>null</code> if this
+     *   code template has no descriptions.
      */
     public String getDescription() {
         return description;
     }
 
     /**
-     * Get the parametrized text of this code template.
-     * <br>
-     * The parameters have form "${...}" and there can be arbitrary
-     * number of them.
+     * Gets the code text of this code template.
+     * 
+     * This is the text that will be expanded when a user types the abbreviation
+     * in the editor and presses the expansion key. The text can contain parameters
+     * in the form of "${...}".
      *
-     * @return non-null parametrized text.
+     * @return The code text with parameters.
      */
     public String getParametrizedText() {
         return parametrizedText;
     }
 
+    /**
+     * Gets the list of contexts that apply for this code template. The contexts
+     * are simply unique identifiers used by the infrastructure to filter out
+     * code templates that are not suitable for the editor context, where a user
+     * types.
+     * 
+     * <p>The actual identifiers are defined by each particular language (mime type)
+     * and can be different for different languages. The language defines contexts
+     * for its constructs such as loops, methods, classes, if-else blocks, etc. and
+     * than tags each code template available for that language with a context,
+     * where it is meaningful to apply the template.
+     * 
+     * @return The contexts for this code template.
+     */
     public List<String> getContexts() {
         return contexts;
     }

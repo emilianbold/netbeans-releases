@@ -19,7 +19,7 @@
 
 package org.netbeans.api.editor.settings;
 
-import java.util.List;
+import java.util.Collection;
 import javax.swing.KeyStroke;
 
 /**
@@ -38,23 +38,23 @@ public abstract class CodeTemplateSettings {
      */
     public CodeTemplateSettings() {
         // Control instantiation of the allowed subclass only
-        if (!"org.netbeans.modules.editor.settings.xxx".equals(getClass().getName())) { // NOI18N
+        if (!"org.netbeans.modules.editor.settings.storage.codetemplates.CodeTemplateSettingsImpl$Immutable".equals(getClass().getName())) { // NOI18N
             throw new IllegalStateException("Instantiation prohibited."); // NOI18N
         }
     }
     
     /**
-     * Gets list of code template descriptions.
+     * Gets the list of code template descriptions.
      *
-     * @return non-modifiable list of the code template descriptions.
+     * @return An unmodifiable list of code template descriptions.
      */
-    public abstract List<CodeTemplateDescription> getCodeTemplateDescriptions();
+    public abstract Collection<CodeTemplateDescription> getCodeTemplateDescriptions();
     
     /**
-     * Get the keystroke that expands the code templates abbreviations.
+     * Gets the keystroke that expands the code templates abbreviations.
      *
-     * @return non-null keystroke that expands the code template abbreviations
-     *  into code templates.
+     * @return A keystroke that expands code template abbreviations to
+     *   its code text.
      */
     public abstract KeyStroke getExpandKey();
     
