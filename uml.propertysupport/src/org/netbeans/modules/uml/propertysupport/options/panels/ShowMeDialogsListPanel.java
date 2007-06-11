@@ -115,7 +115,6 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new javax.swing.JScrollPane();
         jPanel2 = new javax.swing.JPanel();
         mainLabel = new javax.swing.JLabel();
         jSeparator2 = new javax.swing.JSeparator();
@@ -264,9 +263,7 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
-        jScrollPane1.setViewportView(jPanel2);
-
-        add(jScrollPane1, java.awt.BorderLayout.CENTER);
+        add(jPanel2, java.awt.BorderLayout.PAGE_START);
     }// </editor-fold>//GEN-END:initComponents
 
     
@@ -300,7 +297,6 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JLabel mainLabel;
     private javax.swing.JComboBox modifyCB;
