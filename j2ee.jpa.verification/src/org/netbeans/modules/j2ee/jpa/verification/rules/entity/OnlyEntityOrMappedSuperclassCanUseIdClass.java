@@ -47,7 +47,8 @@ public class OnlyEntityOrMappedSuperclassCanUseIdClass extends JPAClassRule {
         
         if (Utilities.hasAnnotation(subject, JPAAnnotations.ID_CLASS)){
             return new ErrorDescription[]{createProblem(subject, ctx,
-                    NbBundle.getMessage(QueriesProperlyDefined.class, "MSG_OnlyEntityOrMappedSuperclassCanUseIdClass"))};
+                    NbBundle.getMessage(OnlyEntityOrMappedSuperclassCanUseIdClass.class,
+                    "MSG_OnlyEntityOrMappedSuperclassCanUseIdClass"))};
         }
         
         return null;
