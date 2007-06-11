@@ -18,6 +18,7 @@
             </file>
             <file name="GenericRESTServices">
                 <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.GenericRESTServicesIterator" />
                 <attr name="templateWizardURL"
                       urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/RESTServicesFromPatterns.html"/>
