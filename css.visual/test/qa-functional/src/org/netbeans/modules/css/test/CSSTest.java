@@ -21,9 +21,11 @@ package org.netbeans.modules.css.test;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
+import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.junit.NbTestSuite;
 
 
@@ -47,11 +49,22 @@ public class CSSTest extends JellyTestCase {
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
     }
     
-    protected void openFile(String fileName){
-        Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
-        new Node(rootNode,"Web Pages|css|"+fileName).performPopupAction("Open");
+    protected void waitUpdate(){
+        try{
+            Thread.sleep(5000);
+        }catch (InterruptedException exc){
+            throw new JemmyException("INTERUPTION", exc);
+        }
     }
-
+    
+    protected EditorOperator openFile(String fileName){
+        Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
+        Node node = new Node(rootNode,"Web Pages|css|"+fileName);
+        node.select();
+        node.performPopupAction("Open");
+        return new EditorOperator(fileName);
+    }
+    
     public static Test suite() {
         TestSuite suite = new NbTestSuite("TestCSS");
         suite.addTest(new TestBasic("testNewCSS"));
@@ -60,13 +73,13 @@ public class CSSTest extends JellyTestCase {
         suite.addTest(new TestFontSettings("testSetFontFamily"));
         suite.addTest(new TestFontSettings("testChangeFontFamily"));
         suite.addTest(new TestFontSettings("testChangeFontSize"));
-        //        disabled because of Issue #105728
-        //        suite.addTest(new TestFontSettings("testChangeFontWeight"));
-        //        suite.addTest(new TestFontSettings("testChangeFontStyle"));
-        //        suite.addTest(new TestFontSettings("testChangeFontVariant"));
-        //        suite.addTest(new TestFontSettings("testDecoration"));
-        //        suite.addTest(new TestFontSettings("testChangeFontColor"));
-        
+        suite.addTest(new TestFontSettings("testChangeFontWeight"));
+        suite.addTest(new TestFontSettings("testChangeFontStyle"));
+        suite.addTest(new TestFontSettings("testChangeFontVariant"));
+        suite.addTest(new TestFontSettings("testDecoration"));
+        suite.addTest(new TestFontSettings("testChangeFontColor"));
+        suite.addTest(new TestIssues("test105562"));
+        suite.addTest(new TestIssues("test105568"));
         return suite;
     }
     

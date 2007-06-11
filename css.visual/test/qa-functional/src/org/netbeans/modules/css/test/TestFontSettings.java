@@ -92,6 +92,7 @@ public class TestFontSettings extends CSSTest{
         JListOperator fontFamilies = fontOper.fontFamilies();
         int familiesCount = getSize(fontFamilies);
         fontFamilies.selectItem(new Random().nextInt(familiesCount-1)+1);// IGNORE <NOT SET>
+        waitUpdate();
         String selected = fontFamilies.getSelectedValue().toString();
         assertTrue("CHANGED FONT", getRootRuleText().contains(selected));
         assertTrue("CHANGED FONT", getRootRuleText().contains("font-family:"));
@@ -131,7 +132,7 @@ public class TestFontSettings extends CSSTest{
     }
     
     public void testChangeFontVariant(){
-        System.out.println("running testChangeFontStyle");
+        System.out.println("running testChangeFontVariant");
         FontPaneOperator fontOper = initializeFontChanging();
         checkAtrribute("font-variant", fontOper.fontVariant());
     }
@@ -143,9 +144,11 @@ public class TestFontSettings extends CSSTest{
         int size = getSize(operator);
         assertFalse("SOME ITEMS", size == 0);
         operator.selectItem("green");
+        waitUpdate();
         assertTrue(getRootRuleText().contains("color: green"));
         //        JColorChooserOperator chooser = fontOper.showColorChooser();
         //        chooser.setColor(Color.RED);
+        //        waitUpdate();
         //        assertTrue(getRootRuleText().contains("color: red"));
     }
     
@@ -153,15 +156,23 @@ public class TestFontSettings extends CSSTest{
         System.out.println("running testUnderline");
         FontPaneOperator fontOper = initializeFontChanging();
         fontOper.overline(true);
+        waitUpdate();
         assertTrue(getRootRuleText().contains("text-decoration: overline"));
         fontOper.overline(false);
+        waitUpdate();
         fontOper.underline(true);
+        waitUpdate();
         assertTrue(getRootRuleText().contains("text-decoration: underline"));
         fontOper.underline(false);
+        waitUpdate();
         fontOper.strikethrough(true);
+        waitUpdate();
         assertTrue(getRootRuleText().contains("text-decoration: line-through"));
         fontOper.noDecoration(true);
+        waitUpdate();
         assertTrue(getRootRuleText().contains("text-decoration: none"));
+        assertFalse(getRootRuleText().contains("line-through"));
+        assertFalse(getRootRuleText().contains("overline"));
     }
     
     private void checkAtrribute(String attributeName, JComboBoxOperator operator) {
@@ -169,15 +180,18 @@ public class TestFontSettings extends CSSTest{
         assertFalse("SOME ITEMS", size == 0);
         //--------INSERT ONCE--------//
         operator.selectItem(new Random().nextInt(size-1)+1);
+        waitUpdate();
         String selected = operator.getSelectedItem().toString();
-        assertTrue(getRootRuleText().contains(attributeName + ": " + selected));
+        assertTrue("INSERTING", getRootRuleText().contains(attributeName + ": " + selected));
         //--------  UPDATE   --------//
         operator.selectItem(new Random().nextInt(size-1)+1);
+        waitUpdate();
         selected = operator.getSelectedItem().toString();
-        assertTrue(getRootRuleText().contains(attributeName + ": "+selected));
+        assertTrue("UPDATING", getRootRuleText().contains(attributeName + ": "+selected));
         //-------- REMOVE -----------//
         operator.selectItem(0);//<NOT SET>
-        assertFalse(getRootRuleText().contains(attributeName));
+        waitUpdate();
+        assertFalse("REMOVING", getRootRuleText().contains(attributeName));
     }
     
     private String getRootRuleText(){
@@ -208,7 +222,7 @@ public class TestFontSettings extends CSSTest{
     private List<String> getItems(JComboBoxOperator boxOperator){
         JComboBox box = (JComboBox) boxOperator.getSource();
         int boxSize = box.getItemCount();
-        List<String> result = new ArrayList(boxSize);
+        List<String> result = new ArrayList<String>(boxSize);
         for(int i = 0;i < boxSize; i++){
             result.add(box.getModel().getElementAt(i).toString());
         }
@@ -218,7 +232,7 @@ public class TestFontSettings extends CSSTest{
     private List<String> getItems(JListOperator listOperator){
         JList jList = (JList) listOperator.getSource();
         int listOperatorSize = getSize(listOperator);
-        List<String> result = new ArrayList(listOperatorSize);
+        List<String> result = new ArrayList<String>(listOperatorSize);
         for (int i=0; i <listOperatorSize ;i++){
             result.add(jList.getModel().getElementAt(i).toString());
         }

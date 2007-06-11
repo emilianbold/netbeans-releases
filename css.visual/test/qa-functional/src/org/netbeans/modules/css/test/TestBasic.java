@@ -98,8 +98,7 @@ public class TestBasic extends CSSTest{
         Object root = treeOperator.getRoot();
         assertNotNull(root);
         assertEquals("NUMBER OF ROOT CHILD", 2, treeOperator.getChildCount(root));
-        openFile(navigatorTestFile);
-        new EditorOperator(navigatorTestFile).setVisible(true);
+        openFile(navigatorTestFile).setVerification(true);
         treeOperator = navigatorOperator.getTree();
         root = treeOperator.getRoot();
         assertNotNull(root);

@@ -156,12 +156,16 @@ public class StyleBuilderOperator extends TopComponentOperator{
         public void noDecoration(boolean b){
             changeSelection(b, new JCheckBoxOperator(topComp, Bundle.getString(uiBundle, "NO_DECORATION_1")));
         }
+
+        public boolean isOverline(){
+            return new JCheckBoxOperator(topComp, Bundle.getString(uiBundle, "FONT_OVERLINE")).isSelected();
+        }
         
         private void changeSelection(boolean b, JCheckBoxOperator operator){
             if (operator.isSelected() && !b){
-                operator.changeSelection(b);
+                operator.setSelected(b);
             }else if (!operator.isSelected() && b){
-                operator.changeSelection(b);
+                operator.setSelected(b);
             }
         }
         
