@@ -85,7 +85,7 @@ public class UnitTab extends javax.swing.JPanel {
     private PopupActionSupport popupActionsSupport;
     private RowTabAction activateAction;
     private RowTabAction deactivateAction;
-    private TabAction refreshAction;
+    private TabAction reloadAction;
     
     private RowTabAction removeLocallyDownloaded;
     
@@ -132,11 +132,6 @@ public class UnitTab extends javax.swing.JPanel {
             @Override
             public void componentShown (ComponentEvent e) {
                 super.componentShown (e);
-                if (Utilities.modulesOnly()) {
-                    lTabActionDescription.setText(textForKey("SettingsTab.cbModules.text"));
-                } else {
-                    lTabActionDescription.setText(textForKey("SettingsTab.cbPlugins.text"));
-                }
                 focusTable ();
                 
             }
@@ -180,8 +175,8 @@ public class UnitTab extends javax.swing.JPanel {
                 }
             }
         }
-        if (refreshAction != null) {
-            refreshAction.setEnabled (enabled);
+        if (reloadAction != null) {
+            reloadAction.setEnabled (enabled);
         }
         Component parent = getParent ();
         Component rootPane = getRootPane ();
@@ -242,7 +237,6 @@ public class UnitTab extends javax.swing.JPanel {
         TabAction[] forPopup = null;
         switch (model.getType ()) {
         case INSTALLED :
-            //setTabActionDescription ("UnitTab_lTabActionDescription_Text_INSTALLED");
         {
             RowTabAction checkCategoryAction = new CheckCategoryAction ();
             RowTabAction uncheckCategoryAction = new UncheckCategoryAction ();
@@ -261,11 +255,10 @@ public class UnitTab extends javax.swing.JPanel {
             };
         }
         bTabAction.setAction (new UninstallAction ());
-        prepareTopButton (refreshAction = new ReloadAction ());
+        prepareTopButton (reloadAction = new ReloadAction ());
         table.setEnableRenderer (new EnableRenderer ());
         break;
         case UPDATE :
-            //setTabActionDescription ("UnitTab_lTabActionDescription_Text_UPDATE");
         {
             RowTabAction selectCategoryAction = new CheckCategoryAction ();
             RowTabAction deselectCategoryAction = new UncheckCategoryAction ();
@@ -278,10 +271,9 @@ public class UnitTab extends javax.swing.JPanel {
             };
         }
         bTabAction.setAction (new UpdateAction ());
-        prepareTopButton (refreshAction = new ReloadAction ());
+        prepareTopButton (reloadAction = new ReloadAction ());
         break;
         case AVAILABLE :
-            //setTabActionDescription ("UnitTab_lTabActionDescription_Text_AVAILABLE");
         {
             RowTabAction selectCategoryAction = new CheckCategoryAction ();
             RowTabAction deselectCategoryAction = new UncheckCategoryAction ();
@@ -294,11 +286,10 @@ public class UnitTab extends javax.swing.JPanel {
             };
         }
         bTabAction.setAction (new AvailableAction ());
-        prepareTopButton (refreshAction = new ReloadAction ());
+        prepareTopButton (reloadAction = new ReloadAction ());
         break;
         case LOCAL :
             removeLocallyDownloaded = new RemoveLocallyDownloadedAction ();
-            //setTabActionDescription ("UnitTab_lTabActionDescription_Text_LOCAL");
             {
                 forPopup = new TabAction[] {
                     removeLocallyDownloaded, new CheckAction ()
@@ -306,7 +297,6 @@ public class UnitTab extends javax.swing.JPanel {
             }
             bTabAction.setAction (new LocalUpdateAction ());
             prepareTopButton (new AddLocallyDownloadedAction ());
-            //addToToolbar (removeLocallyDownloaded);
             break;
         }
         model.addTableModelListener (new TableModelListener () {
@@ -316,17 +306,9 @@ public class UnitTab extends javax.swing.JPanel {
         });
         new PopupAction ();
         table.addMouseListener (popupActionsSupport = new PopupActionSupport (forPopup));
-        setTabActionDescription ("UnitTab_lTabActionDescription_Text");
         getDefaultAction ().setEnabled (model.getMarkedUnits ().size () > 0);
     }
     
-    private void setTabActionDescription (String key) {
-        Mnemonics.setLocalizedText (lTabActionDescription, NbBundle.getMessage (UnitTab.class, key));
-    }
-    
-    private void setTabActionName (String key) {
-        Mnemonics.setLocalizedText (bTabAction, NbBundle.getMessage (UnitTab.class, key));
-    }
     
     private void cleanSelectionInfo () {
         lSelectionInfo.setText ("");
@@ -446,13 +428,10 @@ public class UnitTab extends javax.swing.JPanel {
 
         lSelectionInfo = new javax.swing.JLabel();
         bTabAction = new javax.swing.JButton();
-        lTabActionDescription = new javax.swing.JLabel();
         lSearch = new javax.swing.JLabel();
         tfSearch = new javax.swing.JTextField();
         spTab = new javax.swing.JSplitPane();
         topButton = new javax.swing.JButton();
-
-        lTabActionDescription.setLabelFor(table);
 
         lSearch.setLabelFor(tfSearch);
         org.openide.awt.Mnemonics.setLocalizedText(lSearch, org.openide.util.NbBundle.getMessage(UnitTab.class, "lSearch1.text")); // NOI18N
@@ -473,9 +452,7 @@ public class UnitTab extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(topButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(lTabActionDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 395, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 413, Short.MAX_VALUE)
                         .add(lSearch)
                         .add(4, 4, 4)
                         .add(tfSearch, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 114, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -494,7 +471,6 @@ public class UnitTab extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
                     .add(tfSearch, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(lSearch)
-                    .add(lTabActionDescription)
                     .add(topButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(spTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 46, Short.MAX_VALUE)
@@ -1335,7 +1311,7 @@ public class UnitTab extends javax.swing.JPanel {
     
     private class AddLocallyDownloadedAction extends TabAction {
         public AddLocallyDownloadedAction () {
-            super ("UnitTab_AddLocallyDownloadedAction", null);
+            super ("UnitTab_bAddLocallyDownloads_Name", null);
             String tooltip = NbBundle.getMessage (UnitTab.class, "UnitTab_Tooltip_AddAction_LOCAL");//NOI18N
             putValue (TOOL_TIP_TEXT_KEY, tooltip);
             //String picture = "add.png";//NOI18N
@@ -1481,19 +1457,11 @@ public class UnitTab extends javax.swing.JPanel {
             return retval;
         }
     }
-    
-    private static class MyToolBar extends JToolBar {
-        @Override
-        protected void paintComponent (Graphics g) {
-            //no painting;
-        }
-    }
-    
+        
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bTabAction;
     private javax.swing.JLabel lSearch;
     private javax.swing.JLabel lSelectionInfo;
-    private javax.swing.JLabel lTabActionDescription;
     private javax.swing.JSplitPane spTab;
     private javax.swing.JTextField tfSearch;
     private javax.swing.JButton topButton;

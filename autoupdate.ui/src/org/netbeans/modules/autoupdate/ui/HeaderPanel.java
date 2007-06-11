@@ -64,12 +64,14 @@ public class HeaderPanel extends javax.swing.JPanel {
         add(title, gridBagConstraints);
 
         button.setText("jButton1");
+        button.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         add(button, gridBagConstraints);
 
         button2.setText(org.openide.util.NbBundle.getMessage(HeaderPanel.class, "HeaderPanel.button2.text")); // NOI18N
+        button2.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;

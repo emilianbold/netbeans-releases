@@ -18,9 +18,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="topButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="lTabActionDescription" pref="395" max="32767" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace pref="413" max="32767" attributes="0"/>
                       <Component id="lSearch" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
                       <Component id="tfSearch" min="-2" pref="114" max="-2" attributes="0"/>
@@ -44,7 +42,6 @@
               <Group type="103" groupAlignment="2" attributes="0">
                   <Component id="tfSearch" alignment="2" min="-2" max="-2" attributes="0"/>
                   <Component id="lSearch" alignment="2" min="-2" max="-2" attributes="0"/>
-                  <Component id="lTabActionDescription" alignment="2" min="-2" max="-2" attributes="0"/>
                   <Component id="topButton" alignment="2" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -63,16 +60,6 @@
     <Component class="javax.swing.JLabel" name="lSelectionInfo">
     </Component>
     <Component class="javax.swing.JButton" name="bTabAction">
-    </Component>
-    <Component class="javax.swing.JLabel" name="lTabActionDescription">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="table" type="code"/>
-        </Property>
-      </Properties>
-      <AuxValues>
-        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
-      </AuxValues>
     </Component>
     <Component class="javax.swing.JLabel" name="lSearch">
       <Properties>
