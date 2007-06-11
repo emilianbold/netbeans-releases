@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.common.SecurityRole;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.sun.ddloaders.Utils;
 
 
@@ -33,6 +34,17 @@ public class SecurityRoleMetadataReader extends CommonBeanReader {
 
     public SecurityRoleMetadataReader() {
         super(DDBinding.PROP_SECURITY_ROLE);
+    }
+    
+    @Override
+    public Map<String, Object> readDescriptor(CommonDDBean commonDD) {
+        // This method is passed the root of the standard descriptor.  For ejb-jar,
+        // the security-role elements are under the assembly-descriptor element, if any.
+        if(commonDD instanceof EjbJar) {
+            commonDD = ((EjbJar) commonDD).getSingleAssemblyDescriptor();
+        }
+
+        return super.readDescriptor(commonDD);
     }
     
     /** Maps interesting fields from security-role descriptor to a multi-level property map.

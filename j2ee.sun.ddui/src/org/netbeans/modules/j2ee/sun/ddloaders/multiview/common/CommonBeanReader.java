@@ -44,7 +44,7 @@ import org.openide.loaders.DataObject;
  */
 public abstract class CommonBeanReader
 {
-    private String propertyName;
+    protected String propertyName;
     
     public CommonBeanReader(String propertyName) {
         this.propertyName = propertyName;
