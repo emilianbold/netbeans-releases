@@ -21,7 +21,6 @@ package org.netbeans.lib.editor.codetemplates;
 
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
-import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateProcessor;
 
 
 /**
@@ -36,6 +35,13 @@ public abstract class CodeTemplateApiPackageAccessor {
     private static CodeTemplateApiPackageAccessor INSTANCE;
 
     public static CodeTemplateApiPackageAccessor get() {
+        try {
+            Class clazz = Class.forName(CodeTemplateManager.class.getName());
+        } catch (ClassNotFoundException e) {
+            // ignore
+        }
+        
+        assert INSTANCE != null : "There is no API package accessor available!"; //NOI18N
         return INSTANCE;
     }
 

@@ -118,10 +118,6 @@ implements LookupListener, Runnable, SettingsChangeListener {
     
     private CodeTemplateManagerOperation(String mimeType) {
         this.mimeType = mimeType;
-        
-        // Ensure the API package accessor gets initialized
-        CodeTemplateManager.class.getName();
-
         this.manager = CodeTemplateApiPackageAccessor.get().createCodeTemplateManager(this);
         
         // Compute descriptions asynchronously
