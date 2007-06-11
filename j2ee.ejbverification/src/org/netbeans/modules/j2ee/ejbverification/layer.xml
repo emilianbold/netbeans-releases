@@ -3,7 +3,7 @@
 <filesystem>
     <folder name="TaskList">
         <folder name="Scanners">
-            <file name="JPAVerificationTaskProvider.instance">
+            <file name="EJBVerificationTaskProvider.instance">
                 <attr name="instanceOf" stringvalue="org.netbeans.spi.tasklist.FileTaskScanner"/>
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.ejbverification.EJBVerificationTaskProvider"/>
             </file>
