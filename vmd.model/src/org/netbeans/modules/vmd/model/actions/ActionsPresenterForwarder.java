@@ -26,9 +26,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import org.netbeans.modules.vmd.api.model.Presenter;
 
 /**
  *
