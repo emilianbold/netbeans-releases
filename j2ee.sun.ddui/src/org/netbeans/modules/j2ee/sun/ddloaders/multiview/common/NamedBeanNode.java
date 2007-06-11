@@ -33,6 +33,7 @@ import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodePanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
+import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
@@ -141,7 +142,7 @@ public abstract class NamedBeanNode extends BaseSectionNode {
         
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             if(!isEnabled()) {
-                System.out.println("<Remove> action should not be enabled for " + binding.toString());
+                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "<Remove> action should not be enabled for " + binding.toString());
             } else {
                 SectionNodeView view = getSectionNodeView();
                 if(view instanceof DDSectionNodeView) {
