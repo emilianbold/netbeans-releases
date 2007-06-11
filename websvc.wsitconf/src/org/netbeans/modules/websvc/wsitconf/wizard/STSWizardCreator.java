@@ -95,7 +95,7 @@ public class STSWizardCreator {
     
     public void createSTS() {
         final ProgressHandle handle = ProgressHandleFactory.createHandle( 
-                NbBundle.getMessage(STSWizardCreator.class, "TXT_WebServiceGeneration")); //NOI18N
+                NbBundle.getMessage(STSWizardCreator.class, "TXT_StsGeneration")); //NOI18N
 
         initProjectInfo(project);
         

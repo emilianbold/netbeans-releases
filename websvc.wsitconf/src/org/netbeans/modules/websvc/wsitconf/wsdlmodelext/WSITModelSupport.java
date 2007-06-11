@@ -105,7 +105,10 @@ public class WSITModelSupport {
             return getModelForClient(p, client, create, createdFiles);
         } else if (service != null) {  //it is a service
             FileObject implClass = node.getLookup().lookup(FileObject.class);
-            if (jaxWsModel == null) return null;
+            if (jaxWsModel == null) {
+                logger.log(Level.INFO, "JAX-WS Model is null: " + node);
+                return null;
+            }
             Project p = FileOwnerQuery.getOwner(jaxWsModel.getJaxWsFile());
             return getModelForService(service, implClass, p, create, createdFiles);
         } else { //neither a client nor a service, get out of here
@@ -124,7 +127,10 @@ public class WSITModelSupport {
         try {
             String wsdlUrl = service.getWsdlUrl();
             if (wsdlUrl == null) { // WS from Java
-                if (implClass == null) return null;
+                if (implClass == null) {
+                    logger.log(Level.INFO, "Implementation class is null: " + implClass);
+                    return null;
+                }
                 JAXWSSupport supp = JAXWSSupport.getJAXWSSupport(implClass);
                 return getModelForServiceFromJava(implClass, supp, create, createdFiles);
             } else {

@@ -20,9 +20,13 @@
 package org.netbeans.modules.websvc.wsitconf.wizard;
 
 import java.awt.Component;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -68,6 +72,8 @@ public class STSWizard implements TemplateWizard.Iterator {
     private Project project;
 
     private static final Logger logger = Logger.getLogger(STSWizard.class.getName());
+
+    private static final String SERVICENAME_TAG = "__SERVICENAME__"; //NOI18N
     
     private WsdlModeler wsdlModeler;
     private WsdlModel wsdlModel;
@@ -84,14 +90,15 @@ public class STSWizard implements TemplateWizard.Iterator {
     }
     
     public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
-        FileObject template = Templates.getTemplate(wiz);
-        DataObject dTemplate = DataObject.find(template);
-        
+        File wsdlFile = null;
+        File tempFolder = new File(System.getProperty("netbeans.user"));     //NOI18N
+        DataObject folderDO = DataObject.find(FileUtil.toFileObject(tempFolder));
+
         OutputStream schemaos = null, wsdlos = null;
-        
+                
         try {
-            final InputStream schemaIS = this.getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/websvc/wsitconf/resources/sts_schema.xsd"); //NOI18N
-            File schema = new File(System.getProperty("java.io.tmpdir") + "sts_schema.xsd");     //NOI18N       
+            final InputStream schemaIS = this.getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/websvc/wsitconf/resources/templates/sts_schema.template"); //NOI18N
+            File schema = new File(System.getProperty("netbeans.user") + File.separator + "sts_schema.xsd");     //NOI18N       
             schema.createNewFile();
             schemaos = new FileOutputStream(schema);
             FileUtil.copy(schemaIS, schemaos);
@@ -103,26 +110,66 @@ public class STSWizard implements TemplateWizard.Iterator {
             if (schemaos != null) schemaos.close();
         }
 
-        File folder = null;
         try {
-            final InputStream wsdlIS = this.getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/websvc/wsitconf/resources/sts.wsdl");  //NOI18N
-            folder = new File(System.getProperty("java.io.tmpdir") + "sts.wsdl");   //NOI18N
-            folder.createNewFile();
-            wsdlos = new FileOutputStream(folder);
+            final InputStream wsdlIS = this.getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/websvc/wsitconf/resources/templates/sts.template"); //NOI18N
+            wsdlFile = new File(System.getProperty("netbeans.user") + File.separator + "sts.wsdl");     //NOI18N       
+            wsdlFile.createNewFile();
+            wsdlos = new FileOutputStream(wsdlFile);
             FileUtil.copy(wsdlIS, wsdlos);
         } catch (FileNotFoundException ex) {
             logger.log(Level.INFO, null, ex);
         } catch (IOException ex) {
             logger.log(Level.INFO, null, ex);
         } finally {
-            if (wsdlos != null) wsdlos.close();
+            if (schemaos != null) schemaos.close();
         }
 
-        if (folder == null) return null;
-        
-        final URL wsdlURL = folder.toURI().toURL();
+        if (wsdlFile == null) return null;
+        String serviceName = Templates.getTargetName(wiz) + NbBundle.getMessage(STSWizard.class, "LBL_ServiceEnding"); //NOI18N
 
-        wiz.putProperty(WizardProperties.WSDL_FILE_PATH, folder.getPath());
+        FileObject wsdlFO = FileUtil.toFileObject(wsdlFile);
+        FileObject wsdlFolder = wsdlFO.getParent();
+        
+        String newName = serviceName;
+        FileObject newFO = FileUtil.copyFile(wsdlFO, wsdlFolder, newName);
+        File newFile = FileUtil.toFile(newFO);
+        final URL wsdlURL = newFile.toURI().toURL();
+         
+        wiz.putProperty(WizardProperties.WSDL_FILE_PATH, newFile.getPath());
+
+        BufferedReader reader = null;
+        BufferedWriter writer = null;
+        
+        try {
+            reader = new BufferedReader(new FileReader(wsdlFile));
+            writer = new BufferedWriter(new FileWriter(newFile));
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if ((index = line.indexOf(SERVICENAME_TAG)) != -1) {
+                    line = line.replaceAll(SERVICENAME_TAG, serviceName);
+                }
+                writer.write(line);
+                writer.newLine();
+            }
+        } catch (FileNotFoundException ex) {
+            logger.log(Level.INFO, null, ex);
+        } catch (IOException ex) {
+            logger.log(Level.INFO, null, ex);
+        } finally {
+            try {
+                if (writer != null) {
+                    writer.flush();
+                    writer.close();
+                }
+
+                if (reader != null) {
+                    reader.close();
+                }
+            } catch (IOException ex) {
+                logger.log(Level.INFO, null, ex);
+            }
+        }
         
         wsdlModeler = WsdlModelerFactory.getDefault().getWsdlModeler(wsdlURL);
         wsdlModeler.generateWsdlModel(new WsdlModelListener() {
@@ -167,7 +214,7 @@ public class STSWizard implements TemplateWizard.Iterator {
             new STSWizardCreator(project, wiz).createSTS();
         }
         
-        return Collections.singleton(dTemplate);
+        return Collections.singleton(folderDO);
     }
     
     private transient int index;

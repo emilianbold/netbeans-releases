@@ -28,8 +28,10 @@
              <attr name="templateCategory" stringvalue="web-services"/>
              <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/wsitconf/resources/STSWizard.html"/>
              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.wsitconf.wizard.Bundle"/>
-             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/dev/resources/XMLServiceDataIcon.png"/> 
+             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/XMLServiceDataIcon.png"/> 
             </file>
+            <file name="sts.wsdl" url="templates/sts.template"/>
+            <file name="sts_schema.xsd" url="templates/sts_schema.template"/>
             <file name="Saml11hok.java" url="templates/Saml11HOKCallbackHandler.template"/>
             <file name="Saml11sv.java" url="templates/Saml11SVCallbackHandler.template"/>
             <file name="Saml20hok.java" url="templates/Saml20HOKCallbackHandler.template"/>
