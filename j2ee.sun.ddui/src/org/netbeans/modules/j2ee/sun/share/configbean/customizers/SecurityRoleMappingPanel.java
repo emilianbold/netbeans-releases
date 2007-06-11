@@ -507,8 +507,7 @@ public class SecurityRoleMappingPanel extends SectionNodeInnerPanel
      * Implementation of the TableModelListener interface
      */
     public void tableChanged(TableModelEvent tableModelEvent) {
-//        Object source = tableModelEvent.getSource();
-//        theBean.setDirty();
+        mappingNode.addVirtualBean();
     }
 
 //    public void partitionStateChanged(ErrorMessageDB.PartitionState oldState, ErrorMessageDB.PartitionState newState) {
@@ -535,9 +534,9 @@ public class SecurityRoleMappingPanel extends SectionNodeInnerPanel
 //        }
 //    }
 
-        public String getHelpId() {
-                return "AS_CFG_SecurityRoleMapping";	// NOI18N
-        }
+    public String getHelpId() {
+        return "AS_CFG_SecurityRoleMapping";	// NOI18N
+    }
 
     public void setValue(JComponent source, Object value) {
     }
