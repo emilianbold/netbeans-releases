@@ -88,7 +88,7 @@ public class PositionRegion {
      * @return true if the regions are sorted according to the starting offset
      *  of the given regions or false otherwise.
      */
-    public static boolean isRegionsSorted(List<PositionRegion> positionRegionList) {
+    public static boolean isRegionsSorted(List<? extends PositionRegion> positionRegionList) {
         for (int i = positionRegionList.size() - 2; i >= 0; i--) {
             if (getComparator().compare(positionRegionList.get(i),
                     positionRegionList.get(i + 1)) > 0) {
