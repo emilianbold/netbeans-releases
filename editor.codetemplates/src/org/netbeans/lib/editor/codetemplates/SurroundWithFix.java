@@ -21,7 +21,6 @@ package org.netbeans.lib.editor.codetemplates;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -39,16 +38,16 @@ public class SurroundWithFix implements Fix {
     
     private static String SURROUND_WITH = NbBundle.getMessage(SurroundWithFix.class, "TXT_SurroundWithHint_Prefix"); //NOI18N
     
-    public static List getFixes(JTextComponent component) {
-        List fixes = new ArrayList();
+    public static List<Fix> getFixes(JTextComponent component) {
+        List<Fix> fixes = new ArrayList<Fix>();
         Document doc = component.getDocument();
         CodeTemplateManagerOperation op = CodeTemplateManagerOperation.get(doc);
         op.waitLoaded();
-        Collection/*<CodeTemplateFilter>*/ filters = op.getTemplateFilters(component, component.getSelectionStart());
-        for (Iterator it = op.findSelectionTemplates().iterator(); it.hasNext();) {
-            CodeTemplate template = (CodeTemplate)it.next();
-            if (accept(template, filters))
+        Collection<? extends CodeTemplateFilter> filters = op.getTemplateFilters(component, component.getSelectionStart());
+        for (CodeTemplate template : op.findSelectionTemplates()) {
+            if (accept(template, filters)) {
                 fixes.add(new SurroundWithFix(template, component));
+            }
         }
         return fixes;
     }
@@ -71,11 +70,11 @@ public class SurroundWithFix implements Fix {
         return null;
     }
     
-    private static boolean accept(CodeTemplate template, Collection/*<CodeTemplateFilter>*/ filters) {
-        for(Iterator it = filters.iterator(); it.hasNext();) {
-            CodeTemplateFilter filter = (CodeTemplateFilter)it.next();
-            if (!filter.accept(template))
+    private static boolean accept(CodeTemplate template, Collection<? extends CodeTemplateFilter> filters) {
+        for(CodeTemplateFilter filter : filters) {
+            if (!filter.accept(template)) {
                 return false;
+            }
         }
         return true;
     }

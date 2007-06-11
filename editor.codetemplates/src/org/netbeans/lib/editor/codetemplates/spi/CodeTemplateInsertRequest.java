@@ -91,7 +91,7 @@ public final class CodeTemplateInsertRequest {
      *
      * @return non-null unmodifiable list of master parameters.
      */
-    public List/*<CodeTemplateParameter>*/ getMasterParameters() {
+    public List<? extends CodeTemplateParameter> getMasterParameters() {
         return handler.getMasterParameters();
     }
     
@@ -120,7 +120,7 @@ public final class CodeTemplateInsertRequest {
      * @return non-null unmodifiable list of all parameters.
      * @see #getMasterParameters()
      */
-    public List/*<CodeTemplateParameter>*/ getAllParameters() {
+    public List<? extends CodeTemplateParameter> getAllParameters() {
         return handler.getAllParameters();
     }
     

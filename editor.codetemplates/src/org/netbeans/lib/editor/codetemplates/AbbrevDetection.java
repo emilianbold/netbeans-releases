@@ -50,6 +50,7 @@ import org.netbeans.editor.SettingsUtil;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.ErrorManager;
@@ -112,7 +113,7 @@ PropertyChangeListener, KeyListener, CaretListener {
     private Acceptor resetAcceptor;
     
     private ErrorDescription errorDescription = null;
-    private List surrounsWithFixes = null;
+    private List<Fix> surrounsWithFixes = null;
     private Timer surroundsWithTimer;
     
     private AbbrevDetection(JTextComponent component) {
@@ -344,7 +345,9 @@ PropertyChangeListener, KeyListener, CaretListener {
         if (!surrounsWithFixes.isEmpty()) {
             try {                
                 Position pos = doc.createPosition(component.getCaretPosition());
-                errorDescription = ErrorDescriptionFactory.createErrorDescription(Severity.HINT, SURROUND_WITH, surrounsWithFixes, doc, pos, pos);
+                errorDescription = ErrorDescriptionFactory.createErrorDescription(
+                        Severity.HINT, SURROUND_WITH, surrounsWithFixes, doc, pos, pos);
+                
                 HintsController.setErrors(doc, SURROUND_WITH, Collections.singleton(errorDescription));
             } catch (BadLocationException ble) {
                 Logger.getLogger("global").log(Level.WARNING, ble.getMessage(), ble);
@@ -359,7 +362,7 @@ PropertyChangeListener, KeyListener, CaretListener {
             surrounsWithFixes = null;
         if (errorDescription != null) {
             errorDescription = null;
-            HintsController.setErrors(doc, SURROUND_WITH, Collections.emptySet());
+            HintsController.setErrors(doc, SURROUND_WITH, Collections.<ErrorDescription>emptySet());
         }
     }
 }

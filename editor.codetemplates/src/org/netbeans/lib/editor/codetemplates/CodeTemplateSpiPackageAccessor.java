@@ -37,6 +37,13 @@ public abstract class CodeTemplateSpiPackageAccessor {
     private static CodeTemplateSpiPackageAccessor INSTANCE;
     
     public static CodeTemplateSpiPackageAccessor get() {
+        try {
+            Class clazz = Class.forName(CodeTemplateInsertRequest.class.getName());
+        } catch (ClassNotFoundException e) {
+            // ignore
+        }
+        
+        assert INSTANCE != null : "There is no SPI package accessor available!"; //NOI18N
         return INSTANCE;
     }
 

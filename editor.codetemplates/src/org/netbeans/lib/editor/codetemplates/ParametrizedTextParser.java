@@ -36,23 +36,23 @@ public final class ParametrizedTextParser {
 
     private final String parametrizedText;
 
-    private List paramImpls; // filled only when (handler == null)
+    private List<CodeTemplateParameterImpl> paramImpls; // filled only when (handler == null)
 
     /**
      * Fragments of the parametrized text between the parameters.
      */
-    private List/*<String>*/ parametrizedTextFragments;
+    private List<String> parametrizedTextFragments;
 
     public ParametrizedTextParser(CodeTemplateInsertHandler handler, String parametrizedText) {
         this.handler = handler; // may be null for parsing for completion doc item
         this.parametrizedText = parametrizedText;
         if (handler == null) { // will build doc for completion item
-            paramImpls = new ArrayList();
+            paramImpls = new ArrayList<CodeTemplateParameterImpl>();
         }
     }
     
     public void parse() {
-        parametrizedTextFragments = new ArrayList();
+        parametrizedTextFragments = new ArrayList<String>();
 
         StringBuffer textFrag = new StringBuffer();
         int copyStartIndex = 0;
@@ -134,11 +134,10 @@ public final class ParametrizedTextParser {
     }
     
     public void appendHtmlText(StringBuffer htmlTextBuffer) {
-        htmlTextBuffer.append(toHtmlText((String)parametrizedTextFragments.get(0)));
+        htmlTextBuffer.append(toHtmlText(parametrizedTextFragments.get(0)));
         
         int fragIndex = 1;
-        for (Iterator it = paramImpls.iterator(); it.hasNext();) {
-            CodeTemplateParameterImpl paramImpl = (CodeTemplateParameterImpl)it.next();
+        for (CodeTemplateParameterImpl paramImpl : paramImpls) {
             htmlTextBuffer.append("<b>"); // NOI18N
             if (CodeTemplateParameter.CURSOR_PARAMETER_NAME.equals(paramImpl.getName())) {
                 htmlTextBuffer.append("|"); // NOI18N
@@ -146,7 +145,7 @@ public final class ParametrizedTextParser {
                 htmlTextBuffer.append(toHtmlText(paramImpl.getValue()));
             }
             htmlTextBuffer.append("</b>"); // NOI18N
-            htmlTextBuffer.append(toHtmlText((String)parametrizedTextFragments.get(fragIndex)));
+            htmlTextBuffer.append(toHtmlText(parametrizedTextFragments.get(fragIndex)));
             fragIndex++;
         }
     }

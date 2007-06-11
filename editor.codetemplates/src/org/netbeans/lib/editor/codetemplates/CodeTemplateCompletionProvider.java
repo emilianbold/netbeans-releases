@@ -36,6 +36,7 @@ import org.netbeans.editor.ext.ExtSettingsDefaults;
 import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
+import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -68,7 +69,7 @@ public final class CodeTemplateCompletionProvider implements CompletionProvider 
         
         private int queryCaretOffset;
         private int queryAnchorOffset;
-        private List queryResult;
+        private List<CodeTemplateCompletionItem> queryResult;
         
         private String filterPrefix;
         
@@ -111,12 +112,15 @@ public final class CodeTemplateCompletionProvider implements CompletionProvider 
             return true;
         }
         
-        private Collection getFilteredData(Collection data, String prefix) {
-            List ret = new ArrayList();
-            for (Iterator it = data.iterator(); it.hasNext();) {
-                CodeTemplateCompletionItem itm = (CodeTemplateCompletionItem) it.next();
-                if (itm.getInsertPrefix().toString().startsWith(prefix))
+        private Collection<? extends CompletionItem> getFilteredData(
+            Collection<? extends CompletionItem> data, 
+            String prefix
+        ) {
+            List<CompletionItem> ret = new ArrayList<CompletionItem>();
+            for (CompletionItem itm : data) {
+                if (itm.getInsertPrefix().toString().startsWith(prefix)) {
                     ret.add(itm);
+                }
             }
             return ret;
         }
@@ -146,13 +150,14 @@ public final class CodeTemplateCompletionProvider implements CompletionProvider 
             if (identifierBeforeCursor != null) {
                 boolean ignoreCase = !SettingsUtil.getBoolean(component.getUI().getEditorKit(component).getClass(), ExtSettingsNames.COMPLETION_CASE_SENSITIVE,
                         ExtSettingsDefaults.defaultCompletionCaseSensitive);
-                Collection cts = op.findByParametrizedText(identifierBeforeCursor, ignoreCase);
-                Collection/*<CodeTemplateFilter>*/ filters = op.getTemplateFilters(component, queryAnchorOffset);
-                queryResult = new ArrayList(cts.size());
-                for (Iterator it = cts.iterator(); it.hasNext();) {
-                    CodeTemplate ct = (CodeTemplate)it.next();
-                    if (accept(ct, filters))
+                Collection<? extends CodeTemplate> cts = op.findByParametrizedText(identifierBeforeCursor, ignoreCase);
+                Collection<? extends CodeTemplateFilter> filters = op.getTemplateFilters(component, queryAnchorOffset);
+                
+                queryResult = new ArrayList<CodeTemplateCompletionItem>(cts.size());
+                for (CodeTemplate ct : cts) {
+                    if (accept(ct, filters)) {
                         queryResult.add(new CodeTemplateCompletionItem(ct));
+                    }
                 }
                 resultSet.addAllItems(queryResult);
             }

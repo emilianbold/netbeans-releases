@@ -203,7 +203,7 @@ public final class CodeTemplateParameter {
      * For example the hints map for <code>${param hint1 hint2="defaultValue"}</code>
      * will contain ["hint1","true"] and ["hint2","defaultValue"].
      */
-    public Map getHints() {
+    public Map<String, String> getHints() {
         return impl.getHints();
     }
     
@@ -225,7 +225,7 @@ public final class CodeTemplateParameter {
      *  The collection will be empty if this is a slave parameter
      *  or a master with no slaves.
      */
-    public Collection getSlaves() {
+    public Collection<? extends CodeTemplateParameter> getSlaves() {
         return impl.getSlaves();
     }
     

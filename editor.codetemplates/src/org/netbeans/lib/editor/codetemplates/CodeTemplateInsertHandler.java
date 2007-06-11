@@ -72,7 +72,7 @@ implements DocumentListener, KeyListener {
     
     private final JTextComponent component;
     
-    private final List/*<CodeTemplateProcessor>*/ processors;
+    private final List<CodeTemplateProcessor> processors;
     
     private String parametrizedText;
     
@@ -80,15 +80,15 @@ implements DocumentListener, KeyListener {
 
     private String insertText;
     
-    private List allParameters;
+    private List<CodeTemplateParameter> allParameters;
     
-    private List allParametersUnmodifiable;
+    private List<CodeTemplateParameter> allParametersUnmodifiable;
     
-    private List masters;
+    private List<CodeTemplateParameter> masters;
     
-    private List mastersUnmodifiable;
+    private List<CodeTemplateParameter> mastersUnmodifiable;
     
-    private List editableMasters;
+    private List<CodeTemplateParameter> editableMasters;
     
     private CodeTemplateInsertRequest request;
     
@@ -102,7 +102,7 @@ implements DocumentListener, KeyListener {
     
     private ActionMap componentOrigActionMap;
     
-    private List/*<DrawLayer>*/ drawLayers;
+    private List<DrawLayer> drawLayers;
     
     private Document doc;
 
@@ -145,23 +145,20 @@ implements DocumentListener, KeyListener {
      */
     private boolean syncingDocModification;
     
-    public CodeTemplateInsertHandler(CodeTemplate codeTemplate,
-    JTextComponent component, Collection/*<CodeTemplateProcessorFactory>*/ processorFactories) {
+    public CodeTemplateInsertHandler(
+        CodeTemplate codeTemplate,
+        JTextComponent component, 
+        Collection<? extends CodeTemplateProcessorFactory> processorFactories
+    ) {
         this.codeTemplate = codeTemplate;
         this.component = component;
 
         Position zeroPos = PositionRegion.createFixedPosition(0);
         this.positionRegion = new MutablePositionRegion(zeroPos, zeroPos);
-        
-        // Ensure that the SPI package accessor gets registered
-        CodeTemplateInsertRequest.class.getClass().getName();
+        this.request = CodeTemplateSpiPackageAccessor.get().createInsertRequest(this);
 
-        this.request = CodeTemplateSpiPackageAccessor.get().
-                createInsertRequest(this);
-
-        processors = new ArrayList();
-        for (Iterator it = processorFactories.iterator(); it.hasNext();) {
-            CodeTemplateProcessorFactory factory = (CodeTemplateProcessorFactory)it.next();
+        processors = new ArrayList<CodeTemplateProcessor>();
+        for (CodeTemplateProcessorFactory factory : processorFactories) {
             processors.add(factory.createProcessor(this.request));
         }
 
@@ -222,18 +219,17 @@ implements DocumentListener, KeyListener {
         }
     }
     
-    public List/*<CodeTemplateParameter>*/ getAllParameters() {
+    public List<? extends CodeTemplateParameter> getAllParameters() {
         return allParametersUnmodifiable;
     }
 
-    public List/*<CodeTemplateParameter>*/ getMasterParameters() {
+    public List<? extends CodeTemplateParameter> getMasterParameters() {
         return mastersUnmodifiable;
     }
     
     public void processTemplate() {
         // Update default values by all processors
-        for (Iterator it = processors.iterator(); it.hasNext();) {
-            CodeTemplateProcessor processor = (CodeTemplateProcessor)it.next();
+        for (CodeTemplateProcessor processor : processors) {
             processor.updateDefaultValues();
         }
 
@@ -256,7 +252,7 @@ implements DocumentListener, KeyListener {
     
     CodeTemplateParameter getActiveMaster() {
         return (activeMasterIndex < editableMasters.size())
-            ? (CodeTemplateParameter)editableMasters.get(activeMasterIndex)
+            ? editableMasters.get(activeMasterIndex)
             : null;
     }
     
@@ -298,7 +294,7 @@ implements DocumentListener, KeyListener {
                     CodeTemplateParameterImpl paramImpl = CodeTemplateParameterImpl.get(parameter);
                     paramImpl.resetPositions(caretPosition, caretPosition);
                 } else { // Not a CURSOR parameter
-                    List parameterRegions = new ArrayList(4);
+                    List<MutablePositionRegion> parameterRegions = new ArrayList<MutablePositionRegion>(4);
                     addParameterRegion(parameterRegions, parameter, doc, insertOffset);
                     for (Iterator slaveIt = parameter.getSlaves().iterator(); slaveIt.hasNext();) {
                         CodeTemplateParameter slaveParameter = (CodeTemplateParameter)slaveIt.next();
@@ -351,9 +347,9 @@ implements DocumentListener, KeyListener {
                     component, this);
 
             EditorUI editorUI = Utilities.getEditorUI(component);
-            drawLayers = new ArrayList(editableMasters.size());
-            for (Iterator it = editableMasters.iterator(); it.hasNext();) {
-                CodeTemplateParameterImpl paramImpl = paramImpl(((CodeTemplateParameter)it.next()));
+            drawLayers = new ArrayList<DrawLayer>(editableMasters.size());
+            for (Iterator<CodeTemplateParameter> it = editableMasters.iterator(); it.hasNext();) {
+                CodeTemplateParameterImpl paramImpl = paramImpl(it.next());
                 CodeTemplateDrawLayer drawLayer = new CodeTemplateDrawLayer(paramImpl);
                 drawLayers.add(drawLayer);
                 editorUI.addLayer(drawLayer, CodeTemplateDrawLayer.VISIBILITY);
@@ -501,8 +497,7 @@ implements DocumentListener, KeyListener {
     
     private void notifyParameterUpdate(CodeTemplateParameter parameter, boolean typingChange) {
         // Notify all processors about parameter's change
-        for (Iterator it = processors.iterator(); it.hasNext();) {
-            CodeTemplateProcessor processor = (CodeTemplateProcessor)it.next();
+        for (CodeTemplateProcessor processor : processors) {
             processor.parameterValueChanged(parameter, typingChange);
         }
     }
@@ -515,11 +510,11 @@ implements DocumentListener, KeyListener {
     }
     
     private void parseParametrizedText() {
-        allParameters = new ArrayList(2);
+        allParameters = new ArrayList<CodeTemplateParameter>(2);
         allParametersUnmodifiable = Collections.unmodifiableList(allParameters);
-        masters = new ArrayList(2);
+        masters = new ArrayList<CodeTemplateParameter>(2);
         mastersUnmodifiable = Collections.unmodifiableList(masters);
-        editableMasters = new ArrayList(2);
+        editableMasters = new ArrayList<CodeTemplateParameter>(2);
         parametrizedTextParser = new ParametrizedTextParser(this, parametrizedText);
         parametrizedTextParser.parse();
     }
@@ -605,8 +600,7 @@ implements DocumentListener, KeyListener {
             // Free the draw layers
             EditorUI editorUI = Utilities.getEditorUI(component);
             if (editorUI != null) {
-                for (Iterator it = drawLayers.iterator(); it.hasNext();) {
-                    DrawLayer drawLayer = (DrawLayer)it.next();
+                for (DrawLayer drawLayer : drawLayers) {
                     editorUI.removeLayer(drawLayer.getName());
                 }
             }
@@ -617,8 +611,7 @@ implements DocumentListener, KeyListener {
         }
 
         // Notify processors
-        for (Iterator it = processors.iterator(); it.hasNext();) {
-            CodeTemplateProcessor processor = (CodeTemplateProcessor)it.next();
+        for (CodeTemplateProcessor processor : processors) {
             processor.release();
         }
         
@@ -699,7 +692,7 @@ implements DocumentListener, KeyListener {
             && offset + length <= lastActiveRegionEndOffset);
     }
     
-    private void addParameterRegion(List parameterRegions, CodeTemplateParameter parameter,
+    private void addParameterRegion(List<MutablePositionRegion> parameterRegions, CodeTemplateParameter parameter,
     Document doc, int insertOffset) throws BadLocationException {
         int startOffset = insertOffset + parameter.getInsertTextOffset();
         BaseDocument bdoc = (BaseDocument)doc;

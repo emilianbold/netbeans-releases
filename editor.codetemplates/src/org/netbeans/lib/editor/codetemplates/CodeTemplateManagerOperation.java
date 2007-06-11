@@ -19,12 +19,12 @@
 
 package org.netbeans.lib.editor.codetemplates;
 
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.swing.event.ChangeEvent;
@@ -56,31 +56,28 @@ import org.openide.util.RequestProcessor;
 public final class CodeTemplateManagerOperation
 implements LookupListener, Runnable, SettingsChangeListener {
     
-    private static Map mime2operation = new HashMap(8);
+    private static Map<String, Reference<CodeTemplateManagerOperation>> mime2operation = 
+            new HashMap<String, Reference<CodeTemplateManagerOperation>>(8);
     
     public static synchronized CodeTemplateManager getManager(Document doc) {
         return get(doc).getManager();
     }
 
     public static synchronized CodeTemplateManagerOperation get(Document doc) {
-        String mimeType = (String)doc.getProperty("mimeType");
+        String mimeType = (String)doc.getProperty("mimeType"); //NOI18N
         CodeTemplateManagerOperation operation = (CodeTemplateManagerOperation)
                 doc.getProperty(CodeTemplateManagerOperation.class);
         boolean mimesEqual = (operation != null) && mimeTypesEqual(mimeType,
                 operation.getMimeType());
 
         if (!mimesEqual) {
-            WeakReference ref = (WeakReference)mime2operation.get(mimeType);
-            if (ref != null) {
-                operation = (CodeTemplateManagerOperation)ref.get();
-            } else {
-                operation = null;
-            }
+            Reference<CodeTemplateManagerOperation> ref = mime2operation.get(mimeType);
+            operation = ref == null ? null : ref.get();
             if (operation == null) {
                 operation = new CodeTemplateManagerOperation(mimeType);
                 CodeTemplateApiPackageAccessor.get().createCodeTemplateManager(operation);
 
-                mime2operation.put(mimeType, new WeakReference(operation));
+                mime2operation.put(mimeType, new WeakReference<CodeTemplateManagerOperation>(operation));
             }
 
             doc.putProperty(CodeTemplateManagerOperation.class, operation);
@@ -99,21 +96,21 @@ implements LookupListener, Runnable, SettingsChangeListener {
 
     private final String mimeType;
 
-    private Lookup.Result descriptions;
+    private Lookup.Result<CodeTemplateDescription> descriptions;
     
-    private Collection/*<CodeTemplateProcessorFactory>*/ processorFactories;
+    private Collection<? extends CodeTemplateProcessorFactory> processorFactories;
     
-    private Collection/*<CodeTemplateFilter.Factory>*/ filterFactories;
+    private Collection<? extends CodeTemplateFilter.Factory> filterFactories;
     
-    private Map abbrev2template;
+    private Map<String, CodeTemplate> abbrev2template;
     
-    private List sortedTemplatesByAbbrev;
+    private List<CodeTemplate> sortedTemplatesByAbbrev;
     
-    private List unmodSortedTemplatesByAbbrev;
+    private List<CodeTemplate> unmodSortedTemplatesByAbbrev;
     
-    private List sortedTemplatesByParametrizedText;
+    private List<CodeTemplate> sortedTemplatesByParametrizedText;
     
-    private List selectionTemplates;
+    private List<CodeTemplate> selectionTemplates;
     
     private EventListenerList listenerList = new EventListenerList();
     
@@ -140,26 +137,26 @@ implements LookupListener, Runnable, SettingsChangeListener {
         return mimeType;
     }
     
-    public Collection getCodeTemplates() {
+    public Collection<? extends CodeTemplate> getCodeTemplates() {
         return unmodSortedTemplatesByAbbrev;
     }
     
-    public Collection findSelectionTemplates() {
+    public Collection<? extends CodeTemplate> findSelectionTemplates() {
         return selectionTemplates;
     }
     
     public CodeTemplate findByAbbreviation(String abbreviation) {
-        return (CodeTemplate)abbrev2template.get(abbreviation);
+        return abbrev2template.get(abbreviation);
     }
     
-    public Collection findByParametrizedText(String prefix, boolean ignoreCase) {
-        List result = new ArrayList();
+    public Collection<? extends CodeTemplate> findByParametrizedText(String prefix, boolean ignoreCase) {
+        List<CodeTemplate> result = new ArrayList<CodeTemplate>();
         
         int low = 0;
 	int high = sortedTemplatesByParametrizedText.size() - 1;
 	while (low <= high) {
 	    int mid = (low + high) >> 1;
-	    CodeTemplate t = (CodeTemplate)sortedTemplatesByParametrizedText.get(mid);
+	    CodeTemplate t = sortedTemplatesByParametrizedText.get(mid);
 	    int cmp = compareTextIgnoreCase(t.getParametrizedText(), prefix);
 
 	    if (cmp < 0) {
@@ -175,7 +172,7 @@ implements LookupListener, Runnable, SettingsChangeListener {
         // Go back whether prefix matches the name
         int i = low - 1;
         while (i >= 0) {
-            CodeTemplate t = (CodeTemplate)sortedTemplatesByParametrizedText.get(i);
+            CodeTemplate t = sortedTemplatesByParametrizedText.get(i);
             int mp = matchPrefix(t.getParametrizedText(), prefix);
             if (mp == MATCH_NO) { // not matched
                 break;
@@ -191,7 +188,7 @@ implements LookupListener, Runnable, SettingsChangeListener {
         
         i = low;
         while (i < sortedTemplatesByParametrizedText.size()) {
-            CodeTemplate t = (CodeTemplate)sortedTemplatesByParametrizedText.get(i);
+            CodeTemplate t = sortedTemplatesByParametrizedText.get(i);
             int mp = matchPrefix(t.getParametrizedText(), prefix);
             if (mp == MATCH_NO) { // not matched
                 break;
@@ -208,10 +205,9 @@ implements LookupListener, Runnable, SettingsChangeListener {
         return result;
     }
     
-    public Collection/*<CodeTemplateFilter>*/ getTemplateFilters(JTextComponent component, int offset) {
-        List/*<CodeTemplateFilter>*/ result = new ArrayList/*<CodeTemplateFilter>*/();
-        for (Iterator it = filterFactories.iterator(); it.hasNext();) {
-            CodeTemplateFilter.Factory factory = (CodeTemplateFilter.Factory)it.next();
+    public Collection<? extends CodeTemplateFilter> getTemplateFilters(JTextComponent component, int offset) {
+        List<CodeTemplateFilter> result = new ArrayList<CodeTemplateFilter>();
+        for (CodeTemplateFilter.Factory factory : filterFactories) {
             result.add(factory.createFilter(component, offset));
         }
         return result;
@@ -311,27 +307,22 @@ implements LookupListener, Runnable, SettingsChangeListener {
     
     public void run() {
         Lookup lookup = MimeLookup.getLookup(MimePath.parse(getMimeType()));
-        Lookup.Result result = lookup.lookup(
-                new Lookup.Template(CodeTemplateProcessorFactory.class));
         
-        processorFactories = result.allInstances();
+        processorFactories = lookup.lookupAll(CodeTemplateProcessorFactory.class);
         // [TODO] listen for changes
 
-        result = lookup.lookup(
-                new Lookup.Template(CodeTemplateFilter.Factory.class));
-        
-        filterFactories = result.allInstances();
+        filterFactories = lookup.lookupAll(CodeTemplateFilter.Factory.class);
         // [TODO] listen for changes
 
         // [TODO] take from settings
-        setDescriptions(Lookup.EMPTY.lookup(new Lookup.Template(CodeTemplateDescription.class)));
+        setDescriptions(Lookup.EMPTY.lookupResult(CodeTemplateDescription.class));
     }
     
     public void settingsChange(SettingsChangeEvent evt) {
         rebuildCodeTemplates();
     }
     
-    void setDescriptions(Lookup.Result descriptions) {
+    void setDescriptions(Lookup.Result<CodeTemplateDescription> descriptions) {
         synchronized (listenerList) {
             this.descriptions = descriptions;
             rebuildCodeTemplates();
@@ -341,18 +332,18 @@ implements LookupListener, Runnable, SettingsChangeListener {
         }
     }
     
-    private Collection updateDescriptionInstances(Collection descriptionsInstances) {
-        descriptionsInstances = new ArrayList();
+    private Collection<? extends CodeTemplateDescription> updateDescriptionInstances(
+        Collection<? extends CodeTemplateDescription> descriptionsInstances
+    ) {
+        ArrayList<CodeTemplateDescription> templates = new ArrayList<CodeTemplateDescription>();
         
         Lookup lookup = MimeLookup.getLookup(MimePath.parse(mimeType));
-        BaseOptions baseOptions = (BaseOptions) lookup.lookup(BaseOptions.class);
+        BaseOptions baseOptions = lookup.lookup(BaseOptions.class);
         if (baseOptions != null) {
-            Map abbrevMap = baseOptions.getAbbrevMap();
+            Map<String, String> abbrevMap = baseOptions.getAbbrevMap();
             if (abbrevMap != null) {
-                for (Iterator entryIt = abbrevMap.entrySet().iterator(); entryIt.hasNext();) {
-                    Map.Entry entry = (Map.Entry)entryIt.next();
-                    String abbreviation = (String)entry.getKey();
-                    String abbrevText = (String)entry.getValue();
+                for (String abbreviation : abbrevMap.keySet()) {
+                    String abbrevText = abbrevMap.get(abbreviation);
 
                     String parametrizedText = abbrevText.replaceFirst(
                             "([^|]+)[|]([^|]+)", "$1\\${cursor}$2"); // NOI18N
@@ -371,7 +362,7 @@ implements LookupListener, Runnable, SettingsChangeListener {
 
                     CodeTemplateDescription ctd = new CodeTemplateDescription(
                             abbreviation, desc, parametrizedText, null);
-                    descriptionsInstances.add(ctd);
+                    templates.add(ctd);
 
                 }
             }
@@ -382,20 +373,27 @@ implements LookupListener, Runnable, SettingsChangeListener {
                 Settings.addSettingsChangeListener(this);
             }
         }
-        return descriptionsInstances;
+        
+        return templates;
     }
     
     private void rebuildCodeTemplates() {
-        Collection descriptionsInstances = descriptions.allInstances();
+        Collection<? extends CodeTemplateDescription> descriptionsInstances = descriptions.allInstances();
         descriptionsInstances = updateDescriptionInstances(descriptionsInstances);
-        List/*<CodeTemplate>*/ codeTemplates = new ArrayList(descriptionsInstances.size());
-        selectionTemplates = new ArrayList(descriptionsInstances.size());
+        
+        List<CodeTemplate> codeTemplates = new ArrayList<CodeTemplate>(descriptionsInstances.size());
+        selectionTemplates = new ArrayList<CodeTemplate>(descriptionsInstances.size());
+        
         CodeTemplateApiPackageAccessor api = CodeTemplateApiPackageAccessor.get();
         // Construct template instances
-        for (Iterator it = descriptionsInstances.iterator(); it.hasNext();) {
-            CodeTemplateDescription description = (CodeTemplateDescription)it.next();
-            CodeTemplate ct = api.createCodeTemplate(this, description.getAbbreviation(),
-                    description.getDescription(), description.getParametrizedText());
+        for (CodeTemplateDescription description : descriptionsInstances) {
+            CodeTemplate ct = api.createCodeTemplate(
+                this, 
+                description.getAbbreviation(),
+                description.getDescription(), 
+                description.getParametrizedText()
+            );
+            
             codeTemplates.add(ct);
             if (description.getParametrizedText().toLowerCase().indexOf("${selection") > -1) { //NOI18N
                 selectionTemplates.add(ct);
@@ -405,19 +403,20 @@ implements LookupListener, Runnable, SettingsChangeListener {
         refreshMaps(codeTemplates);
     }
     
-    private void refreshMaps(List/*<CodeTemplate>*/ codeTemplates) {
-        abbrev2template = new HashMap(codeTemplates.size());
-        sortedTemplatesByAbbrev = new ArrayList(codeTemplates.size());
+    private void refreshMaps(List<CodeTemplate> codeTemplates) {
+        abbrev2template = new HashMap<String, CodeTemplate>(codeTemplates.size());
+        sortedTemplatesByAbbrev = new ArrayList<CodeTemplate>(codeTemplates.size());
         unmodSortedTemplatesByAbbrev = Collections.unmodifiableList(sortedTemplatesByAbbrev);
-        sortedTemplatesByParametrizedText = new ArrayList(codeTemplates.size());
+        sortedTemplatesByParametrizedText = new ArrayList<CodeTemplate>(codeTemplates.size());
+        
         // Construct template instances and store them in map and sorted list
-        for (Iterator it = codeTemplates.iterator(); it.hasNext();) {
-            CodeTemplate template = (CodeTemplate)it.next();
+        for (CodeTemplate template : codeTemplates) {
             String abbreviation = template.getAbbreviation();
             abbrev2template.put(abbreviation, template);
             sortedTemplatesByAbbrev.add(template);
             sortedTemplatesByParametrizedText.add(template);
         }
+        
         // Sort the templates in case insensitive order
         Collections.sort(sortedTemplatesByAbbrev,
                 CodeTemplateComparator.BY_ABBREVIATION_IGNORE_CASE);

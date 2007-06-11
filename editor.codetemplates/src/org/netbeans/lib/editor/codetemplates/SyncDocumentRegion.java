@@ -42,9 +42,9 @@ public final class SyncDocumentRegion {
     
     private Document doc;
     
-    private List/*<MutablePositionRegion>*/ regions;
+    private List<? extends MutablePositionRegion> regions;
     
-    private List/*<MutablePositionRegion>*/ sortedRegions;
+    private List<? extends MutablePositionRegion> sortedRegions;
     
     private boolean regionsSortPerformed;
     
@@ -56,7 +56,7 @@ public final class SyncDocumentRegion {
      *  The first region is the master. All the regions need to have
      *  the initial position to have the backward bias.
      */
-    public SyncDocumentRegion(Document doc, List/*<MutablePositionRegion>*/ regions) {
+    public SyncDocumentRegion(Document doc, List<? extends MutablePositionRegion> regions) {
         this.doc = doc;
         this.regions = regions;
         // Check bounds correctness and whether they are sorted
@@ -64,7 +64,7 @@ public final class SyncDocumentRegion {
         if (regionsSortPerformed) {
             sortedRegions = regions;
         } else {
-            sortedRegions = new ArrayList(regions);
+            sortedRegions = new ArrayList<MutablePositionRegion>(regions);
             Collections.sort(sortedRegions, PositionRegion.getComparator());
         }
     }
@@ -74,7 +74,7 @@ public final class SyncDocumentRegion {
     }
     
     public MutablePositionRegion getRegion(int regionIndex) {
-        return (MutablePositionRegion)regions.get(regionIndex);
+        return regions.get(regionIndex);
     }
 
     public int getFirstRegionStartOffset() {
@@ -96,7 +96,7 @@ public final class SyncDocumentRegion {
      * @return region in a sorted list of the regions.
      */
     public MutablePositionRegion getSortedRegion(int regionIndex) {
-         return (MutablePositionRegion)sortedRegions.get(regionIndex);
+         return sortedRegions.get(regionIndex);
     }
 
     /**

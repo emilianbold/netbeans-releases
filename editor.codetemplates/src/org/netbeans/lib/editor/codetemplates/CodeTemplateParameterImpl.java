@@ -65,15 +65,15 @@ public final class CodeTemplateParameterImpl {
     
     private CodeTemplateParameter master;
     
-    private Collection slaves;
+    private Collection<CodeTemplateParameter> slaves;
     
-    private Collection slavesUnmodifiable;
+    private Collection<CodeTemplateParameter> slavesUnmodifiable;
     
     private String name;
     
-    private Map hints;
+    private Map<String, String> hints;
     
-    private Map hintsUnmodifiable;
+    private Map<String, String> hintsUnmodifiable;
     
     private SyncDocumentRegion region;
     
@@ -88,10 +88,6 @@ public final class CodeTemplateParameterImpl {
     String parametrizedText, int parametrizedTextOffset) {
         this.handler = handler; // handler may be null for completion item parsing
         this.parametrizedTextStartOffset = parametrizedTextOffset;
-       
-        // Ensure the CodeTemplateSpiPackageAccessor gets registered
-        CodeTemplateInsertRequest.class.getName();
-
         this.parameter = CodeTemplateSpiPackageAccessor.get().createParameter(this);
         parseParameterContent(parametrizedText);
     }
@@ -196,16 +192,16 @@ public final class CodeTemplateParameterImpl {
         return positionRegion;
     }
 
-    public Map getHints() {
-        return (hintsUnmodifiable != null) ? hintsUnmodifiable : Collections.EMPTY_MAP;
+    public Map<String, String> getHints() {
+        return (hintsUnmodifiable != null) ? hintsUnmodifiable : Collections.<String, String>emptyMap();
     }
     
     public CodeTemplateParameter getMaster() {
         return master;
     }
     
-    public Collection getSlaves() {
-        return (slaves != null) ? slaves : Collections.EMPTY_LIST;
+    public Collection<? extends CodeTemplateParameter> getSlaves() {
+        return (slaves != null) ? slaves : Collections.<CodeTemplateParameter>emptyList();
     }
     
     public boolean isSlave() {
@@ -233,8 +229,8 @@ public final class CodeTemplateParameterImpl {
         
         // reparent slaves as well
         if (slaves != null) {
-            for (Iterator it = slaves.iterator(); it.hasNext();) {
-                CodeTemplateParameterImpl paramImpl = paramImpl((CodeTemplateParameter)it.next());
+            for (Iterator<CodeTemplateParameter> it = slaves.iterator(); it.hasNext();) {
+                CodeTemplateParameterImpl paramImpl = paramImpl(it.next());
                 paramImpl.setMaster(master);
                 masterImpl.addSlave(paramImpl.getParameter());
             }
@@ -310,7 +306,7 @@ public final class CodeTemplateParameterImpl {
                     name = completedString;
                 } else { // hints
                     if (hints == null) { // Create hints
-                        hints = new LinkedHashMap(4);
+                        hints = new LinkedHashMap<String, String>(4);
                         hintsUnmodifiable = Collections.unmodifiableMap(hints);
                     }
                     
@@ -453,7 +449,7 @@ public final class CodeTemplateParameterImpl {
     
     private void addSlave(CodeTemplateParameter slave) {
         if (slaves == null) {
-            slaves = new ArrayList(2);
+            slaves = new ArrayList<CodeTemplateParameter>(2);
             slavesUnmodifiable = Collections.unmodifiableCollection(slaves);
         }
         slaves.add(slave);

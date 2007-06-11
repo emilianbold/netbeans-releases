@@ -27,15 +27,15 @@ import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
  *
  * @author Miloslav Metelka
  */
-public final class CodeTemplateComparator implements Comparator {
+public final class CodeTemplateComparator implements Comparator<CodeTemplate> {
 
     // public static final Comparator BY_ABBREVIATION = new CodeTemplateComparator(true, false);
 
-    public static final Comparator BY_ABBREVIATION_IGNORE_CASE = new CodeTemplateComparator(true, true);
+    public static final Comparator<CodeTemplate> BY_ABBREVIATION_IGNORE_CASE = new CodeTemplateComparator(true, true);
 
     // public static final Comparator BY_PARAMETRIZED_TEXT = new CodeTemplateComparator(false, false);
     
-    public static final Comparator BY_PARAMETRIZED_TEXT_IGNORE_CASE = new CodeTemplateComparator(false, true);
+    public static final Comparator<CodeTemplate> BY_PARAMETRIZED_TEXT_IGNORE_CASE = new CodeTemplateComparator(false, true);
     
     private final boolean byAbbreviation;
     
@@ -46,9 +46,7 @@ public final class CodeTemplateComparator implements Comparator {
         this.ignoreCase = ignoreCase;
     }
     
-    public int compare(Object o1, Object o2) {
-        CodeTemplate t1 = (CodeTemplate)o1;
-        CodeTemplate t2 = (CodeTemplate)o2;
+    public int compare(CodeTemplate t1, CodeTemplate t2) {
         String n1 = byAbbreviation ? t1.getAbbreviation() : t1.getParametrizedText();
         String n2 = byAbbreviation ? t2.getAbbreviation() : t2.getParametrizedText();
         return ignoreCase ? n1.compareToIgnoreCase(n2) : n1.compareTo(n2);

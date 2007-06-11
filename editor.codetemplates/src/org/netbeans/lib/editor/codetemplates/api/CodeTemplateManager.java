@@ -24,8 +24,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import org.netbeans.lib.editor.codetemplates.CodeTemplateApiPackageAccessor;
 import org.netbeans.lib.editor.codetemplates.CodeTemplateManagerOperation;
-import org.netbeans.lib.editor.codetemplates.CodeTemplateSpiPackageAccessor;
-import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateProcessor;
 
 /**
  * Code template manager maintains list of code templates
@@ -44,6 +42,7 @@ public final class CodeTemplateManager {
      * Get an instance of the manager for the given document.
      *
      * @param doc document for which the instance of the manager should be obtained.
+     * @return The code template manager for the document.
      */
     public static CodeTemplateManager get(Document doc) {
         return CodeTemplateManagerOperation.getManager(doc);
@@ -62,7 +61,7 @@ public final class CodeTemplateManager {
      *
      * @return non-null unmodifiable collection of the code templates.
      */
-    public Collection/*<CodeTemplate>*/ getCodeTemplates() {
+    public Collection<? extends CodeTemplate> getCodeTemplates() {
         waitLoaded(); // Wait for the manager to become loaded with the templates.
         return operation.getCodeTemplates();
     }
