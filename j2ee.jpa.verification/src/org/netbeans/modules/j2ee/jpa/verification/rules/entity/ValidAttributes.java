@@ -30,6 +30,7 @@ import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemFinder;
 import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.rules.attribute.AttrIsEncapsulated;
+import org.netbeans.modules.j2ee.jpa.verification.rules.attribute.GeneratedValueIsId;
 import org.netbeans.modules.j2ee.jpa.verification.rules.attribute.MVRelationshipForEntityTypeAttrDefined;
 import org.netbeans.modules.j2ee.jpa.verification.rules.attribute.RelationshipForEntityTypeAttrDefined;
 import org.netbeans.modules.j2ee.jpa.verification.rules.attribute.ValidBasicType;
@@ -55,7 +56,8 @@ public class ValidAttributes extends JPAClassRule {
         new RelationshipForEntityTypeAttrDefined(),
         new MVRelationshipForEntityTypeAttrDefined(),
         new AttrIsEncapsulated(),
-        new ValidVersionType()
+        new ValidVersionType(),
+        new GeneratedValueIsId()
                 //TODO: enable this check once #104484 is fixed
                 // new TemporalFieldsAnnotated()
     };
