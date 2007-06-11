@@ -84,6 +84,11 @@ public class MarkOccurrencesSupport implements CaretListener {
             removeHighlights ();
             ASTNode node = parserManager.getAST ();
             DatabaseContext root = DatabaseManager.getRoot (node);
+            if (root == null) {
+                // I keep getting NPEs on the next line while editing RHTML
+                // files - please check
+                return;
+            }
             DatabaseItem item = root.getDatabaseItem (offset);
             if (item == null)
                 item = root.getDatabaseItem (offset - 1);
