@@ -24,7 +24,6 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.api.screen.editor.EditedScreenSupport;
-import org.netbeans.modules.vmd.screen.ScreenAccessController;
 
 /**
  *

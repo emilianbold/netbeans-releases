@@ -56,14 +56,14 @@ public final class PropertiesSupport {
     }
     
     //multi selection not supported
-    //remember not to invoke inside read transaction
+    //DO NOT invoke this method inside read transaction!
     public synchronized static void showCustomPropertyEditor(DesignComponent component, String propertyName) {
         boolean propertyEditorExists = false;
         if (component.getDocument().getTransactionManager().isWriteAccess())
             Debug.warning("Calling PropertiesSupport.showPropertyEditorForCurrentComponent form write transaction may generate problems"); //NOI18N
         DataEditorView view = ActiveViewSupport.getDefault().getActiveView();
         assert (view != null);
-        Sheet sheet = PropertiesNodesManager.getDefault(view).getSheet(component);
+        Sheet sheet = PropertiesNodesManager.getDefault(view).createSheet(component);
         for (PropertySet propertySet : sheet.toArray()) {
             for (Property property : propertySet.getProperties()) {
                 if(propertyName.equals(property.getName())) {

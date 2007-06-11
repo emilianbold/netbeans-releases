@@ -46,15 +46,15 @@ import java.util.*;
  * @author Karol Harezlak
  */
 public final class MidpProjectSupport {
-
-    private static final Lookup.Result<ProjectResourceResolver> resolvers = Lookup.getDefault ().lookupResult (ProjectResourceResolver.class);
+    
+    private static final Lookup.Result<ProjectResourceResolver> resolvers = Lookup.getDefault().lookupResult(ProjectResourceResolver.class);
     
     /** Creates a new instance of MidpProjectSupport */
     private MidpProjectSupport() {
     }
-
-    public static Collection<? extends ProjectResourceResolver> getAllResolvers () {
-        return resolvers.allInstances ();
+    
+    public static Collection<? extends ProjectResourceResolver> getAllResolvers() {
+        return resolvers.allInstances();
     }
     
     /**
@@ -83,7 +83,7 @@ public final class MidpProjectSupport {
             }
         });
     }
-
+    
     /**
      * Add library to the project based on the supplied archive files
      * @param document the document
@@ -97,10 +97,10 @@ public final class MidpProjectSupport {
                     return;
                 ProjectClassPathExtender extender = project.getLookup().lookup(ProjectClassPathExtender.class);
                 for (FileObject file : archiveFiles) {
-                    if (file == null  ||  ! file.isValid ())
+                    if (file == null  ||  ! file.isValid())
                         continue;
                     try {
-                        extender.addArchiveFile (file);
+                        extender.addArchiveFile(file);
                     } catch (IOException e) {
                         Debug.warning(e);
                     }
@@ -108,7 +108,7 @@ public final class MidpProjectSupport {
             }
         });
     }
-
+    
     /**
      * Gets project for document.
      * @param document the document
@@ -163,32 +163,32 @@ public final class MidpProjectSupport {
         for (ClassPath cp : classPathList) {
             FileObject[] roots = cp.getRoots();
             for (FileObject root : roots) {
-                Enumeration<? extends FileObject> children = root.getChildren (true);
-                while (children.hasMoreElements ()) {
-                    FileObject child = children.nextElement ();
-                    String curRelPath = FileUtil.getRelativePath (root, child);
-                    if (relativeResourcePath.equals (curRelPath)) {
-                        matches.put (child, root);
+                Enumeration<? extends FileObject> children = root.getChildren(true);
+                while (children.hasMoreElements()) {
+                    FileObject child = children.nextElement();
+                    String curRelPath = FileUtil.getRelativePath(root, child);
+                    if (relativeResourcePath.equals(curRelPath)) {
+                        matches.put(child, root);
                     }
                 }
             }
         }
-
-        for (ProjectResourceResolver resolver : resolvers.allInstances ()) {
-            Collection<FileObject> collection = resolver.getResourceRoots (project, document.getDocumentInterface ().getProjectType ());
+        
+        for (ProjectResourceResolver resolver : resolvers.allInstances()) {
+            Collection<FileObject> collection = resolver.getResourceRoots(project, document.getDocumentInterface().getProjectType());
             if (collection == null)
                 continue;
             for (FileObject root : collection) {
-                Enumeration<? extends FileObject> enumeration = root.getChildren (true);
-                while (enumeration.hasMoreElements ()) {
-                    FileObject object = enumeration.nextElement ();
+                Enumeration<? extends FileObject> enumeration = root.getChildren(true);
+                while (enumeration.hasMoreElements()) {
+                    FileObject object = enumeration.nextElement();
                     String curRelPath = FileUtil.getRelativePath(root, object);
                     if (relativeResourcePath.equals(curRelPath))
                         matches.put(object, root);
                 }
             }
         }
-
+        
         return matches;
     }
     
@@ -248,36 +248,38 @@ public final class MidpProjectSupport {
             FileObject[] roots = cp.getRoots();
             for (FileObject root : roots) {
                 //fill the map <FileObject, String relativePath>
-                extractFiles (root, root, matches, fileExtensions);
+                extractFiles(root, root, matches, fileExtensions);
             }
         }
-
-        for (ProjectResourceResolver resolver : resolvers.allInstances ()) {
-            Collection<FileObject> collection = resolver.getResourceRoots (project, document.getDocumentInterface ().getProjectType ());
+        
+        for (ProjectResourceResolver resolver : resolvers.allInstances()) {
+            Collection<FileObject> collection = resolver.getResourceRoots(project, document.getDocumentInterface().getProjectType());
             if (collection == null)
                 continue;
             for (FileObject root : collection)
-                extractFiles (root, root, matches, fileExtensions);
+                extractFiles(root, root, matches, fileExtensions);
         }
-
+        
         return matches;
     }
     
     /**
      * Recurses directories looking for files with given extensions. Extensions must be in lowercase.
      */
-    private static void extractFiles(FileObject root, FileObject current, final Map<FileObject, String> bank, Collection imgFileExtensions) {
+    private static void extractFiles(FileObject root, FileObject current, final Map<FileObject, String> bank, Collection<String> imgFileExtensions) {
         if (current.isFolder()) {
             FileObject[] children = current.getChildren();
             for (int i = 0; i < children.length; i++) {
                 extractFiles(root, children[i], bank, imgFileExtensions);
             }
         } else {
-            String ext = current.getExt();
-            if (imgFileExtensions.contains(ext)) {
-                String relativePath = FileUtil.getRelativePath(root, current);
-                bank.put(current, "/" + relativePath); // NOI18N
-                if (false) System.out.println(current.getPath() + " -> " + "/" + relativePath); // NOI18N
+            String currentExt = current.getExt();
+            for(String ext : imgFileExtensions) {
+                if (ext.equalsIgnoreCase(currentExt)) {
+                    String relativePath = FileUtil.getRelativePath(root, current);
+                    bank.put(current, "/" + relativePath); // NOI18N
+                    if (false) System.out.println(current.getPath() + " -> " + "/" + relativePath); // NOI18N
+                }
             }
         }
     }
@@ -298,18 +300,18 @@ public final class MidpProjectSupport {
     }
     
     public static ClasspathInfo getClasspathInfo(Project project) {
-        SourceGroup group = getSourceGroup (project);
+        SourceGroup group = getSourceGroup(project);
         if (group == null)
             return null;
-        FileObject fileObject = group.getRootFolder ();
-        return ClasspathInfo.create (fileObject);
+        FileObject fileObject = group.getRootFolder();
+        return ClasspathInfo.create(fileObject);
     }
-
-    public static SourceGroup getSourceGroup (Project project) {
+    
+    public static SourceGroup getSourceGroup(Project project) {
         SourceGroup[] sourceGroups = org.netbeans.api.project.ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (sourceGroups == null || sourceGroups.length < 1)
             return null;
         return sourceGroups[0];
     }
-	
+    
 }

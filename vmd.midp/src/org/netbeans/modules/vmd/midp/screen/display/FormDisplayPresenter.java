@@ -33,7 +33,6 @@ public class FormDisplayPresenter extends DisplayableDisplayPresenter {
     
     private JPanel fillPanel;
     
-    
     public FormDisplayPresenter() {
         getPanel().getContentPanel().setLayout(new GridBagLayout());
         fillPanel = new JPanel();

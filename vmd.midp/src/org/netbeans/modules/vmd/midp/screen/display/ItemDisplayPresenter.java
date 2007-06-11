@@ -19,6 +19,7 @@
  */
 package org.netbeans.modules.vmd.midp.screen.display;
 
+import java.awt.datatransfer.Transferable;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
@@ -33,6 +34,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.modules.vmd.api.screen.display.ScreenMoveTransferable;
 
 /**
  * @author David Kaspar
@@ -42,6 +44,7 @@ public class ItemDisplayPresenter extends ScreenDisplayPresenter {
     private JPanel panel;
     private JLabel label;
     private JComponent contentComponent;
+    private Transferable transferable;
     
     public ItemDisplayPresenter() {
         panel = new JPanel() {
@@ -121,5 +124,5 @@ public class ItemDisplayPresenter extends ScreenDisplayPresenter {
                 new ScreenPropertyDescriptor (getComponent (), label, new ScreenStringPropertyEditor (ItemCD.PROP_LABEL))
         );
     }
-
+ 
 }

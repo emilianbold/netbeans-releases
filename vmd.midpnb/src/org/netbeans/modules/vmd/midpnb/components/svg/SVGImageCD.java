@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.vmd.midpnb.components.svg;
 
+import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.codegen.*;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.inspector.common.FolderPositionControllerFactory;
@@ -40,6 +41,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
+import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
+import org.netbeans.modules.vmd.midp.components.resources.ResourcesSupport;
 import org.netbeans.modules.vmd.midp.screen.ResourceSRItemPresenter;
 
 
@@ -127,8 +131,15 @@ public class SVGImageCD extends ComponentDescriptor {
         });
     }
     
+    protected void gatherPresenters(ArrayList<Presenter> presenters) {
+        DocumentSupport.removePresentersOfClass(presenters, InfoPresenter.class);
+        super.gatherPresenters(presenters);
+    }
+    
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
+                //info
+                ResourcesSupport.createResourceInfoResolver(),
                 // properties
                 createPropertiesPresenter(),
                 // code
@@ -138,8 +149,8 @@ public class SVGImageCD extends ComponentDescriptor {
                 new InspectorFolderComponentPresenter(true),
                 InspectorPositionPresenter.create(new ResourcePC(), FolderPositionControllerFactory.createHierarchical()),
                 // screen
-                new ResourceSRItemPresenter()       
-         );
+                new ResourceSRItemPresenter(InfoPresenter.NameType.TERTIARY)
+                );
     }
     
 }

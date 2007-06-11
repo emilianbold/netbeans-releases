@@ -40,47 +40,52 @@ import org.openide.util.actions.SystemAction;
  * @author David Kaspar
  */
 public final class MidpActionsSupport {
-
-    public static void addCommonActionsPresenters (List<Presenter> presenters, boolean allowEdit, boolean allowGoToSource, boolean allowRename, boolean allowDelete, boolean allowProperties) {
+    
+    public static void addCommonActionsPresenters(List<Presenter> presenters, boolean allowEdit, boolean allowGoToSource, boolean allowRename, boolean allowDelete, boolean allowProperties) {
         if (allowEdit)
-            presenters.add (ActionsPresenter.create (20,SystemAction.get(DesignerEditAction.class)));
+            presenters.add(ActionsPresenter.create(20,SystemAction.get(DesignerEditAction.class)));
         if (allowGoToSource)
-            presenters.add (ActionsPresenter.create (20, SystemAction.get(GoToSourceAction.class)));
+            presenters.add(ActionsPresenter.create(20, SystemAction.get(GoToSourceAction.class)));
         if (allowRename)
-            presenters.add (ActionsPresenter.create (30, SystemAction.get(RenameAction.class)));
+            presenters.add(ActionsPresenter.create(30, SystemAction.get(RenameAction.class)));
         if (allowDelete)
-            presenters.add (ActionsPresenter.create (40, SystemAction.get(DeleteAction.class)));
+            presenters.add(ActionsPresenter.create(40, SystemAction.get(DeleteAction.class)));
         if (allowProperties)
-            presenters.add (ActionsPresenter.create (60, SystemAction.get(PropertiesAction.class)));
+            presenters.add(ActionsPresenter.create(60, SystemAction.get(PropertiesAction.class)));
     }
     
-    public static void addCommonActionsPresentersParentEditAction (List<Presenter> presenters, boolean allowEdit, boolean allowGoToSource, boolean allowRename, boolean allowDelete, boolean allowProperties) {
+    public static void addCommonActionsPresentersParentEditAction(List<Presenter> presenters, boolean allowEdit, boolean allowGoToSource, boolean allowRename, boolean allowDelete, boolean allowProperties) {
         if (allowEdit)
-            presenters.add (ActionsPresenter.create (20,SystemAction.get(DesignerEditParentAction.class)));
+            presenters.add(ActionsPresenter.create(20,SystemAction.get(DesignerEditParentAction.class)));
         if (allowGoToSource)
-            presenters.add (ActionsPresenter.create (20, SystemAction.get(GoToSourceAction.class)));
+            presenters.add(ActionsPresenter.create(20, SystemAction.get(GoToSourceAction.class)));
         if (allowRename)
-            presenters.add (ActionsPresenter.create (30, SystemAction.get(RenameAction.class)));
+            presenters.add(ActionsPresenter.create(30, SystemAction.get(RenameAction.class)));
         if (allowDelete)
-            presenters.add (ActionsPresenter.create (40, SystemAction.get(DeleteAction.class)));
+            presenters.add(ActionsPresenter.create(40, SystemAction.get(DeleteAction.class)));
         if (allowProperties)
-            presenters.add (ActionsPresenter.create (60, SystemAction.get(PropertiesAction.class)));
+            presenters.add(ActionsPresenter.create(60, SystemAction.get(PropertiesAction.class)));
     }
     
     public static void addMoveActionPresenter(List<Presenter> presenters, String propertyName) {
-            presenters.add(ActionsPresenter.create (50, MoveAction.createMoveUpAction(propertyName), MoveAction.createMoveDownAction(propertyName)));
+        presenters.add(ActionsPresenter.create(50, MoveAction.createMoveUpAction(propertyName), MoveAction.createMoveDownAction(propertyName)));
     }
-
+    
     public static void addNewActionPresenter(List<Presenter> presenters, TypeID... types) {
-       presenters.add(ActionsPresenter.create(10, AddAction.getInstance()));
-       presenters.add(AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 10, types));
+        presenters.add(ActionsPresenter.create(10, AddAction.getInstance()));
+        presenters.add(AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 10, types));
     }
     
     public static void addUnusedCommandsAddActionForDisplayable(List<Presenter> presenters) {
         presenters.add(UnusedCommandsAddActionPresenter.createForDisplayable(UnusedCommandsAddActionPresenter.DISPLAY_NAME_ADD, 20));
     }
     
-     public static void addUnusedCommandsAddActionForItem(List<Presenter> presenters) {
+    public static void addUnusedCommandsAddActionForItem(List<Presenter> presenters) {
         presenters.add(UnusedCommandsAddActionPresenter.createForItem(UnusedCommandsAddActionPresenter.DISPLAY_NAME_ADD, 20));
     }
+    
+    public static void addPropertiesActionPresenter(List<Presenter> presenters) {
+        presenters.add(ActionsPresenter.create(Integer.MAX_VALUE, SystemAction.get(PropertiesAction.class)));
+    }
+    
 }

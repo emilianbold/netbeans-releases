@@ -20,6 +20,7 @@
 
 package org.netbeans.modules.vmd.midp.screen.display;
 
+import java.awt.datatransfer.Transferable;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
@@ -29,14 +30,21 @@ import org.openide.util.Utilities;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.modules.vmd.api.model.common.DesignComponentDataFlavor;
 
 /**
  * @author David Kaspar
  */
 public class SpacerDisplayPresenter extends ScreenDisplayPresenter {
-
+    
+    private Transferable transferable;
+    
     JSeparator separator = new JSeparator (JSeparator.HORIZONTAL) {
         public JPopupMenu getComponentPopupMenu () {
             return Utilities.actionsToPopup (ActionsSupport.createActionsArray (getRelatedComponent ()), this);

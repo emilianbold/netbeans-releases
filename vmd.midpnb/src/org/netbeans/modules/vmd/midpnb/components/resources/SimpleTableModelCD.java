@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.vmd.midpnb.components.resources;
 
+import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
@@ -43,6 +44,9 @@ import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorTableModel;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
+import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
+import org.netbeans.modules.vmd.midp.components.resources.ResourcesSupport;
 
 /**
  *
@@ -97,8 +101,15 @@ public class SimpleTableModelCD extends ComponentDescriptor {
             .addSetters (MidpSetter.createSetter ("setColumnNames", MidpVersionable.MIDP_2).setArrayParameter(PROP_COLUMN_NAMES).addParameters (PROP_COLUMN_NAMES));
     }
 
+    protected void gatherPresenters(ArrayList<Presenter> presenters) {
+        DocumentSupport.removePresentersOfClass(presenters, InfoPresenter.class);
+        super.gatherPresenters(presenters);
+    }
+    
     protected List<? extends Presenter> createPresenters() {
-        return Arrays.asList (
+        return Arrays.asList(
+            //info
+            ResourcesSupport.createResourceInfoResolver(),
             // properties
             createPropertiesPresenter (),
             // code
@@ -108,7 +119,7 @@ public class SimpleTableModelCD extends ComponentDescriptor {
             new InspectorFolderComponentPresenter(true),
             InspectorPositionPresenter.create(new ResourcePC(), FolderPositionControllerFactory.createHierarchical()),
              // screen
-            new ResourceSRItemPresenter()
+            new ResourceSRItemPresenter(InfoPresenter.NameType.TERTIARY)
         );
     }
     

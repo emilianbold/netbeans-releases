@@ -164,10 +164,10 @@ public class ResourceItemPanel extends JLabel implements MouseListener {
     
     private class DragListener implements DragGestureListener {
         private ScreenTransferable flavor;
-                
+        
         public void dragGestureRecognized(DragGestureEvent dgEvent) {
-             if (flavor == null)
-                 flavor = new ScreenTransferable(component);
+            if (flavor == null)
+                flavor = new ScreenTransferable(component);
             try {
                 dgEvent.startDrag(null , flavor);
             } catch (InvalidDnDOperationException e) {

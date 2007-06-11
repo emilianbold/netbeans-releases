@@ -19,9 +19,6 @@
 
 package org.netbeans.modules.vmd.midp.screen.display;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
@@ -30,27 +27,18 @@ import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo.DeviceTheme.
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo.DeviceTheme.FontSize;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo.DeviceTheme.FontStyle;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo.DeviceTheme.FontType;
-import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
-import org.netbeans.modules.vmd.midp.components.ProjectResourceResolver;
 import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.vmd.api.io.DataObjectContext;
+import java.util.Map;
 
 /**
  *
@@ -159,48 +147,22 @@ public final class ScreenSupport {
      * @return icon
      */
     public static Icon getIconFromImageComponent(DesignComponent imageComponent) {
+        // System.out.println("imageComponent: " + imageComponent);
         if (imageComponent == null)
             return null;
         String imagePath = MidpTypes.getString(imageComponent.readProperty(ImageCD.PROP_RESOURCE_PATH));
+        
         if (imagePath == null)
             return null;
         DesignDocument document = imageComponent.getDocument();
         
-        Set<FileObject> foldersToScan = getFoldersToScan(imageComponent);
+        Map<FileObject, FileObject> fileMap = MidpProjectSupport.getFileObjectsForRelativeResourcePath(document, imagePath);
         
-        for (FileObject folder: foldersToScan) {
-            Icon sourceIcon = resolveImageForRoot(folder, imagePath);
-            if (sourceIcon != null)
-                return sourceIcon;
-        }
-        
-        Project project = MidpProjectSupport.getProjectForDocument(document);
-        for (ProjectResourceResolver resolver : MidpProjectSupport.getAllResolvers()) {
-            Collection<FileObject> collection = resolver.getResourceRoots(project, MidpDocumentSupport.PROJECT_TYPE_MIDP);
-            if (collection != null)
-                for (FileObject root : collection) {
-                    Icon icon = resolveImageForRoot(root, imagePath);
-                    if (icon != null)
-                        return icon;
-                }
+        FileObject imageFileObject = fileMap.keySet().iterator().next();
+        if (imageFileObject != null) {
+            return resolveImageForRoot(imageFileObject, imagePath);
         }
         Debug.warning("Resource path property in " + imageComponent + " contains incorrect value"); // NOI18N
-        return null;
-    }
-    
-    private static Icon resolveImageForRoot(FileObject root, String imagePath) {
-        FileObject imageFile = root.getFileObject(imagePath);
-        if (imageFile != null) {
-            File input = FileUtil.toFile(imageFile);
-            if (input != null) {
-                try {
-                    BufferedImage img = ImageIO.read(input);
-                    if (img != null)
-                        return new ImageIcon(img);
-                } catch (IOException e) {
-                }
-            }
-        }
         return null;
     }
     
@@ -210,21 +172,15 @@ public final class ScreenSupport {
         return fm.getHeight();
     }
     
-    private static  Set<FileObject> getFoldersToScan(DesignComponent component) {
-        DesignDocument document = component.getDocument();
-        Set<FileObject> filesToScan = new HashSet<FileObject>();
-        
-        FileObject projectDirectory = ProjectUtils.getProject(document).getProjectDirectory();
-        DataObjectContext dac = ProjectUtils.getDataObjectContextForDocument(document);
-        //Resources
-        for (FileObject f : ClassPath.getClassPath(projectDirectory, ClassPath.COMPILE).getRoots()) {
-            filesToScan.add((f));
+    private static Icon resolveImageForRoot(FileObject file, String relPath) {
+        try {
+            BufferedImage img = ImageIO.read(file.getInputStream());
+            if (img != null)
+                return new ImageIcon(img);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        //Sources
-        for (SourceGroup g : ProjectUtils.getSourceGroups(dac)) {
-            filesToScan.add((g.getRootFolder()));
-        }
-        return filesToScan;
+        return null;
     }
     
 }

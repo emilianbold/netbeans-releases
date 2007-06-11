@@ -23,6 +23,7 @@ package org.netbeans.modules.vmd.api.model.presenters.actions;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +36,9 @@ import javax.swing.Action;
 import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.model.actions.ActionsPresenterForwarder;
 
 /**
  *
@@ -48,11 +51,11 @@ public final class ActionsSupport {
     
     private static final TypeID[] EMPTY_TYPEID_ARRAY = new TypeID[0];
     
-    public static Action[] createAddActionArray(final DesignComponent component) {
+    public static synchronized Action[] createAddActionArray(final DesignComponent component) {
         return createAddActionArray(component, EMPTY_TYPEID_ARRAY);
     }
     
-    public static Action[] createAddActionArray(final DesignComponent component,final TypeID... filtersTypeID) {
+    public static synchronized Action[] createAddActionArray(final DesignComponent component,final TypeID... filtersTypeID) {
         final List<Action> actions = new ArrayList<Action>();
         
         component.getDocument().getTransactionManager().readAccess(new Runnable() {
@@ -109,7 +112,7 @@ public final class ActionsSupport {
         return actions.toArray(new Action[actions.size()]);
     }
     
-    public static Action[] createActionsArray(final DesignComponent component) {
+    public static synchronized Action[] createActionsArray(final DesignComponent component) {
         final List<Action> actions = new ArrayList<Action>();
         
         component.getDocument().getTransactionManager().readAccess(new Runnable() {
@@ -117,8 +120,10 @@ public final class ActionsSupport {
                 Map <Integer, List<Action>> sortedLists = new TreeMap<Integer, List<Action>>();
                 
                 DesignDocument document = null;
-                
-                for (ActionsPresenter presenter : component.getPresenters(ActionsPresenter.class)) {
+                Collection<? extends ActionsPresenter> presenters = component.getPresenters(ActionsPresenter.class);
+                if (presenters == null)
+                    return;
+                for (ActionsPresenter presenter : presenters) {
                     List<Action> actions = presenter.getActions();
                     if (actions == null || actions.isEmpty())
                         continue;
@@ -144,10 +149,11 @@ public final class ActionsSupport {
                         sortedLists.put(order, new ArrayList<Action>(actions));
                     else
                         list.addAll(actions);
-                }
-                
+                }           
                 for (List<Action> list : sortedLists.values()) {
-                    actions.addAll(list);
+                    for (Action action : list) {
+                        actions.add(action);
+                    }
                     actions.add(null);
                 }
             }
@@ -155,7 +161,27 @@ public final class ActionsSupport {
         
         return actions.toArray(new Action[actions.size()]);
     }
-  
+    
+    public static synchronized Collection<Presenter> createByReference(final String referencePropertyName, Class... actionsToInherit) {
+        HashSet presenters = new HashSet();
+        for (Class actionClass : actionsToInherit) {
+            Presenter presenter = ActionsPresenterForwarder.byReference(referencePropertyName, actionClass);
+            if (presenter != null)
+                presenters.add(presenter);
+        }
+        return presenters;
+    }
+    
+    public static synchronized Collection<Presenter> createByParent(Class... actionsToInherit) {
+        HashSet presenters = new HashSet();
+        for (Class actionClass : actionsToInherit) {
+            Presenter presenter = ActionsPresenterForwarder.byParent(actionClass);
+            if (presenter != null)
+                presenters.add(presenter);
+        }
+        return presenters;
+    }
+    
     private static class SeperatorAction extends  AbstractAction {
         
         public SeperatorAction(String name){

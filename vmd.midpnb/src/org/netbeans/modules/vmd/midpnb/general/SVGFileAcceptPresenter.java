@@ -36,6 +36,7 @@ import org.netbeans.modules.vmd.midpnb.components.svg.SVGAnimatorWrapperCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.util.SVGUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -45,15 +46,15 @@ import org.openide.util.Exceptions;
 public class SVGFileAcceptPresenter extends FileAcceptPresenter {
     
     public SVGFileAcceptPresenter() {
-        addFileExtensions(SVGAnimatorWrapperCD.PROP_SVG_IMAGE, SVGImageCD.TYPEID, "svg");
+        super(SVGAnimatorWrapperCD.PROP_SVG_IMAGE, SVGImageCD.TYPEID, "svg");
     }
     
     public Result accept(Transferable transferable) {
         Result result = super.accept(transferable);
         DesignComponent svgImage = result.getComponents().iterator().next();
         final DesignComponent animator = getComponent();
-        
-        svgImage.writeProperty(SVGImageCD.PROP_RESOURCE_PATH , MidpTypes.createStringValue(getFilePath(transferable)));
+        FileObject fileObject = getNodeFile(transferable);
+        svgImage.writeProperty(SVGImageCD.PROP_RESOURCE_PATH , MidpTypes.createStringValue(fileObject.getPath()));
         MidpDocumentSupport.getCategoryComponent(animator.getDocument(), ResourcesCategoryCD.TYPEID).addComponent(svgImage);
         
         if (animator.getType() == SVGMenuCD.TYPEID) {

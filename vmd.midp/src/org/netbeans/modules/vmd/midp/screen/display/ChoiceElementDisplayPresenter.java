@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.vmd.midp.screen.display;
 
+import java.awt.datatransfer.Transferable;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
@@ -142,5 +143,5 @@ public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
                 new ScreenPropertyDescriptor(getComponent(), label, new ScreenStringPropertyEditor(ChoiceElementCD.PROP_STRING))
                 );
     }
-    
+
 }

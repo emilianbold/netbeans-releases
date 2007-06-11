@@ -138,7 +138,7 @@ public final class PropertiesNodesManager {
         }
     };
     
-    private Sheet createSheet(final DesignComponent component) {
+    public Sheet createSheet(final DesignComponent component) {
         final Sheet sheet = new Sheet();
         component.getDocument().getTransactionManager().readAccess(new Runnable() {
             public void run() {

@@ -80,7 +80,7 @@ public class SVGMenuElementEventSourceCD extends ComponentDescriptor {
 
         MidpActionsSupport.addCommonActionsPresenters(presenters, false, true, false, true, false);
         MidpActionsSupport.addMoveActionPresenter(presenters, SVGMenuCD.PROP_ELEMENTS);
-        presenters.add(ActionsPresenterForwarder.createByParent(DeleteAction.DISPLAY_NAME, RenameAction.DISPLAY_NAME));
+        presenters.addAll(ActionsSupport.createByParent(DeleteAction.class, RenameAction.class));
 
         super.gatherPresenters (presenters);
     }
@@ -140,10 +140,7 @@ public class SVGMenuElementEventSourceCD extends ComponentDescriptor {
                     DesignComponent menu = component.getParentComponent ();
                     ArraySupport.remove (menu, SVGMenuCD.PROP_ELEMENTS, component);
                 }
-            }
-        
-        
-        
+            }        
         );
     }
 

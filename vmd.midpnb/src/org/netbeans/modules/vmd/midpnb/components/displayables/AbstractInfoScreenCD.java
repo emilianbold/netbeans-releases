@@ -46,6 +46,7 @@ import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpAcceptProducerKindPresenter;
 import org.netbeans.modules.vmd.midp.general.FileAcceptPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpAcceptTrensferableKindPresenter;
+import org.netbeans.modules.vmd.midp.components.resources.ImageFileAcceptPresenter;
 
 /**
  *
@@ -114,7 +115,7 @@ public class AbstractInfoScreenCD extends ComponentDescriptor {
             MidpCodePresenterSupport.createAddImportPresenter (),
             // screen
             new AbstractInfoDisplayPresenter(),new MidpAcceptProducerKindPresenter().addType(FontCD.TYPEID, PROP_TEXT_FONT).addType(ImageCD.TYPEID, PROP_IMAGE),
-            FileAcceptPresenter.create(ImageCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "png", "gif"),
+            new ImageFileAcceptPresenter(ImageCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "png", "gif"),
             new MidpAcceptTrensferableKindPresenter().addType(FontCD.TYPEID, PROP_TEXT_FONT)
         );
     }

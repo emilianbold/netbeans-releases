@@ -90,6 +90,8 @@ public class MidpAcceptTrensferableKindPresenter extends AbstractAcceptPresenter
             dataFlavor = new DesignComponentDataFlavor(getComponent());
         }
         try {
+            if (!(transferable.getTransferData(dataFlavor) instanceof DesignComponent))
+                return false;
             component = (DesignComponent) transferable.getTransferData(dataFlavor);
             if (typesMap.containsKey(component.getType())) {
                 propertyName = typesMap.get(component.getType());

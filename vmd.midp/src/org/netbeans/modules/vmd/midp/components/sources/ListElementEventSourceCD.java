@@ -50,6 +50,7 @@ import org.netbeans.modules.vmd.midp.screen.display.ListElementEventSourceDispla
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.components.resources.ImageFileAcceptPresenter;
 
 /**
  * @author David Kaspar
@@ -96,9 +97,9 @@ public final class ListElementEventSourceCD extends ComponentDescriptor {
         DocumentSupport.removePresentersOfClass (presenters, InspectorPositionPresenter.class);
         DocumentSupport.removePresentersOfClass (presenters, ActionsPresenter.class);
         DocumentSupport.removePresentersOfClass (presenters, AbstractAcceptPresenter.class);
-        MidpActionsSupport.addCommonActionsPresenters(presenters, false, true, false, true, false);
+        MidpActionsSupport.addCommonActionsPresenters(presenters, false, true, false, true, true);
         MidpActionsSupport.addMoveActionPresenter(presenters, ListCD.PROP_ELEMENTS);
-        presenters.add(ActionsPresenterForwarder.createByParent(DeleteAction.DISPLAY_NAME, RenameAction.DISPLAY_NAME));
+        presenters.addAll(ActionsSupport.createByParent(DeleteAction.class, RenameAction.class));
         super.gatherPresenters (presenters);
     }
 
@@ -111,7 +112,7 @@ public final class ListElementEventSourceCD extends ComponentDescriptor {
             // inspector
             InspectorPositionPresenter.create(new ComponentsCategoryPC(MidpInspectorSupport.TYPEID_ELEMENTS)),
             // accept
-            FileAcceptPresenter.create(ImageCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "png", "gif"),
+            new ImageFileAcceptPresenter(ImageCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "png", "gif"),
             MidpAcceptTrensferableKindPresenter.createFontAcceptPresenter(),
             MidpAcceptTrensferableKindPresenter.createImageAcceptPresenter(),
             new AcceptTypePresenter(EventHandlerCD.TYPEID) {

@@ -37,9 +37,15 @@ import org.openide.util.Utilities;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.modules.vmd.api.model.common.DesignComponentDataFlavor;
 
 /**
  *
@@ -54,19 +60,20 @@ public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresent
     private JLabel state;
     private JLabel image;
     private JLabel label;
+    private Transferable transferable;
     
     public ListElementEventSourceDisplayPresenter() {
-        view = new JPanel ();
+        view = new JPanel();
         view.setLayout(new BoxLayout(view, BoxLayout.X_AXIS));
-        view.setOpaque (false);
-
-        state = new JLabel ();
-        view.add (state);
-        image = new JLabel ();
-        view.add (image);
+        view.setOpaque(false);
+        
+        state = new JLabel();
+        view.add(state);
+        image = new JLabel();
+        view.add(image);
         label = new JLabel();
-        view.add (label);
-
+        view.add(label);
+        
         view.add(Box.createHorizontalGlue());
     }
     
@@ -83,21 +90,21 @@ public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresent
     }
     
     public void reload(ScreenDeviceInfo deviceInfo) {
-        int type = (Integer) getComponent ().getParentComponent ().readProperty (ListCD.PROP_LIST_TYPE).getPrimitiveValue ();
-        PropertyValue selectedValue = getComponent ().readProperty (ListElementEventSourceCD.PROP_SELECTED);
-        boolean selected = selectedValue.getKind () == PropertyValue.Kind.VALUE  &&  MidpTypes.getBoolean (selectedValue);
+        int type = (Integer) getComponent().getParentComponent().readProperty(ListCD.PROP_LIST_TYPE).getPrimitiveValue();
+        PropertyValue selectedValue = getComponent().readProperty(ListElementEventSourceCD.PROP_SELECTED);
+        boolean selected = selectedValue.getKind() == PropertyValue.Kind.VALUE  &&  MidpTypes.getBoolean(selectedValue);
         switch (type) {
-            case ChoiceSupport.VALUE_EXCLUSIVE:
-                state.setIcon (selected ? ChoiceElementDisplayPresenter.ICON_RADIOBUTTON : ChoiceElementDisplayPresenter.ICON_EMPTY_RADIOBUTTON);
-                break;
-            case ChoiceSupport.VALUE_MULTIPLE:
-                state.setIcon (selected ? ChoiceElementDisplayPresenter.ICON_CHECKBOX : ChoiceElementDisplayPresenter.ICON_EMPTY_CHECKBOX);
-                break;
-            default:
-                state.setIcon (null);
-                break;
+        case ChoiceSupport.VALUE_EXCLUSIVE:
+            state.setIcon(selected ? ChoiceElementDisplayPresenter.ICON_RADIOBUTTON : ChoiceElementDisplayPresenter.ICON_EMPTY_RADIOBUTTON);
+            break;
+        case ChoiceSupport.VALUE_MULTIPLE:
+            state.setIcon(selected ? ChoiceElementDisplayPresenter.ICON_CHECKBOX : ChoiceElementDisplayPresenter.ICON_EMPTY_CHECKBOX);
+            break;
+        default:
+            state.setIcon(null);
+            break;
         }
-
+        
         DesignComponent imageComponent = getComponent().readProperty(ChoiceElementCD.PROP_IMAGE).getComponent();
         String path = null;
         if (imageComponent != null)
@@ -109,7 +116,7 @@ public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresent
             image.setIcon(ICON_BROKEN);
         else
             image.setIcon(null);
-
+        
         String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(ListElementEventSourceCD.PROP_STRING));
         label.setText(ScreenSupport.wrapWithHtml(text));
         
@@ -120,12 +127,12 @@ public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresent
     public Shape getSelectionShape() {
         return new Rectangle(view.getSize());
     }
-
-    public Collection<ScreenPropertyDescriptor> getPropertyDescriptors () {
-        return Arrays.asList (
-                new ScreenPropertyDescriptor (getComponent (), state, new ScreenBooleanPropertyEditor (ChoiceElementCD.PROP_SELECTED)),
+    
+    public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
+        return Arrays.asList(
+                new ScreenPropertyDescriptor(getComponent(), state, new ScreenBooleanPropertyEditor(ChoiceElementCD.PROP_SELECTED)),
                 new ScreenPropertyDescriptor(getComponent(), label, new ScreenStringPropertyEditor(ChoiceElementCD.PROP_STRING))
-        );
+                );
     }
-
+    
 }

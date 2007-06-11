@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.vmd.midp.components.displayables;
 
-import java.awt.datatransfer.Transferable;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.codegen.Parameter;
 import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
@@ -104,7 +103,7 @@ public final class FormCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
                 // accept
-                FormAcceptPresentersSupport.createImageItemFromImageAcceptPresenter("png","jpg","gif"),
+                new FormFileAcceptPresenter("png","jpg","gif"), //NOI18N
                 new AcceptTypePresenter(ItemCD.TYPEID) {
             protected void notifyCreated(DesignComponent component) {
                 super.notifyCreated(component);

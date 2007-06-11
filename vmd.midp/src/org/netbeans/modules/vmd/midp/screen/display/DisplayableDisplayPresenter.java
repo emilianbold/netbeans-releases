@@ -13,6 +13,10 @@
  */
 package org.netbeans.modules.vmd.midp.screen.display;
 
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
@@ -28,9 +32,11 @@ import org.openide.util.Utilities;
 
 import javax.swing.*;
 import java.awt.*;
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.modules.vmd.api.model.common.DesignComponentDataFlavor;
 
 /**
  * A presenter for Displayable MIDP class. ALl other presenters should
@@ -43,6 +49,7 @@ public class DisplayableDisplayPresenter extends ScreenDisplayPresenter {
     
     private static final Image BATTERY = Utilities.loadImage("org/netbeans/modules/vmd/midp/screen/display/resources/battery.png"); // NOI18N
     private static final Image SIGNAL = Utilities.loadImage("org/netbeans/modules/vmd/midp/screen/display/resources/signal.png"); // NOI18N
+    private Transferable transferable;
     
     private DisplayableDisplayPanel panel;
     
@@ -52,11 +59,11 @@ public class DisplayableDisplayPresenter extends ScreenDisplayPresenter {
         panel.getSignal().setIcon(new ImageIcon(SIGNAL));
     }
     
-     public DisplayableDisplayPresenter(Image image) {
-       this();
-       panel.add(new JLabel(new ImageIcon(image)));
+    public DisplayableDisplayPresenter(Image image) {
+        this();
+        panel.add(new JLabel(new ImageIcon(image)));
     }
-     
+    
     public boolean isTopLevelDisplay() {
         return true;
     }
@@ -85,11 +92,11 @@ public class DisplayableDisplayPresenter extends ScreenDisplayPresenter {
             DesignComponent ticker = getComponent().readProperty(DisplayableCD.PROP_TICKER).getComponent();
             if (ticker != null) {
                 PropertyValue value = ticker.readProperty(TickerCD.PROP_STRING);
-                if (value.getKind() == PropertyValue.Kind.USERCODE) 
+                if (value.getKind() == PropertyValue.Kind.USERCODE)
                     tickerText = "<ticker string user code>"; //NOI18N
                 else {
                     tickerText = MidpValueSupport.getHumanReadableString(value);
-                    if (tickerText == null || "".equals (tickerText))
+                    if (tickerText == null || "".equals(tickerText))
                         tickerText = "<empty ticker string>"; //NOI18N
                 }
             }

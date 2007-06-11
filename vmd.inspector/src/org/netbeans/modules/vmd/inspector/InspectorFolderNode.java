@@ -142,7 +142,7 @@ final class InspectorFolderNode extends AbstractNode {
     }
     
     public PasteType getDropType(final Transferable t, final int action, int index) {
-        final Node dropNode = NodeTransfer.node( t, DnDConstants.ACTION_COPY_OR_MOVE + NodeTransfer.CLIPBOARD_CUT );
+        final Node dropNode = NodeTransfer.node( t, DnDConstants.ACTION_COPY_OR_MOVE);
         if (!(dropNode instanceof InspectorFolderNode))
             return null;
         

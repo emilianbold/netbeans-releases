@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.vmd.midpnb.components.resources;
 
+import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.codegen.CodeWriter;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
@@ -40,119 +41,127 @@ import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScree
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
-
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
+import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
+import org.netbeans.modules.vmd.midp.components.resources.ResourcesSupport;
 
 /**
  *
  * @author Karol Harezlak
  */
 public class SimpleCancellableTaskCD extends ComponentDescriptor {
-
+    
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.util.SimpleCancellableTask"); // NOI18N
-
+    
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/resource_16.png"; // NOI18N
-
+    
     public static final String PROP_CODE = "executableMethodBody"; //NOI18N
-
+    
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
     }
-
+    
     public SimpleCancellableTaskCD() {
     }
-
+    
     public TypeDescriptor getTypeDescriptor() {
         return new TypeDescriptor(ClassCD.TYPEID, TYPEID, true, true);
     }
-
+    
     public VersionDescriptor getVersionDescriptor() {
         return MidpVersionDescriptor.MIDP;
     }
-
-    public void postInitialize (DesignComponent component) {
-        component.writeProperty (PROP_CODE, MidpTypes.createJavaCodeValue ("// write task-execution user code here")); // NOI18N
-        MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY);
+    
+    public void postInitialize(DesignComponent component) {
+        component.writeProperty(PROP_CODE, MidpTypes.createJavaCodeValue("// write task-execution user code here")); // NOI18N
+        MidpProjectSupport.addLibraryToProject(component.getDocument(), AbstractInfoScreenCD.MIDP_NB_LIBRARY);
     }
-
+    
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
-            new PropertyDescriptor (PROP_CODE, MidpTypes.TYPEID_JAVA_CODE, PropertyValue.createNull(), false, true, MidpVersionable.MIDP_2, false, false)
-        );
+                new PropertyDescriptor(PROP_CODE, MidpTypes.TYPEID_JAVA_CODE, PropertyValue.createNull(), false, true, MidpVersionable.MIDP_2, false, false)
+                );
     }
-
-//     private static DefaultPropertiesPresenter createPropertiesPresenter() {
-//        return new DefaultPropertiesPresenter (DesignEventFilterResolver.THIS_COMPONENT)
-//                .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-//                     .addProperty("Executable Code", PropertyEditorJavaString.createInstance(TYPEID), PROP_CODE);
-//    }
-
-    private static Presenter createSetterPresenter () {
-        return new CodeSetterPresenter ()
-            .addParameters (new ExecutableParameter ())
-            .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2))
-            .addSetters (MidpSetter.createSetter ("setExecutable", MidpVersionable.MIDP_2).addParameters (ExecutableParameter.PARAM_EXECUTABLE));
+    
+    //     private static DefaultPropertiesPresenter createPropertiesPresenter() {
+    //        return new DefaultPropertiesPresenter (DesignEventFilterResolver.THIS_COMPONENT)
+    //                .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
+    //                     .addProperty("Executable Code", PropertyEditorJavaString.createInstance(TYPEID), PROP_CODE);
+    //    }
+    
+    private static Presenter createSetterPresenter() {
+        return new CodeSetterPresenter()
+                .addParameters(new ExecutableParameter())
+                .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP_2))
+                .addSetters(MidpSetter.createSetter("setExecutable", MidpVersionable.MIDP_2).addParameters(ExecutableParameter.PARAM_EXECUTABLE));
     }
-
+    protected void gatherPresenters(ArrayList<Presenter> presenters) {
+        DocumentSupport.removePresentersOfClass(presenters, InfoPresenter.class);
+        super.gatherPresenters(presenters);
+    }
+    
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
-            // properties
-//            createPropertiesPresenter(),
-            // setter
-            createSetterPresenter (),
-            MidpCodePresenterSupport.createAddImportPresenter (),
-             // inspector
-            new InspectorFolderComponentPresenter(true),
-            InspectorPositionPresenter.create(new ResourcePC (), FolderPositionControllerFactory.createHierarchical()),
-            // screen
-            new ResourceSRItemPresenter ()
-        );
+                //info
+                ResourcesSupport.createResourceInfoResolver(),
+                // properties
+                //            createPropertiesPresenter(),
+                // setter
+                createSetterPresenter(),
+                MidpCodePresenterSupport.createAddImportPresenter(),
+                // inspector
+                new InspectorFolderComponentPresenter(true),
+                InspectorPositionPresenter.create(new ResourcePC(), FolderPositionControllerFactory.createHierarchical()),
+                // screen
+                new ResourceSRItemPresenter(InfoPresenter.NameType.TERTIARY)
+                );
     }
-
+    
     private static class ExecutableParameter implements Parameter {
-
+        
         public static final String PARAM_EXECUTABLE = "executable"; // NOI18N
-
-        public String getParameterName () {
+        
+        public String getParameterName() {
             return PARAM_EXECUTABLE;
         }
-
-        public int getParameterPriority () {
+        
+        public int getParameterPriority() {
             return 0;
         }
-
-        public void generateParameterCode (DesignComponent component, MultiGuardedSection section, int index) {
-            CodeWriter writer = section.getWriter ();
-            writer.write ("new org.netbeans.microedition.util.Executable() {\n"); // NOI18N
-            writer.write ("public void execute () throws Exception {\n"); // NOI18N
-            writer.commit ();
-
-            section.switchToEditable (component.getComponentID () + "-execute");
-            writer = section.getWriter ();
-            String code = MidpTypes.getJavaCode (component.readProperty (PROP_CODE));
+        
+        public void generateParameterCode(DesignComponent component, MultiGuardedSection section, int index) {
+            CodeWriter writer = section.getWriter();
+            writer.write("new org.netbeans.microedition.util.Executable() {\n"); // NOI18N
+            writer.write("public void execute () throws Exception {\n"); // NOI18N
+            writer.commit();
+            
+            section.switchToEditable(component.getComponentID() + "-execute");
+            writer = section.getWriter();
+            String code = MidpTypes.getJavaCode(component.readProperty(PROP_CODE));
             if (code != null)
-                writer.write (code);
-            if (code == null  ||  ! code.endsWith ("\n")) // NOI18N
-                writer.write ("\n"); // NOI18N
-            writer.commit ();
-
-            section.switchToGuarded ();
-            writer = section.getWriter ();
-            writer.write ("}\n"); // NOI18N
-            writer.write ("}"); // NOI18N
+                writer.write(code);
+            if (code == null  ||  ! code.endsWith("\n")) // NOI18N
+                writer.write("\n"); // NOI18N
+            writer.commit();
+            
+            section.switchToGuarded();
+            writer = section.getWriter();
+            writer.write("}\n"); // NOI18N
+            writer.write("}"); // NOI18N
         }
-
-        public boolean isRequiredToBeSet (DesignComponent component) {
+        
+        public boolean isRequiredToBeSet(DesignComponent component) {
             return true;
         }
-
-        public int getCount (DesignComponent component) {
+        
+        public int getCount(DesignComponent component) {
             return -1;
         }
-
-        public boolean isRequiredToBeSet (DesignComponent component, int index) {
+        
+        public boolean isRequiredToBeSet(DesignComponent component, int index) {
             return false;
         }
-
+        
     }
-
+    
 }

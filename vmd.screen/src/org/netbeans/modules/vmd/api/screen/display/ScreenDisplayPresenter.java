@@ -24,6 +24,7 @@ import org.netbeans.modules.vmd.api.model.Presenter;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.Transferable;
 import java.util.Collection;
 
 /**
@@ -81,5 +82,9 @@ public abstract class ScreenDisplayPresenter extends Presenter {
     public abstract Collection<ScreenPropertyDescriptor> getPropertyDescriptors ();// {
       //  return Collections.emptySet ();
    // }
-
+    
+    //public abstract boolean isDragable();
+    
+    //public abstract Transferable getTransferable();
+  
 }

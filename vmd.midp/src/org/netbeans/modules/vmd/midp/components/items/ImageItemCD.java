@@ -41,6 +41,7 @@ import org.netbeans.modules.vmd.midp.screen.display.ImageItemDisplayPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.injector.ImageItemInjectorPresenter;
 
 import java.util.*;
+import org.netbeans.modules.vmd.midp.components.resources.ImageFileAcceptPresenter;
 
 /**
  *
@@ -109,7 +110,7 @@ public class ImageItemCD extends ComponentDescriptor {
                 // delete
                 DeleteDependencyPresenter.createNullableComponentReferencePresenter (PROP_IMAGE),
                 //accept
-                FileAcceptPresenter.create(ImageItemCD.PROP_IMAGE, ImageCD.TYPEID, "jpg","gif","png"), //NOI18N
+                new ImageFileAcceptPresenter(ImageItemCD.PROP_IMAGE, ImageCD.TYPEID, "jpg","gif","png"), //NOI18N
                 new MidpAcceptProducerKindPresenter().addType(ImageCD.TYPEID, PROP_IMAGE),
                 // screen
                 new ImageItemDisplayPresenter(),

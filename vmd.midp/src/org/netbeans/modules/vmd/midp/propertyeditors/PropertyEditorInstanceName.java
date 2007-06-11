@@ -189,5 +189,4 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
         }
     }
     
-    
 }
