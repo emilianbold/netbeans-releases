@@ -19,7 +19,11 @@
 
 package org.netbeans.modules.visualweb.insync.faces.refactoring;
 
+import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,6 +33,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
+
+import javax.swing.JLabel;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -51,6 +60,8 @@ import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -58,7 +69,9 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 
 final class FacesRefactoringUtils {
@@ -661,4 +674,98 @@ final class FacesRefactoringUtils {
         }        
         return result;
     }
+
+    private static Dialog waitDialog = null;
+    private static RequestProcessor.Task waitTask = null;
+    
+    /**
+     * This is a helper method to provide support for delaying invocations of actions
+     * depending on java model. See <a href="http://java.netbeans.org/ui/waitscanfinished.html">UI Specification</a>.
+     * <br>Behavior of this method is following:<br>
+     * If classpath scanning is not in progress, runnable's run() is called. <br>
+     * If classpath scanning is in progress, modal cancellable notification dialog with specified
+     * tile is opened.
+     * </ul>
+     * As soon as classpath scanning finishes, this dialog is closed and runnable's run() is called.
+     * This method must be called in AWT EventQueue. Runnable is performed in AWT thread.
+     * 
+     * @param runnable Runnable instance which will be called.
+     * @param actionName Title of wait dialog.
+     * @return true action was cancelled <br>
+     *         false action was performed
+     */
+    public static boolean invokeAfterScanFinished(final Runnable runnable , final String actionName) {
+        assert SwingUtilities.isEventDispatchThread();
+        if (SourceUtils.isScanInProgress()) {
+            final ActionPerformer ap = new ActionPerformer(runnable);
+            ActionListener listener = new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    ap.cancel();
+                    waitTask.cancel();
+                }
+            };
+            JLabel label = new JLabel(getString("MSG_WaitScan"), javax.swing.UIManager.getIcon("OptionPane.informationIcon"), SwingConstants.LEFT);
+            label.setBorder(new EmptyBorder(12,12,11,11));
+            DialogDescriptor dd = new DialogDescriptor(label, actionName, true, new Object[]{getString("LBL_CancelAction", new Object[]{actionName})}, null, 0, null, listener);
+            waitDialog = DialogDisplayer.getDefault().createDialog(dd);
+            waitDialog.pack();
+            waitTask = RequestProcessor.getDefault().post(ap);
+            waitDialog.setVisible(true);
+            waitTask = null;
+            waitDialog = null;
+            return ap.hasBeenCancelled();
+        } else {
+            runnable.run();
+            return false;
+        }
+    }
+    
+    private static String getString(String key) {
+        return NbBundle.getMessage(FacesRefactoringUtils.class, key);
+    }
+
+    private static String getString(String key, Object values) {
+        return new MessageFormat(getString(key)).format(values);
+    }
+    
+    private static class ActionPerformer implements Runnable {
+        private Runnable action;
+        private boolean cancel = false;
+
+        ActionPerformer(Runnable a) {
+            this.action = a;
+        }
+        
+        public boolean hasBeenCancelled() {
+            return cancel;
+        }
+        
+        public void run() {
+            try {
+                SourceUtils.waitScanFinished();
+            } catch (InterruptedException ie) {
+                Exceptions.printStackTrace(ie);
+            }
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    if (!cancel) {
+                        waitDialog.setVisible(false);
+                        action.run();
+                    }
+                }
+            });
+        }
+        
+        public void cancel() {
+            assert SwingUtilities.isEventDispatchThread();
+            // check if the scanning did not finish during cancel
+            // invocation - in such case do not set cancel to true
+            // and do not try to hide waitDialog window
+            if (waitDialog != null) {
+                cancel = true;
+                waitDialog.setVisible(false);
+            }
+        }
+    }
+    
 }

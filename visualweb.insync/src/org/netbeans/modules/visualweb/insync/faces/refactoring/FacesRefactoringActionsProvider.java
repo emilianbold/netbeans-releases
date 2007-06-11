@@ -25,6 +25,9 @@ import java.util.Collection;
 import java.util.Dictionary;
 import java.util.List;
 
+import javax.swing.Action;
+
+import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.UI;
@@ -59,6 +62,7 @@ public class FacesRefactoringActionsProvider extends ActionsImplementationProvid
                     // Yes. It can be Renamed 
                     return true;
                 }
+                // Check for non special folders under web folder
             }
         }
         return false;
@@ -71,14 +75,14 @@ public class FacesRefactoringActionsProvider extends ActionsImplementationProvid
     public void doRename(final Lookup lookup) {
         // First check can rename
         if (canRename(lookup)) {
-            new NodeToFileObject(lookup.lookupAll(Node.class)) {
+        	Runnable task = new NodeToFileObjectTask(lookup.lookupAll(Node.class)) {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] fileObjects) {
                     String newName = getNewName(lookup.lookup(Dictionary.class));
                     return new FacesRenameRefactoringUI(fileObjects[0], newName);
-                }
-                
-            }.run();           
+                }                
+        	};
+        	FacesRefactoringUtils.invokeAfterScanFinished(task, (String) RefactoringActionsFactory.renameAction().getValue(Action.NAME));
         }
     }
     
@@ -119,7 +123,7 @@ public class FacesRefactoringActionsProvider extends ActionsImplementationProvid
         // First check can move
         if (canMove(lookup)) {
             final Dictionary dictionary = lookup.lookup(Dictionary.class);
-            new NodeToFileObject(lookup.lookupAll(Node.class)) {
+            Runnable task = new NodeToFileObjectTask(lookup.lookupAll(Node.class)) {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] fileObjects) {
                     // are other parameters specified e.g. due to drag and drop or copy paste
@@ -133,7 +137,8 @@ public class FacesRefactoringActionsProvider extends ActionsImplementationProvid
                     }
                 }
                 
-            }.run();
+            };
+            FacesRefactoringUtils.invokeAfterScanFinished(task, (String) RefactoringActionsFactory.moveAction().getValue(Action.NAME));
         }
     }
     
@@ -171,10 +176,10 @@ public class FacesRefactoringActionsProvider extends ActionsImplementationProvid
         return (String) dict.get("name"); //NOI18N
     }
     
-    public static abstract class NodeToFileObject implements Runnable {
+    public static abstract class NodeToFileObjectTask implements Runnable {
         private Collection<? extends Node> nodes;
         
-        public NodeToFileObject(Collection<? extends Node> nodes) {
+        public NodeToFileObjectTask(Collection<? extends Node> nodes) {
             this.nodes = nodes;
         }
         

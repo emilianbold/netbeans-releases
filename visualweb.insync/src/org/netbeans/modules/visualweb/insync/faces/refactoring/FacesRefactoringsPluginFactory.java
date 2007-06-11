@@ -72,6 +72,8 @@ public class FacesRefactoringsPluginFactory implements RefactoringPluginFactory 
                     }
                 }
             }
+            // Check if this is a non special folder under web/ folder
+            // Check if this is a folder under pageBeansRoot
         } else {
             // Is this refactoring for a package
             NonRecursiveFolder refactoredNonRecursiveFolder = refactoringSource.lookup(NonRecursiveFolder.class);
