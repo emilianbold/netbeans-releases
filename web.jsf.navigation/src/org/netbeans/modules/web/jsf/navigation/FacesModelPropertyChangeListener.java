@@ -100,7 +100,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
             
             final Object source = ev.getSource();
             
-           
+            
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
                     replaceFromViewIdToViewIdEventHandler(ev, source, oldName, newName);
@@ -157,7 +157,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
                 return;
             }
         } */
-        if ( oldPageNode != null && !pfc.isPageInFacesConfig(oldName) && !isNewPageLinked ) {
+        if ( oldPageNode != null && !pfc.isPageInAnyFacesConfig(oldName) && !isNewPageLinked ) {
             LOGGER.finest("CASE 1: OldPage is not null and does not exist in the facesconfig anymore.  This is the firsttime the new page is linked.");
             FileObject fileObj = pfc.getWebFolder().getFileObject(newName);
             if ( fileObj != null && pfc.containsWebFile(fileObj) ){
@@ -172,10 +172,10 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
             } else {
                 pfc.changeToAbstractNode(oldPageNode, newName);
             }
-        }else if ( oldPageNode == null && !pfc.isPageInFacesConfig(oldName)) {
+        }else if ( oldPageNode == null && !pfc.isPageInAnyFacesConfig(oldName)) {
             //This means that oldPage has already been removed.  Do nothing.
             LOGGER.finest("CASE 2: OldPage was removed before.");
-        }else if ( navCase != null && pfc.isPageInFacesConfig(oldName)) {
+        }else if ( navCase != null && pfc.isPageInAnyFacesConfig(oldName)) {
             LOGGER.finest("CASE 3: NavCase is not null");
             NavigationCaseEdge newCaseEdge = null;
             NavigationCaseEdge oldCaseEdge = null;
@@ -189,7 +189,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
             //                pfc.removePageName2Node(oldPageNode, true);
             //                view.validateGraph();
             //            }
-        } else if ( navRule != null && pfc.isPageInFacesConfig(oldName) ) {
+        } else if ( navRule != null && pfc.isPageInAnyFacesConfig(oldName) ) {
             LOGGER.finest("CASE 4: NavRule is not null.");
             List<NavigationCase> navCases = navRule.getNavigationCases();
             pfc.putNavRule2String(navRule, FacesModelUtility.getViewIdFiltiered(newName));
@@ -203,7 +203,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
                 pfc.putNavCase2NavCaseEdge(navCase, newCaseEdge);
                 navigationCaseEdgeEventHandler( newCaseEdge, oldCaseEdge);
             }
-
+            
         }else {
             LOGGER.finest("CASE 5: Setup Graph");
             setupGraph(ev);
@@ -287,19 +287,29 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
                 view.removeEdge(oldCaseEdge);
                 
                 String toPage = oldCaseEdge.getToViewId();
-                if( toPage != null ) {
-                    Page pageNode = pfc.getPageName2Page(toPage);
-                    if( pageNode != null && !pfc.isPageInFacesConfig(toPage)){
-                        if( !pageNode.isDataNode() || pfc.isCurrentScope(PageFlowUtilities.Scope.SCOPE_FACESCONFIG)){
-                            view.removeNodeWithEdges(pageNode);
-                            pfc.removePageName2Page(pageNode,true);
-                            view.validateGraph();
-                        }
+                removePageIfNoReference(toPage);
+            }
+        }
+        view.validateGraph();
+    }
+    
+    private final void removePageIfNoReference(String page) {
+        if( page != null ){
+            Page pageNode = pfc.getPageName2Page(page);
+            if( pageNode != null && !pfc.isPageInAnyFacesConfig(page)){
+                if( !pageNode.isDataNode() || pfc.isCurrentScope(PageFlowUtilities.Scope.SCOPE_FACESCONFIG)){
+                    if ( pfc.isCurrentScope(PageFlowUtilities.Scope.SCOPE_ALL_FACESCONFIG)  && !pfc.isPageInAnyFacesConfig(page)) {
+                        view.removeNodeWithEdges(pageNode);
+                        pfc.removePageName2Page(pageNode, true);
+                        view.validateGraph();
+                    } else if ( !pfc.isCurrentScope(PageFlowUtilities.Scope.SCOPE_ALL_FACESCONFIG)  ) {
+                        view.removeNodeWithEdges(pageNode);
+                        pfc.removePageName2Page(pageNode, true);
+                        view.validateGraph();
                     }
                 }
             }
         }
-        view.validateGraph();
     }
     
     
@@ -307,18 +317,8 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
         //This has side effects in PageFlowNode destroy.
         //Because it does not consistantly work, I can't account for reactions.
         if( myOldRule != null ){
-            String fromPage = pfc.removeNavRule2String(myOldRule);
-            
-            if( fromPage != null ){
-                Page pageNode = pfc.getPageName2Page(fromPage);
-                if( pageNode != null && !pfc.isPageInFacesConfig(fromPage)){
-                    if( !pageNode.isDataNode() || pfc.isCurrentScope(PageFlowUtilities.Scope.SCOPE_FACESCONFIG)){
-                        view.removeNodeWithEdges(pageNode);
-                        pfc.removePageName2Page(pageNode, true);
-                        view.validateGraph();
-                    }
-                }
-            }
+            String fromPage = pfc.removeNavRule2String(myOldRule);            
+            removePageIfNoReference(fromPage);
         }
         if( myNewRule != null ){
             pfc.putNavRule2String(myNewRule, FacesModelUtility.getFromViewIdFiltered(myNewRule));

@@ -106,7 +106,7 @@ public class WebFolderListener extends FileChangeAdapter{
         
         Page oldNode = pfc.getPageName2Page(pageDisplayName);
         if( oldNode != null ) {
-            if( pfc.isPageInFacesConfig(oldNode.getDisplayName()) ) {
+            if( pfc.isPageInAnyFacesConfig(oldNode.getDisplayName()) ) {
                 //                Node tmpNode = new AbstractNode(Children.LEAF);
                 //                tmpNode.setName(pageDisplayName);
                 //                oldNode.replaceWrappedNode(tmpNode);
@@ -228,7 +228,7 @@ public class WebFolderListener extends FileChangeAdapter{
             
             
             //Figure out what to do with old node.
-            if (pfc.isPageInFacesConfig(oldDisplayName)){
+            if (pfc.isPageInAnyFacesConfig(oldDisplayName)){
                 pfc.changeToAbstractNode(oldNode, oldDisplayName);
             } else if ( oldNode != null ){
                 view.removeNodeWithEdges(oldNode);
@@ -237,7 +237,7 @@ public class WebFolderListener extends FileChangeAdapter{
             abstractNode.replaceWrappedNode(newNodeDelegate);
             view.resetNodeWidget(abstractNode, true);
         } else if ( oldNode != null ){
-            if( pfc.isPageInFacesConfig(oldDisplayName) ){
+            if( pfc.isPageInAnyFacesConfig(oldDisplayName) ){
                 pfc.changeToAbstractNode(oldNode, oldDisplayName);
                 if( pfc.isCurrentScope(PageFlowUtilities.Scope.SCOPE_PROJECT) ) {
                     Page newNode = pfc.createPageFlowNode(newNodeDelegate);

@@ -273,11 +273,5 @@ public final class NavigationCaseEdge extends PageFlowSceneElement  {
         
     }
     
-    private boolean modifiable = true;
-    public boolean isModifiable () {
-        return modifiable;
-    } 
-    public void setModifiable(boolean modifiable ){
-        this.modifiable = modifiable;
-    }
+
 }

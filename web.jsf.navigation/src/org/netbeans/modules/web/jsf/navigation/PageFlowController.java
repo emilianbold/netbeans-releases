@@ -57,7 +57,9 @@ import org.netbeans.modules.web.jsf.navigation.NavigationCaseEdge;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import java.util.*;
+import java.util.Map.Entry;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -712,20 +714,28 @@ public class PageFlowController {
     }
     
     
-    public boolean isPageInFacesConfig(String name){
-        List<NavigationRule> rules = configModel.getRootComponent().getNavigationRules();
-        Collection<String> pagesInConfig = getFacesConfigPageNames(rules);
-        return pagesInConfig.contains(name);
+    public boolean isPageInAnyFacesConfig(String name){
+        WebModule webModule = WebModule.getWebModule(getWebFolder());
+        FileObject[] configFiles = ConfigurationUtils.getFacesConfigFiles(webModule);
+        for( FileObject aConfigFile : configFiles ){
+            JSFConfigModel aConfigModel = ConfigurationUtils.getConfigModel(aConfigFile,true);
+            List<NavigationRule> rules = aConfigModel.getRootComponent().getNavigationRules();
+            Collection<String> pagesInConfig = getFacesConfigPageNames(rules);
+            if( pagesInConfig.contains(name)){
+                return true; /* Return as soon as you find one. */
+            }
+        }
+        return false;
     }
     
-    //    public boolean isNavCaseInFacesConfig(NavigationCaseEdge navEdge ){
-    //        NavigationCase navCase = getNavCase2NavCaseEdge(navEdge);
-    //        JSFConfigComponent navRule = navCase.getParent();
-    //        if ( configModel.getRootComponent().getNavigationRules().contains(navRule) ) {
-    //            return true;
-    //        }
-    //        return false;
-    //    }
+    public boolean isNavCaseInFacesConfig(NavigationCaseEdge navEdge ){
+        NavigationCase navCase = getNavCase2NavCaseEdge(navEdge);
+        JSFConfigComponent navRule = navCase.getParent();
+        if ( configModel.getRootComponent().getNavigationRules().contains(navRule) ) {
+            return true;
+        }
+        return false;
+    }
     
     public void changeToAbstractNode(Page oldNode, String displayName  ) {
         //1. Make Old Node an abstract node
@@ -781,15 +791,15 @@ public class PageFlowController {
         return navCase2NavCaseEdge.get(navCase);
     }
     
-    //    private final NavigationCase getNavCase2NavCaseEdge( NavigationCaseEdge navEdge){
-    //        Set<Entry<NavigationCase,NavigationCaseEdge>> entries = navCase2NavCaseEdge.entrySet();
-    //        for( Entry entry : entries ){
-    //            if( entry.getValue().equals(navEdge)){
-    //                return (NavigationCase) entry.getKey();
-    //            }
-    //        }
-    //        return null;
-    //    }
+    private final NavigationCase getNavCase2NavCaseEdge( NavigationCaseEdge navEdge){
+        Set<Entry<NavigationCase,NavigationCaseEdge>> entries = navCase2NavCaseEdge.entrySet();
+        for( Entry entry : entries ){
+            if( entry.getValue().equals(navEdge)){
+                return (NavigationCase) entry.getKey();
+            }
+        }
+        return null;
+    }
     
     public final NavigationCaseEdge removeNavCase2NavCaseEdge(NavigationCase navCase ){
         return navCase2NavCaseEdge.remove(navCase);

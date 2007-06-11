@@ -159,7 +159,7 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
         
         String oldDisplayName = getDisplayName();
         try {
-            if( !pc.isPageInFacesConfig(oldDisplayName) ) {
+            if( !pc.isPageInAnyFacesConfig(oldDisplayName) ) {
                 original.setName(s);
             } else {
                 renaming = true;
@@ -209,7 +209,7 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
      */
     @Override
     public boolean canRename() {
-        return true;
+        return isModifiable();
     }
     
     @Override

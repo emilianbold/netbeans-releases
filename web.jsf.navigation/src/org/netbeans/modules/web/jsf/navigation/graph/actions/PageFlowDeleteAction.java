@@ -12,6 +12,8 @@ package org.netbeans.modules.web.jsf.navigation.graph.actions;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -19,6 +21,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.web.jsf.navigation.NavigationCaseEdge;
+import org.netbeans.modules.web.jsf.navigation.Page;
 import org.netbeans.modules.web.jsf.navigation.PageFlowUtilities;
 import org.netbeans.modules.web.jsf.navigation.Pin;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
@@ -45,6 +48,11 @@ public class PageFlowDeleteAction extends AbstractAction{
         this.scene = scene;
     }
     
+    /* These are edges that do not exist in the local facesConfig. */
+    private final Collection<NavigationCaseEdge> thoseEdges = new ArrayList();
+    
+    /* These are edges that exist in the local facesConfig. */
+    private final Collection<NavigationCaseEdge> theseEdges = new ArrayList();
     
     @Override
     public boolean isEnabled() {
@@ -59,9 +67,33 @@ public class PageFlowDeleteAction extends AbstractAction{
             if(!( selectedObj instanceof PageFlowSceneElement )  ){
                 return false;
             }
+            PageFlowSceneElement element = (PageFlowSceneElement)selectedObj;
             /* Can usually assume the case is in the config file unless we are dealing with the SCOPE_ALL_FACESCONFIG. */
-            if( selectedObj instanceof NavigationCaseEdge && !((NavigationCaseEdge)selectedObj).isModifiable()) {
+            if( !element.isModifiable()) {
+                return false;
+            }
+            
+            if( scene.getPageFlowView().getPageFlowController().isCurrentScope(PageFlowUtilities.Scope.SCOPE_ALL_FACESCONFIG) &&
+                    element instanceof Page ){
+                /* These are edges in the local faces config */
+                thoseEdges.clear();
+                theseEdges.clear();
+                
+                Collection<NavigationCaseEdge> allEdges = new ArrayList();
+                Collection<Pin> pins = scene.getNodePins((Page)element);
+                for( Pin pin : pins ){
+                    allEdges.addAll(scene.findPinEdges(pin, true, true));
+                }
+                for ( NavigationCaseEdge edge : allEdges ){
+                    if ( edge.isModifiable() ) {
+                        theseEdges.add(edge);
+                    } else {
+                        thoseEdges.add(edge);
+                    }
+                }
+                if( theseEdges.size() == 0 ){
                     return false;
+                }
             }
         }
         
@@ -97,10 +129,10 @@ public class PageFlowDeleteAction extends AbstractAction{
         for( Object selectedObj : selectedObjects ){
             if( selectedObj instanceof PageFlowSceneElement ){
                 if( scene.isEdge(selectedObj) ){
-                    assert !scene.isPin(selectedObj);                    
+                    assert !scene.isPin(selectedObj);
                     selectedEdges.add((NavigationCaseEdge)selectedObj);
                 } else {
-                    assert scene.isNode(selectedObj) || scene.isPin(selectedObj);                    
+                    assert scene.isNode(selectedObj) || scene.isPin(selectedObj);
                     selectedNonEdges.add((PageFlowSceneElement)selectedObj);
                 }
             }
@@ -110,9 +142,9 @@ public class PageFlowDeleteAction extends AbstractAction{
         deleteNodesList.addAll(selectedEdges);
         deleteNodesList.addAll(selectedNonEdges);
         
-//        for( Object selectedObj : nonEdgeSelectedObjects ){
-//            deleteNodesList.add((PageFlowSceneElement)selectedObj);
-//        }
+        //        for( Object selectedObj : nonEdgeSelectedObjects ){
+        //            deleteNodesList.add((PageFlowSceneElement)selectedObj);
+        //        }
         deleteNodes(deleteNodesList);
         
     }
@@ -131,8 +163,21 @@ public class PageFlowDeleteAction extends AbstractAction{
                                 updateSourcePins((NavigationCaseEdge)deleteNode);
                             }
                             
-                            
-                            deleteNode.destroy();
+                            if( scene.getPageFlowView().getPageFlowController().isCurrentScope(PageFlowUtilities.Scope.SCOPE_ALL_FACESCONFIG)){
+                                if( thoseEdges.size() == 0 ) {
+                                    deleteNode.destroy();
+                                } else {
+                                    for( NavigationCaseEdge edge : theseEdges ){
+                                        if ( scene.findWidget(edge) != null ){                                            
+                                            updateSourcePins(edge);
+                                            edge.destroy();
+                                        }
+                                    }
+                                }
+                                thoseEdges.clear();
+                            } else {
+                                deleteNode.destroy();
+                            }
                         }
                     }
                 } catch (IOException ex) {
