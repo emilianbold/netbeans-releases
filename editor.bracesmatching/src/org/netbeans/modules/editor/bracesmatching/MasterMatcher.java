@@ -87,6 +87,12 @@ public final class MasterMatcher {
         AttributeSet matchedColoring, 
         AttributeSet mismatchedColoring
     ) {
+        assert document != null : "The document parameter must not be null"; //NOI18N
+        assert highlights != null : "The highlights parameter must not be null"; //NOI18N
+        assert matchedColoring != null : "The matchedColoring parameter must not be null"; //NOI18N
+        assert mismatchedColoring != null : "The mismatchedColoring parameter must not be null"; //NOI18N
+        assert caretOffset >= 0 : "The caretOffset parameter must be >= 0"; //NOI18N
+        
         synchronized (LOCK) {
             Object allowedSearchDirection = getAllowedDirection();
             Object caretBias = getCaretBias();
@@ -126,6 +132,10 @@ public final class MasterMatcher {
         Caret caret,
         boolean select
     ) {
+        assert document != null : "The document parameter must not be null"; //NOI18N
+        assert caret != null : "The caret parameter must not be null"; //NOI18N
+        assert caretOffset >= 0 : "The caretOffset parameter must be >= 0"; //NOI18N
+        
         RequestProcessor.Task waitFor = null;
         
         synchronized (LOCK) {
@@ -405,6 +415,15 @@ public final class MasterMatcher {
             }
 
             if (Thread.currentThread().isInterrupted()) {
+                return;
+            }
+            
+            if (caretOffset > document.getLength()) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("Invalid offset, braces matching request ignored. " + //NOI18N
+                        "Offset = " + caretOffset + //NOI18N
+                        ", doc.getLength() = " + document.getLength()); //NOI18N
+                }
                 return;
             }
             

@@ -29,6 +29,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.SimpleAttributeSet;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeEvent;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
@@ -72,8 +73,10 @@ public class BracesMatchHighlighting extends AbstractHighlightsContainer
 
         // Load the colorings
         FontColorSettings fcs = MimeLookup.getLookup(mimePath).lookup(FontColorSettings.class);
-        this.bracesMatchColoring = fcs.getFontColors(BRACES_MATCH_COLORING);
-        this.bracesMismatchColoring = fcs.getFontColors(BRACES_MISMATCH_COLORING);
+        AttributeSet match = fcs.getFontColors(BRACES_MATCH_COLORING);
+        AttributeSet mismatch = fcs.getFontColors(BRACES_MISMATCH_COLORING);
+        this.bracesMatchColoring = match != null ? match : SimpleAttributeSet.EMPTY;
+        this.bracesMismatchColoring = mismatch != null ? mismatch : SimpleAttributeSet.EMPTY;
         
         // Create and hook up the highlights bag
         this.bag = new OffsetsBag(document, true);
