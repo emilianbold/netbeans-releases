@@ -21,6 +21,8 @@ package org.netbeans.modules.j2ee.ejbjarproject.test;
 
 import java.beans.PropertyVetoException;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -204,6 +206,52 @@ public final class TestUtil extends ProxyLookup {
      */
     public static void notifyDeleted(Project p) {
         ((TestProject)p).state.notifyDeleted();
+    }
+
+    /**
+     * Copies content of "src" directory to "tgt" directory.
+     * 
+     **/
+    public static void copyDir(File src,File tgt) throws IOException {
+        if (src.isDirectory()) {
+            if (!tgt.exists()) {
+                tgt.mkdir();
+            }
+            
+            String[] dirList = src.list();
+            for (int i=0; i < dirList.length; i++) {
+                copyDir(new File(src, dirList[i]),
+                        new File(tgt, dirList[i]));
+            }
+        } else {
+            InputStream is = new FileInputStream(src);
+            OutputStream os = new FileOutputStream(tgt);
+            byte[] buffer = new byte[3 * 1024]; // 3 KB buffer
+            int len = -1;
+            try {
+                len = is.read(buffer) ;
+                while (len  > 0) {
+                    os.write(buffer, 0, len);
+                    len = is.read(buffer) ;
+                }
+            }finally {
+                if (is != null){
+                    try {
+                        is.close();
+                    } catch (Exception ex){
+                        // log
+                    }
+                }
+                
+                if (os != null){
+                    try {
+                        os.close();
+                    } catch (Exception ex){
+                        // log
+                    }
+                }
+            }
+        }
     }
     
     /**

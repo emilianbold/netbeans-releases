@@ -237,7 +237,7 @@ public final class TestUtil extends ProxyLookup {
      */
     public static String registerSunAppServer(NbTestCase test) throws Exception {
         return registerSunAppServer(test, new Object[0]);
-}
+    }
     
     public static String registerSunAppServer(NbTestCase test, Object[] additionalLookupItems) throws Exception {
         String oldNbHome = System.getProperty("netbeans.home"); // NOI18N
@@ -285,6 +285,48 @@ public final class TestUtil extends ProxyLookup {
         return serverID;
     }
 
+    public static void copyDir(File src,File tgt) throws IOException {
+        if (src.isDirectory()) {
+            if (!tgt.exists()) {
+                tgt.mkdir();
+            }
+            
+            String[] dirList = src.list();
+            for (int i=0; i < dirList.length; i++) {
+                copyDir(new File(src, dirList[i]), 
+                        new File(tgt, dirList[i]));
+            }
+        } else {
+            InputStream is = new FileInputStream(src);
+            OutputStream os = new FileOutputStream(tgt);
+            byte[] buffer = new byte[3 * 1024]; // 3 KB buffer
+            int len = -1;
+            try {
+                len = is.read(buffer) ;
+                while (len  > 0) {
+                    os.write(buffer, 0, len);
+                    len = is.read(buffer) ;                
+                }
+            }finally {
+                if (is != null){
+                    try {
+                        is.close();                        
+                    } catch (Exception ex){
+                        // log
+                    }
+                }
+
+                if (os != null){
+                    try {
+                        os.close();
+                    } catch (Exception ex){
+                        // log
+                    }
+                }
+            }
+        }
+    }    
+    
     private static File extractAppSrv(File destDir, File archiveFile) throws IOException {
         ZipInputStream zis = null;
         BufferedOutputStream dest = null;
