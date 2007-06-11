@@ -556,7 +556,6 @@ public class SecurityRoleMappingPanel extends SectionNodeInnerPanel
         Dimension minSize = getMinimumSize();
         Dimension maxSize = getMaximumSize();
         int preferredWidth = Math.min(Math.max(200, maxSize.width), minSize.width);
-        System.out.println("preferredWidth = " + preferredWidth);
         return new Dimension(preferredWidth, minSize.height);
     }
 
