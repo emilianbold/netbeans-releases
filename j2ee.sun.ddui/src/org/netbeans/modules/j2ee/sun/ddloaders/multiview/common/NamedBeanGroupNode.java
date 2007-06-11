@@ -35,6 +35,8 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.common.EjbRef;
+import org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestination;
+import org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef;
 import org.netbeans.modules.j2ee.sun.dd.api.common.ResourceEnvRef;
 import org.netbeans.modules.j2ee.sun.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping;
@@ -72,6 +74,9 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
     public static final String STANDARD_SERVICE_REF_NAME = ServiceRef.SERVICE_REF_NAME; // e.g. "ServiceRefName"
     public static final String STANDARD_ROLE_NAME = SecurityRoleMapping.ROLE_NAME; // e.g. "RoleName"
     public static final String STANDARD_WEBSERVICE_DESC_NAME = WebserviceDescription.WEBSERVICE_DESCRIPTION_NAME; // e.g. "WebserviceDescriptionName"
+    public static final String STANDARD_MSGDEST_NAME = MessageDestination.MESSAGE_DESTINATION_NAME; // e.g. "MessageDestination"
+    public static final String STANDARD_MSGDEST_REF_NAME = MessageDestinationRef.MESSAGE_DESTINATION_REF_NAME; // e.g. "MessageDestinationRef"
+    
     
     protected CommonDDBean commonDD;
     private String beanNameProperty;
