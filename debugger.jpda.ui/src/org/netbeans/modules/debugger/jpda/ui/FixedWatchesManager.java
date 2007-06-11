@@ -19,7 +19,10 @@
 
 package org.netbeans.modules.debugger.jpda.ui;
 
+import javax.swing.Action;
 import javax.swing.KeyStroke;
+import java.util.*;
+
 import org.netbeans.spi.viewmodel.*;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.*;
@@ -27,8 +30,7 @@ import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.openide.util.NbBundle;
 
-import javax.swing.*;
-import java.util.*;
+import org.netbeans.modules.debugger.jpda.ui.models.WatchesNodeModel;
 
 /**
  * Manages lifecycle and presentation of fixed watches. Should be
@@ -47,7 +49,7 @@ NodeActionsProviderFilter, NodeModelFilter {
             ("CTL_DeleteFixedWatch_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
-                return true;
+                return !WatchesNodeModel.isEmptyWatch(node);
             }
             public void perform (Object[] nodes) {
                 int i, k = nodes.length;
@@ -72,7 +74,7 @@ NodeActionsProviderFilter, NodeModelFilter {
             ("CTL_CreateFixedWatch_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
-                return true;
+                return !WatchesNodeModel.isEmptyWatch(node);
             }
             public void perform (Object[] nodes) {
                 int i, k = nodes.length;

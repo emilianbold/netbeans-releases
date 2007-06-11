@@ -50,7 +50,7 @@ public class WatchesNodeModel extends VariablesNodeModel implements ExtendedNode
         super (lookupProvider);
     }
     
-    static boolean isEmptyWatch(Object node) {
+    public static boolean isEmptyWatch(Object node) {
         return "EmptyWatch".equals(node.getClass().getSimpleName());
     }
     
@@ -58,15 +58,19 @@ public class WatchesNodeModel extends VariablesNodeModel implements ExtendedNode
         if (o == TreeModel.ROOT)
             return NbBundle.getBundle (WatchesNodeModel.class).
                 getString ("CTL_WatchesModel_Column_Name_Name");
-        if (o instanceof JPDAWatch)
+        if (o instanceof JPDAWatch) {
+            /*if (isEmptyWatch(o)) {
+                return "<html><font color=\"#808080\">&lt;Enter new watch&gt;</font></html>";
+            }*/
             return ((JPDAWatch) o).getExpression ();
+        }
         return super.getDisplayName (o);
     }
     
     protected String getShortDescriptionSynch (Object o) {
         if (o instanceof JPDAWatch) {
             if (isEmptyWatch(o)) {
-                return "Write or paste a new watch expression.";
+                return NbBundle.getMessage(WatchesNodeModel.class, "TTP_NewWatch");
             }
             JPDAWatch w = (JPDAWatch) o;
             boolean evaluated;
@@ -98,13 +102,14 @@ public class WatchesNodeModel extends VariablesNodeModel implements ExtendedNode
     
     public String getIconBase (Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT) {
+            return WATCH;
+        }
+        if (o instanceof JPDAWatch) {
             if (isEmptyWatch(o)) {
                 return null;
             }
             return WATCH;
         }
-        if (o instanceof JPDAWatch)
-            return WATCH;
         return super.getIconBase (o);
     }
 
