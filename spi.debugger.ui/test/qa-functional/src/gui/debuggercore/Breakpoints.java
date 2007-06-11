@@ -424,10 +424,10 @@ public class Breakpoints extends JellyTestCase {
     public void testMethodBreakpointPrefilledConstructor() throws Throwable {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(53);
-            new JComboBoxOperator(dialog, 0).selectItem("Method");
+            setBreakpointType(dialog, "Method");
             assertEquals("Package Name was not set to correct value.", "examples.advanced", new JTextFieldOperator(dialog, 1).getText());
             assertEquals("Class Name was not set to correct value.", "MemoryView", new JTextFieldOperator(dialog, 2).getText());
-            assertEquals("Method Name was not set to correct value.", "<init>", new JTextFieldOperator(dialog, 3).getText());
+            assertEquals("Method Name was not set to correct value.", "MemoryView ()", new JTextFieldOperator(dialog, 3).getText());
             dialog.cancel();
         } catch (Throwable th) {
             try {
@@ -446,10 +446,10 @@ public class Breakpoints extends JellyTestCase {
     public void testMethodBreakpointPrefilledMethod() throws Throwable {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(92);
-            new JComboBoxOperator(dialog, 0).selectItem("Method");
+            setBreakpointType(dialog, "Method");
             assertEquals("Package Name was not set to correct value.", "examples.advanced", new JTextFieldOperator(dialog, 1).getText());
             assertEquals("Class Name was not set to correct value.", "MemoryView", new JTextFieldOperator(dialog, 2).getText());
-            assertEquals("Method Name was not set to correct value.", "updateStatus", new JTextFieldOperator(dialog, 3).getText());
+            assertEquals("Method Name was not set to correct value.", "updateStatus ()", new JTextFieldOperator(dialog, 3).getText());
             dialog.cancel();
         } catch (Throwable th) {
             try {
@@ -468,7 +468,7 @@ public class Breakpoints extends JellyTestCase {
     public void testMethodBreakpointCreation() throws Throwable {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(92);
-            new JComboBoxOperator(dialog, 0).selectItem("Method");
+            setBreakpointType(dialog, "Method");
             dialog.ok();
             Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
             JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
@@ -490,7 +490,7 @@ public class Breakpoints extends JellyTestCase {
     public void testMethodBreakpointFunctionalityInPrimaryClass() throws Throwable {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(92);
-            new JComboBoxOperator(dialog, 0).selectItem("Method");
+            setBreakpointType(dialog, "Method");
             dialog.ok();
             Utilities.startDebugger();
             Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:92", 0);
@@ -511,7 +511,7 @@ public class Breakpoints extends JellyTestCase {
     public void testMethodBreakpointFunctionalityInSecondClass() throws Throwable {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(154);
-            new JComboBoxOperator(dialog, 0).selectItem("Method");
+            setBreakpointType(dialog, "Method");
             dialog.ok();
             Utilities.startDebugger();
             Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:154", 0);
@@ -532,7 +532,7 @@ public class Breakpoints extends JellyTestCase {
     public void testMethodBreakpointFunctionalityOnAllMethods() throws Throwable {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(37);
-            new JComboBoxOperator(dialog, 0).selectItem("Method");
+            setBreakpointType(dialog, "Method");
             dialog.ok();
             Utilities.startDebugger();
             int lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:39", 0);
@@ -562,13 +562,13 @@ public class Breakpoints extends JellyTestCase {
     public void testMethodBreakpointFunctionalityOnExit() throws Throwable {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(54);
-            new JComboBoxOperator(dialog, 0).selectItem("Method");
+            setBreakpointType(dialog, "Method");
             new JCheckBoxOperator(dialog, 1).setSelected(true);  //method entry
             new JCheckBoxOperator(dialog, 2).setSelected(true);  //method exit
             dialog.ok();
             
             dialog = Utilities.newBreakpoint(102);
-            new JComboBoxOperator(dialog, 0).selectItem("Method");
+            setBreakpointType(dialog, "Method");
             new JCheckBoxOperator(dialog, 1).setSelected(false);  //method entry
             new JCheckBoxOperator(dialog, 2).setSelected(true);  //method exit
             dialog.ok();
@@ -593,7 +593,7 @@ public class Breakpoints extends JellyTestCase {
     public void testConditionalMethodBreakpointFunctionality() throws Throwable {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(104);
-            new JComboBoxOperator(dialog, 0).selectItem("Method");
+            setBreakpointType(dialog, "Method");
             new JTextFieldOperator(dialog, 0).setText("UPDATE_TIME >= 1001");
             
             dialog.ok();
@@ -619,7 +619,7 @@ public class Breakpoints extends JellyTestCase {
     public void testMethodBreakpointsValidation() throws Throwable {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(104);
-            new JComboBoxOperator(dialog, 0).selectItem("Method");
+            setBreakpointType(dialog, "Method");
             String wrongname = "wrong";
             new JTextFieldOperator(dialog, 3).setText(wrongname);
             dialog.ok();
@@ -627,7 +627,7 @@ public class Breakpoints extends JellyTestCase {
             Utilities.startDebugger();
             int lines = Utilities.waitDebuggerConsole("Not able to submit breakpoint MethodBreakpoint [examples.advanced.MemoryView]."+wrongname, 0);
             dialog = Utilities.newBreakpoint(104);
-            new JComboBoxOperator(dialog, 0).selectItem("Method");
+            setBreakpointType(dialog, "Method");
             wrongname = "wrong2";
             new JTextFieldOperator(dialog, 3).setText(wrongname);
             dialog.ok();
@@ -649,8 +649,8 @@ public class Breakpoints extends JellyTestCase {
     public void testClassBreakpointPrefilledInClass() throws Throwable {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(27);
-            if (!new JComboBoxOperator(dialog, 0).getSelectedItem().equals("Class"))
-                new JComboBoxOperator(dialog, 0).selectItem("Class");
+            if (!new JComboBoxOperator(dialog, 1).getSelectedItem().equals("Class"))
+                setBreakpointType(dialog, "Class");
             assertEquals("Package Name was not set to correct value.", "", new JTextFieldOperator(dialog, 0).getText());
             assertEquals("Class Name was not set to correct value.", "", new JTextFieldOperator(dialog, 1).getText());
             dialog.cancel();
@@ -671,8 +671,8 @@ public class Breakpoints extends JellyTestCase {
     public void testClassBreakpointPrefilledInInitializer() throws Throwable {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(38);
-            if (!new JComboBoxOperator(dialog, 0).getSelectedItem().equals("Class"))
-                new JComboBoxOperator(dialog, 0).selectItem("Class");
+            if (!new JComboBoxOperator(dialog, 1).getSelectedItem().equals("Class"))
+                setBreakpointType(dialog, "Class");
             assertEquals("Package Name was not set to correct value.", "examples.advanced", new JTextFieldOperator(dialog, 0).getText());
             assertEquals("Class Name was not set to correct value.", "MemoryView", new JTextFieldOperator(dialog, 1).getText());
             dialog.cancel();
@@ -693,8 +693,8 @@ public class Breakpoints extends JellyTestCase {
     public void testClassBreakpointPrefilledInConstructor() throws Throwable {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(45);
-            if (!new JComboBoxOperator(dialog, 0).getSelectedItem().equals("Class"))
-                new JComboBoxOperator(dialog, 0).selectItem("Class");
+            if (!new JComboBoxOperator(dialog, 1).getSelectedItem().equals("Class"))
+                setBreakpointType(dialog, "Class");
             assertEquals("Package Name was not set to correct value.", "examples.advanced", new JTextFieldOperator(dialog, 0).getText());
             assertEquals("Class Name was not set to correct value.", "MemoryView", new JTextFieldOperator(dialog, 1).getText());
             dialog.cancel();
@@ -715,8 +715,8 @@ public class Breakpoints extends JellyTestCase {
     public void testClassBreakpointPrefilledInMethod() throws Throwable {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(80);
-            if (!new JComboBoxOperator(dialog, 0).getSelectedItem().equals("Class"))
-                new JComboBoxOperator(dialog, 0).selectItem("Class");
+            if (!new JComboBoxOperator(dialog, 1).getSelectedItem().equals("Class"))
+                setBreakpointType(dialog, "Class");
             assertEquals("Package Name was not set to correct value.", "examples.advanced", new JTextFieldOperator(dialog, 0).getText());
             assertEquals("Class Name was not set to correct value.", "MemoryView", new JTextFieldOperator(dialog, 1).getText());
             dialog.cancel();
@@ -737,8 +737,8 @@ public class Breakpoints extends JellyTestCase {
     public void testClassBreakpointPrefilledInSecondClass() throws Throwable {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(154);
-            if (!new JComboBoxOperator(dialog, 0).getSelectedItem().equals("Class"))
-                new JComboBoxOperator(dialog, 0).selectItem("Class");
+            if (!new JComboBoxOperator(dialog, 1).getSelectedItem().equals("Class"))
+                setBreakpointType(dialog, "Class");
             assertEquals("Package Name was not set to correct value.", "examples.advanced", new JTextFieldOperator(dialog, 0).getText());
             assertEquals("Class Name was not set to correct value.", "Helper", new JTextFieldOperator(dialog, 1).getText());
             dialog.cancel();
@@ -759,7 +759,7 @@ public class Breakpoints extends JellyTestCase {
     public void testClassBreakpointCreation() throws Throwable {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(73);
-            new JComboBoxOperator(dialog, 0).selectItem("Class");
+            setBreakpointType(dialog, "Class");
             dialog.ok();
             Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
             JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
@@ -781,7 +781,7 @@ public class Breakpoints extends JellyTestCase {
     public void testClassBreakpointFunctionalityOnPrimaryClass() throws Throwable {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(73);
-            new JComboBoxOperator(dialog, 0).selectItem("Class");
+            setBreakpointType(dialog, "Class");
             dialog.ok();
             new EventTool().waitNoEvent(500);
             Utilities.startDebugger();
@@ -805,7 +805,7 @@ public class Breakpoints extends JellyTestCase {
     public void testClassBreakpointFunctionalityOnSecondClass() throws Throwable {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(154);
-            new JComboBoxOperator(dialog, 0).selectItem("Class");
+            setBreakpointType(dialog, "Class");
             dialog.ok();
             Utilities.startDebugger();
             int lines = Utilities.waitDebuggerConsole("Thread main stopped.", 0);
@@ -828,7 +828,7 @@ public class Breakpoints extends JellyTestCase {
     public void testClassBreakpointFunctionalityWithFilter() throws Throwable {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(73);
-            new JComboBoxOperator(dialog, 0).selectItem("Class");
+            setBreakpointType(dialog, "Class");
             new JTextFieldOperator(dialog, 1).setText("*");
             dialog.ok();
             
@@ -862,7 +862,7 @@ public class Breakpoints extends JellyTestCase {
     public void testFieldBreakpointPrefilledValues() throws Throwable {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(36, 36);
-            new JComboBoxOperator(dialog, 0).selectItem("Field");
+            setBreakpointType(dialog, "Field");
             assertEquals("Package Name was not set to correct value.", "examples.advanced", new JTextFieldOperator(dialog, 1).getText());
             assertEquals("Class Name was not set to correct value.", "MemoryView", new JTextFieldOperator(dialog, 2).getText());
             assertEquals("Field Name was not set to correct value.", "msgMemory", new JTextFieldOperator(dialog, 3).getText());
@@ -884,8 +884,8 @@ public class Breakpoints extends JellyTestCase {
     public void testFieldBreakpointCreation() throws Throwable {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(36, 36);
-            new JComboBoxOperator(dialog, 0).selectItem("Field");
-            new JComboBoxOperator(dialog, 1).selectItem("Field Access");
+            setBreakpointType(dialog, "Field");
+            new JComboBoxOperator(dialog, 2).selectItem("Field Access");
             dialog.ok();
             Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
             JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
@@ -907,8 +907,8 @@ public class Breakpoints extends JellyTestCase {
     public void testFieldBreakpointFunctionalityAccess() throws Throwable {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(36, 36);
-            new JComboBoxOperator(dialog, 0).selectItem("Field");
-            new JComboBoxOperator(dialog, 1).selectItem("Field Access");
+            setBreakpointType(dialog, "Field");
+            new JComboBoxOperator(dialog, 2).selectItem("Field Access");
             dialog.ok();
             Utilities.startDebugger();
             Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104.", 0);
@@ -929,8 +929,8 @@ public class Breakpoints extends JellyTestCase {
     public void testFieldBreakpointFunctionalityModification() throws Throwable {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(36, 36);
-            new JComboBoxOperator(dialog, 0).selectItem("Field");
-            new JComboBoxOperator(dialog, 1).selectItem("Field Modification");
+            setBreakpointType(dialog, "Field");
+            new JComboBoxOperator(dialog, 2).selectItem("Field Modification");
             dialog.ok();
             Utilities.startDebugger();
             Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:45", 0);
@@ -948,8 +948,8 @@ public class Breakpoints extends JellyTestCase {
     public void testConditionalFieldBreakpointFunctionality() throws Throwable {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(36, 36);
-            new JComboBoxOperator(dialog, 0).selectItem("Field");
-            new JComboBoxOperator(dialog, 1).selectItem("Field Access");
+            setBreakpointType(dialog, "Field");
+            new JComboBoxOperator(dialog, 2).selectItem("Field Access");
             new JTextFieldOperator(dialog, 0).setText("UPDATE_TIME >= 1001");
             dialog.ok();
             
@@ -975,7 +975,7 @@ public class Breakpoints extends JellyTestCase {
     public void testFieldBreakpointsValidation() throws Throwable {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(36, 36);
-            new JComboBoxOperator(dialog, 0).selectItem("Field");
+            setBreakpointType(dialog, "Field");
             String wrongname = "wrongname";
             new JTextFieldOperator(dialog, 3).setText(wrongname);
             dialog.ok();
@@ -983,7 +983,7 @@ public class Breakpoints extends JellyTestCase {
             Utilities.startDebugger();
             int lines = Utilities.waitDebuggerConsole("Not able to submit breakpoint FieldBreakpoint examples.advanced.MemoryView."+wrongname, 0);
             dialog = Utilities.newBreakpoint(36, 36);
-            new JComboBoxOperator(dialog, 0).selectItem("Field");
+            setBreakpointType(dialog, "Field");
             wrongname = "wrongname2";
             new JTextFieldOperator(dialog, 3).setText(wrongname);
             dialog.ok();
@@ -1006,7 +1006,7 @@ public class Breakpoints extends JellyTestCase {
         try {
             new NewBreakpointAction().perform();
             NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-            new JComboBoxOperator(dialog, 0).selectItem("Thread");
+            setBreakpointType(dialog, "Thread");
             dialog.ok();
             Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
             JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
@@ -1029,7 +1029,7 @@ public class Breakpoints extends JellyTestCase {
         try {
             new NewBreakpointAction().perform();
             NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-            new JComboBoxOperator(dialog, 0).selectItem("Thread");
+            setBreakpointType(dialog, "Thread");
             dialog.ok();
             
             Utilities.startDebugger();
@@ -1056,11 +1056,11 @@ public class Breakpoints extends JellyTestCase {
         try {
             new NewBreakpointAction().perform();
             NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-            new JComboBoxOperator(dialog, 0).selectItem("Exception");
+            setBreakpointType(dialog, "Exception");
             
             new JTextFieldOperator(dialog, 2).setText("java.lang");
-            new JComboBoxOperator(dialog, 2).typeText("NullPointerException");
-            new JComboBoxOperator(dialog, 1).selectItem("Caught or Uncaught");
+            new JComboBoxOperator(dialog, 3).typeText("NullPointerException");
+            new JComboBoxOperator(dialog, 2).selectItem("Caught or Uncaught");
             dialog.ok();
             Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
             JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
@@ -1083,10 +1083,10 @@ public class Breakpoints extends JellyTestCase {
         try {
             new NewBreakpointAction().perform();
             NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-            new JComboBoxOperator(dialog, 0).selectItem("Exception");
+            setBreakpointType(dialog, "Exception");
             new JTextFieldOperator(dialog, 2).setText("java.lang");
-            new JComboBoxOperator(dialog, 2).typeText("ClassNotFoundException");
-            new JComboBoxOperator(dialog, 1).selectItem("Caught or Uncaught");
+            new JComboBoxOperator(dialog, 3).typeText("ClassNotFoundException");
+            new JComboBoxOperator(dialog, 2).selectItem("Caught or Uncaught");
             dialog.ok();
             Utilities.startDebugger();
             new ContinueAction().perform();
@@ -1100,5 +1100,10 @@ public class Breakpoints extends JellyTestCase {
             }
             throw th;
         }
+    }
+    
+    protected void setBreakpointType(NbDialogOperator dialog, String type) {
+        new JComboBoxOperator(dialog, 0).selectItem("Java");
+        new JComboBoxOperator(dialog, 1).selectItem(type);
     }
 }
