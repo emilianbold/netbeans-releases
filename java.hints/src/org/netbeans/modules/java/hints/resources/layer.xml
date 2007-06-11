@@ -50,7 +50,8 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="org-netbeans-modules-java-hints-AssignResultToVariable.instance" />
                     <file name="org-netbeans-modules-java-hints-AssignmentToItself.instance" />
                     <file name="org-netbeans-modules-java-hints-MissingHashCode.instance" />                    
-                    <file name="org-netbeans-modules-java-hints-DoubleCheck.instance" />                    
+                    <file name="org-netbeans-modules-java-hints-DoubleCheck.instance" />
+                    <file name="org-netbeans-modules-java-hints-WrongStringComparison.instance" />
                 </folder>    
 
                 <folder name="rules15">
@@ -143,6 +144,30 @@ Microsystems, Inc. All Rights Reserved.
                     </file>
                     <file name="DivisionByZero.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.StandardJavacWarnings.createDivisionByZero" />
+                    </file>
+                </folder>
+
+                <folder name="empty">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>                    
+                    
+                    <file name="EmptyDelegate.instance">
+                        <attr name="nonGUI" boolvalue="true"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.EmptyStatements.createDelegate" />
+                    </file>
+                    <file name="EmptyInBlock.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.EmptyStatements.createBlock" />
+                    </file>
+                    <file name="EmptyFor.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.EmptyStatements.createFor" />
+                    </file>
+                    <file name="EmptyWhile.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.EmptyStatements.createWhile" />
+                    </file>
+                    <file name="EmptyDoWhile.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.EmptyStatements.createDoWhile" />
+                    </file>
+                    <file name="EmptyIf.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.EmptyStatements.createIf" />
                     </file>
                 </folder>
 
