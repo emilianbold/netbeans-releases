@@ -19,12 +19,6 @@
 
 package org.netbeans.modules.j2ee.persistence.dd;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.j2ee.metadata.MetadataUnit;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappings;
-
 /**
  * Provider of model based on persistence_ORM.xsd schema.
  * Provided model is merged representation of metadata defined in both
@@ -35,7 +29,6 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappings;
  */
 public final class ORMMetadata {
     private static final ORMMetadata instance = new ORMMetadata();
-    private Map<MetadataUnit, EntityMappings> annotationDDMap;
     
     private ORMMetadata() {
         // TODO: RETOUCHE
@@ -50,26 +43,6 @@ public final class ORMMetadata {
     public static ORMMetadata getDefault() {
         return instance;
     }
-    
-    /**
-     * Provides root element as defined in persistence_ORM.xsd
-     *
-     * @param mu unit providing ORM metadata defined in annotations and deployment descriptor.
-     * It can be retrieved from {@link PersistenceProvider}
-     * @return root element of schema or null if it doesn't exist for provided
-     * MetadataUnit
-     * @throws java.io.IOException
-     * @see PersistenceProvider
-     */
-    public EntityMappings getRoot(MetadataUnit mu) throws IOException {
-        // TODO: RETOUCHE
-        //        EntityMappings annotationRoot = getAnnotationRoot(mu);
-        //        EntityMappings entityMappings = (EntityMappings) MergedProvider.getDefault().getRoot(annotationRoot, null);
-        //        return entityMappings;
-        return null;
-    }
-    
-    
     
     public boolean isScanInProgress() {
         // TODO: RETOUCHE
