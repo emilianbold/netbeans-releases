@@ -1,0 +1,93 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt. 
+  * 
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ */
+package org.netbeans.modules.mobility.svgcore.composer.actions;
+
+import java.awt.Graphics;
+import java.awt.event.InputEvent;
+import java.awt.event.MouseEvent;
+import org.netbeans.modules.mobility.svgcore.composer.AbstractComposerAction;
+import org.netbeans.modules.mobility.svgcore.composer.ComposerActionFactory;
+import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
+import org.netbeans.modules.mobility.svgcore.composer.SVGObjectOutline;
+import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
+import org.netbeans.modules.mobility.svgcore.view.svg.SVGViewTopComponent;
+import org.openide.util.NbBundle;
+import org.w3c.dom.svg.SVGLocatableElement;
+
+/**
+ *
+ * @author Pavel Benes
+ */
+public class HighlightAction extends AbstractComposerAction {
+    private final SVGObject m_highlighted;
+
+    public HighlightAction(ComposerActionFactory factory, SVGObject highlighted) {
+        super(factory);
+        m_highlighted = highlighted;
+        getScreenManager().getAnimatorView().setToolTipText(getTooltipText());
+        m_highlighted.repaint(SVGObjectOutline.SELECTOR_OVERLAP);
+    }
+
+    public boolean consumeEvent(InputEvent evt) {
+        SceneManager sceneMgr = m_factory.getSceneManager();
+        assert sceneMgr.containsAction(HighlightAction.class);
+ 
+        if ( evt.getID() == MouseEvent.MOUSE_MOVED) {
+            MouseEvent me = (MouseEvent) evt;
+            SVGObject [] objects = sceneMgr.getPerseusController().getObjectsAt(me.getX(), me.getY());
+            if (objects == null || objects.length == 0 || 
+                objects[0] != m_highlighted)  {
+                getScreenManager().getAnimatorView().setToolTipText("");
+                actionCompleted();
+                m_highlighted.repaint(SVGObjectOutline.SELECTOR_OVERLAP);
+            }
+        }
+        return false;
+    }
+
+    public void paint(Graphics g, int x, int y) {
+        if (getScreenManager().getHighlightObject()) {
+            m_highlighted.getOutline().highlight(g, x, y);
+        }
+    }
+    
+    private String getTooltipText() {
+        if (getScreenManager().getShowTooltip()) {
+            SVGLocatableElement elem = m_highlighted.getSVGElement();
+            
+            String prefix = getPerseusController().getSVGDocument().toPrefix( 
+                elem.getNamespaceURI(), elem);
+            if (prefix == null || prefix.length() == 0){
+               prefix = elem.getLocalName();
+            }
+            StringBuilder sb = new StringBuilder();
+            sb.append("<html>");
+            sb.append(NbBundle.getMessage(SVGViewTopComponent.class, "LBL_Type", prefix)); //NOI18N
+            sb.append("<br>"); //NOI18N
+
+            String id = elem.getId();
+            if (id != null){
+                sb.append(NbBundle.getMessage(SVGViewTopComponent.class, "LBL_Id", id)); //NOI18N
+                sb.append("<br>"); //NOI18N
+            }
+            
+            sb.append(getDataObject().getModel().describeElement(
+                      m_highlighted.getActualSelection(), false, true, "<br>")); //NOI18N
+            sb.append("</html>"); //NOI18N
+            return sb.toString();
+        } else {
+            return "";    
+        }
+    }
+}

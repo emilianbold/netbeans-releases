@@ -19,6 +19,10 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.UniFileLoader;
 import org.openide.util.NbBundle;
 
+/**
+ *
+ * @author Pavel Benes
+ */
 public class SVGDataLoader extends UniFileLoader {
     
     public static final String REQUIRED_MIME = "image/svg+xml";

@@ -20,6 +20,10 @@ import java.beans.SimpleBeanInfo;
 import org.openide.loaders.UniFileLoader;
 import org.openide.util.Utilities;
 
+/**
+ *
+ * @author Pavel Benes
+ */
 public class SVGDataLoaderBeanInfo extends SimpleBeanInfo {
     
     public BeanInfo[] getAdditionalBeanInfo() {
@@ -37,6 +41,5 @@ public class SVGDataLoaderBeanInfo extends SimpleBeanInfo {
         } else {
             return null;
         }
-    }
-    
+    }    
 }

@@ -46,7 +46,7 @@ public final class TapPanel extends javax.swing.JPanel {
         setLayout ( new TrivialLayout () );
     }
 
-    private static WeakReference adapRef = null;
+    private static WeakReference<Adap> adapRef = null;
 
     static class Adap extends MouseAdapter implements MouseMotionListener {
         MouseListener other = null;
@@ -84,7 +84,7 @@ public final class TapPanel extends javax.swing.JPanel {
         }
         if ( result == null ) {
             result = new Adap ();
-            adapRef = new WeakReference ( result );
+            adapRef = new WeakReference<Adap>( result );
         }
         return result;
     }

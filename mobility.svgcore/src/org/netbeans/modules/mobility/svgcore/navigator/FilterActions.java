@@ -15,6 +15,7 @@ package org.netbeans.modules.mobility.svgcore.navigator;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JCheckBoxMenuItem;
@@ -50,7 +51,7 @@ public final class FilterActions extends AbstractAction {
     
     public JMenuItem[] createMenuItems () {
         FiltersDescription filtersDesc = filters.getDescription();
-        ArrayList menuItems = new ArrayList();
+        List<JMenuItem> menuItems = new ArrayList<JMenuItem>();
         for (int i = 0; i < filtersDesc.getFilterCount(); i++) {
             String filterName = filtersDesc.getName(i);
             JMenuItem menuItem = new JCheckBoxMenuItem(

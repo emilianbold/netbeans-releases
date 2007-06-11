@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE editor_palette_item PUBLIC "-//NetBeans//Editor Palette Item 1.0//EN" 
+ "http://www.netbeans.org/dtds/editor-palette-item-1_0.dtd">
+
+ <editor_palette_item version="1.0">
+     <body>
+
+     </body>
+     
+     <icon16 urlvalue="org/netbeans/modules/mobility/svgcore/resources/icon16.png" />
+     <icon32 urlvalue="org/netbeans/modules/mobility/svgcore/resources/icon32.png" />
+     
+     <description 
+         localizing-bundle="org.netbeans.modules.mobility.svgcore.Bundle"
+         display-name-key="SVGXML_PALETTE_CLOSEDCURVE_NAME_key"
+         tooltip-key="SVGXML_PALETTE_CLOSEDCURVE_HINT_key" />         
+ </editor_palette_item>
+

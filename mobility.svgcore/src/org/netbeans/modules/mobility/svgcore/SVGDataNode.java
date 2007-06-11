@@ -15,6 +15,10 @@ package org.netbeans.modules.mobility.svgcore;
 import org.openide.loaders.DataNode;
 import org.openide.nodes.Children;
 
+/**
+ *
+ * @author Pavel Benes
+ */
 public class SVGDataNode extends DataNode {
     
     private static final String IMAGE_ICON_BASE = "org/netbeans/modules/mobility/svgcore/resources/svg.png"; //NOI18N

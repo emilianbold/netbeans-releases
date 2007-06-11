@@ -21,15 +21,10 @@
 
 package org.netbeans.modules.mobility.svgcore.util;
 
-import com.sun.perseus.model.ElementNode;
-import com.sun.perseus.model.ModelNode;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.EventListener;
-import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.zip.GZIPInputStream;
 import javax.microedition.m2g.SVGImage;
 import javax.microedition.m2g.ScalableImage;
@@ -42,10 +37,8 @@ import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutionEngine;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -53,18 +46,20 @@ import org.openide.windows.InputOutput;
  * Utility class for derived SVG support components. It provides external editor lunching facility and SVG image loading
  * @author suchys
  */
-public class Util {    
-    /**
-     * Lunches external editor set using options. If the editor is not set or is not set correctly, 
-     * <br> no Exception is thrown but warning dialog is displayed.
-     * @param fo SVG file to be lunched in external editor
-     */
+public class Util {  
+    //public static final String UNIQUE_NODE_ID = "unid";
+    
+    //**
+    // * Lunches external editor set using options. If the editor is not set or is not set correctly, 
+    // * <br> no Exception is thrown but warning dialog is displayed.
+    // * @param fo SVG file to be lunched in external editor
+    // 
     public static void launchExternalEditor(final FileObject fo){
         assert fo != null : "File object is null";
         final InputOutput io = IOProvider.getDefault().getIO(NbBundle.getMessage(Util.class, "LBL_EditedSvgFile", fo.getName()), false); //NOI18N
         ExecutionEngine.getDefault().execute(NbBundle.getMessage(Util.class, "LBL_SvgEditor"), new Runnable() { //NOI18N
             public void run() {
-                String path = SvgcoreSettings.getDefault().getExternalEditorPath();
+                String path = SvgcoreSettings.getExternalEditorPath();
                 if (path == null || path.length() == 0 || !new File(path).exists()){
                     if (path == null || path.length() == 0){
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
@@ -102,6 +97,7 @@ public class Util {
      * @return SVGImage created SVG image
      * @throws IOException if loading failed
      */
+    
     public static SVGImage createSVGImage (FileObject fo, boolean showProgress) throws IOException {
         assert fo != null : "File object is null";
         if (!showProgress){
@@ -111,11 +107,16 @@ public class Util {
         }
     }
 
+    public static SVGImage createSVGImage (InputStream in) throws IOException {
+        return (SVGImage) ScalableImage.createImage(in, null);
+    }
+    
     /**
      * Loads SVG image from the FileObject in other thread
      * @param fo from which to create SVG image
      * @param loadedListener where the events should be dispached
      */
+/*    
     public static void createSVGImageAsync (final FileObject fo, final boolean showProgress, final SVGImageLoadedListener loadedListener ){
         assert fo != null : "File object is null";
         assert loadedListener != null : "Listener is null";
@@ -139,12 +140,12 @@ public class Util {
             }
         });
     }
+*/    
     
     private static SVGImage loadImage(String url) throws IOException {
         return (SVGImage) ScalableImage.createImage(url, null);
     }
     
-
     
     private static SVGImage loadImageWithProgress(FileObject fo) throws IOException {
         ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(Util.class, "MSG_Loading", fo.getNameExt()));
@@ -160,7 +161,7 @@ public class Util {
                     if (pis != null)
                         pis.close();
                 } catch (IOException ioEx){
-                    /*discard*/
+                    //discard
                 }
             }
         } else {
@@ -175,35 +176,37 @@ public class Util {
                     if (pis != null)
                         pis.close();
                 } catch (IOException ioEx){
-                    /*discard*/
+                    // discard
                 }
             }
-        }
-        
-    }
-    
+        }        
+    } 
+ 
+
+/*            
     public static interface SVGImageLoadedListener extends EventListener {
-        /**
-         * Notify about loaded SVG image or report Exception if loading failed
-         * @param image created SVG image or null if loading failed
-         * @param e containing @see java.lang.Exception if loading failed or null if loading was successful
-         */
+        ///**
+        // * Notify about loaded SVG image or report Exception if loading failed
+        // * @param image created SVG image or null if loading failed
+        // * @param e containing @see java.lang.Exception if loading failed or null if loading was successful
+        // 
         public void svgImageLoaded(SVGImage image, Exception e);
     }
-    
+*/    
+            
     private static class ProgressInputStream extends BufferedInputStream {
         private ProgressHandle handle;
         private long expectedSize;
         private long alreadyRead;
         
-        /**
-         * Creates a <code>BufferedInputStream</code>
-         * and saves its  argument, the input stream
-         * <code>in</code>, for later use. An internal
-         * buffer array is created and  stored in <code>buf</code>.
-         *
-         * @param   in   the underlying input stream.
-         */
+        // **
+        // * Creates a <code>BufferedInputStream</code>
+        // * and saves its  argument, the input stream
+        // * <code>in</code>, for later use. An internal
+        // * buffer array is created and  stored in <code>buf</code>.
+        // *
+        // * @param   in   the underlying input stream.
+        // 
         public ProgressInputStream(InputStream in, long expectedSize, ProgressHandle handle) {
             super(in);
             this.handle = handle;
@@ -232,12 +235,23 @@ public class Util {
             handle.progress((int)current);  
         }
     }
+ 
+            
+    /*
+    public static Document createXMLDOM(DataObject doj) throws IOException, SAXException {
+        InputSource  in = DataObjectAdapters.inputSource(doj);
+        Document xmlDoc = XMLUtil.parse( in, false, true, null, null);
+        return xmlDoc;
+    }
+     **/
     
     /**
      * Used for attributation for Perseus DOM
      * @param n ElementNode for root of document
      */
+/*    
     public static void attributeTree(final ModelNode n) {
+        System.out.println("SVG DOM");
         attributeTree(n, 1);//, new HashMap());
     }
     
@@ -249,13 +263,37 @@ public class Util {
         
         while (child != null) {
             if (child instanceof ElementNode){
-                ((ElementNode)child).setAttribute("node", depth + "_" + order++); //NOI18N
+                String id = depth + "_" + order++;
+                ((ElementNode)child).setAttribute(UNIQUE_NODE_ID, id);
+                System.out.println(((ElementNode)child).getLocalName() + " " + id);
             }
             attributeTree(child, depth+1);            
             child = (ModelNode) child.getNextSiblingNode();
         }
     }        
+
+    public static void attributeTree(final org.w3c.dom.Node elem) {
+        System.out.println("W3C DOM");
+        attributeTree(elem, 1);//, new HashMap());        
+    }
     
+    private static void attributeTree(final org.w3c.dom.Node elem, int depth) {
+        int order = 1;
+        org.w3c.dom.Node child = elem.getFirstChild();
+        Document d;
+        while (child != null) {
+            if (child.getNodeType() == child.ELEMENT_NODE){
+                String id = depth + "_" + order++;
+                child.setUserData(UNIQUE_NODE_ID, id, null);
+                System.out.println(child.getLocalName() + " " + id);
+            }
+            attributeTree(child, depth+1);            
+            child = child.getNextSibling();
+        }
+    }        
+*/
+    /*
+    //TODO remove??
     public static Hashtable SVG_ELEMENTS_ATTRIBUTES = new Hashtable();
 
     {
@@ -284,4 +322,23 @@ public class Util {
             "stroke-dashoffset", //NOI18N
             "color", //NOI18N
             "fill-rule"}; //NOI18N
+     */
+    
+    //TODO make more robust
+    public static String getPropertyValue(String text, String propName) {
+        if (text != null) {
+            int index = text.indexOf(propName);
+            if (index != -1) {
+                index += propName.length();
+                int from = text.indexOf('"', index);
+                if (from != -1) {
+                    int to = text.indexOf('"', ++from);
+                    if (to != -1) {
+                        return text.substring(from, to);
+                    }
+                }
+            }
+        }
+        return null;
+    }    
 }

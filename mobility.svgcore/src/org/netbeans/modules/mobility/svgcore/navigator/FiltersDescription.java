@@ -28,11 +28,11 @@ public final class FiltersDescription {
     }
     
     /** List of <FilterItem> describing filters properties */
-    private List filters;
+    private List<FilterItem> filters;
     
     /** Creates a new instance of FiltersDescription */
     public FiltersDescription() {
-        filters = new ArrayList();
+        filters = new ArrayList<FilterItem>();
     }
     
     public void addFilter (String name, String displayName, String tooltip,

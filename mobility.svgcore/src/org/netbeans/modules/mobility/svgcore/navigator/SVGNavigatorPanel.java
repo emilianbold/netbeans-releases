@@ -10,34 +10,29 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */   
-
-
 package org.netbeans.modules.mobility.svgcore.navigator;
 
 import java.util.Collection;
-import javax.microedition.m2g.SVGImage;
 import javax.swing.JComponent;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
-import org.netbeans.modules.mobility.svgcore.view.SelectionPathBean;
+import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
-import org.w3c.dom.Document;
-import org.w3c.dom.svg.SVGLocatableElement;
 
 /** An implementation of NavigatorPanel for XML navigator.
  *
- * @author Marek Fukala
+ * @author Pavel Benes (based on the class NavigatorPanel by Marek Fukala)
  * @version 1.0
  */
 public class SVGNavigatorPanel implements NavigatorPanel {
     
-    private NavigatorContent navigator = NavigatorContent.getDefault();
+    private SVGNavigatorContent navigator = SVGNavigatorContent.getDefault();
     
     private Lookup.Result dataObjectSelection;
-    private Lookup.Result elementSelection;
+    //private Lookup.Result elementSelection;
     
     private final LookupListener dataObjectListener = new LookupListener() {
         public void resultChanged(LookupEvent ev) {
@@ -45,12 +40,13 @@ public class SVGNavigatorPanel implements NavigatorPanel {
         }
     };
     
+    /*
     private final LookupListener elementSelectionListener = new LookupListener() {
         public void resultChanged(LookupEvent ev) {
             select(elementSelection.allInstances());
         }
-    };
-    
+    };    
+    */
     
     /** public no arg constructor needed for system to instantiate the provider. */
     public SVGNavigatorPanel() {
@@ -73,36 +69,47 @@ public class SVGNavigatorPanel implements NavigatorPanel {
     }
     
     public void panelActivated(Lookup context) {
-        dataObjectSelection = context.lookup(new Lookup.Template(SVGDataObject.class));
+        dataObjectSelection = context.lookup(new Lookup.Template<SVGDataObject>(SVGDataObject.class));
         dataObjectSelection.addLookupListener(dataObjectListener);
+        dataObjectSelection.allItems();
         dataObjectListener.resultChanged(null);
-
+/*
         elementSelection = context.lookup(new Lookup.Template(SelectionPathBean.class));
         elementSelection.addLookupListener(elementSelectionListener);
+        elementSelection.allItems();
         elementSelectionListener.resultChanged(null);
-
+ */
     }
     
     public void panelDeactivated() {
+        /*
         elementSelection.removeLookupListener(elementSelectionListener);
         elementSelection = null;
-        
+        */
         dataObjectSelection.removeLookupListener(dataObjectListener);
         dataObjectSelection = null;
         navigator.release(); //hide the UI
     }
-    
+        
     public void navigate(Collection/*<DataObject>*/ selectedFiles) {
         if (selectedFiles.size() == 1) {
             final SVGDataObject d = (SVGDataObject) selectedFiles.iterator().next();
+            //TODO Potential memory leak, use weak reference or something
+            d.getModel().addSelectionListener( new SVGFileModel.SelectionListener() {
+                public void selectionChanged(int [] path) {
+                    navigator.select(path);
+                }
+            });
             navigator.navigate(d);        
         }
     }    
     
-    public void select(Collection /*SelectionPathBean */ selectedPath){
+    /*
+    public void select(Collection selectedPath){
         if (selectedPath.size() == 1){
             SelectionPathBean path = (SelectionPathBean) selectedPath.iterator().next();
             navigator.select(path.getActualSelection());
         }
     }
+    */
 }
