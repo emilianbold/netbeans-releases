@@ -39,12 +39,12 @@ public class MessageDestinationMetadataReader extends CommonBeanReader {
     }
     
     /** For normalizing data structures within /ejb-jar graph.
-     *    /ejb-jar -> /ejb-jar/enterprise-beans
+     *    /ejb-jar -> /ejb-jar/assembly-descriptor
      */
     @Override
     protected CommonDDBean normalizeParent(CommonDDBean parent) {
         if(parent instanceof EjbJar) {
-            parent = ((EjbJar) parent).getEnterpriseBeans();
+            parent = ((EjbJar) parent).getSingleAssemblyDescriptor();
         }
         return parent;
     }
