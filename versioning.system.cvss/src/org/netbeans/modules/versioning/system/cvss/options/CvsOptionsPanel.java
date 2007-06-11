@@ -81,7 +81,6 @@ class CvsOptionsPanel extends javax.swing.JPanel {
 
         statusLabelFormat.setText(org.openide.util.NbBundle.getMessage(CvsOptionsPanel.class, "CvsOptionsPanel.statusLabelFormat.text")); // NOI18N
 
-        excludeNewFiles.setBackground(new java.awt.Color(255, 255, 255));
         org.openide.awt.Mnemonics.setLocalizedText(excludeNewFiles, org.openide.util.NbBundle.getMessage(CvsOptionsPanel.class, "CvsOptionsPanel.excludeNewFiles.text")); // NOI18N
         excludeNewFiles.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         excludeNewFiles.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -98,7 +97,6 @@ class CvsOptionsPanel extends javax.swing.JPanel {
             }
         });
 
-        wrapCommitMessages.setBackground(new java.awt.Color(255, 255, 255));
         org.openide.awt.Mnemonics.setLocalizedText(wrapCommitMessages, org.openide.util.NbBundle.getMessage(CvsOptionsPanel.class, "CvsOptionsPanel.wrapCommitMessages.text")); // NOI18N
         wrapCommitMessages.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         wrapCommitMessages.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -133,7 +131,7 @@ class CvsOptionsPanel extends javax.swing.JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
                     .add(statusVarsBrowse)
@@ -143,7 +141,8 @@ class CvsOptionsPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(wrapCommitMessages)
-                    .add(wrapCharCount, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(wrapCharCount, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(0, 0, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 

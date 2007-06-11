@@ -60,14 +60,10 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
     public FormEditorCustomizer () {
         ButtonGroup group = new ButtonGroup ();
         loc(cbFold, "Fold"); // NOI18N
-        cbFold.setBackground (Color.white);
         loc(cbAssistant, "Assistant"); // NOI18N
-        cbAssistant.setBackground(Color.white);
         loc(rbGenerateLocals, "Generate_Locals"); // NOI18N
-        rbGenerateLocals.setBackground (Color.white);
         group.add (rbGenerateLocals);
         loc(rbGenerateFields, "Generate_Fields"); // NOI18N
-        rbGenerateFields.setBackground (Color.white);
         group.add (rbGenerateFields);
         cbModifier.addItem(loc("Public_Modifier")); // NOI18N
         cbModifier.addItem(loc("Default_Modifier")); // NOI18N
@@ -143,7 +139,6 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
                 .addContainerGap()
         );
         setBorder(new TitledBorder(loc("Code_Generation"))); // NOI18N
-        setBackground (Color.white);
 
         cbFold.addActionListener (this);
         cbAssistant.addActionListener(this);

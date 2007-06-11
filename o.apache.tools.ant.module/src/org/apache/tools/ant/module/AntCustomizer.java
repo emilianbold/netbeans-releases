@@ -210,14 +210,8 @@ public class AntCustomizer extends JPanel implements ActionListener {
     
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-        javax.swing.JLabel antHomeLabel;
-        javax.swing.JLabel classpathLabel;
-        javax.swing.JPanel classpathPanel;
-        javax.swing.JLabel propertiesLabel;
-        javax.swing.JPanel propertiesPanel;
-        javax.swing.JLabel verbosityLabel;
 
-        antHomeLabel = new javax.swing.JLabel();
+        javax.swing.JLabel antHomeLabel = new javax.swing.JLabel();
         tfAntHome = new javax.swing.JTextField();
         bAntHome = new javax.swing.JButton();
         bAntHomeDefault = new javax.swing.JButton();
@@ -226,21 +220,20 @@ public class AntCustomizer extends JPanel implements ActionListener {
         cbReuseOutput = new javax.swing.JCheckBox();
         cbAlwaysShowOutput = new javax.swing.JCheckBox();
         cbVerbosity = new javax.swing.JComboBox();
-        verbosityLabel = new javax.swing.JLabel();
-        propertiesPanel = new javax.swing.JPanel();
-        propertiesLabel = new javax.swing.JLabel();
+        javax.swing.JLabel verbosityLabel = new javax.swing.JLabel();
+        javax.swing.JPanel propertiesPanel = new javax.swing.JPanel();
+        javax.swing.JLabel propertiesLabel = new javax.swing.JLabel();
         bProperties = new javax.swing.JButton();
-        classpathPanel = new javax.swing.JPanel();
-        classpathLabel = new javax.swing.JLabel();
+        javax.swing.JPanel classpathPanel = new javax.swing.JPanel();
+        javax.swing.JLabel classpathLabel = new javax.swing.JLabel();
         bClasspath = new javax.swing.JButton();
 
-        setBackground(java.awt.Color.white);
         antHomeLabel.setLabelFor(tfAntHome);
-        org.openide.awt.Mnemonics.setLocalizedText(antHomeLabel, NbBundle.getMessage(AntCustomizer.class, "Ant_Home"));
+        org.openide.awt.Mnemonics.setLocalizedText(antHomeLabel, NbBundle.getMessage(AntCustomizer.class, "Ant_Home")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(bAntHome, NbBundle.getMessage(AntCustomizer.class, "Ant_Home_Button"));
+        org.openide.awt.Mnemonics.setLocalizedText(bAntHome, NbBundle.getMessage(AntCustomizer.class, "Ant_Home_Button")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(bAntHomeDefault, NbBundle.getMessage(AntCustomizer.class, "Ant_Home_Default_Button"));
+        org.openide.awt.Mnemonics.setLocalizedText(bAntHomeDefault, NbBundle.getMessage(AntCustomizer.class, "Ant_Home_Default_Button")); // NOI18N
         bAntHomeDefault.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bAntHomeDefaultActionPerformed(evt);
@@ -250,31 +243,28 @@ public class AntCustomizer extends JPanel implements ActionListener {
         lAntVersion.setBackground(java.awt.Color.white);
         org.openide.awt.Mnemonics.setLocalizedText(lAntVersion, "<Ant version here...>");
 
-        cbSaveFiles.setBackground(java.awt.Color.white);
-        org.openide.awt.Mnemonics.setLocalizedText(cbSaveFiles, NbBundle.getMessage(AntCustomizer.class, "Save_Files"));
+        org.openide.awt.Mnemonics.setLocalizedText(cbSaveFiles, NbBundle.getMessage(AntCustomizer.class, "Save_Files")); // NOI18N
         cbSaveFiles.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         cbSaveFiles.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        cbReuseOutput.setBackground(java.awt.Color.white);
-        org.openide.awt.Mnemonics.setLocalizedText(cbReuseOutput, NbBundle.getMessage(AntCustomizer.class, "Reuse_Output"));
+        org.openide.awt.Mnemonics.setLocalizedText(cbReuseOutput, NbBundle.getMessage(AntCustomizer.class, "Reuse_Output")); // NOI18N
         cbReuseOutput.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         cbReuseOutput.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        cbAlwaysShowOutput.setBackground(java.awt.Color.white);
-        org.openide.awt.Mnemonics.setLocalizedText(cbAlwaysShowOutput, NbBundle.getMessage(AntCustomizer.class, "Always_Show_Output"));
+        org.openide.awt.Mnemonics.setLocalizedText(cbAlwaysShowOutput, NbBundle.getMessage(AntCustomizer.class, "Always_Show_Output")); // NOI18N
         cbAlwaysShowOutput.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         cbAlwaysShowOutput.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         cbVerbosity.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Normal" }));
 
         verbosityLabel.setLabelFor(cbVerbosity);
-        org.openide.awt.Mnemonics.setLocalizedText(verbosityLabel, NbBundle.getMessage(AntCustomizer.class, "Verbosity"));
+        org.openide.awt.Mnemonics.setLocalizedText(verbosityLabel, NbBundle.getMessage(AntCustomizer.class, "Verbosity")); // NOI18N
 
-        propertiesPanel.setBackground(java.awt.Color.white);
-        propertiesPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(NbBundle.getMessage(AntCustomizer.class, "Properties_Panel")));
-        org.openide.awt.Mnemonics.setLocalizedText(propertiesLabel, NbBundle.getMessage(AntCustomizer.class, "Properties_Text_Area"));
+        propertiesPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(NbBundle.getMessage(AntCustomizer.class, "Properties_Panel"))); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(bProperties, NbBundle.getMessage(AntCustomizer.class, "Properties_Button"));
+        org.openide.awt.Mnemonics.setLocalizedText(propertiesLabel, NbBundle.getMessage(AntCustomizer.class, "Properties_Text_Area")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(bProperties, NbBundle.getMessage(AntCustomizer.class, "Properties_Button")); // NOI18N
 
         org.jdesktop.layout.GroupLayout propertiesPanelLayout = new org.jdesktop.layout.GroupLayout(propertiesPanel);
         propertiesPanel.setLayout(propertiesPanelLayout);
@@ -296,11 +286,11 @@ public class AntCustomizer extends JPanel implements ActionListener {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        classpathPanel.setBackground(java.awt.Color.white);
-        classpathPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(NbBundle.getMessage(AntCustomizer.class, "Classpath_Panel")));
-        org.openide.awt.Mnemonics.setLocalizedText(classpathLabel, NbBundle.getMessage(AntCustomizer.class, "Classpath_Text_Area"));
+        classpathPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(NbBundle.getMessage(AntCustomizer.class, "Classpath_Panel"))); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(bClasspath, NbBundle.getMessage(AntCustomizer.class, "Classpath_Button"));
+        org.openide.awt.Mnemonics.setLocalizedText(classpathLabel, NbBundle.getMessage(AntCustomizer.class, "Classpath_Text_Area")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(bClasspath, NbBundle.getMessage(AntCustomizer.class, "Classpath_Button")); // NOI18N
 
         org.jdesktop.layout.GroupLayout classpathPanelLayout = new org.jdesktop.layout.GroupLayout(classpathPanel);
         classpathPanel.setLayout(classpathPanelLayout);
@@ -375,7 +365,7 @@ public class AntCustomizer extends JPanel implements ActionListener {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(propertiesPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(classpathPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 59, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(classpathPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents

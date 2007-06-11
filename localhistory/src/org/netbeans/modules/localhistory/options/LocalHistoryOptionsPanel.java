@@ -42,9 +42,6 @@ public class LocalHistoryOptionsPanel extends javax.swing.JPanel {
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
 
-        setBackground(new java.awt.Color(255, 255, 255));
-
-        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.jPanel1.border.title"))); // NOI18N
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.jLabel1.text")); // NOI18N
@@ -105,7 +102,7 @@ public class LocalHistoryOptionsPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(13, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     
