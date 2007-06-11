@@ -147,6 +147,11 @@ Microsystems, Inc. All Rights Reserved.
                     </file>
                 </folder>
 
+                <folder name="apisupport">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
+                    <file name="org-netbeans-modules-java.hints-IllegalInstanceOf.instance" />
+                </folder>
+
                 <folder name="empty">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>                    
                     
