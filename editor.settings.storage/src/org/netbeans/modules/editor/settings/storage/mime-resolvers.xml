@@ -57,4 +57,33 @@ Microsystems, Inc. All Rights Reserved.
         </resolver>
     </file>
 
+    <!-- CodeTemplateSettings -->
+    <file>
+        <ext name="xml"/>
+        <resolver mime="text/x-nbeditor-codetemplatesettings">
+            <xml-rule>
+                <doctype public-id="-//NetBeans//DTD Editor Code Templates settings 1.0//EN"/>
+            </xml-rule>
+        </resolver>
+    </file>
+    <file>
+        <ext name="xml"/>
+        <resolver mime="text/x-nbeditor-codetemplatesettings">
+            <xml-rule>
+                <element name="codetemplates"/>
+            </xml-rule>
+        </resolver>
+    </file>
+
+    <!-- Legacy code templates, called abbreviations -->
+    <file>
+        <ext name="xml"/>
+        <resolver mime="text/x-nbeditor-legacy-abbreviations">
+            <xml-rule>
+                <element name="abbrevs"/>
+            </xml-rule>
+        </resolver>
+    </file>
+
+    
 </MIME-resolver>

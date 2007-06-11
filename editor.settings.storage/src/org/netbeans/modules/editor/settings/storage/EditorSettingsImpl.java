@@ -33,9 +33,11 @@ import javax.swing.text.AttributeSet;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.KeyBindingSettings;
+import org.netbeans.modules.editor.settings.storage.api.CodeTemplateSettingsFactory;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.editor.settings.storage.api.FontColorSettingsFactory;
 import org.netbeans.modules.editor.settings.storage.api.KeyBindingSettingsFactory;
+import org.netbeans.modules.editor.settings.storage.codetemplates.CodeTemplateSettingsImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
@@ -530,10 +532,15 @@ public class EditorSettingsImpl extends EditorSettings {
         return FontColorSettingsImpl.get(Utils.mimeTypes2mimePath(mimeTypes));
     }
     
+    public CodeTemplateSettingsFactory getCodeTemplateSettings(MimePath mimePath) {
+        mimePath = filter(mimePath);
+        return CodeTemplateSettingsImpl.get(mimePath);
+    }
+    
     private String [] filter(String [] mimeTypes) {
         if (mimeTypes.length > 0) {
             String [] filtered = mimeTypes;
-            
+    
             if (mimeTypes[0].contains(TEXT_BASE_MIME_TYPE)) {
                 if (mimeTypes.length == 1) {
                     filtered = EMPTY;
@@ -557,6 +564,37 @@ public class EditorSettingsImpl extends EditorSettings {
             return filtered;
         } else {
             return mimeTypes;
+        }
+    }
+
+    private MimePath filter(MimePath mimePath) {
+        if (mimePath.size() > 0) {
+            MimePath filtered = mimePath;
+            String first = mimePath.getMimeType(0);
+            
+            if (first.contains(TEXT_BASE_MIME_TYPE)) {
+                if (mimePath.size() == 1) {
+                    filtered = MimePath.EMPTY;
+                } else {
+                    String path = mimePath.getPath().substring(first.length() + 1);
+                    filtered = MimePath.parse(path);
+                }
+                
+                if (LOG.isLoggable(Level.INFO)) {
+                    LOG.log(Level.INFO, TEXT_BASE_MIME_TYPE + " has been deprecated, use MimePath.EMPTY instead."); //, new Throwable("Stacktrace") //NOI18N
+                }
+                
+            } else if (first.startsWith("test")) {
+                String filteredFirst = first.substring(first.indexOf('_') + 1); //NOI18N
+                String path = filteredFirst + mimePath.getPath().substring(first.length() + 1);
+                filtered = MimePath.parse(path);
+
+                LOG.log(Level.INFO, "Don't use 'test' mime type to access settings through the editor/settings/storage API!", new Throwable("Stacktrace"));
+            }
+            
+            return filtered;
+        } else {
+            return mimePath;
         }
     }
 }

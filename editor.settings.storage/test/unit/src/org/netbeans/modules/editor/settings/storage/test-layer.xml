@@ -60,7 +60,7 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="x-orig">
                 <file name="marker.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.settings.storage.SettingsProviderTest.createMarker" />
-                    <attr name="instanceOf" methodvalue="org.netbeans.modules.editor.settings.storage.SettingsProviderTest$Marker" />
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.editor.settings.storage.SettingsProviderTest$Marker" />
                 </file>
             </folder>
 

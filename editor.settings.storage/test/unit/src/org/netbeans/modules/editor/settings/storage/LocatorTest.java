@@ -46,12 +46,19 @@ public class LocatorTest extends NbTestCase {
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
         "<!DOCTYPE bindings PUBLIC \"-//NetBeans//DTD Editor KeyBindings settings 1.1//EN\" \"http://www.netbeans.org/dtds/EditorKeyBindings-1_1.dtd\">\n" +
         "<bindings></bindings>";
+
+    private static final String CT_CONTENTS = 
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+        "<!DOCTYPE codetemplates PUBLIC \"-//NetBeans//DTD Editor Code Templates settings 1.0//EN\" \"http://www.netbeans.org/dtds/EditorCodeTemplates-1_0.dtd\">\n" +
+        "<codetemplates></codetemplates>";
+    
     
     /** Creates a new instance of LocatorTest */
     public LocatorTest(String name) {
         super(name);
     }
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
     
@@ -245,6 +252,53 @@ public class LocatorTest extends NbTestCase {
         
         List<Object []> profileFiles = results.get("NetBeans");
         checkProfileFiles(files, null, profileFiles, "NetBeans");
+    }
+
+    public void testFullCodeTemplatesMixedLayout() throws Exception {
+        String [] files = new String [] {
+            "Editors/Defaults/abbreviations.xml",
+            "Editors/CodeTemplates/Defaults/zz.xml",
+            "Editors/CodeTemplates/Defaults/dd.xml",
+            "Editors/CodeTemplates/Defaults/kk.xml",
+            "Editors/CodeTemplates/Defaults/aa.xml",
+            "Editors/abbreviations.xml",
+            "Editors/CodeTemplates/papap.xml",
+            "Editors/CodeTemplates/kekeke.xml",
+            "Editors/CodeTemplates/dhdhdddd.xml",
+        };
+        String writableUserFile = "Editors/" + SettingsType.CODETEMPLATES.getLocator().getWritableFileName(null, null, false);
+        
+        createOrderedFiles(files, CT_CONTENTS);
+        TestUtilities.createFile(writableUserFile, CT_CONTENTS);
+        
+        FileObject baseFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors");
+        Map<String, List<Object []>> results = new HashMap<String, List<Object []>>();
+        SettingsType.CODETEMPLATES.getLocator().scan(baseFolder, null, null, true, true, true, results);
+        
+        assertNotNull("Scan results should not null", results);
+        assertEquals("Wrong number of profiles", 1, results.size());
+        
+        List<Object []> profileFiles = results.get(null);
+        checkProfileFiles(files, writableUserFile, profileFiles, null);
+    }
+
+    public void testFullCodeTemplatesLegacyLayout() throws Exception {
+        String [] files = new String [] {
+            "Editors/Defaults/abbreviations.xml",
+            "Editors/abbreviations.xml",
+        };
+        
+        createOrderedFiles(files, CT_CONTENTS);
+        
+        FileObject baseFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors");
+        Map<String, List<Object []>> results = new HashMap<String, List<Object []>>();
+        SettingsType.CODETEMPLATES.getLocator().scan(baseFolder, null, null, true, true, true, results);
+        
+        assertNotNull("Scan results should not null", results);
+        assertEquals("Wrong number of profiles", 1, results.size());
+        
+        List<Object []> profileFiles = results.get(null);
+        checkProfileFiles(files, null, profileFiles, null);
     }
 
     private void checkProfileFiles(String [] paths, String writablePath, List<Object []> files, String profileId) {

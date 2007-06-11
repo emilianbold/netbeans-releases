@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.editor.settings.CodeTemplateSettings;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.KeyBindingSettings;
 import org.openide.filesystems.FileObject;
@@ -45,13 +46,22 @@ public enum SettingsType {
         "FontsColors", //NOI18N
         true, 
         FontColorSettings.class, 
-        "text/x-nbeditor-fontcolorsettings" //NOI18N
+        "text/x-nbeditor-fontcolorsettings", //NOI18N
+        null
     ),
     KEYBINDINGS(
         "Keybindings", //NOI18N
         true, 
         KeyBindingSettings.class, 
-        "text/x-nbeditor-keybindingsettings" //NOI18N
+        "text/x-nbeditor-keybindingsettings", //NOI18N
+        "keybindings.xml" //NOI18N
+    ),
+    CODETEMPLATES(
+        "CodeTemplates", //NOI18N
+        false, 
+        CodeTemplateSettings.class, 
+        "text/x-nbeditor-codetemplatesettings", //NOI18N
+        "abbreviations.xml" //NOI18N
     );
     
     public static SettingsType get(Class apiClass) {
@@ -81,12 +91,14 @@ public enum SettingsType {
     private final Class apiClass;
     private final String mimeType;
     private Locator locator;
+    private final String legacyFileName;
     
-    private SettingsType(String settingsTypeId, boolean usesProfiles, Class apiClass, String mimeType) {
+    private SettingsType(String settingsTypeId, boolean usesProfiles, Class apiClass, String mimeType, String legacyFileName) {
         this.settingsTypeId = settingsTypeId;
         this.usesProfiles = usesProfiles;
         this.apiClass = apiClass;
         this.mimeType = mimeType;
+        this.legacyFileName = legacyFileName;
     }
 
     public String getId() {
@@ -112,6 +124,10 @@ public enum SettingsType {
         return locator;
     }
     
+    public String getLegacyFileName() {
+        return legacyFileName;
+    }
+    
     private static class DefaultLocator implements Locator {
 
         protected static final String MODULE_FILES_FOLDER = "Defaults"; //NOI18N
@@ -132,8 +148,8 @@ public enum SettingsType {
             this.settingType = settingType;
             this.settingTypeFolderName = "/" + settingType.getId() + "/"; //NOI18N
             this.writableFileName = WRITABLE_FILE_PREFIX + settingType.getId() + WRITABLE_FILE_SUFFIX;
-            this.modulesWritableFileName = "/" + MODULE_FILES_FOLDER + "/" + WRITABLE_FILE_PREFIX + settingType.getId() + WRITABLE_FILE_SUFFIX; //NOI18N
-            this.usersWritableFileName = "/" + writableFileName; //NOI18N
+            this.modulesWritableFileName = MODULE_FILES_FOLDER + "/" + WRITABLE_FILE_PREFIX + settingType.getId() + WRITABLE_FILE_SUFFIX; //NOI18N
+            this.usersWritableFileName = writableFileName; //NOI18N
         }
         
         public final void scan(
@@ -175,21 +191,23 @@ public enum SettingsType {
         }
 
         public final String getWritableFileName(String mimeType, String profileId, boolean modulesFile) {
-            assert mimeType != null : "The mimeType parameter must not be null"; //NOI18N
-            assert profileId != null : "The profileId parameter must not be null"; //NOI18N
-            
             String part;
             
-            if (mimeType.length() == 0) {
+            if (mimeType == null || mimeType.length() == 0) {
                 part = settingType.getId() + "/"; //NOI18N
             } else {
                 part = mimeType + settingTypeFolderName;
             }
             
+            if (settingType.isUsingProfiles()) {
+                assert profileId != null : "The profileId parameter must not be null"; //NOI18N
+                part = part + profileId + "/"; //NOI18N
+            }
+            
             if (modulesFile) {
-                return part + profileId + modulesWritableFileName;
+                return part + modulesWritableFileName;
             } else {
-                return part + profileId + usersWritableFileName;
+                return part + usersWritableFileName;
             }
         }
         
@@ -198,11 +216,27 @@ public enum SettingsType {
         }
 
         protected void addModulesLegacyFiles(FileObject mimeFolder, String profileId, boolean fullScan, Map<String, List<Object []>> files) {
-            // Do nothing by default
+            if (settingType.getLegacyFileName() != null) {
+                addLegacyFiles(
+                    mimeFolder, 
+                    profileId, 
+                    MODULE_FILES_FOLDER + "/" + settingType.getLegacyFileName(), //NOI18N
+                    files, 
+                    true
+                );
+            }
         }
         
         protected void addUsersLegacyFiles(FileObject mimeFolder, String profileId, boolean fullScan, Map<String, List<Object []>> files) {
-            // Do nothing by default
+            if (settingType.getLegacyFileName() != null) {
+                addLegacyFiles(
+                    mimeFolder, 
+                    profileId, 
+                    settingType.getLegacyFileName(), 
+                    files, 
+                    true
+                );
+            }
         }
 
         private FileObject getMimeFolder(FileObject baseFolder, String mimeType) {
@@ -213,16 +247,23 @@ public enum SettingsType {
             if (profileId == null) {
                 FileObject settingHome = mimeFolder.getFileObject(settingType.getId());
                 if (settingHome != null && settingHome.isFolder()) {
-                    FileObject [] profileHomes = settingHome.getChildren();
-                    for(FileObject f : profileHomes) {
-                        if (!f.isFolder()) {
-                            continue;
+                    if (settingType.isUsingProfiles()) {
+                        FileObject [] profileHomes = settingHome.getChildren();
+                        for(FileObject f : profileHomes) {
+                            if (!f.isFolder()) {
+                                continue;
+                            }
+
+                            String id = f.getNameExt();
+                            FileObject folder = f.getFileObject(MODULE_FILES_FOLDER);
+                            if (folder != null && folder.isFolder()) {
+                                addFiles(folder, fullScan, files, id, f, true);
+                            }
                         }
-                        
-                        String id = f.getNameExt();
-                        FileObject folder = f.getFileObject(MODULE_FILES_FOLDER);
+                    } else {
+                        FileObject folder = settingHome.getFileObject(MODULE_FILES_FOLDER);
                         if (folder != null && folder.isFolder()) {
-                            addFiles(folder, fullScan, files, id, f, true);
+                            addFiles(folder, fullScan, files, null, null, true);
                         }
                     }
                 }
@@ -238,12 +279,16 @@ public enum SettingsType {
             if (profileId == null) {
                 FileObject settingHome = mimeFolder.getFileObject(settingType.getId());
                 if (settingHome != null && settingHome.isFolder()) {
-                    FileObject [] profileHomes = settingHome.getChildren();
-                    for(FileObject f : profileHomes) {
-                        if (f.isFolder()) {
-                            String id = f.getNameExt();
-                            addFiles(f, fullScan, files, id, f, false);
+                    if (settingType.isUsingProfiles()) {
+                        FileObject [] profileHomes = settingHome.getChildren();
+                        for(FileObject f : profileHomes) {
+                            if (f.isFolder()) {
+                                String id = f.getNameExt();
+                                addFiles(f, fullScan, files, id, f, false);
+                            }
                         }
+                    } else {
+                        addFiles(settingHome, fullScan, files, null, null, false);
                     }
                 }
             } else {
@@ -389,6 +434,65 @@ public enum SettingsType {
             
             return sorted.toArray(new FileObject[sorted.size()]);
         }
+        
+        private void addLegacyFiles(FileObject mimeFolder, String profileId, String filePath, Map<String, List<Object []>> files, boolean moduleFiles) {
+            if (profileId == null) {
+                String defaultProfileId;
+                
+                if (settingType.isUsingProfiles()) {
+                    FileObject [] profileHomes = mimeFolder.getChildren();
+                    for(FileObject f : profileHomes) {
+                        if (!f.isFolder() || f.getNameExt().equals(MODULE_FILES_FOLDER)) {
+                            continue;
+                        }
+
+                        String id = f.getNameExt();
+                        FileObject legacyFile = f.getFileObject(filePath);
+                        if (legacyFile != null) {
+                            addFile(legacyFile, files, id, f, true);
+                        }
+                    }
+                    defaultProfileId = DEFAULT_PROFILE_NAME;
+                } else {
+                    defaultProfileId = null;
+                }
+                
+                FileObject legacyFile = mimeFolder.getFileObject(filePath);
+                if (legacyFile != null) {
+                    addFile(legacyFile, files, defaultProfileId, null, true);
+                }
+            } else {
+                if (profileId.equals(DEFAULT_PROFILE_NAME)) {
+                    FileObject file = mimeFolder.getFileObject(filePath); //NOI18N
+                    if (file != null) {
+                        addFile(file, files, profileId, null, moduleFiles);
+                    }
+                } else {
+                    FileObject profileHome = mimeFolder.getFileObject(profileId);
+                    if (profileHome != null && profileHome.isFolder()) {
+                        FileObject file = profileHome.getFileObject(filePath);
+                        if (file != null) {
+                            addFile(file, files, profileId, profileHome, moduleFiles);
+                        }
+                    }
+                }
+            }
+        }
+        
+        private void addFile(FileObject file, Map<String, List<Object []>> files, String profileId, FileObject profileHome, boolean moduleFiles) {
+            List<Object []> pair = files.get(profileId);
+            if (pair == null) {
+                pair = new ArrayList<Object[]>();
+                files.put(profileId, pair);
+            }
+            pair.add(new Object [] { profileHome, file, moduleFiles });
+            
+            if (LOG.isLoggable(Level.INFO)) {
+                Utils.logOnce(LOG, Level.INFO, settingType.getId() + " settings " + //NOI18N
+                    "should reside in '" + settingType.getId() + "' subfolder, " + //NOI18N
+                    "see #90403 for details. Offending file '" + file.getPath() + "'", null); //NOI18N
+            }
+        }
     } // End of DefaultLocator class
     
     private static final class FontsColorsLocator extends DefaultLocator {
@@ -467,7 +571,7 @@ public enum SettingsType {
                     pair.add(new Object [] { profileHome, f, moduleFiles });
 
                     if (LOG.isLoggable(Level.INFO)) {
-                        Utils.logOnce(LOG, Level.INFO, "Fonts & colors profiles " + //NOI18N
+                        Utils.logOnce(LOG, Level.INFO, FONTSCOLORS.getId() + " settings " + //NOI18N
                             "should reside in '" + FONTSCOLORS.getId() + "' subfolder, " + //NOI18N
                             "see #90403 for details. Offending file '" + f.getPath() + "'", null); //NOI18N
                     }
@@ -482,9 +586,6 @@ public enum SettingsType {
 
     private static final class KeybindingsLocator extends DefaultLocator {
         
-        private static final String M_KEYBINDING_FILE_NAME = MODULE_FILES_FOLDER + "/keybindings.xml"; // NOI18N
-        private static final String U_KEYBINDING_FILE_NAME = "keybindings.xml"; // NOI18N
-        
         public KeybindingsLocator() {
             super(KEYBINDINGS);
         }
@@ -497,85 +598,5 @@ public enum SettingsType {
                 return super.getMimeFolder(baseFolder, mimeType);
             }
         }
-
-        @Override
-        protected void addModulesLegacyFiles(
-            FileObject mimeFolder,
-            String profileId, 
-            boolean fullScan,
-            Map<String, List<Object []>> files
-        ) {
-            addFiles(mimeFolder, profileId, fullScan, M_KEYBINDING_FILE_NAME, files, true);
-        }
-        
-        @Override
-        protected void addUsersLegacyFiles(
-            FileObject mimeFolder,
-            String profileId, 
-            boolean fullScan,
-            Map<String, List<Object []>> files
-        ) {
-            addFiles(mimeFolder, profileId, fullScan, U_KEYBINDING_FILE_NAME, files, false);
-        }
-        
-        private void addFiles(
-            FileObject mimeFolder,
-            String profileId, 
-            boolean fullScan,
-            String filePath,
-            Map<String, List<Object []>> files,
-            boolean moduleFiles
-        ) {
-            if (profileId == null) {
-                FileObject [] profileHomes = mimeFolder.getChildren();
-                for(FileObject f : profileHomes) {
-                    if (!f.isFolder() || f.getNameExt().equals(MODULE_FILES_FOLDER)) {
-                        continue;
-                    }
-                    
-                    String id = f.getNameExt();
-                    FileObject file = f.getFileObject(filePath);
-                    if (file != null) {
-                        addFile(file, files, id, f, moduleFiles);
-                    }
-                }
-                
-                FileObject file = mimeFolder.getFileObject(filePath);
-                if (file != null) {
-                    addFile(file, files, DEFAULT_PROFILE_NAME, null, moduleFiles);
-                }
-            } else {
-                if (profileId.equals(DEFAULT_PROFILE_NAME)) {
-                    FileObject file = mimeFolder.getFileObject(filePath); //NOI18N
-                    if (file != null) {
-                        addFile(file, files, profileId, null, moduleFiles);
-                    }
-                } else {
-                    FileObject profileHome = mimeFolder.getFileObject(profileId);
-                    if (profileHome != null && profileHome.isFolder()) {
-                        FileObject file = profileHome.getFileObject(filePath);
-                        if (file != null) {
-                            addFile(file, files, profileId, profileHome, moduleFiles);
-                        }
-                    }
-                }
-            }
-        }
-
-        private void addFile(FileObject file, Map<String, List<Object []>> files, String profileId, FileObject profileHome, boolean moduleFiles) {
-            List<Object []> pair = files.get(profileId);
-            if (pair == null) {
-                pair = new ArrayList<Object[]>();
-                files.put(profileId, pair);
-            }
-            pair.add(new Object [] { profileHome, file, moduleFiles });
-            
-            if (LOG.isLoggable(Level.INFO)) {
-                Utils.logOnce(LOG, Level.INFO, "Keybinding profiles " + //NOI18N
-                    "should reside in '" + KEYBINDINGS.getId() + "' subfolder, " + //NOI18N
-                    "see #90403 for details. Offending file '" + file.getPath() + "'", null); //NOI18N
-            }
-        }
-
     } // End of KeybindingsLocator class
 }

@@ -20,11 +20,11 @@
 package org.netbeans.modules.editor.settings.storage.api;
 
 import java.beans.PropertyChangeListener;
-import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.text.AttributeSet;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.editor.settings.storage.EditorSettingsImpl;
 
 
@@ -65,6 +65,8 @@ public abstract class EditorSettings {
     /**
      * Returns name of language for given mime type.
      *
+     * @param mimeType The mime type to translate.
+     * 
      * @return name of language for given mime type
      */
     public abstract String getLanguageName (String mimeType);
@@ -198,6 +200,8 @@ public abstract class EditorSettings {
     /**
      * Returns FontColorSettings for given mimetypes.
      *
+     * @param mimeTypes The mime path to get the settings for.
+     * 
      * @return FontColorSettings for given mimetypes
      */
     public abstract FontColorSettingsFactory getFontColorSettings (String[] mimeTypes);
@@ -212,6 +216,8 @@ public abstract class EditorSettings {
     /**
      * Returns KeyBindingSettings for given mimetypes.
      *
+     * @param mimeTypes The mime path to get the settings for.
+     * 
      * @return KeyBindingSettings for given mimetypes
      */
     public abstract KeyBindingSettingsFactory getKeyBindingSettings (String[] mimeTypes);
@@ -245,6 +251,19 @@ public abstract class EditorSettings {
      */
     public abstract void setCurrentKeyMapProfile (String profile);
 
+    // Code templates .................................................................
+
+    /**
+     * Gets code template settings for a given mime path.
+     * 
+     * @param mimePath The mime path to get the settings for.
+     * 
+     * @return The code template settings.
+     */
+    public abstract CodeTemplateSettingsFactory getCodeTemplateSettings(MimePath mimePath);
+    
+    // Other .................................................................
+    
     /**
      * PropertyChangeListener registration.
      *

@@ -40,6 +40,9 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="DTD_Editor_KeyBindings_settings_1_1" url="nbres:/org/netbeans/modules/editor/settings/storage/EditorKeyBindings-1_1.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Editor KeyBindings settings 1.1//EN"/>
                 </file>
+                <file name="DTD_Editor_Code_Templates_settings_1_0" url="nbres:/org/netbeans/modules/editor/settings/storage/codetemplates/EditorCodeTemplates-1_0.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Editor Code Templates settings 1.0//EN"/>
+                </file>
             </folder>
         </folder>
     </folder>

@@ -35,6 +35,7 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.KeyBindingSettings;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
+import org.netbeans.modules.editor.settings.storage.codetemplates.CodeTemplateSettingsImpl;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
@@ -117,8 +118,10 @@ public final class SettingsProvider implements MimeDataProvider {
         private final InstanceContent ic;
         private Object fontColorSettings = null;
         private Object keyBindingSettings = null;
+        private Object codeTemplateSettings = null;
         
         private KeyBindingSettingsImpl kbsi;
+        private CodeTemplateSettingsImpl ctsi;
         
         public MyLookup(MimePath mimePath, String profile) {
             this(mimePath, profile, new InstanceContent());
@@ -150,16 +153,22 @@ public final class SettingsProvider implements MimeDataProvider {
             
             this.kbsi = KeyBindingSettingsImpl.get(mimePath);
             this.kbsi.addPropertyChangeListener(WeakListeners.propertyChange(this, this.kbsi));
+
+            this.ctsi = CodeTemplateSettingsImpl.get(mimePath);
+            this.ctsi.addPropertyChangeListener(WeakListeners.propertyChange(this, this.ctsi));
         }
 
+        @Override
         protected void initialize() {
             synchronized (this) {
                 fontColorSettings = new CompositeFCS(allMimePaths, fcsProfile);
                 keyBindingSettings = this.kbsi.createInstanceForLookup();
-
+                codeTemplateSettings = this.ctsi.createInstanceForLookup();
+                
                 ic.set(Arrays.asList(new Object [] {
                     fontColorSettings,
-                    keyBindingSettings
+                    keyBindingSettings,
+                    codeTemplateSettings
                 }), null);
             }
         }
@@ -168,6 +177,7 @@ public final class SettingsProvider implements MimeDataProvider {
             synchronized (this) {
                 boolean fcsChanged = false;
                 boolean kbsChanged = false;
+                boolean ctsChanged = false;
 
 //                if (mimePath.getPath().contains("xml")) {
 //                    System.out.println("@@@ propertyChange: mimePath = " + mimePath.getPath() + " profile = " + fcsProfile + " property = " + evt.getPropertyName() + " oldValue = " + (evt.getOldValue() instanceof MimePath ? ((MimePath) evt.getOldValue()).getPath() : evt.getOldValue()) + " newValue = " + evt.getNewValue());
@@ -176,6 +186,9 @@ public final class SettingsProvider implements MimeDataProvider {
                 // Determine what has changed
                 if (this.kbsi == evt.getSource()) {
                     kbsChanged = true;
+                    
+                } else if (this.ctsi == evt.getSource()) {
+                    ctsChanged = true;
                     
                 } else if (evt.getPropertyName() == null) {
                     // reset all
@@ -221,10 +234,16 @@ public final class SettingsProvider implements MimeDataProvider {
                     updateContents = true;
                 }
                 
+                if (ctsChanged  && codeTemplateSettings != null) {
+                    codeTemplateSettings = this.ctsi.createInstanceForLookup();
+                    updateContents = true;
+                }
+                
                 if (updateContents) {
                     ic.set(Arrays.asList(new Object [] {
                         fontColorSettings,
-                        keyBindingSettings
+                        keyBindingSettings,
+                        codeTemplateSettings
                     }), null);
                 }
             }

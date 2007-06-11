@@ -159,7 +159,7 @@ public class Utils {
         return result.toArray(new KeyStroke[result.size ()]);
     }
     
-    static String getLocalizedName(FileObject fo, String defaultValue) {
+    public static String getLocalizedName(FileObject fo, String defaultValue) {
         try {
             return fo.getFileSystem().getStatus().annotateName(defaultValue, Collections.singleton(fo));
         } catch (FileStateInvalidException ex) {
@@ -170,11 +170,11 @@ public class Utils {
         }
     }
     
-    static String getLocalizedName(FileObject fo, String key, String defaultValue) {
+    public static String getLocalizedName(FileObject fo, String key, String defaultValue) {
         return getLocalizedName(fo, key, defaultValue, false);
     }
     
-    static String getLocalizedName(FileObject fo, String key, String defaultValue, boolean silent) {
+    public static String getLocalizedName(FileObject fo, String key, String defaultValue, boolean silent) {
         assert key != null : "The key can't be null"; //NOI18N
 
         Object [] bundleInfo = findResourceBundle(fo, silent);
