@@ -375,7 +375,7 @@ public class SvnUtils {
             // get the URL from the server, it's just that it could be quite a performance killer.
             throw new SVNClientException(NbBundle.getMessage(SvnUtils.class, "MSG_too_old_WC"));
         }                   
-        return repositoryPath;
+        return repositoryPath.startsWith("/") ? repositoryPath.substring(1) : repositoryPath;
     }
     
     /**

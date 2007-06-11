@@ -20,7 +20,6 @@ package org.netbeans.modules.subversion.ui.history;
 
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.ErrorManager;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
