@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.Action;
-import org.netbeans.modules.mobility.project.ui.CleanConfigurationAction;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
@@ -204,21 +203,21 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
                         {
                             //new Configuration
                             final J2MEProject project=node.getLookup().lookup(J2MEProject.class);
-                            final Node n=new CfgNode(
+                            final Node n=new NodeFactory.CfgNode(
                                     new ConfigChildren(),
                                     Lookups.fixed(new Object[] {project, cfg, AbilitiesPanel.hintInstance}),
                                     cfg.getDisplayName(),PLATFORM_ICON,
                                     new Action[] {
-                                                  SystemAction.get(RunConfigurationAction.class),
-                                                  SystemAction.get(DebugConfigurationAction.class),
-                                                  SystemAction.get(BuildConfigurationAction.class),
-                                                  SystemAction.get(CleanAndBuildConfigurationAction.class),
-                                                  SystemAction.get(CleanConfigurationAction.class),
-                                                  SystemAction.get(DeployConfigurationAction.class),
-                                                  SystemAction.get(SetConfigurationAction.class),
+                                                  SystemAction.get(NodeActions.RunConfigurationAction.class),
+                                                  SystemAction.get(NodeActions.DebugConfigurationAction.class),
+                                                  SystemAction.get(NodeActions.BuildConfigurationAction.class),
+                                                  SystemAction.get(NodeActions.CleanAndBuildConfigurationAction.class),
+                                                  SystemAction.get(NodeActions.CleanConfigurationAction.class),
+                                                  SystemAction.get(NodeActions.DeployConfigurationAction.class),
+                                                  SystemAction.get(NodeActions.SetConfigurationAction.class),
                                                   null,
                                                   SystemAction.get(CopyAction.class),
-                                                  SystemAction.get(RemoveConfigurationAction.class),
+                                                  SystemAction.get(NodeActions.RemoveConfigurationAction.class),
                                                  });
                             node.getChildren().add(new Node[] {n});
                             n.setName(cfg.getDisplayName());
@@ -282,32 +281,32 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
         for (int i=0;i<confs.length;i++)
         {
             final Node node=confs[i].equals(project.getConfigurationHelper().getDefaultConfiguration()) ? 
-                new CfgNode(new ConfigChildren(), 
+                new NodeFactory.CfgNode(new ConfigChildren(), 
                     Lookups.fixed(new Object[] {project, confs[i], AbilitiesPanel.hintInstance}),
                     confs[i].getDisplayName(),PLATFORM_ICON,
                     new Action[] {
-                                  SystemAction.get(RunConfigurationAction.class),
-                                  SystemAction.get(DebugConfigurationAction.class),
-                                  SystemAction.get(BuildConfigurationAction.class),
-                                  SystemAction.get(CleanAndBuildConfigurationAction.class),
-                                  SystemAction.get(CleanConfigurationAction.class),
-                                  SystemAction.get(DeployConfigurationAction.class),
-                                  SystemAction.get(SetConfigurationAction.class),
+                                  SystemAction.get(NodeActions.RunConfigurationAction.class),
+                                  SystemAction.get(NodeActions.DebugConfigurationAction.class),
+                                  SystemAction.get(NodeActions.BuildConfigurationAction.class),
+                                  SystemAction.get(NodeActions.CleanAndBuildConfigurationAction.class),
+                                  SystemAction.get(NodeActions.CleanConfigurationAction.class),
+                                  SystemAction.get(NodeActions.DeployConfigurationAction.class),
+                                  SystemAction.get(NodeActions.SetConfigurationAction.class),
                                  }) :
-                new CfgNode(new ConfigChildren(),
+                new NodeFactory.CfgNode(new ConfigChildren(),
                     Lookups.fixed(new Object[] {project, confs[i], AbilitiesPanel.hintInstance}),
                     confs[i].getDisplayName(),PLATFORM_ICON,
                     new Action[] {
-                                  SystemAction.get(RunConfigurationAction.class),
-                                  SystemAction.get(DebugConfigurationAction.class),
-                                  SystemAction.get(BuildConfigurationAction.class),
-                                  SystemAction.get(CleanAndBuildConfigurationAction.class),
-                                  SystemAction.get(CleanConfigurationAction.class),
-                                  SystemAction.get(DeployConfigurationAction.class),
-                                  SystemAction.get(SetConfigurationAction.class),
+                                  SystemAction.get(NodeActions.RunConfigurationAction.class),
+                                  SystemAction.get(NodeActions.DebugConfigurationAction.class),
+                                  SystemAction.get(NodeActions.BuildConfigurationAction.class),
+                                  SystemAction.get(NodeActions.CleanAndBuildConfigurationAction.class),
+                                  SystemAction.get(NodeActions.CleanConfigurationAction.class),
+                                  SystemAction.get(NodeActions.DeployConfigurationAction.class),
+                                  SystemAction.get(NodeActions.SetConfigurationAction.class),
                                   null,
                                   SystemAction.get(CopyAction.class),
-                                  SystemAction.get(RemoveConfigurationAction.class),
+                                  SystemAction.get(NodeActions.RemoveConfigurationAction.class),
                                   });
             nodeArray.add(node);
             if (confs[i].getDisplayName().equals(active.getDisplayName()))
@@ -342,7 +341,7 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
         
         final Node node=NodeFactory.createProjCfgsNode(createActionNodes(project), Lookups.singleton(project),
                 NbBundle.getMessage(LibResViewProvider.class,"LBL_ProjectConfigurations"),
-                CONFIGS_ICON, new Action[] {AddConfigurationAction.getStaticInstance(),null,
+                CONFIGS_ICON, new Action[] {NodeActions.AddConfigurationAction.getStaticInstance(),null,
                                           SystemAction.get(PasteAction.class),});
         project.getConfigurationHelper().addPropertyChangeListener(new ConfChangeListener(node));        
         return new Node[] {node};

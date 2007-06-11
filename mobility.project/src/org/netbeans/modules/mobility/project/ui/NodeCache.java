@@ -59,10 +59,10 @@ class NodeCache implements PropertyChangeListener
 
     final static private Action[] emptyAction = new Action[] {};
     final private Action[] pActions=new Action[] {
-                AddProjectAction.getStaticInstance(),
-                AddJarAction.getStaticInstance(),
-                AddFolderAction.getStaticInstance(),
-                AddLibraryAction.getStaticInstance(),
+                NodeActions.AddProjectAction.getStaticInstance(),
+                NodeActions.AddJarAction.getStaticInstance(),
+                NodeActions.AddFolderAction.getStaticInstance(),
+                NodeActions.AddLibraryAction.getStaticInstance(),
                 null,
                 SystemAction.get(PasteAction.class),
             };
@@ -186,12 +186,12 @@ class NodeCache implements PropertyChangeListener
                     if (gray)
                     {
                         resNode.setDisplayName("Resources - Inherited from "+project.getConfigurationHelper().getDefaultConfiguration().getDisplayName());
-                        ((ActionNode)resNode).setActions(null);
+                        ((NodeFactory.ActionNode)resNode).setActions(null);
                     }
                     else
                     {
                         resNode.setDisplayName("Resources");
-                        ((ActionNode)resNode).setActions(pActions);
+                        ((NodeFactory.ActionNode)resNode).setActions(pActions);
                     }
                     resNode.setValue("gray",gray);
                 }

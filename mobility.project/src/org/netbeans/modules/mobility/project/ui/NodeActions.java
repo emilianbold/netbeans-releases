@@ -82,7 +82,9 @@ import org.openide.util.NbBundle;
  * @author Lukas Waldmann
  */
 
-abstract class ContextAction extends org.openide.util.actions.NodeAction //AbstractAction implements ContextAwareAction
+class NodeActions {
+
+static abstract class ContextAction extends org.openide.util.actions.NodeAction //AbstractAction implements ContextAwareAction
 {
     final private String name;
     
@@ -114,7 +116,7 @@ abstract class ContextAction extends org.openide.util.actions.NodeAction //Abstr
     }
 }
 
-abstract class NodeAction<T> extends ContextAction
+static abstract class NodeAction<T> extends ContextAction
 {   
     protected NodeAction(String name)
     {
@@ -242,7 +244,7 @@ abstract class NodeAction<T> extends ContextAction
 }
 
 
-class AddLibraryAction extends NodeAction<Library>
+static class AddLibraryAction extends NodeAction<Library>
 {
     final static String aName  = NbBundle.getMessage(CustomizerLibraries.class,"LBL_CustLibs_Add_Library");
     final static Action action = new AddLibraryAction();
@@ -291,7 +293,7 @@ class AddLibraryAction extends NodeAction<Library>
     }
 }
 
-class AddFolderAction extends NodeAction<File>
+static class AddFolderAction extends NodeAction<File>
 {    
     private static File lastFile = null;
     
@@ -342,7 +344,7 @@ class AddFolderAction extends NodeAction<File>
 }
 
 
-class RemoveResourceAction extends NodeAction<Object>
+static class RemoveResourceAction extends NodeAction<Object>
 {
     final static String aName  = NbBundle.getMessage(CustomizerLibraries.class,"LBL_CustLibs_Remove");
     final static Action action = new RemoveResourceAction();
@@ -385,7 +387,7 @@ class RemoveResourceAction extends NodeAction<Object>
     }
 }
 
-class AddProjectAction extends NodeAction<ArtifactItem>
+static class AddProjectAction extends NodeAction<ArtifactItem>
 {
     final static String aName  = NbBundle.getMessage(CustomizerLibraries.class,"LBL_CustLibs_Add_Project");
     final static Action action = new AddProjectAction();
@@ -432,7 +434,7 @@ class AddProjectAction extends NodeAction<ArtifactItem>
 }
 
 
-class AddJarAction extends NodeAction<File>
+static class AddJarAction extends NodeAction<File>
 {
     private static File lastFile = null;
     
@@ -499,7 +501,7 @@ class AddJarAction extends NodeAction<File>
     }
 }
 
-class SetConfigurationAction extends ContextAction
+static class SetConfigurationAction extends ContextAction
 {
     final static String aName  = NbBundle.getMessage(SetConfigurationAction.class,"LBL_SACAction_SetConfiguration");
     final static Action action = new SetConfigurationAction();
@@ -543,7 +545,7 @@ class SetConfigurationAction extends ContextAction
     }
 }
 
-class AddConfigurationAction extends ContextAction
+static class AddConfigurationAction extends ContextAction
 {
     final static String aName  = NbBundle.getMessage(CustomizerLibraries.class,"LBL_VCS_AddConfiguration");
     final static Action action = new AddConfigurationAction();
@@ -627,7 +629,7 @@ class AddConfigurationAction extends ContextAction
     }
 }
 
-abstract class AntAction extends ContextAction
+static abstract class AntAction extends ContextAction
 {
     final String command;
     
@@ -685,7 +687,7 @@ abstract class AntAction extends ContextAction
     }
 }
 
-class BuildConfigurationAction extends AntAction
+static class BuildConfigurationAction extends AntAction
 {
     final static String aName  = NbBundle.getMessage(ContextAction.class,"Title_CfgSelection_build-all");
     final static Action action = new BuildConfigurationAction();
@@ -702,7 +704,7 @@ class BuildConfigurationAction extends AntAction
     
 }
 
-class CleanConfigurationAction extends AntAction
+static class CleanConfigurationAction extends AntAction
 {
     final static String aName  = NbBundle.getMessage(ContextAction.class,"Title_CfgSelection_clean-all");
     final static Action action = new CleanConfigurationAction();
@@ -719,7 +721,7 @@ class CleanConfigurationAction extends AntAction
     
 }
 
-class CleanAndBuildConfigurationAction extends AntAction
+static class CleanAndBuildConfigurationAction extends AntAction
 {
     final static String aName  = NbBundle.getMessage(ContextAction.class,"Title_CfgSelection_rebuild-all");
     final static Action action = new CleanAndBuildConfigurationAction();
@@ -737,7 +739,7 @@ class CleanAndBuildConfigurationAction extends AntAction
 }
 
 
-class DeployConfigurationAction extends AntAction
+static class DeployConfigurationAction extends AntAction
 {
     final static String aName  = NbBundle.getMessage(ContextAction.class,"Title_CfgSelection_deploy-all");
     final static Action action = new DeployConfigurationAction();
@@ -754,7 +756,7 @@ class DeployConfigurationAction extends AntAction
     
 }
 
-abstract class AntSingleAction extends ContextAction
+static abstract class AntSingleAction extends ContextAction
 {
     final String command;
     
@@ -789,7 +791,7 @@ abstract class AntSingleAction extends ContextAction
 }
 
 
-class RunConfigurationAction extends AntSingleAction
+static class RunConfigurationAction extends AntSingleAction
 {
     final static String aName  = NbBundle.getMessage(ContextAction.class,"LBL_RunConfigurationAction_Name");
     final static Action action = new RunConfigurationAction();
@@ -805,7 +807,7 @@ class RunConfigurationAction extends AntSingleAction
     }
 }
 
-class DebugConfigurationAction extends AntSingleAction
+static class DebugConfigurationAction extends AntSingleAction
 {
     final static String aName  = NbBundle.getMessage(ContextAction.class,"LBL_DebugConfigurationAction_Name");
     final static Action action = new DebugConfigurationAction();
@@ -823,7 +825,7 @@ class DebugConfigurationAction extends AntSingleAction
 
 
 
-class RemoveConfigurationAction extends ContextAction
+static class RemoveConfigurationAction extends ContextAction
 {
     final static String aName  = NbBundle.getMessage(CustomizerLibraries.class,"ACSN_RemovePanel");
     final static Action action = new RemoveConfigurationAction();
@@ -907,4 +909,6 @@ class RemoveConfigurationAction extends ContextAction
         // Store the properties 
         j2meProperties.store();
     }
+}
+
 }

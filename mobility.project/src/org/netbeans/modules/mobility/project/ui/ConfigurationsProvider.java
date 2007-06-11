@@ -106,7 +106,7 @@ class ConfigurationsProvider
         
         final Action act[]=new Action[] 
         {
-            RemoveResourceAction.getStaticInstance(),
+            NodeActions.RemoveResourceAction.getStaticInstance(),
             SystemAction.get(CopyAction.class),
         };
 
@@ -291,9 +291,9 @@ class ConfigurationsProvider
                     {
                         final Lookup lookup = Lookups.fixed( new Object[] {project,conf, item} );
                         final Action actions[]=gray ? new Action[] {} : new Action[] { 
-                                                                                       RemoveResourceAction.getStaticInstance(),
+                                                                                       NodeActions.RemoveResourceAction.getStaticInstance(),
                                                                                      };
-                        final Node n=new FNode(new ActionNode(Children.LEAF,lookup,iPath,item.getDisplayName(),null,actions),lookup,null,item);
+                        final Node n=new FNode(new NodeFactory.ActionNode(Children.LEAF,lookup,iPath,item.getDisplayName(),null,actions),lookup,null,item);
                         n.setValue("error",Boolean.TRUE);
                         brokenArray.add(n);
                         File parent=f.getParentFile();
@@ -392,7 +392,7 @@ class ConfigurationsProvider
                         final Lookup lookup = Lookups.fixed( new Object[] {project,conf, item} );
                         Children ch=new Children.Array();
                         ch.add(createPackage(project,conf,path,map,!gray,multi).toArray(new Node[0]));
-                        libNode=new FNode(new ActionNode(ch,lookup,xPath,item.getDisplayName(),null,null),lookup,gray?emptyAction:null,item);
+                        libNode=new FNode(new NodeFactory.ActionNode(ch,lookup,xPath,item.getDisplayName(),null,null),lookup,gray?emptyAction:null,item);
                         brokenArray.add(libNode);
 
                     }

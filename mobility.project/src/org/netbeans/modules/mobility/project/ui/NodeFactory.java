@@ -167,9 +167,8 @@ final class NodeFactory
         final Children child=new NodeKeys(new LinkedHashMap<String,Node>(),nodes);
         return new ResourcesNode(child,lookup,name,dName, icon, act);
     }
-}
 
-class ActionNode extends AbstractNode
+static class ActionNode extends AbstractNode
 {
     Action[] actions;    
     
@@ -233,7 +232,7 @@ class ActionNode extends AbstractNode
     }
 }
 
-class ProjCfgNode extends ActionNode implements AntProjectListener, PropertyChangeListener
+static class ProjCfgNode extends ActionNode implements AntProjectListener, PropertyChangeListener
 {
     private boolean broken = false;
     
@@ -497,7 +496,7 @@ class ProjCfgNode extends ActionNode implements AntProjectListener, PropertyChan
     }
 }
 
-class ResourcesNode extends ActionNode
+static class ResourcesNode extends ActionNode
 {
     private static final Image ICON_BADGE = Utilities.loadImage("org/netbeans/modules/mobility/project/ui/resources/libraries-badge.png");    //NOI18N
 
@@ -520,7 +519,7 @@ class ResourcesNode extends ActionNode
             {
                 if (set.size() != 0)                        
                 {
-                    NodeAction.pasteAction(set,ResourcesNode.this);
+                    NodeActions.NodeAction.pasteAction(set,ResourcesNode.this);
                     set.clear();
                 }
                     
@@ -644,7 +643,7 @@ class ResourcesNode extends ActionNode
     }    
 }
 
-class CfgNode extends ActionNode implements AntProjectListener, PropertyChangeListener
+static class CfgNode extends ActionNode implements AntProjectListener, PropertyChangeListener
 {
     protected boolean broken = false;
     final AntProjectHelper antHelper;
@@ -802,4 +801,5 @@ class CfgNode extends ActionNode implements AntProjectListener, PropertyChangeLi
     public void propertyChange(final PropertyChangeEvent evt) {
         checkBroken();
     }
+}
 }
