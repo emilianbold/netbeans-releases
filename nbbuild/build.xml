@@ -1417,7 +1417,28 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <fileset refid="harness-source-modules" />
     </zip>
   </target>
-  
+
+  <target name="build-source-config"
+    depends="init,set-buildnumber"
+    description="Packages sources needed to compile one cluster.config">
+    <property name="buildnum" value="${buildnumber}"/>
+    <echo message="Packaging sources of ${cluster.config} modules"/>
+
+    <taskdef name="resolvelist" classname="org.netbeans.nbbuild.ResolveList" classpath="nbantext.jar"/>
+    <resolvelist name="modules.for.checkout.list" list="${nb.clusters.list}"/>
+
+    <resolve name="harness-modules" value="nb.cluster.harness"/>
+    <mkdir dir="${netbeans.build.dir}"/>
+    <property name="source.zip.filename" location="${netbeans.build.dir}/${cluster.config}-src-${buildnum}.zip"/>
+    <taskdef name="definefileset" classname="org.netbeans.nbbuild.PrintCvsModules" classpath="nbantext.jar"/>
+    <definefileset modules="${modules.for.checkout.list}" id="source-modules" dir=".."/>
+    <definefileset modules="${harness-modules}" id="harness-source-modules" dir=".."/>
+    <zip zipfile="${netbeans.build.dir}/${cluster.config}-src-${buildnum}.zip" duplicate="preserve">
+      <fileset refid="source-modules"/>
+      <fileset refid="harness-source-modules"/>
+    </zip>
+  </target>
+
   <target name="generate-golden-files-init" depends="init,bootstrap" >
     <property name="template.files.dir" location="build/golden" />
     <property name="golden.files.dir" location="../ide/golden" />
