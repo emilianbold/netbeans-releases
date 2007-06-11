@@ -1046,11 +1046,14 @@
 		};
 		actions = (
 			{
-				name = "CreateTable";
-				class = org.netbeans.modules.db.explorer.actions.CreateTableAction;
-				node = tablelist;
-				perm = "write";
+				name = "ViewData";
+				class = org.netbeans.modules.db.explorer.actions.ViewDataAction;
 			},
+			{
+				name = "DesignQuery";
+				class = org.netbeans.modules.db.explorer.actions.DesignQueryAction;
+			},
+			delimiter,
 			{
 				name = "AddColumn";
 				class = org.netbeans.modules.db.explorer.actions.AddColumnAction;
@@ -1059,6 +1062,12 @@
 			{
 				name = "Refresh";
 				class = org.netbeans.modules.db.explorer.actions.RefreshChildrenAction;
+			},
+			{
+				name = "RemoveTable";
+				class = org.openide.actions.DeleteAction;
+				perm = "write";
+				system = YES;
 			},
 			delimiter,
 			{
@@ -1072,25 +1081,6 @@
 				perm = "write";
 			},
 			delimiter,
-			{
-				name = "ViewData";
-				class = org.netbeans.modules.db.explorer.actions.ViewDataAction;
-			},
-			{
-				name = "ExecuteCommand";
-				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
-			},
-			{
-				name = "DesignQuery";
-				class = org.netbeans.modules.db.explorer.actions.DesignQueryAction;
-			},
-			delimiter,
-			{
-				name = "RemoveTable";
-				class = org.openide.actions.DeleteAction;
-				perm = "write";
-				system = YES;
-			},
                         {
                                 name = "Properties";
                                 class = org.openide.actions.PropertiesAction;
@@ -1146,19 +1136,8 @@
 		};
 		actions = (
 			{
-				name = "AddColumn";
-				class = org.netbeans.modules.db.explorer.actions.AddColumnAction;
-				perm = "write";
-				node = table;
-			},
-			delimiter,
-			{
 				name = "ViewData";
 				class = org.netbeans.modules.db.explorer.actions.ViewDataAction;
-			},
-			{
-				name = "ExecuteCommand";
-				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
 			},
 			{
 				name = "DesignQuery";
@@ -1171,6 +1150,7 @@
 				perm = "write";
 				system = YES;
 			},
+			delimiter,
                         {
                                 name = "Properties";
                                 class = org.openide.actions.PropertiesAction;
