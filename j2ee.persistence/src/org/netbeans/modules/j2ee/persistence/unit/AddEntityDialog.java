@@ -19,19 +19,12 @@
 
 package org.netbeans.modules.j2ee.persistence.unit;
 
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
+import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -43,33 +36,12 @@ import org.openide.util.NbBundle;
  */
 public class AddEntityDialog {
     
-    private Project project;
-    private List existingClassNames;
-    
-    /** Creates a new instance of AddClassDialog */
-    public AddEntityDialog(Project project, String[] existingClassNames) {
-        this.project = project;
-        this.existingClassNames = Arrays.asList(existingClassNames);
-    }
-    
     /**
      * Opens dialog for adding entities.
      * @return fully qualified names of the selected entities' classes.
      */
-    public List<String> open(){
-        Set<Entity> entities = null;
-        try {
-            entities = new HashSet(PersistenceUtils.getEntityClasses(project));
-            for (Iterator<Entity> i = entities.iterator(); i.hasNext();) {
-                if (existingClassNames.contains(i.next().getClass2())) {
-                    i.remove();
-                }
-            }
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
-            entities = Collections.emptySet();
-        }
-        AddEntityPanel panel = new AddEntityPanel(entities);
+    public static List<String> open(EntityClassScope entityClassScope, Set<String> ignoreClassNames){
+        AddEntityPanel panel = AddEntityPanel.create(entityClassScope, ignoreClassNames);
         
         final DialogDescriptor nd = new DialogDescriptor(
                 panel,
@@ -87,7 +59,7 @@ public class AddEntityDialog {
             return Collections.emptyList();
         }
         
-        return panel.getSelectedEntityClasses();
+        return Collections.unmodifiableList(panel.getSelectedEntityClasses());
     }
     
 }

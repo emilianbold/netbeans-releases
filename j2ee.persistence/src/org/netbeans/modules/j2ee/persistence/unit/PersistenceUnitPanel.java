@@ -20,7 +20,10 @@
 package org.netbeans.modules.j2ee.persistence.unit;
 
 import java.awt.CardLayout;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.DefaultListModel;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.db.explorer.ConnectionManager;
@@ -28,6 +31,7 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Properties;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Property;
@@ -764,9 +768,14 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
     }//GEN-LAST:event_removeClassButtonActionPerformed
     
     private void addClassButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addClassButtonActionPerformed
-        String[] existingClasses = persistenceUnit.getClass2();
-        AddEntityDialog dialog = new AddEntityDialog(project, existingClasses);
-        for (String entityClass : dialog.open()) {
+        EntityClassScope entityClassScope = EntityClassScope.getEntityClassScope(dObj.getPrimaryFile());
+        if (entityClassScope == null) {
+            return;
+        }
+        String[] existingClassNames = persistenceUnit.getClass2();
+        Set<String> ignoreClassNames = new HashSet<String>(Arrays.asList(existingClassNames));
+        List<String> addedClassNames = AddEntityDialog.open(entityClassScope, ignoreClassNames);
+        for (String entityClass : addedClassNames) {
             if (dObj.addClass(persistenceUnit, entityClass)){
                 ((DefaultListModel)entityList.getModel()).addElement(entityClass);
             }
