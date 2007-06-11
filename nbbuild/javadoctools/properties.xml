@@ -126,3 +126,5 @@ Microsystems, Inc. All Rights Reserved.
 <property name="javadoc.docs.org-netbeans-modules-autoupdate-services" value="${javadoc.web.root}/org-netbeans-modules-autoupdate-services"/>
 <property name="javadoc.docs.org-netbeans-modules-refactoring-api" value="${javadoc.web.root}/org-netbeans-modules-refactoring-api"/>
 <property name="javadoc.docs.org-netbeans-core-startup" value="${javadoc.web.root}/org-netbeans-core-startup"/>
+<property name="javadoc.docs.org-netbeans-modules-xml-xdm" value="${javadoc.web.root}/org-netbeans-modules-xml-xdm"/>
+<property name="javadoc.docs.org-netbeans-modules-xml-xam" value="${javadoc.web.root}/org-netbeans-modules-xml-xam"/>
