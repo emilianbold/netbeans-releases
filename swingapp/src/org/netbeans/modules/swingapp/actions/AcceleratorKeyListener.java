@@ -18,10 +18,12 @@
  */
 package org.netbeans.modules.swingapp.actions;
 
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import org.netbeans.modules.swingapp.ActionPropertyEditorPanel;
 
 /**
  * The AcceleratorKeyListener is a special KeyListener which can watch for
@@ -32,12 +34,20 @@ import javax.swing.KeyStroke;
  */
 public class AcceleratorKeyListener implements KeyListener {
 
-    int currentKeyCode = 0;
+    private int currentKeyCode = 0;
+    private KeyStroke keyStroke = null;
+    private ActionPropertyEditorPanel panel;
 
+    public AcceleratorKeyListener(ActionPropertyEditorPanel panel) {
+        this.panel = panel;
+    }
+    
     public void keyPressed(KeyEvent ke) {
         ke.consume();
         JTextField tf = (JTextField) ke.getSource();
-        tf.setText(toString(ke));
+        setModifiers(ke);
+        String s = toString(ke);
+        tf.setText(s);
     }
 
     public void keyReleased(KeyEvent ke) {
@@ -48,11 +58,7 @@ public class AcceleratorKeyListener implements KeyListener {
             case KeyEvent.VK_ALT_GRAPH:
             case KeyEvent.VK_CONTROL:
             case KeyEvent.VK_SHIFT:
-
-
                 tf.setText("");
-
-
                 return;
         }
     }
@@ -60,10 +66,54 @@ public class AcceleratorKeyListener implements KeyListener {
     public void keyTyped(KeyEvent ke) {
         ke.consume();
     }
-
-    private String toString(KeyEvent ke) {
-        KeyStroke keyStroke = KeyStroke.getKeyStrokeForEvent(ke);
-        int keyCode = currentKeyCode = ke.getKeyCode();
-        return keyStroke.toString();
+    
+    public void setCurrentKeyStroke(KeyStroke ks) {
+        keyStroke = ks;
+        clearFields();
+        if(ks != null) {
+            currentKeyCode = keyStroke.getKeyCode();
+            panel.acceleratorText.setText(KeyEvent.getKeyText(currentKeyCode));
+            panel.shiftCheckbox.setSelected((keyStroke.getModifiers() & InputEvent.SHIFT_DOWN_MASK) > 0);
+            panel.controlCheckbox.setSelected((keyStroke.getModifiers() & InputEvent.CTRL_DOWN_MASK) > 0);
+            panel.altCheckbox.setSelected((keyStroke.getModifiers() & InputEvent.ALT_DOWN_MASK) > 0);
+            panel.metaCheckbox.setSelected((keyStroke.getModifiers() & InputEvent.META_DOWN_MASK) > 0);
+        };
     }
+    
+    public KeyStroke getCurrentKeyStroke() {
+       return keyStroke;
+    }
+    
+    public void clearFields() {
+        panel.shiftCheckbox.setSelected(false);
+        panel.controlCheckbox.setSelected(false);
+        panel.altCheckbox.setSelected(false);
+        panel.metaCheckbox.setSelected(false);
+        panel.acceleratorText.setText("");
+    }
+    
+    public void setEnabled(boolean enabled) {
+        panel.shiftCheckbox.setEnabled(enabled);
+        panel.controlCheckbox.setEnabled(enabled);
+        panel.altCheckbox.setEnabled(enabled);
+        panel.metaCheckbox.setEnabled(enabled);
+        panel.acceleratorText.setEnabled(enabled);
+    }
+
+    
+    
+    private void setModifiers(KeyEvent ke) {
+        panel.shiftCheckbox.setSelected(ke.isShiftDown());
+        panel.controlCheckbox.setSelected(ke.isControlDown());
+        panel.altCheckbox.setSelected(ke.isAltDown());
+        panel.metaCheckbox.setSelected(ke.isMetaDown());
+    }
+    
+    
+    private String toString(KeyEvent ke) {
+        keyStroke = KeyStroke.getKeyStrokeForEvent(ke);
+        currentKeyCode = ke.getKeyCode();
+        return ke.getKeyText(currentKeyCode);
+    }
+    
 }
