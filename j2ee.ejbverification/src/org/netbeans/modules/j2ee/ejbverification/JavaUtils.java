@@ -45,6 +45,14 @@ public class JavaUtils {
         return null;
     }
     
+    /**
+     * A convenience method, returns true if findAnnotation(...) != null
+     */
+    public static boolean hasAnnotation(Element element, String annClass){
+        AnnotationMirror annEntity = findAnnotation(element, annClass);
+        return annEntity != null;
+    }
+    
     public static AnnotationMirror findAnnotation(Element element, String annotationClass){
         for (AnnotationMirror ann : element.getAnnotationMirrors()){
             if (annotationClass.equals(ann.getAnnotationType().toString())){
