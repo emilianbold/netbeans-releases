@@ -245,9 +245,12 @@ public final class HighlightingManager {
         }
         
         private synchronized void rebuildAllContainers() {
-            if (!inRebuildAllContainers) {
-                inRebuildAllContainers = true;
-                
+            if (inRebuildAllContainers) {
+                return;
+            }
+            
+            inRebuildAllContainers = true;
+            try {
                 for(HighlightsLayerFilter filter : containers.keySet()) {
                     WeakReference<CompoundHighlightsContainer> ref = containers.get(filter);
                     CompoundHighlightsContainer container = ref == null ? null : ref.get();
@@ -256,6 +259,8 @@ public final class HighlightingManager {
                         rebuildContainer(filter, container);
                     }
                 }
+            } finally {
+                inRebuildAllContainers = false;
             }
         }
 
