@@ -67,8 +67,6 @@ public class WrongStringComparison extends AbstractHint {
         
         BinaryTree bt = (BinaryTree) t;
         
-        System.out.println("BT " + bt);
-        
         TreePath left = new TreePath(treePath, bt.getLeftOperand() );
         TreePath right = new TreePath(treePath, bt.getRightOperand() );
         
