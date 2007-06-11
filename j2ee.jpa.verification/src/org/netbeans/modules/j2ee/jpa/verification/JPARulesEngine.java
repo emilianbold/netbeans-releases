@@ -33,6 +33,7 @@ import org.netbeans.modules.j2ee.jpa.verification.rules.entity.JPAAnnotsOnlyOnAc
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.LegalCombinationOfAnnotations;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.NoIdClassOnEntitySubclass;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.NonFinalClass;
+import org.netbeans.modules.j2ee.jpa.verification.rules.entity.OnlyEntityOrMappedSuperclassCanUseIdClass;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.PersistenceUnitPresent;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.PublicClass;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.QueriesProperlyDefined;
@@ -66,6 +67,7 @@ public class JPARulesEngine extends RulesEngine {
         classRules.add(new LegalCombinationOfAnnotations());
         classRules.add(new JPAAnnotsOnlyOnAccesor());
         classRules.add(new QueriesProperlyDefined());
+        classRules.add(new OnlyEntityOrMappedSuperclassCanUseIdClass());
     }
     
     protected Collection<Rule<TypeElement>> getClassRules() {
