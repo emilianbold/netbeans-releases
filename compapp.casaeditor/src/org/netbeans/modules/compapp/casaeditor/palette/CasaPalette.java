@@ -105,7 +105,7 @@ public class CasaPalette {
         // For now just hard code this in.
         // This eventually should be replaced with a lookup for 
         // external service providers.
-        plugins.add(new AspectPalettePlugin());
+//        plugins.add(new AspectPalettePlugin());
         
         return plugins;
     }
