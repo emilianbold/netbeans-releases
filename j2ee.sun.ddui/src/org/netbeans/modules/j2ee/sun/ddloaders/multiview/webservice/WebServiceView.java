@@ -20,8 +20,8 @@ package org.netbeans.modules.j2ee.sun.ddloaders.multiview.webservice;
 
 import java.util.HashSet;
 import java.util.Set;
-import org.netbeans.modules.j2ee.sun.dd.api.client.SunApplicationClient;
 import org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceDescription;
+import org.netbeans.modules.j2ee.sun.dd.api.ejb.SunEjbJar;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.DDSectionNodeView;
@@ -38,7 +38,7 @@ public class WebServiceView extends DDSectionNodeView {
     public WebServiceView(SunDescriptorDataObject dataObject) {
         super(dataObject);
         
-        if(!(rootDD instanceof SunWebApp || rootDD instanceof SunApplicationClient)) {
+        if(!(rootDD instanceof SunWebApp || rootDD instanceof SunEjbJar)) {
             throw new IllegalArgumentException("Data object is not a root that contains webservice-description elements (" + rootDD + ")");
         }
         
