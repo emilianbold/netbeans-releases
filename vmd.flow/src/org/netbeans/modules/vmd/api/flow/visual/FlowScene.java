@@ -115,7 +115,7 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
         addChild (connectionLayer = new LayerWidget (this));
         addChild (interractionLayer = new LayerWidget (this));
 
-        moveAction = ActionFactory.createMoveAction ();
+        moveAction = ActionFactory.createMoveAction (null, new FlowMoveProvider ());
         acceptAction = ActionFactory.createAcceptAction (new FlowAcceptProvider ());
         FlowConnectDecoratorProvider flowConnectDecoratorProvider = new FlowConnectDecoratorProvider ();
         connectAction = ActionFactory.createConnectAction (flowConnectDecoratorProvider, interractionLayer, flowConnectDecoratorProvider);
@@ -846,6 +846,46 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
                 }
             });
         }
+    }
+
+    private class FlowMoveProvider implements MoveProvider {
+
+        private HashMap<Widget, Point> originals = new HashMap<Widget, Point> ();
+        private Point original;
+
+        public void movementStarted (Widget widget) {
+            Object object = findObject (widget);
+            if (isNode (object)) {
+                for (Object o : getSelectedObjects ())
+                    if (isNode (o)) {
+                        Widget w = findWidget (o);
+                        if (w != null)
+                            originals.put (w, w.getPreferredLocation ());
+                    }
+            } else {
+                originals.put (widget, widget.getPreferredLocation ());
+            }
+        }
+
+        public void movementFinished (Widget widget) {
+            originals.clear ();
+            original = null;
+        }
+
+        public Point getOriginalLocation (Widget widget) {
+            original = widget.getPreferredLocation ();
+            return original;
+        }
+
+        public void setNewLocation (Widget widget, Point location) {
+            int dx = location.x - original.x;
+            int dy = location.y - original.y;
+            for (Map.Entry<Widget, Point> entry : originals.entrySet ()) {
+                Point point = entry.getValue ();
+                entry.getKey ().setPreferredLocation (new Point (point.x + dx, point.y + dy));
+            }
+        }
+
     }
 
     private final static class CacheNodeDescriptor {
