@@ -6,10 +6,27 @@
 
 package org.netbeans.modules.java.hints;
 
+import java.awt.Dialog;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
+import javax.swing.BorderFactory;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -21,10 +38,83 @@ public class ForbiddenImportsCustomizer extends javax.swing.JPanel {
     private static String FORBIDDEN_IMPORTS_DEFAULT = "sun.**"; // NOI18N
     private static String IMPORTS_DELIMITER = ";"; // NOI18N
     
+    private Preferences prefs;
+    
     /** Creates new form ForbiddenImports */
     public ForbiddenImportsCustomizer(Preferences node) {
+        this.prefs = node;
         initComponents();
+        DefaultListModel model = new DefaultListModel();
+        for( String item : getForbiddenImports(node) ) {
+            model.addElement( item );
+        }
+        listItems.setModel( model );
+        listItems.addListSelectionListener( new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                enableButtons();
+            }
+        });
+        enableButtons();
     }
+    
+    private void enableButtons() {
+        int selIndex = listItems.getSelectedIndex();
+        btnEdit.setEnabled( selIndex >= 0 );
+        btnRemove.setEnabled( selIndex >= 0 );
+    }
+    
+    private void updatePreferences() {
+        String[] items = new String[listItems.getModel().getSize()];
+        for( int i=0; i<((DefaultListModel)listItems.getModel()).size(); i++ ) {
+            items[i] = (String)listItems.getModel().getElementAt(i);
+        }
+        prefs.put(FORBIDDEN_IMPORTS_KEY, encodeForbiddenImports( items ));
+    }
+    
+    private String showInputDialog( String initialValue ) {
+        String title = null == initialValue ? NbBundle.getMessage( ForbiddenImportsCustomizer.class, "ForbiddenImportsCustomizer.titleAdd" ) //NOI18N
+                : NbBundle.getMessage( ForbiddenImportsCustomizer.class, "ForbiddenImportsCustomizer.titleEdit" ); //NOI18N
+        final JButton btnOk = new JButton( null == initialValue ? NbBundle.getMessage( ForbiddenImportsCustomizer.class, "ForbiddenImportsCustomizer.btnAdd" ) //NOI18N
+                : NbBundle.getMessage( ForbiddenImportsCustomizer.class, "ForbiddenImportsCustomizer.btnEdit" ) ); //NOI18N
+        btnOk.setEnabled( null != initialValue );
+        JButton btnCancel = new JButton( NbBundle.getMessage( ForbiddenImportsCustomizer.class, "ForbiddenImportsCustomizer.btnCancel" ) ); //NOI18N
+        
+        JPanel panel = new JPanel( new GridBagLayout() );
+        panel.setBorder( BorderFactory.createEmptyBorder(10, 10, 0, 10) );
+        
+        JTextField input = new JTextField();
+        input.setText( null == initialValue ? "" : initialValue );
+        input.getDocument().addDocumentListener( new DocumentListener() {
+
+            public void insertUpdate(DocumentEvent e) {
+                btnOk.setEnabled( e.getDocument().getLength() > 0 );
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                btnOk.setEnabled( e.getDocument().getLength() > 0 );
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                btnOk.setEnabled( e.getDocument().getLength() > 0 );
+            }
+        });
+        
+        panel.add( new JLabel(NbBundle.getMessage( ForbiddenImportsCustomizer.class, "ForbiddenImportsCustomizer.label" ) ),  //NOI18N
+                new GridBagConstraints(0,0,1,1,0.0,0.0,GridBagConstraints.WEST,GridBagConstraints.NONE,new Insets(0,0,0,5),0,0) );
+        panel.add( input, new GridBagConstraints(1,0,1,1,1.0,0.0,GridBagConstraints.WEST,GridBagConstraints.HORIZONTAL,new Insets(0,0,0,0),0,0) );
+        panel.add( new JLabel(NbBundle.getMessage(ForbiddenImportsCustomizer.class, "ForbiddenImportsCustomizer.hint") ),  //NOI18N 
+                new GridBagConstraints(1,1,1,1,1.0,0.0,GridBagConstraints.WEST,GridBagConstraints.HORIZONTAL,new Insets(5,0,0,0),0,0) );
+        
+        DialogDescriptor dd = new DialogDescriptor(panel, title, true, 
+                new Object[] { btnOk, btnCancel }, btnOk, 
+                DialogDescriptor.DEFAULT_ALIGN, null, null );
+        Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
+        dlg.setVisible( true );
+        if( btnOk == dd.getValue() ) {
+            return input.getText();
+        }
+        return null;
+    } 
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -36,20 +126,21 @@ public class ForbiddenImportsCustomizer extends javax.swing.JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         jScrollPane1 = new javax.swing.JScrollPane();
-        jList1 = new javax.swing.JList();
+        listItems = new javax.swing.JList();
         jPanel1 = new javax.swing.JPanel();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
+        btnAdd = new javax.swing.JButton();
+        btnEdit = new javax.swing.JButton();
+        btnRemove = new javax.swing.JButton();
 
+        setOpaque(false);
         setLayout(new java.awt.GridBagLayout());
 
-        jList1.setModel(new javax.swing.AbstractListModel() {
+        listItems.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
         });
-        jScrollPane1.setViewportView(jList1);
+        jScrollPane1.setViewportView(listItems);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
@@ -58,27 +149,43 @@ public class ForbiddenImportsCustomizer extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         add(jScrollPane1, gridBagConstraints);
 
+        jPanel1.setOpaque(false);
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jButton1.setText(org.openide.util.NbBundle.getMessage(ForbiddenImportsCustomizer.class, "ForbiddenImportsCustomizer.jButton1.text")); // NOI18N
+        btnAdd.setText(org.openide.util.NbBundle.getMessage(ForbiddenImportsCustomizer.class, "ForbiddenImportsCustomizer.btnAdd.text")); // NOI18N
+        btnAdd.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addItem(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
-        jPanel1.add(jButton1, gridBagConstraints);
+        jPanel1.add(btnAdd, gridBagConstraints);
 
-        jButton2.setText(org.openide.util.NbBundle.getMessage(ForbiddenImportsCustomizer.class, "ForbiddenImportsCustomizer.jButton2.text")); // NOI18N
+        btnEdit.setText(org.openide.util.NbBundle.getMessage(ForbiddenImportsCustomizer.class, "ForbiddenImportsCustomizer.btnEdit.text")); // NOI18N
+        btnEdit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editItem(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
-        jPanel1.add(jButton2, gridBagConstraints);
+        jPanel1.add(btnEdit, gridBagConstraints);
 
-        jButton3.setText(org.openide.util.NbBundle.getMessage(ForbiddenImportsCustomizer.class, "ForbiddenImportsCustomizer.jButton3.text")); // NOI18N
+        btnRemove.setText(org.openide.util.NbBundle.getMessage(ForbiddenImportsCustomizer.class, "ForbiddenImportsCustomizer.btnRemove.text")); // NOI18N
+        btnRemove.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeItem(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
@@ -86,7 +193,7 @@ public class ForbiddenImportsCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        jPanel1.add(jButton3, gridBagConstraints);
+        jPanel1.add(btnRemove, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -95,15 +202,52 @@ public class ForbiddenImportsCustomizer extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
         add(jPanel1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
+
+private void removeItem(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeItem
+    int selIndex = listItems.getSelectedIndex();
+    if( selIndex < 0 )
+        return;
+    ((DefaultListModel)listItems.getModel()).remove( selIndex );
+    selIndex++;
+    if( selIndex > listItems.getModel().getSize()-1 )
+        selIndex = listItems.getModel().getSize()-1;
+    listItems.getSelectionModel().setSelectionInterval( selIndex, selIndex );
+    updatePreferences();
+}//GEN-LAST:event_removeItem
+
+private void editItem(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editItem
+    int selIndex = listItems.getSelectedIndex();
+    if( selIndex < 0 )
+        return;
+    String initialValue = (String)((DefaultListModel)listItems.getModel()).get( selIndex );
+    String newValue = showInputDialog( initialValue );
+    if( null != newValue ) {
+        ((DefaultListModel)listItems.getModel()).set( selIndex, newValue );
+        listItems.getSelectionModel().setSelectionInterval( selIndex, selIndex );
+        updatePreferences();
+    }
+}//GEN-LAST:event_editItem
+
+private void addItem(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addItem
+    String newValue = showInputDialog( null );
+    if( null != newValue ) {
+        ((DefaultListModel)listItems.getModel()).addElement( newValue );
+        int count = listItems.getModel().getSize();
+        if( count > 0 )
+            listItems.getSelectionModel().setSelectionInterval( count-1, count-1 );
+        updatePreferences();
+    }
+
+}//GEN-LAST:event_addItem
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JList jList1;
+    private javax.swing.JButton btnAdd;
+    private javax.swing.JButton btnEdit;
+    private javax.swing.JButton btnRemove;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JList listItems;
     // End of variables declaration//GEN-END:variables
     
     public static String encodeForbiddenImports( String[] forbiddenImports ) {
