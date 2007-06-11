@@ -124,6 +124,7 @@ public final class HighlightingManager {
         private HighlightsLayerFilter paneFilter;
         private Document lastKnownDocument = null;
         private MimePath [] lastKnownMimePaths = null;
+        private boolean inRebuildAllContainers = false;
         
         private final WeakHashMap<HighlightsLayerFilter, WeakReference<CompoundHighlightsContainer>> containers = 
             new WeakHashMap<HighlightsLayerFilter, WeakReference<CompoundHighlightsContainer>>();
@@ -244,12 +245,16 @@ public final class HighlightingManager {
         }
         
         private synchronized void rebuildAllContainers() {
-            for(HighlightsLayerFilter filter : containers.keySet()) {
-                WeakReference<CompoundHighlightsContainer> ref = containers.get(filter);
-                CompoundHighlightsContainer container = ref == null ? null : ref.get();
+            if (!inRebuildAllContainers) {
+                inRebuildAllContainers = true;
                 
-                if (container != null) {
-                    rebuildContainer(filter, container);
+                for(HighlightsLayerFilter filter : containers.keySet()) {
+                    WeakReference<CompoundHighlightsContainer> ref = containers.get(filter);
+                    CompoundHighlightsContainer container = ref == null ? null : ref.get();
+
+                    if (container != null) {
+                        rebuildContainer(filter, container);
+                    }
                 }
             }
         }
