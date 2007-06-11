@@ -843,7 +843,10 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                     if(selectedConnection.getDatabaseURL().startsWith("jdbc:axiondb:")) {
                         schemaComboBox.setEnabled(false);
                         populateTableList("");
-                    } else {
+                    } else if(selectedConnection.getDatabaseURL().startsWith("jdbc:mysql:")) {
+                        schemaComboBox.setEnabled(false);
+                        populateTableList("");
+                    } else  {
                         // Get all Schemas from meta
                         schemaComboBox.setEnabled(true);
                         String[] schemas = meta.getSchemas();
