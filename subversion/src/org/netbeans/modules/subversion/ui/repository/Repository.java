@@ -240,7 +240,9 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         textChanged(e);
     }
 
-    public void changedUpdate(DocumentEvent e) { }
+    public void changedUpdate(DocumentEvent e) { 
+        textChanged(e);
+    }
 
     private void textChanged(final DocumentEvent e) {
         // repost later to AWT otherwise it can deadlock because
@@ -560,7 +562,9 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             refresh(rc);
             updateVisibility();  
             editedRC = new RepositoryConnection(rc);           
-        }        
+        } else if(evt.getStateChange() == ItemEvent.DESELECTED) {
+            updateVisibility();  
+        }       
     }
     
     private void refresh(RepositoryConnection rc) {        
