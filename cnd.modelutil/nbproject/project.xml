@@ -4,7 +4,6 @@
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.cnd.modelutil</code-name-base>
-            <suite-component/>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.netbeans.modules.cnd</code-name-base>
