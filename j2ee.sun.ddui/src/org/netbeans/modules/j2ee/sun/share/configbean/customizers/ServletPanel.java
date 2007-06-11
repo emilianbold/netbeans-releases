@@ -19,9 +19,7 @@
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers;
 
 import java.awt.Dimension;
-import java.awt.Image;
 import java.util.ResourceBundle;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
@@ -36,7 +34,6 @@ import org.netbeans.modules.xml.multiview.ItemEditorHelper;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
-import org.openide.util.Utilities;
 
 
 /**
@@ -92,30 +89,6 @@ public class ServletPanel extends SectionNodeInnerPanel {
 
         jTxtName.setEditable(!servletNode.getBinding().isBound());
         handleRoleFields(servletNode.getBinding());
-
-        updateOrigin();
-    }
-
-    private void updateOrigin() {
-        DDBinding binding = servletNode.getBinding();
-        String origin = binding.hasStandardDDBinding() ? "Standard DD" : 
-                binding.hasAnnotationBinding() ? "Annotation" : "Unbound";
-        if(binding.isVirtual()) {
-            origin += " (virtual)";
-        }
-        jTxtOrigin.setText(origin);
-
-        Image originImage = getOriginImage(binding);
-        jLblOriginImage.setIcon(new ImageIcon(originImage));
-    }
-
-    public static final String UNBOUND_ICON = "org/netbeans/modules/j2ee/sun/ddloaders/resources/UnBoundDD.gif";
-    public static final String BOUND_STANDARD_DD_ICON = "org/netbeans/modules/j2ee/sun/ddloaders/resources/BoundStandardDD.gif";
-    public static final String BOUND_ANNOTATION_ICON = "org/netbeans/modules/j2ee/sun/ddloaders/resources/BoundAnnotation.gif";
-
-    public Image getOriginImage(DDBinding binding) {
-        String iconRef = binding.isBound() ? (binding.isAnnotated() ? BOUND_ANNOTATION_ICON : BOUND_STANDARD_DD_ICON) : UNBOUND_ICON;
-        return Utilities.loadImage(iconRef);
     }
 
     /** This method is called from within the constructor to
@@ -128,11 +101,8 @@ public class ServletPanel extends SectionNodeInnerPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         jPnlServlet = new javax.swing.JPanel();
-        jLblOriginImage = new javax.swing.JLabel();
         jLblName = new javax.swing.JLabel();
         jTxtName = new javax.swing.JTextField();
-        jLblOrigin = new javax.swing.JLabel();
-        jTxtOrigin = new javax.swing.JLabel();
         jLblRoleUsageDescription = new javax.swing.JLabel();
         jLblRunAsRoleName = new javax.swing.JLabel();
         jTxtRunAsRoleName = new javax.swing.JTextField();
@@ -148,12 +118,6 @@ public class ServletPanel extends SectionNodeInnerPanel {
         jPnlServlet.setOpaque(false);
         jPnlServlet.setLayout(new java.awt.GridBagLayout());
 
-        jLblOriginImage.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
-        jPnlServlet.add(jLblOriginImage, gridBagConstraints);
-
         jLblName.setLabelFor(jTxtName);
         jLblName.setText(customizerBundle.getString("LBL_ServletName_1")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -161,8 +125,6 @@ public class ServletPanel extends SectionNodeInnerPanel {
         gridBagConstraints.ipady = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPnlServlet.add(jLblName, gridBagConstraints);
-
-        jTxtName.setText("asdfasf");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -172,21 +134,6 @@ public class ServletPanel extends SectionNodeInnerPanel {
         jPnlServlet.add(jTxtName, gridBagConstraints);
         jTxtName.getAccessibleContext().setAccessibleName(customizerBundle.getString("ACSN_ServletName")); // NOI18N
         jTxtName.getAccessibleContext().setAccessibleDescription(customizerBundle.getString("ACSD_ServletName")); // NOI18N
-
-        jLblOrigin.setText("Origin:");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
-        jPnlServlet.add(jLblOrigin, gridBagConstraints);
-
-        jTxtOrigin.setText("(unknown)");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
-        jPnlServlet.add(jTxtOrigin, gridBagConstraints);
 
         jLblRoleUsageDescription.setLabelFor(jTxtPrincipalName);
         jLblRoleUsageDescription.setText(customizerBundle.getString("LBL_ServletRunAsDescription")); // NOI18N
@@ -289,15 +236,12 @@ public class ServletPanel extends SectionNodeInnerPanel {
     private javax.swing.JLabel jLblClassNameUsageDesc;
     private javax.swing.JLabel jLblEndpointHelp;
     private javax.swing.JLabel jLblName;
-    private javax.swing.JLabel jLblOrigin;
-    private javax.swing.JLabel jLblOriginImage;
     private javax.swing.JLabel jLblPrincipalName;
     private javax.swing.JLabel jLblRoleUsageDescription;
     private javax.swing.JLabel jLblRunAsRoleName;
     private javax.swing.JPanel jPnlServlet;
     private javax.swing.JTextField jTxtClassName;
     private javax.swing.JTextField jTxtName;
-    private javax.swing.JLabel jTxtOrigin;
     private javax.swing.JTextField jTxtPrincipalName;
     private javax.swing.JTextField jTxtRunAsRoleName;
     // End of variables declaration//GEN-END:variables
@@ -446,7 +390,7 @@ public class ServletPanel extends SectionNodeInnerPanel {
 
             // If this was a virtual bean, commit it to the graph.
             if(servletNode.addVirtualBean()) {
-                updateOrigin();
+                // TODO Code to update display based on virtual -> non virtual transition can go here.
             }
         }
         
