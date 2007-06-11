@@ -25,6 +25,7 @@ import java.net.MalformedURLException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -47,17 +48,21 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelerFactory;
 import org.netbeans.modules.websvc.design.util.SourceUtils;
+import org.netbeans.modules.websvc.design.view.actions.JavaParamModel;
 import org.netbeans.modules.websvc.design.view.actions.ParamModel;
 import org.netbeans.modules.websvc.design.view.actions.Utils;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.xml.schema.model.ElementReference;
 import org.netbeans.modules.xml.schema.model.GlobalComplexType;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
+import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.LocalElement;
 import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
 import org.netbeans.modules.xml.schema.model.Schema;
+import org.netbeans.modules.xml.schema.model.SchemaComponentFactory;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.schema.model.Sequence;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingFault;
@@ -95,12 +100,204 @@ import org.openide.filesystems.FileObject;
  */
 public class OperationGeneratorHelper {
     File wsdlFile;
+    Map<String, String> types;
+    Collection<GlobalSimpleType> primitives;
     
     /** Creates a new instance of MethodGeneratorHelper */
     public OperationGeneratorHelper(File wsdlFile) {
         this.wsdlFile=wsdlFile;
+        
     }
     
+    public Operation addWsOperatonFromJava(WSDLModel wsdlModel, String interfaceName, String operationName, List<JavaParamModel> parameterTypes, String returnType,
+            List<JavaParamModel>faultTypes){
+        WSDLComponentFactory factory = wsdlModel.getFactory();
+        Definitions definitions = wsdlModel.getDefinitions();
+        Types types = definitions.getTypes();
+        Operation operation = null;
+        try{
+            wsdlModel.startTransaction();
+            
+            operation = factory.createRequestResponseOperation();
+            operation.setName(operationName);
+            Message inputMessage=null;
+            GlobalElement paramElement=null;
+            GlobalElement returnElement = null;
+            List<GlobalElement> faultElements = new ArrayList<GlobalElement>();
+            SchemaModel schemaModel = null;
+            Schema schema = null;
+            
+            Collection<Schema> schemas = types.getSchemas();
+            Iterator<Schema> it = schemas.iterator();
+            if (it.hasNext()) {
+                schema = it.next();
+                schemaModel = schema.getModel();
+                Collection<GlobalSimpleType> simpleTypes = SchemaModelFactory.getDefault().getPrimitiveTypesModel().getSchema().getSimpleTypes();
+                for(GlobalSimpleType t :simpleTypes){
+                    
+                }
+            }
+            if(parameterTypes.size() > 0){
+                if(schemaModel == null) {
+                    schemaModel = createSchemaModel(factory, definitions, types);
+                    schema = schemaModel.getSchema();
+                }
+                //wrap the parameters in a global element
+                GlobalComplexType complexType = schemaModel.getFactory().createGlobalComplexType();
+                complexType.setName(operationName);
+                Sequence seq = schemaModel.getFactory().createSequence();
+                complexType.setDefinition(seq);
+                schema.addComplexType(complexType);
+                
+                for(JavaParamModel param : parameterTypes) {
+                    addElementToSequence(seq, schemaModel, param);
+                }
+                paramElement = schemaModel.getFactory().createGlobalElement();
+                paramElement.setName(getUniqueGlobalElementName(schema, operationName)); //NOI18N
+                NamedComponentReference<GlobalType> complexTypeRef = schema.createReferenceTo((GlobalType)complexType, GlobalType.class);
+                paramElement.setType(complexTypeRef);
+                schema.addElement(paramElement);
+                
+                if (paramElement!=null) {
+                    if(inputMessage == null){
+                        inputMessage = factory.createMessage();
+                        inputMessage.setName(operationName);
+                        definitions.addMessage(inputMessage);
+                    }
+                    Part part = factory.createPart();
+                    part.setName("parameters");
+                    NamedComponentReference<GlobalElement> ref = part.createSchemaReference(paramElement, GlobalElement.class);
+                    part.setElement(ref);
+                    inputMessage.addPart(part);
+                }
+                
+                if (inputMessage!=null) {
+                    Input input = factory.createInput();
+                    NamedComponentReference<Message> inputRef = input.createReferenceTo(inputMessage, Message.class);
+                    input.setName(operationName);
+                    input.setMessage(inputRef);
+                    operation.setInput(input);
+                }
+                Message outputMessage=null;
+                if(returnType != null) {  //if the operation returns something
+                    if(schemaModel == null){
+                        schemaModel = createSchemaModel(factory, definitions, types);
+                        schema = schemaModel.getSchema();
+                    }
+                    GlobalComplexType responseComplexType = schemaModel.getFactory().createGlobalComplexType();
+                    responseComplexType.setName(operationName + "Response"); //NOI18N
+                    Sequence seq1 = schemaModel.getFactory().createSequence();
+                    responseComplexType.setDefinition(seq1);
+                    schema.addComplexType(responseComplexType);
+                    LocalElement el = schemaModel.getFactory().createLocalElement();
+                    GlobalSimpleType simpleType = getPrimitiveType(returnType);
+                    NamedComponentReference<GlobalType> typeRef = schema.createReferenceTo((GlobalType)simpleType, GlobalType.class);
+                    el.setName("result"); //NOI18N
+                    el.setType(typeRef);
+                    seq1.appendContent(el);
+                    
+                    returnElement = schemaModel.getFactory().createGlobalElement();
+                    returnElement.setName(this.getUniqueGlobalElementName(schema, operationName + "Response"));
+                    NamedComponentReference<GlobalType> responseTypeRef = schema.createReferenceTo((GlobalType)responseComplexType, GlobalType.class);
+                    returnElement.setType(responseTypeRef);
+                    schema.addElement(returnElement);
+                }
+                if (returnElement!=null) {
+                    outputMessage = factory.createMessage();
+                    outputMessage.setName(operationName + "Response");
+                    Part outpart = factory.createPart();
+                    outpart.setName("result");
+                    NamedComponentReference<GlobalElement> outref = outpart.createSchemaReference(returnElement, GlobalElement.class);
+                    outpart.setElement(outref);
+                    outputMessage.addPart(outpart);
+                    definitions.addMessage(outputMessage);
+                }
+                
+                
+                if (outputMessage!=null) {
+                    Output output = factory.createOutput();
+                    NamedComponentReference<Message> outputRef = output.createReferenceTo(outputMessage, Message.class);
+                    output.setName(operationName + "Response");
+                    output.setMessage(outputRef);
+                    operation.setOutput(output);
+                }
+                Collection<PortType> portTypes = definitions.getPortTypes();
+                PortType portType = null;
+                for(PortType p : portTypes){
+                    if(p.getName().equals(interfaceName)){
+                        portType = p;
+                        break;
+                    }
+                }
+                if(portType != null){
+                    portType.addOperation(operation);
+                } else{
+                    //TODO: what will we do if portType is not found?
+                    return null;
+                }
+                
+                //Add binding section for operation, if there is a binding section
+                //Assume SOAP binding only
+                Collection<Binding> bindings = definitions.getBindings();
+                Binding binding = null;
+                if(portType != null && bindings.size() > 0){
+                    //find binding for portType
+                    binding = findBindingForPortType(bindings, portType);
+                    if(binding != null){
+                        //determine if it is soap binding
+                        List<SOAPBinding> soapBindings = binding.getExtensibilityElements(SOAPBinding.class);
+                        if(soapBindings.size() > 0){  //it is SOAP binding
+                            //get the SOAP Binding
+                            SOAPBinding soapBinding = soapBindings.iterator().next();
+                            //is style specified at the soap binding level?
+                            Style style = soapBinding.getStyle();
+                            BindingOperation bOp = factory.createBindingOperation();
+                            bOp.setName(operation.getName());
+                            
+                            SOAPOperation soapOperation = factory.createSOAPOperation();
+                            soapOperation.setSoapAction("");  //TODO: have user set this in UI?
+                            //if style is not specified at the SOAP binding level, specify it
+                            //at the SOAP operation level.
+                            //TODO: For now, assume it is document style. We need to determine
+                            //style based on the message.
+                            if(style == null){
+                                soapOperation.setStyle(Style.DOCUMENT);
+                            }
+                            bOp.addExtensibilityElement(soapOperation);
+                            //create input binding to SOAP
+                            if(inputMessage != null){
+                                //For now, assume all parms are to be put in the body
+                                //TODO: based on the WebParm annotation, we need to determine
+                                //if a certain part is for a header
+                                BindingInput bindingInput = factory.createBindingInput();
+                                SOAPBody soapBody = factory.createSOAPBody();
+                                //TODO: for multiple messages, need to specify parts
+                                //Always has to be literal
+                                soapBody.setUse(SOAPMessageBase.Use.LITERAL);
+                                bindingInput.addExtensibilityElement(soapBody);
+                                bOp.setBindingInput(bindingInput);
+                            }
+                            //create output binding to SOAP
+                            if(outputMessage != null){
+                                //TODO: same comments as in InputMessage
+                                BindingOutput bindingOutput = factory.createBindingOutput();
+                                SOAPBody soapBody = factory.createSOAPBody();
+                                soapBody.setUse(SOAPMessageBase.Use.LITERAL);
+                                bindingOutput.addExtensibilityElement(soapBody);
+                                bOp.setBindingOutput(bindingOutput);
+                            }
+                             binding.addBindingOperation(bOp);
+                        }
+                    }
+                }
+            }
+        }finally{
+            wsdlModel.endTransaction();
+            
+        }
+        
+        return operation;
+    }
     /** This method adds new operation to the wsdl file
      */
     public Operation addWsOperation(WSDLModel wsdlModel,
@@ -141,6 +338,7 @@ public class OperationGeneratorHelper {
             List<Message> faultMessages = new ArrayList<Message>();
             
             SchemaModel schemaModel = null;
+            
             Schema schema = null;
             
             Collection<Schema> schemas = types.getSchemas();
@@ -256,7 +454,7 @@ public class OperationGeneratorHelper {
                     returnElement.setType(responseTypeRef);
                     schema.addElement(returnElement);
                 } else if (returnType instanceof GlobalElement) {
-                        returnElement = (GlobalElement)returnType;
+                    returnElement = (GlobalElement)returnType;
                 } else if (returnType instanceof  GlobalType) {
                     if(schemaModel == null){
                         schemaModel = createSchemaModel(factory, definitions, types);
@@ -426,6 +624,32 @@ public class OperationGeneratorHelper {
         return (Utils.getPrimitiveType(comp.getName()) !=  null);
     }
     
+    public  GlobalSimpleType getPrimitiveType(String javaPrimitive){
+        if(types == null){
+            populateXSDTable();
+        }
+        if(primitives == null){
+            SchemaModel primitiveModel = SchemaModelFactory.getDefault().getPrimitiveTypesModel();
+            primitives = primitiveModel.getSchema().getSimpleTypes();
+        }
+        String xsdTypeName = types.get(javaPrimitive);
+        for(GlobalSimpleType ptype: primitives){
+            if(ptype.getName().equals(xsdTypeName)){
+                return ptype;
+            }
+        }
+        return null;
+    }
+    
+    private void addElementToSequence(Sequence sequence, SchemaModel schemaModel, JavaParamModel param){
+        GlobalSimpleType simpleType = getPrimitiveType(param.getParamType());
+        LocalElement el = schemaModel.getFactory().createLocalElement();
+        NamedComponentReference<GlobalType> typeRef = schemaModel.getSchema().createReferenceTo(simpleType, GlobalType.class);
+        el.setName(param.getParamName());
+        el.setType(typeRef);
+        sequence.appendContent(el);
+    }
+    
     private void addElementToSequence(Sequence sequence, SchemaModel schemaModel, ParamModel param) {
         
         ReferenceableSchemaComponent paramType = param.getParamType();
@@ -441,6 +665,20 @@ public class OperationGeneratorHelper {
             el.setRef(typeRef);
             sequence.appendContent(el);
         }
+    }
+    
+    
+    private void populateXSDTable(){
+        types = new HashMap<String, String>();
+        types.put("int", "int");
+        types.put("char", "unsignedShort");
+        types.put("boolean","boolean");
+        types.put("long", "long");
+        types.put("double", "double");
+        types.put("float", "float");
+        types.put("byte",  "byte");
+        types.put("String", "string");
+        types.put("java.lang.String", "string");
     }
     
     private Binding findBindingForPortType(Collection<Binding> bindings, PortType portType){
@@ -622,7 +860,7 @@ public class OperationGeneratorHelper {
         return jaxwssupport.getLocalWsdlFolderForService(serviceName, false);
     }
     
-    private void invokeWsImport(Project project, final String serviceName) {
+    public  void invokeWsImport(Project project, final String serviceName) {
         if (project!=null) {
             FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
             try {

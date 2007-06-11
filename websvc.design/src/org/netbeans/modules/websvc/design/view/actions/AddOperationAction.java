@@ -29,11 +29,17 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import javax.lang.model.element.Modifier;
 import javax.swing.AbstractAction;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.core.AddWsOperationHelper;
@@ -114,7 +120,11 @@ public class AddOperationAction extends AbstractAction {
                             public void run() {
                                 try{
                                     handle.start();
-                                    addWSDLOperation(panel);
+                                    if(panel.isUseJava()){
+                                        addWSDLOperationFromJava(panel);
+                                    } else{
+                                        addWSDLOperation(panel);
+                                    }
                                 }catch(Exception e){
                                     handle.finish();
                                     ErrorManager.getDefault().notify(e);
@@ -157,6 +167,22 @@ public class AddOperationAction extends AbstractAction {
         }
     }
     
+    private void addDefinedJavaMethod(AddOperationFromSchemaPanel panel) throws IOException{
+        AddWsOperationHelper strategy = new AddWsOperationHelper(getName());
+        String className = _RetoucheUtil.getMainClassName(implementationClass);
+        if (className != null) {
+            String returnType = panel.getJavaReturnType();
+            List<JavaParamModel> javaParams = panel.getJavaParameterTypes();
+            Map<String, String> params = new HashMap<String, String>();
+            for(JavaParamModel javaParam : javaParams){
+                params.put(javaParam.getParamName(), javaParam.getParamType());
+            }
+            strategy.addMethod(implementationClass, panel.getOperationName(), returnType, "", params, Collections.<String>emptyList(),
+                    Collections.<Modifier>emptySet());
+            saveImplementationClass(implementationClass);
+        }
+    }
+    
     private void addJavaMethod() throws IOException{
         AddWsOperationHelper strategy = new AddWsOperationHelper(getName());
         String className = _RetoucheUtil.getMainClassName(implementationClass);
@@ -182,6 +208,19 @@ public class AddOperationAction extends AbstractAction {
         }
     }
     
+    private void addWSDLOperationFromJava(AddOperationFromSchemaPanel panel)throws IOException{
+        addDefinedJavaMethod(panel);
+        OperationGeneratorHelper generatorHelper = new OperationGeneratorHelper(wsdlFile);
+        WSDLModel wsdlModel = Util.getWSDLModel(FileUtil.toFileObject(wsdlFile), true);
+        String operationName = panel.getOperationName();
+        List<JavaParamModel> parameterTypes = panel.getJavaParameterTypes();
+        String returnType = panel.getJavaReturnType();
+        Operation operation = generatorHelper.addWsOperatonFromJava(wsdlModel, generatorHelper.getPortTypeName(implementationClass),
+                operationName, parameterTypes, returnType, null);
+        Project project = FileOwnerQuery.getOwner(implementationClass);
+        generatorHelper.invokeWsImport(project,service.getName());
+    }
+    
     private void addWSDLOperation(AddOperationFromSchemaPanel panel)
             throws IOException, FileStateInvalidException, URISyntaxException, UnknownHostException{
         OperationGeneratorHelper generatorHelper = new OperationGeneratorHelper(wsdlFile);
@@ -200,7 +239,7 @@ public class AddOperationAction extends AbstractAction {
         Operation operation = generatorHelper.addWsOperation(wsdlModel, generatorHelper.getPortTypeName(implementationClass),
                 operationName, parameterTypes, returnType, faultTypes);
         generatorHelper.generateJavaArtifacts(service.getName(), implementationClass, operationName, false);
-   
+        
         saveImplementationClass(implementationClass);
     }
     
