@@ -12,6 +12,27 @@ cd  $NB_ALL
 #
 ###################################################################
 
+#Build source packages
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml -Dmerge.dependent.modules=false -Dcluster.config=full build-source-config
+ERROR_CODE=$?
+
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Can't build all source package"
+#    exit $ERROR_CODE;
+else
+    mv nbbuild/build/*-src-* $DIST/zip
+fi
+
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml -Dmerge.dependent.modules=false -Dcluster.name=nb.cluster.platform build-source
+ERROR_CODE=$?
+
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Can't build basic platform source package"
+#    exit $ERROR_CODE;
+else
+    mv nbbuild/build/*-src-* $DIST/zip
+fi
+
 #Build the NB IDE first - no validation tests!
 ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nozip
 ERROR_CODE=$?
@@ -40,17 +61,10 @@ else
     mv nbbuild/build/testdist.zip $DIST/zip/testdist-${BUILDNUMBER}.zip
 fi
 
-
-#ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml -Dmerge.dependent.modules=false -Dcluster.name=nb.cluster.platform sanity-build-from-source
-#ERROR_CODE=$?
-
-#if [ $ERROR_CODE != 0 ]; then
-#    echo "ERROR: $ERROR_CODE - Can't build basic platform source package"
-#    exit $ERROR_CODE;
-#fi
-
 cd $NB_ALL/nbbuild
 
 #Remove the build helper files
 rm -f netbeans/nb.cluster.*
 rm -f netbeans/build_info
+rm -rf netbeans/extra
+rm -rf netbeans/testtools
