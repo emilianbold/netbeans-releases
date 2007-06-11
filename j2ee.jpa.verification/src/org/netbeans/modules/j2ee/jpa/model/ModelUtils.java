@@ -36,6 +36,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Embeddable;
@@ -184,18 +185,12 @@ public class ModelUtils {
     }
     
     public static MetadataModel<EntityMappingsMetadata> getModel(FileObject sourceFile){
-        Project project = FileOwnerQuery.getOwner(sourceFile);
+        EntityClassScope scope = EntityClassScope.getEntityClassScope(sourceFile);
         
-        if (project == null){
-            return null; // the source file doesn't belong to any project, skip all checks
+        if (scope != null) {
+            return scope.getEntityMappingsModel(false); // false since I guess you only want the entity classes defined in the project
         }
-        
-        PersistenceScope scope = ModelUtils.getDefaultPersistenceScope(project);
-        if (scope == null) {
-            return null; // no persistence scope in the project
-        }
-        
-        return scope.getEntityMappingsModel(null);
+        return null;
     }
     
     public static Collection<String> extractAnnotationNames(Element elem) {
