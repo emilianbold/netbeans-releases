@@ -43,9 +43,9 @@ ant -f nbbuild/build.xml commitValidation || exit
 # ant -Dbuildnum=$BUILD_TAG -f nbbuild/build.xml build-nbms -Dmoduleconfig=all -Dbase.nbm.target.dir=${DIST}/nbms || exit
 
 cd nbbuild
-#rm -f netbeans/nb.cluster.*
-#rm -f netbeans/moduleCluster.properties
-#rm -f netbeans/module_tracking.xml
+rm -f netbeans/nb.cluster.*
+rm -f netbeans/moduleCluster.properties
+rm -f netbeans/module_tracking.xml
 rm -f netbeans/build_info
 
 BASENAME=netbeans-$BUILD_TAG
@@ -53,11 +53,11 @@ BASENAME=netbeans-$BUILD_TAG
 mkdir -p $DIST/zip/moduleclusters
 mkdir -p $DIST/contrib
 
-zip -q -r $DIST/zip/$BASENAME-full.zip netbeans || exit
+find netbeans | egrep -v "netbeans/(extra|testtools)" | zip -q $DIST/zip/$BASENAME-full.zip -@ || exit
 
-find netbeans | egrep -v "netbeans/(mobility|enterprise|visualweb|uml|ruby|soa)" | zip -q $DIST/zip/$BASENAME-basic.zip -@ || exit
-find netbeans | egrep -v "netbeans/(uml|ruby|soa)" | zip -q $DIST/zip/$BASENAME-standard.zip -@ || exit
-find netbeans | egrep -v "netbeans/(xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa)" | zip -q $DIST/contrib/$BASENAME-rubyide.zip -@ || exit
+find netbeans | egrep -v "netbeans/(extra|testtools|mobility|enterprise|visualweb|uml|ruby|soa)" | zip -q $DIST/zip/$BASENAME-basic.zip -@ || exit
+find netbeans | egrep -v "netbeans/(extra|testtools|uml|ruby|soa)" | zip -q $DIST/zip/$BASENAME-standard.zip -@ || exit
+find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa)" | zip -q $DIST/contrib/$BASENAME-rubyide.zip -@ || exit
 
 cd netbeans
 expat=
