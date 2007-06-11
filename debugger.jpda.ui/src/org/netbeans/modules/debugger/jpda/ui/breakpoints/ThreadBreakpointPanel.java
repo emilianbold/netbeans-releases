@@ -13,18 +13,22 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.debugger.jpda.ui.breakpoints;
 
+import java.awt.Dimension;
 import javax.swing.JPanel;
-import org.netbeans.api.debugger.DebuggerManager;
 
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
 import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
-import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.spi.debugger.ui.Controller;
+
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -37,6 +41,7 @@ import org.openide.util.NbBundle;
 public class ThreadBreakpointPanel extends JPanel implements Controller, org.openide.util.HelpCtx.Provider {
 // </RAVE>
     
+    private ConditionsPanel             conditionsPanel;
     private ActionsPanel                actionsPanel; 
     private ThreadBreakpoint            breakpoint;
     private boolean                     createBreakpoint = false;
@@ -78,6 +83,13 @@ public class ThreadBreakpointPanel extends JPanel implements Controller, org.ope
                 break;
         }
         
+        conditionsPanel = new ConditionsPanel();
+        conditionsPanel.showClassFilter(false);
+        conditionsPanel.showCondition(false);
+        conditionsPanel.setHitCountFilteringStyle(b.getHitCountFilteringStyle());
+        conditionsPanel.setHitCount(b.getHitCountFilter());
+        cPanel.add(conditionsPanel, "Center");
+        
         actionsPanel = new ActionsPanel (b);
         pActions.add (actionsPanel, "Center");
         // <RAVE>
@@ -107,15 +119,16 @@ public class ThreadBreakpointPanel extends JPanel implements Controller, org.ope
         pSettings = new javax.swing.JPanel();
         jLabel4 = new javax.swing.JLabel();
         cbBreakpointType = new javax.swing.JComboBox();
+        cPanel = new javax.swing.JPanel();
         pActions = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
-        pSettings.setLayout(new java.awt.GridBagLayout());
-
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle"); // NOI18N
         pSettings.setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("L_Thread_Breakpoint_BorderTitle"))); // NOI18N
+        pSettings.setLayout(new java.awt.GridBagLayout());
+
         jLabel4.setLabelFor(cbBreakpointType);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, bundle.getString("L_Thread_Breakpoint_Type")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -131,6 +144,7 @@ public class ThreadBreakpointPanel extends JPanel implements Controller, org.ope
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
@@ -143,21 +157,26 @@ public class ThreadBreakpointPanel extends JPanel implements Controller, org.ope
         gridBagConstraints.weightx = 1.0;
         add(pSettings, gridBagConstraints);
 
-        pActions.setLayout(new java.awt.BorderLayout());
-
+        cPanel.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        add(cPanel, gridBagConstraints);
+
+        pActions.setLayout(new java.awt.BorderLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         add(pActions, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(jPanel1, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
 
     
@@ -169,6 +188,14 @@ public class ThreadBreakpointPanel extends JPanel implements Controller, org.ope
      * @return whether customizer can be closed
      */
     public boolean ok () {
+        String msg = valiadateMsg();
+        if (msg == null) {
+            msg = conditionsPanel.valiadateMsg();
+        }
+        if (msg != null) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
+            return false;
+        }
         actionsPanel.ok ();
         switch (cbBreakpointType.getSelectedIndex ()) {
             case 0:
@@ -181,6 +208,8 @@ public class ThreadBreakpointPanel extends JPanel implements Controller, org.ope
                 breakpoint.setBreakpointType (ThreadBreakpoint.TYPE_THREAD_STARTED_OR_DEATH);
                 break;
         }
+        breakpoint.setHitCountFilter(conditionsPanel.getHitCount(),
+                conditionsPanel.getHitCountFilteringStyle());
         
         if (createBreakpoint) 
             DebuggerManager.getDebuggerManager ().addBreakpoint (breakpoint);
@@ -207,8 +236,13 @@ public class ThreadBreakpointPanel extends JPanel implements Controller, org.ope
         return true;
     }
     
+    private String valiadateMsg () {
+        return null;
+    }
+    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel cPanel;
     private javax.swing.JComboBox cbBreakpointType;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;

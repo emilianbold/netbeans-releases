@@ -13,26 +13,27 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.debugger.jpda.ui.breakpoints;
 
+import java.awt.Dimension;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import javax.swing.JPanel;
-import javax.swing.JOptionPane;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.debugger.DebuggerManager;
 
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.ui.FilteredKeymap;
 import org.netbeans.spi.debugger.ui.Controller;
 
-import java.net.URI;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
@@ -55,6 +56,7 @@ import org.openide.util.NbBundle;
 public class LineBreakpointPanel extends JPanel implements Controller, org.openide.util.HelpCtx.Provider {
 // </RAVE>
     
+    private ConditionsPanel             conditionsPanel;
     private ActionsPanel                actionsPanel; 
     private LineBreakpoint              breakpoint;
     private boolean                     createBreakpoint = false;
@@ -91,8 +93,18 @@ public class LineBreakpointPanel extends JPanel implements Controller, org.openi
         } catch (Exception e) {
             tfFileName.setText(url);
         }
+        tfFileName.setPreferredSize(new Dimension(
+            30*tfFileName.getFontMetrics(tfFileName.getFont()).charWidth('W'),
+            tfFileName.getPreferredSize().height));
+
         tfLineNumber.setText(Integer.toString(b.getLineNumber()));
-        tfCondition.setText (b.getCondition ());
+        conditionsPanel = new ConditionsPanel();
+        conditionsPanel.showClassFilter(false);
+        conditionsPanel.setCondition(b.getCondition());
+        conditionsPanel.setHitCountFilteringStyle(b.getHitCountFilteringStyle());
+        conditionsPanel.setHitCount(b.getHitCountFilter());
+        cPanel.add(conditionsPanel, "Center");
+        
         setupConditionPane();
         
         actionsPanel = new ActionsPanel (b);
@@ -123,7 +135,6 @@ public class LineBreakpointPanel extends JPanel implements Controller, org.openi
     }
     
     private void setupConditionPane() {
-        tfCondition.setKeymap(new FilteredKeymap(tfCondition.getKeymap()));
         String url = breakpoint.getURL();
         DataObject dobj = null;
         FileObject file;
@@ -139,7 +150,7 @@ public class LineBreakpointPanel extends JPanel implements Controller, org.openi
         } catch (MalformedURLException e) {
             // null dobj
         }
-        tfCondition.getDocument().putProperty(javax.swing.text.Document.StreamDescriptionProperty, dobj);
+        conditionsPanel.setupConditionPaneContext(dobj);
     }
     
     // <RAVE>
@@ -161,21 +172,19 @@ public class LineBreakpointPanel extends JPanel implements Controller, org.openi
 
         pSettings = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
         tfFileName = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         tfLineNumber = new javax.swing.JTextField();
-        spCondition = new javax.swing.JScrollPane();
-        tfCondition = new javax.swing.JEditorPane();
+        cPanel = new javax.swing.JPanel();
         pActions = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
-        pSettings.setLayout(new java.awt.GridBagLayout());
-
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle"); // NOI18N
         pSettings.setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("L_Line_Breakpoint_BorderTitle"))); // NOI18N
+        pSettings.setLayout(new java.awt.GridBagLayout());
+
         jLabel3.setLabelFor(tfFileName);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, bundle.getString("L_Line_Breakpoint_File_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -186,17 +195,6 @@ public class LineBreakpointPanel extends JPanel implements Controller, org.openi
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         pSettings.add(jLabel3, gridBagConstraints);
         jLabel3.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_L_Line_Breakpoint_File_Name")); // NOI18N
-
-        jLabel5.setLabelFor(tfCondition);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, bundle.getString("L_Line_Breakpoint_Condition")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        pSettings.add(jLabel5, gridBagConstraints);
-        jLabel5.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_L_Line_Breakpoint_Condition")); // NOI18N
 
         tfFileName.setEditable(false);
         tfFileName.setToolTipText(bundle.getString("TTT_TF_Line_Breakpoint_File_Name")); // NOI18N
@@ -233,42 +231,32 @@ public class LineBreakpointPanel extends JPanel implements Controller, org.openi
         tfLineNumber.getAccessibleContext().setAccessibleName("Line number");
         tfLineNumber.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TF_Line_Breakpoint_Line_Number")); // NOI18N
 
-        spCondition.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        spCondition.setToolTipText(org.openide.util.NbBundle.getMessage(LineBreakpointPanel.class, "ACSD_TF_Line_Breakpoint_Condition")); // NOI18N
-        spCondition.setMinimumSize(spCondition.getPreferredSize());
-        tfCondition.setContentType("text/x-java");
-        tfCondition.setToolTipText(org.openide.util.NbBundle.getMessage(LineBreakpointPanel.class, "ACSD_TF_Line_Breakpoint_Condition")); // NOI18N
-        spCondition.setViewportView(tfCondition);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        pSettings.add(spCondition, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         add(pSettings, gridBagConstraints);
 
-        pActions.setLayout(new java.awt.BorderLayout());
-
+        cPanel.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        add(cPanel, gridBagConstraints);
+
+        pActions.setLayout(new java.awt.BorderLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         add(pActions, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(jPanel1, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
 
     
@@ -281,13 +269,19 @@ public class LineBreakpointPanel extends JPanel implements Controller, org.openi
      */
     public boolean ok () {
         String msg = valiadateMsg();
+        if (msg == null) {
+            msg = conditionsPanel.valiadateMsg();
+        }
         if (msg != null) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
             return false;
         }
         actionsPanel.ok ();
         breakpoint.setLineNumber(Integer.parseInt(tfLineNumber.getText().trim()));
-        breakpoint.setCondition (tfCondition.getText ());
+        breakpoint.setCondition (conditionsPanel.getCondition());
+        breakpoint.setHitCountFilter(conditionsPanel.getHitCount(),
+                conditionsPanel.getHitCountFilteringStyle());
+        
         if (createBreakpoint)
             DebuggerManager.getDebuggerManager ().addBreakpoint (breakpoint);
         return true;
@@ -314,35 +308,34 @@ public class LineBreakpointPanel extends JPanel implements Controller, org.openi
     }
     
     private String valiadateMsg () {
+        int line;
         try {
-            int line = Integer.parseInt(tfLineNumber.getText().trim());
-            if (line <= 0) {
-                return NbBundle.getMessage(LineBreakpointPanel.class, "MSG_NonPositive_Line_Number_Spec");
-            }
-            int maxLine = findNumLines(breakpoint.getURL());
-            if (maxLine == 0) { // Not found
-                maxLine = Integer.MAX_VALUE; // Not to bother the user when we did not find it
-            }
-            if (line > maxLine) {
-                return NbBundle.getMessage(LineBreakpointPanel.class, "MSG_TooBig_Line_Number_Spec",
-                        Integer.toString(line), Integer.toString(maxLine));
-            }
+            line = Integer.parseInt(tfLineNumber.getText().trim());
         } catch (NumberFormatException e) {
             return NbBundle.getMessage(LineBreakpointPanel.class, "MSG_No_Line_Number_Spec");
+        }
+        if (line <= 0) {
+            return NbBundle.getMessage(LineBreakpointPanel.class, "MSG_NonPositive_Line_Number_Spec");
+        }
+        int maxLine = findNumLines(breakpoint.getURL());
+        if (maxLine == 0) { // Not found
+            maxLine = Integer.MAX_VALUE; // Not to bother the user when we did not find it
+        }
+        if (line > maxLine) {
+            return NbBundle.getMessage(LineBreakpointPanel.class, "MSG_TooBig_Line_Number_Spec",
+                    Integer.toString(line), Integer.toString(maxLine));
         }
         return null;
     }
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel cPanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel pActions;
     private javax.swing.JPanel pSettings;
-    private javax.swing.JScrollPane spCondition;
-    private javax.swing.JEditorPane tfCondition;
     private javax.swing.JTextField tfFileName;
     private javax.swing.JTextField tfLineNumber;
     // End of variables declaration//GEN-END:variables

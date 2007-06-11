@@ -13,11 +13,14 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.debugger.jpda.ui.breakpoints;
+
+import java.awt.Dimension;
+import java.awt.Rectangle;
 
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 
@@ -49,6 +52,10 @@ public class ActionsPanel extends javax.swing.JPanel {
         }
         if (b.getPrintText () != null)
             tfPrintText.setText (b.getPrintText ());
+        tfPrintText.setPreferredSize(new Dimension(
+                30*tfPrintText.getFontMetrics(tfPrintText.getFont()).charWidth('W'),
+                tfPrintText.getPreferredSize().height));
+        tfPrintText.setCaretPosition(0);
     }
     
     /** This method is called from within the constructor to

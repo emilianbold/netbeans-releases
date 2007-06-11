@@ -98,12 +98,14 @@ public class WatchPanel {
         JLabel textLabel = new JLabel();
         Mnemonics.setLocalizedText(textLabel, bundle.getString ("CTL_Watch_Name")); // NOI18N
         editorPane = new JEditorPane("text/x-java", expression); // NOI18N
-        editorPane.setKeymap(new FilteredKeymap(editorPane.getKeymap()));
         
         setupContext(editorPane);
         
-        JScrollPane sp = new JScrollPane(editorPane, JScrollPane.VERTICAL_SCROLLBAR_NEVER,
-                                                     JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        JScrollPane sp = createScrollableLineEditor(editorPane);
+        FontMetrics fm = editorPane.getFontMetrics(editorPane.getFont());
+        int size = 2*fm.getLeading() + fm.getMaxAscent() + fm.getMaxDescent() + 2;
+        editorPane.setPreferredSize(new Dimension(30*size, (int) (1*size)));
+        sp.setPreferredSize(new Dimension(30*size, (int) (1*size) + 2));
         
         textLabel.setBorder (new EmptyBorder (0, 0, 5, 0));
         panel.setLayout (new BorderLayout ());
@@ -111,16 +113,7 @@ public class WatchPanel {
         panel.add (BorderLayout.NORTH, textLabel);
         panel.add (BorderLayout.CENTER, sp);
         
-        FontMetrics fm = editorPane.getFontMetrics(editorPane.getFont());
-        int size = 2*fm.getLeading() + fm.getMaxAscent() + fm.getMaxDescent() + 4;
-        
-        editorPane.setPreferredSize(new Dimension(30*size, (int) (1*size)));
-        
         editorPane.getAccessibleContext ().setAccessibleDescription (bundle.getString ("ACSD_CTL_Watch_Name")); // NOI18N
-        editorPane.setBorder (
-            new CompoundBorder (editorPane.getBorder (),
-            new EmptyBorder (2, 0, 2, 0))
-        );
         editorPane.setText (expression);
         editorPane.selectAll ();
 
@@ -132,5 +125,17 @@ public class WatchPanel {
 
     public String getExpression() {
         return editorPane.getText().trim();
+    }
+    
+    public static JScrollPane createScrollableLineEditor(JEditorPane editorPane) {
+        editorPane.setKeymap(new FilteredKeymap(editorPane.getKeymap()));
+        JScrollPane sp = new JScrollPane(editorPane, JScrollPane.VERTICAL_SCROLLBAR_NEVER,
+                                                     JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+                
+        editorPane.setBorder (
+            new CompoundBorder (editorPane.getBorder (),
+            new EmptyBorder (2, 0, 2, 0))
+        );
+        return sp;
     }
 }

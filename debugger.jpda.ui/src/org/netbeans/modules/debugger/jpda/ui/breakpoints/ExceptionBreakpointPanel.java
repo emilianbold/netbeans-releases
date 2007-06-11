@@ -13,23 +13,23 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.debugger.jpda.ui.breakpoints;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
+import java.awt.Dimension;
 import javax.swing.JPanel;
-import javax.swing.JOptionPane;
-import org.netbeans.api.debugger.DebuggerManager;
 
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
 import org.netbeans.api.debugger.jpda.ExceptionBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.spi.debugger.ui.Controller;
+
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 
@@ -43,26 +43,10 @@ import org.openide.util.NbBundle;
 public class ExceptionBreakpointPanel extends JPanel implements Controller, org.openide.util.HelpCtx.Provider {
 // </RAVE>
     
+    private ConditionsPanel             conditionsPanel;
     private ActionsPanel                actionsPanel; 
     private ExceptionBreakpoint         breakpoint;
     private boolean                     createBreakpoint = false;
-    private static Map                  exceptions = new TreeMap ();
-    
-    static {
-        exceptions.put ("ArrayIndexOutOfBoundsException", "java.lang");
-        exceptions.put ("AssertionError", "java.lang");
-        exceptions.put ("ClassCastException", "java.lang");
-        exceptions.put ("ClassNotFoundException", "java.lang");
-        exceptions.put ("IllegalAccessException", "java.lang");
-        exceptions.put ("IllegalArgumentException", "java.lang");
-        exceptions.put ("IndexOutOfBoundsException", "java.lang");
-        exceptions.put ("NullPointerException", "java.lang");
-        exceptions.put ("RuntimeException", "java.lang");
-        exceptions.put ("SecurityException", "java.lang");
-        exceptions.put ("StringIndexOutOfBoundsException", "java.lang");
-        exceptions.put ("UnsupportedOperationException", "java.lang");
-        exceptions.put ("IOException", "java.io");
-    }
     
     private static ExceptionBreakpoint creteBreakpoint () {
         ExceptionBreakpoint mb = ExceptionBreakpoint.create (
@@ -87,22 +71,12 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller, org.
     public ExceptionBreakpointPanel (ExceptionBreakpoint b) {
         breakpoint = b;
         initComponents ();
-        Iterator it = exceptions.keySet ().iterator ();
-        while (it.hasNext ())
-            cbExceptionClassName.addItem (it.next ());
         
         String className = b.getExceptionClassName ();
-        int i = className.lastIndexOf ('.');
-        if (i < 0) {
-            tfPackageName.setText ("");
-            cbExceptionClassName.setSelectedItem (className);
-        } else {
-            tfPackageName.setText (className.substring (0, i));
-            cbExceptionClassName.setSelectedItem (className.substring (i + 1, className.length ()));
-        }
-        cbBreakpointType.addItem (java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("LBL_Exception_Breakpoint_Type_Catched"));
-        cbBreakpointType.addItem (java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("LBL_Exception_Breakpoint_Type_Uncatched"));
-        cbBreakpointType.addItem (java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("LBL_Exception_Breakpoint_Type_Catched_or_Uncatched"));
+        tfExceptionClassName.setText (className);
+        cbBreakpointType.addItem (NbBundle.getMessage(ExceptionBreakpointPanel.class, "LBL_Exception_Breakpoint_Type_Catched"));
+        cbBreakpointType.addItem (NbBundle.getMessage(ExceptionBreakpointPanel.class, "LBL_Exception_Breakpoint_Type_Uncatched"));
+        cbBreakpointType.addItem (NbBundle.getMessage(ExceptionBreakpointPanel.class, "LBL_Exception_Breakpoint_Type_Catched_or_Uncatched"));
         switch (b.getCatchType ()) {
             case ExceptionBreakpoint.TYPE_EXCEPTION_CATCHED:
                 cbBreakpointType.setSelectedIndex (0);
@@ -114,7 +88,16 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller, org.
                 cbBreakpointType.setSelectedIndex (2);
                 break;
         }
-        tfCondition.setText (b.getCondition ());
+        
+        conditionsPanel = new ConditionsPanel();
+        conditionsPanel.showClassFilter(true);
+        conditionsPanel.showCondition(true);
+        conditionsPanel.setClassMatchFilter(b.getClassFilters());
+        conditionsPanel.setClassExcludeFilter(b.getClassExclusionFilters());
+        conditionsPanel.setCondition(b.getCondition());
+        conditionsPanel.setHitCountFilteringStyle(b.getHitCountFilteringStyle());
+        conditionsPanel.setHitCount(b.getHitCountFilter());
+        cPanel.add(conditionsPanel, "Center");
         
         actionsPanel = new ActionsPanel (b);
         pActions.add (actionsPanel, "Center");
@@ -143,49 +126,24 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller, org.
         java.awt.GridBagConstraints gridBagConstraints;
 
         pSettings = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         cbBreakpointType = new javax.swing.JComboBox();
-        jLabel5 = new javax.swing.JLabel();
-        tfCondition = new javax.swing.JTextField();
-        cbExceptionClassName = new javax.swing.JComboBox();
-        tfPackageName = new javax.swing.JTextField();
+        tfExceptionClassName = new javax.swing.JTextField();
+        cPanel = new javax.swing.JPanel();
         pActions = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
-        pSettings.setLayout(new java.awt.GridBagLayout());
-
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle"); // NOI18N
         pSettings.setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("L_Exception_Breakpoint_BorderTitle"))); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, bundle.getString("L_Exception_Breakpoint_filter_hint")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        pSettings.add(jLabel1, gridBagConstraints);
-        jLabel1.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_L_Exception_Breakpoint_filter_hint")); // NOI18N
+        pSettings.setLayout(new java.awt.GridBagLayout());
 
-        jLabel2.setLabelFor(tfPackageName);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, bundle.getString("L_Exception_Breakpoint_Package_Name")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        pSettings.add(jLabel2, gridBagConstraints);
-        jLabel2.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_L_Exception_Breakpoint_Package_Name")); // NOI18N
-
-        jLabel3.setLabelFor(cbExceptionClassName);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, bundle.getString("L_Exception_Breakpoint_Class_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
@@ -207,55 +165,20 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller, org.
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         pSettings.add(cbBreakpointType, gridBagConstraints);
         cbBreakpointType.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CB_Exception_Breakpoint_Type")); // NOI18N
 
-        jLabel5.setLabelFor(tfCondition);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, bundle.getString("L_Exception_Breakpoint_Condition")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        pSettings.add(jLabel5, gridBagConstraints);
-        jLabel5.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_L_Exception_Breakpoint_Condition")); // NOI18N
-
-        tfCondition.setToolTipText(bundle.getString("TTT_TF_Exception_Breakpoint_Condition")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        pSettings.add(tfCondition, gridBagConstraints);
-        tfCondition.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TF_Exception_Breakpoint_Condition")); // NOI18N
-
-        cbExceptionClassName.setEditable(true);
-        cbExceptionClassName.setToolTipText(bundle.getString("TTT_CB_Exception_Breakpoint_Class_Name")); // NOI18N
-        cbExceptionClassName.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cbExceptionClassNameActionPerformed(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        pSettings.add(cbExceptionClassName, gridBagConstraints);
-        cbExceptionClassName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CB_Exception_Breakpoint_Class_Name")); // NOI18N
-
-        tfPackageName.setToolTipText(bundle.getString("TTT_CB_Exception_Breakpoint_Package_Name")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        pSettings.add(tfPackageName, gridBagConstraints);
-        tfPackageName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TF_Exception_Breakpoint_Package_Name")); // NOI18N
+        pSettings.add(tfExceptionClassName, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -263,29 +186,27 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller, org.
         gridBagConstraints.weightx = 1.0;
         add(pSettings, gridBagConstraints);
 
-        pActions.setLayout(new java.awt.BorderLayout());
-
+        cPanel.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        add(cPanel, gridBagConstraints);
+
+        pActions.setLayout(new java.awt.BorderLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         add(pActions, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(jPanel1, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
-
-    private void cbExceptionClassNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbExceptionClassNameActionPerformed
-        // TODO add your handling code here:
-        String pkg = (String) exceptions.get (cbExceptionClassName.getSelectedItem ());
-        if (pkg != null)
-            tfPackageName.setText (pkg);
-    }//GEN-LAST:event_cbExceptionClassNameActionPerformed
 
     
     // Controller implementation ...............................................
@@ -296,17 +217,16 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller, org.
      * @return whether customizer can be closed
      */
     public boolean ok () {
-        if (! isFilled()) {
-            JOptionPane.showMessageDialog(this,
-                java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle")
-                    .getString("MSG_No_Exception_Class_Name_Spec"));
+        String msg = valiadateMsg();
+        if (msg == null) {
+            msg = conditionsPanel.valiadateMsg();
+        }
+        if (msg != null) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
             return false;
         }
         actionsPanel.ok ();
-        String className = ((String) tfPackageName.getText ()).trim ();
-        if (className.length () > 0)
-            className += '.';
-        className += ((String) cbExceptionClassName.getSelectedItem ()).trim ();
+        String className = tfExceptionClassName.getText ().trim ();
         breakpoint.setExceptionClassName (className);
         
         switch (cbBreakpointType.getSelectedIndex ()) {
@@ -320,7 +240,11 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller, org.
                 breakpoint.setCatchType (ExceptionBreakpoint.TYPE_EXCEPTION_CATCHED_UNCATCHED);
                 break;
         }
-        breakpoint.setCondition (tfCondition.getText ());
+        breakpoint.setClassFilters(conditionsPanel.getClassMatchFilter());
+        breakpoint.setClassExclusionFilters(conditionsPanel.getClassExcludeFilter());
+        breakpoint.setCondition (conditionsPanel.getCondition());
+        breakpoint.setHitCountFilter(conditionsPanel.getHitCount(),
+                conditionsPanel.getHitCountFilteringStyle());
         
         if (createBreakpoint) 
             DebuggerManager.getDebuggerManager ().addBreakpoint (breakpoint);
@@ -347,27 +271,22 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller, org.
         return true;
     }
     
-    boolean isFilled () {
-        if (((String) cbExceptionClassName.getSelectedItem ())
-            .trim ().length() > 0)
-            return true;
-        return false;
+    private String valiadateMsg () {
+        if (tfExceptionClassName.getText().trim ().length() == 0) {
+            return NbBundle.getMessage(ExceptionBreakpointPanel.class, "MSG_No_Exception_Class_Name_Spec");
+        }
+        return null;
     }
     
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel cPanel;
     private javax.swing.JComboBox cbBreakpointType;
-    private javax.swing.JComboBox cbExceptionClassName;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel pActions;
     private javax.swing.JPanel pSettings;
-    private javax.swing.JTextField tfCondition;
-    private javax.swing.JTextField tfPackageName;
+    private javax.swing.JTextField tfExceptionClassName;
     // End of variables declaration//GEN-END:variables
     
 }
