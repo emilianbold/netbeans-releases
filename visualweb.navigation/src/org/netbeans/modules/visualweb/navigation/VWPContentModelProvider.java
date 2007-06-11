@@ -46,7 +46,7 @@ public class VWPContentModelProvider implements PageContentModelProvider{
             if( modelset !=  null ){
                 facesModel = modelset.getFacesModel(fileObject);
                 if ( facesModel != null ) {
-                    model =  new VWPContentModel(facesModel, fileObject.getName());
+                    model =  new VWPContentModel(facesModel);
                     map.put(fileObject, model);
                     fileObject.addFileChangeListener( new FileChangeAdapter() {
                         @Override

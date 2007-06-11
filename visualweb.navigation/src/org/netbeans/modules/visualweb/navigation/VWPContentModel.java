@@ -55,7 +55,6 @@ import org.openide.filesystems.URLMapper;
 public class VWPContentModel extends PageContentModel{
     private FacesModel facesModel;
     private Collection<PageContentItem> pageContentItems = new ArrayList<PageContentItem>();
-    private String pageName;
     
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.web.jsf.navigation");
 //    
@@ -68,9 +67,8 @@ public class VWPContentModel extends PageContentModel{
      * @param facesModel can not be null
      * @param pageName can not be null
      */
-    public VWPContentModel(FacesModel facesModel, String pageName) {
+    public VWPContentModel(FacesModel facesModel) {
         this.facesModel = facesModel;
-        this.pageName = pageName;
         updatePageContentItems();
         initListeners();
     }
@@ -101,11 +99,15 @@ public class VWPContentModel extends PageContentModel{
         pageContentItems.remove(pageContentItem);
     }
     
+    public String getPageName() {
+        return facesModel.getBeanName();
+    }
+    
     private FacesModelSetListener msl;
     public void initListeners() {
         LOGGER.entering("VWPContentModel", "initListeners()");
         if( msl == null ){
-            LOGGER.finest("Adding model listener for Page: " + pageName);
+            LOGGER.finest("Adding model listener for Page: " + getPageName());
             msl = new FacesModelSetListener(this);
             facesModel.getOwner().addModelSetListener(msl);
             DesignBean designBean = facesModel.getRootBean();
@@ -118,7 +120,7 @@ public class VWPContentModel extends PageContentModel{
         
         LOGGER.entering("VWPContentModel", "destroyListeners()");
         if ( facesModel != null ) {            
-            LOGGER.finest("Removing model listener for Page: " + pageName);
+            LOGGER.finest("Removing model listener for Page: " + getPageName());
             ModelSet set = facesModel.getOwner();
             if( set != null && msl != null ) {
                 set.removeModelSetListener(msl);
@@ -213,9 +215,9 @@ public class VWPContentModel extends PageContentModel{
             List<DesignBean> zoomedBeans = new ArrayList<DesignBean>();
             if (container != null) {
                 findCommandBeans(facesModel, container, zoomedBeans, true);
-                LOG.fine("Container or RootBean found for page: " + pageName);
+                LOG.fine("Container or RootBean found for page: " + getPageName());
             } else {
-                LOG.fine("Container or RootBean is null for the facesModel of page: " + pageName);
+                LOG.fine("Container or RootBean is null for the facesModel of page: " + getPageName());
                 return false;
             }
             
@@ -231,7 +233,7 @@ public class VWPContentModel extends PageContentModel{
                 /* If the page name does not match the designContext page name, then prepend it to the NavigableComponent name. */
                 //                int lastIndex = pageName.lastIndexOf('.');
                 //                if( !pageName.substring(0,lastIndex).equals(designContextName)) {
-                if( !pageName.equals(designContextName)) {
+                if( !getPageName().equals(designContextName)) {
                     name = designContextName + ":" + name;
                 }
                 
@@ -503,7 +505,7 @@ public class VWPContentModel extends PageContentModel{
     
     
     private PageContentItem solveNavComponent(DesignBean designBean){
-        if( designBean == null || pageName == null ) {
+        if( designBean == null || getPageName() == null ) {
             return null;
         }
         
@@ -515,7 +517,7 @@ public class VWPContentModel extends PageContentModel{
         
         /* If the page name does not match the designContext page name, then prepend it to the NavigableComponent name. */
         
-        if( !pageName.equals(designContextName)) {
+        if( !getPageName().equals(designContextName)) {
             name = designContextName + ":" + name;
         }
         
