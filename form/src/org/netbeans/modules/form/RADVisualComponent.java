@@ -22,13 +22,7 @@ package org.netbeans.modules.form;
 import java.util.*;
 import java.beans.*;
 import javax.accessibility.*;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.JRadioButtonMenuItem;
-import javax.swing.JSeparator;
+import javax.swing.*;
 import javax.swing.MenuElement;
 
 import org.openide.nodes.*;
@@ -515,7 +509,18 @@ public class RADVisualComponent extends RADComponent {
                             return true;
                         }
                         public Object getDefaultValue() {
-                            return getAccessibleContext().getAccessibleDescription();
+                            AccessibleContext context = getAccessibleContext();
+                            Object bean = getBeanInstance();
+                            if (bean instanceof JComponent) {
+                                Object o = ((JComponent)bean).getClientProperty("labeledBy"); // NOI18N
+                                if (o instanceof Accessible) {
+                                    AccessibleContext ac = ((Accessible) o).getAccessibleContext();
+                                    if (ac == context) {
+                                        return FormUtils.getBundleString("MSG_CyclicAccessibleContext"); // NOI18N
+                                    }
+                                }
+                            }
+                            return context.getAccessibleDescription();
                         }
                         public void restoreDefaultValue()
                             throws IllegalAccessException,
