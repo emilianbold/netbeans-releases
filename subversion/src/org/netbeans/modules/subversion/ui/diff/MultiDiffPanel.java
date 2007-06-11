@@ -61,6 +61,10 @@ import java.util.*;
 import java.util.List;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.ui.actions.ContextAction;
+import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -81,7 +85,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
      */
     private final Context context;
 
-    private int                     displayStatuses;
+    private int displayStatuses;
 
     /**
      * Display name of the context of this diff.
@@ -367,10 +371,23 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         executeStatusSupport = new SvnProgressSupport() {
             public void perform() {                                                
                 StatusAction.executeStatus(context, this);
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        refreshSetups();
+                    }
+                    
+                });
             }
         };
-        refreshSetups();        
-    }
+        SVNUrl url;
+        try {
+            url = ContextAction.getSvnUrl(context); 
+        } catch(SVNClientException ex)  {
+            SvnClientExceptionHandler.notifyException(ex, true, true);     
+            return;             
+        }
+        executeStatusSupport.start(rp, url, NbBundle.getMessage(MultiDiffPanel.class, "MSG_Refresh_Progress"));
+    }                    
 
     private void onUpdateButton() {
         UpdateAction.performUpdate(context, contextName);
