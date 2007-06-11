@@ -14,7 +14,6 @@
             <sourcepath>
                 <pathelement location="${{buildsystem.baton}}"/>
             </sourcepath>
-            <fileset dir="${{buildsystem.baton}}"/>
         </javadoc>
         <antcall target="browse-javadoc"/>
     </target>
