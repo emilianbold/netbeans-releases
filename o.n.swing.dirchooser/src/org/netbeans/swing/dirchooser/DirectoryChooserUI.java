@@ -586,7 +586,13 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     private JComponent createTree() {
         // #106011: don't show "colors, food, sports" sample model after init :-)
         tree = new JTree(new Object[0]);
-        updateTree(fileChooser.getFileSystemView().getRoots()[0]);
+        // #105642: start with right content in tree 
+        File curDir = fileChooser.getCurrentDirectory();
+        if (curDir == null) {
+            curDir = fileChooser.getFileSystemView().getRoots()[0];
+        }
+        updateTree(curDir);
+        
         tree.setFocusable(true);
         tree.setOpaque(true);
         tree.setRootVisible(false);
