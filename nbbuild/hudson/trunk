@@ -22,10 +22,8 @@ then
     ant -f nbbuild/build.xml cvs-clean || exit
 fi
 
-for www in */www
-do
-    if [ \! -f $www/.IGNOREME ]
-    then
+for www in */www ; do
+    if [ \! -f $www/.IGNOREME ] ; then
         rm -rf $www
         cp -r nbbuild/dummy $www
     fi
