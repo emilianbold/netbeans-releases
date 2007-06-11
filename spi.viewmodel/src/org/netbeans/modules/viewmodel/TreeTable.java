@@ -20,17 +20,20 @@
 package org.netbeans.modules.viewmodel;
 
 import java.awt.BorderLayout;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
-
-
 import java.util.*;
 import javax.swing.ActionMap;
+import javax.swing.ComponentInputMap;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTree;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeExpansionEvent;
@@ -77,7 +80,7 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
     private ExplorerManager     explorerManager;
     private MyTreeTable         treeTable;
     Node.Property[]             columns; // Accessed from tests
-    private List                expandedPaths = new ArrayList ();
+    //private List                expandedPaths = new ArrayList ();
     private TreeModelRoot       currentTreeModelRoot;
     private Models.CompoundModel model;
     
@@ -108,7 +111,7 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
             currentTreeModelRoot.destroy ();
         
         // 2) save current settings (like columns, expanded paths)
-        List ep = treeTable.getExpandedPaths ();
+        //List ep = treeTable.getExpandedPaths ();
         saveWidths ();
         
         // 3) no model => set empty root node & return
@@ -158,7 +161,7 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
                 }
             });
          */
-        if (ep.size () > 0) expandedPaths = ep;
+        //if (ep.size () > 0) expandedPaths = ep;
     }
     
     public ExplorerManager getExplorerManager () {
@@ -348,6 +351,19 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
             super ();
             treeTable.setShowHorizontalLines (true);
             treeTable.setShowVerticalLines (false);
+            filterInputMap(treeTable, JComponent.WHEN_FOCUSED);
+            filterInputMap(treeTable, JComponent.WHEN_IN_FOCUSED_WINDOW);
+            filterInputMap(treeTable, JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        }
+        
+        private void filterInputMap(JComponent component, int condition) {
+            InputMap imap = component.getInputMap(condition);
+            if (imap instanceof ComponentInputMap) {
+                imap = new F8FilterComponentInputMap(component, imap);
+            } else {
+                imap = new F8FilterInputMap(imap);
+            }
+            component.setInputMap(condition, imap);
         }
         
         JTable getTable () {
@@ -358,6 +374,7 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
             return tree;
         }
 
+        /*
         public List getExpandedPaths () {
             List result = new ArrayList ();
             ExplorerManager em = ExplorerManager.find (this);
@@ -376,6 +393,7 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
             }
             return result;
         }
+         */
         
         /** Expands all the paths, when exists
          */
@@ -404,6 +422,43 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
                 return new TreePath (tns);
             } catch (NodeNotFoundException e) {
                 return null;
+            }
+        }
+    }
+    
+    private static final class F8FilterComponentInputMap extends ComponentInputMap {
+        
+        private KeyStroke f8 = KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0);
+        
+        public F8FilterComponentInputMap(JComponent component, InputMap imap) {
+            super(component);
+            setParent(imap);
+        }
+
+        @Override
+        public Object get(KeyStroke keyStroke) {
+            if (f8.equals(keyStroke)) {
+                return null;
+            } else {
+                return super.get(keyStroke);
+            }
+        }
+    }
+    
+    private static final class F8FilterInputMap extends InputMap {
+        
+        private KeyStroke f8 = KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0);
+        
+        public F8FilterInputMap(InputMap imap) {
+            setParent(imap);
+        }
+
+        @Override
+        public Object get(KeyStroke keyStroke) {
+            if (f8.equals(keyStroke)) {
+                return null;
+            } else {
+                return super.get(keyStroke);
             }
         }
     }
