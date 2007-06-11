@@ -816,6 +816,38 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                     WSUtils.setJaxWsEndorsedDirProperty(ep);
                     
                     helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+                    // update a dual build directory project to use a single build directory
+                    ep = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    String earBuildDir = ep.getProperty(EjbJarProjectProperties.BUILD_EAR_CLASSES_DIR);
+                    if (null != earBuildDir) {
+                        // there is an BUILD_EAR_CLASSES_DIR property... we may 
+                        //  need to change its value
+                        String buildDir = ep.getProperty(EjbJarProjectProperties.BUILD_CLASSES_DIR);
+                        if (null != buildDir) {
+                            // there is a value that we may need to change the 
+                            // BUILD_EAR_CLASSES_DIR property value to match.
+                            if (!buildDir.equals(earBuildDir)) {
+                                // the values do not match... update the property and save it
+                                ep.setProperty(EjbJarProjectProperties.BUILD_EAR_CLASSES_DIR,
+                                        buildDir);
+                                updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,
+                                        ep);
+                            }
+                            // else {
+                            //   the values match and we don't need to do anything
+                            // }
+                        }
+                        // else {
+                        //   the project doesn't have a BUILD_CLASSES_DIR property
+                        //   ** This is not an expected state, but if the project 
+                        //      properties evolve, this property may go away...
+                        // }
+                    }
+                    // else {
+                    //   there isn't a BUILD_EAR_CLASSES_DIR in this project...
+                    //     so we should not create one, by setting it.
+                    // }
+
                     try {
                         ProjectManager.getDefault().saveProject(EjbJarProject.this);
                     } catch (IOException e) {

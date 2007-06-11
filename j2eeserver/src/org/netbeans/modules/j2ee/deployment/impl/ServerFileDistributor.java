@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,6 +24,8 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileUtil;
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.j2ee.deployment.common.api.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
@@ -51,6 +53,8 @@ public class ServerFileDistributor extends ServerProgress {
     Map childModuleFiles;
     // keyed by child module URL, valued by collection of J2eeModule's
     Map childModuleMap;
+    
+    private static final Logger LOGGER  = Logger.getLogger(ServerFileDistributor.class.getName());
     
     /** Creates a new instance of ServerFileDistributor */
     public ServerFileDistributor(ServerInstance instance, DeploymentTarget dtarget){
@@ -119,13 +123,18 @@ public class ServerFileDistributor extends ServerProgress {
         
             //PENDING: whether module need to be stop first
             for (int i=0; childModules != null && i<childModules.length; i++) {
-                String url = incremental.getModuleUrl(targetModule.delegate());
+                // need to get the ModuleUrl for the child, not the root app... DUH
+                String url = incremental.getModuleUrl(childModules[i]);
                 destDir = incremental.getDirectoryForModule(childModules[i]);
                 Iterator source = (Iterator) childModuleFiles.get(url);
                 if (destDir == null)
                     changes.record(_distribute(childModules[i], lastDeployTime));
-                else
-                    changes.record(_distribute(source, destDir, targetModule.delegate(), url, lastDeployTime));
+                else if (null != source)
+                    // original code assumed 1-to-1 correspondence between 
+                    //   J2eeModule objects and TargetModuleID objects that are
+                    //   are children of a deployed EAR... 
+                    // That assumption is not valid
+                    changes.record(_distribute(source, destDir, childModules[i], url, lastDeployTime));
             }
             
             //PENDING: whether ordering of copying matters
@@ -180,7 +189,6 @@ public class ServerFileDistributor extends ServerProgress {
         }
         setStatusDistributeRunning(NbBundle.getMessage(
         ServerFileDistributor.class, "MSG_RunningIncrementalDeploy", target));
-        FileLock lock = null;
         try {
             //get relative-path-key map from FDL
             File dir = incremental.getDirectoryForModule(target);
@@ -203,53 +211,18 @@ public class ServerFileDistributor extends ServerProgress {
                 String relativePath = entry.getRelativePath();
                 FileObject sourceFO = entry.getFileObject();
                 FileObject targetFO = (FileObject) destMap.get(relativePath);
-                FileObject destFolder;
                 if (sourceFO.isFolder()) {
                     destMap.remove(relativePath);
-                    //System.out.println("entering folder:"+relativePath);
                     continue;
                 }
-                if (targetFO == null) {
-                    destFolder = findOrCreateParentFolder(destRoot, relativePath);
-                } else {
-                    // remove from map to form of to-remove-target-list
-                    destMap.remove(relativePath);
-                    
-                    //check timestamp
-                    if (! sourceFO.lastModified().after(targetFO.lastModified())) {
-                        //System.out.println("Skipping file "+sourceFO.getPath());
-                        continue;
+                // refactor to make the finally easier to write and read in the 
+                // future.
+                createOrReplace(sourceFO,targetFO,destRoot,relativePath,mc,destMap);
                     }
-                    destFolder = targetFO.getParent();
                     
-                    //System.out.println("Prepare for copy by deleting old target file: "+targetFO.getPath());
-                    targetFO.delete();
-                }
-                mc.record(relativePath);
-                //PENDING: update progress object or should we not for performance?
-                //System.out.println("Copying "+sourceFO.getPath()+" to "+destFolder.getPath());
-                
-                FileUtil.copyFile(sourceFO, destFolder, sourceFO.getName());
-            }
-            
             ModuleType moduleType = (ModuleType) dtarget.getModule ().getModuleType ();
             String[] rPaths = instance.getServer().getDeploymentPlanFiles(moduleType);
-            /*for (int n=0; n < rPaths.length; n++) {
-                FileObject removedFO = (FileObject)destMap.remove(rPaths[n]);
-                System.out.println("Sparing plan file: "+rPaths[n]+" removedFO="+removedFO);
-            }
              
-            // Cleanup destination
-            for (Iterator k=destMap.values().iterator(); k.hasNext();) {
-                FileObject remainingFO = (FileObject) k.next();
-                lock = remainingFO.lock();
-                System.out.println("Deleting remaining file "+remainingFO.getPath());
-                remainingFO.delete(lock);
-                System.out.println("File "+remainingFO.getPath()+" deleted");
-                lock.releaseLock();
-                lock = null;
-            }*/
-            
             // copying serverconfiguration files if changed
             File configFile = dtarget.getConfigurationFile();
             if (rPaths == null || rPaths.length == 0)
@@ -267,21 +240,69 @@ public class ServerFileDistributor extends ServerProgress {
         } catch (Exception e) {
             String msg = NbBundle.getMessage(ServerFileDistributor.class, "MSG_IncrementalDeployFailed", e);
             setStatusDistributeFailed(msg);
-            throw new RuntimeException(e);
+            throw new RuntimeException(msg,e);
+        } 
+    }
+    
+    private static void createOrReplace(FileObject sourceFO, FileObject targetFO,
+            FileObject destRoot, String relativePath, AppChanges mc, Map destMap) throws IOException {
+        FileObject destFolder;
+        OutputStream destStream = null;
+        InputStream sourceStream = null;
+        try {
+            if (targetFO == null) {
+                destFolder = findOrCreateParentFolder(destRoot, relativePath);
+            } else {
+                // remove from map to form of to-remove-target-list
+                destMap.remove(relativePath);
+                
+                //check timestamp
+                if (! sourceFO.lastModified().after(targetFO.lastModified())) {
+                    return;
+                }
+                destFolder = targetFO.getParent();
+                
+                // we need to rewrite the content of the file here... thanks,
+                //   to windows file locking.
+                destStream = targetFO.getOutputStream();
+                
+            }
+            mc.record(relativePath);
+            
+            if (null == destStream) {
+                FileUtil.copyFile(sourceFO, destFolder, sourceFO.getName());
+            } else {
+                // this is where we need to push the content into the file....
+                sourceStream = sourceFO.getInputStream();
+                FileUtil.copy(sourceStream, destStream);
+            }
         } finally {
-            if (lock != null) {
-                try { lock.releaseLock(); } catch(Exception ex) {}
+            if (null != sourceStream) {
+                try {
+                    sourceStream.close();
+                } catch (IOException ioe) {
+                    LOGGER.log(Level.WARNING, null, ioe);
+                }
+            }
+            if (null != destStream) {
+                try {
+                    destStream.close();
+                } catch (IOException ioe) {
+                    LOGGER.log(Level.WARNING, null, ioe);
+                }
             }
         }
     }
+    
     
     /**
      * Find or create parent folder of a file given its root and its relative path.
      * The target file does not need to exist.
      *
      * @param dest FileObject for the root of the target file
-     * @param relativePaht relative path of the target file
+     * @param relativePath relative path of the target file
      * @return the FileObject for the parent folder target file.
+     * @throws java.io.IOException 
      */
     public static FileObject findOrCreateParentFolder(FileObject dest, String relativePath) throws IOException {
         File parentRelativePath = (new File(relativePath)).getParentFile();
@@ -292,7 +313,6 @@ public class ServerFileDistributor extends ServerProgress {
         if (folder == null)
             folder = FileUtil.createFolder(dest, parentRelativePath.getPath());
         
-        //System.out.println("Created folder "+folder.getPath());
         return folder;
     }
     

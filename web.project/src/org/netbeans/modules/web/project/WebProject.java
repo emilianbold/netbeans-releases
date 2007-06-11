@@ -677,6 +677,36 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                     }
                     
                     updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+
+                    // update a dual build directory project to use a single directory
+                    String earBuildDir = props.getProperty(WebProjectProperties.BUILD_EAR_WEB_DIR);
+                    if (null != earBuildDir) {
+                        // there is an BUILD_EAR_WEB_DIR property... we may 
+                        //  need to change its value
+                        String buildDir = props.getProperty(WebProjectProperties.BUILD_WEB_DIR);
+                        if (null != buildDir) {
+                            // there is a value that we may need to change the 
+                            // BUILD_EAR_WEB_DIR property value to match.
+                            if (!buildDir.equals(earBuildDir)) {
+                                // the values do not match... update the property
+                                props.setProperty(WebProjectProperties.BUILD_EAR_WEB_DIR,
+                                        buildDir);
+                            }
+                            // else {
+                            //   the values match and we don't need to do anything
+                            // }
+                        }
+                        // else {
+                        //   the project doesn't have a BUILD_WEB_DIR property
+                        //   ** This is not an expected state, but if the project 
+                        //      properties evolve, this property may go away...
+                        // }
+                    }
+                    // else {
+                    //   there isn't a BUILD_EAR_WEB_DIR in this project...
+                    //     so we should not create one, by setting it.
+                    // }
+
                     updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                     
                     try {

@@ -20,6 +20,9 @@
 package org.netbeans.modules.j2ee.sun.ide.j2ee.incrdeploy;
 
 import java.io.File;
+import java.util.Map;
+import java.util.WeakHashMap;
+import javax.enterprise.deploy.spi.exceptions.TargetException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import javax.enterprise.deploy.spi.Target;
@@ -37,6 +40,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
 import org.netbeans.modules.j2ee.sun.api.ServerInterface;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -47,9 +51,21 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
     Object inner = null;
     private File[] resourceDirs = null;
     private DeploymentManager dm;
+    private boolean issue2999Fixed = true;
+    
+    private static Map cache = new WeakHashMap();
+
+    public static IncrementalDeployment get(DeploymentManager dm) {
+        IncrementalDeployment id = (IncrementalDeployment) cache.get(dm);
+        if (null == id) {
+            id = new DirectoryDeploymentFacade(dm);
+            cache.put(dm,id);
+        }
+        return id;
+    }
     
     /** Creates a new instance of DirectoryDeploymentFacade */
-    public DirectoryDeploymentFacade(DeploymentManager dm) {
+    private DirectoryDeploymentFacade(DeploymentManager dm) {
         try {
             setDeploymentManager(dm);
             Class[] cls= new Class[1];
@@ -71,14 +87,49 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
      * @param manager
      */
     public void setDeploymentManager(DeploymentManager manager) {
-        if (null == manager){
-            throw new IllegalArgumentException("invalid null argumment");
+        if (null == manager) {
+            throw new java.lang.IllegalArgumentException("invalid null argumment");
         }
-        
-        if (manager instanceof SunDeploymentManagerInterface)
+        if (manager instanceof org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface)
             this.dm = manager;
         else
-            throw new IllegalArgumentException("setDeploymentManager: Invalid manager type, expecting SunDeploymentManager and got "+manager.getClass().getName());
+            throw new java.lang.IllegalArgumentException("setDeploymentManager: Invalid manager type, expecting SunDeploymentManager and got " +
+                    manager.getClass().getName());
+        checkIssue2999(manager);
+    }
+    
+    private void checkIssue2999(DeploymentManager manager) {
+        org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface sdmi =
+                (org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface) manager;
+        if (ServerLocationManager.getAppServerPlatformVersion(sdmi.getPlatformRoot()) <=
+                ServerLocationManager.GF_V2) {
+            Target[] targs = manager.getTargets();
+            TargetModuleID tmids[] = null;
+            try {
+                tmids = manager.getRunningModules(ModuleType.EAR, targs);
+                if (tmids == null || tmids.length < 1) {
+                    tmids = manager.getNonRunningModules(ModuleType.EAR, targs);
+                }
+                boolean jwsSupportFound = false;
+                for (TargetModuleID ear : tmids) {
+                    // find out if we are deploying to a broken 9.0 or 9.1 build
+                    if (ear.toString().startsWith("__JWSappclients")) {
+                        jwsSupportFound = true;
+                        TargetModuleID tmids2[] = ear.getChildTargetModuleID();
+                        if (null == tmids2 || tmids2.length < 1) {
+                            issue2999Fixed = false;
+                        }
+                    }
+                }
+                // 8.x doesn't support this
+                if (!jwsSupportFound) {
+                    issue2999Fixed = false;
+                }
+            } catch (Exception ex) {
+                // better safe than sorry here
+                issue2999Fixed = false;
+            }
+        }        
     }
     
     
@@ -148,9 +199,6 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
         if (null == dm){
             retVal = false;
         }
-        if (null == target){
-            retVal = false;
-        }
         if (null == module){
             retVal = false;
         } else {
@@ -158,8 +206,11 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
             resourceDirs = Utils.getResourceDirs(module);
             
             //so far only WAR are supported for Directory based deployment
-            if ((module.getModuleType() != ModuleType.WAR)){
+            if ((module.getModuleType() == ModuleType.CAR)){
                 retVal = false;
+            }
+            if (retVal && !issue2999Fixed) {
+                retVal = module.getModuleType() != ModuleType.EAR;
             }
             if (retVal) {
                 retVal = ((SunDeploymentManagerInterface)dm).isLocal();

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -148,8 +148,9 @@ public class InitialServerFileDistributor extends ServerProgress {
             if (! dir.exists())
                 dir.mkdirs();
             
-            File parent = dir.getParentFile();
-            FileObject destRoot = FileUtil.toFileObject(parent);
+            // original code deleted the project source... that was probably a
+            //   bug.
+            FileObject destRoot = FileUtil.toFileObject(dir);
             
             FileObject[] garbages = destRoot.getChildren();
             for (int i=0; i<garbages.length; i++) {

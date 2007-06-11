@@ -728,8 +728,9 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
                     return childModule;
                 }
             }
-            // TODO child module was not found
-            return null;
+            // If the moduleUri is null, the j2eeModule needs to be sent back,
+            //     to enable directory deployment of EAR projects.
+            return moduleUri == null ? j2eeModule : null;
         }
         return j2eeModule;
     }

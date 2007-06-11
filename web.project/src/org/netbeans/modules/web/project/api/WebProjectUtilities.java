@@ -617,7 +617,7 @@ public class WebProjectUtilities {
         ep.setProperty(WebProjectProperties.BUILD_TEST_CLASSES_DIR, "${build.dir}/test/classes"); // NOI18N
         ep.setProperty(WebProjectProperties.BUILD_TEST_RESULTS_DIR, "${build.dir}/test/results"); // NOI18N
         ep.setProperty(WebProjectProperties.BUILD_WEB_DIR, "${"+WebProjectProperties.BUILD_DIR+"}/web"); // NOI18N
-        ep.setProperty(WebProjectProperties.BUILD_EAR_WEB_DIR, "${"+WebProjectProperties.BUILD_DIR+"}/ear-module"); // NOI18N
+        ep.setProperty(WebProjectProperties.BUILD_EAR_WEB_DIR, "${"+WebProjectProperties.BUILD_DIR+"}/web"); // NOI18N
         ep.setProperty(WebProjectProperties.BUILD_GENERATED_DIR, "${"+WebProjectProperties.BUILD_DIR+"}/generated"); // NOI18N
         ep.setProperty(WebProjectProperties.BUILD_CLASSES_DIR, "${"+WebProjectProperties.BUILD_WEB_DIR+"}/WEB-INF/classes"); // NOI18N
         ep.setProperty(WebProjectProperties.BUILD_EAR_CLASSES_DIR, "${"+WebProjectProperties.BUILD_EAR_WEB_DIR+"}/WEB-INF/classes"); // NOI18N

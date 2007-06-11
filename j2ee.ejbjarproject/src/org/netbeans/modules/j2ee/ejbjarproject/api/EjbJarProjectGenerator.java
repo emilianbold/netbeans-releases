@@ -347,7 +347,7 @@ public class EjbJarProjectGenerator {
         ep.setProperty(EjbJarProjectProperties.BUILD_TEST_RESULTS_DIR, "${build.dir}/test/results"); // NOI18N
         ep.setProperty(EjbJarProjectProperties.BUILD_GENERATED_DIR, "${"+EjbJarProjectProperties.BUILD_DIR+"}/generated");
         ep.setProperty(EjbJarProjectProperties.BUILD_CLASSES_DIR, "${"+EjbJarProjectProperties.BUILD_DIR+"}/jar");
-        ep.setProperty(EjbJarProjectProperties.BUILD_EAR_CLASSES_DIR, "${"+EjbJarProjectProperties.BUILD_DIR+"}/ear-module");
+        ep.setProperty(EjbJarProjectProperties.BUILD_EAR_CLASSES_DIR, "${"+EjbJarProjectProperties.BUILD_DIR+"}/jar");
         ep.setProperty(EjbJarProjectProperties.BUILD_CLASSES_EXCLUDES, "**/*.java,**/*.form,**/.nbattrs");
         ep.setProperty(EjbJarProjectProperties.DIST_JAVADOC_DIR, "${"+EjbJarProjectProperties.DIST_DIR+"}/javadoc");
         ep.setProperty(EjbJarProjectProperties.JAVA_PLATFORM, "default_platform");

@@ -338,7 +338,7 @@ public class AppClientProjectGenerator {
         //XXX the name of the dist.ear.jar file should be different, but now it cannot be since the name is used as a key in module provider mapping
         ep.setProperty(AppClientProjectProperties.DIST_EAR_JAR, "${"+AppClientProjectProperties.DIST_DIR+"}/" + "${" + AppClientProjectProperties.JAR_NAME + "}"); // NOI18N
         ep.setProperty(AppClientProjectProperties.JAR_NAME, PropertyUtils.getUsablePropertyName(name) + ".jar"); // NOI18N
-        ep.setProperty(AppClientProjectProperties.BUILD_EAR_CLASSES_DIR, "${"+AppClientProjectProperties.BUILD_DIR+"}/ear-module"); // NOI18N
+        ep.setProperty(AppClientProjectProperties.BUILD_EAR_CLASSES_DIR, "${"+AppClientProjectProperties.BUILD_DIR+"}/jar"); // NOI18N
         
         ep.setProperty("dist.dir", "dist"); // NOI18N
         ep.setComment("dist.dir", new String[] {"# " + NbBundle.getMessage(AppClientProjectGenerator.class, "COMMENT_dist.dir")}, false); // NOI18N
