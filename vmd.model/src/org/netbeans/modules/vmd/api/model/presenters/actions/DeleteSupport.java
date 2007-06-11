@@ -24,6 +24,7 @@ import org.netbeans.modules.vmd.api.model.DesignDocument;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import org.netbeans.modules.vmd.model.actions.ConfirmDeletionPanel;
 
 /**
  * Support class for component deletion.
@@ -69,7 +70,7 @@ public final class DeleteSupport {
         return disallowedForUserOnly ? DeletableState.DISALLOWED_FOR_USER_ONLY : DeletableState.ALLOWED;
     }
 
-    static boolean isSilent (DesignComponent component) {
+    public static boolean isSilent (DesignComponent component) {
         for (DeletePresenter presenter : component.getPresenters (DeletePresenter.class))
             if (presenter.isSilent ())
                 return true;
