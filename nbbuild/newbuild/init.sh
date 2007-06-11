@@ -46,8 +46,6 @@ LOGS=$DIST/logs
 BASENAME=netbeans-$BUILDNUM
 
 mkdir -p $DIST/zip
-mkdir -p $DIST/targz
-mkdir -p $DIST/tarbz2
 mkdir -p $LOGS
 
 #LOGS
