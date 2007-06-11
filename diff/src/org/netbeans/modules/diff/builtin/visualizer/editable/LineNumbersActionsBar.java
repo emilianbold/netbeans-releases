@@ -270,7 +270,7 @@ class LineNumbersActionsBar extends JComponent implements Scrollable, MouseMotio
     }
     
     public Dimension getPreferredSize() {
-        return new Dimension(getBarWidth(), Integer.MAX_VALUE);
+        return new Dimension(getBarWidth(), Integer.MAX_VALUE >> 2);
     }
 
     private int getBarWidth() {
