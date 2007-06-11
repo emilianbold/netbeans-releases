@@ -207,39 +207,41 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
         SortedSet<DDBinding> bindingDataSet = new TreeSet<DDBinding>();
 
         // Match up like names
-        for(CommonDDBean sunBean: sunBeans) {
-            String beanName = getBeanName(sunBean);
-            beanName = (beanName != null) ? beanName.trim() : beanName;
-            
-            Map<String, Object> stdBeanProperties = null;
-            if(stdBeanPropertyMap != null) {
-                Object value = stdBeanPropertyMap.get(beanName);
-                if(value != null) {
-                    if(value instanceof Map<?, ?>) {
-                        stdBeanProperties = (Map<String, Object>) value;
-                        stdBeanPropertyMap.remove(beanName);
-                    } else {
-                        System.out.println("Property for standard bean " + beanName + " is wrong type: " + value.getClass().getSimpleName());
+        if(sunBeans != null) {
+            for(CommonDDBean sunBean: sunBeans) {
+                String beanName = getBeanName(sunBean);
+                beanName = (beanName != null) ? beanName.trim() : beanName;
+
+                Map<String, Object> stdBeanProperties = null;
+                if(stdBeanPropertyMap != null) {
+                    Object value = stdBeanPropertyMap.get(beanName);
+                    if(value != null) {
+                        if(value instanceof Map<?, ?>) {
+                            stdBeanProperties = (Map<String, Object>) value;
+                            stdBeanPropertyMap.remove(beanName);
+                        } else {
+                            System.out.println("Property for standard bean " + beanName + " is wrong type: " + value.getClass().getSimpleName());
+                        }
                     }
                 }
-            }
 
-            Map<String, Object> annotationProperties = null;
-            if(annotationPropertyMap != null) {
-                Object value = annotationPropertyMap.get(beanName);
-                if(value != null) {
-                    if(value instanceof Map<?, ?>) {
-                        annotationProperties = (Map<String, Object>) value;
-                        annotationPropertyMap.remove(beanName);
-                    } else {
-                        System.out.println("Property for annotation " + beanName + " is wrong type: " + value.getClass().getSimpleName());
+                Map<String, Object> annotationProperties = null;
+                if(annotationPropertyMap != null) {
+                    Object value = annotationPropertyMap.get(beanName);
+                    if(value != null) {
+                        if(value instanceof Map<?, ?>) {
+                            annotationProperties = (Map<String, Object>) value;
+                            annotationPropertyMap.remove(beanName);
+                        } else {
+                            System.out.println("Property for annotation " + beanName + " is wrong type: " + value.getClass().getSimpleName());
+                        }
                     }
                 }
-            }
 
-            DDBinding binding = new DDBinding(this, sunBean, stdBeanProperties, annotationProperties, false);
-            bindingDataSet.add(binding);
-            System.out.println("Loaded from sun-???.xml... " + binding.toString());
+                DDBinding binding = new DDBinding(this, sunBean, stdBeanProperties, annotationProperties, false);
+                bindingDataSet.add(binding);
+                System.out.println("Loaded from sun-???.xml... " + binding.toString());
+            }
         }
         
         // Add dummy entries for all unmatched standard servlets (unmatched sun servlets were added previous step)
