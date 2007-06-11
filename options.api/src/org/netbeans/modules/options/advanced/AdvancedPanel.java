@@ -21,18 +21,17 @@ package org.netbeans.modules.options.advanced;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Iterator;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
-import org.netbeans.modules.options.ui.TabbedPanel;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.netbeans.modules.options.*;
 
 
@@ -44,7 +43,7 @@ import org.netbeans.modules.options.*;
 public final class AdvancedPanel extends JPanel {
 
     
-    TabbedPanel     tabbedPanel;
+    JTabbedPane     tabbedPanel;
     private final Model   model = new Model ();
     
     
@@ -63,7 +62,7 @@ public final class AdvancedPanel extends JPanel {
     }
     
     public HelpCtx getHelpCtx () {
-        return model.getHelpCtx (tabbedPanel.getSelectedComponent ());
+        return model.getHelpCtx ((JComponent)tabbedPanel.getSelectedComponent ());
     }
     
     public boolean dataValid () {
@@ -80,10 +79,10 @@ public final class AdvancedPanel extends JPanel {
     
     void init (Lookup masterLookup) {
         // init components
-        tabbedPanel = new WhiteTabbedPanel (model, TabbedPanel.EXPAND_SOME); // expansionPolicy         
+        tabbedPanel = new JTabbedPane();
         tabbedPanel.setBorder (null);
-        tabbedPanel.addActionListener (new ActionListener () {
-            public void actionPerformed (ActionEvent e) {
+        tabbedPanel.addChangeListener(new ChangeListener () {
+            public void stateChanged(ChangeEvent e) {
                 firePropertyChange (OptionsPanelController.PROP_HELP_CTX, null, null);
             }
         });
@@ -103,6 +102,7 @@ public final class AdvancedPanel extends JPanel {
                 preferredWith, 
                 component.getPreferredSize ().width + 22
             );
+            tabbedPanel.add(category, component);
         }
         setPreferredSize (new Dimension (preferredWith, 100));        
         model.setLoookup (masterLookup);

@@ -81,7 +81,7 @@ public final class Model extends TabbedPanelModel {
         else
             b = new EmptyBorder (6, 16, 6, 6);
         panel.setBorder (b);
-        panel.setBackground (Color.white);
+        //panel.setBackground (Color.white);
         panel.setMaximumSize (panel.getPreferredSize ());
         return panel;
     }

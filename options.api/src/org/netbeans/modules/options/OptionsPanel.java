@@ -261,21 +261,14 @@ public class OptionsPanel extends JPanel {
         
         // layout
         setLayout (new BorderLayout (10, 10));
-        if (isMac) {
-            pOptions.setBorder (new CompoundBorder (
-                new VariableBorder (null, null, borderMac, null),
-                BorderFactory.createEmptyBorder (0, 20, 5, 20)
-            ));
-            add (pCategories, BorderLayout.NORTH);
-            add (pOptions, BorderLayout.CENTER);
-        } else {
-            JPanel centralPanel = new JPanel (new BorderLayout (10, 10));
-            centralPanel.add (pTitle, BorderLayout.NORTH);
-            centralPanel.add (pOptions, BorderLayout.CENTER);
-            add (pCategories, BorderLayout.WEST);
-            add (centralPanel, BorderLayout.CENTER);
-            setBorder (new EmptyBorder (10, 10, 0, 10));
-        }        
+
+        //TODO: other border for non Mac
+        pOptions.setBorder(new CompoundBorder(
+                new VariableBorder(null, null, borderMac, null),
+                BorderFactory.createEmptyBorder(0, 20, 5, 20)
+                ));
+        add(pCategories, BorderLayout.NORTH);
+        add(pOptions, BorderLayout.CENTER);
      
         categoryName = getCategoryID(categoryName);
         if (categoryName != null) {
@@ -346,25 +339,14 @@ public class OptionsPanel extends JPanel {
         getInputMap (JComponent.WHEN_IN_FOCUSED_WINDOW).put (keyStroke, button);
         getActionMap ().put (button, new SelectAction (category));
 
-        if (isMac) {
-            GridBagConstraints gbc = new GridBagConstraints ();
-            gbc.anchor = GridBagConstraints.NORTHWEST;
-            gbc.fill = GridBagConstraints.VERTICAL;
-            gbc.weightx = 0.0;
-            gbc.weighty = 1.0;
-            gbc.gridx = index;
-            gbc.gridy = 0;
-            pCategories2.add (button, gbc);
-        } else {
-            GridBagConstraints gbc = new GridBagConstraints();
-            gbc.anchor = GridBagConstraints.NORTHWEST;
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.weightx = 1.0;
-            gbc.weighty = 0.0;
-            gbc.gridx = 0;
-            gbc.gridy = index;
-            pCategories2.add (button, gbc);
-        }
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        gbc.fill = GridBagConstraints.VERTICAL;
+        gbc.weightx = 0.0;
+        gbc.weighty = 1.0;
+        gbc.gridx = index;
+        gbc.gridy = 0;
+        pCategories2.add(button, gbc);
         buttons.put (category.getID(), button);
     }
     
@@ -381,10 +363,7 @@ public class OptionsPanel extends JPanel {
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
-        if (isMac)
-            gbc.gridy = 0;
-        else
-            gbc.gridx = 0;
+        gbc.gridy = 0;
         pCategories2.add (new javax.swing.JLabel (""), gbc);
     }
         
