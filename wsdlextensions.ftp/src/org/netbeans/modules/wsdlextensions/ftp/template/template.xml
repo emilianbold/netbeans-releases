@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+
+<!--
+    Document   : template.xml
+    Created on : Sept 27, 2006, 5:39 PM
+    Author     : jfu jim.fu@sun.com
+    Description: Describes the FTP Binding Component's extensibility element views on WSDL wizard
+-->
+<templateGroup namespace="http://schemas.sun.com/jbi/wsdl-extensions/ftp/" 
+	       xmlns="http://xml.netbeans.org/schema/templates"
+	       xmlns:xsi="http://www.w3.org/1999/XMLSchema/instance"
+               xsi:schemaLocation="http://xml.netbeans.org/schema/templates 
+               templates.xsd" prefix="ftp">
+    <template name="FTPMessage">
+        <wsdlElement name="BindingOperationInput">
+           <extensionElement name="message" >
+                <extensionAttr name="messageRepository" defaultValue="" />
+                <extensionAttr name="messageName" defaultValue="" />
+                <extensionAttr name="messageNamePrefixIB" defaultValue="" />
+                <extensionAttr name="messageNamePrefixOB" defaultValue="" />
+                <extensionAttr name="pollIntervalMillis" defaultValue="5000" />
+                <extensionAttr name="archive" defaultValue="true" />
+                <extensionAttr name="protect" defaultValue="true" />
+                <extensionAttr name="stage" defaultValue="true" />
+                <extensionAttr name="use" defaultValue="literal" />
+                <extensionAttr name="encodingStyle" defaultValue="" />
+                <extensionAttr name="part"/>
+                <extensionAttr name="messageCorrelate" defaultValue="true" />
+            </extensionElement>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationOutput">
+            <extensionElement name="message" >
+                <extensionAttr name="messageRepository" defaultValue="" />
+                <extensionAttr name="messageName" defaultValue="" />
+                <extensionAttr name="messageNamePrefixIB" defaultValue="" />
+                <extensionAttr name="messageNamePrefixOB" defaultValue="" />
+                <extensionAttr name="pollIntervalMillis" defaultValue="5000" />
+                <extensionAttr name="archive" defaultValue="true" />
+                <extensionAttr name="protect" defaultValue="true" />
+                <extensionAttr name="stage" defaultValue="true" />
+                <extensionAttr name="use" defaultValue="literal" />
+                <extensionAttr name="encodingStyle" defaultValue="" />
+                <extensionAttr name="part"/>
+                <extensionAttr name="messageCorrelate" defaultValue="true" />
+            </extensionElement>
+        </wsdlElement>
+        <wsdlElement name="ServicePort">
+            <extensionElement name="address" >
+                <extensionAttr name="url"  defaultValue="ftp://anonymous:user\@yahoo.com@localhost:21"/>
+                <!-- 
+                where:
+                [ftp_user]: FTP account login
+                [ftp_password]: FTP account login password
+                [ftp_host]: name or IP of FTP server host
+                [ftp_port]: FTP port
+                -->
+                <extensionAttr name="dirListStyle" defaultValue="UNIX" />
+                <extensionAttr name="useUserDefinedHeuristics" defaultValue="false" />
+                <extensionAttr name="userDefDirListStyle" defaultValue="" />
+                <extensionAttr name="userDefDirListHeuristics" defaultValue="" />
+                <extensionAttr name="mode" defaultValue="BINARY" />
+                <extensionAttr name="cmdChannelTimeout" defaultValue="45000" />
+                <extensionAttr name="dataChannelTimeout" defaultValue="45000" />
+            </extensionElement>
+        </wsdlElement>
+        <wsdlElement name="Binding">
+            <extensionElement name="binding" />
+        </wsdlElement>
+        <wsdlElement name="BindingOperation">
+            <extensionElement name="operation" />
+        </wsdlElement>
+    </template>
+    <template name="FTPTransport">
+        <wsdlElement name="BindingOperationInput">
+            <extensionElement name="transfer" >
+                <extensionAttr name="sendTo" defaultValue="" />
+                <extensionAttr name="sendToHasPatterns" defaultValue="false" />
+                <extensionAttr name="append" defaultValue="false" />
+                <extensionAttr name="receiveFrom" defaultValue="" />
+                <extensionAttr name="receiveFromHasRegexs" defaultValue="false" />
+                <extensionAttr name="pollIntervalMillis" defaultValue="5000" />
+                <extensionAttr name="preSendCommand" defaultValue="NONE" />
+                <extensionAttr name="preSendLocation" defaultValue="" />
+                <extensionAttr name="preSendLocationHasPatterns" defaultValue="false" />
+                <extensionAttr name="preReceiveCommand" defaultValue="NONE" />
+                <extensionAttr name="preReceiveLocation" defaultValue="" />
+                <extensionAttr name="preReceiveLocationHasPatterns" defaultValue="false" />
+                <extensionAttr name="postSendCommand" defaultValue="NONE" />
+                <extensionAttr name="postSendLocation" defaultValue="" />
+                <extensionAttr name="postSendLocationHasPatterns" defaultValue="false" />
+                <extensionAttr name="postReceiveCommand" defaultValue="NONE" />
+                <extensionAttr name="postReceiveLocation" defaultValue="" />
+                <extensionAttr name="postReceiveLocationHasPatterns" defaultValue="false" />
+                <extensionAttr name="senderUsePassive" defaultValue="true" />
+                <extensionAttr name="receiverUsePassive" defaultValue="true" />
+                <extensionAttr name="use" defaultValue="literal" />
+                <extensionAttr name="encodingStyle" defaultValue="" />
+                <extensionAttr name="part"/>
+                <extensionAttr name="messageCorrelate" defaultValue="false" />
+            </extensionElement>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationOutput">
+            <extensionElement name="transfer" >
+                <extensionAttr name="sendTo" defaultValue="" />
+                <extensionAttr name="sendToHasPatterns" defaultValue="false" />
+                <extensionAttr name="append" defaultValue="false" />
+                <extensionAttr name="receiveFrom" defaultValue="" />
+                <extensionAttr name="receiveFromHasRegexs" defaultValue="false" />
+                <extensionAttr name="pollIntervalMillis" defaultValue="5000" />
+                <extensionAttr name="preSendCommand" defaultValue="NONE" />
+                <extensionAttr name="preSendLocation" defaultValue="" />
+                <extensionAttr name="preSendLocationHasPatterns" defaultValue="false" />
+                <extensionAttr name="preReceiveCommand" defaultValue="NONE" />
+                <extensionAttr name="preReceiveLocation" defaultValue="" />
+                <extensionAttr name="preReceiveLocationHasPatterns" defaultValue="false" />
+                <extensionAttr name="postSendCommand" defaultValue="NONE" />
+                <extensionAttr name="postSendLocation" defaultValue="" />
+                <extensionAttr name="postSendLocationHasPatterns" defaultValue="false" />
+                <extensionAttr name="postReceiveCommand" defaultValue="NONE" />
+                <extensionAttr name="postReceiveLocation" defaultValue="" />
+                <extensionAttr name="postReceiveLocationHasPatterns" defaultValue="false" />
+                <extensionAttr name="senderUsePassive" defaultValue="true" />
+                <extensionAttr name="receiverUsePassive" defaultValue="true" />
+                <extensionAttr name="use" defaultValue="literal" />
+                <extensionAttr name="encodingStyle" defaultValue="" />
+                <extensionAttr name="part"/>
+                <extensionAttr name="messageCorrelate" defaultValue="false" />
+            </extensionElement>
+        </wsdlElement>
+        <wsdlElement name="ServicePort">
+            <extensionElement name="address" >
+                <extensionAttr name="url"  defaultValue="ftp://anonymous:user\@yahoo.com@localhost:21"/>
+                <!-- 
+                where:
+                [ftp_user]: FTP account login
+                [ftp_password]: FTP account login password
+                [ftp_host]: name or IP of FTP server host
+                [ftp_port]: FTP port
+                -->
+                <extensionAttr name="dirListStyle" defaultValue="UNIX" />
+                <extensionAttr name="useUserDefinedHeuristics" defaultValue="false" />
+                <extensionAttr name="userDefDirListStyle" defaultValue="" />
+                <extensionAttr name="userDefDirListHeuristics" defaultValue="" />
+                <extensionAttr name="mode" defaultValue="BINARY" />
+                <extensionAttr name="cmdChannelTimeout" defaultValue="45000" />
+                <extensionAttr name="dataChannelTimeout" defaultValue="45000" />
+            </extensionElement>
+        </wsdlElement>
+        <wsdlElement name="Binding">
+            <extensionElement name="binding" />
+        </wsdlElement>
+        <wsdlElement name="BindingOperation">
+            <extensionElement name="operation" />
+        </wsdlElement>
+    </template>
+</templateGroup>
