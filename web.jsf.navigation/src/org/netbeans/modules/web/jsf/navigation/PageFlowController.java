@@ -706,6 +706,8 @@ public class PageFlowController {
      * @return FileObject webfolder
      */
     public FileObject getWebFolder() {
+        assert webFolder.isValid();
+        
         return webFolder;
     }
     

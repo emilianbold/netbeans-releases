@@ -107,9 +107,8 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
     
     private String nodeDisplayName;
     
-    private Node _oldNode;
     private void setNode(Node newNode ){
-        _oldNode = original;
+        String oldDisplayName = nodeDisplayName;
         original = newNode;
         nodeDisplayName = original.getDisplayName();
         //HACK sometimes the datanode name isn't updated as fast as the filename.
@@ -118,7 +117,7 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
             
             FileObject fileObj = ((DataNode)original).getDataObject().getPrimaryFile();
             assert fileObj != null;
-            String oldNodeDisplayName = nodeDisplayName;
+//            String oldNodeDisplayName = nodeDisplayName;
             nodeDisplayName = getFolderDisplayName(pc.getWebFolder(), fileObj );
             
             //            if( !nodeDisplayName.equals(oldNodeDisplayName) ){
@@ -129,7 +128,12 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
             //            }
             
         }
-        pc.putPageName2Page(nodeDisplayName, this);
+       if( !nodeDisplayName.equals(oldDisplayName)) {
+            if  (oldDisplayName != null ) { 
+                pc.removePageName2Page(oldDisplayName, false);
+            }
+            pc.putPageName2Page(nodeDisplayName, this);
+        }
     }
     
     public void updateNode_HACK(){
