@@ -49,7 +49,7 @@ public class MessageDestinationMetadataReader extends CommonBeanReader {
         return parent;
     }
     
-    /** Maps interesting fields from security-role descriptor to a multi-level property map.
+    /** Maps interesting fields from message-destination descriptor to a multi-level property map.
      * 
      * @return Map<String, Object> where Object is either a String value or nested map
      *  with the same structure (and thus ad infinitum)
@@ -64,9 +64,9 @@ public class MessageDestinationMetadataReader extends CommonBeanReader {
                     if(result == null) {
                         result = new HashMap<String, Object>();
                     }
-                    Map<String, String> securityRoleMap = new HashMap<String, String>();
-                    result.put(msgDestName, securityRoleMap);
-                    securityRoleMap.put(DDBinding.PROP_NAME, msgDestName);
+                    Map<String, String> msgDestMap = new HashMap<String, String>();
+                    result.put(msgDestName, msgDestMap);
+                    msgDestMap.put(DDBinding.PROP_NAME, msgDestName);
                 }
             }
         }
