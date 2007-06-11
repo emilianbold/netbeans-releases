@@ -19,47 +19,36 @@
 
 package org.netbeans.modules.project.ui.actions;
 
-import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.ui.NoMainProjectWarning;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ProjectConfiguration;
-import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Actions;
-import org.openide.awt.DropDownButtonFactory;
 import org.openide.awt.MouseUtils;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
-import org.openide.util.actions.Presenter;
-import org.openide.util.lookup.Lookups;
 
 /** Invokes command on the main project.
  * 
  * @author Pet Hrebejk 
  */
-public class MainProjectAction extends BasicAction implements Presenter.Toolbar, PropertyChangeListener {
+public class MainProjectAction extends BasicAction implements PropertyChangeListener {
     
     private String command;
     private ProjectActionPerformer performer;
@@ -203,9 +192,10 @@ public class MainProjectAction extends BasicAction implements Presenter.Toolbar,
         return canceled;
     }
 
+    /* Backed out; see issue #105664 for discussion:
     public Component getToolbarPresenter() {
         final JButton button = DropDownButtonFactory.createDropDownButton(
-                /*replaced anyway*/new ImageIcon(new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB)), null);
+                new ImageIcon(new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB)), null); // image replaced anyway
         Actions.connect(button, this);
         final PropertyChangeListener[] weakPCL = {null};
         PropertyChangeListener pcl = new PropertyChangeListener() {
@@ -256,5 +246,6 @@ public class MainProjectAction extends BasicAction implements Presenter.Toolbar,
         pcl.propertyChange(null);
         return button;
     }
+    */
 
 }
