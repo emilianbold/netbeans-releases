@@ -30,6 +30,7 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
@@ -55,6 +56,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Mutex;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -157,19 +159,27 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
     }
     
     public void checkChildren(final CommonDDBean focusBean) {
-        Mutex.EVENT.readAccess(new Runnable() {
+        RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                doCheck = true;
-                if (setChecking(true)) {
-                    try {
-                        while (doCheck) {
-                            doCheck = false;
-                            check(focusBean);
+                // Compute dataset
+                final SortedSet<DDBinding> bindingDataSet = computeBindingSet();
+                
+                // Notify AWT for UI update.
+                Mutex.EVENT.readAccess(new Runnable() {
+                    public void run() {
+                        doCheck = true;
+                        if (setChecking(true)) {
+                            try {
+                                while (doCheck) {
+                                    doCheck = false;
+                                    check(focusBean, bindingDataSet);
+                                }
+                            } finally {
+                                setChecking(false);
+                            }
                         }
-                    } finally {
-                        setChecking(false);
                     }
-                }
+                });
             }
         });
     }
@@ -188,9 +198,13 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
             return true;
         }
     }
-    
-    @SuppressWarnings("unchecked")
-    protected void check(final CommonDDBean focusBean) {
+
+    /** This method actually updates the display nodes in the UI.  It should not
+     *  do any slow calculation and should only be called on AWT thread.
+     */
+    protected void check(final CommonDDBean focusBean, SortedSet<DDBinding> bindingDataSet) {
+        assert SwingUtilities.isEventDispatchThread();
+        
         Map<Object, Node> nodeMap = new HashMap<Object, Node>();
         Children children = getChildren();
         Node[] nodes = children.getNodes();
@@ -199,11 +213,61 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
             nodeMap.put(((SectionNode) node).getKey(), node);
         }
        
-        // Get the raw data
+        // !PW Optimization - How to match virtual servlets from prior pass with virtual servlets from this pass?
+        // Currently their keys will always be created new.  Can we look them up?
+        
+        SectionNode focusNode = null;
+        boolean dirty = nodes.length != bindingDataSet.size();
+        List<Node> newNodeList = new ArrayList<Node>(bindingDataSet.size());
+        
+        int index = 0;
+        Iterator<DDBinding> setIter = bindingDataSet.iterator();
+        while(setIter.hasNext()) {
+            DDBinding binding = setIter.next();
+            SectionNode node = (SectionNode) nodeMap.get(binding.getSunBean());
+            if(node instanceof NamedBeanNode && !binding.equals(((NamedBeanNode) node).getBinding())) {
+                node = createNode(binding);
+                dirty = true;
+            } else if(node == null) {
+                node = createNode(binding);
+                dirty = true;
+            }
+            newNodeList.add(node);
+            if(!dirty) {
+                dirty = ((SectionNode) nodes[index]).getKey() != node.getKey();
+            }
+            if(binding.getSunBean() == focusBean) {
+                focusNode = node;
+            }
+            index++;
+        }
+        
+        if (dirty) {
+            Node [] newNodes = newNodeList.toArray(new Node[newNodeList.size()]);
+            children.remove(nodes);
+            children.add(newNodes);
+            populateBoxPanel();
+        }
+        
+        if(focusBean != null && focusNode != null) {
+            SectionNodePanel nodePanel = focusNode.getSectionNodePanel();
+            nodePanel.open();
+            nodePanel.scroll();
+            nodePanel.setActive(true);
+        }
+    }
+    
+    protected SortedSet<DDBinding> computeBindingSet() {
         CommonDDBean [] sunBeans = getBeansFromModel();
         Map<String, Object> stdBeanPropertyMap = readDescriptor();
         Map<String, Object> annotationPropertyMap = readAnnotations();
         
+        return computeBindingSet(sunBeans, stdBeanPropertyMap, annotationPropertyMap);
+    }
+    
+    @SuppressWarnings("unchecked")
+    protected SortedSet<DDBinding> computeBindingSet(CommonDDBean [] sunBeans, 
+            Map<String, Object> stdBeanPropertyMap, Map<String, Object> annotationPropertyMap) {
         SortedSet<DDBinding> bindingDataSet = new TreeSet<DDBinding>();
 
         // Match up like names
@@ -305,48 +369,7 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
         // Possibly only consider annotations on bound servlets?  Then we can look at specific servlet class for annotations
         // using <servlet-class> field in standard descriptor.
         
-        // !PW Optimization - How to match virtual servlets from prior pass with virtual servlets from this pass?
-        // Currently their keys will always be created new.  Can we look them up?
-        
-        SectionNode focusNode = null;
-        boolean dirty = nodes.length != bindingDataSet.size();
-        List<Node> newNodeList = new ArrayList<Node>(bindingDataSet.size());
-        
-        int index = 0;
-        Iterator<DDBinding> setIter = bindingDataSet.iterator();
-        while(setIter.hasNext()) {
-            DDBinding binding = setIter.next();
-            SectionNode node = (SectionNode) nodeMap.get(binding.getSunBean());
-            if(node instanceof NamedBeanNode && !binding.equals(((NamedBeanNode) node).getBinding())) {
-                node = createNode(binding);
-                dirty = true;
-            } else if(node == null) {
-                node = createNode(binding);
-                dirty = true;
-            }
-            newNodeList.add(node);
-            if(!dirty) {
-                dirty = ((SectionNode) nodes[index]).getKey() != node.getKey();
-            }
-            if(binding.getSunBean() == focusBean) {
-                focusNode = node;
-            }
-            index++;
-        }
-        
-        if (dirty) {
-            Node [] newNodes = newNodeList.toArray(new Node[newNodeList.size()]);
-            children.remove(nodes);
-            children.add(newNodes);
-            populateBoxPanel();
-        }
-        
-        if(focusBean != null && focusNode != null) {
-            SectionNodePanel nodePanel = focusNode.getSectionNodePanel();
-            nodePanel.open();
-            nodePanel.scroll();
-            nodePanel.setActive(true);
-        }
+        return bindingDataSet;
     }
     
     protected <T> MetadataModel<T> getMetadataModel(Class<T> type) {
