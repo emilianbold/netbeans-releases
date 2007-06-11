@@ -129,7 +129,25 @@ public class LifelineDrawEngine extends ADNodeDrawEngine
     /// the minimum allowable rectangle for this container
     IETRect m_rectMinimumResize = null;
     private boolean adjustCreateConnnector = false;
-    
+
+    public void init() throws ETException
+    {
+        if (TypeConversions.getElement(this) != null)
+        {
+            IPresentationElement pPE = getPresentationElement();
+            if (pPE != null)
+            {
+                clearCompartments();
+                createCompartments();
+                initCompartments(pPE);
+            }
+
+            initResources();
+            handleSizeToContents(-1);
+        }
+    }
+
+
     public String getElementType()
     {
         String type = super.getElementType();
@@ -1144,7 +1162,8 @@ public class LifelineDrawEngine extends ADNodeDrawEngine
      */
     public void sizeToContents()
     {
-        handleSizeToContents(-1);
+        // disable automatic resizing #90587
+       // handleSizeToContents(-1);
     }
     
     /**
