@@ -23,10 +23,8 @@ import java.awt.Toolkit;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Pattern;
-//import java.util.Arrays;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 //import java.util.HashSet;
 //import java.util.Set;
 //import org.netbeans.api.project.FileOwnerQuery;
@@ -36,9 +34,8 @@ import java.util.regex.Pattern;
 //import org.openide.DialogDisplayer;
 //import org.openide.DialogDisplayer;
 //import org.openide.NotifyDescriptor;
-import org.netbeans.editor.FindSupport;
-import org.netbeans.editor.SettingsNames;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -49,11 +46,16 @@ import org.openide.filesystems.XMLFileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.text.Line;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Open the layer file(s) declaring the SFS node.
@@ -183,27 +185,41 @@ public class OpenLayerFilesAction extends CookieAction {
         EditorCookie editorCookie = layerDataObject.getCookie(EditorCookie.class);
         if (editorCookie != null) {
             editorCookie.open();
-            FindSupport findSupport = FindSupport.getFindSupport();
-            Map findProps = new HashMap();
-            findProps.put(SettingsNames.FIND_HIGHLIGHT_SEARCH, Boolean.FALSE);
-            findProps.put(SettingsNames.FIND_REG_EXP, Boolean.TRUE);
-            findProps.put(SettingsNames.FIND_WHOLE_WORDS, Boolean.FALSE);
-            findProps.put(SettingsNames.FIND_MATCH_CASE, Boolean.FALSE);
-            findProps.put(SettingsNames.FIND_WRAP_SEARCH, Boolean.TRUE);
-            findProps.put(SettingsNames.FIND_INC_SEARCH, Boolean.FALSE);
-            findProps.put(SettingsNames.FIND_BACKWARD_SEARCH, Boolean.FALSE);
-            findProps.put(SettingsNames.FIND_WHAT,
-                "<" + ".*" + (originalF.isFolder() ? "folder" : "file") + ".*" + "name=\"" +  // NOI18N
-                Pattern.quote(originalF.getNameExt()) // quote the pattern
-                + "\""); // NOI18N
-            if (findSupport.find(findProps, false)) {
-                findProps.put(SettingsNames.FIND_REG_EXP, Boolean.FALSE);
-                findProps.put(SettingsNames.FIND_WRAP_SEARCH, Boolean.FALSE);
-                findProps.put(SettingsNames.FIND_WHAT, originalF.getNameExt());
-                findSupport.find(findProps, true);
+            LineCookie lineCookie = layerDataObject.getCookie(LineCookie.class);
+            if (lineCookie != null) {
+                try {
+                    InputSource in = new InputSource(layerDataObject.getPrimaryFile().getURL().toExternalForm());
+                    SAXParserFactory factory = SAXParserFactory.newInstance();
+                    SAXParser parser = factory.newSAXParser();
+                    final int[] line = new int[1];
+                    final String elementName = originalF.isFolder() ? "folder" : "file"; // NOI18N
+                    final String name = originalF.getNameExt();
+                    class Handler extends DefaultHandler {
+                        private Locator locator;
+                        @Override
+                        public void setDocumentLocator(Locator l) {
+                            locator = l;
+                        }
+                        @Override
+                        public void startElement(String uri, String localname, String qname, Attributes attr) throws SAXException {
+                            if (line[0] == 0) {
+                                if (qname.equals(elementName) && name.equals(attr.getValue("name"))) { // NOI18N
+                                    line[0] = locator.getLineNumber();
+                                }
+                            }
+                        }
+                    }
+                    parser.parse(in, new Handler());
+                    if (line[0] < 1) {
+                        return;
+                    }
+                    lineCookie.getLineSet().getCurrent(line[0] - 1).show(Line.SHOW_GOTO);
+                } catch (Exception e) {
+                    return;
+                }
             }
         }
-    }
+    }        
 
     public String getName() {
          return NbBundle.getMessage(OpenLayerFilesAction.class, "LBL_open_layer_files_action");
