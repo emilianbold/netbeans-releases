@@ -333,115 +333,6 @@ public class ProxySocketFactory extends SocketFactory {
         throw new IOException("Basic authentication failed: " + line);
     }
 
-    private Socket getSocks4TunnelSocket(InetSocketAddress address, ConnectivitySettings cs, int timeout) throws IOException {
-        boolean success = false;
-        Socket proxy = new Socket();
-        proxy.connect(new InetSocketAddress(cs.getProxyHost(), cs.getProxyPort()), timeout);
-        try {
-            DataInputStream din = new DataInputStream(new InterruptibleInputStream(proxy.getInputStream()));
-            DataOutputStream dos = new DataOutputStream(proxy.getOutputStream());
-
-            dos.writeByte(4);				// protocol
-            dos.writeByte(1);				// connect command
-            dos.writeShort(address.getPort());
-            InetAddress addr = address.getAddress();
-            if (addr == null) throw new UnknownHostException(address.getHostName());
-            byte[] byteAddress = addr.getAddress();
-            for (int i = 0; i < byteAddress.length; i++) {
-                dos.writeByte(byteAddress[i]);
-            }
-            String uname = cs.getProxyUsername();
-            if (uname != null) {
-                byte[] unamebytes = uname.getBytes();
-                for (int i = 0; i < unamebytes.length; i++) {
-                    dos.writeByte(unamebytes[i]);
-                }
-            }
-            dos.writeByte(0);
-
-            int replyVersion = din.read();
-            if (replyVersion != 0) throw new IOException("socks4.not.available." + replyVersion);
-            int retCode = din.read();
-            if (retCode != 90) throw new IOException("socks4.error." + retCode);
-            while (din.available() > 0) din.read();
-            success = true;
-            return proxy;
-        } finally {
-            if (!success) proxy.close();
-        }
-    }
-    
-    private Socket getSocks5TunnelSocket(InetSocketAddress address, ConnectivitySettings cs, int timeout) throws IOException {
-        boolean success = false;
-        int tmp;
-
-        Socket proxy = new Socket();
-        proxy.connect(new InetSocketAddress(cs.getProxyHost(), cs.getProxyPort()), timeout);
-        try {
-            DataInputStream din = new DataInputStream(new InterruptibleInputStream(proxy.getInputStream()));
-            DataOutputStream dos = new DataOutputStream(proxy.getOutputStream());
-
-// protocol, # of supported auth methods, no auth, user/pass auth   
-            dos.write(new byte[]{5, 2, 0, 2});
-
-            int serverVersion = din.read();
-            if (serverVersion != 5) throw new IOException("SOCKS5 protocol error: version: " + serverVersion);
-            int authMethod = din.read();
-            if (authMethod == 0xFF) throw new IOException("SOCKS5 authentication failure: no supported method acccepted by server");
-
-            if (authMethod == 2) {
-                dos.writeByte(1);		// negotiation version
-                String uname = cs.getProxyUsername();
-                byte[] unamebytes = (uname == null) ? new byte[]{} : uname.getBytes();
-                dos.writeByte(unamebytes.length);
-                for (int i = 0; i < unamebytes.length; i++) {
-                    dos.writeByte(unamebytes[i]);
-                }
-                String pwd = null;
-                if (cs.getProxyPassword() != null) {
-                    pwd = new String(cs.getProxyPassword());
-                }
-                byte[] pwdbytes = (pwd == null) ? new byte[]{} : pwd.getBytes();
-                dos.writeByte(pwdbytes.length);
-                for (int i = 0; i < pwdbytes.length; i++) {
-                    dos.writeByte(pwdbytes[i]);
-                }
-
-                tmp = din.read();
-                if (tmp != 1) throw new IOException("socks5.auth.error." + tmp);
-                tmp = din.read();
-                if (tmp != 0) throw new IOException("socks5.auth.error." + tmp);
-            }
-
-            String hostName = address.getHostName();
-// protocol, CONNECT, <reserved>, domain name follows, domain name length
-            dos.write(new byte[]{5, 1, 0, 3, (byte) hostName.length()});
-            dos.writeBytes(hostName);
-            dos.writeShort(address.getPort());
-
-            serverVersion = din.read();
-            if (serverVersion != 5) throw new IOException("SOCKS5 protocol error: version: " + serverVersion);
-            tmp = din.read();
-            if (tmp != 0) throw new IOException("SOCKS5 protocol error: " + tmp);
-            tmp = din.read();
-            if (tmp != 0) throw new IOException("SOCKS5 protocol error: " + tmp);
-            int addrType = din.read();
-            if (addrType == -1) throw new IOException("SOCKS5 protocol error: " + addrType);
-            // address
-            for (int i = 0; i < 4; i++) {
-                tmp = din.read();
-                if (tmp == -1) throw new IOException("SOCKS5 error: " + tmp);
-            }
-            // port
-            tmp = din.read();
-            tmp = din.read();
-            success = true;
-            return proxy;
-        } finally {
-            if (!success) proxy.close();
-        }
-    }
-    
     /**
      * Creates a new Socket connected to the given IP address. The method uses connection settings supplied
      * in the constructor for connecting the socket.
@@ -541,12 +432,6 @@ public class ProxySocketFactory extends SocketFactory {
     private Socket createSocket(ConnectivitySettings cs, InetSocketAddress address, int timeout) throws IOException {
         switch (cs.getConnectionType()) {
         case ConnectivitySettings.CONNECTION_VIA_SOCKS:
-            try {
-                return getSocks5TunnelSocket(address, cs, timeout);
-            } catch (IOException e) {
-                return getSocks4TunnelSocket(address, cs, timeout);
-            }
-
         case ConnectivitySettings.CONNECTION_DIRECT:
             Socket s = new Socket();
             s.connect(address, timeout);
