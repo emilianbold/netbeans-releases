@@ -195,7 +195,7 @@ public class WaitMessageHandler {
                             // does not fire then we force the cleanup.
                             isForcingCleanup = true;
                             mForcedCleanupDelay = 0;
-                        } else if (isForcingCleanup && mForcedCleanupDelay >= 3000) {
+                        } else if (isForcingCleanup && mForcedCleanupDelay >= 5000) {
                             if (mCurrentAnimator == this) {
                                 CasaModelGraphUtilities.setSceneEnabled(
                                         (CasaModelGraphScene) getScene(),
