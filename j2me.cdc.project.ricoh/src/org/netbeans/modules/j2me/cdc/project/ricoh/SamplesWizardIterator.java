@@ -105,7 +105,7 @@ public class SamplesWizardIterator implements WizardDescriptor.InstantiatingIter
                 new PanelConfigurePlatform(platform),
                 new PanelConfigureProject( this.type, preferredName )} :
             new WizardDescriptor.Panel[] {
-                new PlatformInstallPanel.WizardPanel(platform),
+                new PlatformInstallPanel.WizardPanel(platform,CDCPlatform.PLATFORM_CDC),
                 new PanelConfigurePlatform(platform),
                 new PanelConfigureProject( this.type, preferredName )
             };

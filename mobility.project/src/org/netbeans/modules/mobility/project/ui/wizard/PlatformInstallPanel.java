@@ -30,8 +30,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.modules.j2me.cdc.platform.CDCPlatform;
+import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
 import org.netbeans.modules.mobility.project.J2MEProjectGenerator;
 import org.openide.ErrorManager;
 import org.openide.filesystems.Repository;
@@ -177,6 +180,21 @@ public class PlatformInstallPanel extends javax.swing.JPanel {
         }
     }
     
+    public static boolean isPlatformInstalled(String subType,String platformType) {
+        JavaPlatform platforms[]=JavaPlatformManager.getDefault().getPlatforms(null, new Specification(platformType, null));
+        if (subType==null || !(platformType.equals(CDCPlatform.PLATFORM_CDC) || platformType.equals(J2MEPlatform.SPECIFICATION_NAME)))
+            return platforms.length > 0;
+        else
+            for (JavaPlatform platform : platforms)
+            {
+                if (platform instanceof J2MEPlatform)
+                    if (subType.equals(((J2MEPlatform)platform).getType())) return true;
+                if (platform instanceof CDCPlatform)
+                    if (subType.equals(((CDCPlatform)platform).getType())) return true;
+            }
+        return false;    
+    }
+    
     public static boolean isPlatformInstalled(String platformType) {
         return JavaPlatformManager.getDefault().getPlatforms(null, new Specification(platformType, null)).length != 0;
     }
@@ -188,10 +206,18 @@ public class PlatformInstallPanel extends javax.swing.JPanel {
         Collection<ChangeListener> listeners = new ArrayList<ChangeListener>();
         boolean valid = false;
         final String platformType;
+        final String platformSubType;
         
         public WizardPanel(String platType)
         {
             platformType=platType;
+            platformSubType=null;
+        }
+        
+        public WizardPanel(String name,String platType)
+        {
+            platformType=platType;
+            platformSubType=name;
         }
         
         public void addChangeListener(final javax.swing.event.ChangeListener changeListener) {
@@ -225,7 +251,7 @@ public class PlatformInstallPanel extends javax.swing.JPanel {
         }
         
         public boolean isValid() {
-            final boolean valid = PlatformInstallPanel.isPlatformInstalled(platformType);
+            final boolean valid = PlatformInstallPanel.isPlatformInstalled(platformSubType,platformType);
             if (! valid)
                 showError(NbBundle.getMessage(PlatformInstallPanel.class, "ERR_Platform_NoPlatform")); // NOI18N
             else
