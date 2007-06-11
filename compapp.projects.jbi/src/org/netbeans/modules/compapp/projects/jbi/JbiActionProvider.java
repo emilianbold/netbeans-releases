@@ -281,13 +281,15 @@ public class JbiActionProvider implements ActionProvider {
                 command.equals(JbiProjectConstants.COMMAND_JBIBUILD) ||
                 command.equals(JbiProjectConstants.COMMAND_JBICLEANBUILD)) {
             FileObject casaFO = CasaHelper.getCasaFileObject(project, false);
-            try {
-                DataObject casaDO = DataObject.find(casaFO);
-                if (casaDO != null) {
-                    return (JbiBuildListener) casaDO.getLookup().lookup(JbiBuildListener.class);
+            if (casaFO != null) {
+                try {
+                    DataObject casaDO = DataObject.find(casaFO);
+                    if (casaDO != null) {
+                        return (JbiBuildListener) casaDO.getLookup().lookup(JbiBuildListener.class);
+                    }
+                } catch (DataObjectNotFoundException e) {
+                    ; // ignore the error
                 }
-            } catch (DataObjectNotFoundException e) {
-                ; // ignore the error
             }
         }
         return null;
