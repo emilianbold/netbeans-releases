@@ -51,6 +51,8 @@ public class JPAAnnotations {
     public static final String ASSOCIATION_OVERRIDES = "javax.persistence.AssociationOverrides"; // NOI18N
     public static final String NAMED_QUERY = "javax.persistence.NamedQuery"; // NOI18N
     public static final String NAMED_NATIVE_QUERY = "javax.persistence.NamedNativeQuery"; // NOI18N
+    public static final String NAMED_QUERIES = "javax.persistence.NamedQueries"; // NOI18N
+    public static final String NAMED_NATIVE_QUERIES = "javax.persistence.NamedNativeQueries"; // NOI18N
     
     // member level annotations...
     public static final String ID = "javax.persistence.Id"; //NOI18N

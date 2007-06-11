@@ -35,6 +35,7 @@ import org.netbeans.modules.j2ee.jpa.verification.rules.entity.NoIdClassOnEntity
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.NonFinalClass;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.PersistenceUnitPresent;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.PublicClass;
+import org.netbeans.modules.j2ee.jpa.verification.rules.entity.QueriesProperlyDefined;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.SerializableClass;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.TopLevelClass;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.UniqueEntityName;
@@ -64,10 +65,11 @@ public class JPARulesEngine extends RulesEngine {
         classRules.add(new UniqueEntityName());
         classRules.add(new LegalCombinationOfAnnotations());
         classRules.add(new JPAAnnotsOnlyOnAccesor());
+        classRules.add(new QueriesProperlyDefined());
     }
     
     protected Collection<Rule<TypeElement>> getClassRules() {
         return classRules;
     }
-
+    
 }
