@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -44,7 +44,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.SourceRoots;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.LogicalViewChildren;
 
 import org.openide.nodes.*;
 import org.openide.util.*;
@@ -81,6 +80,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
+import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileStatusEvent;
@@ -125,7 +125,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
     }
     
     public Node findPath( Node root, Object target ) {
-        Project project = (Project)root.getLookup().lookup( Project.class );
+        Project project = root.getLookup().lookup(Project.class);
         if ( project == null ) {
             return null;
         }
@@ -238,7 +238,8 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
         // icon badging <<<
         
         public WebLogicalViewRootNode() {
-            super( new LogicalViewChildren( project, updateHelper, evaluator, resolver ), createLookup( project ) ); 
+            super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-j2ee-ejbjarproject/Nodes"), // NOI18N
+                    createLookup(project));
             setIconBase( "org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejbjarProjectIcon" ); // NOI18N
             super.setName( ProjectUtils.getInformation( project ).getDisplayName() );            
             if (hasBrokenLinks()) {
@@ -246,7 +247,8 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
             }
             brokenLinksAction = new BrokenLinksAction();            
             brokenServerAction = new BrokenServerAction();
-            J2eeModuleProvider moduleProvider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+            J2eeModuleProvider moduleProvider = 
+                           project.getLookup().lookup(J2eeModuleProvider.class);
             moduleProvider.addInstanceListener((InstanceListener)WeakListeners.create(
                         InstanceListener.class, brokenServerAction, moduleProvider));
             setProjectFiles(project);
@@ -460,7 +462,8 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
 
             ResourceBundle bundle = NbBundle.getBundle(EjbJarLogicalViewProvider.class);
             
-            J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+            J2eeModuleProvider provider = 
+                           project.getLookup().lookup(J2eeModuleProvider.class);
             List actions = new ArrayList(30);
             actions.add(CommonProjectActions.newFileAction());
             actions.add(null);
@@ -672,8 +675,9 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
             
             public void actionPerformed( ActionEvent e ) {
                 
-                Project project = (Project)context.lookup( Project.class );
-                ActionProvider ap = (ActionProvider)project.getLookup().lookup( ActionProvider.class); 
+                Project project = context.lookup(Project.class);
+                ActionProvider ap = 
+                               project.getLookup().lookup(ActionProvider.class); 
                 
                 ap.invokeAction( command, context );
                                 
