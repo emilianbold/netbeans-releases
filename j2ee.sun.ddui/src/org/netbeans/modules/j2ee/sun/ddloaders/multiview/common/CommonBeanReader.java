@@ -54,6 +54,7 @@ public abstract class CommonBeanReader
         Map<String, Object> result = null;
         
         try {
+            commonDD = normalizeParent(commonDD);
             // Need to call getValues() here, not getValue(), but it's not exposed by ddapi :(
 //            Object value = (commonDD != null) ? commonDD.getValues(propertyName) : null;
             Object value = (commonDD != null) ? getChild(commonDD, propertyName) : null;
@@ -77,8 +78,8 @@ public abstract class CommonBeanReader
                 if(module != null) {
                     if(J2eeModule.WAR == module.getModuleType()) {
                         readWebAppMetadata(module.getDeploymentDescriptor(WebAppMetadata.class));
-//                    } else if(J2eeModule.EJB == module.getModuleType()) {
-//                        result = readEjbJarMetadata(module.getDeploymentDescriptor((EjbJarMetadata.class));
+                    } else if(J2eeModule.EJB == module.getModuleType()) {
+                        result = readEjbJarMetadata(module.getDeploymentDescriptor(EjbJarMetadata.class));
                     } else if(J2eeModule.CLIENT == module.getModuleType()) {
                         result = readAppClientMetadata(module.getDeploymentDescriptor(AppClientMetadata.class));
                     }
@@ -98,7 +99,15 @@ public abstract class CommonBeanReader
      *  with the same structure (and thus ad infinitum)
      */
     protected abstract Map<String, Object> genProperties(CommonDDBean [] beans);
-    
+
+    /** For normalizing data structures within /ejb-jar graph, e.g. 
+     *    assembly-descriptor/security-role
+     *    enterprise-beans/message-destination
+     *    enterprise-beans/ejb
+     */
+    protected CommonDDBean normalizeParent(CommonDDBean oldParent) {
+        return oldParent;
+    }
     
     /** Entry points to generate map from annotation metadata
      */
@@ -146,7 +155,10 @@ public abstract class CommonBeanReader
 
         public Map<String, Object> run(EjbJarMetadata metadata) throws Exception {
             // TODO how to read named beans from named ejbs... 
-            return null; // genCommonProperties(metadata.getRoot());
+            // TODO how to read security-roles from assembly-descriptor
+            // TODO how to read message-destination from enterprise-beans
+            CommonDDBean newParent = normalizeParent(metadata.getRoot());
+            return genCommonProperties(newParent);
         }
         
     }

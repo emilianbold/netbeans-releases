@@ -36,15 +36,15 @@ public class SecurityRoleMetadataReader extends CommonBeanReader {
         super(DDBinding.PROP_SECURITY_ROLE);
     }
     
+    /** For normalizing data structures within /ejb-jar graph.
+     *    /ejb-jar -> /ejb-jar/assembly-descriptor
+     */
     @Override
-    public Map<String, Object> readDescriptor(CommonDDBean commonDD) {
-        // This method is passed the root of the standard descriptor.  For ejb-jar,
-        // the security-role elements are under the assembly-descriptor element, if any.
-        if(commonDD instanceof EjbJar) {
-            commonDD = ((EjbJar) commonDD).getSingleAssemblyDescriptor();
+    protected CommonDDBean normalizeParent(CommonDDBean parent) {
+        if(parent instanceof EjbJar) {
+            parent = ((EjbJar) parent).getSingleAssemblyDescriptor();
         }
-
-        return super.readDescriptor(commonDD);
+        return parent;
     }
     
     /** Maps interesting fields from security-role descriptor to a multi-level property map.
