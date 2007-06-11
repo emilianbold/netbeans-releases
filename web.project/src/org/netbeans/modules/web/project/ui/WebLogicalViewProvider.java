@@ -122,18 +122,6 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
         return new WebLogicalViewRootNode();
     }
 
-    public PropertyEvaluator getEvaluator() {
-        return evaluator;
-    }
-    
-    public ReferenceHelper getRefHelper() {
-        return resolver;
-    }
-    
-    public UpdateHelper getUpdateHelper() {
-        return helper;
-    }
-
     public Node findPath(Node root, Object target) {
         Project project = root.getLookup().lookup(Project.class);
         if (project == null)

@@ -77,8 +77,8 @@ public final class DocBaseNodeFactory implements NodeFactory {
             project = proj;
             WebLogicalViewProvider logView = (WebLogicalViewProvider) project.getLookup().lookup(WebLogicalViewProvider.class);
             assert logView != null;
-            evaluator = logView.getEvaluator();
-            helper = logView.getUpdateHelper();
+            evaluator = project.evaluator();
+            helper = project.getUpdateHelper();
         }
         
         public List<String> keys() {

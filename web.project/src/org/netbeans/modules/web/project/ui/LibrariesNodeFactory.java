@@ -76,9 +76,9 @@ public final class LibrariesNodeFactory implements NodeFactory {
             testSources = project.getTestSourceRoots();
             WebLogicalViewProvider logView = (WebLogicalViewProvider)project.getLookup().lookup(WebLogicalViewProvider.class);
             assert logView != null;
-            evaluator = logView.getEvaluator();
-            helper = logView.getUpdateHelper();
-            resolver = logView.getRefHelper();
+            evaluator = project.evaluator();
+            helper = project.getUpdateHelper();
+            resolver = project.getReferenceHelper();
         }
         
         public List<String> keys() {
