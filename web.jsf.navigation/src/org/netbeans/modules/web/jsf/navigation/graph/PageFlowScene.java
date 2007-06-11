@@ -239,11 +239,7 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
         }
     }
     
-    //    public boolean replacePageFlowNode( PageFlowNode oldNode, PageFlowNode newNode ){
-    //        VMDNodeWidget widget = (VMDNodeWidget) findWidget(oldNode);
-    //        widget.
-    //    }
-    
+
     
     /**
      * Implements attaching a widget to a node. The widget is VMDNodeWidget and has object-hover, select, popup-menu and move actions.
@@ -278,51 +274,10 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
             nodeWidget.setMinimized(true);
         }
         
-        //        if ( !initialSetup ) {
-        //            pageFlowSceneGraphLayout.invokeLayout();
-        //            //            Point point = locations.get(displayName);
-        //            //            if( point == null ) {
-        //            //                point = PageFlowLayoutUtilities.getPreferredNodePosition(this,true);
-        //            //            } else {
-        //            //                //Just in case there is another widget there. Relocate that one instead.
-        //            //                Widget widget = PageFlowLayoutUtilities.isWidgetAt(this, point);
-        //            //                if (widget != null ){
-        //            //                    widget.setPreferredLocation(PageFlowLayoutUtilities.getPreferredNodePosition(this,true));
-        //            //                }
-        //            //            }
-        //            //            nodeWidget.setPreferredLocation(point);
-        //        }
-        
         return nodeWidget;
     }
     
-    //    public void saveLocations() {
-    //        pageFlowSceneGraphLayout.saveLocations();
-    //    }
-    //    public void saveLocation(Page pageNode, String newDisplayName){
-    //        pageFlowSceneGraphLayout.saveLocation(pageNode,newDisplayName);
-    //    }
-    //    public void saveLocation(Page pageNode, Point  newPoint){
-    //        pageFlowSceneGraphLayout.saveLocation(pageNode,newPoint);
-    //    }
-    //    private PageFlowSceneGraphLayout pageFlowSceneGraphLayout = new PageFlowSceneGraphLayout(this);
-    //    boolean initialSetup = true;
-    //    public boolean initLayout(){
-    //        //        if( pageFlowSceneGraphLayout != null ) {
-    //        pageFlowSceneGraphLayout.invokeLayoutImmediately();
-    //        initialSetup = false;
-    //        return isValidated();
-    //        //        } else {
-    //        //            System.out.println("SceneGraphLayout is still null");
-    //        //            return false;
-    //        //        }
-    //    }
-    
-    
-    //    public boolean layoutGraph(){
-    //        pageFlowSceneGraphLayout.invokeLayout();
-    //    }
-    
+
     
     private Map<VMDNodeWidget,Point> nodeWidget2Point = new HashMap<VMDNodeWidget,Point>();
     
