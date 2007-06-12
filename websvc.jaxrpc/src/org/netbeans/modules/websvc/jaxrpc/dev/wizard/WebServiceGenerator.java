@@ -249,7 +249,8 @@ public class WebServiceGenerator {
             }
         } else {
             try {
-                implBeanClass = wsSupport.generateImplementationBean(wsName, pkg, project, null);
+//                implBeanClass = wsSupport.generateImplementationBean(wsName, pkg, project, null);
+                implBeanClass = wsgenUtil.getFullClassName(pkgName, wsgenUtil.generateClass(WEBSERVICE_TEMPLATE, b, pkg, true));
                 b.setClassnameName(wsgenUtil.getSEIName(wsName));
                 intfClass = wsgenUtil.getFullClassName(pkgName, wsgenUtil.generateClass(INTERFACE_TEMPLATE, b, pkg, false));
             } catch (java.io.IOException e) {
