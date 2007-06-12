@@ -129,16 +129,13 @@ class AppFrameworkSupport {
     
     /**
      * Returns source code for obtaining the ResourceMap for given file (class).
+     * Supposing the code is only used within the given source file - so the
+     * simple class name (not FQN) is used.
      * @param srcFile the source file for which the ResourceMap should be obtained
      */
     static String getResourceMapCode(FileObject srcFile) {
-        return getResourceMapCode(
-                ClassPath.getClassPath(srcFile, ClassPath.SOURCE).getResourceName(srcFile, '.', false));
-    }
-    
-    static String getResourceMapCode(String srcClassName) {
         return application.ApplicationContext.class.getName()
-                + ".getInstance().getResourceMap(" + srcClassName + ".class)"; // NOI18N
+                + ".getInstance().getResourceMap(" + srcFile.getName() + ".class)"; // NOI18N
     }
     
     /**

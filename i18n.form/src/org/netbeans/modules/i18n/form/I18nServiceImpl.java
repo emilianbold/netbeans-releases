@@ -444,6 +444,24 @@ public class I18nServiceImpl implements I18nService {
         return false;
     }
 
+    public List<FileObject> getResourceFiles(FileObject srcFile, String bundleName) {
+        PropertiesDataObject dobj = null;
+        try {
+            dobj = getPropertiesDataObject(srcFile, bundleName);
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+        if (dobj != null) {
+            List<FileObject> list = new ArrayList<FileObject>();
+            list.add(dobj.getPrimaryEntry().getFile());
+            for (MultiDataObject.Entry e : dobj.secondaryEntries()) {
+                list.add(e.getFile());
+            }
+            return list;
+        }
+        return Collections.EMPTY_LIST;
+    }
+
     // -----
 
     private static PropertiesDataObject getPropertiesDataObject(FileObject srcFile, String bundleName)

@@ -22,6 +22,7 @@ package org.netbeans.modules.form;
 import java.awt.Component;
 import java.beans.PropertyEditor;
 import java.io.IOException;
+import java.util.List;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 
@@ -120,4 +121,12 @@ public interface I18nService {
      *  this method.]
      */
     boolean isDefaultInternationalizableProject(FileObject srcFile);
+
+    /**
+     * Returns the properties files that are used to store data for given source
+     * file and correspond to given name (resource bundle). It is basically the
+     * default properties file and all locale variants. The returned files can
+     * be used e.g. for backup (undo).
+     */
+    List<FileObject> getResourceFiles(FileObject srcFile, String bundleName);
 }

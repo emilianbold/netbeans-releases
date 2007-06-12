@@ -120,9 +120,9 @@ public class RefactoringInfo {
         return targetFolder != null && targetFolder.isFolder() ? targetFolder : null;
     }
 
-    public FormRefactoringUpdate getUpdateForFile(FileObject fo, boolean create) {
+    public FormRefactoringUpdate getUpdateForFile(FileObject fo) {
         FormRefactoringUpdate update = fileToUpdateMap.get(fo);
-        if (update == null && create) {
+        if (update == null) {
             assert isJavaFileOfForm(fo);
             update = new FormRefactoringUpdate(this, fo);
             fileToUpdateMap.put(fo, update);

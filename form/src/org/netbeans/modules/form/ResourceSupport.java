@@ -539,6 +539,8 @@ public class ResourceSupport {
         String oldBundle = oldPkg + newBundle.substring(newPkg.length());
         switchFormToPlainValues(false, oldBundle);
         switchFormToResources();
+        // TODO: probably should also copy the manually set values (not just
+        // move as in case of auto-i18n) - definitely if moving between projects
     }
 
     public static void loadInjectedResources(RADComponent metacomp) {
@@ -891,6 +893,20 @@ public class ResourceSupport {
             return resourceService.createResourcePanel(prop.getValueType(), getSourceFile());
         }
         else return null;
+    }
+
+    public static List<FileObject> getAutomatedResourceFiles(FormModel formModel) {
+        return FormEditor.getResourceSupport(formModel).getAutomatedResourceFiles();
+    }
+
+    private List<FileObject> getAutomatedResourceFiles() {
+        if (isI18nAutoMode()) {
+            return getI18nService().getResourceFiles(getSourceFile(), getI18nBundleName());
+        } else if (isResourceAutoMode()) {
+            return getResourceService().getResourceFiles(getSourceFile());
+        } else {
+            return Collections.EMPTY_LIST;
+        }
     }
 
     // -----

@@ -19,22 +19,20 @@
 package org.netbeans.modules.form;
 
 import java.awt.EventQueue;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.refactoring.spi.BackupFacility;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.Transaction;
-import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.PositionBounds;
@@ -43,37 +41,62 @@ import org.openide.util.Lookup;
 
 /**
  * This class does the actual refactoring changes for one form - updates the
- * form, regenerates code, updates properties file.
+ * form, regenerates code, updates properties files for i18n, etc. Multiple
+ * different instances (updates) can be created and executed for one refactoring
+ * (all kept in RefacoringInfo).
  * 
  * @author Tomas Pavek
  */
 public class FormRefactoringUpdate extends SimpleRefactoringElementImplementation implements Transaction {
 
+    /**
+     * Information about the performed refactoring.
+     */
     private RefactoringInfo refInfo;
 
+    /**
+     * RefactoringElement used in the preview, but doing nothing.
+     */
     private RefactoringElementImplementation previewElement;
 
+    /**
+     * Java file of a form affected by the refactoring.
+     */
     private FileObject changingFile;
 
-    private FormDataObject formDataObject; // has the changedFile as primary file at the beginning, but may get a different one later (e.g. if moved)
+    /**
+     * DataObject of the changed file. Has changedFile as primary file at the
+     * beginning, but may get a different one later (e.g. if moved).
+     */
+    private FormDataObject formDataObject;
 
+    /**
+     * FormEditor of the updated form. Either taken from the FormDataObject
+     * (typically when already opened), or created temporarily just to do the
+     * update. See prepareForm method.
+     */
     private FormEditor formEditor;
 
     private boolean loadingFailed;
 
-    private boolean guardedCodeChanging; // whether a change in guarded code is requested by java refactoring
+    /**
+     * Whether a change in guarded code was requested by java refactoring.
+     */
+    private boolean guardedCodeChanging;
 
     private boolean transactionDone;
 
     private List<RefactoringElementImplementation> preFileChanges;
-//    private List<Transaction> preTransactions;
-//    private List<Transaction> postTransactions;
 
-    public FormRefactoringUpdate(RefactoringInfo refInfo, FileObject changedFile) {
+    private List<BackupFacility.Handle> backups;
+
+    // -----
+
+    public FormRefactoringUpdate(RefactoringInfo refInfo, FileObject changingFile) {
         this.refInfo = refInfo;
-        this.changingFile = changedFile;
+        this.changingFile = changingFile;
         try {
-            DataObject dobj = DataObject.find(changedFile);
+            DataObject dobj = DataObject.find(changingFile);
             if (dobj instanceof FormDataObject) {
                 formDataObject = (FormDataObject) dobj;
             }
@@ -107,69 +130,77 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
         }
         preFileChanges.add(change);
     }
-//    public void addAdditionalTransaction(Transaction t, boolean before) {
-//        if (before) {
-//            if (preTransactions == null) {
-//                preTransactions = new LinkedList<Transaction>();
-//            }
-//            preTransactions.add(t);
-//        } else {
-//            if (postTransactions == null) {
-//                postTransactions = new LinkedList<Transaction>();
-//            }
-//            postTransactions.add(t);
-//        }
-//    }
 
-    // Transaction
+    // -----
+
+    // Transaction (registered via RefactoringElementsBag.registerTransaction)
     public void commit() {
-//        if (preTransactions != null) {
-//            for (Transaction t : preTransactions) {
-//                t.commit();
-//            }
-//        }
+        if (previewElement != null && !previewElement.isEnabled()) {
+            return;
+        }
+
+        // As "transactions" we do updates only in the content of the source
+        // file, registered by the refactoring guarded block handler. The file
+        // itself is not changed (moved/renamed etc). Our transaction is called
+        // after retouche commits its changes to the source. After all
+        // transactions are done, the source file is saved automatically.
 
         switch (refInfo.getChangeType()) {
         case VARIABLE_RENAME:
-            renameMetaComponent();
+            renameMetaComponent(refInfo.getOldName(), refInfo.getNewName());
             transactionDone = true;
             break;
-        case CLASS_RENAME:
+        case CLASS_RENAME: // renaming a component class used in the form
             if (!refInfo.getPrimaryFile().equals(changingFile)) {
-                componentClassRename();
+                componentClassRename(refInfo.getOldName(), refInfo.getNewName());
                 transactionDone = true;
             }
-//            classRename();
             break;
-        case CLASS_MOVE:
+        case CLASS_MOVE: // moving a component class used in the form
             if (!refInfo.getPrimaryFile().equals(changingFile)) {
                 componentChange(refInfo.getOldName(), refInfo.getNewName());
                 transactionDone = true;
             }
-//            classMove();
             break;
-//        case PACKAGE_RENAME:
-//        case FOLDER_RENAME:
-//            packageRename();
-//            break;
+            //do nothing otherwise - could be just redundantly registered by the guarded handler
         }
-
-//        if (postTransactions != null) {
-//            for (Transaction t : postTransactions) {
-//                t.commit();
-//            }
-//        }
     }
 
-    // Transaction
+    // Transaction (registered via RefactoringElementsBag.registerTransaction)
     public void rollback() {
-    }
-
-    // RefactoringElementImplementation
-    public void performChange() {
-        if (transactionDone) {
+        if (previewElement != null && !previewElement.isEnabled()) {
             return;
         }
+        undoFromBackups();
+/*        switch (refInfo.getChangeType()) {
+        case VARIABLE_RENAME:
+            renameMetaComponent(refInfo.getNewName(), refInfo.getOldName());
+            break;
+        case CLASS_RENAME: // renaming a component class used in the form
+            if (!refInfo.getPrimaryFile().equals(changingFile)) {
+                componentClassRename(refInfo.getNewName(), refInfo.getOldName());
+            }
+            break;
+        case CLASS_MOVE: // moving a component class used in the form
+            if (!refInfo.getPrimaryFile().equals(changingFile)) {
+                componentChange(refInfo.getNewName(), refInfo.getOldName());
+            }
+            break;
+        } */
+    }
+
+    // RefactoringElementImplementation (registered via RefactoringElementsBag.addFileChange)
+    public void performChange() {
+        if (previewElement != null && !previewElement.isEnabled()) {
+            return;
+        }
+        if (transactionDone) { // could be registered redundantly as file change
+            return;
+        }
+
+        // As "file changes" we do updates that react on changes of the file's
+        // name or location. We need the source file to be already renamed/moved.
+        // The file changes are run after the "transactions".
 
         if (preFileChanges != null) {
             for (RefactoringElementImplementation change : preFileChanges) {
@@ -178,13 +209,13 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
         }
 
         switch (refInfo.getChangeType()) {
-        case CLASS_RENAME:
+        case CLASS_RENAME: // renaming the form itself
             if (refInfo.getPrimaryFile().equals(changingFile)) {
                 formRename();
             }
             break;
-        case CLASS_MOVE:
-            if (refInfo.getPrimaryFile().equals(changingFile) && formEditor != null) {
+        case CLASS_MOVE: // moving the form itself
+            if (refInfo.getPrimaryFile().equals(changingFile) && prepareForm(false)) {
                 formMove();
             }
             break;
@@ -195,88 +226,55 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
         }
     }
 
-    private void renameMetaComponent() {
+    // RefactoringElementImplementation (registered via RefactoringElementsBag.addFileChange)
+    public void undoChange() {
+        if (previewElement != null && !previewElement.isEnabled()) {
+            return;
+        }
+        if (transactionDone) { // could be registered redundantly as file change
+            return;
+        }
+
+        undoFromBackups();
+
+        if (preFileChanges != null) {
+            for (RefactoringElementImplementation change : preFileChanges) {
+                change.undoChange();
+            }
+        }
+    }
+
+    // -----
+
+    private void renameMetaComponent(String oldName, String newName) {
         if (formEditor != null) {
-            RADComponent metacomp = formEditor.getFormModel().findRADComponent(refInfo.getOldName());
+            RADComponent metacomp = formEditor.getFormModel().findRADComponent(oldName);
             if (metacomp != null) {
-                metacomp.setName(refInfo.getNewName());
+                saveFormForUndo();
+                saveResourcesForUndo();
+                metacomp.setName(newName);
                 updateForm(false);
             }
         }
     }
 
-/*    private void classRename() {
-        if (refInfo.getPrimaryFile().equals(changingFile)) {
-            // the form is being renamed
-            // needs to be regenerated (use of MyForm.this)
-            if (formEditor != null) {
-                // changedFile survives the renaming
-                if (changingFile.getName().equals(refInfo.getNewName())) {
-                    formRename(false);
-                } else { // dataobject not renamed yet...
-                    changingFile.addFileChangeListener(new FileChangeAdapter() {
-                        public void fileRenamed(FileRenameEvent fe) {
-                            changingFile.removeFileChangeListener(this);
-                            formRename(true);
-                        }
-                    });
-                }
-            }
-        } else { // a component class used in this form is renamed
-            FileObject renamedFile = refInfo.getPrimaryFile();
-            String pkg = ClassPath.getClassPath(renamedFile, ClassPath.SOURCE)
-                    .getResourceName(renamedFile.getParent(), '.', false);
-            String oldClassName = (pkg != null && pkg.length() > 0)
-                    ? pkg + "." + refInfo.getOldName() // NOI18N
-                    : refInfo.getOldName();
-            String newClassName = (pkg != null && pkg.length() > 0)
-                    ? pkg + "." + refInfo.getNewName() // NOI18N
-                    : refInfo.getNewName();
-            componentChange(oldClassName, newClassName);
-        }
-    } */
-
     private void formRename(/*boolean saveAll*/) {
+        saveFormForUndo();
+        saveResourcesForUndo();
         ResourceSupport.formRenamed(formEditor.getFormModel(), refInfo.getOldName());
         updateForm(true);
     }
 
-    private void componentClassRename() {
+    private void componentClassRename(String oldName, String newName) {
         FileObject renamedFile = refInfo.getPrimaryFile();
         String pkg = ClassPath.getClassPath(renamedFile, ClassPath.SOURCE)
                 .getResourceName(renamedFile.getParent(), '.', false);
         String oldClassName = (pkg != null && pkg.length() > 0)
-                ? pkg + "." + refInfo.getOldName() // NOI18N
-                : refInfo.getOldName();
+                ? pkg + "." + oldName : oldName; // NOI18N
         String newClassName = (pkg != null && pkg.length() > 0)
-                ? pkg + "." + refInfo.getNewName() // NOI18N
-                : refInfo.getNewName();
+                ? pkg + "." + newName : newName; // NOI18N
         componentChange(oldClassName, newClassName);
     }
-
-/*    private void classMove() {
-        if (refInfo.getPrimaryFile().equals(changingFile)) {
-            // the form is being moved
-            if (formEditor != null) {
-                // changedFile FileObject is abandoned, we must watch DataObject
-                if (!formDataObject.getPrimaryFile().equals(changingFile)) {
-                    formMove(false);
-                } else { // not moved yet
-                    formDataObject.addPropertyChangeListener(new PropertyChangeListener() {
-                        public void propertyChange(PropertyChangeEvent ev) {
-                            if (DataObject.PROP_PRIMARY_FILE.equals(ev.getPropertyName())
-                                    && !formDataObject.getPrimaryFile().equals(changingFile)) {
-                                formDataObject.removePropertyChangeListener(this);
-                                formMove(true);
-                            }
-                        }
-                    });
-                }
-            }
-        } else { // a component class used in this form is moved
-            componentChange(refInfo.getOldName(), refInfo.getNewName());
-        }
-    } */
 
     private void formMove(/*final boolean saveAll*/) {
         final FormEditorSupport fes = formDataObject.getFormEditorSupport();
@@ -295,6 +293,8 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
 
     private void formMove2(/*boolean saveAll*/) {
         if (prepareForm(true)) {
+            saveFormForUndo();
+            saveResourcesForUndo();
             ResourceSupport.formMoved(formEditor.getFormModel(), changingFile.getParent());
             updateForm(true);
         }
@@ -376,6 +376,42 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
         return false;
     }
 
+    private void saveFormForUndo() {
+        saveForUndo(formDataObject.getFormFile());
+        // java file is backed up by java refactoring
+    }
+
+    private void saveResourcesForUndo() {
+        for (FileObject file : ResourceSupport.getAutomatedResourceFiles(formEditor.getFormModel())) {
+            saveForUndo(file);
+        }
+    }
+
+    private void saveForUndo(FileObject file) {
+        try {
+            BackupFacility.Handle id = BackupFacility.getDefault().backup(file);
+            if (backups == null) {
+                backups = new ArrayList<BackupFacility.Handle>();
+            }
+            backups.add(id);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private void undoFromBackups() {
+        if (backups != null) {
+            try {
+                for (BackupFacility.Handle id : backups) {
+                    id.restore();
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            backups.clear();
+        }
+    }
+
     // -----
 
     private static class PreviewElement extends SimpleRefactoringElementImplementation {
@@ -422,7 +458,7 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
     // RefactoringElementImplementation
     public String getDisplayText() {
 //            return displayText;
-        return "Post-refactoring:Update GUI form and regenerate code in guarded blocks";
+        return "Post-refactoring: Update GUI form and regenerate code in guarded blocks";
     }
 
     // RefactoringElementImplementation
@@ -504,16 +540,17 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
                         rep.append("\n"); // NOI18N
                     }
                 }
-                outString = rep.toString();
                 if (!rep.anythingChanged()) {
                     return false;
                 }
+                outString = rep.toString();
             } else {
                 // The replaced name is short with no '.', so it is too risky
                 // to do plain search/replace over the entire file content.
                 // Search only in the specific attribute of the component element.
                 // TODO: also in custom code fragments...
                 StringBuilder buf = new StringBuilder((int)formFile.getSize());
+                boolean anyChange = false;
                 String line = reader.readLine();
                 while (line != null) {
                     if (line.trim().startsWith(COMPONENT_MARK)) {
@@ -525,6 +562,7 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
                                 char c = line.charAt(i3);
                                 if (c == '\"' || c == '.') { // NOI18N
                                     line = line.substring(0, i2) + newName + line.substring(i3);
+                                    anyChange = true;
                                 }
                             }
                         }
@@ -535,8 +573,14 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
                         buf.append("\n"); // NOI18N
                     }
                 }
+                if (!anyChange) {
+                    return false;
+                }
                 outString = buf.toString();
             }
+
+            saveForUndo(formFile);
+
             is.close();
             os = formFile.getOutputStream(lock);
             os.write(outString.getBytes(encoding));

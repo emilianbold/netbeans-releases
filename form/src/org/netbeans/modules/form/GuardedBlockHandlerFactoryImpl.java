@@ -21,8 +21,11 @@ package org.netbeans.modules.form;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import org.netbeans.api.editor.guards.SimpleSection;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -35,7 +38,8 @@ import org.openide.filesystems.FileObject;
 
 /**
  * Used by java refactoring to delegate changes in guarded blocks. Registered
- * in META-INF/services. Creates one GuardedBlockHandlerImpl instance per form.
+ * in META-INF/services. Creates one GuardedBlockHandlerImpl instance per
+ * refactoring (so it can handle more forms).
  * 
  * @author Tomas Pavek
  */
@@ -49,10 +53,11 @@ public class GuardedBlockHandlerFactoryImpl implements GuardedBlockHandlerFactor
         return new GuardedBlockHandlerImpl(refInfo);
     }
 
+    // -----
+    
     private static class GuardedBlockHandlerImpl implements GuardedBlockHandler {
-
         private RefactoringInfo refInfo;
-        private GuardedBlockUpdate guardedUpdate;
+        private Map<FileObject, GuardedBlockUpdate> guardedUpdates;
 
         private boolean first = true;
 
@@ -68,22 +73,24 @@ public class GuardedBlockHandlerFactoryImpl implements GuardedBlockHandlerFactor
             }
 
             FileObject changedFile = proposedChange.getParentFile();
-            FormRefactoringUpdate update = refInfo.getUpdateForFile(changedFile, true);
+            FormRefactoringUpdate update = refInfo.getUpdateForFile(changedFile);
             update.setGaurdedCodeChanging(true);
+
             boolean preloadForm = false;
             boolean canRegenerate = false;
 
-            if (refInfo.getPrimaryFile().equals(changedFile) && refInfo.isForm()) { // the change started in this form
+            if (refInfo.getPrimaryFile().equals(changedFile) && refInfo.isForm()) {
+                // the change started in this form
                 switch (refInfo.getChangeType()) {
                 case VARIABLE_RENAME: // renaming field or local variable of initComponents
-//                case CLASS_RENAME: // renaming form class, need to regenarate use of MyForm.this
+                case CLASS_RENAME: // renaming form class, need to regenarate use of MyForm.this
                 case EVENT_HANDLER_RENAME: // renaming event handler - change the method and calls
                     preloadForm = true;
                     canRegenerate = true;
                     break;
                 case CLASS_MOVE:
-                    // can't preload the form - it must be loaded
-                    // and regenareted *after* moved to the new location
+                    // can't preload the form - it must be loaded and
+                    // regenareted *after* moved to the new location
                     canRegenerate = true;
                 }
             } else { // change originated in another class
@@ -106,18 +113,25 @@ public class GuardedBlockHandlerFactoryImpl implements GuardedBlockHandlerFactor
                 // remember the change and modify the guarded block directly later
                 ModificationResult.Difference diff = proposedChange.getLookup().lookup(ModificationResult.Difference.class);
                 if (diff != null) {
-                    if (guardedUpdate == null) {
-                        guardedUpdate = new GuardedBlockUpdate(
-                                update.getFormDataObject().getFormEditorSupport());
+                    GuardedBlockUpdate gbUpdate;
+                    if (guardedUpdates == null) {
+                        guardedUpdates = new HashMap<FileObject, GuardedBlockUpdate>();
+                        gbUpdate = null;
+                    } else {
+                        gbUpdate = guardedUpdates.get(changedFile);
                     }
-                    guardedUpdate.addChange(diff);
-                    transactions.add(guardedUpdate);
+                    if (gbUpdate == null) {
+                        gbUpdate = new GuardedBlockUpdate(
+                                update.getFormDataObject().getFormEditorSupport());
+                        guardedUpdates.put(changedFile, gbUpdate);
+                    }
+                    gbUpdate.addChange(diff);
+                    transactions.add(gbUpdate);
                 }
             }
 
-//            // make sure the form update transaction is registered // [is this needed??]
-            // we must add some transaction or element so it looks like we care
-            // about this guarded block change...
+            // we must add some transaction or element (even if it can be redundant)
+            // so it looks like we care about this guarded block change...
             transactions.add(update);
 
             return null;
@@ -162,11 +176,12 @@ public class GuardedBlockHandlerFactoryImpl implements GuardedBlockHandlerFactor
         }
 
         public void rollback() {
-            for (GuardedBlockInfo block : guardedInfos) {
+            // rollback not needed - should be reverted by java refactoring as a whole file
+/*            for (GuardedBlockInfo block : guardedInfos) {
                 formEditorSupport.getGuardedSectionManager()
                     .findSimpleSection(block.getName())
                         .setText(block.originalText);
-            }
+            } */
         }
     }
 
@@ -181,7 +196,7 @@ public class GuardedBlockHandlerFactoryImpl implements GuardedBlockHandlerFactor
         /**
          * Represents one change in the guarded block.
          */
-        private static class ChangeInfo {
+        private static class ChangeInfo implements Comparable<ChangeInfo> {
             private int startPos;
             private int length;
             private String newText;
@@ -190,9 +205,13 @@ public class GuardedBlockHandlerFactoryImpl implements GuardedBlockHandlerFactor
                 this.length = len;
                 this.newText = newText;
             }
+
+            public int compareTo(ChangeInfo ch) {
+                return startPos - ch.startPos;
+            }
         }
 
-        private List<ChangeInfo> changes = new LinkedList<ChangeInfo>();
+        private Set<ChangeInfo> changes = new TreeSet<ChangeInfo>();
 
         GuardedBlockInfo(SimpleSection section) {
             blockName = section.getName();

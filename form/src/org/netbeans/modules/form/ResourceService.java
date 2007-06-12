@@ -22,6 +22,7 @@ package org.netbeans.modules.form;
 import java.beans.PropertyEditor;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -204,4 +205,16 @@ public interface ResourceService {
     String getInjectionCode(Object component, String variableName, FileObject srcFile);
 
     ResourcePanel createResourcePanel(Class valueType, FileObject srcFile);
+
+    /**
+     * Returns the files that define resources for given source file.
+     * Practically this includes the properties file (resource map) and all its
+     * locale or OS variants. Other files referenced from the resource map
+     * (like icons) are not included. The returned files can be used e.g. for
+     * backup during a refactoring operation.
+     * @param srcFile the source java file for which the resource files should
+     *        be returned
+     * @return list of properties files defining resources for given source file
+     */
+    List<FileObject> getResourceFiles(FileObject srcFile);
 }

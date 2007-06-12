@@ -24,10 +24,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyEditor;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.form.ResourcePanel;
@@ -229,5 +232,18 @@ public class ResourceServiceImpl implements ResourceService {
 
     public ResourcePanel createResourcePanel(Class valueType, FileObject srcFile) {
         return new ResourcePanelImpl(ResourceUtils.getDesignResourceMap(srcFile, true), valueType);
+    }
+
+    public List<FileObject> getResourceFiles(FileObject srcFile) {
+        PropertiesDataObject dobj = ResourceUtils.getPropertiesDataObject(srcFile);
+        if (dobj != null) {
+            List<FileObject> list = new ArrayList<FileObject>();
+            list.add(dobj.getPrimaryEntry().getFile());
+            for (MultiDataObject.Entry e : dobj.secondaryEntries()) {
+                list.add(e.getFile());
+            }
+            return list;
+        }
+        return Collections.EMPTY_LIST;
     }
 }

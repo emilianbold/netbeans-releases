@@ -61,9 +61,9 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
         FileObject primaryFile = null;
         String oldName = null;
 
-        // we must do some more analysis here, though would be better to do it
-        // in the plugin's prepare method, but we can't be sure the guarded
-        // handler is not called sooner from java plugin than our plugin
+        // We must do some more analysis here, though it would be better to do
+        // it later in the plugin's prepare method, but we can't be sure the
+        // guarded handler is not called sooner from java plugin than our plugin.
 
         if (refactoring instanceof RenameRefactoring) {
             Lookup sourceLookup = refactoring.getRefactoringSource();
@@ -196,23 +196,17 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
         public Problem prepare(RefactoringElementsBag refactoringElements) {
             // even if guarded blocks are not affected directly we might want some changes
             if (refInfo.isForm()) {
-                FormRefactoringUpdate update = refInfo.getUpdateForFile(refInfo.getPrimaryFile(), true);
+                FormRefactoringUpdate update = refInfo.getUpdateForFile(refInfo.getPrimaryFile());
                 switch (refInfo.getChangeType()) {
                 case CLASS_RENAME: // renaming form class, always needs to load - auto-i18n
                     if (!update.prepareForm(true)) {
                         return new Problem(true, "Error loading form. Cannot update generated code.");
                     }
                     break;
-                case CLASS_MOVE:
-                    update.prepareForm(false); // make sure we have the form before
-                      // it is moved so we don't have to look for the new file later
-                    break;
                 // for VARIABLE_RENAME and EVENT_HANDLER_RENAME we don't know yet
                 // if they affect the form - guarded block handler will take care
                 }
-                // add placeholder element for the preview
                 refactoringElements.add(refInfo.getRefactoring(), update.getPreviewElement());
-//                refactoringElements.registerTransaction(update);
                 refactoringElements.addFileChange(refInfo.getRefactoring(), update);
             } else if (refInfo.getChangeType() == RefactoringInfo.ChangeType.PACKAGE_RENAME
                        || refInfo.getChangeType() == RefactoringInfo.ChangeType.FOLDER_RENAME) {
@@ -220,8 +214,7 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
                 for (FileObject fo : refInfo.getPrimaryFile().getChildren()) {
                     if (RefactoringInfo.isJavaFileOfForm(fo)) {
                         anyForm = true;
-                        FormRefactoringUpdate update = refInfo.getUpdateForFile(fo, true);
-//                        refactoringElements.registerTransaction(update);
+                        FormRefactoringUpdate update = refInfo.getUpdateForFile(fo);
                         refactoringElements.addFileChange(refInfo.getRefactoring(), update);
                     }
                 }
