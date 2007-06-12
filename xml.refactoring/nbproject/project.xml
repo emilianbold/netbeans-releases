@@ -158,8 +158,8 @@
                 <friend>org.netbeans.modules.bpel.refactoring</friend>
                 <friend>org.netbeans.modules.xml.axi</friend>
                 <friend>org.netbeans.modules.xml.axi.impl</friend>
+                <friend>org.netbeans.modules.xml.schema</friend>
                 <friend>org.netbeans.modules.xml.schema.abe</friend>
-                <friend>org.netbeans.modules.xml.schema.core</friend>
                 <friend>org.netbeans.modules.xml.schema.refactoring</friend>
                 <friend>org.netbeans.modules.xml.schema.ui.analysis</friend>
                 <friend>org.netbeans.modules.xml.schema.ui.basic</friend>
