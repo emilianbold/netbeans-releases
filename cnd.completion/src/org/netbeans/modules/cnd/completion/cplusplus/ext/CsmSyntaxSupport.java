@@ -244,11 +244,12 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         return getIncludeProc().getUnknownImports();
     }
     
-    /** Returns true if the given class is in the import statement directly or
-     *  indirectly (package.name.*) */    
-    public boolean isIcluded(CsmClass cls){
-        return getIncludeProc().isIncluded(cls);
-    }
+// VK: never used - commented this out
+//    /** Returns true if the given class is in the import statement directly or
+//     *  indirectly (package.name.*) */    
+//    public boolean isIcluded(CsmClass cls){
+//        return getIncludeProc().isIncluded(cls);
+//    }
 
     public void refreshJavaImport() {
         if (javaImport != null) {

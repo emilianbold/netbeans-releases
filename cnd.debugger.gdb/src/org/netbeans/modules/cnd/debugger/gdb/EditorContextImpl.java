@@ -22,6 +22,7 @@ package org.netbeans.modules.cnd.debugger.gdb;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.HashMap;
@@ -34,7 +35,9 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.Caret;
 import javax.swing.text.StyledDocument;
 import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 
+import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
@@ -538,7 +541,7 @@ public class EditorContextImpl extends EditorContext {
         if (e == null){
             return null;
         }
-        JEditorPane[] op = e.getOpenedPanes();
+        JEditorPane[] op = getOpenedPanes(e);
         // We listen on open panes if e implements EditorCookie.Observable
         if ((op == null) || (op.length < 1)) {
             return null;
@@ -551,13 +554,38 @@ public class EditorContextImpl extends EditorContext {
         if (e == null){
             return null;
         }
-        JEditorPane[] op = e.getOpenedPanes();
+        JEditorPane[] op = getOpenedPanes(e);
         // We listen on open panes if e implements EditorCookie.Observable
         if ((op == null) || (op.length < 1)) {
             return null;
         }
         return op [0];
     }
+    
+    /**
+     * In NB6 JEditorPane.getOpenedPanes() must be called from the event dispatch
+     * thread. Ensure its correct now.
+     */
+    public static JEditorPane[] getOpenedPanes(final EditorCookie e) {
+	if (SwingUtilities.isEventDispatchThread()) {
+	    return e.getOpenedPanes();
+	} else {
+	    final JEditorPane[][] pane = new JEditorPane[1][1];
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        pane[0] = e.getOpenedPanes();
+                    }
+                });
+            } catch (InvocationTargetException ex) {
+                ErrorManager.getDefault().notify(ex.getTargetException());
+            } catch (InterruptedException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+	    return pane[0];
+	}
+    }
+
     
     private EditorCookie getCurrentEditorCookie() {
         synchronized (currentLock) {

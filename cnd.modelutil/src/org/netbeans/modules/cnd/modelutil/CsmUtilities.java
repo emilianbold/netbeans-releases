@@ -636,25 +636,21 @@ public class CsmUtilities {
             } else {
                 addComma = true;
             }
-            //sb.append(par.getText());
-            CsmType type = par.getType();
-            if( type != null ) {
-                sb.append(type.getText());
-                //sb.append(' ');
-            } else if (par.isVarArgs()){
-                sb.append("..."); // NOI18N
-            }
-            if (showParamNames && !par.isVarArgs()) {
-                String name = par.getName();
-                if (name != null && name.length() >0) {
-                    sb.append(' ');
-                    sb.append(name);
-                }
-            }
-        }
-        
+	    if (showParamNames) {
+		sb.append(par.getDisplayText());
+	    }
+	    else {
+		CsmType type = par.getType();
+		if( type != null ) {
+		    sb.append(type.getText());
+		    //sb.append(' ');
+		} else if (par.isVarArgs()){
+		    sb.append("..."); // NOI18N
+		}
+	    }
+        }        
         sb.append(')');
-        if (CsmKindUtilities.isMethod(fun) && fun instanceof CsmMethod){
+        if (CsmKindUtilities.isMethodDeclaration(fun)){
             if( ((CsmMethod) fun).isConst() ) {
                 sb.append(" const");
             }

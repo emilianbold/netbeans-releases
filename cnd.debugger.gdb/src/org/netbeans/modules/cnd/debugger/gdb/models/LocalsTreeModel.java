@@ -23,30 +23,31 @@ import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 import java.util.WeakHashMap;
+import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
 import org.netbeans.modules.cnd.debugger.gdb.CallStackFrameImpl;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebuggerImpl;
 import org.netbeans.modules.cnd.debugger.gdb.LocalVariable;
 import org.netbeans.modules.cnd.debugger.gdb.LocalVariableImpl;
-import org.netbeans.modules.cnd.debugger.gdb.Variable;
+import org.netbeans.spi.viewmodel.TreeExpansionModel;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakSet;
 
 /*
  * LocalsTreeModel.java
  *
  * @author Nik Molchanov (copied from Jan Jancura's JPDA implementation)
  */
-public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
+public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyChangeListener {
         
     private static boolean      verbose = false;
     
@@ -58,10 +59,11 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
     private Vector              listeners = new Vector();
     private Map                 cachedLocals = new WeakHashMap();
     private Map                 cachedArrayChildren = new WeakHashMap();
+    private Set                 expandedNodes = new WeakSet();
+    private Set                 collapsedNodes = new WeakSet();
         
     public LocalsTreeModel(ContextProvider lookupProvider) {
         debugger = (GdbDebuggerImpl) lookupProvider.lookupFirst(null, GdbDebugger.class);
-        debugger.registerLocalsModel(this);
     }    
     
     public Object getRoot() {
@@ -104,7 +106,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
      */
     public int getChildrenCount(Object node) throws UnknownTypeException {
         if (node.equals(ROOT)) {
-            CallStackFrameImpl callStackFrame = (CallStackFrameImpl) debugger.getCurrentCallStackFrame();
+            CallStackFrame callStackFrame = debugger.getCurrentCallStackFrame();
             if (callStackFrame == null) {
                 return 1;
             } else {
@@ -266,6 +268,58 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                     task = null;
                 }
             }
+        }
+    }
+  
+    /**
+     * Defines default state (collapsed, expanded) of given node.
+     *
+     * @param node a node
+     * @return default state (collapsed, expanded) of given node
+     */
+    public boolean isExpanded(Object node) throws UnknownTypeException {
+        synchronized (this) {
+            if (expandedNodes.contains(node)) {
+                return true;
+            }
+            if (collapsedNodes.contains(node)) {
+                return false;
+            }
+        }
+        // Default behavior follows:
+        if (node instanceof AbstractVariable) {
+            return false;
+        }
+        throw new UnknownTypeException(node);
+    }
+    
+    /**
+     * Called when given node is expanded.
+     *
+     * @param node a expanded node
+     */
+    public void nodeExpanded(Object node) {
+//        if (node instanceof AbstractVariable) {
+//            AbstractVariable var = (AbstractVariable) node;
+//            if (var.expandChildren()) {
+//                fireTreeChanged();
+//            }
+//        }
+        synchronized (this) {
+            expandedNodes.add(node);
+            collapsedNodes.remove(node);
+        }
+    }
+    
+    /**
+     * Called when given node is collapsed.
+     *
+     * @param node a collapsed node
+     */
+    public void nodeCollapsed(Object node) {
+        synchronized (this) {
+            collapsedNodes.add(node);
+            expandedNodes.remove(node);
         }
     }
 }

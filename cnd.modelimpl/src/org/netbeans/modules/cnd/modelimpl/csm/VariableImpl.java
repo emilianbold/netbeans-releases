@@ -255,6 +255,23 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         }
     }
     
+    public String getDisplayText() {
+	StringBuilder sb = new StringBuilder();
+	CsmType type = getType();
+	if( type instanceof TypeImpl ) {
+	    return ((TypeImpl) type).getText(false, this.getName()).toString();
+	}
+	else if( type != null ) {
+	    sb.append(type.getText());
+	    String name = getName();
+	    if (name != null && name.length() >0) {
+		sb.append(' ');
+		sb.append(name);
+	    }
+	}
+	return sb.toString();
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     

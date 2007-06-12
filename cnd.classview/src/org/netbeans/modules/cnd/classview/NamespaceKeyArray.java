@@ -130,7 +130,7 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
         if (d.getName().length() > 0) {
             if( CsmKindUtilities.isClass(d) ) {
                 CsmClass cls = (CsmClass) d;
-                if( cls.getContainingClass() == null ) {
+                if( !CsmKindUtilities.isClassMember(cls) ) {
                     return true;
                 }
             } else if( d.getKind() == CsmDeclaration.Kind.VARIABLE ) {
@@ -165,7 +165,8 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
                     // inner classes are return in namespace declarations list
                     // (since they act just like top-level classes),
                     // but shouldn't be included in class view at the top level
-                    if( cls.getContainingClass() == null ) {
+		    if( ! CsmKindUtilities.isClassMember(cls) ) {
+                    //if( cls.getContainingClass() == null ) {
                         return new ClassNode( (CsmClass) d,
                                 new ClassifierKeyArray(updater, (CsmClass) d));
                     }

@@ -119,19 +119,17 @@ public class CsmCompletionProvider implements CompletionProvider {
 //            if (JavaMetamodel.getManager().isScanInProgress())
 //                resultSet.setWaitText(NbBundle.getMessage(CsmCompletionProvider.class, "scanning-in-progress")); //NOI18N
             CsmSyntaxSupport sup = (CsmSyntaxSupport)Utilities.getSyntaxSupport(component).get(CsmSyntaxSupport.class);
-            if (!sup.isCompletionDisabled(caretOffset)) {
-                NbCsmCompletionQuery query = new NbCsmCompletionQuery();
-                NbCsmCompletionQuery.CsmCompletionResult res = (NbCsmCompletionQuery.CsmCompletionResult)query.query(component, caretOffset, sup);
-                if (res != null) {
-                    queryCaretOffset = caretOffset;
-                    queryAnchorOffset = res.getSubstituteOffset();
-                    Collection items = res.getData();
-                    resultSet.estimateItems(items.size(), -1);
-                    resultSet.setTitle(res.getTitle());
-                    resultSet.setAnchorOffset(queryAnchorOffset);
-                    resultSet.addAllItems(items);
-                    queryResult = res;
-                }
+            NbCsmCompletionQuery query = new NbCsmCompletionQuery();
+            NbCsmCompletionQuery.CsmCompletionResult res = (NbCsmCompletionQuery.CsmCompletionResult)query.query(component, caretOffset, sup);
+            if (res != null) {
+                queryCaretOffset = caretOffset;
+                queryAnchorOffset = res.getSubstituteOffset();
+                Collection items = res.getData();
+                resultSet.estimateItems(items.size(), -1);
+                resultSet.setTitle(res.getTitle());
+                resultSet.setAnchorOffset(queryAnchorOffset);
+                resultSet.addAllItems(items);
+                queryResult = res;
             }
             resultSet.finish();
         }

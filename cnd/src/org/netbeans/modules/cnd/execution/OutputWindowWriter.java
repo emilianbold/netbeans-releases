@@ -29,6 +29,7 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -100,14 +101,14 @@ public class OutputWindowWriter extends Writer {
                 fileName = fileName.replace('/', File.separatorChar);
             }
         }
-
+        
 	File directory = FileUtil.normalizeFile(new File(fileName));
-
+        
         return FileUtil.toFileObject(directory);
     }
 
     private static FileObject resolveRelativePath(FileObject relativeDir, String relativePath) {
-        if (relativePath.startsWith(File.separator) || relativePath.indexOf(":")==1){ // NOI18N
+        if (IpeUtils.isPathAbsolute(relativePath)){ // NOI18N
             if (relativePath.startsWith(File.separator)){ // NOI18N
                 relativePath = relativePath.substring(1);
             }
@@ -384,8 +385,7 @@ public class OutputWindowWriter extends Writer {
                 }
                 
                 if (this.isEntered) {
-                    if (!directory.startsWith(File.separator) &&    //NOI18N
-                        !(directory.charAt(1) == ':')) { //NOI18N
+                    if (!IpeUtils.isPathAbsolute(directory)) { 
                         if (this.relativeToFO != null) {
                             if (this.relativeToFO.isFolder()) {
                                 directory = this.relativeToFO.getURL().getPath() + File.separator + directory;
@@ -411,8 +411,7 @@ public class OutputWindowWriter extends Writer {
             
             if (m.pattern() == GCC_DIRECTORY_CD) {
                 String directory = m.group(1);
-                if (!directory.startsWith(File.separator) ||    //NOI18N
-                    !(directory.charAt(1) == ':')) { //NOI18N
+                if (!IpeUtils.isPathAbsolute(directory)) { 
                     if (this.relativeToFO != null) {
                         if (this.relativeToFO.isFolder()) {
                             directory = this.relativeToFO.getURL().getPath() + File.separator + directory;

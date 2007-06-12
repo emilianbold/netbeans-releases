@@ -21,6 +21,8 @@ package org.netbeans.modules.cnd.classview.model;
 import java.util.Collection;
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.api.model.services.CsmFriendResolver;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.classview.PersistentKey;
 import org.openide.nodes.*;
 
@@ -76,11 +78,18 @@ public abstract class ObjectNode extends BaseNode implements ChangeListener {
             CsmProject project = decl.getContainingFile().getProject();
             if (project != null){
                 Collection<CsmOffsetableDeclaration> arr = project.findDeclarations(name);
+                for(CsmFriend friend : CsmFriendResolver.getDefault().findFriends(decl)){
+                    if (CsmKindUtilities.isFriendMethod(friend)) {
+                        arr.add(friend);
+                    }
+                }
+
                 if (arr.size() > 1){
                     Action more = new MoreDeclarations(arr);
                     return new Action[] { action, more };
                 }
             }
+            
             return new Action[] { action };
         }
         return new Action[0];

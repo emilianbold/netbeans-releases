@@ -21,6 +21,8 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 
 import java.io.File;
 import java.io.PrintStream;
+import org.netbeans.modules.cnd.api.model.CsmModel;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 
@@ -44,6 +46,14 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         performTest(source, source+".dat", source+".err"); // NOI18N
     }
 
+    protected final ProjectBase getProject(){
+        return helper.getProject();
+    }
+
+    protected final CsmModel getModel(){
+        return helper.getModel();
+    }
+    
     protected void preSetUp() {
         // init flags needed for file model tests before creating TraceModel
     }
@@ -68,6 +78,10 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         helper.shutdown();
     }
     
+    protected final void performModelTest(File testFile, PrintStream streamOut, PrintStream streamErr) throws Exception {
+        getTraceModel().test(testFile, streamOut, streamErr);
+    }
+    
     protected void performTest(String source, String goldenDataFileName, String goldenErrFileName) throws Exception {
         File workDir = getWorkDir();
         File testFile = getDataFile(source);
@@ -83,7 +97,7 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
             // redirect output and err
             System.setOut(streamOut);
             System.setErr(streamErr);
-            getTraceModel().test(testFile, streamOut, streamErr);
+            performModelTest(testFile, streamOut, streamErr);
         } finally {
             // restore err and out
             streamOut.close();

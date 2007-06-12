@@ -42,7 +42,7 @@ public class BasicCompiler extends Tool {
         return ""; // NOI18N
     }
     
-    public String getSixtyfourBitsOption(boolean value) {
+    public String getSixtyfourBitsOption(int value) {
         return ""; // NOI18N
     }
     

@@ -106,14 +106,9 @@ public class SimpleRepFilesAccessStrategyImpl implements RepFilesAccessStrategy 
     }
     
     private final static char START_CHAR = 'z';
+    private final static char SEPARATOR_CHAR = '-';
     
     protected String resolveFileName(Key id) {
-        /*if (Stats.isDebug)
-        {
-            String fileName = theRepositoryBase + File.separator + "dummy"; // NOI18N
-            theCache.putCacheName (id, fileName);
-            return fileName;
-        }*/
         assert id != null;
         int size = id.getDepth();
         assert size != 0;
@@ -121,31 +116,28 @@ public class SimpleRepFilesAccessStrategyImpl implements RepFilesAccessStrategy 
         String fileName = theCache.lookupInCacheName(id);
         
         if (fileName == null) {
-            
-            StringBuffer nameBuffer = new StringBuffer(StorageAllocator.getInstance().getUnitStorageName(id.getUnit()));
-            /*try {
-                nameBuffer.append(URLEncoder.encode(id.getUnit(), Stats.ENCODING));
-            } catch (UnsupportedEncodingException ex) {
-                ex.printStackTrace();
-            }*/
+            StringBuffer    nameBuffer = new StringBuffer(""); //NOI18N
+
             for (int i = 0 ; i < size; ++i) {
-                nameBuffer.append(File.separator);
-                nameBuffer.append(START_CHAR);
-                try {
-                    nameBuffer.append(URLEncoder.encode(id.getAt(i), Stats.ENCODING));
-                } catch (UnsupportedEncodingException ex) {
-                    // we use system default encoding, it can't be missed
-                    ex.printStackTrace();
-                }
+                nameBuffer.append(id.getAt(i) + SEPARATOR_CHAR);
             }
             
             for (int j = 0 ; j < id.getSecondaryDepth(); ++j) {
-                nameBuffer.append(File.separator);
-                nameBuffer.append(START_CHAR);
-                nameBuffer.append(id.getSecondaryAt(j));
+                nameBuffer.append(id.getSecondaryAt(j)  + SEPARATOR_CHAR);
             }
             
             fileName = nameBuffer.toString();
+            
+            try {
+                fileName = URLEncoder.encode(fileName, Stats.ENCODING);
+            } catch (UnsupportedEncodingException ex) {
+                // we use system default encoding, it can't be missed
+                ex.printStackTrace();
+            }
+            
+            fileName = StorageAllocator.getInstance().getUnitStorageName(id.getUnit()) + 
+                    StorageAllocator.getInstance().reduceString(fileName);
+
             theCache.putCacheName(id, fileName);
         }
         
@@ -190,22 +182,7 @@ public class SimpleRepFilesAccessStrategyImpl implements RepFilesAccessStrategy 
     }
     
     public void closeUnit(String unitName) {
-        File unitStorage = new File(StorageAllocator.getInstance().getUnitStorageName(unitName));
-        assert unitStorage.isDirectory();
-        deleteDirectory(unitStorage);
     }
     
-    static public boolean deleteDirectory(File path) {
-        if( path.exists() ) {
-            File[] files = path.listFiles();
-            for(int i=0; i<files.length; i++) {
-                if(files[i].isDirectory()) {
-                    deleteDirectory(files[i]);
-                } else {
-                    files[i].delete();
-                }
-            }
-        }
-        return( path.delete() );
-    }
+ 
 }

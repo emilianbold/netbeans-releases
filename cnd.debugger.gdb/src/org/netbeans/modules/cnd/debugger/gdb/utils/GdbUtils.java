@@ -69,6 +69,120 @@ public class GdbUtils {
         return Utilities.isWindows() && message.toLowerCase().contains("cygwin"); // NOI18N
     }
     
+    /** Test if the type of a variable is simple */
+    public static boolean isSimple(String type) {
+        if (type == null) {
+            return false;
+        }
+        type = type.trim();
+        if (type.equals("char") // NOI18N
+                        || type.equals("void") // NOI18N
+                        || type.equals("short") // NOI18N
+                        || type.equals("int") // NOI18N
+                        || type.equals("long") // NOI18N
+                        || type.equals("long int") // NOI18N
+                        || type.equals("long long") // NOI18N
+                        || type.equals("double") // NOI18N
+                        || type.equals("long double") // NOI18N
+                        || type.equals("long unsigned int") // NOI18N
+                        || type.equals("unsigned char") // NOI18N
+                        || type.equals("unsigned short") // NOI18N
+                        || type.equals("unsigned int") // NOI18N
+                        || type.equals("unsigned long") // NOI18N
+                        || type.equals("unsigned long long")) { // NOI18N
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    /** Test if a variable is a struct or union */
+    public static boolean isStructOrUnion(String type) {
+        if (type == null) {
+            return false;
+        }
+        type = type.trim();
+        return type.startsWith("struct ") || type.startsWith("union ");
+    }
+    
+    /** Test if a variable is a class */
+    public static boolean isClass(String type) {
+        if (type == null) {
+            return false;
+        }
+        return type.trim().startsWith("class ");
+    }
+    
+    /** Test if a variable is an array */
+    public static boolean isArray(String type) {
+        if (type == null) {
+            return false;
+        }
+        type = type.trim();
+        return type.indexOf('[') != -1;
+    }
+    
+    /**
+     * Test if a variable is a pointer. This method purposely ignores
+     * function pointers.
+     */
+    public static boolean isPointer(String type) {
+        if (type == null) {
+            return false;
+        }
+        return type.trim().endsWith("*"); // NOI18N
+    }
+    
+    /** Test if a variable is a function pointer */
+    public static boolean isFunctionPointer(String type) {
+        if (type == null) {
+            return false;
+        }
+        return type.trim().endsWith("(*)"); // NOI18N
+    }
+    
+    /**
+     * Given a typename, strip off array and pointer information and return the root type.
+     *
+     * @param type The complete type (possibly including array and pointer information)
+     * @returns The base name of the string (or null if type is null)
+     */
+    public static String getBaseType(String type) {
+        if (type != null) {
+            type = type.replace("const ", ""); // NOI18N
+            type = type.replace("volatile ", ""); // NOI18N
+            type = type.replace("static ", ""); // NOI18N
+            int len = type.length();
+            for (int i = 0; i < len; i++) {
+                char ch = type.charAt(i);
+                if (!Character.isLetter(ch) && !Character.isDigit(ch) && !isOneOf(ch, " _:<>,")) { // NOI18N
+                    return type.substring(0, i).trim();
+                }
+            }
+            return type.trim();
+        } else {
+            return null;
+        }
+    }
+    
+    public static boolean containesOneOf(String str, String chars) {
+        for (int i = 0; i < str.length(); i++) {
+            if (isOneOf(str.charAt(i), chars)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public static boolean isOneOf(char ch, String chars) {
+        for (int i = 0; i < chars.length(); i++) {
+            if (ch == chars.charAt(i)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     /**
      *  Parse the input string for key/value pairs. Each key should be unique so
      *  results can be stored in a map.
@@ -109,11 +223,11 @@ public class GdbUtils {
             }
             key = info.substring(tstart, i - 1);
             if ((ch = info.charAt(i++)) == '{') {
-                tend = findMatchingBrace("{}", info, i) - 1; // NOI18N
+                tend = findMatchingCurly(info, i) - 1;
             } else if (ch == '"') {
                 tend = findEndOfString(info, i);
             } else if (ch == '[') {
-                tend = findMatchingBrace("[]", info, i); // NOI18N
+                tend = findMatchingBrace(info, i);
             } else {
 //                log.fine("INTERNAL ERROR: GdbLogger.createMapFromString(msg) cannot parse message. msg="+info); // NOI18N
                 break;
@@ -153,7 +267,7 @@ public class GdbUtils {
             }
             key = info.substring(tstart, i - 1);
             if ((ch = info.charAt(i++)) == '{') {
-                tend = findMatchingBrace("{}", info, i) - 1; // NOI18N
+                tend = findMatchingCurly(info, i) - 1;
             } else if (ch == '"') {
                 tend = findEndOfString(info, i);
             } else {
@@ -176,38 +290,30 @@ public class GdbUtils {
     
     /**
      * Called with the response of -stack-list-locals. Read the locals string and get
-     * the variable information.
+     * the variable information. The information is one or more comma separated name/value
+     * pairs:
+     *
+     *    {name="name1",value="value1"},{name="name2",value="value2"},{...}
      *
      * @param info The string returned from -stack-list-locals with the header removed
-     * @return A List containing GdbVariables of each argument
+     * @return A List containing GdbVariables for each name/value pair
      */
     public static List createLocalsList(String info) {
-        String name, type, value;   // used to create GdbVariable
+        String name, value; 
         List<GdbVariable> list = new ArrayList();
-        int len = info.length();
-        int pos, pos2;
         int idx = 0;
+        int pos = findMatchingCurly(info, 0);
         
-        while (len > 0) {
-            String frag = info.substring(idx, findMatchingBrace("{}", info, idx)); // NOI18N
-            idx += frag.length() + 1;
-            len -= frag.length() + 1;
-            // {name=\"len\",type=\"int\",value=\"0\"},{...}
-            if (frag.startsWith("{name=\"") && frag.endsWith("\"}")) { // NOI18N
-                pos = frag.indexOf("\",type=\""); // NOI18N
-                if (pos > 0) {
-                    name = frag.substring(7, pos);
-                    pos2 = frag.indexOf("\",value=\"", pos); // NOI18N
-                    if (pos2 > 0) {
-                        type = frag.substring(pos + 8, pos2);
-                        value = frag.substring(pos2 + 9, frag.length() - 2);
-                    } else {
-                        type = frag.substring(pos + 8, frag.length() - 2);
-                        value = null;
-                    }
-                    list.add(new GdbVariable(name, type, value));
-                }
+        while (pos != -1) {
+            String frag = info.substring(idx, pos);
+            int pos2 = findNextComma(frag, 0);
+            if (pos2 != -1) {
+                name = frag.substring(7, pos2 - 2);
+                value = frag.substring(pos2 + 7, frag.length() - 2);
+                list.add(new GdbVariable(name, null, value));
             }
+            idx = info.indexOf('{', pos);
+            pos = findMatchingCurly(info, idx);
         }
         
         return list;
@@ -221,14 +327,14 @@ public class GdbUtils {
      * @return A List containing GdbVariables of each argument
      */
     public static List createArgumentList(String info) {
-        String name, type, value;   // used to create GdbVariable
+        String name, value; 
         List<GdbVariable> list = new ArrayList();
         int len = info.length();
         int pos, pos2;
         int idx = 0;
         
         while (len > 0) {
-            String frag = info.substring(idx, findMatchingBrace("{}", info, idx)); // NOI18N
+            String frag = info.substring(idx, findMatchingCurly(info, idx));
             idx += frag.length() + 1;
             len -= frag.length() + 1;
             // {name=\"argc\",value=\"1\"},{name=\"argv\",value=\"(char **) 0x6625f8\"}
@@ -236,19 +342,8 @@ public class GdbUtils {
                 pos = frag.indexOf("\",value=\""); // NOI18N
                 if (pos > 0) {
                     name = frag.substring(7, pos);
-                    String rem = frag.substring(pos + 9, frag.length() - 2);
-                    if (rem.charAt(0) == '(') {
-                        pos2 = findMatchingBrace("()", rem, 0); // NOI18N
-                        type = rem.substring(1, pos2 - 1);
-                        value = rem.substring(pos2, rem.length() - 1);
-                    } else if (rem.charAt(0) == '{') {
-                        type = null;
-                        value = rem;
-                    } else {
-                        type = null;
-                        value = rem;
-                    }
-                    list.add(new GdbVariable(name, type, value));
+                    value = frag.substring(pos + 9, frag.length() - 2);
+                    list.add(new GdbVariable(name, null, value));
                 }
             }
         }
@@ -275,16 +370,58 @@ public class GdbUtils {
     }
     
     /**
-     * Find the end of a { ... } block. With gdb 6.6, we can get unmatched curly braces
-     * so I've added some checking for this. If there is no matching '}', I return the
-     * index of the last character.
+     * Find the end of a [ ... ] block
+     *
+     * @param s The string to parse
+     * @param idx The index to start at
+     * @returns The index of the closing ']' or -1 if no match is found
+     */
+    public static int findMatchingBrace(String s, int idx) {
+        return findMatchingPair("[]", s, idx);
+    }
+    
+    /**
+     * Find the end of a { ... } block
+     *
+     * @param s The string to parse
+     * @param idx The index to start at
+     * @returns The index of the closing '}' or -1 if no match is found
+     */
+    public static int findMatchingCurly(String s, int idx) {
+        return findMatchingPair("{}", s, idx);
+    }
+    
+    /**
+     * Find the end of a ( ... ) block
+     *
+     * @param s The string to parse
+     * @param idx The index to start at
+     * @returns The index of the closing ')' or -1 if no match is found
+     */
+    public static int findMatchingParen(String s, int idx) {
+        return findMatchingPair("()", s, idx);
+    }
+    
+    /**
+     * Find the end of a < ... > block
+     *
+     * @param s The string to parse
+     * @param idx The index to start at
+     * @returns The index of the closing ')' or -1 if no match is found
+     */
+    public static int findMatchingLtGt(String s, int idx) {
+        return findMatchingPair("<>", s, idx);
+    }
+    
+    /**
+     * Find the end of a [ ... ] or { ... } block.
      *
      * @param pair A 2 character string with a beginning char and an end char
      * @param s The string to parse
      * @param idx The index to start at
-     * @returns The index of the closing '}' or of the last character
+     * @returns The index of the closing ']' or -1 if no match is found
      */
-    private static int findMatchingBrace(String pair, String s, int idx) {
+    private static int findMatchingPair(String pair, String s, int idx) {
         char lbrace = pair.charAt(0);
         char rbrace = pair.charAt(1);
         char last = ' ';
@@ -293,9 +430,9 @@ public class GdbUtils {
         boolean inDoubleQuote = false;
         boolean inSingleQuote = false;
         
-        assert pair != null && pair.length() == 2;
-        assert s != null && s.length() > 0;
-        assert idx >= 0 && idx < s.length();
+        if (s == null || idx >= s.length() || idx < 0) {
+            return -1;
+        }
         
         if (s.charAt(idx) == lbrace) {
             idx++;
@@ -332,7 +469,74 @@ public class GdbUtils {
             last = ch;
         }
         
-        // I used to throw an exception here but gdb sometimes returns an unmatched curly.
-        return idx - 1;
+        return -1;
+    }
+    
+    /**
+     * Find the next comma (ignoring ones in quotes and double quotes)
+     *
+     * @param s The string to search
+     * @param idx The starting index
+     */
+    public static int findNextComma(String s, int idx) {
+        char last = ' ';
+        int len = s.length() - idx;
+        boolean inDoubleQuote = false;
+        boolean inSingleQuote = false;
+        
+        assert s != null && s.length() > 0;
+        assert idx >= 0 && idx < s.length();
+        
+        if (s.charAt(idx) == ',') { // skip ',' if 1st char is comma
+            idx++;
+            len--;
+        }
+        
+        while (len-- > 0) {
+            char ch = s.charAt(idx++);
+            if (inDoubleQuote) {
+                if (ch == '"' && last != '\\') {
+                    inDoubleQuote = false;
+                }
+            } else if (inSingleQuote) {
+                if (ch == '\'' && last != '\\') {
+                    inSingleQuote = false;
+                }
+            } else if (ch == ',') {
+                return idx;
+            } else if (ch == '\"' && last != '\\') {
+                if (inDoubleQuote) {
+                    inDoubleQuote = false;
+                } else {
+                    inDoubleQuote = true;
+                }
+            } else if (ch == '\'' && last != '\\') {
+                inSingleQuote = true;
+            }
+            last = ch;
+        }
+        
+        return -1;
+    }
+    
+    /**
+     * Find the 1st non-whitespace character from the given starting point in the string
+     *
+     * @param info The string to look in
+     * @param idx The starting position in the string
+     * @return The position of the 1st non-white character or -1
+     */
+    public static int firstNonWhite(String info, int idx) {
+        char ch;
+        int len = info.length();
+        if (idx >= 0 && idx < len) {
+            while (idx < len && ((ch = info.charAt(idx)) == ' ' || ch == '\t' || ch == '\n' || ch == '\r')) {
+                idx++;
+            }
+            if (idx < len) {
+                return idx;
+            }
+        }
+        return -1;
     }
 }

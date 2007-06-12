@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
@@ -54,7 +55,7 @@ public final class ProjectImpl extends ProjectBase {
         File file = nativeFile.getFile();
         APTPreprocHandler preprocHandler = createPreprocHandler(nativeFile);
         if (isSourceFile) {
-            findFile(file, FileImpl.SOURCE_FILE, preprocHandler, true, preprocHandler.getState());
+            findFile(file, getFileType(nativeFile), preprocHandler, true, preprocHandler.getState());
         } else {
             findFile(file, FileImpl.HEADER_FILE, preprocHandler, true, preprocHandler.getState());
         }

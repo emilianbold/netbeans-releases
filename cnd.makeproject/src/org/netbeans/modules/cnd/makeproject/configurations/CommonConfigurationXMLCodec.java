@@ -46,6 +46,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerCo
 
 /**
  * History:
+ * V36:
+ *   ARCHITECTURE_ELEMENT added.
+ * V35:
+ *   Gordon added COMPILER set changes?
  * V34:
  *   Added C_REQUIRED_ELEMENT, CPP_REQUIRED_ELEMENT, and FORTRAN_REQUIRED_ELEMENT for build validation
  *   Changed COMPILER_SET_ELEMENT semantics from expecting an integer (0 or 1)
@@ -66,7 +70,7 @@ abstract class CommonConfigurationXMLCodec
     extends XMLDecoder
     implements XMLEncoder {
 
-    protected final static int CURRENT_VERSION = 35;
+    protected final static int CURRENT_VERSION = 36;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
@@ -116,6 +120,7 @@ abstract class CommonConfigurationXMLCodec
     protected final static String COMMAND_LINE_ELEMENT = "commandLine"; // NOI18N
     protected final static String STRIP_SYMBOLS_ELEMENT = "stripSymbols"; // NOI18N
     protected final static String SIXTYFOUR_BITS_ELEMENT = "sixtyfourBits"; // NOI18N
+    protected final static String ARCHITECTURE_ELEMENT = "architecture"; // NOI18N
     protected final static String PREPROCESSOR_ELEMENT = "preprocessor"; // NOI18N
     protected final static String SUPRESS_WARNINGS_ELEMENT = "supressWarnings"; // NOI18N
     protected final static String WARNING_LEVEL_ELEMENT = "warningLevel"; // NOI18N
@@ -320,7 +325,7 @@ abstract class CommonConfigurationXMLCodec
 	if (cCompilerConfiguration.getStrip().getModified())
 	    xes.element(STRIP_SYMBOLS_ELEMENT, "" + cCompilerConfiguration.getStrip().getValue()); // NOI18N
 	if (cCompilerConfiguration.getSixtyfourBits().getModified())
-	    xes.element(SIXTYFOUR_BITS_ELEMENT, "" + cCompilerConfiguration.getSixtyfourBits().getValue()); // NOI18N
+	    xes.element(ARCHITECTURE_ELEMENT, "" + cCompilerConfiguration.getSixtyfourBits().getValue()); // NOI18N
 	if (cCompilerConfiguration.getTool().getModified())
 	    xes.element(COMMANDLINE_TOOL_ELEMENT, "" + cCompilerConfiguration.getTool().getValue()); // NOI18N
 	if (cCompilerConfiguration.getIncludeDirectories().getModified())
@@ -355,7 +360,7 @@ abstract class CommonConfigurationXMLCodec
 	if (ccCompilerConfiguration.getStrip().getModified())
 	    xes.element(STRIP_SYMBOLS_ELEMENT, "" + ccCompilerConfiguration.getStrip().getValue()); // NOI18N
 	if (ccCompilerConfiguration.getSixtyfourBits().getModified())
-	    xes.element(SIXTYFOUR_BITS_ELEMENT, "" + ccCompilerConfiguration.getSixtyfourBits().getValue()); // NOI18N
+	    xes.element(ARCHITECTURE_ELEMENT, "" + ccCompilerConfiguration.getSixtyfourBits().getValue()); // NOI18N
 	if (ccCompilerConfiguration.getTool().getModified())
 	    xes.element(COMMANDLINE_TOOL_ELEMENT, "" + ccCompilerConfiguration.getTool().getValue()); // NOI18N
 	if (ccCompilerConfiguration.getIncludeDirectories().getModified())
@@ -392,7 +397,7 @@ abstract class CommonConfigurationXMLCodec
 	if (fortranCompilerConfiguration.getStrip().getModified())
 	    xes.element(STRIP_SYMBOLS_ELEMENT, "" + fortranCompilerConfiguration.getStrip().getValue()); // NOI18N
 	if (fortranCompilerConfiguration.getSixtyfourBits().getModified())
-	    xes.element(SIXTYFOUR_BITS_ELEMENT, "" + fortranCompilerConfiguration.getSixtyfourBits().getValue()); // NOI18N
+	    xes.element(ARCHITECTURE_ELEMENT, "" + fortranCompilerConfiguration.getSixtyfourBits().getValue()); // NOI18N
 	if (fortranCompilerConfiguration.getTool().getModified())
 	    xes.element(COMMANDLINE_TOOL_ELEMENT, "" + fortranCompilerConfiguration.getTool().getValue()); // NOI18N
 	if (fortranCompilerConfiguration.getCommandLineConfiguration().getModified())

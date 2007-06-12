@@ -45,7 +45,6 @@ public class ModelImplBaseTestSuite extends BaseTestSuite {
     /**
      * Constructs a TestSuite from the given class. Adds all the methods
      * starting with "test" as test cases to the suite.
-     *
      */
     public ModelImplBaseTestSuite(Class theClass) {       
         super(theClass);

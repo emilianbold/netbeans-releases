@@ -1,0 +1,7 @@
+jDeafult char
+jNonCompound char
+jOuter int
+A
+globInt int
+globFoo() void
+main(int argc, char** argv) int

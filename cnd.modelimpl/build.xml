@@ -34,7 +34,7 @@ Microsystems, Inc. All Rights Reserved.
 		<property name="antlr.folding.dir" location="src/org/netbeans/modules/cnd/modelimpl/antlr"/> 
 		-->
         <property name="antlr.output.dir" location="src/org/netbeans/modules/cnd/modelimpl/parser/generated"/>
-        <property name="antlr.jar" location="../suite/build/cluster/modules/org-netbeans-modules-cnd-antlr.jar"/>
+        <property name="antlr.jar" location="${cluster}/modules/org-netbeans-modules-cnd-antlr.jar"/>
         <property name="antlr.grammar.dir" location="src/org/netbeans/modules/cnd/modelimpl/parser"/>
 
         <property name="antlr.apt.grammar.dir" location="../apt/src/org/netbeans/modules/cnd/apt/impl/support"/>

@@ -49,7 +49,7 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
         clone.setDevelopmentMode((IntConfiguration)getDevelopmentMode().clone());
         clone.setWarningLevel((IntConfiguration)getWarningLevel().clone());
         clone.setMTLevel((IntConfiguration)getMTLevel().clone());
-        clone.setSixtyfourBits((BooleanConfiguration)getSixtyfourBits().clone());
+        clone.setSixtyfourBits((IntConfiguration)getSixtyfourBits().clone());
         clone.setStrip((BooleanConfiguration)getStrip().clone());
         clone.setAdditionalDependencies((StringConfiguration)getAdditionalDependencies().clone());
         clone.setTool((StringConfiguration)getTool().clone());

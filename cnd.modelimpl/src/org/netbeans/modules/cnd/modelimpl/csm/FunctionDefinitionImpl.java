@@ -35,7 +35,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 /**
  * @author Vladimir Kvasihn
  */
-public class FunctionDefinitionImpl extends FunctionImplEx<CsmFunctionDefinition> implements CsmFunctionDefinition {
+public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmFunctionDefinition<T> {
 
     private CsmFunction declarationOLD;
     private CsmUID<CsmFunction> declarationUID;

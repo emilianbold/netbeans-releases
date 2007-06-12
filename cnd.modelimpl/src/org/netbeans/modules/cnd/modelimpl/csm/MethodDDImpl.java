@@ -33,7 +33,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
  * Method, which contains it's body right at throws POD (point of declaration)
  * @author Vladimir Kvasihn
  */
-public class MethodDDImpl extends MethodImpl<CsmFunctionDefinition> implements CsmFunctionDefinition {
+public class MethodDDImpl extends MethodImpl<CsmFunctionDefinition> implements CsmFunctionDefinition<CsmFunctionDefinition> {
 
     private final CsmCompoundStatement body;
     

@@ -21,7 +21,6 @@ package org.netbeans.modules.cnd.api.model.deep;
 
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmVariable;
 
 /**
  * Represents declaration statement

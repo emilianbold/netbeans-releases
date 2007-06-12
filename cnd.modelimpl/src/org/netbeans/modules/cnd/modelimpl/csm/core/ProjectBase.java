@@ -28,6 +28,7 @@ import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.apt.debug.DebugUtils;
@@ -185,7 +186,19 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     public Collection<CsmOffsetableDeclaration> findDeclarations(String uniqueName) {
         return declarationsSorage.findDeclarations(uniqueName);
     }
-    
+
+    public Collection<CsmOffsetableDeclaration> findDeclarationsByPrefix(String prefix) {
+        return declarationsSorage.getDeclarationsRange(prefix, prefix+"z"); // NOI18N
+    }
+
+    public Collection<CsmFriend> findFriendDeclarations(CsmOffsetableDeclaration decl) {
+        return declarationsSorage.findFriends(decl);
+    }
+
+    public static boolean isCppFile(CsmFile file){
+        return (file instanceof FileImpl) && ((FileImpl)file).isCppFile();
+    }
+
     private CsmClassifier _getClassifier(String qualifiedName) {
         CsmClassifier result;
         if (TraceFlags.USE_REPOSITORY) {
@@ -350,9 +363,13 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         if( status ==  Status.Initial ) {
             try {
                 status = Status.AddingFiles;
+                long time = 0;
                 if (TraceFlags.SUSPEND_PARSE_TIME != 0) {
                     System.err.println("suspend queue");
                     ParserQueue.instance().suspend();
+                    if (TraceFlags.TIMING) {
+                        time = System.currentTimeMillis();
+                    }
                 }
                 ParserQueue.instance().onStartAddingProjectFiles(this);
                 ModelSupport.instance().registerProjectListeners(this, platformProject);
@@ -361,6 +378,10 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
                     createProjectFilesIfNeed(nativeProject);
                 }
                 if (TraceFlags.SUSPEND_PARSE_TIME != 0) {
+                    if (TraceFlags.TIMING) {
+                        time = System.currentTimeMillis() - time;
+                        System.err.println("getting files from project system + put in queue took " + time + "ms");
+                    }
                     try {
                         System.err.println("sleep for " + TraceFlags.SUSPEND_PARSE_TIME + "sec before resuming queue");
                         Thread.currentThread().sleep(TraceFlags.SUSPEND_PARSE_TIME  * 1000);
@@ -521,12 +542,21 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     }
     
     protected boolean isSourceFile(NativeFileItem nativeFile){
-        return nativeFile.getSystemIncludePaths().size()>0;
-//        NativeProject prj = nativeFile.getNativeProject();
-//        if (prj != null){
-//            return prj.getAllSourceFiles().contains(nativeFile);
-//        }
-//        return false;
+        int type = getFileType(nativeFile);
+        return type == FileImpl.SOURCE_CPP_FILE || type == FileImpl.SOURCE_C_FILE || type == FileImpl.SOURCE_FILE;
+        //return nativeFile.getSystemIncludePaths().size()>0;
+    }
+
+    protected int getFileType(NativeFileItem nativeFile) {
+        Language lang = nativeFile.getLanguage();
+        if (lang == NativeFileItem.Language.C){
+            return FileImpl.SOURCE_C_FILE;
+        } else if (lang == NativeFileItem.Language.CPP){
+            return FileImpl.SOURCE_CPP_FILE;
+        } else if (lang == NativeFileItem.Language.C_HEADER){
+            return FileImpl.HEADER_FILE;
+        }
+        return FileImpl.UNDEFINED_FILE;
     }
     
     private APTMacroMap getSysMacroMap(List<String> sysMacros) {
@@ -627,14 +657,14 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
             update = true;
         } else if (!curState.isStateCorrect() && preprocHandler.isStateCorrect()) {
             update = true;
-            // invalidate file
-            csmFile.stateChanged(true);
         }
         if( update ) {
             state = preprocHandler.getState();
             // need to prevent corrupting shared object => copy
             APTPreprocHandler.State copy = APTHandlersSupport.copyPreprocState(state);
             putPreprocState(file, copy);
+            // invalidate file
+            csmFile.stateChanged(true);
         }
         return state;
     }
@@ -763,6 +793,10 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     }
     
     public void dispose() {
+        dispose(true);
+    }
+    
+    public void dispose(final boolean cleanPersistent) {
 	synchronized (disposeLock) {
 	    isProjectDisposed = true;
 	}
@@ -783,7 +817,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         unresolved = null;
         uid = null;
         if (TraceFlags.USE_REPOSITORY) {
-            RepositoryUtils.closeUnit(getUID());
+            RepositoryUtils.closeUnit(getUID(), cleanPersistent);
         }
     }
     
@@ -808,10 +842,6 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
             } else {
                 APTDriver.getInstance().invalidateAPT(file.getBuffer());
             }
-// don't remove files from repository on project closure
-//            if (TraceFlags.USE_REPOSITORY) {
-//                RepositoryUtils.remove(file.getUID());
-//            }
         }
     }
     
@@ -865,8 +895,6 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     
     private void _clearNamespaces() {
         if (TraceFlags.USE_REPOSITORY) {
-            Collection<CsmUID<CsmNamespace>> uids = namespaces.values();
-            RepositoryUtils.remove(uids);
             namespaces.clear();
         } else {
             namespacesOLD.clear();

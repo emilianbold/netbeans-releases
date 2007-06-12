@@ -43,6 +43,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryEvent;
+import org.netbeans.modules.cnd.modelimpl.options.CodeAssistanceOptions;
 import org.netbeans.modules.cnd.modelimpl.spi.LowMemoryAlerter;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -163,7 +164,7 @@ public class ModelSupport implements PropertyChangeListener {
             }
             
             for( Iterator iter = toClose.iterator(); iter.hasNext(); ) {
-                removeProject((Project) iter.next());
+                closeProject((Project) iter.next());
             }
         }
     }
@@ -442,7 +443,10 @@ public class ModelSupport implements PropertyChangeListener {
             if( TraceFlags.DEBUG ) {
                 dumpProjectFiles(nativeProject);
             }
-            model.addProject(nativeProject, nativeProject.getProjectDisplayName());
+            
+            boolean enableModel = new CodeAssistanceOptions(project).getCodeAssistanceEnabled().booleanValue();
+            
+            model.addProject(nativeProject, nativeProject.getProjectDisplayName(), enableModel);
         }
     }
     
@@ -461,6 +465,14 @@ public class ModelSupport implements PropertyChangeListener {
         }
     }
 
+    private void closeProject(Project project) {
+        if( TraceFlags.DEBUG ) Diagnostic.trace("### ModelSupport.closeProject: " + toString(project)); // NOI18N
+        NativeProject nativeProject = (NativeProject) project.getLookup().lookup(NativeProject.class);
+        if (nativeProject != null) {
+            model.closeProject(nativeProject);
+        }
+        openedProjects.remove(project);
+    }    
     
     private void removeProject(Project project) {
         if( TraceFlags.DEBUG ) Diagnostic.trace("### ModelSupport.removeProject: " + toString(project)); // NOI18N

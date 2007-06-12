@@ -26,11 +26,21 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmFriend;
+import org.netbeans.modules.cnd.api.model.CsmFriendClass;
+import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
@@ -42,14 +52,16 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  * @author Alexander Simon
  */
 /*package-local*/ class DeclarationContainer {
-    private Map<String, Object> declarationsOLD = Collections.synchronizedMap(new HashMap<String, Object>());
+    private SortedMap<String, Object> declarationsOLD = Collections.synchronizedSortedMap(new TreeMap<String, Object>());
     //private Map<String, CsmUID<CsmDeclaration>> declarations = Collections.synchronizedMap(new HashMap<String, CsmUID<CsmDeclaration>>());
-    private Map<String, Object> declarations = Collections.synchronizedMap(new HashMap<String, Object>());
+    private SortedMap<String, Object> declarations = Collections.synchronizedSortedMap(new TreeMap<String, Object>());
+    
+    private Map<String, Set<CsmUID<? extends CsmFriend>>> friends = Collections.synchronizedMap(new HashMap<String, Set<CsmUID<? extends CsmFriend>>>());
     
     /** Creates a new instance of ProjectDeclarations */
     public DeclarationContainer() {
     }
-        
+    
     public void removeDeclaration(CsmDeclaration decl) {
         if (TraceFlags.USE_REPOSITORY) {
             String uniqueName = decl.getUniqueName();
@@ -88,6 +100,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
                 } else if (o instanceof CsmUID){
                     declarations.remove(uniqueName);
                 }
+                removeFriend(decl);
             }
         } else {
             String uniqueName = decl.getUniqueName();
@@ -129,7 +142,31 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
             }
         }
     }
-
+    
+    private void removeFriend(CsmDeclaration decl){
+        if (CsmKindUtilities.isFriendClass(decl)) {
+            CsmFriendClass cls = (CsmFriendClass) decl;
+            String name = cls.getName();
+            Set<CsmUID<? extends CsmFriend>> set = friends.get(name);
+            if (set != null) {
+                set.remove(cls.getUID());
+                if (set.size()==0){
+                    friends.remove(name);
+                }
+            }
+        } else if (CsmKindUtilities.isFriendMethod(decl)) {
+            CsmFriendFunction fun = (CsmFriendFunction) decl;
+            String name = fun.getSignature();
+            Set<CsmUID<? extends CsmFriend>> set = friends.get(name);
+            if (set != null) {
+                set.remove(fun.getUID());
+                if (set.size()==0){
+                    friends.remove(name);
+                }
+            }
+        }
+    }
+    
     public void putDeclaration(CsmDeclaration decl) {
         String name = decl.getUniqueName();
         if (TraceFlags.USE_REPOSITORY) {
@@ -166,6 +203,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
                 } else {
                     declarations.put(name, uid);
                 }
+                putFriend(decl);
             }
         } else {
             CsmOffsetableDeclaration newDecl = (CsmOffsetableDeclaration)decl;
@@ -203,7 +241,106 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
             }
         }
     }
-
+    
+    private void putFriend(CsmDeclaration decl){
+        if (CsmKindUtilities.isFriendClass(decl)) {
+            CsmFriendClass cls = (CsmFriendClass) decl;
+            String name = cls.getName();
+            Set<CsmUID<? extends CsmFriend>> set = friends.get(name);
+            if (set == null) {
+                set = new HashSet<CsmUID<? extends CsmFriend>>();
+                friends.put(name,set);
+            }
+            set.add(cls.getUID());
+        } else if (CsmKindUtilities.isFriendMethod(decl)) {
+            CsmFriendFunction fun = (CsmFriendFunction) decl;
+            String name = fun.getSignature();
+            Set<CsmUID<? extends CsmFriend>> set = friends.get(name);
+            if (set == null) {
+                set = new HashSet<CsmUID<? extends CsmFriend>>();
+                friends.put(name,set);
+            }
+            set.add(fun.getUID());
+        }
+    }
+    
+    public Collection<CsmOffsetableDeclaration> getDeclarationsRange(String from, String to) {
+        if (TraceFlags.USE_REPOSITORY) {
+            List<CsmUID<CsmOffsetableDeclaration>> list = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
+            synchronized(declarations) {
+                for (Map.Entry<String, Object> entry : declarations.subMap(from, to).entrySet()){
+                    Object o = entry.getValue();
+                    if (o instanceof CsmUID[]) {
+                        CsmUID[] uids = (CsmUID[])o;
+                        for(CsmUID uid:uids){
+                            list.add(uid);
+                        }
+                    } else if (o instanceof CsmUID){
+                        list.add((CsmUID)o);
+                    }
+                }
+            }
+            return UIDCsmConverter.UIDsToDeclarations(list);
+        } else {
+            List<CsmOffsetableDeclaration> list = new ArrayList<CsmOffsetableDeclaration>();
+            synchronized(declarationsOLD){
+                for (Map.Entry<String, Object> entry : declarationsOLD.subMap(from, to).entrySet()){
+                    Object o = entry.getValue();
+                    if (o instanceof CsmOffsetableDeclaration[]) {
+                        CsmOffsetableDeclaration[] decls = (CsmOffsetableDeclaration[])o;
+                        for(CsmOffsetableDeclaration decl : decls){
+                            list.add(decl);
+                        }
+                    } else if (o instanceof CsmOffsetableDeclaration){
+                        list.add((CsmOffsetableDeclaration)o);
+                    }
+                }
+            }
+            return list;
+        }
+    }
+    
+    public Collection<CsmFriend> findFriends(CsmOffsetableDeclaration decl){
+        if (TraceFlags.USE_REPOSITORY) {
+            String name = null;
+            if (CsmKindUtilities.isClass(decl)) {
+                CsmClass cls = (CsmClass) decl;
+                name = cls.getName();
+            } else if (CsmKindUtilities.isFunction(decl)) {
+                CsmFunction fun = (CsmFunction) decl;
+                name = fun.getSignature();
+            }
+            if (name != null) {
+                List<CsmUID<? extends CsmFriend>> list = new ArrayList<CsmUID<? extends CsmFriend>>();
+                synchronized(declarations) {
+                    Set<CsmUID<? extends CsmFriend>> set = friends.get(name);
+                    if (set != null) {
+                        list.addAll(set);
+                    }
+                }
+                if (list.size()>0){
+                    Collection<CsmFriend> res = new ArrayList<CsmFriend>();
+                    for(CsmUID<? extends CsmFriend> friendUID : list){
+                        CsmFriend friend = friendUID.getObject();
+                        if (CsmKindUtilities.isFriendClass(friend)) {
+                            CsmFriendClass cls = (CsmFriendClass) friend;
+                            if (cls.getReferencedClass() == decl){
+                                res.add(cls);
+                            }
+                        } else if (CsmKindUtilities.isFriendMethod(friend)) {
+                            CsmFriendFunction fun = (CsmFriendFunction) friend;
+                            if (fun.getReferencedFunction() == decl){
+                                res.add(fun);
+                            }
+                        }
+                    }
+                    return res;
+                }
+            }
+        }
+        return Collections.<CsmFriend>emptyList();
+    }
+    
     public Collection<CsmOffsetableDeclaration> findDeclarations(String uniqueName) {
         if (TraceFlags.USE_REPOSITORY) {
             List<CsmUID<CsmOffsetableDeclaration>> list = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
@@ -262,17 +399,16 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
         }
         return result;
     }
-
+    
     public void clearDeclarations() {
         if (TraceFlags.USE_REPOSITORY) {
-            //List<CsmUID<CsmDeclaration>> uids = new ArrayList<CsmUID<CsmDeclaration>>(declarations.values());
-            List<Object> uids = new ArrayList<Object>(declarations.values());
+            declarations.clear();
         } else {
             declarationsOLD.clear();
         }
     }
-
-
+    
+    
     public void write(DataOutput aStream) throws IOException {
         UIDObjectFactory.getDefaultFactory().writeStringToArrayUIDMap(declarations, aStream, true);
     }

@@ -43,6 +43,11 @@ public final class ParameterImpl extends VariableImpl<CsmParameter> implements C
         return varArg;
     }
     
+    public String getDisplayText() {
+	return isVarArgs() ? "..." : super.getDisplayText(); //NOI18N
+    }
+    
+    
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     

@@ -91,13 +91,13 @@ public final class DiskRepositoryManager extends AbstractDiskRepository {
         }
     }
     
-    public void shutdown() {
+    public void shutdown(final boolean clean) {
 	if( threadManager != null ) {
 	    threadManager.shutdown();
 	}
         iterateWith(new Visitor() {
             public void visit(AbstractDiskRepository repository) {
-                repository.shutdown();
+                repository.shutdown(clean);
             }
         });
     }
@@ -152,19 +152,46 @@ public final class DiskRepositoryManager extends AbstractDiskRepository {
         getRepository(key).remove(key);
     }
 
-    public void closeUnit(final String unitName) {
+    public void closeUnit(final String unitName, final boolean cleanRepository) {
         synchronized ( lockClearWrite ) {
-            queue.clearQueue(new RepositoryQueue.Validator() {
-                public boolean isValid(Key key) {
-                    return !key.getUnit().equals(unitName);
-                }
-            });
+            
+            if (cleanRepository) {
+                queue.clearQueue(new RepositoryQueue.Validator() {
+                    public boolean isValid(Key key, Persistent value) {
+                        return !key.getUnit().equals(unitName);
+                    }
+                });
+            } else {
+                queue.clearQueue(new RepositoryQueue.Validator() {
+                    public boolean isValid(Key key, Persistent value) {
+                        boolean result = !key.getUnit().equals(unitName);
+                        
+                        if (!result) {
+                            try {
+                                getRepository(key).write(key, value);
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                        return result;
+                    }
+                });                
+            }
             iterateWith(new Visitor() {
                 public void visit(AbstractDiskRepository repository) {
-                    repository.closeUnit(unitName);
+                    repository.closeUnit(unitName, cleanRepository);
                 }
             });
-            StorageAllocator.getInstance().closeUnit(unitName);
+            
+            //clean the repository cach files here if it is necessary
+            //
+            StorageAllocator allocator = StorageAllocator.getInstance();
+            if (cleanRepository) {
+                allocator.deleteUnitFiles(unitName);
+            }
+            
+            allocator.closeUnit(unitName);
+            
             if (currentKey != null && unitName.equals(currentKey.getUnit())) {
                 currentKey = null;
             }

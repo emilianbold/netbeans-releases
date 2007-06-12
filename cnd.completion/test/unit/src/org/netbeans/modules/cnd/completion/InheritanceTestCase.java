@@ -31,7 +31,7 @@ public class InheritanceTestCase extends CompletionBaseTestCase {
      * Creates a new instance of InheritanceTestCase
      */
     public InheritanceTestCase(String testName) {
-        super(testName);
+        super(testName, true);
     }
     
     /////////////////////////////////////////////////////////////////
@@ -118,7 +118,7 @@ public class InheritanceTestCase extends CompletionBaseTestCase {
         }
         
         public Failed(String testName) {
-            super(testName);
+            super(testName, true);
         }
         
         /////////////////////////////////////////////////////////////////

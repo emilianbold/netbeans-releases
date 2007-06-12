@@ -288,7 +288,7 @@ abstract public class HostKeyArray extends Children.Keys implements UpdatebleHos
                 if (l != null) {
                     l.stateChanged(new ChangeEvent(newDecl));
                 }
-                return false;
+                return updateFunction(newDecl);
             } else {
                 return newDeclaration(newDecl);
             }
@@ -297,6 +297,35 @@ abstract public class HostKeyArray extends Children.Keys implements UpdatebleHos
         newDeclaration(newDecl);
         update = true;
         return true;
+    }
+    
+    private boolean updateFunction(CsmOffsetableDeclaration decl){
+        if (CsmKindUtilities.isFunctionDeclaration(decl)) {
+            // try to find definition and remove definition from view
+            CsmFunction fun = (CsmFunction) decl;
+            CsmFunctionDefinition def = fun.getDefinition();
+            if (def != null && def != decl){
+                PersistentKey defKey = PersistentKey.createKey(def);
+                if (myKeys.containsKey(defKey)) {
+                    myKeys.remove(defKey);
+                    myChanges.remove(defKey);
+                    childrenUpdater.unregister(myProject,defKey);
+                    update = true;
+                    return true;
+                }
+            }
+        } else if (CsmKindUtilities.isFunctionDefinition(decl)) {
+            // try to find declaration and remove definition from view
+            CsmFunctionDefinition def = (CsmFunctionDefinition) decl;
+            CsmFunction fun = def.getDeclaration();
+            if (fun != null && fun != decl){
+                PersistentKey funKey = PersistentKey.createKey(fun);
+                if (myKeys.containsKey(funKey)) {
+                    return removeDeclaration(decl);
+                }
+            }
+        }
+        return false;
     }
     
     public boolean reset(CsmOffsetableDeclaration decl, List<CsmOffsetableDeclaration> recursive){

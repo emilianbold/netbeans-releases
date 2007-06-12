@@ -37,20 +37,20 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
     private String qualifiedNameSuffix = "";
     
     private ClassImplSpecialization(AST ast, CsmFile file) { 
-	super(ast, file, null);
+	super(ast, file);
     }
     
-    protected void init(NamespaceImpl namespace, CsmClass containingClass, AST ast) {
+    protected void init(CsmScope scope, AST ast) {
 	AST qIdToken = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
 	assert qIdToken != null;
 	qualifiedNameSuffix = TemplateUtils.getSpecializationSuffix(qIdToken);
-	super.init(namespace, containingClass, ast);
+	super.init(scope, ast);
 	// super.register(); // super.init() has already registered me
     }
     
-    public static ClassImplSpecialization create(AST ast, NamespaceImpl namespace, CsmFile file) {
+    public static ClassImplSpecialization create(AST ast, CsmScope scope, CsmFile file) {
 	ClassImplSpecialization impl = new ClassImplSpecialization(ast, file);
-	impl.init(namespace, null, ast);
+	impl.init(scope, ast);
 	return impl;
     }
     

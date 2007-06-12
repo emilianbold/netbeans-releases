@@ -197,14 +197,6 @@ public abstract class GdbDebugger {
     public abstract String getVariableType(String expression);
 
     /**
-     * Returns variable value as String.
-     *
-     * @param expression A variable name or an expression
-     * @return variable value
-     */
-    public abstract String getVariableValue(String expression);
-
-    /**
      * Returns variable's number of children as String.
      *
      * @param expression A variable name or an expression
@@ -289,23 +281,6 @@ public abstract class GdbDebugger {
      */
     public abstract void fixClasses(Map classes);
     
-    /** 
-     * Returns instance of SmartSteppingFilter.
-     *
-     * @return instance of SmartSteppingFilter
-     */
-    //public abstract SmartSteppingFilter getSmartSteppingFilter();
-
-    /**
-     * Helper method that fires CndBreakpointEvent on CndBreakpoints.
-     *
-     * @param breakpoint a breakpoint to be changed
-     * @param event a event to be fired
-    protected void fireBreakpointEvent(CndBreakpoint breakpoint, CndBreakpointEvent event) {
-        breakpoint.fireCndBreakpointChange(event);
-    }
-     */
-    
     /**
      * Adds property change listener.
      *
@@ -326,8 +301,7 @@ public abstract class GdbDebugger {
      * @param propertyName a name of property to listen on
      * @param l new listener.
      */
-    public abstract void addPropertyChangeListener(String propertyName, 
-		PropertyChangeListener l);
+    public abstract void addPropertyChangeListener(String propertyName, PropertyChangeListener l);
     
     /**
      * Removes property change listener.
@@ -335,17 +309,7 @@ public abstract class GdbDebugger {
      * @param propertyName a name of property to listen on
      * @param l removed listener.
      */
-    public abstract void removePropertyChangeListener(String propertyName, 
-		PropertyChangeListener l);
+    public abstract void removePropertyChangeListener(String propertyName, PropertyChangeListener l);
     
-    /**
-     * Creates a new {@link CndStep}. 
-     * Parameters correspond to {@link CndStep} constructor.
-     * 
-     * @return {@link CndStep} 
-     * @throws {@link java.lang.UnsupportedOperationException} If not overridden
-    public CndStep createCndStep(int size, int depth) {
-        throw new UnsupportedOperationException("This method must be overridden."); 
-    }
-     */
+    public abstract void addTypeCompletion(String key);
 }

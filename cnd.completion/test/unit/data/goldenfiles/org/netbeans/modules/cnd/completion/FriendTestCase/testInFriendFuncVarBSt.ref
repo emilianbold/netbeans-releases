@@ -1,0 +1,6 @@
+bPrivSt int
+bProtSt int
+bPubSt int
+bPrivFunSt() void
+bProtFunSt() void
+bPubFunSt() void

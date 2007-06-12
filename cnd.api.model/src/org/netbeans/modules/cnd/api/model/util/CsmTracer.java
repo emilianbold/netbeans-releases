@@ -161,8 +161,21 @@ public class CsmTracer {
 	    }
 	    if( type.isReference() ) sb.append("&"); // NOI18N
 	    CsmClassifier classifier = type.getClassifier();
-	    //sb.append(isDummyUnresolved(classifier) ? "<unresolved>": classifier.getName());
-	    sb.append(classifier != null ? classifier.getQualifiedName() : "<*no_classifier*>"); // NOI18N
+	    if( classifier != null ) {
+		sb.append(classifier.getQualifiedName());
+//		if( classifier instanceof CsmOffsetable ) {
+//		    CsmOffsetable offs = (CsmOffsetable) classifier;
+//		    sb.append("(Declared in ");
+//		    sb.append(offs.getContainingFile());
+//		    sb.append(' ');
+//		    sb.append(getOffsetString(offs));
+//		    sb.append(')');
+//		}
+	    }
+	    else {
+		sb.append("<*no_classifier*>"); // NOI18N
+	    }
+	    
 	    for( int i = 0; i < type.getArrayDepth(); i++ ) {
 		sb.append("[]"); // NOI18N
 	    }

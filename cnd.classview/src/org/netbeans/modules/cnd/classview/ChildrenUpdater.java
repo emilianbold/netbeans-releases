@@ -31,6 +31,7 @@ import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
@@ -129,16 +130,14 @@ public class ChildrenUpdater {
             }
         }
         for(CsmOffsetableDeclaration decl : e.getNewDeclarations()){
-            UpdatebleHost keys = findHost(project, decl);
-            if (keys != null){
+            for (UpdatebleHost keys : findHost(project, decl)){
                 if (keys.newDeclaration(decl)){
                     toFlush.add(keys);
                 }
             }
         }
         for(CsmOffsetableDeclaration decl : e.getRemovedDeclarations()){
-            UpdatebleHost keys = findHost(project, decl);
-            if (keys != null){
+            for (UpdatebleHost keys : findHost(project, decl)){
                 if (keys.removeDeclaration(decl)){
                     toFlush.add(keys);
                 }
@@ -148,13 +147,12 @@ public class ChildrenUpdater {
         List<Map.Entry<CsmOffsetableDeclaration,CsmOffsetableDeclaration>> change =
                 new ArrayList<Map.Entry<CsmOffsetableDeclaration,CsmOffsetableDeclaration>>(packChangedDeclarations(e.getChangedDeclarations()));
         for(Map.Entry<CsmOffsetableDeclaration,CsmOffsetableDeclaration>  decl : change){
-            UpdatebleHost keys = findHost(project, decl.getKey());
-            if (keys != null){
+            for (UpdatebleHost keys : findHost(project, decl.getKey())){
                 if (keys.changeDeclaration(decl.getKey(),decl.getValue())){
                     toFlush.add(keys);
                 }
             }
-            keys = findNode(project, decl.getValue());
+            UpdatebleHost keys = findNode(project, decl.getValue());
             if (keys != null){
                 if (keys.reset(decl.getValue(),recursive)){
                     toFlush.add(keys);
@@ -246,13 +244,26 @@ public class ChildrenUpdater {
         return null;
     }
     
-    private UpdatebleHost findHost(CsmProject project, CsmOffsetableDeclaration decl){
+    private List<UpdatebleHost> findHost(CsmProject project, CsmOffsetableDeclaration decl){
+        List<UpdatebleHost> res = new ArrayList<UpdatebleHost>();
         if (!project.isValid()){
-            return null;
+            return res;
         }
         Map<PersistentKey, UpdatebleHost> hosts = map.get(project);
         if (hosts == null){
-            return null;
+            return res;
+        }
+        if (CsmKindUtilities.isFriendMethod(decl)){
+            CsmClass cls = ((CsmFriendFunction)decl).getContainingClass();
+            if (cls != null && cls.isValid()) {
+                CsmFile file = cls.getContainingFile();
+                if (file != null && file.isValid()) {
+                    UpdatebleHost host = hosts.get(PersistentKey.createKey(cls));
+                    if (host != null) {
+                        res.add(host);
+                    }
+                }
+            }
         }
         CsmScope scope = decl.getScope();
         if (CsmKindUtilities.isClass(scope)){
@@ -260,7 +271,10 @@ public class ChildrenUpdater {
             if (cls.isValid()) {
                 CsmFile file = cls.getContainingFile();
                 if (file != null && file.isValid()) {
-                    return hosts.get(PersistentKey.createKey(cls));
+                    UpdatebleHost host = hosts.get(PersistentKey.createKey(cls));
+                    if (host != null) {
+                        res.add(host);
+                    }
                 }
             }
         } else if(CsmKindUtilities.isEnum(scope)){
@@ -268,24 +282,36 @@ public class ChildrenUpdater {
             if (cls.isValid()) {
                 CsmFile file = cls.getContainingFile();
                 if (file != null && file.isValid()) {
-                    return hosts.get(PersistentKey.createKey(cls));
+                    UpdatebleHost host = hosts.get(PersistentKey.createKey(cls));
+                    if (host != null) {
+                        res.add(host);
+                    }
                 }
             }
         } else if (CsmKindUtilities.isNamespace(scope)){
             CsmNamespace cls = (CsmNamespace)scope;
-            return hosts.get(PersistentKey.createKey(cls));
+            UpdatebleHost host = hosts.get(PersistentKey.createKey(cls));
+            if (host != null) {
+                res.add(host);
+            }
         } else if (CsmKindUtilities.isNamespaceDefinition(scope)){
             CsmNamespaceDefinition cls = (CsmNamespaceDefinition)scope;
             CsmFile file = cls.getContainingFile();
             if (file != null && file.isValid()) {
-                return hosts.get(PersistentKey.createKey(cls.getNamespace()));
+                UpdatebleHost host = hosts.get(PersistentKey.createKey(cls.getNamespace()));
+                if (host != null) {
+                    res.add(host);
+                }
             }
         } else if (CsmKindUtilities.isFile(scope)){
             CsmFile cls = (CsmFile)scope;
             if (cls.isValid()) {
-                return hosts.get(PersistentKey.createKey(project.getGlobalNamespace()));
+                UpdatebleHost host = hosts.get(PersistentKey.createKey(project.getGlobalNamespace()));
+                if (host != null) {
+                    res.add(host);
+                }
             }
         }
-        return null;
+        return res;
     }
 }

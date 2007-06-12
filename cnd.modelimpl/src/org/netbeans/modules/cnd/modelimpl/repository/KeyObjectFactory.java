@@ -31,6 +31,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities.NamespaceKey;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities.OffsetableDeclarationKey;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities.ProjectKey;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.support.KeyFactory;
 import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
@@ -38,20 +39,12 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  *
  * @author Nickolay Dalmatov
  */
-public class KeyObjectFactory extends AbstractObjectFactory {
-    private static KeyObjectFactory theFactory;
+public class KeyObjectFactory extends KeyFactory {
     
     /** Creates a new instance of KeyObjectFactory */
-    protected KeyObjectFactory() {
+    public KeyObjectFactory() {
     }
     
-    synchronized public static KeyObjectFactory getDefaultFactory() {
-        if (theFactory == null) {
-            theFactory = new KeyObjectFactory();
-        }
-        
-        return theFactory;
-    }
     
     public void writeKey(Key aKey, DataOutput aStream) throws IOException {
         assert aKey instanceof SelfPersistent;

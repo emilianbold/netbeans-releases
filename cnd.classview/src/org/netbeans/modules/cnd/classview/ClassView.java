@@ -239,7 +239,7 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
     
     public void projectClosed(CsmProject project) {
         if( Diagnostic.DEBUG ) Diagnostic.trace("\n@@@ PROJECT CLOSEED " + project); // NOI18N
-        if (model != null) {
+        if (model != null && !getExplorerManager().getRootContext().isLeaf()) {
             model.closeProject(project);
             RootNode root = model.getRoot();
             Children children = root.getChildren();
@@ -305,19 +305,24 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
     }
     
     Node createEmptyRoot() {
-        return new AbstractNode(Children.LEAF);
+        return Node.EMPTY;
     }
     
     // VK: code is copied from org.netbeans.modules.favorites.Tab class
     /** Exchanges deserialized root context to projects root context
      * to keep the uniquennes. */
-    protected void setupRootContext(Node rc) {
-        getExplorerManager().setRootContext(rc);
+    protected void setupRootContext(final Node rc) {
         try {
             getExplorerManager().setSelectedNodes(new Node[0]);
         } catch (PropertyVetoException ex) {
             ex.printStackTrace();
         }
+        getExplorerManager().setRootContext(rc);
+//        try {
+//            getExplorerManager().setSelectedNodes(new Node[0]);
+//        } catch (PropertyVetoException ex) {
+//            ex.printStackTrace();
+//        }
         if( Diagnostic.DEBUG ) Diagnostic.trace(">>> Setup root context "+rc); // NOI18N
         //setIcon(rc.getIcon(BeanInfo.ICON_COLOR_16x16));
         setToolTipText(I18n.getMessage("ClassViewTitle"));	// NOI18N

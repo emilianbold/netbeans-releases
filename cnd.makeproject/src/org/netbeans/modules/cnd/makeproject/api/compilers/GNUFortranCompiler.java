@@ -20,6 +20,7 @@
 package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 
 public class GNUFortranCompiler extends BasicCompiler {
     private static final String[] DEVELOPMENT_MODE_OPTIONS = {
@@ -55,8 +56,15 @@ public class GNUFortranCompiler extends BasicCompiler {
             return ""; // NOI18N
     }
     
-    public String getSixtyfourBitsOption(boolean value) {
-        return value ? "-m64" : ""; // NOI18N
+    public String getSixtyfourBitsOption(int value) {
+        if (value == BasicCompilerConfiguration.BITS_DEFAULT)
+            return ""; // NOI18N
+        else if (value == BasicCompilerConfiguration.BITS_32)
+            return "-m32"; // NOI18N
+        else if (value == BasicCompilerConfiguration.BITS_64)
+            return "-m64"; // NOI18N
+        else
+            return ""; // NOI18N
     }
     
     public String getStripOption(boolean value) {

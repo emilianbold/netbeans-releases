@@ -22,7 +22,8 @@ package org.netbeans.modules.cnd.repository.disk.api;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import org.netbeans.modules.cnd.repository.sfs.ConcurrentFileRWAccess;
-import org.netbeans.modules.cnd.repository.spi.*;
+import org.netbeans.modules.cnd.repository.spi.Key;
+
 
 /**
  *

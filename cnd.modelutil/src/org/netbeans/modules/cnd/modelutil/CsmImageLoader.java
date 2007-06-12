@@ -43,6 +43,21 @@ public class CsmImageLoader implements CsmImageName {
         String iconPath = getImagePath(o);
         return Utilities.loadImage(iconPath);
     }
+
+    public static Image getFriendFunctionImage(CsmFriend o) {
+        String iconPath;
+        if (CsmKindUtilities.isFriendClass(o)) {
+            iconPath = FRIEND_CLASS;
+        } else {
+            int modifiers = CsmUtilities.getModifiers(o);
+            if ((modifiers & CsmUtilities.OPERATOR) == CsmUtilities.OPERATOR) {
+                iconPath = FRIEND_OPERATOR;
+            } else {
+                iconPath = FRIEND_METHOD;
+            }
+        }
+        return Utilities.loadImage(iconPath);
+    }
     
     public static Icon getIcon(CsmDeclaration.Kind kind, int modifiers) {
         String iconPath = getImagePath(kind, modifiers);
@@ -60,10 +75,16 @@ public class CsmImageLoader implements CsmImageName {
         if (CsmKindUtilities.isEnumerator(o)) {
             kind = CsmDeclaration.Kind.ENUM;
             modifiers |= CsmUtilities.ENUMERATOR;
-        } else if (CsmKindUtilities.isUsing(o)) {
+        } else if (CsmKindUtilities.isUsingDirective(o)) {
             return USING;
+        } else if (CsmKindUtilities.isUsingDeclaration(o)) {
+            return USING_DECLARATION;
         } else if (CsmKindUtilities.isClassForwardDeclaration(o)) {
-            return CLASS_FORWARD;
+            CsmClass cls = ((CsmClassForwardDeclaration)o).getCsmClass();
+            if (cls != null && cls.getKind() == CsmDeclaration.Kind.CLASS) {
+                return CLASS_FORWARD;
+            }
+            return STRUCT_FORWARD;
         } else if (CsmKindUtilities.isDeclaration(o)) {
             kind = ((CsmDeclaration)o).getKind();
         } else if (CsmKindUtilities.isNamespace(o)) {
@@ -73,7 +94,11 @@ public class CsmImageLoader implements CsmImageName {
         } else if (CsmKindUtilities.isMacro(o)) {
             return MACRO;
         } else if (CsmKindUtilities.isInclude(o)) {
-            return INCLUDE;
+            if (((CsmInclude)o).isSystem()){
+                return INCLUDE_SYSTEM;
+            } else {
+                return INCLUDE_USER;
+            }
         }
         return getImagePath(kind, modifiers);
     }
@@ -98,6 +123,8 @@ public class CsmImageLoader implements CsmImageName {
             iconPath = UNION; 
         } else if (kind == CsmDeclaration.Kind.TYPEDEF) {
             iconPath = TYPEDEF;
+        } else if (kind == CsmDeclaration.Kind.CLASS_FRIEND_DECLARATION) {
+            iconPath = FRIEND_CLASS;
         } else if (kind == CsmDeclaration.Kind.VARIABLE || kind == CsmDeclaration.Kind.VARIABLE_DEFINITION ) {
             boolean isLocal = (modifiers & CsmUtilities.LOCAL) != 0;
             boolean isFileLocal = (modifiers & CsmUtilities.FILE_LOCAL) != 0;

@@ -21,7 +21,13 @@ package org.netbeans.modules.cnd.api.model;
 
 /**
  * This interface provides a way to obtain validity of the instance of CSM object.
+ * Returns true if the given object is valid, otherwise false.
+ * It's always false upon project closing or reparsing of the file that contains the object.
+ * If you store object, say, in a field, then 
+ * you have to check isValid() prior to calling any other method;
+ * otherwise results are inpredictable.
  */
+
 public interface CsmValidable {
 
     public boolean isValid();

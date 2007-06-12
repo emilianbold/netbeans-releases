@@ -35,6 +35,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebuggerImpl;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  * Class GdbProxyEngine implements the communication with gdb (low level)
@@ -64,6 +65,15 @@ public class GdbProxyEngine {
      */
     public GdbProxyEngine(GdbDebuggerImpl debugger, GdbProxy gdbProxy, List debuggerCommand,
                     String[] debuggerEnvironment, String workingDirectory) throws IOException {
+        
+        if (Utilities.isUnix()) {
+            String xterm = gdbProxy.getXTERMvalue(debuggerEnvironment);
+            String externalTerminal = gdbProxy.openExternalProgramIOWindow(this, xterm, debuggerEnvironment);
+            if (externalTerminal != null) {
+                debuggerCommand.add("-tty"); // NOI18N
+                debuggerCommand.add(externalTerminal);
+            }
+        }
         this.debugger = debugger;
         this.gdbProxy = gdbProxy;
         ProcessBuilder pb = new ProcessBuilder(debuggerCommand);
@@ -155,12 +165,20 @@ public class GdbProxyEngine {
      * @return null if the reply is not recognized, otherwise return reply
      */
     private void processMessage(String msg) {
+        if (msg.equals("(gdb)")) { // NOI18N
+            return; // skip prompts
+        }
         String reply = null;
         String s1, s2;
         int id = 0;
         int i = 0;
         int token = getToken(msg);
-        gdbProxy.getLogger().logMessage(msg);
+        if (token < 0) {
+            token = debugger.getCurrentToken();
+            gdbProxy.getLogger().logMessage(token + msg);
+        } else {
+            gdbProxy.getLogger().logMessage(msg);
+        }
         msg = stripToken(msg);
         
         switch (msg.charAt(0)) {

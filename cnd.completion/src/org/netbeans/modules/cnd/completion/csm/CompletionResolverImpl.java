@@ -225,7 +225,7 @@ public class CompletionResolverImpl implements CompletionResolver {
                     classFields = contResolver.getFields(clazz, funDef, strPrefix, staticContext, match, true);
                     
                     // get class enumerators visible in this method
-                    classEnumerators = contResolver.getEnumerators(clazz, funDef, strPrefix, staticContext, match, true);
+                    classEnumerators = contResolver.getEnumerators(clazz, funDef, strPrefix, match, true);
                     
                     // get class methods visible in this method
                     classMethods = contResolver.getMethods(clazz, funDef, strPrefix, staticContext, match, true);

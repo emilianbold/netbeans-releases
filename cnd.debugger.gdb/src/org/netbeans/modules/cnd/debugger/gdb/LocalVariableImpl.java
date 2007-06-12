@@ -46,6 +46,14 @@ public class LocalVariableImpl implements LocalVariable, Field {
         debugger = null;
     }
     
+    public LocalVariableImpl(GdbVariable var) {
+        name = var.getName();
+        type = var.getType();
+        currentValueText = var.getValue();
+        previousValueText = var.getValue();
+        debugger = null;
+    }
+    
     public String getName() {
         return name; // Name to show in Locals View
     }

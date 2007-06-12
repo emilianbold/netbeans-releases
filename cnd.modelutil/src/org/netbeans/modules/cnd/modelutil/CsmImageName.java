@@ -30,6 +30,7 @@ public interface CsmImageName {
     static final String NAMESPACE = RESOURCE_BASE+"namespace_16.png"; // NOI18N
     static final String CLASS = RESOURCE_BASE+"class_16.png"; // NOI18N
     static final String CLASS_FORWARD = RESOURCE_BASE+"class_forward_decl.png"; // NOI18N
+    static final String STRUCT_FORWARD = RESOURCE_BASE+"struct_forward_decl.png"; // NOI18N
     static final String STRUCT = RESOURCE_BASE+"struct_16.png"; // NOI18N
     static final String UNION = RESOURCE_BASE+"union_16.png"; // NOI18N
     static final String ENUMERATION = RESOURCE_BASE+"enumeration_16.png"; // NOI18N
@@ -68,27 +69,30 @@ public interface CsmImageName {
     static final String METHOD_ST_PROTECTED = RESOURCE_BASE+"methods_static_protected.png"; // NOI18N
     static final String METHOD_ST_PRIVATE = RESOURCE_BASE+"methods_static_private.png"; // NOI18N
     
+    static final String FRIEND_METHOD = RESOURCE_BASE+"friend_method.png"; // NOI18N
+    static final String FRIEND_OPERATOR = RESOURCE_BASE+"friend_operator.png"; // NOI18N
+    static final String FRIEND_CLASS = RESOURCE_BASE+"friend_class.png"; // NOI18N
+
     static final String FUNCTION_GLOBAL = RESOURCE_BASE+"global_function.png"; // NOI18N
     static final String FUNCTION_DECLARATION_GLOBAL = RESOURCE_BASE+"global_function_decl.png"; // NOI18N
     static final String FUNCTION_ST_GLOBAL = RESOURCE_BASE+"global_function.png"; // NOI18N
 
-    static final String OPERATOR_PUBLIC = RESOURCE_BASE+"operator_color_16.png"; // NOI18N
-    static final String OPERATOR_PROTECTED = RESOURCE_BASE+"operator_color_16.png"; // NOI18N
-    static final String OPERATOR_PRIVATE = RESOURCE_BASE+"operator_color_16.png"; // NOI18N
+    static final String OPERATOR_PUBLIC = RESOURCE_BASE+"operator_public.png"; // NOI18N
+    static final String OPERATOR_PROTECTED = RESOURCE_BASE+"operator_protected.png"; // NOI18N
+    static final String OPERATOR_PRIVATE = RESOURCE_BASE+"operator_privat.png"; // NOI18N
 
-    static final String OPERATOR_ST_PUBLIC = RESOURCE_BASE+"operator_color_16.png"; // NOI18N
-    static final String OPERATOR_ST_PROTECTED = RESOURCE_BASE+"operator_color_16.png"; // NOI18N
-    static final String OPERATOR_ST_PRIVATE = RESOURCE_BASE+"operator_color_16.png"; // NOI18N
+    static final String OPERATOR_ST_PUBLIC = RESOURCE_BASE+"operator_static.png"; // NOI18N
+    static final String OPERATOR_ST_PROTECTED = RESOURCE_BASE+"operator_static_protected.png"; // NOI18N
+    static final String OPERATOR_ST_PRIVATE = RESOURCE_BASE+"operator_static_privat.png"; // NOI18N
     
-    static final String OPERATOR_GLOBAL = RESOURCE_BASE+"operator_16.png"; // NOI18N
-    static final String OPERATOR_ST_GLOBAL = RESOURCE_BASE+"operator_16.png"; // NOI18N
+    static final String OPERATOR_GLOBAL = RESOURCE_BASE+"global_operator.png"; // NOI18N
+    static final String OPERATOR_ST_GLOBAL = RESOURCE_BASE+"global_operator_static.png"; // NOI18N
 
     static final String VARIABLE_GLOBAL = RESOURCE_BASE+"global_variable.png"; // NOI18N
     static final String VARIABLE_ST_GLOBAL = RESOURCE_BASE+"global_variable.png"; // NOI18N
 
-    static final String VARIABLE_CONST_GLOBAL = RESOURCE_BASE+"constant_16.png"; // NOI18N
-    static final String VARIABLE_CONST_ST_GLOBAL = RESOURCE_BASE+"constant_16.png"; // NOI18N
-
+    static final String VARIABLE_CONST_GLOBAL = RESOURCE_BASE+"global_constant.png"; // NOI18N
+    static final String VARIABLE_CONST_ST_GLOBAL = RESOURCE_BASE+"global_constant.png"; // NOI18N
 
     static final String VARIABLE_LOCAL = RESOURCE_BASE+"local_variable.png"; // NOI18N
     static final String VARIABLE_ST_LOCAL = RESOURCE_BASE+"local_variable.png"; // NOI18N
@@ -99,10 +103,12 @@ public interface CsmImageName {
     static final String VARIABLE_FILE_LOCAL = RESOURCE_BASE+"global_variable.png"; // NOI18N
     static final String VARIABLE_ST_FILE_LOCAL = RESOURCE_BASE+"global_variable.png"; // NOI18N
 
-    static final String VARIABLE_CONST_FILE_LOCAL = RESOURCE_BASE+"constant_16.png"; // NOI18N
-    static final String VARIABLE_CONST_ST_FILE_LOCAL = RESOURCE_BASE+"constant_16.png"; // NOI18N
+    static final String VARIABLE_CONST_FILE_LOCAL = RESOURCE_BASE+"global_constant.png"; // NOI18N
+    static final String VARIABLE_CONST_ST_FILE_LOCAL = RESOURCE_BASE+"global_constant.png"; // NOI18N
     
     static final String MACRO = RESOURCE_BASE+"code_macro_16.png"; // NOI18N
-    static final String INCLUDE = RESOURCE_BASE+"include_directive_16.png"; // NOI18N
+    static final String INCLUDE_USER = RESOURCE_BASE+"include_user_16.png"; // NOI18N
+    static final String INCLUDE_SYSTEM = RESOURCE_BASE+"include_sys_16.png"; // NOI18N
     static final String USING = RESOURCE_BASE+"using_namespace_16.png"; // NOI18N
+    static final String USING_DECLARATION =  RESOURCE_BASE+"using_declaration_16.png"; // NOI18N
 }

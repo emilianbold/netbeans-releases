@@ -23,11 +23,16 @@ import java.beans.Customizer;
 import java.beans.PropertyChangeListener;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.debugger.DebuggerManager;
 
 import org.netbeans.modules.cnd.debugger.gdb.InvalidExpressionException;
 import org.netbeans.modules.cnd.debugger.gdb.Field;
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebuggerImpl;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.debugger.gdb.GdbVariable;
 import org.netbeans.modules.cnd.debugger.gdb.LocalVariable;
+import org.netbeans.modules.cnd.debugger.gdb.LocalVariableImpl;
+import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 
 /*
  * An AbstractVariable is an array, pointer, struct, or union.
@@ -36,21 +41,26 @@ import org.netbeans.modules.cnd.debugger.gdb.LocalVariable;
  */
 public class AbstractVariable implements LocalVariable, Customizer {
     
-    private GdbDebuggerImpl debugger;
+    private GdbDebugger debugger;
     private String          name;
     private String          type;
     private String          value;
     private Field[]         fields;
-    private Field[]         staticFields;
-    private Field[]         inheritedFields;
     
     private Set listeners = new HashSet();
     
-    public AbstractVariable(GdbDebuggerImpl debugger, String name, String type, String value) {
-        this.debugger = debugger;
+    public AbstractVariable(String name, String type, String value) {
         this.name = name;
         this.type = type;
         this.value = value;
+    }
+    
+    public AbstractVariable(GdbVariable var) {
+        this(var.getName(), var.getType(), var.getValue());
+        
+        for (GdbVariable child : var.getChildren()) {
+            addField(new AbstractField(child));
+        }
     }
     
     /**
@@ -67,9 +77,10 @@ public class AbstractVariable implements LocalVariable, Customizer {
      *
      * @param value string representation of value of this variable.
      */
+    // FIXME - Havn't reimplemented or verified this yet
     public void setValue(String expression) throws InvalidExpressionException {
         // evaluate expression to Value
-        //NM Value value = debugger.evaluateIn (expression);
+        //NM Value value = getDebugger().evaluateIn (expression);
         String value = expression;
         // set new value to remote veriable
         //NM setValue (value);
@@ -97,7 +108,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
                 if (!oldValue.startsWith(strAddr)) {
                     // Pointer is changed
                     strAddr = expression;
-//                    debugger.setVariableValue(name, strAddr);
+//                    getDebugger().setVariableValue(name, strAddr);
                 }
             }
             // Compare string value
@@ -112,7 +123,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
                         if (c != oldstrValue.charAt(n)) {
                             if (n < 2) break; // First 2 characters must match (\")
                             int k = n - 2;
-//                            debugger.setVariableValue(name+"["+k+"]", "'"+c+"'"); // NOI18N
+//                            getDebugger().setVariableValue(name+"["+k+"]", "'"+c+"'"); // NOI18N
                         }
                     }
                 }
@@ -121,7 +132,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
             }
             return;
         }
-////        debugger.setVariableValue(name, value);
+////        getDebugger().setVariableValue(name, value);
 //        // set new value to this model
 //        // setInnerValue (value);
 //        // refresh tree
@@ -242,14 +253,45 @@ public class AbstractVariable implements LocalVariable, Customizer {
         return name;
     }
     
-    protected final GdbDebuggerImpl getDebugger() {
+    protected final GdbDebugger getDebugger() {
+        if (debugger == null) {
+            DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
+            if (currentEngine == null) {
+                return null;
+            }
+            debugger = (GdbDebugger) currentEngine.lookupFirst(null, GdbDebugger.class);
+
+        }
         return debugger;
+    }
+    
+//    public boolean expandChildren() {
+//        if (fields.length == 1 && fields[0].getName().length() == 0) {
+//            // Need to make the real children into fields...
+//            initFields(); // removes the bogus placeholder field
+//            if (isStruct()) {
+//                System.err.println("AbstractVariable.expandChildren[" + name + "]: This is a struct (unimplemented)");
+//            } else if (isPointer()) {
+//                System.err.println("AbstractVariable.expandChildren[" + name + "]: This is a pointer (unimplemented)");
+//            } else {
+//                System.err.println("AbstractVariable.expandChildren[" + name + "]: Unknown");
+//            }
+//            return true;
+//        } else {
+//            return false;
+//        }
+//    }
+    
+    private boolean isStruct() {
+        return type.indexOf('*') == -1 && value.charAt(0) == '{';
+    }
+    
+    private boolean isPointer() {
+        return type.indexOf('*') > 0;
     }
 
     private void initFields() {
         fields = new Field[0];
-        staticFields = new Field[0];
-        inheritedFields = new Field[0];
     }
     
     /**
@@ -278,6 +320,25 @@ public class AbstractVariable implements LocalVariable, Customizer {
     
     public String toString() {
         return "AbstractVariable "; // NOI18N
+    }
+    
+    public class AbstractField extends AbstractVariable implements Field {
+        
+        public AbstractField(GdbVariable var) {
+            super(var);
+        }
+        
+        public AbstractField(String name, String type, String value) {
+            super(name, type, value);
+        }
+        
+        public boolean isStatic() {
+            return false;
+        }
+        
+        public void setValue(String value) throws InvalidExpressionException {
+            // ignore value - only allow simple vars to change value
+        }
     }
 }
 

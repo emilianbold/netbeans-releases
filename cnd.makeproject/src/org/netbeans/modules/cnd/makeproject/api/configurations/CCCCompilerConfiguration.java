@@ -221,7 +221,7 @@ public class CCCCompilerConfiguration extends BasicCompilerConfiguration {
 	// BasicCompilerConfiguration
 	clone.setDevelopmentMode((IntConfiguration)getDevelopmentMode().clone());
 	clone.setWarningLevel((IntConfiguration)getWarningLevel().clone());
-	clone.setSixtyfourBits((BooleanConfiguration)getSixtyfourBits().clone());
+	clone.setSixtyfourBits((IntConfiguration)getSixtyfourBits().clone());
 	clone.setStrip((BooleanConfiguration)getStrip().clone());
 	clone.setAdditionalDependencies((StringConfiguration)getAdditionalDependencies().clone());
 	clone.setTool((StringConfiguration)getTool().clone());
@@ -268,7 +268,7 @@ public class CCCCompilerConfiguration extends BasicCompilerConfiguration {
                 master = null;
 	}
 	String[] texts = new String[] {getString("PreprocessorDefinitionsTxt1"), getString("PreprocessorDefinitionsHint"), getString("PreprocessorDefinitionsTxt2"), getString("InheritedValuesTxt"), inheritedValues};
-	set1.put(new OptionsNodeProp(getPreprocessorConfiguration(), getInheritPreprocessor(), new PreprocessorOptions(), null, ";", texts)); // NOI18N
+	set1.put(new OptionsNodeProp(getPreprocessorConfiguration(), getInheritPreprocessor(), new PreprocessorOptions(), null, null, texts)); // NOI18N
         
         return set1;
     }

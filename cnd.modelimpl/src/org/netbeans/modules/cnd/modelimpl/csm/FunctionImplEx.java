@@ -75,7 +75,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
 	return null;
     }    
     
-    private static String[] initClassOrNspNames(AST node) {
+    public static String[] initClassOrNspNames(AST node) {
         //qualified id
         AST qid = AstUtil.findMethodName(node);
         if( qid == null ) {

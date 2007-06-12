@@ -97,6 +97,8 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
     /** Text of the last found token except Syntax.EOT and Syntax.EOL */
     private String lastValidTokenText;
 
+    private boolean errorState = false;
+
     // helper variables
     private TokenID curTokenID;
     private int curTokenPosition;
@@ -139,6 +141,10 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
         return curTokenPosition;
     }
 
+    final boolean isErrorState() {
+        return errorState;
+    }
+    
     /** Was the scanning stopped by request by the token processor */
     final boolean isStopped() {
         return stopped;
@@ -534,7 +540,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
         // System.err.printf("tokenOffset = %d, tokenLen = %d, tokenID = %s\n", tokenOffset, tokenLen, tokenID == null ? "null" : tokenID.toString());
         curTokenText = new String(buffer, tokenOffset, tokenLen);
         lastValidTokenText = curTokenText;
-        boolean err = false; // whether the parser cannot understand given tokens
+        errorState = false; // whether the parser cannot understand given tokens
         stopped = false;
 
         checkJoin(tokenID);
@@ -546,7 +552,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
         String kwdType = CCTokenContext.isType(tokenID) ? curTokenText : null; // keyword constant type (used in conversions)
         
         if (tokenID == null) { // invalid token-id
-            err = true;
+            errorState = true;
 
         } else { // valid token-id
             int tokenNumID = tokenID.getNumericID();
@@ -593,7 +599,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                         if (topID == DOT_OPEN || topID == ARROW_OPEN || topID == SCOPE_OPEN) {
                             pushExp(createTokenExp(VARIABLE));
                         } else {
-                            err = true;
+                            errorState = true;
                         }
                         break;
 
@@ -601,7 +607,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                         switch (topID) {
                         case VARIABLE:
                         case NEW:
-                            err = true;
+                            errorState = true;
                             break;
 
                         default:
@@ -620,7 +626,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
 //                            top.addParameter(createTokenExp(CPPINCLUDE));
 //                            break;
                         default:
-                            err = true;
+                            errorState = true;
                             break;
                         }
                         break;
@@ -648,7 +654,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
 //                            pushExp(createTokenExp(INSTANCEOF));
 //                            break;
 //                        default:
-//                            err = true;
+//                            errorContext = true;
 //                            break;
 //                        }
 //                        break;
@@ -694,7 +700,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                     case CCTokenContext.TRY_ID:
                     case CCTokenContext.VOLATILE_ID:
                     case CCTokenContext.WHILE_ID:
-                        err = true;
+                        errorState = true;
                         break;
 
                     case CCTokenContext.IDENTIFIER_ID: // identifier found e.g. 'a'
@@ -735,7 +741,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                     break;
                                 }
                             default:
-                                err = true;
+                                errorState = true;
                                 break;
                             }
                         }
@@ -827,9 +833,9 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                     pushExp(createTokenExp(OPERATOR));
                                     break;
                                 }
-                                // else flow to error
+                                // else flow to errorContextor
                             default:
-                                err = true;
+                                errorState = true;
                                 break;
                         }
                         break;
@@ -856,7 +862,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                 }
                             }
 
-                            if (!err && !genericType) { // not generics -> handled compatibly
+                            if (!errorState && !genericType) { // not generics -> handled compatibly
                                 // Operator handling
                                 switch (topID) {
                                     case CONSTANT:
@@ -875,7 +881,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                         break;
 
                                     default:
-                                        err = true;
+                                        errorState = true;
                                         break;
                                 }
                             }                        
@@ -906,7 +912,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                                 break;
 
                                             default:
-                                                err = topID == GENERIC_TYPE;
+                                                errorState = topID == GENERIC_TYPE;
                                                 break;
                                         }
                                         break;
@@ -918,7 +924,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                             }
 
 
-                            if (!err && !genericType) { // not generics - handled compatibly
+                            if (!errorState && !genericType) { // not generics - handled compatibly
                                 // Operator handling
                                 switch (topID) {
                                     case CONSTANT:
@@ -937,7 +943,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                         break;
 
                                     default:
-                                        err = true;
+                                        errorState = true;
                                         break;
                                 }
                             }                        
@@ -976,12 +982,12 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                                     top = top3;
 
                                                 } else { // inner is not generic type
-                                                    err = true;
+                                                    errorState = true;
                                                 }
                                                 break;
 
                                             default:
-                                                err = true;
+                                                errorState = true;
                                                 break;
                                         }
                                         break;
@@ -993,7 +999,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                             }
 
 
-                            if (!err && !genericType) { // not generics - handled compatibly
+                            if (!errorState && !genericType) { // not generics - handled compatibly
                                 // Operator handling
                                 switch (topID) {
                                     case CONSTANT:
@@ -1012,7 +1018,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                         break;
 
                                     default:
-                                        err = true;
+                                        errorState = true;
                                         break;
                                 }
                             }                        
@@ -1057,12 +1063,12 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
 //                                                    top = top4;
 //
 //                                                } else { // inner is not generic type
-//                                                    err = true;
+//                                                    errorContext = true;
 //                                                }
 //                                                break;
 //
 //                                            default:
-//                                                err = true;
+//                                                errorContext = true;
 //                                                break;
 //                                        }
 //                                        break;
@@ -1074,7 +1080,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
 //                            }
 //
 //
-//                            if (!err && !genericType) { // not generics - handled compatibly
+//                            if (!errorContext && !genericType) { // not generics - handled compatibly
 //                                // Operator handling
 //                                switch (topID) {
 //                                    case CONSTANT:
@@ -1090,7 +1096,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
 //                                        break;
 //
 //                                    default:
-//                                        err = true;
+//                                        errorContext = true;
 //                                        break;
 //                                }
 //                            }                        
@@ -1124,7 +1130,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                 break;
 
                             default:
-                                err = true;
+                                errorState = true;
                                 break;
                         }
                         break;
@@ -1159,7 +1165,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                 break;
 
                             default:
-                                err = true;
+                                errorState = true;
                                 break;
                         }
                         break;
@@ -1192,11 +1198,11 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                     pushExp(opExp); // add operator as new exp
                                     break;                                        
                                 } else {
-                                    // flow down to error
+                                    // flow down to errorContextor
                                 }
                             }
                             default:                                    
-                                err = true;
+                                errorState = true;
                                 break;
                         }
                         break;
@@ -1214,6 +1220,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                             case CONSTRUCTOR:
                             case PARENTHESIS:
                             case GENERIC_TYPE:
+                            {
                                 popExp();
                                  // tokenID.getNumericID() is the parameter of the main switch
                                 // create correspondent *_OPEN expression ID
@@ -1222,7 +1229,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                 opExp.addParameter(top);
                                 pushExp(opExp);
                                 break;
-
+                            }
                             case DOT:
                                 addTokenTo(top);
                                 top.setExpID(DOT_OPEN);
@@ -1238,8 +1245,17 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                 top.setExpID(SCOPE_OPEN);
                                 break;
 
+                            case NO_EXP: // alone :: is OK as access to global context
+                                if (tokenNumID == CCTokenContext.SCOPE_ID) {
+                                    CsmCompletionExpression emptyVar = CsmCompletionExpression.createEmptyVariable(curTokenPosition);
+                                    int openExpID = tokenID2OpenExpID(CCTokenContext.SCOPE_ID);
+                                    CsmCompletionExpression opExp = createTokenExp(openExpID);
+                                    opExp.addParameter(emptyVar);
+                                    pushExp(opExp);      
+                                    break;
+                                }
                             default:
-                                err = true;
+                                errorState = true;
                                 break;
                         }
                         break;
@@ -1293,13 +1309,13 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                                 break;
 
                                             default:
-                                                err = true;
+                                                errorState = true;
                                                 break;
                                         }
                                         break;
 
                                     default:
-                                        err = true;
+                                        errorState = true;
                                         break;
                                 }
                                 break;
@@ -1309,14 +1325,14 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                 break;
 
                             default:
-                                err = true;
+                                errorState = true;
                                 break;
 
                         }
                         break;
 
                     case CCTokenContext.SEMICOLON_ID:
-                        err = true;
+                        errorState = true;
                         break;
 
                     case CCTokenContext.LPAREN_ID:
@@ -1371,7 +1387,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                 break;
 
                             default:
-                                err = true;
+                                errorState = true;
                                 break;
                         }
                         break;
@@ -1444,7 +1460,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                         break;
 
                                     default:
-                                        err = true;
+                                        errorState = true;
                                         break;
                                 }
                                 break;
@@ -1455,7 +1471,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
 
                                 //              case PARENTHESIS_OPEN: // empty parenthesis
                             default:
-                                err = true;
+                                errorState = true;
                                 break;
                         }
 
@@ -1507,7 +1523,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                 break;
 
                             default:
-                                err = true;
+                                errorState = true;
                                 break;
                         }
                         break;
@@ -1529,7 +1545,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
 //                                break;
 //
 //                            default:
-//                                err = true;
+//                                errorContext = true;
 //                                break;
 //                        }
 //                        break;
@@ -1567,7 +1583,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                         break;
 
                                     default:
-                                        err = true;
+                                        errorState = true;
                                         break;
                                 }
                                 break;
@@ -1578,7 +1594,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                 break;
 
                             default:
-                                err = true;
+                                errorState = true;
                                 break;
                         }
                         break;
@@ -1596,11 +1612,11 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                 break;
                             }
                         }
-                        err = true;
+                        errorState = true;
                         break;
 
                     case CCTokenContext.RBRACE_ID:
-                        err = true;
+                        errorState = true;
                         break;
 
 
@@ -1657,7 +1673,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
             case ARROW_OPEN:
             case SCOPE_OPEN:
             case MEMBER_POINTER_OPEN:
-                err = true;
+                errorState = true;
                 break;
 
             case ARRAY_OPEN:
@@ -1671,17 +1687,17 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
             case CONVERSION:
             case NO_EXP:
                 pushExp(constExp);
-                err = false;
+                errorState = false;
                 break;
 
             case GENERIC_TYPE_OPEN:
                 top.setExpID(OPERATOR);
                 top.addParameter(constExp);
-                err = false;
+                errorState = false;
                 break;
 
             default:
-                err = true;
+                errorState = true;
                 break;
             }
         }
@@ -1695,7 +1711,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                 addTokenTo(kwdExp);
                 kwdExp.setType(kwdType);
                 pushExp(kwdExp);
-                err = false;
+                errorState = false;
                 break;
             }
             case METHOD_OPEN:
@@ -1705,20 +1721,21 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                 addTokenTo(kwdExp);
                 kwdExp.setType(kwdType);
                 pushExp(kwdExp);
-                err = false;
+                errorState = false;
                 break;
             }
             default: // otherwise not recognized
-                err = true;
+                errorState = true;
                 break;
             }
         }
 
-        if (err) {
+        if (errorState) {
             clearStack();
 
             if (tokenID == CCTokenContext.IDENTIFIER) {
                 pushExp(createTokenExp(VARIABLE));
+                errorState = false;
             }
         }
         
@@ -1849,10 +1866,21 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                         }
                     }
                     break;
+                    
+                case MEMBER_POINTER_OPEN:
+                case UNARY_OPERATOR:
+                    if (top2ID == NO_EXP) {
+                        popExp();
+                        pushExp(CsmCompletionExpression.createEmptyVariable(
+                                bufferStartPos + bufferOffsetDelta + offset));                        
+                    }
+                    break;                    
                 }
             } else { // nothing on the stack, create empty variable
-                pushExp(CsmCompletionExpression.createEmptyVariable(
-                            bufferStartPos + bufferOffsetDelta + offset));
+//                if (!isErrorState()) {
+                    pushExp(CsmCompletionExpression.createEmptyVariable(
+                                bufferStartPos + bufferOffsetDelta + offset));
+//                }
             }
         }
         //    System.out.println(this);

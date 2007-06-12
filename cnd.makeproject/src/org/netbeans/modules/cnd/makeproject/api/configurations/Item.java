@@ -63,13 +63,13 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     
     public Item(String path) {
         this.path = path;
-        String sortName = IpeUtils.getBaseName(path).toLowerCase();
-        int i = sortName.lastIndexOf("."); // NOI18N
-        if (i > 0) {
-            this.sortName = sortName.substring(0, i);
-        } else {
-            this.sortName = sortName;
-        }
+        this.sortName = IpeUtils.getBaseName(path).toLowerCase();
+//        int i = sortName.lastIndexOf("."); // NOI18N
+//        if (i > 0) {
+//            this.sortName = sortName.substring(0, i);
+//        } else {
+//            this.sortName = sortName;
+//        }
         folder = null;
     }
     

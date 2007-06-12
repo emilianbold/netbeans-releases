@@ -1,0 +1,4 @@
+aPub int
+aPubSt int
+aPubFun() void
+aPubFunSt() void

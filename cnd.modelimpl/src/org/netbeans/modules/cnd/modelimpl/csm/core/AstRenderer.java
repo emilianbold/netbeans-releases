@@ -724,12 +724,20 @@ public class AstRenderer {
                 AST ptrOperator = null;
                 boolean theOnly = true;
                 boolean hasVariables = false;
+		int inParamsLevel = 0;
+
                 for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
                     switch( token.getType() ) {
+			case CPPTokenTypes.LPAREN:
+			    inParamsLevel++;
+			    break;
+			case CPPTokenTypes.RPAREN:
+			    inParamsLevel--;
+			    break;		    
                         case CPPTokenTypes.CSM_PTR_OPERATOR:
-                            // store only 1-static one - the others (if any) follows,
+                            // store only 1-st one - the others (if any) follows,
                             // so it's TypeImpl.createType() responsibility to process them all
-                            if( ptrOperator == null ) {
+                            if( ptrOperator == null && inParamsLevel == 0) {
                                 ptrOperator = token;
                             }
                             break;
@@ -835,6 +843,24 @@ public class AstRenderer {
         return parameters;
     }
     
+    public static boolean isVoidParameter(AST ast) {
+        if( ast != null && ast.getType() ==  CPPTokenTypes.CSM_PARMLIST ) {
+            AST token = ast.getFirstChild();
+            if( token.getType() == CPPTokenTypes.CSM_PARAMETER_DECLARATION ) {
+                AST firstChild = token.getFirstChild();
+                if( firstChild != null ) {
+                    if( firstChild.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN & firstChild.getNextSibling() == null ) {
+                        AST grandChild = firstChild.getFirstChild();
+                        if( grandChild != null && grandChild.getType() == CPPTokenTypes.LITERAL_void ) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
     public static ParameterImpl renderParameter(AST ast, final CsmFile file) {
         AST firstChild = ast.getFirstChild();
         if( firstChild != null ) {
@@ -922,7 +948,7 @@ public class AstRenderer {
         return true;
     }
      
-    private boolean isMemberDefinition(AST ast) {
+    protected boolean isMemberDefinition(AST ast) {
 	if( CastUtils.isCast(ast) ) {
 	    return CastUtils.isMemberDefinition(ast);
 	}

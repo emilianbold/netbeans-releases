@@ -54,4 +54,12 @@ public interface CsmVariable<T> extends CsmOffsetableDeclaration<T> {
 
     //public boolean isMutable();
     
+    /**
+     * Gets text as it is displayed to user.
+     * It's necessary here especially for pointers to functions,
+     * for which just typeName+' '+variableName does not work
+     * TODO: move it to one of the ancestors?
+     */
+    String getDisplayText();
+    
 }

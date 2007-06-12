@@ -83,7 +83,27 @@ ClassA& ClassA::operator- (const ClassA& obj) { // in test testOperators
     return *this;
 }
 
-void ClassA::classMethod() {
-    
+ClassA* ClassA::classMethodRetClassAPtr() {
+    return this;
 }
 
+const ClassA& ClassA::classMethodRetClassARef() {
+    return this;
+}
+
+myInt ClassA::classMethodRetMyInt() {
+    return 0;
+}
+
+myInnerInt ClassA::classMethodRetMyInnerInt() {
+    return 0;
+}
+
+ostream& operator <<(ostream& output, const ClassA& item) {
+    output << item.privateMemberInt << customer.privateMemberDbl;
+    return output;
+}
+
+void friendFoo() {
+
+}

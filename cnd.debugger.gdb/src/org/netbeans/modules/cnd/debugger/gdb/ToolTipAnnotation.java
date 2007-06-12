@@ -48,129 +48,109 @@ import org.openide.windows.TopComponent;
  * This class implements "Balloon Evaluation" feature.
  *
  * @author Nik Molchanov (copied from JPDA implementation)
- *
  */
-
-public class ToolTipAnnotation extends Annotation implements Runnable {
+public class ToolTipAnnotation extends Annotation {
     
     private String expression;
 
-    public String getShortDescription () {
-        DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager ().
-            getCurrentEngine ();
-        if (currentEngine == null) return null;
-        Part lp = (Part) getAttachedAnnotatable();
-        if (lp == null) return null;
-        Line line = lp.getLine ();
-        DataObject dob = DataEditorSupport.findDataObject (line);
-        if (dob == null) return null;
-        EditorCookie ec = (EditorCookie) dob.getCookie (EditorCookie.class);
-        if (ec == null) 
+    public String getShortDescription() {
+        DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
+        if (currentEngine == null) {
             return null;
-            // Only for editable dataobjects
+        }
+        GdbDebuggerImpl d = (GdbDebuggerImpl) currentEngine.lookupFirst(null, GdbDebugger.class);
+        if (d == null) {
+            return null;
+        }
+        Part lp = (Part) getAttachedAnnotatable();
+        if (lp == null) {
+            return null;
+        }
+        Line line = lp.getLine();
+        DataObject dob = DataEditorSupport.findDataObject(line);
+        if (dob == null) {
+            return null;
+        }
+        EditorCookie ec = (EditorCookie) dob.getCookie(EditorCookie.class);
+        if (ec == null) {
+            return null;
+        }
 
         try {
-            StyledDocument doc = ec.openDocument ();
-            JEditorPane ep = getCurrentEditor ();
-            if (ep == null) return null;
-            synchronized (this) {
-                expression = getIdentifier (
-                    doc, 
-                    ep,
-                    NbDocument.findLineOffset (
-                        doc,
-                        lp.getLine ().getLineNumber ()
-                    ) + lp.getColumn ()
-                );
-                if (expression == null) return null;
+            StyledDocument doc = ec.openDocument();
+            JEditorPane ep = getCurrentEditor();
+            if (ep == null) {
+                return null;
             }
-            RequestProcessor.getDefault ().post (this);                    
+            synchronized (this) {
+                expression = getIdentifier(doc, ep, NbDocument.findLineOffset(doc,
+                        lp.getLine().getLineNumber()) + lp.getColumn());
+                if (expression == null) {
+                    return null;
+                }
+            }
+            int token = d.getGdbProxy().data_evaluate_expression(expression);
+            d.completeToolTip(token, this);
         } catch (IOException e) {
         }
         return null;
     }
 
-    public void run () {
-        String expression;
-        synchronized (this) {
-            expression = this.expression;
+    public void postToolTip(String value) {
+        if (expression == null) {
+            return;
         }
-        if (expression == null) return;
-        DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager ().
-            getCurrentEngine ();
-        if (currentEngine == null) return;
-        GdbDebuggerImpl d = (GdbDebuggerImpl) currentEngine.lookupFirst
-                (null, GdbDebugger.class);
-        if (d == null) return;
-        String toolTipText = null;
         int i = expression.indexOf('\n');
         if (i >= 0) {
             expression = expression.substring(0, i);
         }
-        try {
-            Variable v = d.evaluate (expression);
-            String type = v.getType ();
-            String value = v.getValue ();
-            if ((type != null) && (type.length() > 0)) {
-                toolTipText = expression + " = " +  "(" + type + ") " + value; // NOI18N
-            } else {
-                toolTipText = expression + " = " + value; // NOI18N
+        
+        final String toolTipText = expression + " = " + value; // NOI18N
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                firePropertyChange(PROP_SHORT_DESCRIPTION, null, toolTipText);
             }
-        } catch (InvalidExpressionException e) {
-            toolTipText = expression + " = >" + e.getMessage () + "<"; // NOI18N
-        }
-        firePropertyChange (PROP_SHORT_DESCRIPTION, null, toolTipText);
+        });
     }
 
     public String getAnnotationType () {
         return null; // Currently return null annotation type
     }
 
-    private static String getIdentifier (
-        StyledDocument doc, 
-        JEditorPane ep, 
-        int offset
-    ) {
+    private static String getIdentifier(StyledDocument doc, JEditorPane ep, int offset) {
         String t = null;
-        if ( (ep.getSelectionStart () <= offset) &&
-             (offset <= ep.getSelectionEnd ())
-        )   t = ep.getSelectedText ();
-        if (t != null) return t;
+        if ((ep.getSelectionStart() <= offset) && (offset <= ep.getSelectionEnd())) {
+            t = ep.getSelectedText();
+        }
+        if (t != null) {
+            return t;
+        }
         
-        int line = NbDocument.findLineNumber (
-            doc,
-            offset
-        );
-        int col = NbDocument.findLineColumn (
-            doc,
-            offset
-        );
+        int line = NbDocument.findLineNumber(doc, offset);
+        int col = NbDocument.findLineColumn(doc, offset);
         try {
-            Element lineElem = 
-                NbDocument.findLineRootElement (doc).
-                getElement (line);
+            Element lineElem = NbDocument.findLineRootElement(doc).getElement(line);
 
-            if (lineElem == null) return null;
-            int lineStartOffset = lineElem.getStartOffset ();
+            if (lineElem == null) {
+                return null;
+            }
+            int lineStartOffset = lineElem.getStartOffset();
             int lineLen = lineElem.getEndOffset() - lineStartOffset;
-            t = doc.getText (lineStartOffset, lineLen);
+            t = doc.getText(lineStartOffset, lineLen);
             int identStart = col;
-            while (identStart > 0 && 
-                (Character.isJavaIdentifierPart (
-                    t.charAt (identStart - 1)
-                ) ||
-                (t.charAt (identStart - 1) == '.'))) {
+            while (identStart > 0 && (Character.isJavaIdentifierPart(t.charAt(identStart - 1)) ||
+                        (t.charAt (identStart - 1) == '.'))) {
                 identStart--;
             }
             int identEnd = col;
-            while (identEnd < lineLen && 
-                   Character.isJavaIdentifierPart(t.charAt(identEnd))
-            ) {
+            while (identEnd < lineLen && Character.isJavaIdentifierPart(t.charAt(identEnd))) {
                 identEnd++;
             }
 
-            if (identStart == identEnd) return null;
-            return t.substring (identStart, identEnd);
+            if (identStart == identEnd) {
+                return null;
+            }
+            return t.substring(identStart, identEnd);
         } catch (BadLocationException e) {
             return null;
         }
@@ -181,12 +161,16 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
      *
      * Used in: ToolTipAnnotation
      */
-    static JEditorPane getCurrentEditor () {
-        EditorCookie e = getCurrentEditorCookie ();
-        if (e == null) return null;
-        JEditorPane[] op = e.getOpenedPanes ();
-        if ((op == null) || (op.length < 1)) return null;
-        return op [0];
+    private static JEditorPane getCurrentEditor() {
+        EditorCookie e = getCurrentEditorCookie();
+        if (e == null) {
+            return null;
+        }
+        JEditorPane[] op = EditorContextImpl.getOpenedPanes(e);
+        if ((op == null) || (op.length < 1)) {
+            return null;
+        }
+        return op[0];
     }
     
     /** 
@@ -194,14 +178,13 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
      *
      * @return current editor component instance
      */
-    private static EditorCookie getCurrentEditorCookie () {
-        Node[] nodes = TopComponent.getRegistry ().getActivatedNodes ();
-        if ( (nodes == null) ||
-             (nodes.length != 1) ) return null;
-        Node n = nodes [0];
-        return (EditorCookie) n.getCookie (
-            EditorCookie.class
-        );
+    private static EditorCookie getCurrentEditorCookie() {
+        Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
+        if (nodes == null || nodes.length != 1) {
+            return null;
+        }
+        Node n = nodes[0];
+        return (EditorCookie) n.getCookie(EditorCookie.class);
     }
 }
 

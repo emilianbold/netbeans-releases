@@ -45,22 +45,18 @@ public class EnumImpl extends ClassEnumBase<CsmEnum>  implements CsmEnum, CsmMem
         super(findName(ast), file, ast);
     }
     
-    protected void init(NamespaceImpl namespace, CsmClass containingClass, AST ast) {
-	super.init(namespace, containingClass, ast);
+    protected void init(CsmScope scope, AST ast) {
+	super.init(scope, ast);
         if (TraceFlags.USE_REPOSITORY) {
             RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
         }
         initEnumeratorList(ast);
-        register();
+        register(scope);
     }
     
-    public static EnumImpl create(AST ast, NamespaceImpl namespace, CsmFile file) {
-	return create(ast, namespace, file, null);
-    }
-    
-    public static EnumImpl create(AST ast, NamespaceImpl namespace, CsmFile file, CsmClass containingClass) {
+    public static EnumImpl create(AST ast, CsmScope scope, CsmFile file) {
 	EnumImpl impl = new EnumImpl(ast, file);
-	impl.init(namespace, containingClass, ast);
+	impl.init(scope, ast);
 	return impl;
     }
     

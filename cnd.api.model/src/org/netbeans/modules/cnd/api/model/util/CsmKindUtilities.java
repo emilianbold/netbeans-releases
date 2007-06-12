@@ -19,11 +19,15 @@
 
 package org.netbeans.modules.cnd.api.model.util;
 
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFriend;
+import org.netbeans.modules.cnd.api.model.CsmFriendClass;
+import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
@@ -40,6 +44,7 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmUsingDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 
 
@@ -104,6 +109,14 @@ public class CsmKindUtilities {
         }          
     }
 
+    public static boolean isDeclarationStatement(CsmObject obj) {
+        if (obj instanceof CsmDeclarationStatement) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
     public static boolean isCompoundStatement(CsmObject obj) {
         if (isStatement(obj)) {
             return ((CsmStatement)obj).getKind() == CsmStatement.Kind.COMPOUND;
@@ -289,7 +302,11 @@ public class CsmKindUtilities {
     
     public static boolean isClassMember(CsmObject obj) {
         if (obj instanceof CsmMember) {
-            return true;
+	    if (isClass(obj) ) {
+		return isClass(((CsmClass) obj).getScope());
+	    } else {
+		return true;
+	    }   
         } else {
             return false;
         }
@@ -385,6 +402,11 @@ public class CsmKindUtilities {
         }
     }       
     
+    /**
+     * checks if passed object is method definition or method declaration
+     * after this check it is safe to cast only to CsmFunction (not CsmMethod)
+     * @see isMethodDeclaration
+     */
     public static boolean isMethod(CsmObject obj) {
         if (isFunction(obj)) {
             return isClassMember(CsmBaseUtilities.getFunctionDeclaration((CsmFunction)obj));
@@ -393,14 +415,23 @@ public class CsmKindUtilities {
         }
     }
     
+    /**
+     * checks if passed object is method declaration;
+     * after this check it is safe to cast to CsmMethod
+     */
     public static boolean isMethodDeclaration(CsmObject obj) {
-        if (isFunctionDeclaration(obj)) {
+        if (isFunction(obj)) {
             return isClassMember(obj);
         } else {
             return false;
         }
     }     
 
+    /**
+     * checks if passed object is method definition;
+     * after this check it is safe to cast to CsmFunctionDefinition (not CsmMethod)
+     * @see isMethodDeclaration
+     */
     public static boolean isMethodDefinition(CsmObject obj) {
         if (isFunctionDefinition(obj)) {
             return isClassMember(CsmBaseUtilities.getFunctionDeclaration((CsmFunction)obj));
@@ -409,14 +440,10 @@ public class CsmKindUtilities {
         }
     }     
 
-//    public static boolean isMethodDefinition(CsmObject obj) {
-//        if (isFunctionDefinition(obj)) {
-//            return isClassMember(getFunctionDeclaration((CsmFunction)obj));
-//        } else {
-//            return false;
-//        }
-//    }   
-    
+    /**
+     * checks if passed object is constructor definition or declaration;
+     * after this check it is safe to cast to CsmFunction
+     */    
     public static boolean isConstructor(CsmObject obj) {
         if (isMethod(obj)) {
             return CsmBaseUtilities.getFunctionDeclaration((CsmFunction)obj) instanceof CsmConstructor;
@@ -447,5 +474,25 @@ public class CsmKindUtilities {
     public static boolean isUsing(CsmObject obj) {
         return (obj instanceof CsmUsingDeclaration) ||
                (obj instanceof CsmUsingDirective);
+    }
+
+    public static boolean isUsingDirective(CsmObject obj) {
+        return obj instanceof CsmUsingDirective;
+    }
+
+    public static boolean isUsingDeclaration(CsmObject obj) {
+        return obj instanceof CsmUsingDeclaration;
+    }
+
+    public static boolean isFriend(CsmObject obj) {
+        return obj instanceof CsmFriend;
+    }
+
+    public static boolean isFriendClass(CsmObject obj) {
+        return obj instanceof CsmFriendClass;
+    }
+
+    public static boolean isFriendMethod(CsmObject obj) {
+        return obj instanceof CsmFriendFunction;
     }
 }

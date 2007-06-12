@@ -25,6 +25,9 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
+import org.netbeans.modules.cnd.api.model.CsmFriend;
+import org.netbeans.modules.cnd.api.model.CsmFriendClass;
+import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmMember;
@@ -35,6 +38,8 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.classview.model.ClassNode;
 import org.netbeans.modules.cnd.classview.model.EnumNode;
 import org.netbeans.modules.cnd.classview.model.EnumeratorNode;
+import org.netbeans.modules.cnd.classview.model.FriendClassNode;
+import org.netbeans.modules.cnd.classview.model.FriendFunctionNode;
 import org.netbeans.modules.cnd.classview.model.GlobalFuncNode;
 import org.netbeans.modules.cnd.classview.model.MemberNode;
 import org.openide.nodes.Node;
@@ -47,11 +52,11 @@ public class ClassifierKeyArray extends HostKeyArray implements UpdatebleHost {
     private static final boolean traceEvents = Boolean.getBoolean("cnd.classview.key-events"); // NOI18N
     
     public ClassifierKeyArray(ChildrenUpdater childrenUpdater, CsmCompoundClassifier classifier){
-        super(childrenUpdater, classifier.getContainingNamespace().getProject(),PersistentKey.createKey(classifier));
+        super(childrenUpdater, classifier.getContainingFile().getProject(),PersistentKey.createKey(classifier));
     }
-
+    
     public ClassifierKeyArray(ChildrenUpdater childrenUpdater, CsmTypedef typedef, CsmCompoundClassifier classifier){
-        super(childrenUpdater, classifier.getContainingNamespace().getProject(), PersistentKey.createKey(typedef));
+        super(childrenUpdater, classifier.getContainingFile().getProject(), PersistentKey.createKey(typedef));
     }
     
     public boolean newNamespsce(CsmNamespace ns) {
@@ -80,11 +85,16 @@ public class ClassifierKeyArray extends HostKeyArray implements UpdatebleHost {
     }
     
     private void initClass(CsmClass cls, java.util.Map<PersistentKey, SortedName> res){
-        for( Iterator/*<CsmClass>*/ iter = cls.getMembers().iterator(); iter.hasNext(); ) {
-            CsmMember member = (CsmMember) iter.next();
+        for(CsmMember member : cls.getMembers()) {
             PersistentKey key = PersistentKey.createKey(member);
             if (key != null) {
                 res.put(key, getSortedName(member));
+            }
+        }
+        for (CsmFriend friend : cls.getFriends()){
+            PersistentKey key = PersistentKey.createKey(friend);
+            if (key != null) {
+                res.put(key, getSortedName(friend));
             }
         }
     }
@@ -132,6 +142,10 @@ public class ClassifierKeyArray extends HostKeyArray implements UpdatebleHost {
                             new ClassifierKeyArray(updater, (CsmEnum) member));
                 } else if( CsmKindUtilities.isEnumerator(member) ) {
                     node = new EnumeratorNode((CsmEnumerator) member);
+                } else if( CsmKindUtilities.isFriendClass(member) ) {
+                    node = new FriendClassNode((CsmFriendClass) member);
+                } else if( CsmKindUtilities.isFriendMethod(member) ) {
+                    node = new FriendFunctionNode((CsmFriendFunction) member);
                 } else if( CsmKindUtilities.isClassMember(member) ) {
                     node = new MemberNode((CsmMember) member);
                 } else if( CsmKindUtilities.isFunction(member) ) {

@@ -126,7 +126,12 @@ public class TypeFactory {
             //}
             ptrOperator = ptrOperator.getNextSibling();
         }
-        return new TypeImpl(classifier, file, pointerDepth, refence, arrayDepth);
+	
+	return (TypeFunPtrImpl.isFunctionPointerParamList(classifier)) ?
+	    new TypeFunPtrImpl(classifier, file, pointerDepth, refence, arrayDepth) :
+	    new TypeImpl(classifier, file, pointerDepth, refence, arrayDepth);
+	
+//	return new TypeImpl(classifier, file, pointerDepth, refence, arrayDepth);
     }
     
 }

@@ -119,7 +119,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
         busyListener = null;
     }
     
-    public AbstractNode getRoot(){
+    public Node getRoot(){
         return root;
     }
     
@@ -139,19 +139,19 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
                             lineNumberIndex.clear();
                             if (csmFile.isValid()){
                                 for(CsmInclude element : csmFile.getIncludes()){
-                                    CppDeclarationNode node = CppDeclarationNode.nodeFactory((CsmObject)element, lineNumberIndex);
+                                    CppDeclarationNode node = CppDeclarationNode.nodeFactory((CsmObject)element, lineNumberIndex, false);
                                     if (node != null){
                                         list.add(node);
                                     }
                                 }
                                 for(CsmMacro element : csmFile.getMacros()){
-                                    CppDeclarationNode node = CppDeclarationNode.nodeFactory((CsmObject)element, lineNumberIndex);
+                                    CppDeclarationNode node = CppDeclarationNode.nodeFactory((CsmObject)element, lineNumberIndex, false);
                                     if (node != null){
                                         list.add(node);
                                     }
                                 }
                                 for(CsmOffsetableDeclaration element : csmFile.getDeclarations()){
-                                    CppDeclarationNode node = CppDeclarationNode.nodeFactory((CsmObject)element, lineNumberIndex);
+                                    CppDeclarationNode node = CppDeclarationNode.nodeFactory((CsmObject)element, lineNumberIndex, false);
                                     if (node != null){
                                         list.add(node);
                                     }

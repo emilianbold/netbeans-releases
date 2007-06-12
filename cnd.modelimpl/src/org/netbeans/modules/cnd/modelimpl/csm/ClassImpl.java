@@ -44,6 +44,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     
     private final List<CsmMember> membersOLD = new ArrayList<CsmMember>();
     private final List<CsmUID<CsmMember>> members = new ArrayList<CsmUID<CsmMember>>();
+
+    private final List<CsmFriend> friendsOLD = new ArrayList<CsmFriend>();
+    private final List<CsmUID<CsmFriend>> friends = new ArrayList<CsmUID<CsmFriend>>();
     
     private final List<CsmInheritance> inheritances = new ArrayList<CsmInheritance>();
     private boolean template;
@@ -67,6 +70,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         public void render(AST ast) {
 	    boolean rcurlyFound = false;
             CsmTypedef[] typedefs;
+            AST child;
             for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
                 switch( token.getType() ) {
                     //case CPPTokenTypes.CSM_TEMPLATE_PARMLIST:
@@ -101,8 +105,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                     case CPPTokenTypes.CSM_CLASS_DECLARATION:
                     case CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION:
 			ClassImpl innerClass = TemplateUtils.isPartialClassSpecialization(token) ? 
-			    ClassImplSpecialization.create(token, getContainingNamespaceImpl(), getContainingFile(), ClassImpl.this) :
-			    ClassImpl.create(token, getContainingNamespaceImpl(), getContainingFile(), ClassImpl.this);
+			    ClassImplSpecialization.create(token, ClassImpl.this, getContainingFile()) :
+			    ClassImpl.create(token, ClassImpl.this, getContainingFile());
                         innerClass.setVisibility(curentVisibility);
                         addMember(innerClass);
                         typedefs = renderTypedef(token, innerClass, ClassImpl.this);
@@ -116,7 +120,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                         renderVariableInClassifier(token, innerClass, null, null);
                         break;
                     case CPPTokenTypes.CSM_ENUM_DECLARATION:
-                        EnumImpl innerEnum = EnumImpl.create(token, getContainingNamespaceImpl(), getContainingFile(), ClassImpl.this);
+                        EnumImpl innerEnum = EnumImpl.create(token, ClassImpl.this, getContainingFile());
                         innerEnum.setVisibility(curentVisibility);
                         addMember(innerEnum);
                         renderVariableInClassifier(token, innerEnum, null, null);
@@ -134,32 +138,82 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                         addMember(new DestructorImpl(token, ClassImpl.this, curentVisibility));
                         break;
                     case CPPTokenTypes.CSM_FIELD:
-                        if( renderVariable(token, null, null) ) {
-			    break;
-			}
-			typedefs = renderTypedef(token, (FileImpl) getContainingFile(), ClassImpl.this);
-			if( typedefs != null && typedefs.length > 0 ) {
-			    for (int i = 0; i < typedefs.length; i++) {
-				// It could be important to register in project before add as member...
-				((FileImpl)getContainingFile()).getProjectImpl().registerDeclaration(typedefs[i]);
-				addMember((MemberTypedef) typedefs[i]);
-			    }
-			    break;
-			}
-			if( renderBitField(token) ) {
-			    break;
-			}
+			child = token.getFirstChild();
+			if( child != null && child.getType() == CPPTokenTypes.LITERAL_friend) {
+                            addFriend(new FriendClassImpl(child, (FileImpl) getContainingFile(),ClassImpl.this));
+                        } else {
+                            if( renderVariable(token, null, null) ) {
+                                break;
+                            }
+                            typedefs = renderTypedef(token, (FileImpl) getContainingFile(), ClassImpl.this);
+                            if( typedefs != null && typedefs.length > 0 ) {
+                                for (int i = 0; i < typedefs.length; i++) {
+                                    // It could be important to register in project before add as member...
+                                    ((FileImpl)getContainingFile()).getProjectImpl().registerDeclaration(typedefs[i]);
+                                    addMember((MemberTypedef) typedefs[i]);
+                                }
+                                break;
+                            }
+                            if( renderBitField(token) ) {
+                                break;
+                            }
+                        }
                         break;
                     case CPPTokenTypes.CSM_FUNCTION_DECLARATION:
                     case CPPTokenTypes.CSM_USER_TYPE_CAST:
-			AST child = token.getFirstChild();
-			if( child != null && child.getType() != CPPTokenTypes.LITERAL_friend ) {
-			    addMember(new MethodImpl(token, ClassImpl.this, curentVisibility));
+			child = token.getFirstChild();
+			if( child != null) {
+                            if (child.getType() == CPPTokenTypes.LITERAL_friend) {
+                                CsmScope scope = ClassImpl.this.getScope();
+                                CsmFriendFunction friend;
+                                CsmFunction func;
+                                if (isMemberDefinition(token)) {
+                                    FriendFunctionImplEx impl = new FriendFunctionImplEx(token, ClassImpl.this, scope);
+                                    func = impl;
+                                    friend = impl;
+                                } else {
+                                    FriendFunctionImpl impl = new FriendFunctionImpl(token, ClassImpl.this, scope);
+                                    friend = impl;
+                                    func = impl;
+                                    if (scope instanceof NamespaceImpl) {
+                                        ((NamespaceImpl)scope).addDeclaration(func);
+                                    } else {
+                                        ((NamespaceImpl)getContainingFile().getProject().getGlobalNamespace()).addDeclaration(func);
+                                    }
+                                }
+                                //((FileImpl)getContainingFile()).addDeclaration(func);
+                                addFriend(friend);
+                            } else {
+                                addMember(new MethodImpl(token, ClassImpl.this, curentVisibility));
+                            }
 			}
                         break;
                     case CPPTokenTypes.CSM_FUNCTION_DEFINITION:
 		    case CPPTokenTypes.CSM_USER_TYPE_CAST_DEFINITION:
-                        addMember(new MethodDDImpl(token, ClassImpl.this, curentVisibility));
+			child = token.getFirstChild();
+			if( child != null && child.getType() == CPPTokenTypes.LITERAL_friend) {
+                            CsmScope scope = ClassImpl.this.getScope();
+                            CsmFriendFunction friend;
+                            CsmFunction func;
+                            if (isMemberDefinition(token)) {
+                                FriendFunctionDefinitionImpl impl = new FriendFunctionDefinitionImpl(token, ClassImpl.this, null);
+                                func = impl;
+                                friend = impl;
+                            } else {
+                                FriendFunctionDDImpl impl = new FriendFunctionDDImpl(token, ClassImpl.this, scope);
+                                friend = impl;
+                                func = impl;
+                                if (scope instanceof NamespaceImpl) {
+                                    ((NamespaceImpl)scope).addDeclaration(func);
+                                } else {
+                                    ((NamespaceImpl)getContainingFile().getProject().getGlobalNamespace()).addDeclaration(func);
+                                }
+                            }
+                            //((FileImpl)getContainingFile()).addDeclaration(func);
+                            addFriend(friend);
+                        } else {
+                            addMember(new MethodDDImpl(token, ClassImpl.this, curentVisibility));
+                        }
                         break;
                     case CPPTokenTypes.CSM_VISIBILITY_REDEF:
                         break;
@@ -249,29 +303,25 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 //        register();
 //    }
 
-    protected ClassImpl(AST ast, CsmFile file, CsmClass containingClass) {
+    protected ClassImpl(AST ast, CsmFile file) {
 	// we call findId(..., true) because there might be qualified name - in the case of nested class template specializations
         super(AstUtil.findId(ast, CPPTokenTypes.RCURLY, true), file, ast); 
 	kind = findKind(ast);
     }
     
-    protected void init(NamespaceImpl namespace, CsmClass containingClass, AST ast) {
-	super.init(namespace, containingClass, ast);
+    protected void init(CsmScope scope, AST ast) {
+	super.init(scope, ast);
         if (TraceFlags.USE_REPOSITORY) {
             RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
         }
         new ClassAstRenderer().render(ast);
         leftBracketPos = initLeftBracketPos(ast);
-        register();
+        register(scope);
     }
     
-    public static ClassImpl create(AST ast, NamespaceImpl namespace, CsmFile file) {
-	return create(ast, namespace, file, null);
-    }
-    
-    public static ClassImpl create(AST ast, NamespaceImpl namespace, CsmFile file, CsmClass containingClass) {
-	ClassImpl impl = new ClassImpl(ast, file, containingClass);
-	impl.init(namespace, containingClass, ast);
+    public static ClassImpl create(AST ast, CsmScope scope, CsmFile file) {
+	ClassImpl impl = new ClassImpl(ast, file);
+	impl.init(scope, ast);
 	return impl;
     }
 
@@ -288,6 +338,18 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
             return out;
         } else {
             return membersOLD;
+        }
+    }
+
+    public List<CsmFriend> getFriends() {
+        if (TraceFlags.USE_REPOSITORY) {
+            List<CsmFriend> out;
+            synchronized (friends) {
+                out = UIDCsmConverter.UIDsToDeclarations(friends);
+            }
+            return out;
+        } else {
+            return friendsOLD;
         }
     }
     
@@ -310,6 +372,18 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
             membersOLD.add(member);
         }
     }
+
+    private void addFriend(CsmFriend friend) {
+        if (TraceFlags.USE_REPOSITORY) {
+            CsmUID<CsmFriend> uid = RepositoryUtils.put(friend);
+            assert uid != null;
+            synchronized (friends) {
+                friends.add(uid);       
+            }
+        } else {
+            friendsOLD.add(friend);
+        }
+    }
     
     private int initLeftBracketPos(AST node) {
         AST lcurly = AstUtil.findChildOfType(node, CPPTokenTypes.LCURLY);
@@ -326,6 +400,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     
     public void dispose() {
         _clearMembers();
+        _clearFriends();
         super.dispose();
     }    
     
@@ -338,6 +413,18 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
             }
         } else {
             membersOLD.clear();
+        }        
+    }    
+
+    private void _clearFriends() {
+        List<CsmFriend> friends2dispose = getFriends();
+        Utils.disposeAll(friends2dispose);
+        if (TraceFlags.USE_REPOSITORY) {
+            synchronized (friends) {
+                RepositoryUtils.remove(this.friends);
+            }
+        } else {
+            friendsOLD.clear();
         }        
     }    
 
@@ -432,5 +519,6 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         }       
         return kind;
     }  
+
 }
 

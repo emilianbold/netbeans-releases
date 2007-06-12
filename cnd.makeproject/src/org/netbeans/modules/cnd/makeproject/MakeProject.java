@@ -172,7 +172,8 @@ public final class MakeProject implements Project, AntProjectListener {
             new NativeProjectProvider(this, projectDescriptorProvider),
 	    new RecommendedTemplatesImpl(),
             new MakeProjectOperations(this),
-            new FolderSearchInfo(projectDescriptorProvider)
+            new FolderSearchInfo(projectDescriptorProvider),
+            new MakeProjectType()
         });
     }
 

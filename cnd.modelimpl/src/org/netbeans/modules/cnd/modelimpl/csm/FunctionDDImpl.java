@@ -35,7 +35,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
  * for those cases, when they coinside (i.e. implivit inlines)
  * @author Vladimir Kvasihn
  */
-public final class FunctionDDImpl extends FunctionImpl<CsmFunctionDefinition> implements CsmFunctionDefinition {
+public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDefinition<T> {
     
     private final CsmCompoundStatement body;
 
@@ -56,10 +56,28 @@ public final class FunctionDDImpl extends FunctionImpl<CsmFunctionDefinition> im
         if( decl != null && decl.getKind() == CsmDeclaration.Kind.FUNCTION ) {
             return (CsmFunction) decl;
         }
-        else {
-            return this;
+        decl = findDeclaration(uname);
+        if( decl != null && decl.getKind() == CsmDeclaration.Kind.FUNCTION ) {
+            return (CsmFunction) decl;
         }
+        return this;
     }
+    
+    private CsmFunction findDeclaration(String uname){
+        if (getParameters().size()!=0){
+            CsmFile file = getContainingFile();
+            if (!ProjectBase.isCppFile(file)){
+                uname = uname.substring(0,uname.indexOf('('))+"()"; // NOI18N
+                CsmDeclaration decl = file.getProject().findDeclaration(uname);
+                if( (decl instanceof FunctionImpl) &&
+                        !((FunctionImpl)decl).isVoidParameterList()) {
+                    return (CsmFunction) decl;
+                }
+            }
+        }
+        return null;
+    }
+
     
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.FUNCTION_DEFINITION;

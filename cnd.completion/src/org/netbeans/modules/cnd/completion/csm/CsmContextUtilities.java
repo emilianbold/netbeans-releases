@@ -327,7 +327,7 @@ public class CsmContextUtilities {
         if (offsetInScope == CsmContext.CsmContextEntry.WHOLE_SCOPE) {
             return isInContext(fullContext, elem);
         } else if (CsmKindUtilities.isOffsetable(elem)) {
-            return ((CsmOffsetable)elem).getStartOffset() > offsetInScope || isInContext(fullContext, elem);
+            return ((CsmOffsetable)elem).getStartOffset() >= offsetInScope || isInContext(fullContext, elem);
         }
         return isInContext(fullContext, elem);
     }

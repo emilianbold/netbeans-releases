@@ -102,7 +102,7 @@ public interface CallStackFrame {
      *
      * @return local variables
      */
-   // public abstract LocalVariable[] getLocalVariables();
+    public abstract LocalVariable[] getLocalVariables();
 
     /**
      * Returns object reference this frame is associated with or null (
@@ -152,5 +152,13 @@ public interface CallStackFrame {
      * @return thread
      */
     //public abstract JPDAThread getThread();
+    
+    public abstract void invalidateCache();
+    
+    public abstract void addType(String key);
+    
+    public abstract void addType(String key, String value);
+    
+    public abstract Object getType(String key);
 }
  

@@ -110,7 +110,7 @@ public class ParserQueue {
     }
     
     private static class Queue {
-        
+        private Map<FileImpl,Entry> storage = new HashMap<FileImpl,Entry>();
         private Entry head;
         private Entry tail;
         
@@ -124,6 +124,8 @@ public class ParserQueue {
         }
         
         public void addFirst(Entry e) {
+            Entry old = storage.put(e.file,e);
+            assert old == null : "only one entry per file must be in queue " + e.file;
             link(e, head);
             head = e;
             if( tail == null ) {
@@ -137,6 +139,8 @@ public class ParserQueue {
                 assert head == null;
                 addFirst(e);
             } else {
+                Entry old = storage.put(e.file,e);
+                assert old == null : "only one entry per file must be in queue " + e.file;
                 link(tail, e);
                 tail = e;
             }
@@ -144,6 +148,8 @@ public class ParserQueue {
         }
         
         public void remove(Entry e) {
+            Entry old = storage.remove(e.file);
+            assert old != null : "there were no entry in queue for file " + e.file;
             link(e.prev, e.next);
             if( head == e ) {
                 head = e.next;
@@ -162,6 +168,7 @@ public class ParserQueue {
         }
         
         public void clear() {
+            storage.clear();
             head = tail = null;
         }
         
@@ -174,12 +181,13 @@ public class ParserQueue {
         }
         
         public Entry find(FileImpl file) {
-            for( Entry curr = head; curr != null; curr = curr.next ) {
-                if( curr.getFile() == file ) {
-                    return curr;
-                }
-            }
-            return null;
+            return storage.get(file);
+//            for( Entry curr = head; curr != null; curr = curr.next ) {
+//                if( curr.getFile() == file ) {
+//                    return curr;
+//                }
+//            }
+//            return null;
         }
         
         public Entry poll() {
@@ -561,7 +569,7 @@ public class ParserQueue {
     private boolean needEnqueue(FileImpl file) {
         // we know, that each file is parsed only once =>
         // let's speed up work with queue ~75% by skipping such files
-        return !file.isParsingOrParsed();
+        return !file.isParsed();
     }
     
     private void fireFileParsingFinished(FileImpl file) {

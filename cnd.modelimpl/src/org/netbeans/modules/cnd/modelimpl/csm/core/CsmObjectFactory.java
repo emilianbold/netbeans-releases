@@ -22,6 +22,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassForwardDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ConstructorDefinitionImpl;
@@ -32,6 +33,11 @@ import org.netbeans.modules.cnd.modelimpl.csm.DestructorImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumeratorImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FieldImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.FriendClassImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.FriendFunctionDDImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.FriendFunctionDefinitionImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.FriendFunctionImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.FriendFunctionImplEx;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionDDImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImpl;
@@ -125,10 +131,18 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                     } else if (object instanceof ConstructorDefinitionImpl) {
                         aHandler = CONSTRUCTOR_DEF_IMPL;
                     } else {
-                        aHandler = FUNCTION_DEF_IMPL;
+                        if (object instanceof CsmFriendFunction) {
+                            aHandler = FRIEND_FUNCTION_DEF_IMPL;
+                        } else {
+                            aHandler = FUNCTION_DEF_IMPL;
+                        }
                     }
                 } else {
-                    aHandler = FUNCTION_IMPL_EX;
+                    if (object instanceof CsmFriendFunction) {
+                        aHandler = FRIEND_FUNCTION_IMPL_EX;
+                    } else {
+                        aHandler = FUNCTION_IMPL_EX;
+                    }
                 }
             } else if (object instanceof MethodImpl) {
                 // we have several MethodImpl subclusses
@@ -147,9 +161,17 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                     aHandler = METHOD_IMPL;
                 }                
             } else if (object instanceof FunctionDDImpl) {
+                if (object instanceof CsmFriendFunction) {
+                    aHandler = FRIEND_FUNCTION_DEF_DECL_IMPL;
+                } else {
                 aHandler = FUNCTION_DEF_DECL_IMPL;
+                }
             } else {
-                aHandler = FUNCTION_IMPL;
+                if (object instanceof CsmFriendFunction) {
+                    aHandler = FRIEND_FUNCTION_IMPL;
+                } else {
+                    aHandler = FUNCTION_IMPL;
+                }
             }
         } else if (object instanceof VariableImpl) {
             // we have several VariableImpl subclasses
@@ -168,6 +190,8 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             aHandler = INCLUDE_IMPL;
         } else if (object instanceof MacroImpl) {
             aHandler = MACRO_IMPL;
+        } else if (object instanceof FriendClassImpl) {
+            aHandler = FRIEND_CLASS_IMPL;
         } else {
             throw new IllegalArgumentException("instance of unknown class " + object.getClass().getName());  //NOI18N
         }
@@ -309,7 +333,27 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             case MACRO_IMPL:
                 obj = new MacroImpl(stream);
                 break;
+
+            case FRIEND_CLASS_IMPL:
+                obj = new FriendClassImpl(stream);
+                break;
+
+            case FRIEND_FUNCTION_IMPL:
+                obj = new FriendFunctionImpl(stream);
+                break;
                 
+            case FRIEND_FUNCTION_IMPL_EX:
+                obj = new FriendFunctionImplEx(stream);
+                break;
+                
+            case FRIEND_FUNCTION_DEF_IMPL:
+                obj = new FriendFunctionDefinitionImpl(stream);
+                break;
+
+            case FRIEND_FUNCTION_DEF_DECL_IMPL:
+                obj = new FriendFunctionDDImpl(stream);
+                break;
+
             default:
                 throw new IllegalArgumentException("unknown handler" + handler);  //NOI18N
         }
@@ -348,18 +392,25 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     private static final int USING_DECLARATION_IMPL         = NAMESPACE_ALIAS_IMPL + 1;
     private static final int USING_DIRECTIVE_IMPL           = USING_DECLARATION_IMPL + 1;
     private static final int CLASS_FORWARD_DECLARATION_IMPL = USING_DIRECTIVE_IMPL + 1;   
+    private static final int FRIEND_CLASS_IMPL              = CLASS_FORWARD_DECLARATION_IMPL + 1;   
                 
     // functions
-    private static final int FUNCTION_IMPL                  = CLASS_FORWARD_DECLARATION_IMPL + 1;
+    private static final int FUNCTION_IMPL                  = FRIEND_CLASS_IMPL + 1;
     private static final int FUNCTION_IMPL_EX               = FUNCTION_IMPL + 1;
     
     //// function definitons 
     private static final int DESTRUCTOR_DEF_IMPL            = FUNCTION_IMPL_EX + 1;
     private static final int CONSTRUCTOR_DEF_IMPL           = DESTRUCTOR_DEF_IMPL + 1;
     private static final int FUNCTION_DEF_IMPL              = CONSTRUCTOR_DEF_IMPL + 1;
+
+    //// friends
+    private static final int FRIEND_FUNCTION_IMPL           = FUNCTION_DEF_IMPL + 1;
+    private static final int FRIEND_FUNCTION_IMPL_EX        = FRIEND_FUNCTION_IMPL + 1;
+    private static final int FRIEND_FUNCTION_DEF_IMPL       = FRIEND_FUNCTION_IMPL_EX + 1;
+    private static final int FRIEND_FUNCTION_DEF_DECL_IMPL  = FRIEND_FUNCTION_DEF_IMPL + 1;
     
     //// methods
-    private static final int DESTRUCTOR_DEF_DECL_IMPL       = FUNCTION_DEF_IMPL + 1;
+    private static final int DESTRUCTOR_DEF_DECL_IMPL       = FRIEND_FUNCTION_DEF_DECL_IMPL + 1;
     private static final int METHOD_DEF_DECL_IMPL           = DESTRUCTOR_DEF_DECL_IMPL + 1;
     private static final int CONSTRUCTOR_IMPL               = METHOD_DEF_DECL_IMPL + 1;
     private static final int DESTRUCTOR_IMPL                = CONSTRUCTOR_IMPL + 1;

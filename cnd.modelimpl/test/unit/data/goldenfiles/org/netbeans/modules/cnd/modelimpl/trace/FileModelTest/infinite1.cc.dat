@@ -51,9 +51,6 @@ CLASS B (B ) [2:1/1-6:3/47] lcurly=13
         CLASS D (B::D ) [3:5/19-5:7/44] lcurly=27
             BASE CLASSES:
             MEMBERS:
-CLASS D (B::D ) [3:5/19-5:7/44] lcurly=27
-    BASE CLASSES:
-    MEMBERS:
 CLASS A (A ) [14:1/92-16:3/124] lcurly=104
     BASE CLASSES:
         CLASS=B VISIBILITY==private virtual==false text='B'

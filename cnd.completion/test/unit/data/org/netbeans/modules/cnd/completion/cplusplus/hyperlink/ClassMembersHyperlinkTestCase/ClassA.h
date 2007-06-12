@@ -56,9 +56,20 @@ private:
     ClassA& operator- (const ClassA& obj); // in test testOperators
     
 private:
-    void classMethod();
+    ClassA* classMethodRetClassAPtr();
+    const ClassA& classMethodRetClassARef();
     
+    typedef int myInnerInt;
+
+    myInt classMethodRetMyInt();
     
+    myInnerInt classMethodRetMyInnerInt();
+    
+private:
+    friend ostream& operator<< (ostream&, const ClassA&);
+
+public:
+    friend void friendFoo();
 };
 
-
+typedef int myInt;

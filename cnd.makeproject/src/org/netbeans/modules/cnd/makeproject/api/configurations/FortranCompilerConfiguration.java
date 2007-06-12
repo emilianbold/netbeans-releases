@@ -46,7 +46,7 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
 	// BasicCompilerConfiguration
 	clone.setDevelopmentMode((IntConfiguration)getDevelopmentMode().clone());
 	clone.setWarningLevel((IntConfiguration)getWarningLevel().clone());
-	clone.setSixtyfourBits((BooleanConfiguration)getSixtyfourBits().clone());
+	clone.setSixtyfourBits((IntConfiguration)getSixtyfourBits().clone());
 	clone.setStrip((BooleanConfiguration)getStrip().clone());
 	clone.setAdditionalDependencies((StringConfiguration)getAdditionalDependencies().clone());
 	clone.setTool((StringConfiguration)getTool().clone());

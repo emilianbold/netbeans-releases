@@ -16,5 +16,6 @@ void foo() {
      // <- test text is inserted here
     ClassA::EN en;
     en = ClassA::ONE;
+    ClassA aa;
      // <- test text is inserted here
 }

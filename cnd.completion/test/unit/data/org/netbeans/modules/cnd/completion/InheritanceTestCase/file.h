@@ -5,89 +5,63 @@
 class ClassC;
 
 class ClassA {
-    friend class ClassC;
-    public:
+public:
     int aPub;
-//    int static aPubSt;
     void aPubFun();
-//    void static aPubFunSt();
-    protected:
+protected:
     int aProt;
-//    int static aProtSt;
     void aProtFun() {}
-//    void static aProtFunSt();
-    private:
+private:
     int aPriv;
-//    int static aPrivSt;
     void aPrivFun() {}
-//    void static aPrivFunSt();
 };
  
 class ClassB : private ClassA {
-    friend void friendOfB();
-    public:
+public:
     int bPub;  
-//    int static bPubSt;
     void bPubFun() {}
-//    void static bPubFunSt();
-    protected:
+protected:
     int bProt;
-//    int static bProtSt;
     void bProtFun();
-//    void static bProtFunSt();
-    private:
+private:
     int bPriv;
-//    int static bPrivSt;
     void bPrivFun() {}
-//    void static bPrivFunSt();
 };
 
 class ClassC {
-    public:
+public:
     int cPub;   
-//    int static cPubSt;
     void cPubFun() {}
-//    void static cPubFunSt();
-    protected:
+protected:
     int cProt;
-//    int static cProtSt;
     void cProtFun() {}
-//    void static cProtFunSt();
-    private:
+private:
     int cPriv;
-//    int static cPrivSt;
     void cPrivFun();
-//    void static cPrivFunSt();
 };
  
 class ClassD : public ClassB, protected ClassC {
-    public:
+public:
     int dPub;
     void dPubFun();
-    protected:
+protected:
     int dProt;
     void dProtFun() {}
-    private:
+private:
     int dPriv;
     void dPrivFun() {}
 };
 
 class ClassE : protected ClassC {
-    public:
+public:
     int ePub;
-//    int static ePubSt;
     void ePubFun();
-//    void static ePubFunSt();
-    protected:
+protected:
     int eProt;
-//    int static eProtSt;
     void eProtFun() {}
-//    void static eProtFunSt();
-    private:
+private:
     int ePriv;
-//    int static ePrivSt;
     void ePrivFun() {}
-//    void static ePrivFunSt();
 };
 
 #endif

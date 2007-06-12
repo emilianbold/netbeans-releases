@@ -43,6 +43,7 @@ public class Folder {
     private ConfigurationDescriptor configurationDescriptor;
     private final String name;
     private String displayName;
+    private String sortName;
     private final Folder parent;
     private Vector items = null; // Folder or Item
     private Set<ChangeListener> changeListenerList = new HashSet<ChangeListener>();
@@ -56,6 +57,7 @@ public class Folder {
         this.displayName = displayName;
         this.projectFiles = projectFiles;
         this.items = new Vector();
+        this.sortName = displayName.toLowerCase();
     }
     
     public int size() {
@@ -74,8 +76,12 @@ public class Folder {
         return name;
     }
     
+    public String getSortName() {
+        return sortName;
+    }
+    
     public String getPath() {
-//        StringBuilder builder = new StringBuilder(getName()); 
+//        StringBuilder builder = new StringBuilder(getName());
 //        Folder parent = getParent();
 //        while (parent != null) {
 //            if (parent.getParent() != null) {
@@ -85,7 +91,7 @@ public class Folder {
 //            parent = parent.getParent();
 //        };
 //        return builder.toString();
-        StringBuilder builder2 = new StringBuilder(32); 
+        StringBuilder builder2 = new StringBuilder(32);
         reversePath(this, builder2);
         return builder2.toString();
     }
@@ -106,6 +112,8 @@ public class Folder {
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
         configurationDescriptor.setModified();
+        sortName = displayName.toLowerCase();
+        getParent().reInsertElement(this);
     }
     
     public ConfigurationDescriptor getConfigurationDescriptor() {
@@ -124,41 +132,78 @@ public class Folder {
         return items;
     }
     
+    public void reInsertElement(Object element) {
+        int index = items.indexOf(element);
+        if (index < 0)
+            return;
+        items.remove(element);
+        if (element instanceof Folder)
+            insertFolderElement((Folder)element);
+        else if (element instanceof Item)
+            insertItemElement((Item)element);
+        else
+            assert false;
+        fireChangeEvent();
+    }
+    
+    private void insertFolderElement(Folder element) {
+        if (!element.isProjectFiles()) {
+            // Insert last
+            items.add(element);
+            return;
+        }
+        String name1 = element.getSortName();
+        int indexAt = items.size() - 1;
+        while (indexAt >= 0) {
+            Object o = items.elementAt(indexAt);
+            if (!(o instanceof Folder)) {
+                indexAt--;
+                continue;
+            }
+            if (!((Folder)o).isProjectFiles()) {
+                indexAt--;
+                break;
+            }
+            String name2 = ((Folder)o).getSortName();
+            int compareRes = name1.compareTo(name2);
+            if (compareRes < 0) {
+                indexAt--;
+                continue;
+            }
+            break;
+        }
+        items.add(indexAt+1, element);
+    }
+    
+    private void insertItemElement(Item element) {
+        String name1 = ((Item)element).getSortName();
+        int indexAt = items.size() - 1;
+        while (indexAt >= 0) {
+            Object o = items.elementAt(indexAt);
+            if (!(o instanceof Item)) {
+                //indexAt--;
+                break;
+            }
+            String name2 = ((Item)o).getSortName();
+            int compareRes = name1.compareTo(name2);
+            if (compareRes < 0) {
+                indexAt--;
+                continue;
+            }
+            break;
+        }
+        items.add(indexAt+1, element);
+    }
+    
     public void addElement(Object element) { // FIXUP: shopuld be private
         // Always keep the vector sorted
         int indexAt = -1;
         if (element instanceof Item) {
-            String name1 = ((Item)element).getSortName();
-            indexAt = 0;
-            while (indexAt < items.size()) {
-                Object o = items.elementAt(indexAt);
-                if (!(o instanceof Item)) {
-                    indexAt++;
-                    continue;
-                }
-                String name2 = ((Item)o).getSortName();
-                int compareRes = name1.compareTo(name2);
-                if (compareRes > 0) {
-                    indexAt++;
-                    continue;
-                }
-                break;
-            }
+            insertItemElement((Item)element);
         } else if (element instanceof Folder) {
-            if (((Folder)element).isProjectFiles()) {
-                Object lastElement = null;
-                if (items.size() > 0) {
-                    lastElement = items.elementAt(items.size()-1);
-                    if (lastElement instanceof Folder && !((Folder)lastElement).isProjectFiles()) {
-                        indexAt = items.size() - 1;
-                    }
-                }
-            }
-        }
-        if (indexAt >= 0) {
-            items.add(indexAt, element);
+            insertFolderElement((Folder)element);
         } else {
-            items.add(element);
+            assert false;
         }
         fireChangeEvent();
     }
@@ -251,8 +296,7 @@ public class Folder {
                 if (parentFolderConfiguration != null) {
                     parentCCompilerConfiguration = parentFolderConfiguration.getCCompilerConfiguration();
                     parentCCCompilerConfiguration = parentFolderConfiguration.getCCCompilerConfiguration();
-                }
-                else {
+                } else {
                     parentCCompilerConfiguration = ((MakeConfiguration)configuration).getCCompilerConfiguration();
                     parentCCCompilerConfiguration = ((MakeConfiguration)configuration).getCCCompilerConfiguration();
                 }
@@ -288,7 +332,7 @@ public class Folder {
             ((MakeConfigurationDescriptor)configurationDescriptor).fireFilesRemoved(list);
         return removeItem(item);
     }
-
+    
     public void renameItemAction(String oldPath, Item newItem) {
         ((MakeConfigurationDescriptor)configurationDescriptor).fireFileRenamed(oldPath, newItem);
     }
@@ -345,7 +389,7 @@ public class Folder {
         ((MakeConfigurationDescriptor)configurationDescriptor).fireFilesRemoved(folder.getAllItemsAsList());
         return removeFolder(folder);
     }
-
+    
     public boolean removeFolder(Folder folder) {
         boolean ret = false;
         if (folder != null) {
@@ -421,8 +465,7 @@ public class Folder {
             if (folder == null)
                 return null;
             return folder.findFolderByPath(path.substring(i+1));
-        }
-        else
+        } else
             return findFolderByName(path);
     }
     

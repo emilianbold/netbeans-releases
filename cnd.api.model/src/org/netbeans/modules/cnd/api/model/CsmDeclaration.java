@@ -66,6 +66,8 @@ public interface CsmDeclaration<T> extends CsmQualifiedNamedElement,
         public static final Kind USING_DECLARATION = new Kind("USING_DECLARATION"); // NOI18N
         
         public static final Kind CLASS_FORWARD_DECLARATION = new Kind("CLASS_FORWARD_DECLARATION"); // NOI18N
+
+        public static final Kind CLASS_FRIEND_DECLARATION = new Kind("CLASS_FRIEND_DECLARATION"); // NOI18N
     }
     
     Kind getKind();

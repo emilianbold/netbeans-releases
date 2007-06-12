@@ -33,11 +33,11 @@ public abstract class AbstractDiskRepository implements RepositoryWriter {
     
     public abstract void remove(Key id);
     
-    public abstract void closeUnit(String unitName);
+    public abstract void closeUnit(String unitName, boolean cleanRepository);
     
     
     //public abstract void put(Key id, Persistent obj);
     
-    public abstract void shutdown();
+    public abstract void shutdown(boolean clean);
     
 }

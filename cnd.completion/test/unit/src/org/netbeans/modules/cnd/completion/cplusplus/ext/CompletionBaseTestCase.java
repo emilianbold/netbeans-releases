@@ -21,11 +21,8 @@ package org.netbeans.modules.cnd.completion.cplusplus.ext;
 
 import java.io.File;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.util.Arrays;
-import org.netbeans.junit.Manager;
 import org.netbeans.modules.cnd.completion.test.ProjectBasedTestCase;
-import org.netbeans.modules.cnd.modelimpl.trace.TestModelHelper;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.modules.editor.completion.CompletionItemComparator;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -36,12 +33,13 @@ import org.netbeans.spi.editor.completion.CompletionItem;
  * @author Vladimir Voskresensky
  */
 public abstract class CompletionBaseTestCase extends ProjectBasedTestCase {
-
+    
     /**
-     * Creates a new instance of CompletionBaseTestCase
+     * if test performs any modifications in data files or create new files
+     * => pass performInWorkDir as true to create local copy of project in work dir
      */
-    public CompletionBaseTestCase(String testName) {
-        super(testName);
+    public CompletionBaseTestCase(String testName, boolean performInWorkDir) {
+        super(testName, performInWorkDir);
     }
     
     @Override
@@ -74,7 +72,8 @@ public abstract class CompletionBaseTestCase extends ProjectBasedTestCase {
         PrintStream streamOut = new PrintStream(output);
         
         CompletionItem[] array = new CompletionTestPerformer().test(logWriter, textToInsert, false, testFile, lineIndex, colIndex); // NOI18N        
-        
+
+	assertNotNull("Result should not be null", array);
         Arrays.sort(array, CompletionItemComparator.BY_PRIORITY);
         for (int i = 0; i < array.length; i++) {
             CompletionItem completionItem = array[i];

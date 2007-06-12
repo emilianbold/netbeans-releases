@@ -26,7 +26,7 @@ import java.util.List;
  * Represents function definition
  * @author Vladimir Kvashin
  */
-public interface CsmFunctionDefinition extends CsmFunction<CsmFunctionDefinition>, CsmScope {
+public interface CsmFunctionDefinition<T> extends CsmFunction<T>, CsmScope {
 
     /** Returns this function declaration */
     CsmFunction getDeclaration();

@@ -34,6 +34,7 @@ public class CCCompletionTestFailed extends BaseTestSuite {
         
         this.addTestSuite(InheritanceTestCase.Failed.class);
         this.addTestSuite(EnumTestCase.Failed.class);
+        this.addTestSuite(StaticMembersTestCase.Failed.class);
     }
 
     public static Test suite() {

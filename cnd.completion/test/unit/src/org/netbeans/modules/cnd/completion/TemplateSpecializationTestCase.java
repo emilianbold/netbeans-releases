@@ -28,7 +28,7 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionBaseTestCase;
 public class TemplateSpecializationTestCase extends CompletionBaseTestCase {
     
     public TemplateSpecializationTestCase(String testName) {
-        super(testName);
+        super(testName, false);
     }
     
     public void testInFunctionAfterUnderscore() throws Exception {

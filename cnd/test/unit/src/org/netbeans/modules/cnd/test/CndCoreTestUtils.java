@@ -135,6 +135,23 @@ public class CndCoreTestUtils {
         is.close();
     }         
     
+    public static void copyDirToWorkDir(File sourceDir, File toDir) throws IOException {
+        assert (sourceDir.isDirectory());
+        assert (sourceDir.exists());
+        toDir.mkdirs();
+        assert (toDir.isDirectory());
+        File files[] = sourceDir.listFiles();
+        for (int i = 0; i < files.length; i++) {
+            File curFile = files[i];
+            File newFile = new File(toDir, curFile.getName());
+            if (curFile.isDirectory()) {
+                copyDirToWorkDir(curFile, newFile);
+            } else {
+                copyToWorkDir(curFile, newFile);
+            }
+        }        
+    }  
+    
     public static boolean diff(File first, File second, File diff) throws IOException {
         return Manager.getSystemDiff().diff(first, second, diff);
     }

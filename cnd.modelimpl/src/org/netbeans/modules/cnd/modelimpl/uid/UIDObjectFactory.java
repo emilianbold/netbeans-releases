@@ -293,7 +293,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             }
             break;
             default:
-                throw new IllegalArgumentException("The UID is an instance of unknow class"); //NOI18N
+                throw new IllegalArgumentException("The UID is an instance of unknown class: " + handler); //NOI18N
         }
         if (share) {
             assert anUID != null;

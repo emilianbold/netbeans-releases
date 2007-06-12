@@ -30,7 +30,7 @@ import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
-import org.netbeans.modules.cnd.api.model.util.CsmInheritanceUtilities;
+import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import java.util.ArrayList;
@@ -514,7 +514,7 @@ public final class CsmProjectContentResolver {
         return res;
     }
     
-    public List/*<CsmEnumerator>*/ getEnumerators(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean staticOnly, boolean match, boolean inspectParentClasses) {
+    public List/*<CsmEnumerator>*/ getEnumerators(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean match, boolean inspectParentClasses) {
         boolean sort = isSortNeeded();
         // get all enums and check theirs enumerators
         List enums = getClassMembers(clazz, contextDeclaration, CsmDeclaration.Kind.ENUM, "", false, false, inspectParentClasses);
@@ -729,9 +729,8 @@ public final class CsmProjectContentResolver {
     }
     
     private List filterFunctionDefinitions(List funs) {
-        List out = funs;
-        if (funs != null && funs.size() > 1) {
-            out = new ArrayList();
+        List out = new ArrayList();
+        if (funs != null && funs.size() > 0) {
             for (Iterator it = funs.iterator(); it.hasNext();) {
                 CsmObject fun = (CsmObject) it.next();
                 if (!CsmKindUtilities.isFunctionDefinition(fun) ||

@@ -113,7 +113,8 @@ public class CompletionTestPerformer {
         CsmCompletionQuery query = CsmCompletionProvider.getCompletionQuery();
         CsmCompletionQuery.CsmCompletionResult res = (CsmCompletionQuery.CsmCompletionResult)query.query(editor, doc, caretOffset, support, false, !unsorted);
         
-        CompletionItem[] array =  (CompletionItem[])res.getData().toArray(new CompletionItem[res.getData().size()]);
+        CompletionItem[] array =  res == null ? new CompletionItem[0] : (CompletionItem[])res.getData().toArray(new CompletionItem[res.getData().size()]);
+        assert array != null;
         return array;
     }
     
@@ -149,8 +150,13 @@ public class CompletionTestPerformer {
         int offset = CndCoreTestUtils.getDocumentOffset(doc, lineIndex, colIndex);
         
         if (textToInsert.length() > 0) {
-            doc.insertString(offset, textToInsert, null);
-            reparseDocument((DataObject) doc.getProperty(doc.StreamDescriptionProperty));
+            doc.atomicLock();
+            try {
+                doc.insertString(offset, textToInsert, null);
+            } finally {
+                doc.atomicUnlock();
+            }
+            saveDocument((DataObject) doc.getProperty(doc.StreamDescriptionProperty));
             offset += textToInsert.length();
         }
         if (editor != null) {
@@ -202,7 +208,7 @@ public class CompletionTestPerformer {
                 log.flush();
             }
             //((CloseCookie) testFile.getCookie(CloseCookie.class)).close();
-            return array[0];
+            return array[0] == null ? new CompletionItem[0] : array[0];
         } catch (Exception e) {
             e.printStackTrace(log);
             throw e;
@@ -217,16 +223,6 @@ public class CompletionTestPerformer {
         }
         log.println("File found: " + csmFile);
         return test;
-    }
-    
-    private static void reparseDocument(DataObject file) throws IOException {
-        saveDocument(file);
-        // XXX waiting to reparse - should be repalaced by smtg more sofisticated
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            
-        }
     }
     
     private static void saveDocument(DataObject file) throws IOException { //!!!WARNING: if this exception is thrown, the test may be locked (the file in editor may be modified, but not saved. problems with IDE finishing are supposed in this case).

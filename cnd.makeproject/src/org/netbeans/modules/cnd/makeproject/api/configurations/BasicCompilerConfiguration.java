@@ -62,10 +62,18 @@ public class BasicCompilerConfiguration {
 	getString("SomeWarningsTxt"),
 	getString("MoreWarningsTxt"),
 	getString("ConvertWarningsTxt"),
-    }; // FIXUP: from Bundle
+    };
     private IntConfiguration warningLevel;
 
-    private BooleanConfiguration sixtyfourBits;
+    public static int BITS_DEFAULT = 0;
+    public static int BITS_32 = 1;
+    public static int BITS_64 = 2;
+    private static final String[] BITS_NAMES = {
+	getString("BITS_DEFAULT"),
+	getString("BITS_32"),
+	getString("BITS_64"),
+    };
+    private IntConfiguration sixtyfourBits;
     private BooleanConfiguration strip;
     private StringConfiguration additionalDependencies;
     private StringConfiguration tool;
@@ -77,7 +85,7 @@ public class BasicCompilerConfiguration {
 	this.master = master;
 	developmentMode = new IntConfiguration(master != null ? master.getDevelopmentMode() : null, DEVELOPMENT_MODE_DEBUG, DEVELOPMENT_MODE_NAMES, null);
 	warningLevel = new IntConfiguration(master != null ? master.getWarningLevel() : null, WARNING_LEVEL_DEFAULT, WARNING_LEVEL_NAMES, null);
-	sixtyfourBits = new BooleanConfiguration(master != null ? master.getSixtyfourBits() : null, false, "", ""); // NOI18N
+	sixtyfourBits = new IntConfiguration(master != null ? master.getSixtyfourBits() : null, BITS_DEFAULT, BITS_NAMES, null);
 	strip = new BooleanConfiguration(master != null ? master.getStrip() : null, false, "", ""); // NOI18N
 	additionalDependencies = new StringConfiguration(master != null ? master.getAdditionalDependencies() : null, ""); // NOI18N
 	tool = new StringConfiguration(master != null ? master.getTool() : null, ""); // NOI18N
@@ -135,10 +143,10 @@ public class BasicCompilerConfiguration {
 
 
     // SixtyfourBits
-    public void setSixtyfourBits(BooleanConfiguration sixtyfourBits) {
+    public void setSixtyfourBits(IntConfiguration sixtyfourBits) {
 	this.sixtyfourBits = sixtyfourBits;
     }
-    public BooleanConfiguration getSixtyfourBits() {
+    public IntConfiguration getSixtyfourBits() {
 	return sixtyfourBits;
     }
 
@@ -225,7 +233,7 @@ public class BasicCompilerConfiguration {
 	BasicCompilerConfiguration clone = new BasicCompilerConfiguration(getBaseDir(), getMaster());
 	clone.setDevelopmentMode((IntConfiguration)getDevelopmentMode().clone());
 	clone.setWarningLevel((IntConfiguration)getWarningLevel().clone());
-	clone.setSixtyfourBits((BooleanConfiguration)getSixtyfourBits().clone());
+	clone.setSixtyfourBits((IntConfiguration)getSixtyfourBits().clone());
 	clone.setStrip((BooleanConfiguration)getStrip().clone());
 	clone.setAdditionalDependencies((StringConfiguration)getAdditionalDependencies().clone());
 	clone.setTool((StringConfiguration)getTool().clone());
@@ -242,7 +250,7 @@ public class BasicCompilerConfiguration {
 	set.setShortDescription(getString("BasicOptionsHint"));
 	set.put(new IntNodeProp(getDevelopmentMode(), true, "DevelopmentMode", getString("DevelopmentModeTxt"), getString("DevelopmentModeHint"))); // NOI18N
 	set.put(new IntNodeProp(getWarningLevel(), true, "WarningLevel", getString("WarningLevelTxt"), getString("WarningLevelHint"))); // NOI18N
-	set.put(new BooleanNodeProp(getSixtyfourBits(), getMaster() != null ? false : true, "64BitArchitecture", getString("64BitArchitectureTxt"), getString("64BitArchitectureHint"))); // NOI18N
+	set.put(new IntNodeProp(getSixtyfourBits(), true, "64BitArchitecture", getString("64BitArchitectureTxt"), getString("64BitArchitectureHint"))); // NOI18N
 	set.put(new BooleanNodeProp(getStrip(), true, "StripSymbols", getString("StripSymbolsTxt"), getString("StripSymbolsHint"))); // NOI18N
 	return set;
     }

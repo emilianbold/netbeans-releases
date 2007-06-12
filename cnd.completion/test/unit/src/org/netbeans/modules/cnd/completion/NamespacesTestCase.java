@@ -31,12 +31,12 @@ public class NamespacesTestCase extends CompletionBaseTestCase {
      * Creates a new instance of NamespacesTestCase
      */
     public NamespacesTestCase(String testName) {
-        super(testName);
+        super(testName, true);
     }
     
     public void testInFunction() throws Exception {
         super.performTest("file.cc", 5, 5);
-    }       
+    }        
     
     public void testInFunctionNsS1AsPrefix() throws Exception {
         // IZ84115: "Code Completion" works incorrectly with namespaces

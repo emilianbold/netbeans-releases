@@ -46,6 +46,10 @@ public class FileModelTest extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
     
+    public void testFriendsDeclaration() throws Exception {
+        performTest("friend.cc"); // NOI18N
+    }
+    
     public void testDummy() throws Exception {
         performTest("dummy.cc"); // NOI18N
     }
@@ -76,6 +80,14 @@ public class FileModelTest extends TraceModelTestBase {
     
     public void testResolverInfiniteLoop3() throws Exception {
 	performTest("infinite3.cc"); // NOI18N
+    }
+
+    public void testCdeclAndPointerReturnType() throws Exception {
+	performTest("cdecl_and_poniter_return_type.cc"); // NOI18N
+    }
+    
+    public void testNestedClassesAndEnums_1() throws Exception {
+	performTest("nested_classes_and_enums_1.cc"); // NOI18N
     }
     
     /////////////////////////////////////////////////////////////////////
@@ -114,11 +126,15 @@ public class FileModelTest extends TraceModelTestBase {
 	    performTest("function_pointer_as_var_type.cc"); // NOI18N
 	}
 	
+	public void testFunctionPointerMisc() throws Exception {
+	    performTest("function_pointer_misc.cc"); // NOI18N
+	}
+	
 	protected void postSetUp() {
 	    // init flags needed for file model tests
 	    getTraceModel().setDumpModel(true);
 	    getTraceModel().setDumpPPState(true);
-	}	
+	}
    }
     
 }

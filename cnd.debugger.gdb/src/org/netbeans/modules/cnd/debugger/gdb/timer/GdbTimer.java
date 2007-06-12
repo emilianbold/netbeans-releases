@@ -32,7 +32,7 @@ public abstract class GdbTimer {
     
     public enum TimerType {Dummy, Default, Custom};
     
-    private static boolean enabled = Boolean.getBoolean("org.netbeans.modules.cnd.gdb.GdbTimer");
+    private static boolean enabled = Boolean.getBoolean("org.netbeans.modules.cnd.gdb.timer.GdbTimer");
     
     private static GdbTimer dummy = new GdbDummyTimer();
     
@@ -42,7 +42,7 @@ public abstract class GdbTimer {
     
     /** GdbTimer factory */
     public static GdbTimer getTimer(String name) {
-        if (Boolean.getBoolean("org.netbeans.modules.cnd.gdb.GdbTimer." + name)) {
+        if (Boolean.getBoolean("org.netbeans.modules.cnd.gdb.timer.GdbTimer." + name)) {
             GdbTimer timer = map.get(name);
             
             if (timer == null) {

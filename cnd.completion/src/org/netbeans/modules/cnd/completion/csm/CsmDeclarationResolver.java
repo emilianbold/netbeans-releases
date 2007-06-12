@@ -28,8 +28,6 @@ import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import java.util.Iterator;
@@ -129,7 +127,12 @@ public class CsmDeclarationResolver {
             it = ((CsmNamespaceDefinition) outDecl).getDeclarations().iterator();
         } else if (CsmKindUtilities.isClass(outDecl)) {
             CsmClass cl  = (CsmClass)outDecl;
-            it = cl.getMembers().iterator();
+            List list = cl.getMembers();
+            if (cl.getFriends().size() > 0) {
+                // combine friends with members for search
+                list.addAll(cl.getFriends());
+            }
+            it = list.iterator();
         }
         if (it != null) {
             // continue till has next and not yet found

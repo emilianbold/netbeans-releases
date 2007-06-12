@@ -53,14 +53,8 @@ import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.editor.parser.FoldingParser;
-import org.netbeans.modules.cnd.loaders.CCDataLoader;
-import org.netbeans.modules.cnd.loaders.CDataLoader;
-import org.netbeans.modules.cnd.loaders.HDataLoader;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
@@ -253,7 +247,7 @@ public class TraceModel {
 			getProject().dispose();
 			((ModelImpl) CsmModelAccessor.getModel()).removeProject(platformProject);
 		}
-		setProject(model.addProject("DummyPrjId", "DummyProject")); // NOI18N
+		setProject(model.addProject("DummyPrjId", "DummyProject", true)); // NOI18N
 	}
 	
 	private boolean processFlag(char flag, String argRest) {
@@ -618,9 +612,9 @@ public class TraceModel {
 		if( showMemoryUsage ) {
 			showMemoryUsage(memUsed);
 		}
-		//if( showTime || showMemoryUsage ) {
-		print("\n"); // NOI18N
-		//}
+		if( showTime || showMemoryUsage || dumpModel || dumpFileOnly || dumpPPState) {
+                    print("\n"); // NOI18N
+		}
 		if (dumpStatistics) {
 			if (this.dumpFile != null) {
 				try {

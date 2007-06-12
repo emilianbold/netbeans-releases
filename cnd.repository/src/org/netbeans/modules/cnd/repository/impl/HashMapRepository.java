@@ -66,7 +66,7 @@ public class HashMapRepository implements Repository {
         map.clear();
     }
 
-    public void closeUnit(String unitName) {
+    public void closeUnit(String unitName, boolean cleanRepository) {
         // do nothing
     }
     

@@ -20,7 +20,7 @@
 package org.netbeans.modules.cnd.qnavigator.navigator;
 
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
 /**
  *
@@ -36,11 +36,11 @@ public class NavigatorContent {
         this.curModel = curModel;
     }
 
-    AbstractNode getRoot(){
+    Node getRoot(){
         if (curModel != null) {
             return curModel.getRoot();
         }
-        return new AbstractNode(Children.LEAF);
+        return Node.EMPTY;
     }
     
     void repaint() {

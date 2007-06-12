@@ -14,7 +14,7 @@ void go(int a) {
 }
 
 void go(int a, double b) {
-    
+    friendFoo();    
 }
 
 int main(int argc, char** argv) {

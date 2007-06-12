@@ -44,12 +44,6 @@ public interface CsmClass extends CsmCompoundClassifier<CsmClass> {
 //    CsmClass.Kind  getClassKind();
     
     /**
-     * If this is nested class, returns the class,
-     * in which this class resides, otherwise null *
-     */
-    CsmClass getContainingClass();
-    
-    /**
      * Returns immutable collection of this class' members
      * Members migt be:
      *	fields
@@ -64,6 +58,8 @@ public interface CsmClass extends CsmCompoundClassifier<CsmClass> {
      */
     List<CsmMember> getMembers();
     
+    List<CsmFriend> getFriends();
+
     /** Returns the list of base classes */
     List<CsmInheritance> getBaseClasses();
     

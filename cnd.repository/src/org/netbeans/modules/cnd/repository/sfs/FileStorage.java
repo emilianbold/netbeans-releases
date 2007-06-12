@@ -56,7 +56,7 @@ public abstract class FileStorage {
     
     abstract public void put(Key key, Persistent object) throws IOException;
     
-    abstract public void remove(Key key);
+    abstract public void remove(Key key) throws IOException;
     
     abstract public long getSize() throws IOException;
 

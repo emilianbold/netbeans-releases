@@ -379,34 +379,35 @@ public class CsmIncludeProcessor implements TokenProcessor {
         return ret;
     }
     
-    /** Returns true if the given class is in the import statement directly or
-     *  indirectly (package.name.*)  */
-    public boolean isIncluded(CsmClass cls){
-        if (cls==null) return false;
-        
-        String clsFullName=cls.getQualifiedName();
-        String pkgName = cls.getContainingNamespace().getQualifiedName();
-        
-        if (name2Class.containsValue(cls)) return true;
-        
-        for (int i = 0; i<infoList.size(); i++){
-            CsmClassifier infoClass=((Info)infoList.get(i)).cls;
-            CsmNamespace infoPackage = ((Info)infoList.get(i)).pkg;
-            
-            if ((clsFullName!=null) && (infoClass!=null)){
-                if (clsFullName.equals(infoClass.getQualifiedName())){
-                    return true;
-                }
-            }
-            if ((pkgName!=null) && (infoPackage!=null)){
-                if (pkgName.equals(infoPackage.getName())){
-                    return true;
-                }
-            }
-            
-        }
-        return false;
-    }
+// VK: never used - commented this out
+//    /** Returns true if the given class is in the import statement directly or
+//     *  indirectly (package.name.*)  */
+//    public boolean isIncluded(CsmClass cls){
+//        if (cls==null) return false;
+//        
+//        String clsFullName=cls.getQualifiedName();
+//        String pkgName = cls.getContainingNamespace().getQualifiedName();
+//        
+//        if (name2Class.containsValue(cls)) return true;
+//        
+//        for (int i = 0; i<infoList.size(); i++){
+//            CsmClassifier infoClass=((Info)infoList.get(i)).cls;
+//            CsmNamespace infoPackage = ((Info)infoList.get(i)).pkg;
+//            
+//            if ((clsFullName!=null) && (infoClass!=null)){
+//                if (clsFullName.equals(infoClass.getQualifiedName())){
+//                    return true;
+//                }
+//            }
+//            if ((pkgName!=null) && (infoPackage!=null)){
+//                if (pkgName.equals(infoPackage.getName())){
+//                    return true;
+//                }
+//            }
+//            
+//        }
+//        return false;
+//    }
 
     public boolean token(TokenID tokenID, TokenContextPath tokenContextPath,
     int tokenBufferOffset, int tokenLen) {

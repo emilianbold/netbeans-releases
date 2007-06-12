@@ -49,8 +49,8 @@ public final class Unresolved implements Disposable {
     public static final class UnresolvedClass extends ClassEnumBase<CsmClass> implements CsmClass {
         public UnresolvedClass(String name, NamespaceImpl namespace, CsmFile file) {
             super(name, file, null);
-	    init(namespace, null, null);
-            register();
+	    init(namespace, null);
+            register(namespace);
         }
         public boolean isTemplate() {
             return false;
@@ -62,13 +62,13 @@ public final class Unresolved implements Disposable {
         public List<CsmMember> getMembers() {
             return Collections.<CsmMember>emptyList();
         }
+
+        public List<CsmFriend> getFriends() {
+            return Collections.<CsmFriend>emptyList();
+        }
         
         public int getLeftBracketOffset() {
             return 0;
-        }
-        
-        public CsmClass getContainingClass() {
-            return null;
         }
         
         public List<CsmInheritance> getBaseClasses() {

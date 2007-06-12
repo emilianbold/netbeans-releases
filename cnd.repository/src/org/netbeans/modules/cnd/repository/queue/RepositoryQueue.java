@@ -22,6 +22,8 @@ package org.netbeans.modules.cnd.repository.queue;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map.Entry;
+import java.util.Set;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
@@ -95,13 +97,16 @@ public class RepositoryQueue extends KeyValueQueue<Key, Persistent> {
         return Thread.currentThread().getName();
     }
     
-    public void clearQueue(Validator validator) {
-        synchronized (lock) {
+    public void clearQueue (Validator validator) {
+       synchronized (lock) {
             // don't use Iterator.remove here
             Collection copy = new HashSet(map.keySet());
+            
             for (Iterator<Key> it = copy.iterator(); it.hasNext();) {
                 Key key = it.next();
-                if (!validator.isValid(key)) {
+                Persistent value = map.get(key).getValue();
+
+                if (!validator.isValid(key, value)) {
                     remove(key);
                 }
             }
@@ -109,8 +114,9 @@ public class RepositoryQueue extends KeyValueQueue<Key, Persistent> {
     }
 
     public interface Validator {
-        boolean isValid(Key key);
+        boolean isValid(Key key, Persistent entry);
     }
+    
 }
 
 

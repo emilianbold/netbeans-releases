@@ -938,7 +938,6 @@ external_declaration {String s; K_and_R = false; boolean definition;}
                 // VV: 23/05/06 support for gcc's "__extension__"
 		(LITERAL___extension__!)?  declaration 
 		{ 
-		    //#external_declaration = #(#[CSM_GENERIC_DECLARATION, "CSM_GENERIC_DECLARATION"], #external_declaration);
 		    // if declaration itself returned proper type, don't wrap it into generic declaration
 		    if( #external_declaration != null ) {
 			int type = #external_declaration.getType(); 
@@ -1682,7 +1681,9 @@ direct_declarator
 	 TypeQualifier tq;}  
 	:
 		// Must be function declaration               
-	        (idInBalanceParensHard LPAREN (RPAREN|parameter_list))=>                           
+	        ((function_attribute_specification)? idInBalanceParensHard LPAREN (RPAREN|parameter_list))=>
+		// TODO: refactor the grammar and use function_declarator here
+		(function_attribute_specification)?
                 id = idInBalanceParensHard                                                     
 		{declaratorID(id, qiFun);}                
 		LPAREN! //{declaratorParameterList(false);}
@@ -1790,49 +1791,6 @@ function_declarator [boolean definition]
 	|	
 		function_direct_declarator[definition]
 	;
-
-/*-----------------------------------------------------------------------------
-function_direct_declarator [boolean definition] 
-	{String q; CPPParser.TypeQualifier tq;}
-	:
-		/* predicate indicate that plain ID is ok here; this counteracts any
-		 * other predicate that gets hoisted (along with this one) that
-		 * indicates that an ID is a type or whatever.  E.g.,
-		 * another rule testing isTypeName() alone, implies that the
-		 * the ID *MUST* be a type name.  Combining isTypeName() and
-		 * this predicate in an OR situation like this one:
-		 * ( declaration_specifiers ... | function_declarator ... )
-		 * would imply that ID can be a type name OR a plain ID.
-		 */ /*--------------
-		(	// fix prompted by (isdigit)() in xlocnum
-			LPAREN q = qualified_id { declaratorID(q, qiFun); } RPAREN                       
-		|
-			q = qualified_id { declaratorID(q, qiFun);} 
-		)
-
-		LPAREN 
-		{
-		    //functionParameterList();
-		    if (K_and_R == false) {
-			    in_parameter_list = true;
-		    }
-		}
-		(parameter_list)? 
-		{
-		    if (K_and_R == false) {
-	  		in_parameter_list = false;
-		    } else {
-			in_parameter_list = true;
-		    }
-		}
-		RPAREN
-		(options{warnWhenFollowAmbig = false;}:
-		 tq = cv_qualifier)*
-		(ASSIGNEQUAL OCTALINT)?	// The value of the octal must be 0             
-		//{functionEndParameterList(definition);}
-		(exception_specification)?
-	;
------------------------------------------------------------------------------*/
 
 function_direct_declarator [boolean definition] 
 	{String q; CPPParser.TypeQualifier tq;}

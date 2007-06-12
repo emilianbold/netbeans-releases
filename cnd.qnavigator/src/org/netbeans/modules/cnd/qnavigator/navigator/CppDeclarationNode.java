@@ -25,7 +25,6 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -35,6 +34,8 @@ import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFriend;
+import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
@@ -46,6 +47,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.AbstractCsmNode;
+import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.nodes.Children;
 
@@ -56,6 +58,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     private Image icon;
     private CsmObject object;
     private CsmFile file;
+    private boolean isFriend;
     private CppDeclarationNode(CsmOffsetableDeclaration element, List<IndexOffsetNode> lineNumberIndex) {
         super(new NavigatorChildren(element, lineNumberIndex));
         object = element;
@@ -66,6 +69,13 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         super(children);
         object = element;
         file = element.getContainingFile();
+    }
+
+    private CppDeclarationNode(Children children, CsmOffsetableDeclaration element, boolean isFriend) {
+        super(children);
+        object = element;
+        file = element.getContainingFile();
+        this.isFriend = isFriend;
     }
 
     private CppDeclarationNode(Children children, CsmMacro element) {
@@ -103,9 +113,18 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
             return icon;
         }
         if (file != null && !file.isValid()){
-            return null;
+            CsmObject obj = object;
+            object = null;
+            Image icon = super.getIcon(param);
+            object = obj;
+            return icon;
         }
-        return super.getIcon(param);
+        if (isFriend) {
+            CsmFriend csmObj = (CsmFriend)object;
+            return (csmObj == null) ? super.getIcon(param) : CsmImageLoader.getFriendFunctionImage(csmObj);
+        } else {
+            return super.getIcon(param);
+        }
     }
     
     public Image getOpenedIcon(int param) {
@@ -123,7 +142,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         return super.getPreferredAction();
     }
     
-    public static CppDeclarationNode nodeFactory(CsmObject element, List<IndexOffsetNode> lineNumberIndex){
+    public static CppDeclarationNode nodeFactory(CsmObject element, List<IndexOffsetNode> lineNumberIndex, boolean isFriend){
         CppDeclarationNode node = null;
         if (CsmKindUtilities.isClassifier(element)){
             node = new CppDeclarationNode((CsmOffsetableDeclaration)element, lineNumberIndex);
@@ -139,7 +158,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
             node.setName(((CsmNamespaceDefinition)element).getName());
             lineNumberIndex.add(new IndexOffsetNode(node,((CsmOffsetable)element).getStartOffset()));
         } else if(CsmKindUtilities.isDeclaration(element)){
-            node = new CppDeclarationNode(Children.LEAF,(CsmOffsetableDeclaration)element);
+            node = new CppDeclarationNode(Children.LEAF,(CsmOffsetableDeclaration)element,isFriend);
             node.setName(((CsmDeclaration)element).getName());
             if(CsmKindUtilities.isFunction(element)){
                 node.setName(CsmUtilities.getSignature((CsmFunction)element, true));
@@ -176,24 +195,30 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
             List<CppDeclarationNode> retValue = new ArrayList<CppDeclarationNode>();
             if (CsmKindUtilities.isClass(element)){
                 CsmClass cls = (CsmClass)element;
-                for (Iterator it = cls.getMembers().iterator(); it.hasNext();){
-                    CppDeclarationNode node = nodeFactory((CsmMember)it.next(), lineNumberIndex);
+                for (CsmMember member : cls.getMembers()){
+                    CppDeclarationNode node = nodeFactory(member, lineNumberIndex, false);
+                    if (node != null){
+                        retValue.add(node);
+                    }
+                }
+                for (CsmFriend friend : cls.getFriends()){
+                    CppDeclarationNode node = nodeFactory(friend, lineNumberIndex, true);
                     if (node != null){
                         retValue.add(node);
                     }
                 }
             } else if (CsmKindUtilities.isEnum(element)){
                 CsmEnum cls = (CsmEnum)element;
-                for (Iterator it = cls.getEnumerators().iterator(); it.hasNext();){
-                    CppDeclarationNode node = nodeFactory((CsmEnumerator)it.next(), lineNumberIndex);
+                for (CsmEnumerator en : cls.getEnumerators()){
+                    CppDeclarationNode node = nodeFactory(en, lineNumberIndex, false);
                     if (node != null){
                         retValue.add(node);
                     }
                 }
             } else if(CsmKindUtilities.isNamespaceDefinition(element)){
                 CsmNamespaceDefinition ns = (CsmNamespaceDefinition)element;
-                for (Iterator it = ns.getDeclarations().iterator(); it.hasNext();){
-                    CppDeclarationNode node = nodeFactory((CsmDeclaration)it.next(), lineNumberIndex);
+                for (CsmDeclaration decl : ns.getDeclarations()){
+                    CppDeclarationNode node = nodeFactory(decl, lineNumberIndex, false);
                     if (node != null){
                         retValue.add(node);
                     }

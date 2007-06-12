@@ -22,6 +22,7 @@ package org.netbeans.modules.cnd.modelimpl.uid;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
@@ -89,6 +90,10 @@ public class UIDCsmConverter {
     } 
     
     public static CsmScope UIDtoScope(CsmUID<CsmScope> uid) {
+        return uid == null ? null : uid.getObject();
+    }
+
+    public static CsmClass UIDtoClass(CsmUID<CsmClass> uid) {
         return uid == null ? null : uid.getObject();
     }
     

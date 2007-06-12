@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -90,11 +91,27 @@ public class SunCCompiler extends CCCCompiler {
             return ""; // NOI18N
     }
     
-    public String getSixtyfourBitsOption(boolean value) {
-        if (getFlavor() == CompilerFlavor.Sun12)
-            return value ? "-m64" : ""; // NOI18N
+    public String getSixtyfourBitsOption(int value) {
+        if (getFlavor() == CompilerFlavor.Sun12) {
+            if (value == BasicCompilerConfiguration.BITS_DEFAULT)
+                return ""; // NOI18N
+            else if (value == BasicCompilerConfiguration.BITS_32)
+                return "-m32"; // NOI18N
+            else if (value == BasicCompilerConfiguration.BITS_64)
+                return "-m64"; // NOI18N
         else
-            return value ? "-xarch=generic64" : ""; // NOI18N
+                return ""; // NOI18N
+    }
+        else {
+            if (value == BasicCompilerConfiguration.BITS_DEFAULT)
+                return ""; // NOI18N
+            else if (value == BasicCompilerConfiguration.BITS_32)
+                return ""; // NOI18N
+            else if (value == BasicCompilerConfiguration.BITS_64)
+                return "-xarch=generic64"; // NOI18N
+            else
+                return ""; // NOI18N
+        }
     }
     
     public String getStripOption(boolean value) {

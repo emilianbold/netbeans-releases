@@ -44,7 +44,7 @@ public class Stats {
     public static final boolean validateKeys = getBoolean("cnd.repository.validate.keys", false); //NOI18N
     public static final boolean rememberKeys = getBoolean("cnd.repository.remember.keys", false); //NOI18N
     public static final boolean useNullWorkaround = getBoolean("cnd.repository.workaround.nulldata", false); //NOI18N
-    public static final boolean deleteCacheFiles = getBoolean("cnd.repository.delete.cache.files", true); //NOI18N
+    public static final boolean deleteCacheFiles = getBoolean("cnd.repository.delete.cache.files", false); //NOI18N
     
     public static final boolean useHardRefRepository = getBoolean("cnd.repository.hardrefs", false); //NOI18N
     public static final boolean queueTiming = getBoolean("cnd.repository.queue.timing", false); //NOI18N

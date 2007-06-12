@@ -154,7 +154,7 @@ public class Resolver3 implements Resolver {
                         containingNamespace = ns;
                     }
                     CsmFunction fun = getFunctionDeclaration(fd);
-                    if( fun != null && CsmKindUtilities.isMethod(fun) ) {
+                    if( fun != null && CsmKindUtilities.isMethodDeclaration(fun) ) {
                         containingClass = ((CsmMethod) fun).getContainingClass();
                     }
                 }
@@ -185,13 +185,28 @@ public class Resolver3 implements Resolver {
                 return ns;
             }
             else if( CsmKindUtilities.isClass(scope) ) {
-                CsmNamespace ns = ((CsmClass) scope).getContainingNamespace();
-                return ns;
+                return getClassNamespace((CsmClass) scope);
             }
         }
         return null;
     }
-
+    
+    private CsmNamespace getClassNamespace(CsmClass cls) {
+	CsmScope scope = cls.getScope();
+	while( scope != null ) {
+	    if( CsmKindUtilities.isNamespace(scope) ) {
+		return (CsmNamespace) scope;
+	    }
+	    if( CsmKindUtilities.isScopeElement(scope) ) {
+		scope = ((CsmScopeElement)scope).getScope();
+	    }
+	    else {
+		break;
+	    }
+	}
+	return null;
+    }
+    
     protected void gatherMaps(CsmFile file) {
         if( visitedFiles.contains(file) ) {
             return;

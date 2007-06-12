@@ -143,34 +143,34 @@ public class TypeImpl extends OffsetableBase implements CsmType {
     }
 
     public String getCanonicalText() {
-	return getText(true);
+	return getText(true, null).toString();
     }
     
     public String getText() {
 	// TODO: resolve typedefs
-	return getText(false);
+	return getText(false, null).toString();
     }
     
-    public String getText(boolean canonical) {
-//        if( text == null ) {
-            StringBuilder sb = new StringBuilder();
-            if( isConst() ) {
-                sb.append("const "); // NOI18N
-            }
-            sb.append(classifierText);
-            for( int i = 0; i < getPointerDepth(); i++ ) {
-                sb.append('*');
-            }
-            if( isReference() ) {
-                sb.append('&');
-            }
-            for( int i = 0; i < getArrayDepth(); i++ ) {
-                sb.append(canonical ? "*" : "[]"); // NOI18N
-            }
-//            text = sb.toString();
-//        }
-//        return text;
-            return sb.toString();
+    protected StringBuilder getText(boolean canonical, String variableNameToInsert) {
+	StringBuilder sb = new StringBuilder();
+	if( isConst() ) {
+	    sb.append("const "); // NOI18N
+	}
+	sb.append(classifierText);
+	for( int i = 0; i < getPointerDepth(); i++ ) {
+	    sb.append('*');
+	}
+	if( isReference() ) {
+	    sb.append('&');
+	}
+	for( int i = 0; i < getArrayDepth(); i++ ) {
+	    sb.append(canonical ? "*" : "[]"); // NOI18N
+	}
+	if( variableNameToInsert != null ) {
+	    sb.append(' ');
+	    sb.append(variableNameToInsert);
+	}
+	return sb;
     }
     
     private String initClassifierText(AST node) {
@@ -202,6 +202,10 @@ public class TypeImpl extends OffsetableBase implements CsmType {
         return getClassifier(null);
     }
 
+    protected String getClassifierText() {
+	return classifierText;
+    }
+    
     public CsmClassifier getClassifier(Resolver parent) {
         CsmClassifier classifier = _getClassifier();
         if (classifier != null && (!(classifier instanceof CsmValidable) || (((CsmValidable)classifier).isValid()))) {
@@ -353,6 +357,16 @@ public class TypeImpl extends OffsetableBase implements CsmType {
     public String toString() {
         return "TYPE " + getText()  + getOffsetString(); // NOI18N
     }    
+    
+    //package-local
+    /**
+     * Return display text for a variable of this type
+     * (we actually need this for function pointers, where simple typeName+' '+variableName does not work.
+     */
+    String getVariableDisplayName(String variableName) {
+	return getText(false, variableName).toString();
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
     
@@ -386,5 +400,5 @@ public class TypeImpl extends OffsetableBase implements CsmType {
         assert TraceFlags.USE_REPOSITORY;
         this.classifierOLD = null;
     }
-    
+
 }

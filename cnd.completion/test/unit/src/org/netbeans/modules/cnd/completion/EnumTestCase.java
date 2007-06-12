@@ -28,7 +28,29 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionBaseTestCase;
 public class EnumTestCase extends CompletionBaseTestCase {
     
     public EnumTestCase(String testName) {
-        super(testName);
+        super(testName, true);
+    }
+    
+        
+    public void testClassAEnumFun() throws Exception {
+        super.performTest("file.cc", 16, 5, "ClassA::");
+    }  
+    
+    
+    public void testClassAaPubFun() throws Exception {
+        super.performTest("file.cc", 10, 5, "ClassA::");
+    }
+
+    public void testVarAaPubFun() throws Exception {
+        super.performTest("file.cc", 10, 5, "this->");
+    }
+    
+    public void testEnumInFun() throws Exception {
+        super.performTest("file.cc", 16, 5);
+    }
+    
+    public void testClassAEnumeratorsInFun() throws Exception {
+        super.performTest("file.cc", 20, 5, "aa.");
     }
     
     /////////////////////////////////////////////////////////////////////
@@ -40,11 +62,8 @@ public class EnumTestCase extends CompletionBaseTestCase {
         }
         
         public Failed(String testName) {
-            super(testName);
+            super(testName, true);
         }
-        
-        public void testClassAaPubFun() throws Exception {
-            super.performTest("file.cc", 10, 5, "ClassA::");
-        }        
+
     }    
 }

@@ -294,6 +294,6 @@ public abstract class GdbBreakpoint extends Breakpoint {
     }
     
     public GdbDebuggerImpl getDebugger() {
-	return(debugger);
+	return debugger;
     }
 }

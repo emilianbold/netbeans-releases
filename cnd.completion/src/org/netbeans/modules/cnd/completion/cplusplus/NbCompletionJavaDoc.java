@@ -133,9 +133,10 @@ public class NbCompletionJavaDoc extends CompletionJavaDoc {
     public void goToSource(){
         SyntaxSupport sup = Utilities.getSyntaxSupport(extEditorUI.getComponent());
         NbCsmSyntaxSupport nbJavaSup = (NbCsmSyntaxSupport)sup.get(NbCsmSyntaxSupport.class);
-        if (nbJavaSup.openSource(getCurrentContent(), false) == null){
-            extEditorUI.getCompletion().setPaneVisible(false);
-        }
+// This is Java heritage that does not work for CND
+//        if (nbJavaSup.openSource(getCurrentContent(), false) == null){
+//            extEditorUI.getCompletion().setPaneVisible(false);
+//        }
     }
     
     /** Opens javadoc in external browser */

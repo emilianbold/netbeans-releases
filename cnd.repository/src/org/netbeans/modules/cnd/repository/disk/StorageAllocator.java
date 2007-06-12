@@ -37,10 +37,16 @@ public class StorageAllocator {
     private StorageAllocator() {
         diskRepositoryPath = System.getProperty("cnd.repository.cache.path");
         if (diskRepositoryPath == null) {
-            diskRepositoryPath = System.getProperty("java.io.tmpdir") + File.separator + System.getProperty("user.name") + "-" + "modelcache"; //NOI18N
+            long index = 0;
+            diskRepositoryPath = System.getProperty("java.io.tmpdir");
+            
+            diskRepositoryPath += File.separator+ 
+                    "repository-caches"  + File.separator +         //NOI18N
+                    System.getProperty("user.name") + "-" + index;  //NOI18N
+            
             File diskRepositoryFile = new File(diskRepositoryPath);
             // find name for directory which is not occupied by file
-            long index = 0;
+
             while (diskRepositoryFile.exists() && !diskRepositoryFile.isDirectory()) {
                 diskRepositoryFile = new File(diskRepositoryPath + ++index);
             }
@@ -49,6 +55,8 @@ public class StorageAllocator {
                 diskRepositoryFile.mkdirs();
             }
             diskRepositoryPath = diskRepositoryFile.getAbsolutePath();
+            
+            //System.out.println("Repository location is " + diskRepositoryPath);
         }
     };
     
@@ -61,6 +69,15 @@ public class StorageAllocator {
     public String getCachePath() {
         return diskRepositoryPath;
     }
+    
+    public String reduceString (String name) {
+        if (name.length() > 128) {
+            int hashCode = name.hashCode();
+            name = name.substring(0,64) + "--" + name.substring(name.length() - 32); // NOI18N
+            name += hashCode;
+        }
+        return name;
+    }
 
     public String getUnitStorageName(String unit) {
         String path = unit2path.get(unit);
@@ -71,16 +88,17 @@ public class StorageAllocator {
             } catch (UnsupportedEncodingException ex) {
                 ex.printStackTrace();
             } 
-            if (prefix.length() > 128) {
-                prefix = prefix.substring(0,64) + "--" + prefix.substring(prefix.length() - 64); // NOI18N
+            
+            prefix = reduceString(prefix);
+            
+            path = getCachePath() + File.separator + prefix + File.separator; // NOI18N
+            
+            File pathFile = new File (path);
+            
+            if (!pathFile.exists()) {
+                pathFile.mkdirs();
             }
-            int cnt = 2;
-            path = getCachePath() + File.separator + prefix; // NOI18N
-            while( new File(path).exists()) {
-                path = getCachePath() + prefix + "-" + cnt++;
-            }
-            path += File.separator;
-            new File(path).mkdir();
+
             unit2path.put(unit, path);
         }
         return path;
@@ -88,5 +106,25 @@ public class StorageAllocator {
     
     public void closeUnit(String unitName) {
         unit2path.remove(unitName);
+    }
+    
+    public void deleteUnitFiles (String unitName) {
+        String path = getUnitStorageName(unitName);
+        File pathFile = new File (path);
+        deleteDirectory(pathFile);
+    }
+    
+    private void deleteDirectory(File path) {
+        if( path.exists() ) {
+            File[] files = path.listFiles();
+            for(int i=0; i<files.length; i++) {
+                if(files[i].isDirectory()) {
+                    deleteDirectory(files[i]);
+                } else {
+                    files[i].delete();
+                }
+            }
+        }
+        path.delete() ;
     }
 }

@@ -106,10 +106,15 @@ public abstract class HyperlinkBaseTestCase extends ProjectBasedTestCase {
             System.err.println("result line " + resultLine);
             System.err.println("result column " + resultColumn);
         } else {
-            assertEquals("Different target files", goldenFileAbsPath, destResultFileAbsPath);
-            assertEquals("Different target line positions", destGoldenLine, resultLine);
-            assertEquals("Different target column positions", destGoldenColumn, resultColumn);
+            String positions = toString(source, lineIndex, colIndex) + " -> " + toString(destGoldenFile, destGoldenLine, destGoldenColumn);
+            assertEquals("Different target *FILE* " + positions, goldenFileAbsPath, destResultFileAbsPath);
+            assertEquals("Different target *LINE* positions " + positions, destGoldenLine, resultLine);
+            assertEquals("Different target *COLUMN* positions " + positions, destGoldenColumn, resultColumn);
         }
+    }
+    
+    private String toString(String file, int line, int column) {
+        return "[" + file + ":" + "Line-" + line +"; Col-" + column + "]";
     }
     
     private CsmOffsetable findTargetObject(BaseDocument doc, int offset, Token jumpToken) {

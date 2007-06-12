@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -28,6 +28,7 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
@@ -40,7 +41,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
 /**
  *
- * @param T 
+ * @param T
  * @author Dmitriy Ivanov, Vladimir Kvashin
  */
 public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements CsmFunction<T>, Disposable, RawNamable {
@@ -49,12 +50,13 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     private final CsmType returnType;
     private final List<CsmParameter>  parametersOLD;
     private final List<CsmUID<CsmParameter>>  parameters;
+    private final boolean isVoidParameterList;
     private String signature;
     
     // only one of scopeRef/scopeAccessor must be used (based on USE_REPOSITORY)
     private /*final*/ CsmScope scopeRef;// can be set in onDispose or contstructor only
     private final CsmUID<CsmScope> scopeUID;
-
+    
     private final String[] rawName;
     
     /** see comments to isConst() */
@@ -82,19 +84,24 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         rawName = AstUtil.getRawNameInChildren(ast);
         _const = initConst(ast);
         returnType = initReturnType(ast);
-
+        
         // set parameters, do it in constructor to have final fields
-        List<CsmParameter> parameters = initParameters(ast);
+        List<CsmParameter> params = initParameters(ast);
         if (TraceFlags.USE_REPOSITORY) {
-            if (parameters == null) {
+            if (params == null) {
                 this.parameters = null;
             } else {
-                this.parameters = RepositoryUtils.put(parameters);
+                this.parameters = RepositoryUtils.put(params);
             }
             this.parametersOLD = null;
         } else {
-            this.parametersOLD = parameters;
+            this.parametersOLD = params;
             this.parameters = null;
+        }
+        if (params == null || params.size() == 0) {
+            isVoidParameterList = isVoidParameter(ast);
+        } else {
+            isVoidParameterList = false;
         }
         
         if( name == null ) {
@@ -109,41 +116,45 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         return findFunctionName(node);
     }
     
+    protected boolean isVoidParameterList(){
+        return isVoidParameterList;
+    }
+    
     private static String extractName(AST token){
-	int type = token.getType();
-	if( type == CPPTokenTypes.ID ) {
-	    return token.getText();
-	} else if( type == CPPTokenTypes.CSM_QUALIFIED_ID ) {
-	    AST last = AstUtil.getLastChild(token);
-	    if( last != null) {
-		if( last.getType() == CPPTokenTypes.ID ) {
-		    return last.getText();
-		} else {
+        int type = token.getType();
+        if( type == CPPTokenTypes.ID ) {
+            return token.getText();
+        } else if( type == CPPTokenTypes.CSM_QUALIFIED_ID ) {
+            AST last = AstUtil.getLastChild(token);
+            if( last != null) {
+                if( last.getType() == CPPTokenTypes.ID ) {
+                    return last.getText();
+                } else {
 //		    if( first.getType() == CPPTokenTypes.LITERAL_OPERATOR ) {
-		    AST operator = AstUtil.findChildOfType(token, CPPTokenTypes.LITERAL_OPERATOR);
-		    if( operator != null ) {
-			StringBuilder sb = new StringBuilder(operator.getText());
-			sb.append(' ');
-			for( AST next = operator.getNextSibling(); next != null; next = next.getNextSibling() ) {
-			    sb.append(next.getText());
-			}
-			return sb.toString();
-		    } else {
-			AST first = token.getFirstChild();
-			if (first.getType() == CPPTokenTypes.ID) {
-			    return first.getText();
-			}
-		    }
-		}
-	    }
-	}
-	return "";
+                    AST operator = AstUtil.findChildOfType(token, CPPTokenTypes.LITERAL_OPERATOR);
+                    if( operator != null ) {
+                        StringBuilder sb = new StringBuilder(operator.getText());
+                        sb.append(' ');
+                        for( AST next = operator.getNextSibling(); next != null; next = next.getNextSibling() ) {
+                            sb.append(next.getText());
+                        }
+                        return sb.toString();
+                    } else {
+                        AST first = token.getFirstChild();
+                        if (first.getType() == CPPTokenTypes.ID) {
+                            return first.getText();
+                        }
+                    }
+                }
+            }
+        }
+        return "";
     }
     
     private static String findFunctionName(AST ast) {
-	if( CastUtils.isCast(ast) ) {
-	    return CastUtils.getFunctionName(ast);
-	}
+        if( CastUtils.isCast(ast) ) {
+            return CastUtils.getFunctionName(ast);
+        }
         AST token = AstUtil.findMethodName(ast);
         if (token != null){
             return extractName(token);
@@ -165,9 +176,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
             this.cleanUID();
         }
     }
-
     
-    /** Gets this element name 
+    
+    /** Gets this element name
      * @return name
      */
     public String getName() {
@@ -177,17 +188,16 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     protected final void setName(String name) {
         this.name = name;
     }
-
+    
     public String getQualifiedName() {
         CsmScope scope = getScope();
         if( (scope instanceof CsmNamespace) || (scope instanceof CsmClass) ) {
-	    String scopeQName = ((CsmQualifiedNamedElement) scope).getQualifiedName();
-	    if( scopeQName != null && scopeQName.length() > 0 ) {
-		return scopeQName + "::" + getQualifiedNamePostfix(); // NOI18N
-	    }
-	    else {
-		return getName();
-	    }
+            String scopeQName = ((CsmQualifiedNamedElement) scope).getQualifiedName();
+            if( scopeQName != null && scopeQName.length() > 0 ) {
+                return scopeQName + "::" + getQualifiedNamePostfix(); // NOI18N
+            } else {
+                return getName();
+            }
         }
         return getName();
     }
@@ -204,15 +214,15 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         return CsmDeclaration.Kind.FUNCTION;
     }
     
-    /** Gets this function's declaration text 
+    /** Gets this function's declaration text
      * @return declaration text
      */
     public String getDeclarationText() {
         return "";
     }
     
-    /** 
-     * Gets this function definition 
+    /**
+     * Gets this function definition
      * TODO: describe getDefiition==this ...
      * @return definition
      */
@@ -240,10 +250,33 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
                 }
             }
         }
+        if (def == null) {
+            def = findDefinition();
+        }
         return (def == null) ? null : (CsmFunctionDefinition) def;
     }
     
-    /** 
+    private CsmFunctionDefinition findDefinition(){
+        if (getParameters().size()==0 && !isVoidParameterList()) {
+            CsmScope scope = getScope();
+            if (CsmKindUtilities.isNamespace(scope) && ((CsmNamespace)scope).isGlobal()) {
+                CsmProject prj = getContainingFile().getProject();
+                if (prj instanceof ProjectBase) {
+                    String uname = CsmDeclaration.Kind.FUNCTION_DEFINITION.toString() + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
+                    String from = uname.substring(0, uname.indexOf('(')+1);
+                    Collection<CsmOffsetableDeclaration> decls = ((ProjectBase)prj).findDeclarationsByPrefix(from);
+                    for(CsmOffsetableDeclaration decl : decls){
+                        if (!ProjectBase.isCppFile(decl.getContainingFile())){
+                            return (CsmFunctionDefinition)decl;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    /**
      * Returns true if this class is template, otherwise false.
      * If isTemplate() returns true, this class is an instance of CsmTemplate
      * @return flag indicated if function is template
@@ -251,8 +284,8 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     public boolean isTemplate() {
         return false;
     }
-
-    /** 
+    
+    /**
      * Gets this function body.
      * The same as the following call:
      * (getDefinition() == null) ? null : getDefinition().getBody();
@@ -271,7 +304,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
 //    public boolean isVirtual() {
 //        return false;
 //    }
-//    
+//
 //    public boolean isExplicit() {
 //        return false;
 //    }
@@ -287,7 +320,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         }
         return ret;
     }
-
+    
     public CsmType getReturnType() {
         return returnType;
     }
@@ -319,6 +352,18 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         }
         return AstRenderer.renderParameters(ast, getContainingFile());
     }
+
+    private boolean isVoidParameter(AST node) {
+        AST ast = AstUtil.findChildOfType(node, CPPTokenTypes.CSM_PARMLIST);
+        if( ast != null ) {
+            // for K&R-style
+            AST ast2 = AstUtil.findSiblingOfType(ast.getNextSibling(), CPPTokenTypes.CSM_PARMLIST);
+            if( ast2 != null ) {
+                ast = ast2;
+            }
+        }
+        return AstRenderer.isVoidParameter(ast);
+    }
     
     public List<CsmParameter>  getParameters() {
         return _getParameters();
@@ -327,7 +372,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     public CsmScope getScope() {
         return _getScope();
     }
-
+    
     public String getSignature() {
         if( signature == null ) {
             signature = createSignature();
@@ -377,7 +422,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
             this.scopeRef = UIDCsmConverter.UIDtoScope(this.scopeUID);
             assert (this.scopeRef != null || this.scopeUID == null) : "empty scope for UID " + this.scopeUID;
         }
-    } 
+    }
     
     private static boolean initConst(AST node) {
         boolean ret = false;
@@ -395,16 +440,16 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         return ret;
     }
     
-    /** 
+    /**
      * isConst was originslly in MethodImpl;
      * but this methods needs internally in FunctionDefinitionImpl
-     * to create proper sugnature. 
+     * to create proper sugnature.
      * Thereform it's moved here as a protected method.
      */
     protected boolean isConst() {
         return _const;
     }
-
+    
     private CsmScope _getScope() {
         CsmScope scope = this.scopeRef;
         if (scope == null) {
@@ -413,9 +458,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
                 assert (scope != null || this.scopeUID == null) : "null object for UID " + this.scopeUID;
             }
         }
-        return scope;        
+        return scope;
     }
-
+    
     private List _getParameters() {
         if (TraceFlags.USE_REPOSITORY) {
             if (this.parameters == null) {
@@ -428,7 +473,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
             return parametersOLD;
         }
     }
-
+    
     private void _disposeParameters() {
         if (TraceFlags.USE_REPOSITORY) {
             if (parameters != null) {
@@ -451,14 +496,15 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         factory.writeUIDCollection(this.parameters, output, false);
         PersistentUtils.writeStrings(this.rawName, output);
         output.writeBoolean(this._const);
-       
+        
         // not null UID
         assert !CHECK_SCOPE || this.scopeUID != null;
-        UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);    
+        UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);
         
         PersistentUtils.writeUTF(this.signature, output);
+        output.writeBoolean(isVoidParameterList);
     }
-    
+
     public FunctionImpl(DataInput input) throws IOException {
         super(input);
         this.name = TextCache.getString(input.readUTF());
@@ -473,7 +519,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         // not null UID
         assert !CHECK_SCOPE || this.scopeUID != null;
         this.scopeRef = null;
-
+        
         assert TraceFlags.USE_REPOSITORY;
         parametersOLD = null;
         
@@ -481,5 +527,6 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         if (this.signature != null) {
             this.signature = QualifiedNameCache.getString(this.signature);
         }
-    }    
+        this.isVoidParameterList = input.readBoolean();
+    }
 }

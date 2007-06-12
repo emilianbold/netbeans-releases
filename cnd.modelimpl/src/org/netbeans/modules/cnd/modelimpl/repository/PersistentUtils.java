@@ -36,6 +36,7 @@ import org.netbeans.modules.cnd.apt.utils.APTStringManager;
 import org.netbeans.modules.cnd.apt.utils.FilePathCache;
 import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NoType;
+import org.netbeans.modules.cnd.modelimpl.csm.TypeFunPtrImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AbstractFileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
@@ -217,6 +218,10 @@ public class PersistentUtils {
 
         case TYPE_IMPL:
             obj = new TypeImpl(stream);
+            break;
+	    
+        case TYPE_FUN_PTR_IMPL:
+            obj = new TypeFunPtrImpl(stream);
             break;        
             
         default:
@@ -230,6 +235,9 @@ public class PersistentUtils {
             stream.writeInt(AbstractObjectFactory.NULL_POINTER);
         } else if (type instanceof NoType) {
             stream.writeInt(NO_TYPE);
+        } else if (type instanceof TypeFunPtrImpl) {
+            stream.writeInt(TYPE_FUN_PTR_IMPL);
+            ((TypeFunPtrImpl)type).write(stream);
         } else if (type instanceof TypeImpl) {
             stream.writeInt(TYPE_IMPL);
             ((TypeImpl)type).write(stream);
@@ -410,6 +418,7 @@ public class PersistentUtils {
     // types
     private static final int NO_TYPE                = FILE_BUFFER_FILE + 1;
     private static final int TYPE_IMPL              = NO_TYPE + 1;
+    private static final int TYPE_FUN_PTR_IMPL	    = TYPE_IMPL + 1;
     
     // state 
     private static final int PREPROC_STATE_STATE_IMPL = TYPE_IMPL + 1;

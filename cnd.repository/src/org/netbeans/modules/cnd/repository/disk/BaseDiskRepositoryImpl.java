@@ -114,11 +114,12 @@ public class BaseDiskRepositoryImpl extends AbstractDiskRepository {
         theFilesHelper.removeObjForKey(id);
     }
 
-    public void closeUnit(String unitName) {
-        theFilesHelper.closeUnit(unitName);
+    public void closeUnit(final String unitName, final boolean clean) {
+        theFilesHelper.setOpenFilesLimit(0);
+        theFilesHelper.setOpenFilesLimit(openFilesLimit);        
     }
 
-    public void shutdown() {
+    public void shutdown(final boolean clean) {
         theFilesHelper.setOpenFilesLimit(0);
         theFilesHelper.setOpenFilesLimit(openFilesLimit);
     }

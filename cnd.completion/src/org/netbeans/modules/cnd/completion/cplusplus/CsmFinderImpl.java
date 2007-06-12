@@ -701,6 +701,27 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
         return classFields;        
     }
 
+    /** Find enumerators by name in a given class.
+    * @param contextDeclaration declaration which defines context (class or function)
+    * @param c class which is searched for the enumerators.
+    * @param name start of the name of the field
+    * @param exactMatch whether the given name of the enumerators is exact
+    * @param inspectOuterClasses if the given class is inner class of some
+    *   outer class, whether the enumerators of the outer class should be possibly
+    *   added or not. This should be false when searching for 'this.'
+    * @return list of the matching fields
+    */    
+    public List findEnumerators(CsmOffsetableDeclaration contextDeclaration, CsmClass c, String name, boolean exactMatch, boolean inspectOuterClasses, boolean inspectParentClasses, boolean sort) {
+        TreeSet ts = naturalSort ? new TreeSet(CsmSortUtilities.NATURAL_MEMBER_NAME_COMPARATOR) : new TreeSet();
+        
+        // get class variables visible in this method
+        CsmClass clazz = c;
+        CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());
+//        CsmVisibility vis = CsmInheritanceUtilities.getContextVisibility(contextClass, clazz);        
+        List classFields = contResolver.getEnumerators(clazz, contextDeclaration, name, exactMatch, inspectParentClasses);
+        return classFields;        
+    }
+    
     /** Find methods by name in a given class.
     * @param contextDeclaration declaration which defines context (class or function)
     * @param c class which is searched for the methods.

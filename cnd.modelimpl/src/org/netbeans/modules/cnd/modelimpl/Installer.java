@@ -21,7 +21,6 @@ package org.netbeans.modules.cnd.modelimpl;
 
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.openide.modules.ModuleInstall;
 
@@ -33,6 +32,8 @@ public class Installer extends ModuleInstall {
     
     public interface Startupable {
 	public void startup();
+	public void shutdown();
+	public void unload();
     }
     
     public void restored() {
@@ -49,7 +50,10 @@ public class Installer extends ModuleInstall {
     public void close() {
         super.close();
 	if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("=== Installer.close");
-	((ModelImpl) CsmModelAccessor.getModel()).shutdown();
+	CsmModel model = CsmModelAccessor.getModel();
+	if( model instanceof Startupable ) {
+	    ((Startupable) model).shutdown();
+	}
     }
 
     public boolean closing() {
@@ -64,7 +68,10 @@ public class Installer extends ModuleInstall {
 
     public void uninstalled() {
 	if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("=== Installer.uninstalled");
-	((ModelImpl) CsmModelAccessor.getModel()).unload();
+	CsmModel model = CsmModelAccessor.getModel();
+	if( model instanceof Startupable ) {
+	    ((Startupable) model).unload();
+	}
 	super.uninstalled();
     }
 }

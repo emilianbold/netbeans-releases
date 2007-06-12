@@ -35,6 +35,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionProvider;
@@ -86,11 +87,14 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             CsmFile file = CsmUtilities.getCsmFile(doc, true);
             csmObject = file == null ? null : CsmOffsetResolver.findObject(file, offset);
             if (CsmKindUtilities.isFunction(csmObject)) {
+                CsmFunction decl = null;
                 if (CsmKindUtilities.isFunctionDefinition(csmObject)) {
-                    CsmFunction decl = ((CsmFunctionDefinition)csmObject).getDeclaration();
-                    if (decl != null) {
-                        csmObject = decl;
-                    }
+                    decl = ((CsmFunctionDefinition)csmObject).getDeclaration();
+                } else if (CsmKindUtilities.isFriendMethod(csmObject)) {
+                    decl = ((CsmFriendFunction)csmObject).getReferencedFunction();
+                }
+                if (decl != null) {
+                    csmObject = decl;
                 }
             } else {
                 csmObject = null;

@@ -64,7 +64,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public static final int UNDEFINED_FILE = 0;
     public static final int SOURCE_FILE = 1;
-    public static final int HEADER_FILE = 2;
+    public static final int SOURCE_C_FILE = 2;
+    public static final int SOURCE_CPP_FILE = 3;
+    public static final int HEADER_FILE = 4;
 
     private FileBuffer fileBuffer;
     
@@ -137,11 +139,17 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     public boolean isSourceFile(){
-        return fileType == SOURCE_FILE;
+        return fileType == SOURCE_FILE || fileType == SOURCE_C_FILE || fileType == SOURCE_CPP_FILE;
+    }
+    
+    public boolean isCppFile(){
+        return fileType == SOURCE_CPP_FILE;
     }
     
     public void setSourceFile(){
-        fileType = SOURCE_FILE;
+        if (!(fileType == SOURCE_C_FILE || fileType == SOURCE_CPP_FILE)) {
+            fileType = SOURCE_FILE;
+        }
     }
 
     public boolean isHeaderFile(){
@@ -149,7 +157,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public void setHeaderFile(){
-        if (fileType != SOURCE_FILE) {
+        if (fileType == UNDEFINED_FILE) {
             fileType = HEADER_FILE;
         }
     }
@@ -568,7 +576,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
     
-    static final private Comparator/*<? super CsmOffsetable>*/ START_OFFSET_COMPARATOR = new Comparator() {
+    public static final Comparator/*<? super CsmOffsetable>*/ START_OFFSET_COMPARATOR = new Comparator() {
         public int compare(Object o1, Object o2) {
             if (o1 == o2) {
                 return 0;
@@ -840,6 +848,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 if( wait ) {
                     stateLock.wait();
                 }
+		else {
+		    return;
+		}
                 //if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("< wait " + getName() + " @" + hashCode() + " waiting for parse; thread: " + Thread.currentThread().getName());
             }
         }
@@ -951,5 +962,55 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         CsmFile other = (CsmFile)obj;
         retValue = this.getAbsolutePath().equals(other.getAbsolutePath());
         return retValue;
+    }
+    
+    public int getOffset(int line, int column) {
+        if (line <= 0 || column <= 0) {
+            throw new IllegalArgumentException("line and column are 1-based");
+        }
+        int offset = 0;
+        int curLine = 1;
+        String text = getText();
+        // find line
+        for (; offset < text.length() && curLine < line; offset++) {
+            if ( text.charAt(offset) == '\n') {
+                curLine++;
+            }
+        }
+        // check line
+        if (curLine < line) {
+            throw new IllegalStateException("no line with index " + line + " in file " + getAbsolutePath());
+        }
+        int outOffset = offset + (column - 1);
+        // check that column is valid: not on the next line
+        if (text.length() < outOffset || (text.substring(offset, outOffset).indexOf('\n') >= 0))  { // NOI18N
+            throw new IllegalStateException("no column with index " + column + " in file " + getAbsolutePath());
+        }
+        return outOffset;
+    }
+    
+    /**
+     * returns 1-based line and column associated with offset
+     * @param offset interested offset in file
+     * @return returns pair {line, column}
+     */
+    public int[] getLineColumn(int offset) {
+        int[] lineCol = new int[] { 1, 1 };
+        int startLineOffset = 0;
+        String text = getText();
+        if (text.length() < offset) {
+            throw new IllegalArgumentException("offset is out of file length");
+        }        
+        // find line and column
+        for (int curOffset = 0; curOffset < offset; curOffset++) {
+            if ( text.charAt(curOffset) == '\n') {
+                // just increase line number
+                lineCol[0] = lineCol[0]+1;
+                startLineOffset = curOffset+1;
+            }
+        }        
+        // column
+        lineCol[1] = (offset - startLineOffset) + 1;
+        return lineCol;
     }
 }

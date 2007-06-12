@@ -168,11 +168,11 @@ public class RepositoryUtils {
         RepositoryAccessor.getRepository().shutdown();
     }
 
-    public static void closeUnit(CsmUID uid) {
+    public static void closeUnit(CsmUID uid, boolean cleanRepository) {
         Key key = UIDtoKey(uid);
         assert key != null;
         String unitName = key.getUnit();
-        RepositoryAccessor.getRepository().closeUnit(unitName);
+        RepositoryAccessor.getRepository().closeUnit(unitName, cleanRepository);
         KeyUtilities.closeUnit(unitName);
     }
 }

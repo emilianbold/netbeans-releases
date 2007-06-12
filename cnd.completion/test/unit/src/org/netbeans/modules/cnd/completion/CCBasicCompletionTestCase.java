@@ -31,14 +31,120 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
      * Creates a new instance of CCBasicCompletionTestCase
      */
     public CCBasicCompletionTestCase(String testName) {
-        super(testName);
+        super(testName, true);
+    }
+    
+    public void testExtraDeclarationOnTypeInsideFun() throws Exception {
+        super.performTest("file.cc", 39, 5, "p");
+    }
+    
+    public void testSwitchCaseVarsInCompound() throws Exception {
+        super.performTest("file.cc", 24, 13);
+    }
+
+    public void testSwitchCaseVarsNotIncCompound() throws Exception {
+        super.performTest("file.cc", 28, 13);
+    }
+    
+    public void testSwitchCaseVarsAfterCompoundAndNotCompoundInDefault() throws Exception {
+        super.performTest("file.cc", 32, 13);
     }
     
     public void testCompletionOnEmptyInGlobal() throws Exception {
         super.performTest("file.cc", 1, 1);
     }
     
-    public void testCompletionOnEmptyInFunction() throws Exception {
-        super.performTest("file.cc", 5, 1);
-    }        
+    public void testCompletionOnEmptyInClassFunction() throws Exception {
+        super.performTest("file.cc", 7, 1);
+    }  
+    
+    public void testCompletionOnEmptyInGlobFunction() throws Exception {
+        super.performTest("file.cc", 19, 1);
+    }  
+    
+    public void testCompletionInsideInclude() throws Exception {
+        // IZ#98530]  Completion list appears in #include directive
+        super.performTest("file.cc", 2, 11); // completion inside #include "file.c"
+    }
+
+    public void testCompletionInsideString() throws Exception {
+        // no completion inside string
+        super.performTest("file.cc", 8, 18); // completion inside strings
+    }
+
+    public void testCompletionInsideChar() throws Exception {
+        // no completion inside char literal
+        super.performTest("file.cc", 14, 15); // completion inside chars
+    }
+
+    public void testGlobalCompletionInGlobal() throws Exception {
+        super.performTest("file.cc", 5, 1, "::");
+    } 
+    
+    public void testGlobalCompletionInClassFunction() throws Exception {
+        super.performTest("file.cc", 7, 1, "::");
+    }  
+
+    public void testGlobalCompletionInGlobFunction() throws Exception {
+        super.performTest("file.cc", 19, 1, "::");
+    }  
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // tests for incomplete or incorrect constructions
+    
+    public void testErrorCompletion1() throws Exception {
+        super.performTest("file.cc", 5, 1, "->");
+    }    
+
+    public void testErrorCompletion2() throws Exception {
+        super.performTest("file.cc", 5, 1, ".");
+    }    
+
+    public void testErrorCompletion3() throws Exception {
+        super.performTest("file.cc", 5, 1, ".->");
+    }    
+
+    public void testErrorCompletion4() throws Exception {
+        super.performTest("file.cc", 5, 1, "::.");
+    }    
+
+    public void testErrorCompletion5() throws Exception {
+        super.performTest("file.cc", 5, 1, "*:");
+    }    
+
+    public void testErrorCompletion6() throws Exception {
+        super.performTest("file.cc", 5, 1, ":");
+    }    
+
+    public void testErrorCompletion7() throws Exception {
+        super.performTest("file.cc", 5, 1, "->");
+    }    
+
+    public void testErrorCompletionInFun1() throws Exception {
+        super.performTest("file.cc", 7, 1, "->");
+    }    
+
+    public void testErrorCompletionInFun2() throws Exception {
+        super.performTest("file.cc", 7, 1, ".");
+    }    
+
+    public void testErrorCompletionInFun3() throws Exception {
+        super.performTest("file.cc", 7, 1, ".->");
+    }    
+
+    public void testErrorCompletionInFun4() throws Exception {
+        super.performTest("file.cc", 7, 1, "::.");
+    }    
+
+    public void testErrorCompletionInFun5() throws Exception {
+        super.performTest("file.cc", 7, 1, "*:");
+    }    
+
+    public void testErrorCompletionInFun6() throws Exception {
+        super.performTest("file.cc", 7, 1, ":");
+    }    
+
+    public void testErrorCompletionInFun7() throws Exception {
+        super.performTest("file.cc", 7, 1, "->");
+    }      
 }

@@ -27,6 +27,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmForStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmIfStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmLoopStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmSwitchStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmTryCatchStatement;
 import java.util.Iterator;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -82,6 +83,7 @@ public class CsmStatementResolver {
             found = findInner((CsmForStatement) stmt, offset, context);
         }
         else if( kind == CsmStatement.Kind.SWITCH ) {
+            found = findInner((CsmSwitchStatement) stmt, offset, context);
         }
         else if( kind == CsmStatement.Kind.BREAK ) {
         }
@@ -196,6 +198,14 @@ public class CsmStatementResolver {
         return findInnerObject(stmt.getBody(), offset, context);
     }
     
+    private static boolean findInner(CsmSwitchStatement stmt, int offset, CsmContext context) {
+        assert (CsmOffsetUtilities.isInObject(stmt, offset)) : "we must be in statement when called"; //NOI18N
+        if (CsmOffsetUtilities.isInObject(stmt.getCondition(), offset)) {
+            CsmContextUtilities.updateContextObject(stmt.getCondition(), offset, context);
+            return true;
+        }
+        return findInnerObject(stmt.getBody(), offset, context);
+    }    
 //    private static String toString(CsmExpression expr) {
 //        if( expr == null ) {
 //            return "null"; //NOI18N

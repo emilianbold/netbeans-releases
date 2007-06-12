@@ -421,7 +421,11 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(SIXTYFOUR_BITS_ELEMENT)) {
             boolean ds = currentText.equals(TRUE_VALUE);
             if (currentBasicCompilerConfiguration != null)
-                currentBasicCompilerConfiguration.getSixtyfourBits().setValue(ds);
+                currentBasicCompilerConfiguration.getSixtyfourBits().setValue(ds ? BasicCompilerConfiguration.BITS_64 : BasicCompilerConfiguration.BITS_DEFAULT);
+        } else if (element.equals(ARCHITECTURE_ELEMENT)) {
+            int val = new Integer(currentText).intValue();
+            if (currentBasicCompilerConfiguration != null)
+                currentBasicCompilerConfiguration.getSixtyfourBits().setValue(val);
         } else if (element.equals(INHERIT_INC_VALUES_ELEMENT)) {
             boolean ds = currentText.equals(TRUE_VALUE);
             if (currentCCCCompilerConfiguration != null)

@@ -25,7 +25,7 @@ import java.util.Collection;
  *
  * @author Vladimir Kvashin
  */
-public interface CsmProject extends CsmObject, CsmIdentifiable<CsmProject>, CsmQualifiedNamedElement {
+public interface CsmProject extends CsmObject, CsmIdentifiable<CsmProject>, CsmQualifiedNamedElement, CsmValidable {
 
     CsmNamespace getGlobalNamespace();
     
@@ -86,16 +86,6 @@ public interface CsmProject extends CsmObject, CsmIdentifiable<CsmProject>, CsmQ
      * path components)
      */
     Collection<CsmProject> getLibraries();
-    
-    /**
-     * Returns true if this project is valid, otherwise false.
-     * It's always false upon project closing.
-     *
-     * If you store CsmProject, say, in a field, then 
-     * you have to chack isValid() prior to calling any other method;
-     * otherwise results are inpredictable.
-     */
-    boolean isValid();
     
     /**
      * Returns true if the project is completely parsed

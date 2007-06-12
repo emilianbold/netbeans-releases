@@ -106,6 +106,19 @@ public interface CsmFinder {
     public List findFields(CsmOffsetableDeclaration contextDeclaration, CsmClass c, String name, boolean exactMatch,
                            boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses, boolean sort);
 
+    /** Find enumerators by name in a given class.
+    * @param contextDeclaration declaration which defines context (class or function)
+    * @param c class which is searched for the enumerators.
+    * @param name start of the name of the field
+    * @param exactMatch whether the given name of the enumerators is exact
+    * @param inspectOuterClasses if the given class is inner class of some
+    *   outer class, whether the enumerators of the outer class should be possibly
+    *   added or not. This should be false when searching for 'this.'
+    * @return list of the matching fields
+    */    
+    public List findEnumerators(CsmOffsetableDeclaration contextDeclaration, CsmClass c, String name, boolean exactMatch, 
+            boolean inspectOuterClasses, boolean inspectParentClasses, boolean sort);
+    
     /** Find methods by name in a given class.
     * @param contextDeclaration declaration which defines context (class or function)
     * @param c class which is searched for the methods.

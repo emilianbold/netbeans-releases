@@ -149,6 +149,64 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("main.cc", 35, 35, "main.cc", 20, 20); // cout << i << ": " << argv[i] << "\n";
     }
     
+    public void testClassMethodRetClassAPtr() throws Exception {
+        // declaration do definition
+        performTest("ClassA.h", 59, 15, "ClassA.cc", 86, 1); // ClassA* classMethodRetClassAPtr();
+        // class name in return type to class
+        performTest("ClassA.h", 59, 10, "ClassA.h", 2, 1); // ClassA* classMethodRetClassAPtr();
+        
+        // definition to declaration
+        performTest("ClassA.cc", 86, 20, "ClassA.h", 59, 5); // ClassA* ClassA::classMethodRetClassAPtr() {
+        // class name in return type to class
+        performTest("ClassA.cc", 86, 5, "ClassA.h", 2, 1); // ClassA* ClassA::classMethodRetClassAPtr() {
+        // class name in method name to class
+        performTest("ClassA.cc", 86, 10, "ClassA.h", 2, 1); // ClassA* ClassA::classMethodRetClassAPtr() {
+    }
+    
+    public void testClassMethodRetClassARef() throws Exception {
+        // declaration do definition
+        performTest("ClassA.h", 60, 20, "ClassA.cc", 90, 1); // const ClassA& classMethodRetClassARef();
+        // class name in return type to class
+        performTest("ClassA.h", 60, 15, "ClassA.h", 2, 1); // const ClassA& classMethodRetClassARef();
+        
+        // definition to declaration
+        performTest("ClassA.cc", 90, 25, "ClassA.h", 60, 5); // const ClassA& ClassA::classMethodRetClassARef() {
+        // class name in return type to class
+        performTest("ClassA.cc", 90, 10, "ClassA.h", 2, 1); // const ClassA& ClassA::classMethodRetClassARef() {
+        // class name in method name to class
+        performTest("ClassA.cc", 90, 20, "ClassA.h", 2, 1); // const ClassA& ClassA::classMethodRetClassARef() {
+    }
+    
+    public void testClassMethodRetMyInt() throws Exception {
+        // declaration do definition
+        performTest("ClassA.h", 64, 20, "ClassA.cc", 94, 1); // myInt classMethodRetMyInt();
+        // type name in return type to typedef
+        performTest("ClassA.h", 64, 7, "ClassA.h", 75, 1); // myInt classMethodRetMyInt();
+        
+        // definition to declaration
+        performTest("ClassA.cc", 94, 25, "ClassA.h", 64, 5); // myInt ClassA::classMethodRetMyInt() {
+        // type name in return type to typedef
+        performTest("ClassA.cc", 94, 5, "ClassA.h", 75, 1); // myInt ClassA::classMethodRetMyInt() {
+        // class name in method name to class
+        performTest("ClassA.cc", 94, 10, "ClassA.h", 2, 1); // myInt ClassA::classMethodRetMyInt() {
+    }
+    
+    public void testFriendFuncHyperlink() throws Exception {
+        // from declaration to definition
+        performTest("ClassA.h", 72, 20, "ClassA.cc", 107, 1); // friend void friendFoo();
+        // from definition to declaration
+        performTest("ClassA.cc", 107, 10, "ClassA.h", 72, 5); // void friendFoo() {
+        // from usage to definition
+        performTest("main.cc", 17, 10, "ClassA.cc", 107, 1); // friendFoo();    
+    }
+    
+    public void testFriendOperatorHyperlink() throws Exception {
+        // from declaration to definition
+        performTest("ClassA.h", 69, 25, "ClassA.cc", 102, 1); // friend ostream& operator<< (ostream&, const ClassA&);
+        // from definition to declaration
+        performTest("ClassA.cc", 102, 15, "ClassA.h", 69, 5); // ostream& operator <<(ostream& output, const ClassA& item) {
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
         
         protected Class getTestCaseDataClass() {
@@ -196,6 +254,16 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
             // TODO: doesn't work yet
             performTest("ClassA.cc", 51, 15, "ClassA.h", 23, 5); // void ClassA::protectedFoo(const ClassA* const ar[])
         }
+    
+        public void testMyInnerInt1() throws Exception {
+            // type name in return type to typedef
+            performTest("ClassA.h", 66, 10, "ClassA.h", 62, 5); // myInnerInt classMethodRetMyInnerInt();
+        }        
+
+        public void testMyInnerInt2() throws Exception {
+            // type name in return type to typedef
+            performTest("ClassA.cc", 98, 5, "ClassA.h", 62, 5); // myInnerInt ClassA::classMethodRetMyInnerInt() {
+        }        
     }
         
 }
