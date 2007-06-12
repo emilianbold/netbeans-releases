@@ -318,7 +318,7 @@ public class MarkOccurrencesHighlighter implements CancellableTask<CompilationIn
     
     private static boolean isEnabled(Preferences node, Element el) {
         switch (el.getKind()) {
-                        case ANNOTATION_TYPE:
+            case ANNOTATION_TYPE:
             case CLASS:
             case ENUM:
             case INTERFACE:
@@ -339,6 +339,8 @@ public class MarkOccurrencesHighlighter implements CancellableTask<CompilationIn
             case PARAMETER:
             case EXCEPTION_PARAMETER:
                 return node.getBoolean(MarkOccurencesSettings.LOCAL_VARIABLES, true);
+            case PACKAGE:
+                return false; //never mark occurrence packages
             default:
                 Logger.getLogger(MarkOccurrencesHighlighter.class.getName()).log(Level.INFO, "Unknow element type: {0}.", el.getKind());
                 return true;
