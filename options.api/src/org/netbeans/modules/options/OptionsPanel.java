@@ -291,9 +291,7 @@ public class OptionsPanel extends JPanel {
             InputMap inputMap = getInputMap 
                 (JComponent.WHEN_IN_FOCUSED_WINDOW);
             inputMap.put (
-                isMac ? KeyStroke.getKeyStroke (KeyEvent.VK_LEFT, 0) : 
-                        KeyStroke.getKeyStroke (KeyEvent.VK_UP, 0), 
-                "UP"
+                KeyStroke.getKeyStroke (KeyEvent.VK_LEFT, 0), "UP"
             );
             getActionMap ().put ("UP", new UpAction ());
             inputMap.put (
@@ -302,9 +300,7 @@ public class OptionsPanel extends JPanel {
             );
             getActionMap ().put ("SPACE", new SelectCurrentAction ());
             inputMap.put (
-                isMac ? KeyStroke.getKeyStroke (KeyEvent.VK_RIGHT, 0) :
-                        KeyStroke.getKeyStroke (KeyEvent.VK_DOWN, 0), 
-                "DOWN"
+                KeyStroke.getKeyStroke (KeyEvent.VK_RIGHT, 0),"DOWN"
             );
             getActionMap ().put ("DOWN", new DownAction ());
         }
