@@ -74,7 +74,8 @@ public final class IfFalseEventSourceCD extends ComponentDescriptor {
             },
             // delete
             DeletePresenter.createUserIndeliblePresenter (),
-            DeleteDependencyPresenter.createDependentOnParentComponentPresenter ()
+            DeleteDependencyPresenter.createDependentOnParentComponentPresenter (),
+            DeletePresenter.createSilentDeletionPresenter()
         );
     }
 

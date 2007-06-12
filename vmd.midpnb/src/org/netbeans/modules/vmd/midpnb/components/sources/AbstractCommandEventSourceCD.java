@@ -18,22 +18,22 @@
  */
 package org.netbeans.modules.vmd.midpnb.components.sources;
 
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
+import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
+import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
+import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.ArrayList;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
-import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
-import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
-import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 
 /**
  * @author Karol Harezlak
@@ -71,7 +71,8 @@ public class AbstractCommandEventSourceCD extends ComponentDescriptor {
             new InspectorFolderComponentPresenter(true),   
             // delete
             DeleteDependencyPresenter.createDependentOnParentComponentPresenter (),
-            DeletePresenter.createUserIndeliblePresenter ()
+            DeletePresenter.createUserIndeliblePresenter (),
+            DeletePresenter.createSilentDeletionPresenter()
         );
     }
 

@@ -18,11 +18,15 @@
  */
 package org.netbeans.modules.vmd.midp.components.sources;
 
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
+import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
+import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
@@ -33,10 +37,6 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
-import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
-import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 
 /**
  * @author David Kaspar
@@ -94,6 +94,7 @@ public final class ListSelectCommandEventSourceCD extends ComponentDescriptor {
             createPropertiesPresenter (),
             // delete
             DeletePresenter.createUserIndeliblePresenter(),
+            DeletePresenter.createSilentDeletionPresenter(),
             //inspector
             new InspectorFolderComponentPresenter(false)
         );
