@@ -57,7 +57,11 @@ public class GenericResourceBean {
     private String[] representationTypes;
     private Set<HttpMethodType> methodTypes;
 
-    public GenericResourceBean(String name, String packageName, String uriTemplate, 
+   public GenericResourceBean(String name, String packageName, String uriTemplate) {
+         this(name, packageName, uriTemplate, supportedMimeTypes, HttpMethodType.values());
+   }
+   
+   public GenericResourceBean(String name, String packageName, String uriTemplate, 
             String[] mediaTypes, HttpMethodType[] methodTypes) {
         this(name, packageName, uriTemplate, mediaTypes, null, methodTypes);
     }

@@ -188,8 +188,8 @@ public class JavaSourceHelper {
         try {
             source.runUserActionTask(new AbstractTask<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     ExpressionTree packageTree = controller.getCompilationUnit().getPackageName();
-                    
                     packageName[0] = packageTree.toString();
                 }
             }, true);

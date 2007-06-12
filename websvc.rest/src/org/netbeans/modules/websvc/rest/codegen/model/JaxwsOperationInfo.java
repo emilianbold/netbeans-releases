@@ -21,6 +21,7 @@ package org.netbeans.modules.websvc.rest.codegen.model;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -61,6 +62,23 @@ public class JaxwsOperationInfo {
         if (support == null) {
             throw new IllegalArgumentException("Project "+project.getProjectDirectory()+" does not support JAX-WS client"); //NOI18N
         }
+    }
+    
+    static String derivePackageName(String wsdlURL) {
+        if (wsdlURL.startsWith("file:")) {
+            throw new IllegalArgumentException("URL to access WSDL could not be local");
+        }
+        int iStart = wsdlURL.indexOf("://") + 3;
+        int iEnd = wsdlURL.indexOf('/', iStart);
+        String pakName = wsdlURL.substring(iStart, iEnd);
+        String[] segments = pakName.split("\\.");
+        StringBuilder sb = new StringBuilder(pakName.length());
+        
+        for (int i=segments.length-1; i>-1; i--) {
+            sb.append(segments[i]);
+            sb.append('.');
+        }
+        return sb.substring(0, sb.length()-1);
     }
 
     public String getServiceName() {
@@ -112,6 +130,7 @@ public class JaxwsOperationInfo {
             return;
         }
         
+        setupWebServiceClient();
         service = getWsdlModel().getServiceByName(serviceName);
         if (service == null) {
             throw new IllegalArgumentException("Service "+serviceName+" does not exists");
@@ -128,7 +147,7 @@ public class JaxwsOperationInfo {
     
     public void setupWebServiceClient() {
         if (getServiceClient() == null) {
-            support.addServiceClient(serviceName, wsdlUrl, null, true);
+            support.addServiceClient(serviceName, wsdlUrl, derivePackageName(wsdlUrl), true);
         }
     }
     
@@ -151,14 +170,17 @@ public class JaxwsOperationInfo {
     }
 
     public WsdlPort getPort() {
+        initWsdlModelInfo();
         return port;
     }
     
     public WsdlOperation getOperation() {
+        initWsdlModelInfo();
         return operation;
     }
     
     public WsdlService getService() {
+        initWsdlModelInfo();
         return service;
     }
 }
