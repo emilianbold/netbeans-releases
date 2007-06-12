@@ -67,7 +67,7 @@ public class OptionsOperatorTest extends JellyTestCase {
         suite.addTest(new OptionsOperatorTest("testSelectEditor"));
         suite.addTest(new OptionsOperatorTest("testSelectFontAndColors"));
         suite.addTest(new OptionsOperatorTest("testSelectKeymap"));
-        suite.addTest(new OptionsOperatorTest("testSelectAdvanced"));
+        suite.addTest(new OptionsOperatorTest("testSelectMiscellaneous"));
         suite.addTest(new OptionsOperatorTest("testSelectGeneral"));
         suite.addTest(new OptionsOperatorTest("testClose"));
         return suite;
@@ -158,9 +158,9 @@ public class OptionsOperatorTest extends JellyTestCase {
         optionsOperator.selectKeymap();
     }
 
-    /** Test of selectAdvanced method. */
-    public void testSelectAdvanced() {
-        optionsOperator.selectAdvanced();
+    /** Test of selectMiscellaneous method. */
+    public void testSelectMiscellaneous() {
+        optionsOperator.selectMiscellaneous();
     }
     
     /** Test of selectGeneral method.  */

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -370,8 +370,6 @@ public class OptionsOperator extends NbDialogOperator {
                 return "OptionsPanel$CategoryButton with text "+name; // NOI18N
             }
         }).clickMouse();
-        // wait for second label signing appropriate panel
-        new JLabelOperator(this, name, 1);
     }
 
     /** Selects General category. */
@@ -399,8 +397,8 @@ public class OptionsOperator extends NbDialogOperator {
                                                "CTL_Keymap_Options"));
     }
     
-    /** Selects Advanced category. */
-    public void selectAdvanced() {
+    /** Selects Miscellaneous category. */
+    public void selectMiscellaneous() {
         selectCategory(Bundle.getStringTrimmed("org.netbeans.modules.options.advanced.Bundle",
                                                "CTL_Advanced_Options"));
     }
