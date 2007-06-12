@@ -19,11 +19,8 @@
 
 package org.netbeans.modules.db.explorer.driver;
 
-import java.io.File;
 import java.net.URL;
 import org.netbeans.api.db.explorer.JDBCDriver;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 
 /**

@@ -28,8 +28,9 @@ import java.util.Comparator;
 import java.util.ResourceBundle;
 import java.util.TreeSet;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import org.openide.ErrorManager;
 
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
@@ -87,7 +88,7 @@ public class DatabaseNodeChildren extends Children.Array {
                 java.util.Map nodeord = (java.util.Map)nodeinfo.get(DatabaseNodeInfo.CHILDREN_ORDERING);
                 boolean sort = (nodeinfo.getName().equals("Drivers") || (nodeinfo instanceof TableNodeInfo) || (nodeinfo instanceof ViewNodeInfo) || (nodeinfo instanceof ProcedureNodeInfo)) ? false : true; //NOI18N
                 TreeSet children = new TreeSet(new NodeComparator(nodeord, sort));
-
+                
                 try {
                     Vector chlist;
                     synchronized (sync) {
@@ -97,10 +98,10 @@ public class DatabaseNodeChildren extends Children.Array {
                     for (int i=0;i<chlist.size();i++) {
                         Node snode = null;
                         Object sinfo = chlist.elementAt(i);
-
+                        
                         if (sinfo instanceof DatabaseNodeInfo) {
                             DatabaseNodeInfo dni = (DatabaseNodeInfo) sinfo;
-
+                            
                             // aware! in this method is clone of instance dni created
                             snode = createNode(dni);
 
@@ -127,7 +128,7 @@ public class DatabaseNodeChildren extends Children.Array {
 //                            });
 //                    }
                 } catch (Exception e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                     showException(e);
                     children.clear();
                 }

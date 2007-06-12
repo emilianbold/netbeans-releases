@@ -33,11 +33,8 @@ import org.netbeans.lib.ddl.impl.*;
 import org.netbeans.modules.db.*;
 import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.explorer.infos.*;
-import org.openide.nodes.Node;
-import org.openide.nodes.NodeTransfer;
 import org.openide.util.Lookup;
 import org.openide.util.datatransfer.ExTransferable;
-import org.openide.util.datatransfer.PasteType;
 
 
 // Node for Table/View/Procedure things.

@@ -41,7 +41,6 @@ import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
 import org.openide.filesystems.FileUtil;
@@ -55,6 +54,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.classfile.ClassName;
 import org.netbeans.modules.db.util.DriverListUtil;
+import org.openide.util.Exceptions;
 
 public class AddDriverDialog extends javax.swing.JPanel {
     
@@ -90,7 +90,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
                 try {
                     fileName = new File(new URI(urls[i].toExternalForm())).getAbsolutePath();
                 } catch (URISyntaxException e) {
-                    ErrorManager.getDefault().notify(e);
+                    Exceptions.printStackTrace(e);
                     fileName = null;
                 }
             } else {

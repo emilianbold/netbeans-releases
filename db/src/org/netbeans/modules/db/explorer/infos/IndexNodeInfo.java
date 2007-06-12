@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -102,7 +104,7 @@ public class IndexNodeInfo extends TableNodeInfo {
             // add built sub-tree
             children.add(subTreeNodes);
         } catch (Exception ex) {
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         }
     }
 

@@ -28,6 +28,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
@@ -38,7 +40,6 @@ import org.netbeans.modules.db.explorer.dlg.ConnectionDialogMediator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 
 import org.netbeans.api.db.explorer.DatabaseException;
@@ -200,9 +201,9 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                         try {
                             ((RootNodeInfo)RootNode.getInstance().getInfo()).addConnection(cinfo);
                         } catch (DatabaseException exc) {
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
-                            String message = MessageFormat.format(bundle().getString("ERR_UnableToAddConnection"), new String[] {exc.getMessage()}); //NOI18N
-                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                            Logger.getLogger("global").log(Level.INFO, null, exc);
+                            String message = MessageFormat.format(bundle().getString("ERR_UnableToAddConnection"), new String[] {exc.getMessage()});
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message,NotifyDescriptor.ERROR_MESSAGE));
                             try {
                                 cinfo.getConnection().close();
                             } catch (SQLException e) {
@@ -210,8 +211,7 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                             }
                             return;
                         }
-
-                        if(dlg != null) {
+                        if (dlg != null) {
                             dlg.close();
 //                        removeListeners(cinfo);
                         }
@@ -223,9 +223,9 @@ public class ConnectUsingDriverAction extends DatabaseAction {
             final ExceptionListener excListener = new ExceptionListener() {
                 public void exceptionOccurred(Exception exc) {
                     if (exc instanceof DDLException) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc.getCause());
+                        Logger.getLogger("global").log(Level.INFO, null, exc.getCause());
                     } else {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+                        Logger.getLogger("global").log(Level.INFO, null, exc);
                     }
                     
                     String message = null;
@@ -268,8 +268,8 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                             //isClosed() method failed, try to connect
                             cinfo.connect();
                         } catch (DatabaseException exc) {
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
-                            String message = MessageFormat.format(bundle().getString("ERR_UnableToAddConnection"), new String[] {exc.getMessage()}); //NOI18N
+                            Logger.getLogger("global").log(Level.INFO, null, exc);
+                            String message = MessageFormat.format(bundle().getString("ERR_UnableToAddConnection"), new String[] {exc.getMessage()}); //NOI18n
                             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                             try {
                                 cinfo.getConnection().close();

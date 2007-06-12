@@ -25,7 +25,7 @@ import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.explorer.actions.ConnectUsingDriverAction;
 import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 
 /**
@@ -276,7 +276,7 @@ public final class ConnectionManager {
             dbconn.getDelegate().disconnect();
         } catch (DatabaseException e) {
             // XXX maybe shouldn't catch the exception
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         }
     }
     

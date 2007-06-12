@@ -27,7 +27,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
-import org.netbeans.modules.db.explorer.dataview.DataViewWindow;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 
 public class ViewDataAction extends QueryAction {

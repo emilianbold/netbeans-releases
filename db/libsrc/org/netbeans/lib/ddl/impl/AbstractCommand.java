@@ -25,9 +25,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
@@ -162,7 +163,7 @@ public class AbstractCommand implements Serializable, DDLCommand {
         try {
             fcmd = getCommand();
         } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
             executionWithException = true;
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_UnableToFormat")+"\n" + format + "\n" + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
             return;
@@ -182,7 +183,7 @@ public class AbstractCommand implements Serializable, DDLCommand {
                     throw new Exception();
 
             } catch (Exception e) {
-                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, e.getMessage() + "\n" + fcmd); //NOI18N
+                Logger.getLogger("global").log(Level.INFO, e.getMessage() + "\n" + fcmd); //NOI18N
             }
         }
 

@@ -29,8 +29,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.JDBCDriver;
-import org.openide.ErrorManager;
 
 /**
  * Class to load drivers and create connections. It can find drivers and connections from
@@ -53,8 +54,8 @@ import org.openide.ErrorManager;
  */
 public class DbDriverManager {
     
-    private static final ErrorManager LOGGER = ErrorManager.getDefault().getInstance("org.netbeans.modules.db.explorer.DbDriverManager"); // NOI18N
-    private static final boolean LOG = LOGGER.isLoggable(ErrorManager.INFORMATIONAL);
+    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.db.explorer.DbDriverManager"); // NOI18N
+    private static final boolean LOG = LOGGER.isLoggable(Level.INFO);
     
     private static final DbDriverManager DEFAULT = new DbDriverManager();
     
@@ -89,7 +90,7 @@ public class DbDriverManager {
      */
     public Connection getConnection(String databaseURL, Properties props, JDBCDriver jdbcDriver) throws SQLException {
         if (LOG) {
-            LOGGER.log(ErrorManager.INFORMATIONAL, "Attempting to connect to '" + databaseURL + "'"); // NOI18N
+            LOGGER.log(Level.INFO, "Attempting to connect to \'" + databaseURL + "\'"); // NOI18N
         }
         
         // try to find a registered driver or use the supplied jdbcDriver
@@ -99,7 +100,7 @@ public class DbDriverManager {
             Connection conn = driver.connect(databaseURL, props);
             if (conn == null) {
                 if (LOG) {
-                    LOGGER.log(ErrorManager.INFORMATIONAL, driver.getClass().getName() + ".connect() returned null"); // NOI18N
+                    LOGGER.log(Level.INFO, driver.getClass().getName() + ".connect() returned null"); // NOI18N
                 }
                 throw createDriverNotFoundException();
             }
@@ -234,12 +235,12 @@ public class DbDriverManager {
             if (loader == null) {
                 loader = new DbURLClassLoader(driver.getURLs());
                 if (LOG) {
-                    LOGGER.log(ErrorManager.INFORMATIONAL, "Creating " + loader); // NOI18N
+                    LOGGER.log(Level.INFO, "Creating " + loader); // NOI18N
                 }
                 driver2Loader.put(driver, loader);
             } else {
                 if (LOG) {
-                    LOGGER.log(ErrorManager.INFORMATIONAL, "Reusing " + loader); // NOI18N
+                    LOGGER.log(Level.INFO, "Reusing " + loader); // NOI18N
                 }
             }
         }

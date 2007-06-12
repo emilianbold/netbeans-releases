@@ -28,7 +28,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
 
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.netbeans.lib.ddl.impl.DriverSpecification;
 import org.netbeans.api.db.explorer.DatabaseException;
@@ -82,15 +83,15 @@ public class IndexListNodeInfo extends DatabaseNodeInfo {
                 value = null;
                 try {
                     value = rs.getString(i);
-                }  catch (SQLException exc) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+                } catch (SQLException exc) {
+                    Logger.getLogger("global").log(Level.INFO, null, exc);
                     rset = null;
                     break;
                 }
                 rset.put(new Integer(i), value);
             }
         } catch (SQLException exc) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+            Logger.getLogger("global").log(Level.INFO, null, exc);
             rset = null;
         }
 

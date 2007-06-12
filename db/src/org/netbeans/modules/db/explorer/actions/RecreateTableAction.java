@@ -23,11 +23,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
 import java.text.MessageFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JFileChooser;
 
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
@@ -59,7 +60,7 @@ public class RecreateTableAction extends DatabaseAction {
         final DatabaseNodeInfo info = (DatabaseNodeInfo) node.getCookie(DatabaseNodeInfo.class);
         final java.awt.Component par = WindowManager.getDefault().getMainWindow();
         RequestProcessor.getDefault().post(new Runnable() {
-            public void run () {
+            public void run() {
                 try {
                     TableListNodeInfo nfo = (TableListNodeInfo) info.getParent(nodename);
                     Specification spec = (Specification) nfo.getSpecification();
@@ -74,7 +75,7 @@ public class RecreateTableAction extends DatabaseAction {
                         public boolean accept(File f) {
                             return (f.isDirectory() || f.getName().endsWith(".grab")); //NOI18N
                         }
-
+                        
                         public String getDescription() {
                             return bundle().getString("GrabTableFileTypeDescription"); //NOI18N
                         }
@@ -109,11 +110,11 @@ public class RecreateTableAction extends DatabaseAction {
                                         cmd.execute();
                                         nfo.addTable(newtab);
                                     } catch (org.netbeans.lib.ddl.DDLException exc) {
-                                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+                                        Logger.getLogger("global").log(Level.INFO, null, exc);
                                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(exc.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
                                         continue;
                                     } catch (org.netbeans.api.db.explorer.DatabaseException exc) {
-                                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+                                        Logger.getLogger("global").log(Level.INFO, null, exc);
                                         continue;
                                     }
                                     noResult = false;
@@ -122,19 +123,19 @@ public class RecreateTableAction extends DatabaseAction {
                                     if(win.executeCommand())
                                         noResult = false;
                                 }
-                            } catch(Exception exc) {
-                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);                        
-                                String message = MessageFormat.format(bundle().getString("ERR_UnableToRecreateTable"), new String[] {exc.getMessage()}); // NOI18N
+                            } catch (Exception exc) {
+                                Logger.getLogger("global").log(Level.INFO, null, exc);
+                                String message = MessageFormat.format(bundle().getString("ERR_UnableToRecreateTable"), new String[] {exc.getMessage()}); //NOI18N
                                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                             }
                         } else { // CANCEL option
                             noResult = false;
                         }
                     }
-                } catch(Exception exc) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
-                    String message = MessageFormat.format(bundle().getString("ERR_UnableToRecreateTable"), new String[] {exc.getMessage()}); // NOI18N
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                } catch (Exception exc) {
+                    Logger.getLogger("global").log(Level.INFO, null, exc);
+                    String message = MessageFormat.format(bundle().getString("ERR_UnableToRecreateTable"), new String[] {exc.getMessage()}); //NOI18N
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE)); //NOI18N
                 }
             }
         }, 0);

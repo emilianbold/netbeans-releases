@@ -37,10 +37,10 @@ import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 import org.netbeans.modules.db.util.DriverListUtil;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.options.SystemOption;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /** Root system option. It stores a list of available drivers and open connections.
@@ -201,6 +201,7 @@ public class DatabaseOption extends SystemOption {
                 jf = new JarFile(files[i]);
                 Set drvs = DriverListUtil.getDrivers();
                 Iterator it = drvs.iterator();
+
                 while (it.hasNext()) {
                     drv = (String) it.next();
                     if (jf.getEntry(drv.replace('.', '/') + ".class") != null) {//NOI18N
@@ -209,7 +210,7 @@ public class DatabaseOption extends SystemOption {
                         try {
                             JDBCDriverManager.getDefault().addDriver(driver);
                         } catch (DatabaseException e) {
-                            ErrorManager.getDefault().notify(e);
+                            Exceptions.printStackTrace(e);
                         }
                     }
                 }

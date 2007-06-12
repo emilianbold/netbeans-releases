@@ -21,6 +21,8 @@ package org.netbeans.modules.db.explorer.nodes;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.Action;
 
@@ -165,7 +167,7 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie {
         try{
             parent.refreshChildren();
         } catch (Exception ex){
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         }
     }
 

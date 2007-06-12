@@ -30,6 +30,8 @@ import java.sql.SQLException;
 import java.sql.Connection;
 import java.text.MessageFormat;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 
 import javax.swing.JTabbedPane;
@@ -42,7 +44,6 @@ import org.netbeans.modules.db.explorer.ConnectionList;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 
 import org.netbeans.api.db.explorer.DatabaseException;
@@ -129,9 +130,9 @@ public class ConnectAction extends DatabaseAction {
             final ExceptionListener excListener = new ExceptionListener() {
                 public void exceptionOccurred(Exception exc) {
                     if (exc instanceof DDLException) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc.getCause());
+                        Logger.getLogger("global").log(Level.INFO, null, exc.getCause());
                     } else {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+                        Logger.getLogger("global").log(Level.INFO, null, exc);
                     }
                     
                     String message = null;
@@ -177,7 +178,7 @@ public class ConnectAction extends DatabaseAction {
                 basePanel.addPropertyChangeListener(argumentListener);
 
                 final PropertyChangeListener connectionListener = new PropertyChangeListener() {
-                        public void propertyChange(PropertyChangeEvent event) {
+                    public void propertyChange(PropertyChangeEvent event) {
                         if (event.getPropertyName().equals("connecting")) { // NOI18N
                             fireConnectionStarted();
                         }
@@ -205,8 +206,8 @@ public class ConnectAction extends DatabaseAction {
                             try {
                                 nfo.finishConnect(null, dbcon, dbcon.getConnection());
                             } catch (DatabaseException exc) {
-                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
-                                String message = MessageFormat.format(bundle().getString("ERR_UnableToInitializeConnection"), new String[] {exc.getMessage()}); //NOI18N
+                                Logger.getLogger("global").log(Level.INFO, null, exc);
+                                String message = MessageFormat.format(bundle().getString("ERR_UnableToInitializeConnection"), new String[] {exc.getMessage()});
                                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                                 return;
                             }
@@ -218,8 +219,7 @@ public class ConnectAction extends DatabaseAction {
                             if (basePanel.rememberPassword()) {
                                 nfo.put(DatabaseNodeInfo.REMEMBER_PWD, Boolean.TRUE);
                             }
-
-                            if(dlg != null) {
+                            if (dlg != null) {
                                 dlg.close();
     //                        removeListeners(cinfo);
                             }
@@ -249,8 +249,8 @@ public class ConnectAction extends DatabaseAction {
                                     try {
                                         nfo.finishConnect(null, dbcon, dbcon.getConnection());
                                     } catch (DatabaseException exc) {
-                                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
-                                        String message = MessageFormat.format(bundle().getString("ERR_UnableToInitializeConnection"), new String[] {exc.getMessage()}); //NOI18N
+                                        Logger.getLogger("global").log(Level.INFO, null, exc);
+                                        String message = MessageFormat.format(bundle().getString("ERR_UnableToInitializeConnection"), new String[] {exc.getMessage()});
                                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                                         return;
                                     }
@@ -262,8 +262,7 @@ public class ConnectAction extends DatabaseAction {
                                     if (basePanel.rememberPassword()) {
                                         nfo.put(DatabaseNodeInfo.REMEMBER_PWD, Boolean.TRUE);
                                     }
-
-                                    if(dlg != null)
+                                    if (dlg != null)
                                         dlg.close();
                                 }
                             } catch (SQLException exc) {
@@ -313,9 +312,10 @@ public class ConnectAction extends DatabaseAction {
                                     if (dialog != null) {
                                         dialog.setVisible(false);
                                     }
-                                } catch (DatabaseException exc) {
-                                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
-                                    String message = MessageFormat.format(bundle().getString("ERR_UnableToInitializeConnection"), new String[] {exc.getMessage()}); //NOI18N
+                                }
+                                catch (DatabaseException exc) {
+                                    Logger.getLogger("global").log(Level.INFO, null, exc);
+                                    String message = MessageFormat.format(bundle().getString("ERR_UnableToInitializeConnection"), new String[] {exc.getMessage()});
                                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                                     return;
                                 }

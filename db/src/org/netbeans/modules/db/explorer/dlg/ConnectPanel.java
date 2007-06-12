@@ -20,8 +20,6 @@
 package org.netbeans.modules.db.explorer.dlg;
 
 import java.awt.BorderLayout;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 

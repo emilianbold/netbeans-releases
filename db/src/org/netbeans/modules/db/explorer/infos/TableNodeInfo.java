@@ -25,6 +25,8 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
@@ -194,38 +196,38 @@ public class TableNodeInfo extends DatabaseNodeInfo {
             // current sub-tree
             DatabaseNodeChildren children = (DatabaseNodeChildren) getNode().getChildren();            
             final Node[] childrenNodes = children.getNodes();            
-            for (int i=0; i < childrenNodes.length; i++)
+            for (int i = 0; i < childrenNodes.length; i++)
                 // is it node Indexes
                 if ((childrenNodes[i]).getCookie(IndexListNodeInfo.class) != null) {
                     final int j = i;
                     javax.swing.SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            try {                            
+                            try {
                                 // refresh indexes
                                 ((DatabaseNode) childrenNodes[j]).getInfo().refreshChildren();
-                            } catch(Exception ex) {
-                                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+                            } catch (Exception ex) {
+                                Logger.getLogger("global").log(Level.INFO, null, ex);
                             }
                         }
                     });
                     // add into refreshed sub-tree
                     subTreeNodes[charr.size()] = childrenNodes[i];
                 } else
-                // is it node Foreign keys or column? 
+                // is it node Foreign keys or column?
                 if ((childrenNodes[i]).getCookie(ForeignKeyListNodeInfo.class) != null) {
                     final int j = i;
                     javax.swing.SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            try {                            
+                            try {
                                 // refresh foreign keys
                                 ((DatabaseNode) childrenNodes[j]).getInfo().refreshChildren();
-                            } catch(Exception ex) {
-                                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+                            } catch (Exception ex) {
+                                Logger.getLogger("global").log(Level.INFO, null, ex);
                             }
                         }
                     });
                     // add into refreshed sub-tree
-                    subTreeNodes[charr.size()+1] = childrenNodes[i];
+                    subTreeNodes[charr.size() + 1] = childrenNodes[i];
                 }
 
             // remove current sub-tree
@@ -240,7 +242,7 @@ public class TableNodeInfo extends DatabaseNodeInfo {
             
             fireRefresh();
         } catch (Exception ex) {
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         }
     }
 

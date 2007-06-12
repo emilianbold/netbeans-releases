@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.db;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.lib.ddl.DBConnection;
 import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
@@ -26,7 +28,6 @@ import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
 import org.netbeans.modules.db.runtime.DatabaseRuntimeManager;
 import org.netbeans.spi.db.explorer.DatabaseRuntime;
-import org.openide.ErrorManager;
 import org.openide.modules.ModuleInstall;
 
 public class DatabaseModule extends ModuleInstall {
@@ -45,7 +46,7 @@ public class DatabaseModule extends ModuleInstall {
                     ((DatabaseConnection)conns[i]).disconnect();
                 } catch (Exception e) {
                     // cf. issue 64185 exceptions should only be logged
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                 }
             }
         }
@@ -57,8 +58,8 @@ public class DatabaseModule extends ModuleInstall {
                 try {
                     runtimes[i].stop();
                 } catch (Exception e) {
-                    // cf. issue 64185 exceptions should only be logged                    
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    // cf. issue 64185 exceptions should only be logged
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                 }
             }
         }

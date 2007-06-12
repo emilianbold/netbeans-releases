@@ -30,7 +30,8 @@ import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Vector;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -50,6 +51,7 @@ import org.openide.xml.EntityCatalog;
 import org.openide.xml.XMLUtil;
 import org.openide.filesystems.Repository;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
+import org.openide.util.Exceptions;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -202,9 +204,9 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         Vector dbconns = RootNode.getOption().getConnections();
         for (Iterator i = dbconns.iterator(); i.hasNext();) {
             try {
-                create((DatabaseConnection)i.next());
+                create((DatabaseConnection) i.next());
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
             i.remove();
         }
@@ -395,7 +397,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
             try {
                 holder.getPrimaryFile().getFileSystem().runAtomicAction(new AtomicWriter(dbconn, holder));
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Logger.getLogger("global").log(Level.INFO, null, ex);
             }
         }
     }

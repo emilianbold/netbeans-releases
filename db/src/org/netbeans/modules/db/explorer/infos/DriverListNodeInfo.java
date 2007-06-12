@@ -33,7 +33,7 @@ import org.netbeans.api.db.explorer.JDBCDriverListener;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 public class DriverListNodeInfo extends DatabaseNodeInfo implements DriverOperations {
     
@@ -48,7 +48,7 @@ public class DriverListNodeInfo extends DatabaseNodeInfo implements DriverOperat
                     try {
                         refreshChildren();
                     } catch (DatabaseException ex) {
-                        ErrorManager.getDefault().notify(ex);
+                        Exceptions.printStackTrace(ex);
                     }
                 }
             });

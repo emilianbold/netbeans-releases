@@ -23,7 +23,6 @@ import java.awt.Dialog;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.Enumeration;
 
@@ -38,7 +37,6 @@ import org.netbeans.modules.db.explorer.dlg.GrabTableProgressPanel;
 import org.openide.DialogDescriptor;
 
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;

@@ -29,10 +29,11 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.lib.ddl.impl.DriverSpecification;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
-import org.openide.ErrorManager;
 
 public class TableListNodeInfo extends DatabaseNodeInfo implements TableOwnerOperations {
     static final long serialVersionUID =-6156362126513404875L;
@@ -151,7 +152,7 @@ public class TableListNodeInfo extends DatabaseNodeInfo implements TableOwnerOpe
             }
         } catch (SQLException e) {
             // not critical, logging is enough
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
             result = Collections.EMPTY_LIST;
         }
         return result;

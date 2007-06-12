@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.db.explorer.driver;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -33,7 +31,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.LinkedList;
-import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -44,7 +41,6 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.XMLDataObject;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -52,6 +48,7 @@ import org.openide.xml.EntityCatalog;
 import org.openide.xml.XMLUtil;
 import org.openide.filesystems.Repository;
 import org.netbeans.api.db.explorer.JDBCDriver;
+import org.openide.util.Exceptions;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -239,7 +236,7 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
                 }
                 create(drv);
             } catch (Exception ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
             try {
                 children[i].delete();

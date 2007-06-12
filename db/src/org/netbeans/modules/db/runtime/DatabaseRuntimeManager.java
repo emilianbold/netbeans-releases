@@ -23,9 +23,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import javax.swing.SwingUtilities;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.spi.db.explorer.DatabaseRuntime;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
@@ -44,8 +44,8 @@ import org.openide.util.Lookup;
  */
 public final class DatabaseRuntimeManager {
     
-    private static final ErrorManager LOGGER = ErrorManager.getDefault().getInstance(DatabaseRuntimeManager.class.getName());
-    private static final boolean LOG = LOGGER.isLoggable(ErrorManager.INFORMATIONAL);
+    private static final Logger LOGGER = Logger.getLogger(DatabaseRuntimeManager.class.getName());
+    private static final boolean LOG = LOGGER.isLoggable(Level.INFO);
     
     /**
      * The path where the runtimes are registered in the SystemFileSystem.
@@ -95,7 +95,7 @@ public final class DatabaseRuntimeManager {
         for (Iterator i = result.allInstances().iterator(); i.hasNext();) {
             DatabaseRuntime runtime = (DatabaseRuntime)i.next();
             if (LOG) {
-                LOGGER.log(ErrorManager.INFORMATIONAL, "Runtime: " + runtime.getClass().getName() + " for driver " + runtime.getJDBCDriverClass()); // NOI18N
+                LOGGER.log(Level.INFO, "Runtime: " + runtime.getClass().getName() + " for driver " + runtime.getJDBCDriverClass()); // NOI18N
             }
             if (jdbcDriverClassName.equals(runtime.getJDBCDriverClass())) {
                 runtimeList.add(runtime);

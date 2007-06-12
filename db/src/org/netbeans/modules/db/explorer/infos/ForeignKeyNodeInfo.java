@@ -21,6 +21,8 @@ package org.netbeans.modules.db.explorer.infos;
 
 import java.sql.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.openide.nodes.Node;
 
@@ -93,7 +95,7 @@ public class ForeignKeyNodeInfo extends TableNodeInfo {
             children.add(subTreeNodes);
 
         } catch (Exception ex) {
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         }
     }
 

@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -369,7 +371,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
         } catch (ClassCastException ex) {
             //PENDING
         } catch (Exception ex) {
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         }
     }
 

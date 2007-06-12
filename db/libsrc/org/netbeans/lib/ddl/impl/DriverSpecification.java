@@ -25,7 +25,8 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.netbeans.lib.ddl.DriverSpecificationFactory;
 
@@ -75,7 +76,7 @@ public class DriverSpecification {
                 list.add(rs.getString(1).trim());
             rs.close();
         } catch (SQLException exc) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+            Logger.getLogger("global").log(Level.INFO, null, exc);
             
 //            this.catalog = catalog;
             this.catalog = null;  //hack for IBM ODBC driver
@@ -240,7 +241,7 @@ public class DriverSpecification {
                 return false;
             }
         } catch(SQLException exc) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+            Logger.getLogger("global").log(Level.INFO, null, exc);
         }
         
         return true;

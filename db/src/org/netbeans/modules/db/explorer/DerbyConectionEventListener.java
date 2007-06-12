@@ -23,7 +23,7 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 /**
  * This class receives notifications about connection events which
@@ -90,7 +90,7 @@ public class DerbyConectionEventListener {
             DbDriverManager.getDefault().getSameDriverConnection(conn, "jdbc:derby:;shutdown=true", new Properties()); // NOI18N
         } catch (SQLException e) {
             if (!DERBY_SYSTEM_SHUTDOWN_STATE.equals(e.getSQLState())) { // NOI18N
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
         }
     }

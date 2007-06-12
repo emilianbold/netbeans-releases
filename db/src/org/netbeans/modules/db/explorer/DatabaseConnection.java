@@ -37,7 +37,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.db.explorer.actions.ConnectAction;
-import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -65,6 +64,7 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
+import org.openide.util.Exceptions;
 import org.openide.windows.TopComponent;
 
 
@@ -78,8 +78,8 @@ import org.openide.windows.TopComponent;
  */
 public class DatabaseConnection implements DBConnection {
     
-    private static final ErrorManager LOGGER = ErrorManager.getDefault().getInstance(DatabaseConnection.class.getName());
-    private static final boolean LOG = LOGGER.isLoggable(ErrorManager.INFORMATIONAL);
+    private static final Logger LOGGER = Logger.getLogger(DatabaseConnection.class.getName());
+    private static final boolean LOG = LOGGER.isLoggable(Level.INFO);
 
     static final long serialVersionUID =4554639187416958735L;
 
@@ -218,7 +218,7 @@ public class DatabaseConnection implements DBConnection {
                  }
              }
          } catch(Exception ex) {
-             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+             Logger.getLogger("global").log(Level.INFO, null, ex);
          }
          return openConnection;
      }
@@ -391,7 +391,7 @@ public class DatabaseConnection implements DBConnection {
      */
     public Connection createJDBCConnection() throws DDLException {
         if (LOG) {
-            LOGGER.log(ErrorManager.INFORMATIONAL, "createJDBCConnection()");
+            LOGGER.log(Level.INFO, "createJDBCConnection()");
         }
         
         if (drv == null || db == null || usr == null || pwd == null )
@@ -462,7 +462,7 @@ public class DatabaseConnection implements DBConnection {
 
     public void connect() {
         if (LOG) {
-            LOGGER.log(ErrorManager.INFORMATIONAL, "connect()");
+            LOGGER.log(Level.INFO, "connect()");
         }
         
         createConnectTask() ;
@@ -701,7 +701,7 @@ public class DatabaseConnection implements DBConnection {
         try {
             nodeName = findConnectionNodeInfo(getName()).getNode().getName();
         } catch (DatabaseException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
             return;
         }
         
@@ -733,14 +733,14 @@ public class DatabaseConnection implements DBConnection {
         try {
             node = NodeOp.findPath(runtimeNode, new String[] { "Databases", nodeName }); // NOI18N
         } catch (NodeNotFoundException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
             return;
         }
         
         try {
             runtimeExplorer.setSelectedNodes(new Node[] { node });
         } catch (PropertyVetoException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
             return;
         }
     
@@ -758,7 +758,7 @@ public class DatabaseConnection implements DBConnection {
                 });
             }
         } catch (DatabaseException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         }
     }
     
@@ -769,7 +769,7 @@ public class DatabaseConnection implements DBConnection {
                 return cni.getConnection();
             }
         } catch (DatabaseException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         }
         return null;
     }

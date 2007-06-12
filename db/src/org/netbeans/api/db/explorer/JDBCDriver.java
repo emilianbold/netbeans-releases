@@ -19,8 +19,6 @@
 
 package org.netbeans.api.db.explorer;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.net.URL;
 import java.util.Arrays;
 
